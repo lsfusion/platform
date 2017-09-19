@@ -7,6 +7,7 @@ import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
@@ -31,7 +32,7 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,7 +72,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
     protected abstract byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException; // single file    
 
-    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException;
+    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPath) throws SQLException, SQLHandledException;
 
 
     @Override
@@ -113,8 +114,10 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                 ServerLoggers.systemLogger.error(e);
             }
         } else { // assert printType != null;
-            Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new HashMap<>();
-            exportClient(context, form.caption, reportData, reportPath);
+            List<ReportPath> reportPathList = SystemProperties.isDebug ? newFormManager.getReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
+            List<ReportPath> autoReportPathList = SystemProperties.isDebug ? newFormManager.getAutoReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
+
+            exportClient(context, form.caption, reportData, reportPathList, autoReportPathList);
         }
     }
 }

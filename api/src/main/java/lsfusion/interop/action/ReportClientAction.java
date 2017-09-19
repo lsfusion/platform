@@ -4,20 +4,22 @@ import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 public class ReportClientAction implements ClientAction {
 
-    public Map<String, String> reportPath;
+    public List<ReportPath> reportPathList;
+    public List<ReportPath> autoReportPathList;
     public boolean isModal;
     public ReportGenerationData generationData;
     public boolean isDebug;
     public FormPrintType printType;
     public String printerName;
 
-    public ReportClientAction(Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData,
+    public ReportClientAction(List<ReportPath> reportPathList, List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean isDebug) {
-        this.reportPath = reportPath;
+        this.reportPathList = reportPathList;
+        this.autoReportPathList = autoReportPathList;
         this.isModal = isModal;
         this.generationData = generationData;
         this.printType = printType;

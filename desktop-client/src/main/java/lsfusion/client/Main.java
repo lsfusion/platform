@@ -13,11 +13,13 @@ import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
 import lsfusion.interop.*;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
+import org.springframework.util.FileCopyUtils;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -37,6 +39,7 @@ import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.*;
@@ -568,13 +571,28 @@ public class Main {
             currentForm = null;
     }
 
-    public static void processPathMap(Map<String, String> pathMap) throws IOException {
-        if (pathMap != null) {
-            for (String path : pathMap.keySet()) {
-                Desktop.getDesktop().open(new File(path));
+    public static void processReportPathList(List<ReportPath> reportPathList, boolean useAuto) throws IOException {
+        if (reportPathList != null) {
+            for (ReportPath reportPath : reportPathList) {
+                if(useAuto)
+                    FileCopyUtils.copy(new File(reportPath.autoPath), new File(reportPath.customPath));
+                Desktop.getDesktop().open(new File(reportPath.customPath));
             }
             // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-            new SavingThread(pathMap).start();
+            new SavingThread(reportPathList).start();
+        }
+    }
+
+    public static void deleteReportPathList(List<ReportPath> reportPathList) throws IOException {
+        if (reportPathList != null) {
+            for (ReportPath reportPath : reportPathList) {
+                File customFile = new File(reportPath.customPath);
+                if(!customFile.delete())
+                    customFile.deleteOnExit();
+                File targetFile = new File(reportPath.targetPath);
+                if(!targetFile.delete())
+                    targetFile.deleteOnExit();
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.interop.FormExportType;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormSelector;
@@ -71,7 +72,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     }
 
     @Override
-    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException {
+    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPath) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException();
     }
 }

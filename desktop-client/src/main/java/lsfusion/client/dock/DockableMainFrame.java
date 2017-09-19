@@ -23,6 +23,7 @@ import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
 import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -277,16 +278,30 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final List<ReportPath> reportPathList, final List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
-            public void invokeEditReport() throws RemoteException {
+            public void invokeEditReport(boolean useAuto) throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.processPathMap(reportPath);
+                    Main.processReportPathList(useAuto ? autoReportPathList : reportPathList, useAuto);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
+            }
+
+            @Override
+            public void invokeDeleteReport() throws RemoteException {
+                try {
+                    Main.deleteReportPathList(reportPathList);
+                } catch (Exception e) {
+                    throw new RuntimeException(getString("form.error.printing.form"), e);
+                }
+            }
+
+            @Override
+            public boolean hasCustomReports() throws RemoteException {
+                return !reportPathList.isEmpty();
             }
         });
     }

@@ -3,6 +3,7 @@ package lsfusion.client.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormGrouping;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.*;
 
 import java.rmi.RemoteException;
@@ -88,8 +89,9 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return target.getReportData(requestIndex, lastReceivedRequestIndex, groupId, toExcel, userPreferences);
     }
 
-    public Map<String, String> getReportPath(long requestIndex, long lastReceivedRequestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences) throws RemoteException {
-        return target.getReportPath(requestIndex, lastReceivedRequestIndex, toExcel, groupId, userPreferences);
+    @Override
+    public List<ReportPath> getReportPath(long requestIndex, long lastReceivedRequestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, boolean useAuto) throws RemoteException {
+        return target.getReportPath(requestIndex, lastReceivedRequestIndex, toExcel, groupId, userPreferences, useAuto);
     }
 
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException {

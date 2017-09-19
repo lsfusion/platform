@@ -33,6 +33,7 @@ import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.*;
 
 import javax.swing.*;
@@ -134,13 +135,28 @@ public class ClientFormController implements AsyncListener {
 
     private EditReportInvoker editReportInvoker = new EditReportInvoker() {
         @Override
-        public void invokeEditReport() {
+        public void invokeEditReport(final boolean useAuto) {
             RmiQueue.runAction(new Runnable() {
                 @Override
                 public void run() {
-                    runEditReport();
+                    runEditReport(useAuto);
                 }
             });
+        }
+
+        @Override
+        public void invokeDeleteReport() throws RemoteException {
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    runDeleteReport();
+                }
+            });
+        }
+
+        @Override
+        public boolean hasCustomReports() throws RemoteException {
+            return hasCustomReportsAction();
         }
     };
 
@@ -1414,7 +1430,7 @@ public class ClientFormController implements AsyncListener {
                 }
 
                 @Override
-                public void onResponse(long requstIndex, final ReportGenerationData generationData) throws Exception {
+                public void onResponse(long requestIndex, final ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
                         RmiQueue.runAction(new Runnable() {
                             @Override
@@ -1430,24 +1446,62 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runEditReport() {
+    public void runEditReport(final boolean useAuto) {
         assert Main.module.isFull();
 
         try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<Map<String, String>>("runEditReport") {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runEditReport") {
                 @Override
-                protected Map<String, String> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences());
+                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), useAuto);
                 }
 
                 @Override
-                public void onResponse(long requstIndex, Map<String, String> pathMap) throws Exception {
-                    Main.processPathMap(pathMap);
+                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
+                    Main.processReportPathList(reportPathList, useAuto);
                 }
             });
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
+    }
+
+    public void runDeleteReport() {
+        try {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runDeleteReport") {
+                @Override
+                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false);
+                }
+
+                @Override
+                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
+                    Main.deleteReportPathList(reportPathList);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.printing.form"), e);
+        }
+    }
+
+    public boolean hasCustomReportsAction() {
+        final HasCustomReports hasCustomReports = new HasCustomReports();
+        try {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<Void>("hasCustomReports") {
+                @Override
+                protected Void doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    hasCustomReports.result = remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false).isEmpty();
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.printing.form"), e);
+        }
+        return hasCustomReports.result;
+    }
+
+    private class HasCustomReports {
+        public boolean result;
     }
 
     public void runSingleGroupReport(final GroupObjectController groupController) {
@@ -1460,7 +1514,7 @@ public class ClientFormController implements AsyncListener {
                 }
 
                 @Override
-                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+                public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
                         Main.frame.runReport(false, generationData, null);
                     }
@@ -1480,7 +1534,7 @@ public class ClientFormController implements AsyncListener {
             }
 
             @Override
-            public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+            public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                 if (generationData != null) {
                     Main.module.openInExcel(generationData);
                 }
