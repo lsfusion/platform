@@ -5,7 +5,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.jdom.JDOMException;
-import org.xBaseJ.xBaseJException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -20,7 +19,7 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
         return new ImportXMLIterator(file, attr) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {
