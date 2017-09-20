@@ -290,9 +290,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 ObjectValueClassSet valueClassSet = classSet.getValueClassSet();
                 // если есть unknown или complex или inconsistent
                 boolean checkClasses;
-                if(inconsistent) {
+                ValueClass inconsistentTableClass;
+                if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
                     Result<Boolean> rereadChange = new Result<Boolean>();
-                    checkClasses = checkClasses(classSet, inconsistentTableClasses.get(field), rereadChange, classRemove, timestamp);
+                    checkClasses = checkClasses(classSet, inconsistentTableClass, rereadChange, classRemove, timestamp);
                     if(rereadChange.result)
                         mInconsistentCheckChanges.exclAdd(field);
                 } else {

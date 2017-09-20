@@ -29,9 +29,4 @@ public class SingleKeyTableUsage<P> extends SessionTableUsage<String, P> {
     public Join<P> join(Expr key) {
         return join(MapFact.singleton("key", key));
     }
-
-    public void modifyRecord(SQLSession session, DataObject key, ImMap<P, ObjectValue> propertyValues, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
-        modifyRecord(session, MapFact.singleton("key", key), propertyValues, type, owner);
-    }
-
 }

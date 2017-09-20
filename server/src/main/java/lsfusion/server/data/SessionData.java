@@ -63,7 +63,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract ClassWhere<KeyField> getClassWhere();
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);
     
-    public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses);
+    public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField);
     public abstract SessionData updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException;
 
     public abstract boolean isEmpty();

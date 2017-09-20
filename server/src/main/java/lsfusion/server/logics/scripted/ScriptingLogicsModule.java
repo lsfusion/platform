@@ -825,6 +825,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             setNotNull((LCP)property, notNull.debugPoint, notNullEvent, 
                     notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(false, true, notNullResolve.debugPoint)) :
                                              ListFact.<PropertyFollowsDebug>EMPTY());
+            
+            if(notNullResolve != null)
+                ((LCP<?>)property).property.setAggr(true);
         }
 
         if (property.property instanceof CalcProperty) {
@@ -944,6 +947,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setAggProp(LP property) {
         ((CalcProperty)property.property).aggProp = true;
+    }
+
+    public void setAggr(LP property) {
+        ((CalcProperty)property.property).setAggr(true);
     }
 
     public void setScriptedEditAction(LP property, String actionType, LPWithParams action) {

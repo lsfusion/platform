@@ -188,7 +188,7 @@ public class SessionRows extends SessionData<SessionRows> {
             return getClasses().second.get(property);
     }
 
-    public SessionRows fixKeyClasses(ClassWhere<KeyField> fixClasses) {
+    public SessionRows fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField) {
         return this;
     }
 
@@ -264,8 +264,9 @@ public class SessionRows extends SessionData<SessionRows> {
             F field = map.getKey(i);
             O value = map.getValue(i);
             
-            Result<Boolean> rereadValue = new Result<>();            
-            if(checkClasses(value, session, baseClass, owner, inconsistentTableClasses.get(field), rereadValue, classRemove, timestamp))
+            Result<Boolean> rereadValue = new Result<>();
+            ValueClass inconsistentTableClass = inconsistentTableClasses.get(field);
+            if(inconsistentTableClass != null && checkClasses(value, session, baseClass, owner, inconsistentTableClass, rereadValue, classRemove, timestamp)) // проверка для correlations
                 mToCheckMap.mapValue(i, (DataObject) value);
             if(rereadValue.result)
                 mRereadChanges.exclAdd(field);

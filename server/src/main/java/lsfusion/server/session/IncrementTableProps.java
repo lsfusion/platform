@@ -26,7 +26,7 @@ public class IncrementTableProps extends IncrementProps {
         return getProperties().isEmpty();
     }
 
-    public <P extends PropertyInterface> IncrementTableProps(CalcProperty<P> property, SinglePropertyTableUsage<P> table) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> IncrementTableProps(CalcProperty<P> property, PropertyChangeTableUsage<P> table) throws SQLException, SQLHandledException {
         add(property, table);
     }
 
@@ -38,7 +38,7 @@ public class IncrementTableProps extends IncrementProps {
         return tableProps.contains(property);
     }
 
-    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(CalcProperty<P> property) {
+    public <P extends PropertyInterface> PropertyChangeTableUsage<P> getTable(CalcProperty<P> property) {
         return tableProps.getTable(property);
     }
 
@@ -46,7 +46,7 @@ public class IncrementTableProps extends IncrementProps {
         return tableProps.getPropertyChange(property);
     }
 
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChangeTableUsage<P> changeTable) throws SQLException, SQLHandledException {
         assert !tableProps.contains(property);
         tableProps.add(property, changeTable);
 
@@ -67,7 +67,7 @@ public class IncrementTableProps extends IncrementProps {
     }
 
     public long getMaxCount(CalcProperty property) {
-        SinglePropertyTableUsage table = tableProps.getTable(property);
+        PropertyChangeTableUsage table = tableProps.getTable(property);
         if(table != null)
             return table.getCount();
         return 0;

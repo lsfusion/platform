@@ -301,7 +301,7 @@ public abstract class SessionModifier implements Modifier {
 
         try {
             readProperty = property;
-            final SinglePropertyTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
+            final PropertyChangeTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
             increment.add(property, changeTable);
         } catch(Exception e) {
             String message = e.getMessage();

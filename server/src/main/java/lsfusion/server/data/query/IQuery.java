@@ -132,7 +132,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         }
         
         public <MK, MV> PullValues<MK, MV> map(ImRevMap<MK, K> mapKeys, ImRevMap<MV, V> mapProps, MapValuesTranslate mapValues) {
-            return new PullValues<>(query.map(mapKeys.filterNotValuesRev(pullKeys.keys()), mapProps.filterNotValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
+            return new PullValues<>(query.map(mapKeys.removeValuesRev(pullKeys.keys()), mapProps.removeValuesRev(pullProps.keys()), mapValues.filter(query.getInnerValues())),
                     mapKeys.rightJoin(mapValues.mapKeys().translate(pullKeys)),
                     mapProps.rightJoin(mapValues.mapKeys().translate(pullProps)));
         }

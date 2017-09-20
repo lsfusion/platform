@@ -16,7 +16,7 @@ public class TableProps {
     public TableProps() {
     }
 
-    private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = MapFact.mAddRemoveMap(); // mutable с remove поведение
+    private Map<CalcProperty, PropertyChangeTableUsage<PropertyInterface>> tables = MapFact.mAddRemoveMap(); // mutable с remove поведение
 
     public String out() {
         return "\ntables : " + tables.toString();
@@ -34,19 +34,19 @@ public class TableProps {
         return tables.containsKey(property);
     }
 
-    public <P extends PropertyInterface> SinglePropertyTableUsage<P> getTable(CalcProperty<P> property) {
-        return (SinglePropertyTableUsage<P>)tables.get(property);
+    public <P extends PropertyInterface> PropertyChangeTableUsage<P> getTable(CalcProperty<P> property) {
+        return (PropertyChangeTableUsage<P>)tables.get(property);
     }
 
     public <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property) {
-        SinglePropertyTableUsage<P> table = getTable(property);
+        PropertyChangeTableUsage<P> table = getTable(property);
         if(table!=null)
-            return SinglePropertyTableUsage.getChange(table);
+            return PropertyChangeTableUsage.getChange(table);
         return null;
     }
 
-    public <P extends PropertyInterface> void add(CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
-        tables.put(property, (SinglePropertyTableUsage<PropertyInterface>) changeTable);
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChangeTableUsage<P> changeTable) {
+        tables.put(property, (PropertyChangeTableUsage<PropertyInterface>) changeTable);
     }
 
     public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql, OperationOwner owner) throws SQLException {
@@ -54,7 +54,7 @@ public class TableProps {
     }
 
     public void clear(SQLSession session, OperationOwner owner) throws SQLException {
-        for (Map.Entry<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet())
+        for (Map.Entry<CalcProperty, PropertyChangeTableUsage<PropertyInterface>> addTable : tables.entrySet())
             addTable.getValue().drop(session, owner);
         tables.clear();
     }

@@ -123,6 +123,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public Where compare(Expr expr, boolean min) {
         return compare(expr, Compare.get(min));
     }
+    public Where equalsNull(Expr expr) {
+        return compare(expr, Compare.EQUALS).or(getWhere().not().and(expr.getWhere().not()));
+    }
     
 /*    public Where equalsFull(Expr expr) {
         return compare(expr, Compare.EQUALS).or(getWhere().not().and(expr.getWhere().not()));

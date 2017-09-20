@@ -2270,4 +2270,16 @@ public class Settings implements Cloneable {
     public void setDefaultCompareForStringContains(boolean defaultCompareForStringContains) {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
+    
+    private boolean disableCorrelations = true;
+
+    public boolean isDisableCorrelations() {
+        if(SystemProperties.isDebug) // для тестирования
+            return false;
+        return disableCorrelations;
+    }
+
+    public void setDisableCorrelations(boolean disableCorrelations) {
+        this.disableCorrelations = disableCorrelations;
+    }
 }

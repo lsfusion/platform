@@ -640,7 +640,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     // см. usage
     public SessionTable fixKeyClasses(ClassWhere<KeyField> fixClasses) {
-        assert propertyClasses.isEmpty();
+//        assert propertyClasses.isEmpty();
         ClassWhere<KeyField> fixedClasses = classes.and(fixClasses);
         if(hashEquals(fixedClasses, classes))
             return this;

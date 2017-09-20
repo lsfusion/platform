@@ -10,6 +10,7 @@ import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -49,6 +50,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -670,6 +672,47 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if(isFull) // неважно implicit или нет
                 table.setFullField(dataProperty);
         }
+    }
+    
+    // если добавлять CONSTRAINT SETCHANGED не забыть задание в графе запусков перетащить
+    public void initClassAggrProps() {
+        MOrderExclSet<CalcProperty> queue = SetFact.mOrderExclSet();
+
+        for(Property property : getProperties())
+            if(property instanceof CalcProperty) {
+                CalcProperty calcProperty = (CalcProperty) property;
+                if(calcProperty.isAggr())
+                    queue.exclAdd(calcProperty);
+            }
+
+        MAddExclMap<CustomClass, MSet<CalcProperty>> classAggrProps = MapFact.mAddExclMap();
+            
+        for(int i=0,size=queue.size();i<size;i++) {
+            CalcProperty<?> property = queue.get(i);
+            ImMap<?, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.aggrPolicy);
+            if(interfaceClasses.size() == 1) {
+                ValueClass valueClass = interfaceClasses.singleValue();
+                if(valueClass instanceof CustomClass) {
+                    CustomClass customClass = (CustomClass) valueClass;
+                    MSet<CalcProperty> mAggrProps = classAggrProps.get(customClass);
+                    if(mAggrProps == null) {
+                        mAggrProps = SetFact.<CalcProperty>mSet();
+                        classAggrProps.exclAdd(customClass, mAggrProps);
+                    }
+                    mAggrProps.add(property);
+                }
+            }
+           
+            // все implement'ы тоже помечаем как aggr
+            for(CalcProperty implement : property.getImplements())
+                if(!queue.contains(implement)) {
+                    queue.exclAdd(implement);
+                    size++;
+                }
+        }
+
+        for(int i=0,size=classAggrProps.size();i<size;i++)
+            classAggrProps.getKey(i).aggrProps = classAggrProps.getValue(i).immutable();
     }
 
     public void initClassDataIndices() {

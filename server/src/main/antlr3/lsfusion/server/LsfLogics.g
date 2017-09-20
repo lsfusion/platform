@@ -1984,7 +1984,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	indexSetting [property]
 	|	aggPropSetting [property]
 	|	setNotNullSetting [ps]
-	|	aggrSetting [ps]
+	|	aggrSetting [property]
 	|	asonEditActionSetting [property]
 	|	eventIdSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
@@ -2019,7 +2019,12 @@ loggableSetting [PropertySettings ps]
 	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
 
-aggrSetting [PropertySettings ps]
+aggrSetting [LP property]
+@after {
+	if (inPropParseState()) {
+		self.setAggr(property);
+	}
+}
     :   
         'AGGR'
     ;

@@ -704,4 +704,22 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public boolean hasComplex() {
         return hasComplex(true) || hasComplex(false);
     }
+    
+    public ImSet<CalcProperty> aggrProps = SetFact.EMPTY(); // все свойство с одним параметром
+
+    @IdentityLazy
+    public ImSet<CalcProperty> getUpAggrProps() {
+        MSet<CalcProperty> mUpAggrProps = SetFact.mSet(aggrProps);
+        for(CustomClass parent : getParentsIt())
+            mUpAggrProps.addAll(parent.getUpAggrProps());        
+        final ImSet<CalcProperty> upAggrProps = mUpAggrProps.immutable();
+        
+        // вырезаем те для кого implements уже есть
+        return upAggrProps.filterFn(new SFunctionSet<CalcProperty>() {
+            public boolean contains(CalcProperty element) {
+                return !upAggrProps.intersect(((CalcProperty<?>)element).getImplements());
+            }
+        });
+    }
+
 }
