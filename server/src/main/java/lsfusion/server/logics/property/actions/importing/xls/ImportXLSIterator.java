@@ -9,6 +9,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.hssf.OldExcelFormatException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -22,6 +23,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ImportXLSIterator extends ImportIterator {
@@ -98,11 +100,31 @@ public class ImportXLSIterator extends ImportIterator {
                         return String.valueOf(hssfCell.getBooleanCellValue());
                     case Cell.CELL_TYPE_STRING:
                     default:
-                        return (hssfCell.getStringCellValue().isEmpty()) ? defaultValue : hssfCell.getStringCellValue();
+                        if(dateFormat != null) {
+                            result = (hssfCell.getStringCellValue().isEmpty()) ? defaultValue : hssfCell.getStringCellValue();
+                            if(result != null)
+                                result = parseFormatDate(dateFormat, result);
+                        } else {
+                            result = (hssfCell.getStringCellValue().isEmpty()) ? defaultValue : hssfCell.getStringCellValue();
+                        }
+                        return result;
                 }
             }
         }
         return defaultValue;
+    }
+
+    private String parseFormatDate(DateFormat dateFormat, String value) {
+        String result = null;
+        try {
+            if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
+                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss");
+                if(date != null)
+                    result = dateFormat.format(date);
+            }
+        } catch (ParseException ignored) {
+        }
+        return result;
     }
 
     @Override
