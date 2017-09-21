@@ -52,7 +52,7 @@ public abstract class NotNullWhere extends DataWhere {
         BaseExpr expr = getExpr();
         Result<Boolean> isOrderTop = new Result<>();
         if(BinaryWhere.needIndexedJoin(expr, orderTop, null, isOrderTop))
-            return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, InnerJoins.EMPTY, true, isOrderTop.result), type); // кривовато конечно, но пока достаточно
+            return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, isOrderTop.result), type); // кривовато конечно, но пока достаточно
         return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);
     }
 

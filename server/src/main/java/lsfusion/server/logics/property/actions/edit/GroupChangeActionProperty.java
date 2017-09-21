@@ -39,7 +39,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
-        if(!groupObject.curClassView.isGrid())
+        if(groupObject == null || !groupObject.curClassView.isGrid())
             return proceed(context);
 
         final ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(groupObject, context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты

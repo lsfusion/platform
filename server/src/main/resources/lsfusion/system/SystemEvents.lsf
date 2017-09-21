@@ -14,7 +14,7 @@ CLASS NonFatalHandledException 'Временное исключение связ
 CLASS ServerException 'Исключение на сервере' : Exception;
 TABLE exception (Exception);
 
-message 'Сообщение исключения' = DATA VARSTRING[250] (Exception);
+message 'Сообщение исключения' = DATA VARISTRING[250] (Exception);
 date 'Время возникновения' = DATA DATETIME (Exception);
 fromDate 'Дата возникновения' (Exception d)= DATE(date(d));
 erTrace 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;

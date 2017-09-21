@@ -1527,7 +1527,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         boolean hasExprIndexed = false; // оптимизация
         WhereJoin[] wheres = getAdjWheres();
         for(WhereJoin valueJoin : wheres)
-            if(valueJoin instanceof ExprIndexedJoin) {
+            if(valueJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin) valueJoin).isNotNull()) {
                 hasExprIndexed = true;
                 break;
             }
@@ -1538,7 +1538,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         MExclSet<ExprIndexedJoin> mExprIndexedJoins = SetFact.mExclSet();
         for(WhereJoin valueJoin : wheres)
-            if(valueJoin instanceof ExprIndexedJoin)
+            if(valueJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin) valueJoin).isNotNull())  // нельзя в ExprStatJoin при not преобразовывать, так как ExprStat => notNull, а ExprIndexedJoin, not не => notNull
                 mExprIndexedJoins.exclAdd((ExprIndexedJoin) valueJoin);
             else
                 result.add(valueJoin);
