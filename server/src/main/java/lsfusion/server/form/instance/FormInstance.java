@@ -2416,7 +2416,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 if(!getSQL().isInTransaction()) { // если в транзакции предполагается что все обновится само (в форме - refresh будет)
                     Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
                     source.first.updateEnvironmentIncrementProp(environmentIncrement, this, null, FormInstance.this, source.second, false, dataChanged);
-                }
+                } else
+                    ServerLoggers.exinfoLog("FAILED TO UPDATE SOURCE IN TRANSACTION " + property);
             }
         };
     }
