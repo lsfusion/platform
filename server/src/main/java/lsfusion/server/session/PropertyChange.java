@@ -303,7 +303,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize();
     }
 
-    public static <T extends PropertyInterface, K extends PropertyInterface> Where materializeWhere(String debugInfo, CalcPropertyMapImplement<T, K> whereProp, DataSession session, ImRevMap<K, KeyExpr> mapKeys, final ImMap<K, ? extends ObjectValue> mapValues, ImMap<K, Expr> innerExprs, final Where where, Result<SessionTableUsage> usedTable) throws SQLException, SQLHandledException {
+    public static <T extends PropertyInterface, K extends PropertyInterface> Where materializeWhere(String debugInfo, CalcPropertyMapImplement<T, K> whereProp, DataSession session, ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends ObjectValue> mapValues, ImMap<K, Expr> innerExprs, final Where where, Result<SessionTableUsage> usedTable) throws SQLException, SQLHandledException {
 
         if(Settings.get().isDisableCorrelations()) {
             final ImRevMap<K, KeyExpr> fMapKeys = mapKeys;
@@ -322,6 +322,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         ImRevMap<T, K> usedMapping = whereProp.mapping;
 
         Result<ImSet<K>> rNulls = new Result<>();
+        mapValues = mapValues.filter(whereProp.mapping.valuesSet()); // mapValues могут быть лишние 
         ImMap<K, DataObject> mapDataValues = DataObject.splitDataObjects(mapValues, rNulls);
         if(!rNulls.result.isEmpty()) { // убираем null'ы (оптимизация)
             usedMapping = usedMapping.removeValuesRev(rNulls.result);
