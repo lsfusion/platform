@@ -185,7 +185,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
                                 }
                             }
-                            keysMap = keysMap.addExcl(new KeyField("key" + k, IntegerClass.instance), keyObject);
+                            keysMap = keysMap.addExcl(new KeyField("key" + k, LongClass.instance), keyObject);
                         }
 
                         mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
@@ -194,13 +194,27 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     Object object = columnsEntry.get(props.indexOf(prop));
                                     if (object == null) return NullValue.instance;
                                     ValueClass classValue = ((StoredDataProperty) prop.property).value;
-                                    if (classValue instanceof ConcreteCustomClass) {
-                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object);
+                                    if (classValue instanceof CustomClass) {
+                                        ////TODO: убрать new Long, когда все базы перейдут на LONG
+                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, new Long((Integer) object));
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
-                                    } else
-                                        return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object) : object instanceof Long ? new DataObject((Long) object)
-                                                : object instanceof BigDecimal ? new DataObject((BigDecimal) object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
+                                    } else if (object instanceof String)
+                                        return new DataObject(((String) object).trim());
+                                    else if (object instanceof Integer)
+                                        return new DataObject((Integer) object);
+                                    else if (object instanceof Long)
+                                        return new DataObject((Long) object);
+                                    else if (object instanceof BigDecimal)
+                                        return new DataObject((BigDecimal) object, (NumericClass) classValue);
+                                    else if (object instanceof java.sql.Date)
+                                        return new DataObject(object, DateClass.instance);
+                                    else if (object instanceof java.sql.Time)
+                                        return new DataObject(object, TimeClass.instance);
+                                    else if (object instanceof java.sql.Timestamp)
+                                        return new DataObject(object, DateTimeClass.instance);
+                                    else
+                                        return new DataObject(String.valueOf(object));
                                 } catch (SQLException | SQLHandledException e) {
                                     return null;
                                 }
@@ -229,10 +243,10 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
 
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
         for(int i = 0; i < keySize; i++)
-            keySet = keySet.addOrderExcl(new KeyField("key" + i, IntegerClass.instance));
+            keySet = keySet.addOrderExcl(new KeyField("key" + i, LongClass.instance));
         SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
             public Type getType(KeyField key) {
-                return IntegerClass.instance;
+                return LongClass.instance;
             }
         }, new Type.Getter<LP>() {
             @Override
