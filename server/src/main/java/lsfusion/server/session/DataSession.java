@@ -1099,6 +1099,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return SetFact.singleton(old.property);
         }
         protected void updateSource(OldProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+            ServerLoggers.assertLog(isInSessionEvent(), "UPDATING SOURCE SHOULD BE IN SESSION EVENT"); // так как идет в getPropertyChanges
             updateSessionNotChangedEvents(property, dataChanged);
         }
     };
@@ -1130,7 +1131,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // вообще если какое-то свойство попало в sessionEventNotChangedOld, а потом изменился источник одного из его зависимых свойств, то в следствие updateSessionEvents "обновленное" изменение попадет в sessionEventChangedOld и "перекроет" изменение в notChanged (по сути последнее никогда использоваться не будет)
     // но есть проблема при изменении источника news, которое в depends не попадает и верхний инвариант будет нарушен
     private void updateSessionNotChangedEvents(OldProperty<PropertyInterface> old, boolean dataChanged) throws SQLException, SQLHandledException {
-        assert !isInTransaction();
+        ServerLoggers.assertLog(!isInTransaction(), "UPDATE NOTCHANGED SHOULD NOT BE IN TRANSACTION");
         if (!isInSessionEvent()) { // помечаем на обновление
             Boolean prevDataChanged = updateNotChangedOld.put(old, dataChanged);
             if(prevDataChanged != null && prevDataChanged && !dataChanged)

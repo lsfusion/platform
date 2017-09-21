@@ -69,9 +69,9 @@ public abstract class OverridePropSourceSessionModifier<P extends CalcProperty> 
     }
     @Override
     protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed) throws SQLException, SQLHandledException {
-        if (overrideProps != null && !(noUpdateInTransaction() && getSQL().isInTransaction())) { // если в транзакции предполагается что все обновится само (в sessionEvent или очистится или откатится, в форме - refresh будет)
-            for (CalcProperty changeProp : overrideProps.getProperties()) { // проверка overrideProps != null из-за того что eventChange может идти до конструктора
-                if (overrideTable == null || !overrideTable.contains(changeProp)) {
+        if (overrideProps != null) { // проверка overrideProps != null из-за того что eventChange может идти до конструктора
+            for (CalcProperty changeProp : overrideProps.getProperties()) {
+                if (overrideTable == null || !overrideTable.contains(changeProp)) { // предполагается что очистка overrideTable, автоматически обновит overrideProps 
                     Boolean isChanged = isChanged(((P) changeProp), changed);
                     if (isChanged != null) {
                         updateSource((P)changeProp, isChanged);

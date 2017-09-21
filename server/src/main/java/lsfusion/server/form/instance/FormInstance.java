@@ -2413,8 +2413,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             @Override
             protected void updateSource(SessionDataProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
-                Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
-                source.first.updateEnvironmentIncrementProp(environmentIncrement, this, null, FormInstance.this, source.second, false, dataChanged);
+                if(!getSQL().isInTransaction()) { // если в транзакции предполагается что все обновится само (в форме - refresh будет)
+                    Pair<GroupObjectInstance, GroupObjectProp> source = environmentIncrementSources.get(property);
+                    source.first.updateEnvironmentIncrementProp(environmentIncrement, this, null, FormInstance.this, source.second, false, dataChanged);
+                }
             }
         };
     }
