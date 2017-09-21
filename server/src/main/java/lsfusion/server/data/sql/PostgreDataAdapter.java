@@ -411,8 +411,11 @@ public class PostgreDataAdapter extends DataAdapter {
                 while (result.next()) {
                     List<Object> rowKeys = new ArrayList<>();
                     List<Object> rowColumns = new ArrayList<>();
-                    for (int i = 1; i <= keys.size(); i++)
-                        rowKeys.add(result.getObject(i));
+                    for (int i = 1; i <= keys.size(); i++) {
+                        Object key = result.getObject(i);
+                        //TODO: убрать, когда все базы перейдут на LONG
+                        rowKeys.add(key instanceof Integer ? new Long((Integer) result.getObject(i)) : key);
+                    }
                     for (int i = keys.size() + 1; i <= keys.size() + columns.size(); i++)
                         rowColumns.add(result.getObject(i));
                     dataKeys.add(rowKeys);
