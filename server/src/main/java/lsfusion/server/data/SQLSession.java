@@ -1645,7 +1645,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         if(handled != null) {
-            handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message + " " + ExceptionUtils.getStackTrace());
+            handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message + (handled instanceof SQLUniqueViolationException ? " " + ExceptionUtils.getStackTrace() : ""));
             return handled;
         }
         
