@@ -177,13 +177,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                             ValueClass valueClass = context.getBL().findClass(table.classKeys.get(k).replace("_", "."));
                             DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
                             if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
-                                try (DataSession session = context.createSession()) {
-                                    //приходится пока через новую сессию, иначе свойства для новосозданного объекта не проставляются
-                                    keyObject = session.addObject((ConcreteCustomClass) valueClass, keyObject);
-                                    keyObject.object = keysEntry.get(k);
-                                    session.apply(context);
-                                    keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
-                                }
+                                keyObject = context.getSession().addObject((ConcreteCustomClass) valueClass, keyObject);
+                                keyObject.object = keysEntry.get(k);
                             }
                             keysMap = keysMap.addExcl(new KeyField("key" + k, LongClass.instance), keyObject);
                         }
