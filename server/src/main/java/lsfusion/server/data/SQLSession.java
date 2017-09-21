@@ -187,7 +187,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             if(firstException.result == null)
                 firstException.set(t);
             else
-                ServerLoggers.sqlSuppLog(t);
+                try {
+                    ServerLoggers.sqlSuppLog(t);
+                } catch (Throwable sl) { // suppress'им логирование, так как runSuppressed не оборачиваются в try finally а важно, что при Interrupt'е надо выполнить остальные                
+                }
         }
     }
 
