@@ -2248,6 +2248,16 @@ public class Settings implements Cloneable {
         this.disableAdjustLimitHeur = disableAdjustLimitHeur;
     }
 
+    private double reduceAdjustLimitHeur = 2.0;
+
+    public double getReduceAdjustLimitHeur() {
+        return reduceAdjustLimitHeur;
+    }
+
+    public void setReduceAdjustLimitHeur(double reduceAdjustLimitHeur) {
+        this.reduceAdjustLimitHeur = reduceAdjustLimitHeur;
+    }
+
     // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
     private int useGroupLastOpt = 1; // 0 (no) - не используем, 1 (pushedIn) - используем только полный pushedInWhere, 2 (mixed) - используем полный pushedInWhere если есть иначе pushedOutWhere, 3 (pushedOut) - всегда pushedOut
 

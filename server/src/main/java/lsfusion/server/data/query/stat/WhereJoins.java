@@ -1877,7 +1877,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 break;
             }
             if(i>=size) // если не осталось порядков, значит все просматривать не надо
-                baseCost = baseCost.div(stat);
+                // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается), поэтому делим cost на 2(N(
+                baseCost = baseCost.div(stat.reduce(Settings.get().getReduceAdjustLimitHeur()));
             stat = Stat.ONE; // предполагаем что limit отбирает мало записей
         }
             

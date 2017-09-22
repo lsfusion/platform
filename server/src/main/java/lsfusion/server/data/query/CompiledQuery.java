@@ -880,6 +880,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 mSubEnv.removeNotMaterializable(level);
                 
                 Cost baseCost = LastJoin.calcCost(compiled.sql.baseCost, compiled.rows, lastBaseCosts, costMax);
+                if(debugInfoWriter != null)
+                    debugInfoWriter.addLines("CALC COST " + baseCost + " : " + compiled.sql.baseCost + " " + compiled.rows + " " + lastBaseCosts + " " + costMax);
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(group.join(resultKeys.result),propertySources),
                         whereSelect.result.toString(" AND "),"","","", "") + ")", baseCost, rSubQueries.result, mSubEnv, groupWhere, false);
             }
@@ -967,8 +969,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 if(isLastOpt) {
                     SQLQuery lastSQLQuery = getLastSQLQuery(useGroupLastOpt, pushGroupWhere != null ? pushGroupWhere.result : null, groupWhere, compiled.sql.baseCost, debugInfoWriter);
-                    if(lastSQLQuery != null)
+                    if(lastSQLQuery != null) {
+                        if(debugInfoWriter !=null)
+                            compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP TO LIMIT TOP", innerJoin));
                         return lastSQLQuery;
+                    }
                 }
 
                 String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, subQueries, params, mSubEnv, pushPrefix(debugInfoWriter, "GROUP", innerJoin));

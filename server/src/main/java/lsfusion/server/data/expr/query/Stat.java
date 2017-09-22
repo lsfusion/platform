@@ -77,6 +77,10 @@ public class Stat {
         return new Stat(deg * mdeg, true);
     }
 
+    public Stat reduce(double rdeg) { 
+        return new Stat((int)Math.ceil((double) deg / rdeg), true); 
+    }
+
     public Stat div(Stat stat) {
         int divDeg = deg - stat.deg;
         if(divDeg<0) // по сути учитываем дисперсию
