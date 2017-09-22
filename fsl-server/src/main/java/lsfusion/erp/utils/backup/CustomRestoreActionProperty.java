@@ -3,10 +3,7 @@ package lsfusion.erp.utils.backup;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
@@ -119,14 +116,17 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             for (ImMap<Object, Object> columnEntry : tableColumnResult.values()) {
                 String sidTableColumn = trimToNull((String) columnEntry.get("sidTableColumn"));
                 String canonicalNameTableColumn = trimToNull((String) columnEntry.get("canonicalNameTableColumn"));
-                CustomRestoreTable table = tables.get(sidTable);
-                if (table == null)
-                    table = new CustomRestoreTable(restoreObjects);
-                if(columnEntry.get("replaceOnlyNullTableColumn") != null)
-                    table.replaceOnlyNullSet.add(canonicalNameTableColumn);
-                table.sqlProperties.add(sidTableColumn);
-                table.lcpProperties.add(canonicalNameTableColumn);
-                tables.put(sidTable, table);
+                LP lpProperty = context.getBL().findProperty(canonicalNameTableColumn);
+                if(lpProperty != null && lpProperty.property instanceof StoredDataProperty) {
+                    CustomRestoreTable table = tables.get(sidTable);
+                    if (table == null)
+                        table = new CustomRestoreTable(restoreObjects);
+                    if (columnEntry.get("replaceOnlyNullTableColumn") != null)
+                        table.replaceOnlyNullSet.add(canonicalNameTableColumn);
+                    table.sqlProperties.add(sidTableColumn);
+                    table.lpProperties.add(lpProperty);
+                    tables.put(sidTable, table);
+                }
             }
 
             //keys
@@ -164,7 +164,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
 
                 if(!keys.isEmpty() || !columns.isEmpty()) {
                     //step1: props, mRows
-                    final ImOrderSet<LP> props = getProps(context.getBL().findProperties(table.lcpProperties.toArray(new String[table.lcpProperties.size()])));
+                    final ImOrderSet<LP> props = SetFact.fromJavaOrderSet(table.lpProperties);
                     MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows = MapFact.mExclMap();
 
                     for (int i = 0; i < columns.size(); i++) {
@@ -226,10 +226,6 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    private ImOrderSet<LP> getProps(LP[] properties) {
-        return SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(properties)));
     }
 
     private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
