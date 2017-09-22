@@ -43,7 +43,7 @@ public abstract class OverridePropSourceSessionModifier<P extends CalcProperty> 
     // важный assert что getSourceProperties не должен быть depends в обе стороны от property !!! так как потенциально может быть рекурсия
     protected abstract ImSet<CalcProperty> getSourceProperties(P property);
     
-    protected abstract void updateSource(P property, boolean dataChanged) throws SQLException, SQLHandledException;
+    protected abstract void updateSource(P property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException;
     
     protected boolean noUpdateInTransaction() {
         return true;
@@ -68,13 +68,15 @@ public abstract class OverridePropSourceSessionModifier<P extends CalcProperty> 
         return null;
     }
     @Override
-    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed) throws SQLException, SQLHandledException {
+    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed, boolean forceUpdate) throws SQLException, SQLHandledException {
         if (overrideProps != null) { // проверка overrideProps != null из-за того что eventChange может идти до конструктора
             for (CalcProperty changeProp : overrideProps.getProperties()) {
                 if (overrideTable == null || !overrideTable.contains(changeProp)) { // предполагается что очистка overrideTable, автоматически обновит overrideProps 
                     Boolean isChanged = isChanged(((P) changeProp), changed);
                     if (isChanged != null) {
-                        updateSource((P)changeProp, isChanged);
+                        if(new Exception().getStackTrace().length > 400)
+                            isChanged = isChanged;
+                        updateSource((P)changeProp, isChanged, forceUpdate);
                     }
                 }
             }

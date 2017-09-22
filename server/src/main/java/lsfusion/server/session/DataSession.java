@@ -1098,8 +1098,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         protected ImSet<CalcProperty> getSourceProperties(OldProperty old) {
             return SetFact.singleton(old.property);
         }
-        protected void updateSource(OldProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
-            ServerLoggers.assertLog(isInSessionEvent(), "UPDATING SOURCE SHOULD BE IN SESSION EVENT"); // так как идет в getPropertyChanges
+        protected void updateSource(OldProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
+            ServerLoggers.assertLog(forceUpdate || isInSessionEvent(), "UPDATING SOURCE SHOULD BE IN SESSION EVENT"); // так как идет в getPropertyChanges
             updateSessionNotChangedEvents(property, dataChanged);
         }
     };
@@ -1285,7 +1285,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
 
             @Override
-            protected void updateSource(CalcProperty property, boolean dataChanged) throws SQLException, SQLHandledException {
+            protected void updateSource(CalcProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
                 assert false;
             }
         };

@@ -103,7 +103,7 @@ public abstract class SessionModifier implements Modifier {
             view.eventChange(property, data, source);
     }
     
-    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed) throws SQLException, SQLHandledException {        
+    protected void notifySourceChange(ImMap<CalcProperty, Boolean> changed, boolean forceUpdate) throws SQLException, SQLHandledException {        
     }
 
     protected void eventNoUpdate(CalcProperty property) throws SQLException, SQLHandledException {
@@ -127,13 +127,16 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public PropertyChanges getPropertyChanges() throws SQLException, SQLHandledException {
-        return getPropertyChanges(SetFact.<CalcProperty>EMPTY());
+        return getPropertyChanges(false);
+    }
+    public PropertyChanges getPropertyChanges(boolean forceUpdate) throws SQLException, SQLHandledException {
+        return getPropertyChanges(SetFact.<CalcProperty>EMPTY(), forceUpdate);
     }
 
     // по сути protected
     protected PropertyChanges propertyChanges = PropertyChanges.EMPTY;
     @ManualLazy
-    public PropertyChanges getPropertyChanges(ImSet<CalcProperty> recursionGuard) throws SQLException, SQLHandledException {
+    public PropertyChanges getPropertyChanges(ImSet<CalcProperty> recursionGuard, boolean forceUpdate) throws SQLException, SQLHandledException {
         if(mChanged != null) {
             ImMap<CalcProperty, Boolean> changed = mChanged.immutable();
             assert !changed.isEmpty();
@@ -149,15 +152,15 @@ public abstract class SessionModifier implements Modifier {
 
             propertyChanges = propertyChanges.replace(replace);
         
-            notifySourceChange(changed.remove(recursionGuard));
+            notifySourceChange(changed.remove(recursionGuard), forceUpdate);
 
-            return getPropertyChanges(recursionGuard.merge(changed.keys())); // так как source change мог еще раз изменить
+            return getPropertyChanges(recursionGuard.merge(changed.keys()), forceUpdate); // так как source change мог еще раз изменить
         }
         return propertyChanges;
     }
 
     public void updateSourceChanges() throws SQLException, SQLHandledException {
-        getPropertyChanges();
+        getPropertyChanges(true);
         for(OverrideSessionModifier view : views)
             view.updateSourceChanges();        
     }
