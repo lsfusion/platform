@@ -26,36 +26,19 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         ClientPropertyDraw property = cellTable.getProperty(row, column);
 
         PropertyRenderer currentComp;
+        Object valueToSet = value;
         if (property != null) {
             currentComp = property.getRendererComponent();
-            currentComp.setValue(value, isSelected, hasFocus);
         } else {
             currentComp = nullPropertyRenderer;
-            currentComp.setValue("", isSelected, hasFocus);
+            valueToSet = "";
         }
 
-        if (cellTable.isSelected(row, column) && !hasFocus) {
-            currentComp.paintAsSelected();
-        }
+        currentComp.updateRenderer(valueToSet, isSelected, hasFocus, cellTable.isSelected(row, column), cellTable.getBackgroundColor(row, column), cellTable.getForegroundColor(row, column));
 
         JComponent comp = currentComp.getComponent();
         if (comp instanceof JButton) {
             ((JButton) comp).setSelected(cellTable.isPressed(row, column));
-        }
-
-        Color backgroundColor = cellTable.getBackgroundColor(row, column);
-        if (backgroundColor != null) {
-            if (!hasFocus && !isSelected && !cellTable.isSelected(row, column)) {
-                comp.setBackground(backgroundColor);
-            } else {
-                Color bgColor = comp.getBackground();
-                comp.setBackground(new Color(backgroundColor.getRGB() & bgColor.getRGB()));
-            }
-        }
-
-        Color foregroundColor = cellTable.getForegroundColor(row, column);
-        if (value != null && foregroundColor != null) {
-            comp.setForeground(foregroundColor);
         }
         
         if (property != null) {

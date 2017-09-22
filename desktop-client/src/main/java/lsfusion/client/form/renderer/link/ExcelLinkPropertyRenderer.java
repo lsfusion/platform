@@ -9,10 +9,10 @@ public class ExcelLinkPropertyRenderer extends LinkPropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         if (value != null) {
-            setIcon(SwingUtils.getSystemIcon("xls"));
+            getComponent().setIcon(SwingUtils.getSystemIcon("xls"));
         }
-        super.setValue(value, isSelected, hasFocus);
+        super.setValue(value);
     }
 }

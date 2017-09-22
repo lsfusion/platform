@@ -9,20 +9,16 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
     public FilePropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        setHorizontalAlignment(JLabel.CENTER);
-        setVerticalAlignment(JLabel.CENTER);
+        getComponent().setHorizontalAlignment(JLabel.CENTER);
+        getComponent().setVerticalAlignment(JLabel.CENTER);
     }
 
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         if (value != null) {
-            setText(null);
+            getComponent().setText(null);
         } else {
-            setIcon(null);
+            getComponent().setIcon(null);
         }
-        super.setValue(value, isSelected, hasFocus);
+        super.setValue(value);
     }
 }

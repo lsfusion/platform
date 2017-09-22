@@ -23,14 +23,14 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         byte[] iconBytes = readImage(property, (String) value);
         if (iconBytes != null) {
             icon = new ImageIcon(iconBytes);
         } else {
             icon = null;
         }
-        super.setValue(value, isSelected, hasFocus);
+        super.setValue(value);
     }
 
     @Override
@@ -39,11 +39,11 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    public void paintLabelComponent(Graphics g) {
+        super.paintLabelComponent(g);
         
         if (icon != null) {
-            ImagePropertyRenderer.paintComponent(this, g, icon);
+            ImagePropertyRenderer.paintComponent(getComponent(), g, icon);
         }
     }
 

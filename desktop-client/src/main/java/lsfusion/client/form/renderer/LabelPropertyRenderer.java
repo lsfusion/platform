@@ -4,72 +4,82 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.text.Format;
 
-public abstract class LabelPropertyRenderer extends JLabel implements PropertyRenderer {
+import static javax.swing.BorderFactory.createCompoundBorder;
+import static javax.swing.BorderFactory.createEmptyBorder;
+import static lsfusion.client.form.ClientFormController.colorPreferences;
+
+public abstract class LabelPropertyRenderer extends PropertyRenderer {
+    protected Color defaultForeground = NORMAL_FOREGROUND;
+    
+    private JLabel label;
     protected Format format;
 
-    private Color defaultBackground = Color.WHITE;
-    protected ClientPropertyDraw property;
-
     protected LabelPropertyRenderer(ClientPropertyDraw property) {
-        super();
-        this.property = property;
+        super(property);
+        
         if (property != null) {
             format = property.getFormat();
-            setOpaque(true);
-            property.design.designCell(this);
-            defaultBackground = getBackground();
+            getComponent().setOpaque(true);
+            
+            defaultForeground = getComponent().getForeground();
         }
     }
+
+    @Override
+    public JLabel getComponent() {
+        if (label == null) {
+            label = new JLabel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    paintLabelComponent(g);
+                }
+            };
+        }
+        return label;
+    }
+    
+    public void paintLabelComponent(Graphics g) {}
 
     public void setFormat(Format format) {
         this.format = format != null || property == null ? format : property.getFormat();
     }
 
-    protected void setSelected(boolean isSelected, boolean hasFocus) {
-        drawBackground(isSelected, hasFocus);
-        drawBorder(isSelected, hasFocus);
-    }
-
-    protected void drawBorder(boolean isSelected, boolean hasFocus) {
-        if (isSelected && property != null) {
-            if (hasFocus) {
-                setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getFocusedCellBorder(), BorderFactory.createEmptyBorder(0, 1, 0, 1)));
-            } else {
-                setBorder(new EmptyBorder(2, 2, 2, 2));
-                setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getSelectedRowBorder(), BorderFactory.createEmptyBorder(1, 2, 1, 2)));
+    @Override
+    protected void drawForeground(Color conditionalForeground) {
+        if (value == null) {
+            if (property != null && property.isEditableNotNull()) {
+                getComponent().setForeground(REQUIRED_FOREGROUND);
             }
         } else {
-            setBorder(new EmptyBorder(1, 2, 1, 2));
+            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : defaultForeground);
         }
     }
 
-    protected void drawBackground(boolean isSelected, boolean hasFocus) {
-        if (isSelected && property != null) {
-            if (hasFocus) {
-                setBackground(property.colorPreferences.getFocusedCellBackground());
-            } else {
-                setBackground(property.colorPreferences.getSelectedRowBackground());
-            }
+    @Override
+    protected Border getDefaultBorder() {
+        return createEmptyBorder(1, 2, 1, 2);
+    }
+
+    @Override
+    protected void drawBorder(boolean isInFocusedRow, boolean hasFocus) {
+        if (hasFocus) {
+            getComponent().setBorder(createCompoundBorder(colorPreferences.getFocusedCellBorder(), createEmptyBorder(0, 1, 0, 1)));
+        } else if (isInFocusedRow) {
+            getComponent().setBorder(createCompoundBorder(colorPreferences.getSelectedRowBorder(), getDefaultBorder()));
         } else {
-            setBackground(defaultBackground);
+            getComponent().setBorder(getDefaultBorder());
         }
     }
 
-    public void paintAsSelected() {
-        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value == null && property.isEditableNotNull()) {
-            setText(REQUIRED_STRING);
-            setForeground(REQUIRED_FOREGROUND);
-        } else {
-            setForeground((property != null && property.design.foreground != null) ? property.design.foreground : NORMAL_FOREGROUND);
+    public void setValue(Object value) {
+        super.setValue(value);
+        if (value == null && property != null && property.isEditableNotNull()) {
+            getComponent().setText(REQUIRED_STRING);
         }
-        setSelected(isSelected, hasFocus);
     }
 }

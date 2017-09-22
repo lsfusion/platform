@@ -10,10 +10,10 @@ public class DynamicFormatLinkRenderer extends LinkPropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         if (value != null) {
-            setIcon(SwingUtils.getSystemIcon(BaseUtils.getFileExtension((String) value)));
+            getComponent().setIcon(SwingUtils.getSystemIcon(BaseUtils.getFileExtension((String) value)));
         }
-        super.setValue(value, isSelected, hasFocus);
+        super.setValue(value);
     }
 }

@@ -17,9 +17,9 @@ public class ActionPropertyEditor implements PropertyEditor {
     public ActionPropertyEditor(ClientPropertyDraw property) {
         //рисуем эдитор так же, как рендерер
         editorComponent = new ActionPropertyRenderer(property);
-        editorComponent.setValue(true, true, true);
+        editorComponent.updateRenderer(true, true, true);
 
-        editorComponent.addFocusListener(new FocusAdapter() {
+        editorComponent.getComponent().addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 tableEditor.stopCellEditingLater();
@@ -32,7 +32,7 @@ public class ActionPropertyEditor implements PropertyEditor {
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        return editorComponent;
+        return editorComponent.getComponent();
     }
 
     public Object getCellEditorValue() {

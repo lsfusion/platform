@@ -9,12 +9,12 @@ public class DynamicFormatFileRenderer extends FilePropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        super.setValue(value, isSelected, hasFocus);
+    public void setValue(Object value) {
+        super.setValue(value);
         
         if (value != null) {
             byte[] union = (byte[]) value;
-            setIcon(SwingUtils.getSystemIcon(new String(union, 1, union[0])));
+            getComponent().setIcon(SwingUtils.getSystemIcon(new String(union, 1, union[0])));
         }
     }
 }

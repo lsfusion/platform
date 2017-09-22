@@ -13,12 +13,12 @@ public class CustomStaticFormatLinkRenderer extends LinkPropertyRenderer {
         this.drawExtension = drawExtension;
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         if (drawExtension != null) {
-            setIcon(SwingUtils.getSystemIcon(drawExtension));
+            getComponent().setIcon(SwingUtils.getSystemIcon(drawExtension));
         } else {
-            setIcon(null);
+            getComponent().setIcon(null);
         }
-        super.setValue(value, isSelected, hasFocus);
+        super.setValue(value);
     }
 }

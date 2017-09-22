@@ -16,8 +16,8 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        super.setValue(value, isSelected, hasFocus);
+    public void setValue(Object value) {
+        super.setValue(value);
         
         if (value != null) {
             icon = new ImageIcon((byte[]) value);
@@ -27,11 +27,11 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    public void paintLabelComponent(Graphics g) {
+        super.paintLabelComponent(g);
 
         if (icon != null) {
-            paintComponent(this, g, icon);
+            paintComponent(getComponent(), g, icon);
         }
     }
     

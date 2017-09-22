@@ -9,22 +9,18 @@ public abstract class LinkPropertyRenderer extends LabelPropertyRenderer {
     public LinkPropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        setHorizontalAlignment(JLabel.CENTER);
-        setVerticalAlignment(JLabel.CENTER);
+        getComponent().setHorizontalAlignment(JLabel.CENTER);
+        getComponent().setVerticalAlignment(JLabel.CENTER);
     }
 
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+    public void setValue(Object value) {
         if (value != null) {
-            setText(null);
+            getComponent().setText(null);
         }
-        super.setValue(getImageIcon(), isSelected, hasFocus); // передаём суперу иконку, а не ссылку. из наличия ссылки не следует наличие иконки
+        super.setValue(getImageIcon()); // передаём суперу иконку, а не ссылку. из наличия ссылки не следует наличие иконки
     }
     
     protected ImageIcon getImageIcon() {
-        return (ImageIcon) getIcon();
+        return (ImageIcon) getComponent().getIcon();
     }
 }

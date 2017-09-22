@@ -11,19 +11,14 @@ public class DateTimePropertyRenderer extends LabelPropertyRenderer {
     public DateTimePropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        setHorizontalAlignment(JLabel.RIGHT);
-
+        getComponent().setHorizontalAlignment(JLabel.RIGHT);
     }
 
-    public JComponent getComponent() {
-        return this;
-    }
+    public void setValue(Object value) {
+        super.setValue(value);
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        super.setValue(value, isSelected, hasFocus);
-
-        if (value != null || !property.isEditableNotNull()) {
-            setText(value == null ? "" : format.format(DateConverter.stampToDate((Timestamp) value)));
+        if (value != null || property == null || !property.isEditableNotNull()) {
+            getComponent().setText(value == null ? "" : format.format(DateConverter.stampToDate((Timestamp) value)));
         }
     }
 }

@@ -101,7 +101,7 @@ public class ClientFormController implements AsyncListener {
     private final String formSID;
     private final String canonicalName;
 
-    private ColorPreferences colorPreferences;
+    public static ColorPreferences colorPreferences;
 
     private final int ID;
 
@@ -244,10 +244,6 @@ public class ClientFormController implements AsyncListener {
         return rmiQueue;
     }
 
-    public ColorPreferences getColorPreferences() {
-        return colorPreferences;
-    }
-
     public void activateTab(String tabSID) {
         ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
         if(parentContainer != null && parentContainer.isTabbed()) {
@@ -300,10 +296,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeColorPreferences() throws RemoteException {
-        colorPreferences = remoteForm.getColorPreferences();
-        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
-                properties.colorPreferences = colorPreferences;
-        }
+        colorPreferences = remoteForm.getColorPreferences(); // есть ли необходимость читать эти настройки при открытии каждой формы?
     }
     
     private void initializeControllers() throws IOException {

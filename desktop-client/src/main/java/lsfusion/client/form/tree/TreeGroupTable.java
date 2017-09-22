@@ -22,7 +22,6 @@ import lsfusion.client.logics.ClientTreeGroup;
 import lsfusion.client.logics.classes.ClientStringClass;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.Order;
-import lsfusion.interop.form.ColorPreferences;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -31,7 +30,10 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
@@ -47,6 +49,7 @@ import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static lsfusion.client.form.ClientFormController.PasteData;
+import static lsfusion.client.form.ClientFormController.colorPreferences;
 import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
 import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
 import static lsfusion.client.form.grid.GridTable.DEFAULT_HEADER_HEIGHT;
@@ -152,7 +155,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             setShowGrid(false, false);
         } else {
             //подсветка ячеек дерева
-            ColorPreferences colorPreferences = getForm().getColorPreferences();
             setHighlighters(
                     new ColorHighlighter(
                             new HighlightPredicate.AndHighlightPredicate(

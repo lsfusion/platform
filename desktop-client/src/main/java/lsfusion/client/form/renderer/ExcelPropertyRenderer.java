@@ -9,11 +9,11 @@ public class ExcelPropertyRenderer extends FilePropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        super.setValue(value, isSelected, hasFocus);
+    public void setValue(Object value) {
+        super.setValue(value);
         
         if (value != null) {
-            setIcon(SwingUtils.getSystemIcon("xls"));
+            getComponent().setIcon(SwingUtils.getSystemIcon("xls"));
         }
     }
 }

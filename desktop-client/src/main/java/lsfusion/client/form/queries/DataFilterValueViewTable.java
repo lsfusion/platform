@@ -162,7 +162,7 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             PropertyRenderer renderer = getProperty().getRendererComponent();
-            renderer.setValue(value, isSelected, hasFocus);
+            renderer.updateRenderer(value, isSelected, hasFocus);
             return renderer.getComponent();
         }
     }
