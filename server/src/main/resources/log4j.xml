@@ -66,7 +66,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="9"/>
+            <param name="maxIndex" value="99"/>
             <param name="activeFileName" value="logs/processdump.log"/>
             <param name="fileNamePattern" value="logs/processdump-%i.log.zip"/>
         </rollingPolicy>
@@ -241,7 +241,7 @@
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="9"/>
+            <param name="maxIndex" value="99"/>
             <param name="activeFileName" value="logs/server-remote.log"/>
             <param name="fileNamePattern" value="logs/server-remote-%i.log.zip"/>
         </rollingPolicy>
