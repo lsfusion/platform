@@ -50,7 +50,6 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -2593,9 +2592,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
                 final Path path = Paths.get(element).resolve("reports/custom");
-                logger.info("Reset reports cache: processing path : " + path);
+//                logger.info("Reset reports cache: processing path : " + path);
                 if (Files.isDirectory(path)) {
-                    logger.info("Reset reports cache: path is directory: " + path);
+//                    logger.info("Reset reports cache: path is directory: " + path);
                     tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
                         @Override
                         public void run(ExecutionStack stack) throws Exception {
