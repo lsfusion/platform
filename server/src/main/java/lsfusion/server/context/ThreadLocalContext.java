@@ -207,36 +207,48 @@ public class ThreadLocalContext {
     public static NewThreadExecutionStack getStack() {
         return stack.get();
     }
-    private static Context aspectBefore(Context context, boolean assertTop, NewThreadExecutionStack stack, SyncType type) { // type - не null, значит новый поток с заданным типом синхронизации
+    
+    private static void checkThread(Context prevContext, boolean assertTop, ThreadType threadType) {
+        ServerLoggers.assertLog(!(assertTop && prevContext != null), "ASSERT TOP EXECUTION");
+        if(assertTop && (Thread.currentThread() instanceof ExecutorFactory.ClosableDaemonThreadFactory.ClosableThread) != (threadType == ThreadType.EXECUTORFACTORY))
+            ServerLoggers.assertLog(false, "CLOSABLE THREAD != EXECUTOR FACTORY THREAD");
+    } 
+    private static Context aspectBefore(Context context, boolean assertTop, ThreadType threadType, NewThreadExecutionStack stack, SyncType type) { // type - не null, значит новый поток с заданным типом синхронизации
         Context prevContext = ThreadLocalContext.get();
-        assert !(assertTop && prevContext != null);
+       
         ThreadLocalContext.set(context);
-
         ThreadLocalContext.stack.set(stack);
+
+        checkThread(prevContext, assertTop, threadType);
 
         return prevContext;
     }
-    private static void aspectAfter(Context prevContext, boolean assertTop) {
+    private static void aspectAfter(Context prevContext, boolean assertTop, ThreadType threadType) {
+        checkThread(prevContext, assertTop, threadType);
+
+        if((assertTop || prevContext == null) && threadType != ThreadType.EXECUTORFACTORY && Settings.get().isEnableCloseThreadLocalSqlInNativeThreads()) // закрываем connection, чтобы не мусорить
+            ThreadLocalContext.getLogicsInstance().getDbManager().closeThreadLocalSql();
+
         ThreadLocalContext.set(prevContext);
     }
 
     private static void assureEvent(Context context, NewThreadExecutionStack stack) {
         assure(context, stack);
     }
-    private static Context aspectBeforeEvent(Context context, boolean assertTop, NewThreadExecutionStack stack, SyncType type) {
-        return aspectBefore(context, assertTop, stack, type); // здесь stack не вызова, а "общий" стек, поэтому оборачивать его по сути не надо
+    private static Context aspectBeforeEvent(Context context, boolean assertTop, ThreadType threadType, NewThreadExecutionStack stack, SyncType type) {
+        return aspectBefore(context, assertTop, threadType, stack, type); // здесь stack не вызова, а "общий" стек, поэтому оборачивать его по сути не надо
     }
-    private static void aspectAfterEvent(Context prevContext, boolean assertTop) {
-        aspectAfter(prevContext, assertTop);
+    private static void aspectAfterEvent(Context prevContext, boolean assertTop, ThreadType threadType) {
+        aspectAfter(prevContext, assertTop, threadType);
     }
     private static void assureEvent(LogicsInstance instance, NewThreadExecutionStack stack) {
         assure(instance.getContext(), stack);
     }
-    private static void aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, SyncType mirror) {
-        aspectBeforeEvent(instance.getContext(), true, stack, mirror);
+    private static void aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadType threadType, SyncType mirror) {
+        aspectBeforeEvent(instance.getContext(), true, threadType, stack, mirror);
     }
-    private static void aspectAfterEvent() {
-        aspectAfterEvent(null, true);
+    private static void aspectAfterEvent(ThreadType threadType) {
+        aspectAfterEvent(null, true, threadType);
     }
     private static NewThreadExecutionStack eventStack(EventServer eventServer) {
         return eventServer.getTopStack();
@@ -249,14 +261,17 @@ public class ThreadLocalContext {
     public static void assureRmi(ContextAwarePendingRemoteObject context) { // не уверен что всегда устанавливается
         assureEvent(context.getContext(), rmiStack(context));
     }
-    public static Context aspectBeforeRmi(ContextAwarePendingRemoteObject object, boolean assertTop) { // rmi + unreferenced и несколько мелочей
-        return aspectBeforeRmi(object, assertTop, null);
+    public static Context aspectBeforeRmi(ContextAwarePendingRemoteObject object, boolean assertTop, ThreadType threadType) { // rmi + unreferenced и несколько мелочей
+        return aspectBeforeRmi(object, assertTop, threadType, null);
     }
-    public static Context aspectBeforeRmi(ContextAwarePendingRemoteObject object, boolean assertTop, SyncType mirror) { // rmi + unreferenced и несколько мелочей
-        return aspectBeforeEvent(object.getContext(), assertTop, rmiStack(object), mirror);
+    public static Context aspectBeforeRmi(ContextAwarePendingRemoteObject object, boolean assertTop, ThreadType threadType, SyncType mirror) { // rmi + unreferenced и несколько мелочей
+        return aspectBeforeEvent(object.getContext(), assertTop, threadType, rmiStack(object), mirror);
     }
-    public static void aspectAfterRmi(Context prevContext, boolean assertTop) {
-        aspectAfterEvent(prevContext, assertTop);
+    public static void aspectAfterRmi(Context prevContext, boolean assertTop, ThreadType threadType) {
+        aspectAfterEvent(prevContext, assertTop, threadType);
+    }
+    public static void aspectAfterRmi(ThreadType threadType) {
+        aspectAfterEvent(threadType);
     }
     private static NewThreadExecutionStack rmiStack(RmiServer remoteServer) {
         return eventStack(remoteServer);
@@ -268,10 +283,10 @@ public class ThreadLocalContext {
         aspectBeforeRmi(remoteServer, null);
     }
     public static void aspectBeforeRmi(RmiServer remoteServer, SyncType type) {
-        aspectBeforeEvent(remoteServer.getLogicsInstance(), rmiStack(remoteServer), type);
+        aspectBeforeEvent(remoteServer.getLogicsInstance(), rmiStack(remoteServer), ThreadType.RMI, type);
     }
     public static void aspectAfterRmi() {
-        aspectAfterEvent();
+        aspectAfterEvent(ThreadType.RMI);
     }
 
     // MONITOR вызовы, когда вызов осуществляется "чужим" потоком (чтение из socket'а, servlet'ом и т.п.)
@@ -281,14 +296,14 @@ public class ThreadLocalContext {
     public static void assureMonitor(MonitorServer monitor) {
         assureEvent(monitor.getLogicsInstance(), monitorStack(monitor));
     }
-    public static void aspectBeforeMonitor(MonitorServer monitor) {
-        aspectBeforeMonitor(monitor, null);
+    public static void aspectBeforeMonitor(MonitorServer monitor, ThreadType threadType) {
+        aspectBeforeMonitor(monitor, threadType, null);
     }
-    public static void aspectBeforeMonitor(MonitorServer monitor, SyncType type) {
-        aspectBeforeEvent(monitor.getLogicsInstance(), monitorStack(monitor), type);
+    public static void aspectBeforeMonitor(MonitorServer monitor, ThreadType threadType, SyncType type) {
+        aspectBeforeEvent(monitor.getLogicsInstance(), monitorStack(monitor), threadType, type);
     }
-    public static void aspectAfterMonitor() {
-        aspectAfterEvent();
+    public static void aspectAfterMonitor(ThreadType threadType) {
+        aspectAfterEvent(threadType);
     }
 
     // СТАРТ СЕРВЕРА
@@ -297,14 +312,14 @@ public class ThreadLocalContext {
     public static void assureLifecycle(LogicsInstance logicsInstance) { // nullable
         assureEvent(logicsInstance, lifecycleStack);
     }
-    public static void aspectBeforeLifecycle(LogicsInstance context) {
-        aspectBeforeLifecycle(context, null);
+    public static void aspectBeforeLifecycle(LogicsInstance context, ThreadType threadType) {
+        aspectBeforeLifecycle(context, threadType, null);
     }
-    public static void aspectBeforeLifecycle(LogicsInstance context, SyncType mirror) {
-        aspectBeforeEvent(context, lifecycleStack, mirror);
+    public static void aspectBeforeLifecycle(LogicsInstance context, ThreadType threadType, SyncType mirror) {
+        aspectBeforeEvent(context, lifecycleStack, threadType, mirror);
     }
-    public static void aspectAfterLifecycle() {
-        aspectAfterEvent();
+    public static void aspectAfterLifecycle(ThreadType threadType) {
+        aspectAfterEvent(threadType);
     }
 
     // вызов из другого контекста в стеке
@@ -313,21 +328,21 @@ public class ThreadLocalContext {
 //        assure(get(), getStack());
     }
     public static void aspectBeforeContext(Context exContext, ExecutionContext<PropertyInterface> context, SyncType type) { // проблема в том, что ExecutionContext не умеет возвращать свой контекст и его приходится передавать в явну.
-        aspectBefore(exContext, true, SyncExecutionStack.newThread(context.stack, "new-thread", type), type);
+        aspectBefore(exContext, true, ThreadType.EXECUTORFACTORY, SyncExecutionStack.newThread(context.stack, "new-thread", type), type);
     }
     public static void aspectAfterContext() {
-        aspectAfter(null, true);
+        aspectAfter(null, true, ThreadType.EXECUTORFACTORY);
     }
 
     public static Context wrapContext(WrapperContext context) {
         Context prevContext = get();
         context.setContext(prevContext);
-        aspectBefore(context, false, getStack(), SyncType.SYNC);
+        aspectBefore(context, false, ThreadType.EXECUTORFACTORY, getStack(), SyncType.SYNC);
         return prevContext;
     }
 
     public static void unwrapContext(Context prevContext) {
-        aspectAfter(prevContext, false);
+        aspectAfter(prevContext, false, ThreadType.EXECUTORFACTORY);
     }
     
     public static String localize(LocalizedString s) {

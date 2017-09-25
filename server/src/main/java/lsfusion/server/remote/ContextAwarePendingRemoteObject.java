@@ -104,11 +104,11 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         if(!isEnabledUnreferenced())
             return;
             
-        ThreadLocalContext.aspectBeforeRmi(this, true);
+        ThreadLocalContext.aspectBeforeRmi(this, true, ThreadType.UNREFERENCED);
         try {
             deactivateAndCloseLater(isUnreferencedSyncedClient());
         } finally {
-            ThreadLocalContext.aspectAfterRmi();
+            ThreadLocalContext.aspectAfterRmi(ThreadType.UNREFERENCED);
         }
     }
 
@@ -160,7 +160,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         final int delay = Settings.get().getCloseFormDelay();
         BaseUtils.runLater(delay, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
             public void run() {
-                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true);
+                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, ThreadType.TIMER);
                 try {
                     deactivate();
 
@@ -172,7 +172,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
                     explicitClose();
                 } finally {
-                    ThreadLocalContext.aspectAfterRmi();
+                    ThreadLocalContext.aspectAfterRmi(ThreadType.TIMER);
                 }
             }
         });
