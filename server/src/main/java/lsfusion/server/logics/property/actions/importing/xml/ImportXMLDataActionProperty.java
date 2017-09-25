@@ -20,7 +20,7 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
 
     @Override
     public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
-        return new ImportXMLIterator(file, attr) {
+        return new ImportXMLIterator(file, properties, attr) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {
                 return getSourceColumns(mapping);

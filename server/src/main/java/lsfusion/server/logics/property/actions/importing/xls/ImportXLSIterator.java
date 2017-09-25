@@ -1,15 +1,9 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.DateTimeClass;
-import lsfusion.server.classes.TimeClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.hssf.OldExcelFormatException;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -23,7 +17,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ImportXLSIterator extends ImportIterator {
@@ -56,16 +49,7 @@ public class ImportXLSIterator extends ImportIterator {
             if (hssfRow != null) {
                 for (Integer column : columns) {
                     try {
-                        ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                        DateFormat dateFormat = null;
-                        if (valueClass instanceof DateClass) {
-                            dateFormat = DateClass.getDateFormat();
-                        } else if (valueClass instanceof TimeClass) {
-                            dateFormat = ((TimeClass) valueClass).getDefaultFormat();
-                        } else if (valueClass instanceof DateTimeClass) {
-                            dateFormat = DateTimeClass.getDateTimeFormat();
-                        }
-                        listRow.add(getXLSFieldValue(hssfRow, column, dateFormat, null));
+                        listRow.add(getXLSFieldValue(hssfRow, column, null));
                     } catch (Exception e) {
                         throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column), e);
                     }
@@ -78,10 +62,11 @@ public class ImportXLSIterator extends ImportIterator {
         return current > lastRow ? null : listRow;
     }
 
-    protected String getXLSFieldValue(HSSFRow hssfRow, int cell, DateFormat dateFormat, String defaultValue) throws ParseException {
+    protected String getXLSFieldValue(HSSFRow hssfRow, int cell, String defaultValue) throws ParseException {
         if (hssfRow != null) {
             HSSFCell hssfCell = hssfRow.getCell(cell);
             if (hssfCell != null) {
+                DateFormat dateFormat = getDateFormat(properties, columns, cell);
                 switch (hssfCell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
                     case Cell.CELL_TYPE_FORMULA:
@@ -112,19 +97,6 @@ public class ImportXLSIterator extends ImportIterator {
             }
         }
         return defaultValue;
-    }
-
-    private String parseFormatDate(DateFormat dateFormat, String value) {
-        String result = null;
-        try {
-            if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
-                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss");
-                if(date != null)
-                    result = dateFormat.format(date);
-            }
-        } catch (ParseException ignored) {
-        }
-        return result;
     }
 
     @Override

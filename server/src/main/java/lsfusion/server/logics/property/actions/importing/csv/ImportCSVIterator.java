@@ -1,22 +1,26 @@
 package lsfusion.server.logics.property.actions.importing.csv;
 
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 
 import java.io.ByteArrayInputStream;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class ImportCSVIterator extends ImportIterator {
     private final List<Integer> columns;
+    private final List<LCP> properties;
     private final String charset;
     private final String separator;
     private Scanner scanner;
     private int row;
     private final int lastRow;
 
-    public ImportCSVIterator(byte[] file, List<Integer> columns, String charset, String separator, boolean noHeader) {
+    public ImportCSVIterator(byte[] file, List<Integer> columns, List<LCP> properties, String charset, String separator, boolean noHeader) {
         this.columns = columns;
+        this.properties = properties;
         this.charset = charset == null ? "UTF-8" : charset;
         this.separator = separator;
 
@@ -45,7 +49,7 @@ public class ImportCSVIterator extends ImportIterator {
                 String[] splittedLine = line.split(String.format("\\%s|;", separator));
                 List<String> result = new ArrayList<>();
                 for (Integer column : columns) {
-                    result.add(splittedLine.length > column ? splittedLine[column] : "");
+                    result.add(formatValue(properties, columns, column, splittedLine.length > column ? splittedLine[column] : ""));
                 }
                 return result;
             }
@@ -75,5 +79,13 @@ public class ImportCSVIterator extends ImportIterator {
                 lastNonEmptyRow = row;
         }
         return lastNonEmptyRow;
+    }
+
+    private String formatValue(List<LCP> properties, List<Integer> columns, Integer column, String value) {
+        DateFormat dateFormat = getDateFormat(properties, columns, column);
+        if (dateFormat != null && value != null) {
+            value = parseFormatDate(dateFormat, value);
+        }
+        return value;
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.xml;
 
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -9,14 +10,17 @@ import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.*;
 
 public abstract class ImportXMLIterator extends ImportIterator {
     private boolean attr;
     private Iterator iterator;
     private List<Integer> columns = null;
+    private final List<LCP> properties;
 
-    public ImportXMLIterator(byte[] file, boolean attr) throws JDOMException, IOException {
+    public ImportXMLIterator(byte[] file, List<LCP> properties, boolean attr) throws JDOMException, IOException {
+        this.properties = properties;
         this.attr = attr;
         SAXBuilder builder = new SAXBuilder();
         Document document = builder.build(new ByteArrayInputStream(file));
@@ -43,7 +47,7 @@ public abstract class ImportXMLIterator extends ImportIterator {
                 for (Integer column : columns) {
                     if (column < attributes.size()) {
                         Attribute attribute = attributes.get(column);
-                        listRow.add(attribute.getValue());
+                        listRow.add(formatValue(properties, columns, column, attribute.getValue()));
                     }
                 }
             } else {
@@ -59,7 +63,7 @@ public abstract class ImportXMLIterator extends ImportIterator {
                 for (Integer column : columns) {
                     if (column < children.size()) {
                         Element child = children.get(column);
-                        listRow.add(child.getValue());
+                        listRow.add(formatValue(properties, columns, column, child.getValue()));
                     }
                 }
             }
@@ -74,4 +78,12 @@ public abstract class ImportXMLIterator extends ImportIterator {
     }
 
     public abstract List<Integer> getColumns(Map<String, Integer> mapping);
+
+    private String formatValue(List<LCP> properties, List<Integer> columns, Integer column, String value) {
+        DateFormat dateFormat = getDateFormat(properties, columns, column);
+        if (dateFormat != null && value != null) {
+            value = parseFormatDate(dateFormat, value);
+        }
+        return value;
+    }
 }

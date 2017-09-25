@@ -49,16 +49,7 @@ public class ImportXLSXIterator extends ImportIterator {
             if (xssfRow != null) {
                 for (Integer column : columns) {
                     try {
-                        ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                        DateFormat dateFormat = null;
-                        if (valueClass instanceof DateClass) {
-                            dateFormat = DateClass.getDateFormat();
-                        } else if (valueClass instanceof TimeClass) {
-                            dateFormat = ((TimeClass) valueClass).getDefaultFormat();
-                        } else if (valueClass instanceof DateTimeClass) {
-                            dateFormat = DateTimeClass.getDateTimeFormat();
-                        }
-                        listRow.add(getXLSXFieldValue(xssfRow, column, dateFormat, null));
+                        listRow.add(getXLSXFieldValue(xssfRow, column, null));
                     } catch (Exception e) {
                         throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column), e);
                     }
@@ -71,11 +62,12 @@ public class ImportXLSXIterator extends ImportIterator {
         return current > lastRow ? null : listRow;
     }
 
-    protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, DateFormat dateFormat, String defaultValue) throws ParseException {
+    protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, String defaultValue) throws ParseException {
         String result = defaultValue;
         if (cell != null && xssfRow != null) {
             XSSFCell xssfCell = xssfRow.getCell(cell);
             if (xssfCell != null) {
+                DateFormat dateFormat = getDateFormat(properties, columns, cell);
                 switch (xssfCell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
                         if (dateFormat != null) {
@@ -133,19 +125,6 @@ public class ImportXLSXIterator extends ImportIterator {
             default:
                 result = xssfCell.getStringCellValue();
                 break;
-        }
-        return result;
-    }
-
-    private String parseFormatDate(DateFormat dateFormat, String value) {
-        String result = null;
-        try {
-            if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
-                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss");
-                if(date != null)
-                    result = dateFormat.format(date);
-            }
-        } catch (ParseException ignored) {
         }
         return result;
     }
