@@ -87,7 +87,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     @Override
     public String toDebugString() {
-        return count + " - " + struct;
+        return name + ": " + count + " - " + struct;
     }
 
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
