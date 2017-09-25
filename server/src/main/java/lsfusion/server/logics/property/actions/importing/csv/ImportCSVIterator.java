@@ -9,17 +9,24 @@ import java.util.Scanner;
 
 public class ImportCSVIterator extends ImportIterator {
     private final List<Integer> columns;
+    private final String charset;
     private final String separator;
     private Scanner scanner;
+    private int row;
+    private final int lastRow;
 
     public ImportCSVIterator(byte[] file, List<Integer> columns, String charset, String separator, boolean noHeader) {
         this.columns = columns;
+        this.charset = charset == null ? "UTF-8" : charset;
         this.separator = separator;
 
+        this.row = 0;
+        this.lastRow = getLastRow(file, noHeader);
+
         ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
-        scanner = charset == null ? new Scanner(inputStream, "UTF-8") : new Scanner(inputStream, charset);
-        
-        if(!noHeader) {
+        scanner = new Scanner(inputStream, this.charset);
+
+        if (!noHeader) {
             scanner.nextLine();
         }
     }
@@ -28,15 +35,20 @@ public class ImportCSVIterator extends ImportIterator {
     public List<String> nextRow() {
         if (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            //cut BOM
-            if(!line.isEmpty() && line.charAt(0) == '\uFEFF')
-                line = line.substring(1);
-            String[] splittedLine = line.split(String.format("\\%s|;", separator));
-            List<String> result = new ArrayList<>();
-            for(Integer column : columns) {
-                result.add(splittedLine.length > column ? splittedLine[column] : "");
+            row++;
+            if(row > lastRow)
+                return null;
+            else {
+                //cut BOM
+                if (!line.isEmpty() && line.charAt(0) == '\uFEFF')
+                    line = line.substring(1);
+                String[] splittedLine = line.split(String.format("\\%s|;", separator));
+                List<String> result = new ArrayList<>();
+                for (Integer column : columns) {
+                    result.add(splittedLine.length > column ? splittedLine[column] : "");
+                }
+                return result;
             }
-            return result;
         }
         return null;
     }
@@ -44,5 +56,24 @@ public class ImportCSVIterator extends ImportIterator {
     @Override
     protected void release() {
         scanner.close();
+    }
+
+    private int getLastRow(byte[] file, boolean noHeader) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
+        scanner = new Scanner(inputStream, charset);
+
+        if (!noHeader) {
+            scanner.nextLine();
+        }
+
+        int row = 0;
+        int lastNonEmptyRow = 0;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            row++;
+            if(!line.isEmpty())
+                lastNonEmptyRow = row;
+        }
+        return lastNonEmptyRow;
     }
 }
