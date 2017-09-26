@@ -291,15 +291,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             applyTransaction = new Transaction();
     }
     public void rollbackTransaction() throws SQLException, SQLHandledException {
-        for(Runnable info : rollbackInfo)
-            info.run();
-        
         try {
-            if(applyTransaction!=null)
-                applyTransaction.rollback();
+            for (Runnable info : rollbackInfo)
+                info.run();
+        } catch (Throwable t) {
+            ServerLoggers.assertLog(false, "SHOULD NOT BE");
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         } finally {
-            endTransaction();
-            sql.rollbackTransaction(getOwner());
+            try {
+                if(applyTransaction!=null)
+                    applyTransaction.rollback();
+            } finally {
+                try {
+                    endTransaction();
+                } catch (Throwable t) {
+                    ServerLoggers.assertLog(false, "SHOULD NOT BE");
+                    throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+                } finally {
+                    sql.rollbackTransaction(getOwner());
+                }
+            }
         }
 //        checkSessionTableMap();
     }

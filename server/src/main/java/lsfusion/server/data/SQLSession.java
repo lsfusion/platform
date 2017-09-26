@@ -439,8 +439,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         lock.readLock().unlock();
 //        ServerLoggers.pausableLogStack("UNLOCKREAD " + this);
     }
-
-    private WeakReference<Thread> prevActiveThread;
+    
+    private WeakReference<Thread> prevActiveThread; // для перестарта соединения и других системных процессов
     private OperationOwner writeOwner;
 
     private void lockWrite(OperationOwner owner) {
