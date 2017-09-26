@@ -1183,9 +1183,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             if(env == null)
                 env = this;
 
-            updateSessionEventNotChangedOld(env);
-
+            boolean afterUpdate = Settings.get().isUpdateAfterInSessionEvent();
+            if(!afterUpdate)
+                updateSessionEventNotChangedOld(env);
+                
             inSessionEvent = true;
+
+            if(afterUpdate)
+                updateSessionEventNotChangedOld(env); // важно после по идее чтобы правильный modifier обновился, а то так абы кто обновится 
 
             try {
                 for(ActionProperty<?> action : getActiveSessionEvents()) {
