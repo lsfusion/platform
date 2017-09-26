@@ -413,7 +413,7 @@ public class PostgreDataAdapter extends DataAdapter {
                     List<Object> rowColumns = new ArrayList<>();
                     for (int i = 1; i <= keys.size(); i++) {
                         Object key = result.getObject(i);
-                        //TODO: убрать, когда все базы перейдут на LONG
+                        //TODO: убрать, когда все базы перейдут на LONG, до этого времени нельзя восстанавливать колонки с ключом INTEGER
                         rowKeys.add(key instanceof Integer ? new Long((Integer) result.getObject(i)) : key);
                     }
                     for (int i = keys.size() + 1; i <= keys.size() + columns.size(); i++)
