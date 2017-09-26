@@ -37,7 +37,10 @@ import lsfusion.server.session.SessionTableUsage;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.trimToNull;
@@ -174,13 +177,13 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                         //step2: exclAdd
                         ImMap<KeyField, DataObject> keysMap = MapFact.EMPTY();
                         for (int k = 0; k < keysEntry.size(); k++) {
-                            ValueClass valueClass = context.getBL().findClass(table.classKeys.get(k).replace("_", "."));
+                            ValueClass valueClass = getKeyClass(context, table.classKeys.get(k));
                             DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
                             if (keyObject.objectClass instanceof UnknownClass && valueClass instanceof ConcreteCustomClass && table.restoreObjects) {
                                 keyObject = context.getSession().addObject((ConcreteCustomClass) valueClass, keyObject);
                                 keyObject.object = keysEntry.get(k);
                             }
-                            keysMap = keysMap.addExcl(new KeyField("key" + k, LongClass.instance), keyObject);
+                            keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? LongClass.instance : (Type) valueClass), keyObject);
                         }
 
                         mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
@@ -190,7 +193,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     if (object == null) return NullValue.instance;
                                     ValueClass classValue = ((StoredDataProperty) prop.property).value;
                                     if (classValue instanceof CustomClass) {
-                                        ////TODO: убрать new Long, когда все базы перейдут на LONG
+                                        //TODO: убрать new Long, когда все базы перейдут на LONG
                                         return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, new Long((Integer) object));
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
@@ -202,11 +205,11 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                         return new DataObject((Long) object);
                                     else if (object instanceof BigDecimal)
                                         return new DataObject((BigDecimal) object, (NumericClass) classValue);
-                                    else if (object instanceof java.sql.Date)
+                                    else if (object instanceof Date)
                                         return new DataObject(object, DateClass.instance);
-                                    else if (object instanceof java.sql.Time)
+                                    else if (object instanceof Time)
                                         return new DataObject(object, TimeClass.instance);
-                                    else if (object instanceof java.sql.Timestamp)
+                                    else if (object instanceof Timestamp)
                                         return new DataObject(object, DateTimeClass.instance);
                                     else
                                         return new DataObject(String.valueOf(object));
@@ -218,7 +221,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                     }
 
                     //step3: writeRows
-                    String result = writeRows(context, props, mRows, keys.get(0).size(), table.replaceOnlyNullSet);
+                    String result = writeRows(context, props, mRows, keys.get(0), table.replaceOnlyNullSet);
                     if (result != null)
                         context.requestUserInteraction(new MessageClientAction(result, "Error restoring table " + tableName));
                 }
@@ -229,15 +232,16 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
     }
 
     private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
-                             int keySize, Set<String> replaceOnlyNullSet)
+                             List<Object> keys, Set<String> replaceOnlyNullSet)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
-        for(int i = 0; i < keySize; i++)
-            keySet = keySet.addOrderExcl(new KeyField("key" + i, LongClass.instance));
+        for(int i = 0; i < keys.size(); i++) {
+            keySet = keySet.addOrderExcl(new KeyField("key" + i, getKeyType(keys.get(i))));
+        }
         SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
             public Type getType(KeyField key) {
-                return LongClass.instance;
+                return key.type;
             }
         }, new Type.Getter<LP>() {
             @Override
@@ -273,5 +277,43 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
 
     private DataObject getBooleanObject(Object value) {
         return value instanceof Boolean ? new DataObject((Boolean) value) : value instanceof Integer ? new DataObject(((Integer) value) != 0) : new DataObject(String.valueOf(value).equalsIgnoreCase("true"));
+    }
+
+    private Type getKeyType(Object key) {
+        Type keyType;
+        if(key instanceof Date) {
+            keyType = DateClass.instance;
+        } else if(key instanceof Time) {
+            keyType = TimeClass.instance;
+        } else if(key instanceof Timestamp) {
+            keyType = DateTimeClass.instance;
+        } else if(key instanceof Integer) {
+            keyType = IntegerClass.instance;
+        } else {
+            keyType = LongClass.instance;
+        }
+        return keyType;
+    }
+
+    private ValueClass getKeyClass(ExecutionContext context, String key) {
+        ValueClass valueClass;
+        switch (key) {
+            case "DATE":
+                valueClass = DateClass.instance;
+                break;
+            case "TIME":
+                valueClass = TimeClass.instance;
+                break;
+            case "DATETIME":
+                valueClass = DateTimeClass.instance;
+                break;
+            case "INTEGER":
+                valueClass = IntegerClass.instance;
+                break;
+            default:
+                valueClass = context.getBL().findClass(key.replace("_", "."));
+                break;
+        }
+        return valueClass;
     }
 }
