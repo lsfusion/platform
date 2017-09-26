@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -153,7 +154,10 @@ public abstract class SessionModifier implements Modifier {
             ImSet<CalcProperty> prevRecursionGuard = propertyChangesRecursionGuard;
             propertyChangesRecursionGuard = propertyChangesRecursionGuard.merge(changed.keys());
             try {
-                notifySourceChange(changed.remove(prevRecursionGuard), forceUpdate);
+                ImMap<CalcProperty, Boolean> guardedChanged = changed.remove(prevRecursionGuard);
+                if(guardedChanged.size() < changed.size())
+                    ServerLoggers.exinfoLog("GUARDED CHANGES : " + changed + ", " + prevRecursionGuard);
+                notifySourceChange(guardedChanged, forceUpdate);
 
                 return getPropertyChanges(forceUpdate); // так как source change мог еще раз изменить
             } finally {
