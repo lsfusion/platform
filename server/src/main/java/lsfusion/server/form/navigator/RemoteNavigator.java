@@ -605,7 +605,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
 
                 for (Map.Entry<Long, UserActivity> userActivity : userActivityMap.entrySet()) {
-                    DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
+                    DataObject customUserObject = session.getDataObject(businessLogics.authenticationLM.customUser, userActivity.getKey());
                     businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue().time), session, customUserObject);
                     businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
