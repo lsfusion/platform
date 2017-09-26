@@ -74,8 +74,6 @@ public abstract class OverridePropSourceSessionModifier<P extends CalcProperty> 
                 if (overrideTable == null || !overrideTable.contains(changeProp)) { // предполагается что очистка overrideTable, автоматически обновит overrideProps 
                     Boolean isChanged = isChanged(((P) changeProp), changed);
                     if (isChanged != null) {
-                        if(new Exception().getStackTrace().length > 400)
-                            isChanged = isChanged;
                         updateSource((P)changeProp, isChanged, forceUpdate);
                     }
                 }
