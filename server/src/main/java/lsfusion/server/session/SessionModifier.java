@@ -155,8 +155,8 @@ public abstract class SessionModifier implements Modifier {
             propertyChangesRecursionGuard = propertyChangesRecursionGuard.merge(changed.keys());
             try {
                 ImMap<CalcProperty, Boolean> guardedChanged = changed.remove(prevRecursionGuard);
-                if(guardedChanged.size() < changed.size())
-                    ServerLoggers.exinfoLog("GUARDED CHANGES : " + changed + ", " + prevRecursionGuard);
+//                if(guardedChanged.size() < changed.size())
+//                    ServerLoggers.exinfoLog("GUARDED CHANGES : " + changed + ", " + prevRecursionGuard);
                 notifySourceChange(guardedChanged, forceUpdate);
 
                 return getPropertyChanges(forceUpdate); // так как source change мог еще раз изменить
