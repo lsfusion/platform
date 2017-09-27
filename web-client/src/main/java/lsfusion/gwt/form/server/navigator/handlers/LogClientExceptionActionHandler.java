@@ -23,6 +23,8 @@ import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static lsfusion.gwt.form.server.GLoggers.invocationLogger;
+
 public class LogClientExceptionActionHandler extends LoggableActionHandler<LogClientExceptionAction, VoidResult, RemoteLogicsInterface> implements NavigatorActionHandler {
     public static final long COUNTER_CLEANER_PERIOD = 3 * 60 * 1000;
     
@@ -47,6 +49,8 @@ public class LogClientExceptionActionHandler extends LoggableActionHandler<LogCl
 
         // чтобы не засорять Журнал ошибок, ограничиваем количество отчётов об ошибках от одного пользователя.
         Integer count = exceptionCounter.get(navigator);
+        invocationLogger.info("Before logging exception, count : " + count + ", navigator " + navigator);
+        
         if (count == null || count < 20) {
             Throwable throwable = new Throwable(action.throwable.toString());
 
@@ -61,8 +65,11 @@ public class LogClientExceptionActionHandler extends LoggableActionHandler<LogCl
             
             deobfuscator.deobfuscateStackTrace(throwable, servlet.getRequest().getHeader(RpcRequestBuilder.STRONG_NAME_HEADER));
             navigator.logClientException(action.title, null, throwable);
-            
-            exceptionCounter.put(navigator, count == null ? 1 : count + 1);
+
+            int newCount = count == null ? 1 : count + 1;
+            exceptionCounter.put(navigator, newCount);
+
+            invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);
         }
         
         return new VoidResult();
