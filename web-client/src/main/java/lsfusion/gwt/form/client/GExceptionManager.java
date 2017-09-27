@@ -20,6 +20,7 @@ import java.util.*;
 
 public class GExceptionManager {
     private final static List<Throwable> unreportedThrowables = new ArrayList<>();
+    private final static Map<Throwable, Integer> unreportedThrowablesTryCount = new HashMap<>();
     
     public static void logClientError(String message, Throwable throwable) {
         logClientError(new LogClientExceptionAction(message, toSerializable(throwable)), message, throwable);
@@ -70,7 +71,8 @@ public class GExceptionManager {
         synchronized (unreportedThrowables) {
             final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
             for (final Throwable t : unreportedThrowables) {
-                NavigatorDispatchAsync.Instance.get().execute(new LogClientExceptionAction("Unreported client error", toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
+                Integer tryCount = unreportedThrowablesTryCount.get(t);
+                NavigatorDispatchAsync.Instance.get().execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
                     @Override
                     public void failure(Throwable caught) {
                         Log.error("Error logging unreported client exception", caught);
@@ -79,11 +81,17 @@ public class GExceptionManager {
                     @Override
                     public void success(VoidResult result) {
                         stillUnreported.remove(t);
+                        unreportedThrowablesTryCount.remove(t);
                     }
                 });
             }
             unreportedThrowables.clear();
-            unreportedThrowables.addAll(stillUnreported);
+            for(Throwable throwable : stillUnreported) {
+                unreportedThrowables.add(throwable);
+
+                Integer prevCount = unreportedThrowablesTryCount.get(throwable);
+                unreportedThrowablesTryCount.put(throwable, prevCount == null ? 1 : prevCount + 1);
+            }
         }
     }
 
