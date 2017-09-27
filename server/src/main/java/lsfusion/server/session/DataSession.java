@@ -1159,9 +1159,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
-        for(Map.Entry<OldProperty, Boolean> old : updateNotChangedOld.entrySet())
-            updateSessionEventNotChangedOld(env, old.getKey(), old.getValue());
-        updateNotChangedOld = new HashMap<>();
+        if(!updateNotChangedOld.isEmpty()) { // оптимизация 
+            Map<OldProperty, Boolean> snapUpdateNotChangedOld = new HashMap<>(updateNotChangedOld); // чтобы не нарушать assertion сверху assert updateNotChangedOld.isEmpty();
+            updateNotChangedOld = new HashMap<>();
+            for (Map.Entry<OldProperty, Boolean> old : snapUpdateNotChangedOld.entrySet())
+                updateSessionEventNotChangedOld(env, old.getKey(), old.getValue());
+        }
     }
 
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env, OldProperty<PropertyInterface> changedOld, boolean dataChanged) throws SQLException, SQLHandledException {
