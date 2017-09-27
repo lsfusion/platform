@@ -327,7 +327,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
                 , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        MMap<String, List<Object>> mResultMap = MapFact.mMap(MapFact.<String, List<Object>>override());
+        Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -361,12 +361,27 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
-                mResultMap.add(resultId, Arrays.asList(query, fullQuery, null, null,
+                List<Object> newEntry = Arrays.asList(query, fullQuery, null, null,
                         address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, statusMessage,
-                        null, null, processId, isDisabledNestLoop, queryTimeout, debugInfo));
+                        null, null, processId, isDisabledNestLoop, queryTimeout, debugInfo);
+                List<Object> prevEntry = resultMap.put(resultId, newEntry);
+
+                if(prevEntry != null) {
+                    Timestamp prevDateTime = (Timestamp) prevEntry.get(6);
+                    if(prevDateTime == null || dateTime == null || prevDateTime.getTime() > dateTime.getTime()) {
+                        resultMap.put("s" + processId, prevEntry);
+                    } else {
+                        resultMap.put(resultId, prevEntry);
+                        resultMap.put("s" + processId, newEntry);
+                    }
+                }
+
+                resultMap.put(resultId, newEntry);
+
+
             }
         }
-        return mResultMap.immutable();
+        return mapToImMap(resultMap);
     }
 
     private ImMap<String, List<Object>> getPostgresProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
@@ -415,7 +430,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             }
         }
 
-        MMap<String, List<Object>> mResultMap = MapFact.mMap(MapFact.<String, List<Object>>override());
+        Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -461,13 +476,24 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
-                mResultMap.add(resultId, Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
+                List<Object> newEntry = Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
                         query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
                         active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, statusMessage,
-                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo));
+                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo);
+                List<Object> prevEntry = resultMap.put(resultId, newEntry);
+
+                if(prevEntry != null) {
+                    Timestamp prevDateTime = (Timestamp) prevEntry.get(6);
+                    if(prevDateTime == null || dateTime == null || prevDateTime.getTime() > dateTime.getTime()) {
+                        resultMap.put("s" + sqlId, prevEntry);
+                    } else {
+                        resultMap.put(resultId, prevEntry);
+                        resultMap.put("s" + sqlId, newEntry);
+                    }
+                }
             }
         }
-        return mResultMap.immutable();
+        return mapToImMap(resultMap);
     }
 
     private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
@@ -611,5 +637,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     protected String trim(String input, Integer length) {
         return input == null ? null : (length == null || length >= input.trim().length() ? input.trim() : input.trim().substring(0, length));
+    }
+
+    private ImMap<String, List<Object>> mapToImMap(Map<String, List<Object>> resultMap) {
+        MMap<String, List<Object>> mResultMap = MapFact.mMap(MapFact.<String, List<Object>>override());
+        for(Map.Entry<String, List<Object>> entry : resultMap.entrySet()) {
+            mResultMap.add(entry.getKey(), entry.getValue());
+        }
+        return mResultMap.immutable();
     }
 }
