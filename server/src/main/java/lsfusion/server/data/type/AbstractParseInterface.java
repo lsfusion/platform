@@ -20,6 +20,10 @@ public abstract class AbstractParseInterface implements ParseInterface {
             return true;
         }
 
+        public boolean isAlwaysSafeString() {
+            return true;
+        }
+
         public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
             return SQLSyntax.NULL;
         }

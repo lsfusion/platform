@@ -11,6 +11,10 @@ public abstract class StringParseInterface extends AbstractParseInterface {
         return true;
     }
 
+    public boolean isAlwaysSafeString() {
+        return true;
+    }
+
     public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
         throw new RuntimeException("not supported");
     }

@@ -7,7 +7,7 @@ public interface ParseValue {
 
     ParseInterface getParseInterface(QueryEnvironment env);
 
-    boolean isAlwaysSafeString();
+    boolean isAlwaysSafeString(); // should be consistent with ParseInterface.isAlwaysSafeString, hack for recursions
 
     FunctionType getFunctionType();
 }

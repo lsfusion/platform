@@ -78,7 +78,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
             ParseInterface parseInterface = paramObjects.getValue(i);
             if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject)) {
                 String string = parseInterface.getString(syntax, envString, usedRecursion);
-                if(recursionFunction)
+                if(recursionFunction && parseInterface.isAlwaysSafeString()) // ignoring noDynamicSQL, because of identity wrapSubQueryRecursion in that case 
                     string = syntax.wrapSubQueryRecursion(string);
                 mvSafeStrings.mapValue(i, new ParsedString(string));
             }

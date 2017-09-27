@@ -34,6 +34,11 @@ public class TypeObject extends AbstractParseInterface {
         return type.isSafeString(object);
     }
 
+    @Override
+    public boolean isAlwaysSafeString() {
+        return type.isSafeString(null);
+    }
+
     // нужно ли делать явный type (для дат важно)
     public boolean isSafeType() {
         return type.isSafeType();
