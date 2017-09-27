@@ -28,6 +28,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
+import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
@@ -35,6 +36,7 @@ import lsfusion.server.stack.ProgressStackItem;
 import org.apache.log4j.MDC;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -215,9 +217,12 @@ public class ThreadLocalContext {
     } 
     private static Context aspectBefore(Context context, boolean assertTop, ThreadType threadType, NewThreadExecutionStack stack, SyncType type) { // type - не null, значит новый поток с заданным типом синхронизации
         Context prevContext = ThreadLocalContext.get();
-       
+
         ThreadLocalContext.set(context);
         ThreadLocalContext.stack.set(stack);
+
+        if(assertTop && prevContext == null)
+            RemoteLoggerAspect.putDateTimeCall(Thread.currentThread().getId(), new Timestamp(System.currentTimeMillis()));
 
         checkThread(prevContext, assertTop, threadType);
 
@@ -225,6 +230,9 @@ public class ThreadLocalContext {
     }
     private static void aspectAfter(Context prevContext, boolean assertTop, ThreadType threadType) {
         checkThread(prevContext, assertTop, threadType);
+
+        if(assertTop && prevContext == null)
+            RemoteLoggerAspect.removeDateTimeCall(Thread.currentThread().getId());
 
         if((assertTop || prevContext == null) && threadType != ThreadType.EXECUTORFACTORY && Settings.get().isEnableCloseThreadLocalSqlInNativeThreads()) // закрываем connection, чтобы не мусорить
             ThreadLocalContext.getLogicsInstance().getDbManager().closeThreadLocalSql();
@@ -344,7 +352,7 @@ public class ThreadLocalContext {
     public static void unwrapContext(Context prevContext) {
         aspectAfter(prevContext, false, ThreadType.EXECUTORFACTORY);
     }
-    
+
     public static String localize(LocalizedString s) {
         return s == null ? null : get().localize(s);    
     }
