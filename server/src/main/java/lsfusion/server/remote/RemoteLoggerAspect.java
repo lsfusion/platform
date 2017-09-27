@@ -29,8 +29,8 @@ public class RemoteLoggerAspect {
             " && !execution(* *.ping(..)) " +
             "&& target(target)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
-        final long id = Thread.currentThread().getId();
-        putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
+        //final long id = Thread.currentThread().getId();
+        //putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
             Long user;
             Long computer = null;

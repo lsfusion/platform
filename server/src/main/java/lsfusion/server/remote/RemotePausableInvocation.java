@@ -140,7 +140,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * @throws Throwable
      */
     protected void runInvocation() throws Throwable {
-        final long id = Thread.currentThread().getId();
+        //final long id = Thread.currentThread().getId();
         //RemoteLoggerAspect.putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
             remoteObject.addLinkedThread(Thread.currentThread());
