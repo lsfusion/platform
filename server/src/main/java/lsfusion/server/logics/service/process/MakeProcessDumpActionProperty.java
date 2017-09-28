@@ -178,7 +178,7 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
                 , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        MMap<String, SQLProcess> mResultMap = MapFact.mMap(MapFact.<String, SQLProcess>override());
+        Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -216,12 +216,23 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
                 Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
                 ThreadType threadType = javaThread == null ? null : RemoteLoggerAspect.getThreadType(javaThread.getId());
 
-                mResultMap.add(resultId, new SQLProcess(dateTimeCall, threadType, query, fullQuery, null, null,
+                SQLProcess newEntry = new SQLProcess(dateTimeCall, threadType, query, fullQuery, null, null,
                         address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, null,
-                        null, null, processId, isDisabledNestLoop, queryTimeout, null));
+                        null, null, processId, isDisabledNestLoop, queryTimeout, null);
+                SQLProcess prevEntry = resultMap.put(resultId, newEntry);
+
+                if (prevEntry != null) {
+                    Timestamp prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                        resultMap.put("s" + prevEntry.sqlId, prevEntry);
+                    } else {
+                        resultMap.put(resultId, prevEntry);
+                        resultMap.put("s" + processId, newEntry);
+                    }
+                }
             }
         }
-        return mResultMap.immutable();
+        return MapFact.fromJavaMap(resultMap);
     }
 
     private ImMap<String, SQLProcess> getPostgresProcesses(ExecutionContext context, Map<Integer, SQLThreadInfo> sessionThreadMap,
@@ -260,7 +271,7 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        MMap<String, SQLProcess> mResultMap = MapFact.mMap(MapFact.<String, SQLProcess>override());
+        Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -304,12 +315,23 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
                 Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
                 ThreadType threadType = javaThread == null ? null : RemoteLoggerAspect.getThreadType(javaThread.getId());
 
-                mResultMap.add(resultId, new SQLProcess(dateTimeCall, threadType, query, fullQuery, userActiveTask, computerActiveTask,
+                SQLProcess newEntry = new SQLProcess(dateTimeCall, threadType, query, fullQuery, userActiveTask, computerActiveTask,
                         address, dateTime, active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount,
-                        state, lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, null));
+                        state, lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, null);
+                SQLProcess prevEntry = resultMap.put(resultId, newEntry);
+
+                if (prevEntry != null) {
+                    Timestamp prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                        resultMap.put("s" + prevEntry.sqlId, prevEntry);
+                    } else {
+                        resultMap.put(resultId, prevEntry);
+                        resultMap.put("s" + sqlId, newEntry);
+                    }
+                }
             }
         }
-        return mResultMap.immutable();
+        return MapFact.fromJavaMap(resultMap);
     }
 
     private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
