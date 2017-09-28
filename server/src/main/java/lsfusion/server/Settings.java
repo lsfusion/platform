@@ -2293,7 +2293,7 @@ public class Settings implements Cloneable {
         this.disableCorrelations = disableCorrelations;
     }
     
-    private boolean enableCloseThreadLocalSqlInNativeThreads = false;
+    private boolean enableCloseThreadLocalSqlInNativeThreads = true;
 
     public boolean isEnableCloseThreadLocalSqlInNativeThreads() {
         return enableCloseThreadLocalSqlInNativeThreads;
