@@ -237,13 +237,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type) {
-        return getStatKeys(groups, rows, keyStat, type, null, null, null);
+        return getStatKeys(groups, rows, keyStat, type, null, null);
     }
 
     // assert что rows >= result
     // можно rows в StatKeys было закинуть как и Cost, но используется только в одном месте и могут быть проблемы с кэшированием
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<ImSet<BaseExpr>> usedNotNullJoins, Result<ImOrderSet<BaseJoin>> joinOrder, DebugInfoWriter debugInfoWriter) {
-        return getCostStatKeys(groups, rows, keyStat, type, usedNotNullJoins, joinOrder, debugInfoWriter);
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, StatType type, Result<CompileInfo> compileInfo, DebugInfoWriter debugInfoWriter) {
+        return getCostStatKeys(groups, rows, keyStat, type, compileInfo, debugInfoWriter);
     }
 
     private static class JoinCostStat<Z> extends CostStat {
@@ -254,7 +254,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             this(join, statKeys, compileInfo ? SetFact.<BaseExpr>EMPTY() : null, compileInfo, inJoins, adjJoins, pushCost);
         }
         public JoinCostStat(BaseJoin<Z> join, StatKeys<Z> statKeys, ImSet<BaseExpr> usedNotNulls, boolean compileInfo, BitSet inJoins, BitSet adjJoins, PushCost pushCost) {
-            super(usedNotNulls, compileInfo ? SetFact.<BaseJoin>singletonOrder(join) : null, inJoins, adjJoins, join instanceof QueryJoin ? MapFact.singleton((QueryJoin)join, pushCost) : null);
+            super(compileInfo ? new CompileInfo(usedNotNulls, SetFact.<BaseJoin>singletonOrder(join), join instanceof QueryJoin ? statKeys.getCost() : Cost.ONE) : null, inJoins, adjJoins, join instanceof QueryJoin ? MapFact.singleton((QueryJoin)join, pushCost) : null);
             this.join = join;
             this.statKeys = statKeys;
         }
@@ -394,7 +394,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         public MergeCostStat(Cost lookAheadCost, MergeCostStat costStat) {
             this(costStat.cost, lookAheadCost, costStat.stat, costStat.inJoins, costStat.adjJoins,
                     costStat.leftCost, costStat.rightCost, costStat.leftStat, costStat.rightStat, costStat.joinsCount,
-                    costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.usedNotNulls, costStat.joinOrder 
+                    costStat.joinStats, costStat.keyStats, costStat.propStats, costStat.pushCosts, costStat.compileInfo 
                     , costStat.debugInfo
             );
         }
@@ -405,17 +405,17 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             ) {
             this(cost, null, stat, inJoins, adjJoins,
                     leftCost, rightCost, leftStat, rightStat, joinsCount,
-                    null, null, null, null, null, null
+                    null, null, null, null, null
                     , debugInfo
                 );
         }
 
         public MergeCostStat(Cost cost, Cost lookAheadCost, Stat stat, BitSet inJoins, BitSet adjJoins,
                              Cost leftCost, Cost rightCost, Stat leftStat, Stat rightStat, int joinsCount,
-                             ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, ImSet<BaseExpr> usedNotNulls, ImOrderSet<BaseJoin> joinOrder
+                             ImMap<BaseJoin, Stat> joinStats, ImMap<BaseJoin, DistinctKeys> keyStats, ImMap<BaseExpr, Stat> propStats, ImMap<QueryJoin, PushCost> pushCosts, CompileInfo compileInfo
                              , DebugInfo debugInfo
                             ) {
-            super(usedNotNulls, joinOrder, inJoins, adjJoins, pushCosts);
+            super(compileInfo, inJoins, adjJoins, pushCosts);
             this.cost = cost;
             this.lookAheadCost = lookAheadCost;
             this.stat = stat;
@@ -585,6 +585,24 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return compare;
         }
     }
+    
+    public static class CompileInfo {
+        protected final ImSet<BaseExpr> usedNotNulls;
+        protected final ImOrderSet<BaseJoin> joinOrder;
+        protected final Cost maxSubQueryCost;
+
+        public CompileInfo(ImSet<BaseExpr> usedNotNulls, ImOrderSet<BaseJoin> joinOrder, Cost maxSubQueryCost) {
+            this.usedNotNulls = usedNotNulls;
+            this.joinOrder = joinOrder;
+            this.maxSubQueryCost = maxSubQueryCost;
+        }
+
+        public CompileInfo add(CompileInfo compileInfo) {
+            return new CompileInfo(usedNotNulls.addExcl(compileInfo.usedNotNulls), joinOrder.addOrderExcl(compileInfo.joinOrder), maxSubQueryCost.or(compileInfo.maxSubQueryCost));
+        }
+        
+        public final static CompileInfo EMPTY = new CompileInfo(SetFact.<BaseExpr>EMPTY(), SetFact.<BaseJoin>EMPTYORDER(), Cost.ONE); 
+    }
 
     private abstract static class CostStat implements Comparable<CostStat> {
 
@@ -607,9 +625,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return adjacent(costStat) || adjacentCommon(costStat);
         }                
                 
-        public CostStat(ImSet<BaseExpr> usedNotNulls, ImOrderSet<BaseJoin> joinOrder, BitSet inJoins, BitSet adjJoins, ImMap<QueryJoin, PushCost> pushCosts) {
-            this.usedNotNulls = usedNotNulls;
-            this.joinOrder = joinOrder;
+        public CostStat(CompileInfo compileInfo, BitSet inJoins, BitSet adjJoins, ImMap<QueryJoin, PushCost> pushCosts) {
+            this.compileInfo = compileInfo;
             this.inJoins = inJoins;
             this.adjJoins = adjJoins;
             this.pushCosts = pushCosts;
@@ -640,8 +657,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         public abstract <K> Stat getKeyStat(BaseJoin<K> join, K key);
 
         // compile параметры
-        protected final ImSet<BaseExpr> usedNotNulls;
-        protected final ImOrderSet<BaseJoin> joinOrder;        
+        protected final CompileInfo compileInfo;
         
         public abstract ImSet getPushKeys(QueryJoin pushJoin);
 
@@ -765,30 +781,26 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return result.calculate(costStat, edges.result, joinStats, exprStats);
     }
 
-    public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<ImSet<BaseExpr>> usedNotNullJoins, final Result<ImOrderSet<BaseJoin>> joinOrder, DebugInfoWriter debugInfoWriter) {
+    public <K extends BaseExpr, Z> StatKeys<K> getCostStatKeys(final ImSet<K> groups, final Result<Stat> rows, final KeyStat keyStat, final StatType type, final Result<CompileInfo> compileInfo, DebugInfoWriter debugInfoWriter) {
         // нужно отдельно STAT считать, так как при например 0 - 3, 0 - 100 получит 3 - 100 -> 3, а не 0 - 3 -> 3 и соотвественно статистику 3, а не 0
         //  но пока не принципиально будем брать stat из "плана"
 
         if(isFalse() && groups.isEmpty()) {
             if(rows != null)
                 rows.set(Stat.ONE);
-            if(usedNotNullJoins != null)
-                usedNotNullJoins.set(SetFact.<BaseExpr>EMPTY());
-            if (joinOrder != null)
-                joinOrder.set(SetFact.<BaseJoin>EMPTYORDER());
+            if(compileInfo != null)
+                compileInfo.set(CompileInfo.EMPTY);
             return new StatKeys<K>(groups, Stat.ONE);
         }
 
-        return calculateCost(groups, null, false, usedNotNullJoins != null || joinOrder != null, keyStat, type, new CostResult<StatKeys<K>>() {
+        return calculateCost(groups, null, false, compileInfo != null, keyStat, type, new CostResult<StatKeys<K>>() {
             public StatKeys<K> calculate(CostStat costStat, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats) {
                 Stat stat = costStat.getStat();
                 Cost cost = costStat.getCost();
                 if (rows != null)
                     rows.set(stat);
-                if (usedNotNullJoins != null)
-                    usedNotNullJoins.set(costStat.usedNotNulls);
-                if (joinOrder != null)
-                    joinOrder.set(costStat.joinOrder);
+                if (compileInfo != null)
+                    compileInfo.set(costStat.compileInfo);
                 return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats)));
             }
         }, debugInfoWriter);
@@ -1360,8 +1372,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     
                     ImMap<BaseJoin, DistinctKeys> newKeyStats = aCostStat.getKeyStats().addExcl(bCostStat.getKeyStats());
                     ImMap<BaseJoin, Stat> newJoinStats = reduceIntermediateStats(newStat.min(aAdjStat), aCostStat).addExcl(reduceIntermediateStats(newStat.min(bAdjStat), bCostStat)); // также фильтруем по notNull
-                    ImSet<BaseExpr> newUsedNotNulls = compileInfo ? aCostStat.usedNotNulls.addExcl(bCostStat.usedNotNulls) : null;
-                    ImOrderSet<BaseJoin> newJoinOrder = compileInfo ? aCostStat.joinOrder.addOrderExcl(bCostStat.joinOrder) : null;
+                    CompileInfo newCompileInfo = compileInfo ? aCostStat.compileInfo.add(bCostStat.compileInfo) : null;
                     BitSet newInJoins = or(aCostStat.inJoins, bCostStat.inJoins);
                     BitSet newAdjJoins = orRemove(aCostStat.adjJoins, bCostStat.adjJoins, newInJoins);
                     ImMap<QueryJoin, PushCost> newPushCosts = pushJoin != null ? CostStat.addPushCosts(aCostStat.pushCosts, bCostStat.pushCosts) : null;
@@ -1388,7 +1399,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     
                     return new MergeCostStat(newCost, null, newStat, newInJoins, newAdjJoins,
                             aCost, bBaseCost, aAdjStat, bAdjStat, newJoinStats.size(),
-                            newJoinStats, newKeyStats, newPropStats, newPushCosts, newUsedNotNulls, newJoinOrder
+                            newJoinStats, newKeyStats, newPropStats, newPushCosts, newCompileInfo
                             , debugEnabled ? new MergeCostStat.DebugInfo(aCostStat, bCostStat, aEdgeStats, bEdgeStats, edgesList) : null
                                             );
                 }
@@ -1845,8 +1856,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     // limitHeur, indexNotNulls
     public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
+        Result<CompileInfo> compileInfo = new Result<>(); 
         StatType statType = StatType.COMPILE;
-        StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, usedNotNulls, joinOrder, debugInfoWriter);// newNotNull
+        StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);// newNotNull
+        usedNotNulls.set(compileInfo.result.usedNotNulls);
+        joinOrder.set(compileInfo.result.joinOrder);
 
         Cost baseCost = statKeys.getCost();
         Stat stat = statKeys.getRows();
@@ -1861,7 +1875,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Expr order = orders.get(i);
                 if(order instanceof BaseExpr) {
                     whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, null, null, debugInfoWriter);
+                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);
 
                     Cost newBaseCost = statKeys.getCost();
                     Stat newStat = statKeys.getRows();
@@ -1878,7 +1892,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }
             if(i>=size) // если не осталось порядков, значит все просматривать не надо
                 // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается), поэтому делим cost на 2(N(
-                baseCost = baseCost.div(stat.reduce(Settings.get().getReduceAdjustLimitHeur()));
+                baseCost = baseCost.div(stat.reduce(Settings.get().getReduceAdjustLimitHeur())).or(compileInfo.result.maxSubQueryCost);
             stat = Stat.ONE; // предполагаем что limit отбирает мало записей
         }
             

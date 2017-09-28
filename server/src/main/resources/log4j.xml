@@ -575,7 +575,7 @@
         <appender-ref ref="explainlog"/>
     </category>
 
-    <category name="ExplainCompileLogger">
+    <category name="ExplainCompileLogger" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="explaincompilelog"/>
     </category>

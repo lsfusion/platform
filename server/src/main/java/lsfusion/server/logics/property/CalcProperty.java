@@ -626,8 +626,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             if(valueClass instanceof CustomClass) {
                 CustomClass customClass = (CustomClass) valueClass;
                 for(CalcProperty<K> aggrProp : customClass.getUpAggrProps())
-                    if(!BaseUtils.hashEquals(aggrProp, this))
-                        mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface));
+//                    if(!BaseUtils.hashEquals(aggrProp, this)) // себя тоже надо коррелировать (в общем-то для удаления, как правило удаляется тоже объекты агрегированные в один объект)
+                    mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface));
             }
         }
 

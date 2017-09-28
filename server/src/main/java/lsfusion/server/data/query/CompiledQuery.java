@@ -527,7 +527,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public void fillInnerJoins(Result<Cost> mBaseCost, Result<Stat> mRows, MCol<String> whereSelect, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) { // заполним Inner Joins, чтобы keySelect'ы были
-            Result<ImSet<BaseExpr>> usedNotNulls = syntax.hasNotNullIndexProblem() ? new Result<ImSet<BaseExpr>>() : null;
+            Result<ImSet<BaseExpr>> usedNotNulls = new Result<>();
             Result<ImOrderSet<BaseJoin>> joinOrder = new Result<>();
             whereJoins.fillCompileInfo(mBaseCost, mRows, usedNotNulls, joinOrder, keys, keyStat, limit, orders, debugInfoWriter);
 
@@ -554,7 +554,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             mImplicitJoins = null;
             mOuterPendingJoins = null;
 
-            if(usedNotNulls != null)
+            if(syntax.hasNotNullIndexProblem())
                 for(BaseExpr notNull : usedNotNulls.result)
                     whereSelect.add(notNull.getSource(this) + " IS NOT NULL");
 
@@ -881,7 +881,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 
                 Cost baseCost = LastJoin.calcCost(compiled.sql.baseCost, compiled.rows, lastBaseCosts, costMax);
                 if(debugInfoWriter != null)
-                    debugInfoWriter.addLines("CALC COST " + baseCost + " : " + compiled.sql.baseCost + " " + compiled.rows + " " + lastBaseCosts + " " + costMax);
+                    debugInfoWriter.addLines("CALC COST " + baseCost + " : cost top query - " + compiled.sql.baseCost + ", rows top query - " + compiled.rows + ", cost per row - " + lastBaseCosts + ", cost group - " + costMax);
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(group.join(resultKeys.result),propertySources),
                         whereSelect.result.toString(" AND "),"","","", "") + ")", baseCost, rSubQueries.result, mSubEnv, groupWhere, false);
             }
