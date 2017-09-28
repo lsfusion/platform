@@ -2248,7 +2248,7 @@ public class Settings implements Cloneable {
         this.disableAdjustLimitHeur = disableAdjustLimitHeur;
     }
 
-    private double reduceAdjustLimitHeur = 2.0;
+    private double reduceAdjustLimitHeur = 1.0;
 
     public double getReduceAdjustLimitHeur() {
         return reduceAdjustLimitHeur;
