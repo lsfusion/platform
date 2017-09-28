@@ -221,8 +221,11 @@ public class ThreadLocalContext {
         ThreadLocalContext.set(context);
         ThreadLocalContext.stack.set(stack);
 
-        if(prevContext == null)
-            RemoteLoggerAspect.putDateTimeCall(Thread.currentThread().getId(), new Timestamp(System.currentTimeMillis()));
+        if(prevContext == null) {
+            long pid = Thread.currentThread().getId();
+            RemoteLoggerAspect.putDateTimeCall(pid, new Timestamp(System.currentTimeMillis()));
+            RemoteLoggerAspect.putThreadType(pid, threadType);
+        }
 
         checkThread(prevContext, assertTop, threadType);
 
@@ -231,8 +234,11 @@ public class ThreadLocalContext {
     private static void aspectAfter(Context prevContext, boolean assertTop, ThreadType threadType) {
         checkThread(prevContext, assertTop, threadType);
 
-        if(prevContext == null)
-            RemoteLoggerAspect.removeDateTimeCall(Thread.currentThread().getId());
+        if(prevContext == null) {
+            long pid = Thread.currentThread().getId();
+            RemoteLoggerAspect.removeDateTimeCall(pid);
+            RemoteLoggerAspect.removeThreadType(pid);
+        }
 
         if((prevContext == null) && threadType != ThreadType.EXECUTORFACTORY && Settings.get().isEnableCloseThreadLocalSqlInNativeThreads()) // закрываем connection, чтобы не мусорить
             ThreadLocalContext.getLogicsInstance().getDbManager().closeThreadLocalSql();

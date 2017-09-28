@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.context.ThreadType;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,6 +22,7 @@ public class RemoteLoggerAspect {
     public static final Map<Long, UserActivity> userActivityMap = MapFact.getGlobalConcurrentHashMap();
     public static final Map<Long, Map<Long, List<Long>>> pingInfoMap = MapFact.getGlobalConcurrentHashMap();
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
+    private static final Map<Long, ThreadType> threadTypeMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 
     @Around("(execution(* (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..))" +
@@ -89,5 +91,17 @@ public class RemoteLoggerAspect {
 
     public static void removeDateTimeCall(long pid) {
         dateTimeCallMap.remove(pid);
+    }
+
+    public static ThreadType getThreadType(long pid) {
+        return threadTypeMap.get(pid);
+    }
+
+    public static void putThreadType(long pid, ThreadType threadType) {
+        threadTypeMap.put(pid, threadType);
+    }
+
+    public static void removeThreadType(long pid) {
+        threadTypeMap.remove(pid);
     }
 }
