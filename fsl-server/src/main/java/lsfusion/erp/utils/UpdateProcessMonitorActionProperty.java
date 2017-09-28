@@ -391,10 +391,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                         resultMap.put("s" + processId, newEntry);
                     }
                 }
-
-                resultMap.put(resultId, newEntry);
-
-
             }
         }
         return MapFact.fromJavaMap(resultMap);
