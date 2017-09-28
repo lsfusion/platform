@@ -7,7 +7,6 @@ import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -18,6 +17,7 @@ import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.context.ThreadType;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -40,6 +40,8 @@ import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.service.process.JavaProcess;
+import lsfusion.server.logics.service.process.SQLProcess;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
@@ -87,44 +89,46 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         boolean logSqlProcesses = Settings.get().isLogSqlProcesses();
 
-        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
+        Map<Integer, SQLThreadInfo> sessionThreadMap = SQLSession.getSQLThreadMap();
 
         MSet<Thread> mSqlJavaActiveThreads = SetFact.mSet();
         MExclSet<String> mFreeSQLProcesses = SetFact.mExclSet();
-        ImMap<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
+        ImMap<String, SQLProcess> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
                 getPostgresProcesses(context, sessionThreadMap, mSqlJavaActiveThreads, mFreeSQLProcesses, activeSQL, logSqlProcesses)
                 : getMSSQLProcesses(context, sessionThreadMap, mSqlJavaActiveThreads, mFreeSQLProcesses, activeSQL);
         ImSet<Thread> sqlJavaActiveThreads = mSqlJavaActiveThreads.immutable();
         ImSet<String> freeSQLProcesses = mFreeSQLProcesses.immutable();
 
-        ImMap<String, List<Object>> javaProcesses = getJavaProcesses(activeSQL ? null : ThreadUtils.getAllThreads(),
+        ImMap<String, JavaProcess> javaProcesses = getJavaProcesses(activeSQL ? null : ThreadUtils.getAllThreads(),
                 active || activeSQL ? sqlJavaActiveThreads : SetFact.<Thread>EMPTY(), active || activeJava, readAllocatedBytes, logSqlProcesses);
 
         // вырезаем "лишние" СУБД'ые процессы (которые нужны чисто чтобы видеть последние запросы)
-        if(active) { // оставляем только javaProcesses + freeProcesses
+        if (active) { // оставляем только javaProcesses + freeProcesses
             sqlProcesses = sqlProcesses.filter(javaProcesses.keys().merge(freeSQLProcesses));
         }
-        if(activeJava) { // оставляем javaProcesses
+        if (activeJava) { // оставляем javaProcesses
             sqlProcesses = sqlProcesses.filter(javaProcesses.keys());
         }
 
-        ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]", "statusJavaProcess[VARSTRING[10]]",
-                "lockNameJavaProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "nameComputerJavaProcess[VARSTRING[10]]", "nameUserJavaProcess[VARSTRING[10]]", "lsfStackTraceProcess[VARSTRING[10]]",
+        ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]",
+                "statusJavaProcess[VARSTRING[10]]", "lockNameJavaProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]",
+                "nameComputerJavaProcess[VARSTRING[10]]", "nameUserJavaProcess[VARSTRING[10]]", "lsfStackTraceProcess[VARSTRING[10]]",
                 "threadAllocatedBytesProcess[VARSTRING[10]]", "lastThreadAllocatedBytesProcess[VARSTRING[10]]"));
 
-        ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]", "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]", "dateTimeSQLProcess[VARSTRING[10]]",
-                "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]", "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusMessageSQLProcess[VARSTRING[10]]",
-                "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "fullQuerySQLProcess[VARSTRING[10]]", "idSQLProcess[VARSTRING[10]]",
-                "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]", "debugInfoSQLProcess[VARSTRING[10]]"));
+        ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]", "threadTypeProcess[VARSTRING[20]]",
+                "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]", "dateTimeSQLProcess[VARSTRING[10]]", "isActiveSQLProcess[VARSTRING[10]]",
+                "inTransactionSQLProcess[VARSTRING[10]]", "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusSQLProcess[VARSTRING[10]]",
+                "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "fullQuerySQLProcess[VARSTRING[10]]",
+                "idSQLProcess[VARSTRING[10]]", "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]", "debugInfoSQLProcess[VARSTRING[10]]"));
 
-        int rowsJava = writeRows(context, propsJava, javaProcesses, true);
-        int rowsSQL = writeRows(context, propsSQL, sqlProcesses, false);
+        int rowsJava = writeRowsJava(context, propsJava, javaProcesses);
+        int rowsSQL = writeRowsSQL(context, propsSQL, sqlProcesses);
         if (rowsJava == 0 && rowsSQL == 0)
             findAction("formRefresh[]").execute(context);
 
     }
 
-    private GetValue<ObjectValue, LCP> getJavaMapValueGetter(final List<Object> javaProcessValue, final String idThread) {
+    private GetValue<ObjectValue, LCP> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
         return new GetValue<ObjectValue, LCP>() {
             public ObjectValue getMapValue(LCP prop) {
                 return getJavaMapValue(prop, javaProcessValue, idThread);
@@ -132,7 +136,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         };
     }
 
-    private GetValue<ObjectValue, LCP> getSQLMapValueGetter(final List<Object> sqlProcessValue, final String idThread) {
+    private GetValue<ObjectValue, LCP> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
         return new GetValue<ObjectValue, LCP>() {
             public ObjectValue getMapValue(LCP prop) {
                 return getSQLMapValue(prop, sqlProcessValue, idThread);
@@ -140,124 +144,135 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         };
     }
 
-    private ObjectValue getJavaMapValue(LCP prop, List<Object> javaProcess, String idThread) {
+    private ObjectValue getJavaMapValue(LCP prop, JavaProcess javaProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
             case "stackTraceJavaProcess":
-                String stackTrace = (String) javaProcess.get(0);
-                return stackTrace == null ? NullValue.instance : new DataObject(stackTrace);
+                return javaProcess.stackTrace == null ? NullValue.instance : new DataObject(javaProcess.stackTrace);
             case "nameJavaProcess":
-                String name = (String) javaProcess.get(1);
-                return name == null ? NullValue.instance : new DataObject(name);
+                return javaProcess.name == null ? NullValue.instance : new DataObject(javaProcess.name);
             case "statusJavaProcess":
-                String status = (String) javaProcess.get(2);
-                return status == null ? NullValue.instance : new DataObject(status);
+                return javaProcess.status == null ? NullValue.instance : new DataObject(javaProcess.status);
             case "lockNameJavaProcess":
-                String lockName = (String) javaProcess.get(3);
-                return lockName == null ? NullValue.instance : new DataObject(lockName);
+                return javaProcess.lockName == null ? NullValue.instance : new DataObject(javaProcess.lockName);
             case "lockOwnerIdProcess":
-                String lockOwnerId = (String) javaProcess.get(4);
-                return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
+                return javaProcess.lockOwnerId == null ? NullValue.instance : new DataObject(javaProcess.lockOwnerId);
             case "lockOwnerNameProcess":
-                String lockOwnerName = (String) javaProcess.get(5);
-                return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
+                return javaProcess.lockOwnerName == null ? NullValue.instance : new DataObject(javaProcess.lockOwnerName);
             case "nameComputerJavaProcess":
-                String computer = (String) javaProcess.get(6);
-                return computer == null ? NullValue.instance : new DataObject(computer);
+                return javaProcess.computer == null ? NullValue.instance : new DataObject(javaProcess.computer);
             case "nameUserJavaProcess":
-                String user = (String) javaProcess.get(7);
-                return user == null ? NullValue.instance : new DataObject(user);
+                return javaProcess.user == null ? NullValue.instance : new DataObject(javaProcess.user);
             case "lsfStackTraceProcess":
-                String lsfStackTrace = (String) javaProcess.get(8);
-                return lsfStackTrace == null ? NullValue.instance : new DataObject(lsfStackTrace);
+                return javaProcess.lsfStackTrace == null ? NullValue.instance : new DataObject(javaProcess.lsfStackTrace);
             case "threadAllocatedBytesProcess":
-                Long threadAllocatedBytes = (Long) javaProcess.get(9);
-                return threadAllocatedBytes == null ? NullValue.instance : new DataObject(threadAllocatedBytes, LongClass.instance);
+                return javaProcess.threadAllocatedBytes == null ? NullValue.instance : new DataObject(javaProcess.threadAllocatedBytes, LongClass.instance);
             case "lastThreadAllocatedBytesProcess":
-                Long lastThreadAllocatedBytes = (Long) javaProcess.get(10);
-                return lastThreadAllocatedBytes == null ? NullValue.instance : new DataObject(lastThreadAllocatedBytes, LongClass.instance);
+                return javaProcess.lastThreadAllocatedBytes == null ? NullValue.instance : new DataObject(javaProcess.lastThreadAllocatedBytes, LongClass.instance);
             default:
                 return NullValue.instance;
         }
     }
 
-    private ObjectValue getSQLMapValue(LCP prop, List<Object> sqlProcess, String idThread/*, Boolean baseInTransaction*/) {
+    private ObjectValue getSQLMapValue(LCP prop, SQLProcess sqlProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
             case "dateTimeCallProcess":
-                Timestamp dateTimeCall = (Timestamp) sqlProcess.get(0);
-                return dateTimeCall == null ? NullValue.instance : new DataObject(dateTimeCall, DateTimeClass.instance);
+                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.instance);
+            case "threadTypeProcess":
+                return sqlProcess.threadType == null ? NullValue.instance : new DataObject(String.valueOf(sqlProcess.threadType));
             case "querySQLProcess":
-                String query = (String) sqlProcess.get(1);
-                return query == null ? NullValue.instance : new DataObject(query);
+                return sqlProcess.query == null ? NullValue.instance : new DataObject(sqlProcess.query);
             case "fullQuerySQLProcess":
-                String fullQuery = (String) sqlProcess.get(2);
-                return fullQuery == null ? NullValue.instance : new DataObject(fullQuery);
+                return sqlProcess.fullQuery == null ? NullValue.instance : new DataObject(sqlProcess.fullQuery);
             case "userProcess":
-                Long user = (Long) sqlProcess.get(3);
-                return user == null ? NullValue.instance : new DataObject(user);
+                return sqlProcess.user == null ? NullValue.instance : new DataObject(sqlProcess.user);
             case "computerProcess":
-                Long computer = (Long) sqlProcess.get(4);
-                return computer == null ? NullValue.instance : new DataObject(computer);
+                return sqlProcess.computer == null ? NullValue.instance : new DataObject(sqlProcess.computer);
             case "addressUserSQLProcess":
-                String address = (String) sqlProcess.get(5);
-                return address == null ? NullValue.instance : new DataObject(address);
+                return sqlProcess.addressUser == null ? NullValue.instance : new DataObject(sqlProcess.addressUser);
             case "dateTimeSQLProcess":
-                Timestamp dateTime = (Timestamp) sqlProcess.get(6);
-                return dateTime == null ? NullValue.instance : new DataObject(dateTime, DateTimeClass.instance);
+                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(sqlProcess.dateTime, DateTimeClass.instance);
             case "isActiveSQLProcess":
-                Boolean isActive = (Boolean) sqlProcess.get(7);
-                return DataObject.create(isActive != null && isActive);
+                return DataObject.create(sqlProcess.isActive != null && sqlProcess.isActive);
             case "inTransactionSQLProcess":
-                Boolean fusionInTransaction = (Boolean) sqlProcess.get(8);
-                Boolean baseInTransaction = (Boolean) sqlProcess.get(9);
-                if(baseInTransaction != null && fusionInTransaction != null && fusionInTransaction)
-                    ServerLoggers.assertLog(baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
-                Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
-                return DataObject.create(inTransaction);
+                if (sqlProcess.baseInTransaction != null && sqlProcess.fusionInTransaction != null && sqlProcess.fusionInTransaction)
+                    ServerLoggers.assertLog(sqlProcess.baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
+                return DataObject.create(sqlProcess.baseInTransaction != null ? sqlProcess.baseInTransaction : sqlProcess.fusionInTransaction);
             case "startTransactionSQLProcess":
-                Long startTransaction = (Long) sqlProcess.get(10);
-                return startTransaction == null ? NullValue.instance : new DataObject(new Timestamp(startTransaction), DateTimeClass.instance);
+                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(new Timestamp(sqlProcess.startTransaction), DateTimeClass.instance);
             case "attemptCountSQLProcess":
-                String attemptCount = (String) sqlProcess.get(11);
-                return attemptCount == null ? NullValue.instance : new DataObject(attemptCount);
-            case "statusMessageSQLProcess":
-                StatusMessage statusMessage = (StatusMessage) sqlProcess.get(12);
-                return statusMessage == null ? NullValue.instance : new DataObject(statusMessage.getMessage());
+                return sqlProcess.attemptCount == null ? NullValue.instance : new DataObject(sqlProcess.attemptCount);
+            case "statusSQLProcess":
+                return sqlProcess.status == null ? NullValue.instance : new DataObject(sqlProcess.status);
             case "lockOwnerIdProcess":
-                String lockOwnerId = (String) sqlProcess.get(13);
-                return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
+                return sqlProcess.lockOwnerId == null ? NullValue.instance : new DataObject(sqlProcess.lockOwnerId);
             case "lockOwnerNameProcess":
-                String lockOwnerName = (String) sqlProcess.get(14);
-                return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
+                return sqlProcess.lockOwnerName == null ? NullValue.instance : new DataObject(sqlProcess.lockOwnerName);
             case "idSQLProcess":
-                Integer idSQLProcess = (Integer) sqlProcess.get(15);
-                return idSQLProcess == null ? NullValue.instance : new DataObject(idSQLProcess);
+                return sqlProcess.sqlId == null ? NullValue.instance : new DataObject(sqlProcess.sqlId);
             case "isDisabledNestLoopProcess":
-                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(16);
-                return DataObject.create(isDisabledNestLoop != null && isDisabledNestLoop);
+                return DataObject.create(sqlProcess.isDisabledNestLoop != null && sqlProcess.isDisabledNestLoop);
             case "queryTimeoutProcess":
-                Integer queryTimeoutProcess = (Integer) sqlProcess.get(17);
-                return queryTimeoutProcess == null ? NullValue.instance : new DataObject(queryTimeoutProcess);
+                return sqlProcess.queryTimeout == null ? NullValue.instance : new DataObject(sqlProcess.queryTimeout);
             case "debugInfoSQLProcess":
-                String debugInfo = (String) sqlProcess.get(18);
-                return debugInfo == null ? NullValue.instance : new DataObject(debugInfo);
+                return sqlProcess.debugInfo == null ? NullValue.instance : new DataObject(sqlProcess.debugInfo);
             default:
                 return NullValue.instance;
         }
     }
 
-    private int writeRows(ExecutionContext context, final ImOrderSet<LCP> props, ImMap<String, List<Object>> processes, final boolean java) throws SQLException, SQLHandledException {
+    private int writeRowsJava(ExecutionContext context, final ImOrderSet<LCP> props, ImMap<String, JavaProcess> processes) throws SQLException, SQLHandledException {
 
-        ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
+        ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows;
+
+        rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
             public ImMap<String, DataObject> getMapValue(String value) {
                 return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
             }
-        }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, List<Object>>() {
-            public ImMap<LCP, ObjectValue> getMapValue(String key, List<Object> value) {
-                return props.getSet().mapValues(java ? getJavaMapValueGetter(value, key) : getSQLMapValueGetter(value, key));
+        }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, JavaProcess>() {
+            public ImMap<LCP, ObjectValue> getMapValue(String key, JavaProcess value) {
+                return props.getSet().mapValues(getJavaMapValueGetter(value, key));
+            }
+        });
+
+        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
+            @Override
+            public Type getType(LCP key) {
+                return key.property.getType();
+            }
+        });
+        OperationOwner owner = context.getSession().getOwner();
+        SQLSession sql = context.getSession().sql;
+        importTable.writeRows(sql, rows, owner);
+
+        ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
+        Join<LCP> importJoin = importTable.join(mapKeys);
+        Where where = importJoin.getWhere();
+        try {
+            for (LCP lcp : props) {
+                PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
+                context.getEnv().change((CalcProperty) lcp.property, propChange);
+            }
+        } finally {
+            importTable.drop(sql, owner);
+        }
+        return rows.size();
+    }
+
+    private int writeRowsSQL(ExecutionContext context, final ImOrderSet<LCP> props, ImMap<String, SQLProcess> processes) throws SQLException, SQLHandledException {
+
+        ImMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> rows;
+
+        rows = processes.mapKeyValues(new GetValue<ImMap<String, DataObject>, String>() {
+            public ImMap<String, DataObject> getMapValue(String value) {
+                return MapFact.singleton("key", new DataObject(value, StringClass.get(10)));
+            }
+        }, new GetKeyValue<ImMap<LCP, ObjectValue>, String, SQLProcess>() {
+            public ImMap<LCP, ObjectValue> getMapValue(String key, SQLProcess value) {
+                return props.getSet().mapValues(getSQLMapValueGetter(value, key));
             }
         });
 
@@ -289,8 +304,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return SetFact.fromJavaOrderSet(new ArrayList<LCP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.importedString);
     }
 
-    private ImMap<String, List<Object>> getMSSQLProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
-                                                          MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive)
+    private ImMap<String, SQLProcess> getMSSQLProcesses(ExecutionContext context, Map<Integer, SQLThreadInfo> sessionThreadMap,
+                                                        MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive)
             throws SQLException, SQLHandledException {
         String originalQuery = "Select A.session_id,B.start_time, A.[host_name], A.[login_name], C.client_net_address, text\n" +
                 "from sys.dm_exec_sessions A\n" +
@@ -327,33 +342,31 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
                 , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        Map<String, List<Object>> resultMap = new HashMap<>();
+        Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
 
             String query = trimToEmpty((String) entry.get("text"));
-            if(!query.equals(originalQuery) && (!onlyActive || !query.isEmpty())) {
+            if (!query.equals(originalQuery) && (!onlyActive || !query.isEmpty())) {
                 Integer processId = (Integer) entry.get("session_id");
-                List<Object> sessionThread = sessionThreadMap.get(processId);
-                String fullQuery = sessionThread == null || sessionThread.get(7) == null ? null : (String) sessionThread.get(7);
-                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(8);
-                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
-                String debugInfo = sessionThread == null ? null : (String) sessionThread.get(10);
+                SQLThreadInfo sessionThread = sessionThreadMap.get(processId);
+                String fullQuery = sessionThread == null ? null : sessionThread.fullQuery;
+                boolean isDisabledNestLoop = sessionThread != null && sessionThread.isDisabledNestLoop;
+                Integer queryTimeout = sessionThread == null ? null : sessionThread.queryTimeout;
+                String debugInfo = sessionThread == null ? null : sessionThread.debugInfo;
 
-                //String userActiveTask = trimToNull((String) entry.get("host_name"));
                 String address = trimToNull((String) entry.get("client_net_address"));
                 Timestamp dateTime = (Timestamp) entry.get("start_time");
 
-                Thread javaThread = sessionThread == null ? null : (Thread) sessionThread.get(0);
-                boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
-                Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                String attemptCount = sessionThread == null ? "0" : (String) sessionThread.get(3);
-                StatusMessage statusMessage = sessionThread == null ? null : (StatusMessage) sessionThread.get(4);
+                Thread javaThread = sessionThread == null ? null : sessionThread.javaThread;
+                boolean baseInTransaction = sessionThread != null && sessionThread.baseInTransaction;
+                Long startTransaction = sessionThread == null ? null : sessionThread.startTransaction;
+                String attemptCount = sessionThread == null ? "0" : sessionThread.attemptCount;
 
                 String resultId = getMonitorId(javaThread, processId);
 
-                if(!query.isEmpty()) {
+                if (!query.isEmpty()) {
                     if (javaThread != null)
                         javaThreads.add(javaThread);
                     else {
@@ -361,16 +374,18 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
-                List<Object> newEntry = Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
-                        query, fullQuery, null, null, address, dateTime, null, null, baseInTransaction, startTransaction,
-                        attemptCount, statusMessage, null, null, processId, isDisabledNestLoop, queryTimeout, debugInfo);
-                List<Object> prevEntry = resultMap.put(resultId, newEntry);
+                Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
+                ThreadType threadType = javaThread == null ? null : RemoteLoggerAspect.getThreadType(javaThread.getId());
 
-                if(prevEntry != null) {
-                    Timestamp prevDateTime = (Timestamp) prevEntry.get(6);
-                    if(prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
-                        Integer prevSqlId = (Integer) prevEntry.get(15);
-                        resultMap.put("s" + prevSqlId, prevEntry);
+                SQLProcess newEntry = new SQLProcess(dateTimeCall, threadType, query, fullQuery, null, null,
+                        address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, null,
+                        null, null, processId, isDisabledNestLoop, queryTimeout, debugInfo);
+                SQLProcess prevEntry = resultMap.put(resultId, newEntry);
+
+                if (prevEntry != null) {
+                    Timestamp prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                        resultMap.put("s" + prevEntry.sqlId, prevEntry);
                     } else {
                         resultMap.put(resultId, prevEntry);
                         resultMap.put("s" + processId, newEntry);
@@ -385,9 +400,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return MapFact.fromJavaMap(resultMap);
     }
 
-    private ImMap<String, List<Object>> getPostgresProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
-                                                             MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive,
-                                                             boolean logSqlProcesses)
+    private ImMap<String, SQLProcess> getPostgresProcesses(ExecutionContext context, Map<Integer, SQLThreadInfo> sessionThreadMap,
+                                                           MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive,
+                                                           boolean logSqlProcesses)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
@@ -424,14 +439,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         if (logSqlProcesses) {
             ServerLoggers.exInfoLogger.info("sessionThreadMap");
-            for (Map.Entry<Integer, List<Object>> entry : sessionThreadMap.entrySet()) {
-                Thread javaThread = (Thread) entry.getValue().get(0);
+            for (Map.Entry<Integer, SQLThreadInfo> entry : sessionThreadMap.entrySet()) {
+                Thread javaThread = entry.getValue().javaThread;
                 ServerLoggers.exInfoLogger.info(String.format("SQL ID: %s, Java ID: %s, User: %s, Computer: %s",
-                        entry.getKey(), javaThread != null ? javaThread.getId() : null, entry.getValue().get(5), entry.getValue().get(6)));
+                        entry.getKey(), javaThread != null ? javaThread.getId() : null, entry.getValue().userActiveTask, entry.getValue().computerActiveTask));
             }
         }
 
-        Map<String, List<Object>> resultMap = new HashMap<>();
+        Map<String, SQLProcess> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -439,7 +454,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String query = trimToEmpty((String) entry.get("query"));
             String state = trimToEmpty((String) entry.get("state"));
 
-            if(logSqlProcesses)
+            if (logSqlProcesses)
                 ServerLoggers.exInfoLogger.info(String.format("PID: %s, Address: %s, State: %s, Query: %s", entry.get("pid"), entry.get("client_addr"), state, query));
 
             boolean active = !query.isEmpty() && state.equals("active");
@@ -448,28 +463,27 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String address = trimToNull((String) entry.get("client_addr"));
                 Timestamp dateTime = (Timestamp) entry.get("query_start");
 
-                List<Object> sessionThread = sessionThreadMap.get(sqlId);
-                Thread javaThread = sessionThread == null ? null : (Thread) sessionThread.get(0);
-                boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
-                Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                String attemptCount = sessionThread == null ? "0" : (String) sessionThread.get(3);
-                StatusMessage statusMessage = sessionThread == null ? null : (StatusMessage) sessionThread.get(4);
-                Long userActiveTask = sessionThread == null ? null : (Long) sessionThread.get(5);
-                Long computerActiveTask = sessionThread == null ? null : (Long) sessionThread.get(6);
-                String fullQuery = sessionThread == null || sessionThread.get(7) == null ? null : (String) sessionThread.get(7);
-                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(8);
-                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(9);
-                String debugInfo = sessionThread == null ? null : (String) sessionThread.get(10);
+                SQLThreadInfo sessionThread = sessionThreadMap.get(sqlId);
+                Thread javaThread = sessionThread == null ? null : sessionThread.javaThread;
+                boolean baseInTransaction = sessionThread != null && sessionThread.baseInTransaction;
+                Long startTransaction = sessionThread == null ? null : sessionThread.startTransaction;
+                String attemptCount = sessionThread == null ? "0" : sessionThread.attemptCount;
+                Long userActiveTask = sessionThread == null ? null : sessionThread.userActiveTask;
+                Long computerActiveTask = sessionThread == null ? null : sessionThread.computerActiveTask;
+                String fullQuery = sessionThread == null ? null : sessionThread.fullQuery;
+                boolean isDisabledNestLoop = sessionThread != null && sessionThread.isDisabledNestLoop;
+                Integer queryTimeout = sessionThread == null ? null : sessionThread.queryTimeout;
+                String debugInfo = sessionThread == null ? null : sessionThread.debugInfo;
 
                 List<Object> lockingProcess = lockingMap.get(sqlId);
-                Integer lockingSqlId = lockingProcess == null ? null : (Integer)lockingProcess.get(0);
-                List<Object> lockingSessionThread = lockingSqlId == null ? null : sessionThreadMap.get(lockingSqlId);
-                String lockOwnerId = lockingSessionThread == null ? null : getMonitorId((Thread)lockingSessionThread.get(0), lockingSqlId);
+                Integer lockingSqlId = lockingProcess == null ? null : (Integer) lockingProcess.get(0);
+                SQLThreadInfo lockingSessionThread = lockingSqlId == null ? null : sessionThreadMap.get(lockingSqlId);
+                String lockOwnerId = lockingSessionThread == null ? null : getMonitorId(lockingSessionThread.javaThread, lockingSqlId);
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
                 String resultId = getMonitorId(javaThread, sqlId);
 
-                if(active) {
+                if (active) {
                     if (javaThread != null)
                         javaThreads.add(javaThread);
                     else {
@@ -477,17 +491,18 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
 
-                List<Object> newEntry = Arrays.asList(javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId()),
-                        query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                        active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, statusMessage,
-                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo);
-                List<Object> prevEntry = resultMap.put(resultId, newEntry);
+                Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
+                ThreadType threadType = javaThread == null ? null : RemoteLoggerAspect.getThreadType(javaThread.getId());
 
-                if(prevEntry != null) {
-                    Timestamp prevDateTime = (Timestamp) prevEntry.get(6);
-                    if(prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
-                        Integer prevSqlId = (Integer) prevEntry.get(15);
-                        resultMap.put("s" + prevSqlId, prevEntry);
+                SQLProcess newEntry = new SQLProcess(dateTimeCall, threadType, query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
+                        active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, state,
+                        lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo);
+                SQLProcess prevEntry = resultMap.put(resultId, newEntry);
+
+                if (prevEntry != null) {
+                    Timestamp prevDateTime = prevEntry.dateTime;
+                    if (prevDateTime != null && (dateTime == null || prevDateTime.getTime() > dateTime.getTime())) {
+                        resultMap.put("s" + prevEntry.sqlId, prevEntry);
                     } else {
                         resultMap.put(resultId, prevEntry);
                         resultMap.put("s" + sqlId, newEntry);
@@ -568,9 +583,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return javaThread != null ? String.valueOf(javaThread.getId()) : ("s" + processId);
     }
 
-    private ImMap<String, List<Object>> getJavaProcesses(ImSet<Thread> allThreads, ImSet<Thread> sqlThreads, boolean onlyActive, boolean readAllocatedBytes, boolean logSqlProcesses) {
+    private ImMap<String, JavaProcess> getJavaProcesses(ImSet<Thread> allThreads, ImSet<Thread> sqlThreads, boolean onlyActive, boolean readAllocatedBytes, boolean logSqlProcesses) {
         ImSet<Thread> threads;
-        if(allThreads != null) {
+        if (allThreads != null) {
             threads = allThreads;
             if (logSqlProcesses) {
                 ServerLoggers.exInfoLogger.info("getAllThreads");
@@ -583,25 +598,25 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
 
         long[] threadIds = new long[threads.size()];
-        for(int i=0,size=threads.size();i<size;i++) {
+        for (int i = 0, size = threads.size(); i < size; i++) {
             threadIds[i] = threads.get(i).getId();
         }
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         ThreadInfo[] threadInfos;
-        if(threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
+        if (threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
             threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
         else
-            threadInfos = new ThreadInfo[] {};
+            threadInfos = new ThreadInfo[]{};
 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
             allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(threadIds);
         }
 
-        MExclMap<String, List<Object>> mResultMap = MapFact.mExclMap();
-        for(int i=0,size=threads.size();i<size;i++) {
+        MExclMap<String, JavaProcess> mResultMap = MapFact.mExclMap();
+        for (int i = 0, size = threads.size(); i < size; i++) {
             Thread thread = threads.get(i);
-            List<Object> threadInfo = getThreadInfo(thread, onlyActive && allThreads != null && !sqlThreads.contains(thread), threadInfos[i], allocatedBytes == null ? null : allocatedBytes[i]);
+            JavaProcess threadInfo = getJavaProcess(thread, onlyActive && allThreads != null && !sqlThreads.contains(thread), threadInfos[i], allocatedBytes == null ? null : allocatedBytes[i]);
             if (threadInfo != null) {
                 long pid = thread.getId();
                 mResultMap.exclAdd(String.valueOf(pid), threadInfo);
@@ -610,9 +625,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return mResultMap.immutable();
     }
 
-    private List<Object> getThreadInfo(Thread thread, boolean onlyActive, ThreadInfo threadInfo, Long allocatedBytes) {
-        long id = thread.getId();
-
+    private JavaProcess getJavaProcess(Thread thread, boolean onlyActive, ThreadInfo threadInfo, Long allocatedBytes) {
         String status = threadInfo == null ? null : String.valueOf(threadInfo.getThreadState());
         String stackTrace = threadInfo == null ? null : ThreadUtils.getJavaStack(threadInfo.getStackTrace());
         String name = threadInfo == null ? null : threadInfo.getThreadName();
@@ -623,9 +636,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String computer = logInfo == null ? null : logInfo.hostnameComputer;
         String user = logInfo == null ? null : logInfo.userName;
         String lsfStack = getLSFStack(thread);
-        Long lastAllocatedBytes = SQLSession.getThreadAllocatedBytes(allocatedBytes, id);
+        Long lastAllocatedBytes = thread == null ? null : SQLSession.getThreadAllocatedBytes(allocatedBytes, thread.getId());
 
-        return !onlyActive || ThreadUtils.isActiveJavaProcess(status, stackTrace, false) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
+        return !onlyActive || ThreadUtils.isActiveJavaProcess(status, stackTrace, false) ? new JavaProcess(stackTrace, name, status, lockName, lockOwnerId,
                 lockOwnerName, computer, user, lsfStack, allocatedBytes, lastAllocatedBytes) : null;
     }
 
