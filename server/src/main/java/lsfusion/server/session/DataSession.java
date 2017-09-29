@@ -1188,15 +1188,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             dataModifier.updateSourceChanges(); // нужно обновить все пометки (тут главное что у этого modifier'а, чтобы notify'уть все пометки)
             
-            boolean afterUpdate = Settings.get().isUpdateAfterInSessionEvent();
-            if(!afterUpdate)
-                updateSessionEventNotChangedOld(env);
-                
             inSessionEvent = true;
 
-            if(afterUpdate)
-                updateSessionEventNotChangedOld(env); // важно после по идее чтобы правильный modifier обновился, а то так абы кто обновится 
-
+            updateSessionEventNotChangedOld(env); // важно после по идее чтобы правильный modifier обновился, а то так абы кто обновится 
+            
             try {
                 for(ActionProperty<?> action : getActiveSessionEvents()) {
                     executeSessionEvent(env, stack, action);

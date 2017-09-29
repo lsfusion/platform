@@ -2302,14 +2302,4 @@ public class Settings implements Cloneable {
     public void setEnableCloseThreadLocalSqlInNativeThreads(boolean enableCloseThreadLocalSqlInNativeThreads) {
         this.enableCloseThreadLocalSqlInNativeThreads = enableCloseThreadLocalSqlInNativeThreads;
     }
-    
-    private boolean updateAfterInSessionEvent = true; // temp, to delete
-
-    public boolean isUpdateAfterInSessionEvent() {
-        return updateAfterInSessionEvent;
-    }
-
-    public void setUpdateAfterInSessionEvent(boolean updateAfterInSessionEvent) {
-        this.updateAfterInSessionEvent = updateAfterInSessionEvent;
-    }
 }
