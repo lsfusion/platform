@@ -8,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Compare;
@@ -186,7 +187,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return mInnerKeys.immutable();
     }
 
-    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, List<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
+    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, MList<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
         ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(new BaseUtils.Group<BaseExpr, ExprIndexedJoin>() {
             public BaseExpr group(ExprIndexedJoin key) {
                 return key.baseExpr;
