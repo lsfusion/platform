@@ -1656,8 +1656,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 InnerExpr innerExpr = (InnerExpr) expr;
                 ExprStatJoin notNullJoin = innerExpr.getNotNullJoin(keyStat, statType);
                 if (notNullJoin != null && !mJoins.add(notNullJoin)) {
-                    if(pushInfo != null)
+                    if(pushInfo != null) {
+                        adjIntervalWheres = adjIntervalWheres.addList(notNullJoin);
                         upAdjWheres.set(new UpWheres<WhereJoin>(upAdjWheres.result.addExcl(notNullJoin, innerExpr.getUpNotNullWhere())));
+                    }
                     mEdges.exclAdd(new Edge(notNullJoin, 0, innerExpr));
                 }
             }
