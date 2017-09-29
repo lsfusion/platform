@@ -1186,6 +1186,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             if(env == null)
                 env = this;
 
+            dataModifier.updateSourceChanges(); // нужно обновить все пометки (тут главное что у этого modifier'а, чтобы notify'уть все пометки)
+            
             boolean afterUpdate = Settings.get().isUpdateAfterInSessionEvent();
             if(!afterUpdate)
                 updateSessionEventNotChangedOld(env);
