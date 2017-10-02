@@ -14,6 +14,7 @@ TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 name 'Наименование' = DATA VARISTRING[100](UserRole);
 
 sid 'Идентификатор' = DATA VARSTRING[30] (UserRole);
+overSID (UserRole ur) = OVERRIDE sid(ur), name(ur);
 userRoleSID (sid) = GROUP AGGR UserRole userRole BY sid (userRole) WHERE userRole IS UserRole;
 
 mainRole = DATA UserRole (User);
@@ -369,7 +370,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES (dprs)  caption, canonicalName,      number,      permitView,          forbidView,          permitChange,          forbidChange
     ORDER BY number(dprs)
 
-    PROPERTIES(ur, p) order COLUMNS (ur) HEADER sid(ur)
+    PROPERTIES(ur, p) order COLUMNS (ur) HEADER overSID(ur)
 
     FILTERS parent(prs)==tprs, parent(dprs)==tdprs
     
