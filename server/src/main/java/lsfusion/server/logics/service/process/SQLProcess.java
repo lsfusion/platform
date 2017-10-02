@@ -1,6 +1,7 @@
 package lsfusion.server.logics.service.process;
 
 import lsfusion.server.context.ThreadType;
+import lsfusion.server.data.StatusMessage;
 
 import java.sql.Timestamp;
 
@@ -19,6 +20,7 @@ public class SQLProcess {
     public Long startTransaction;
     public String attemptCount;
     public String status;
+    public StatusMessage statusMessage;
     public String lockOwnerId;
     public String lockOwnerName;
     public Integer sqlId;
@@ -28,7 +30,7 @@ public class SQLProcess {
 
     public SQLProcess(Timestamp dateTimeCall, ThreadType threadType, String query, String fullQuery, Long user, Long computer, String addressUser,
                       Timestamp dateTime, Boolean isActive, Boolean fusionInTransaction, Boolean baseInTransaction,
-                      Long startTransaction, String attemptCount, String status, String lockOwnerId, String lockOwnerName,
+                      Long startTransaction, String attemptCount, String status, StatusMessage statusMessage, String lockOwnerId, String lockOwnerName,
                       Integer sqlId, Boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo) {
         this.dateTimeCall = dateTimeCall;
         this.threadType = threadType;
@@ -44,6 +46,7 @@ public class SQLProcess {
         this.startTransaction = startTransaction;
         this.attemptCount = attemptCount;
         this.status = status;
+        this.statusMessage = statusMessage;
         this.lockOwnerId = lockOwnerId;
         this.lockOwnerName = lockOwnerName;
         this.sqlId = sqlId;

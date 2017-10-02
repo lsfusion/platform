@@ -11,9 +11,11 @@ public class SQLThreadInfo {
     public boolean isDisabledNestLoop;
     public Integer queryTimeout;
     public String debugInfo;
+    public StatusMessage statusMessage;
 
     public SQLThreadInfo(Thread javaThread, boolean baseInTransaction, Long startTransaction, String attemptCount, Long userActiveTask,
-                         Long computerActiveTask, String fullQuery, boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo) {
+                         Long computerActiveTask, String fullQuery, boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo,
+                         StatusMessage statusMessage) {
         this.javaThread = javaThread;
         this.baseInTransaction = baseInTransaction;
         this.startTransaction = startTransaction;
@@ -24,5 +26,6 @@ public class SQLThreadInfo {
         this.isDisabledNestLoop = isDisabledNestLoop;
         this.queryTimeout = queryTimeout;
         this.debugInfo = debugInfo;
+        this.statusMessage = statusMessage;
     }
 }

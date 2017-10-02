@@ -124,7 +124,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(sqlSession.getActiveThread(),
                         sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(), debugInfo));
+                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
+                        debugInfo, sqlSession.statusMessage));
         }
         return sessionMap;
     }
