@@ -66,7 +66,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
     private WeakReference<Thread> activeThread;
 
-    private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentWeakHashMap();
+    private static ConcurrentIdentityWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = MapFact.getGlobalConcurrentHashMap();
 
@@ -142,12 +142,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 threadAllocatedBytesBMap.put(allThreadIds[i], threadAllocatedBytes[i]);
             }
         }
-    }
-
-    // [todo]: переопределен из-за того, что используется ConcurrentWeakHashMap (желательно какой-нибудь ConcurrentIdentityHashMap)
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj;
     }
 
     public String getExecutingStatement() {
@@ -2753,7 +2747,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void checkSessionTable(SessionTable table) {
         WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
         if(!(sessionTable != null && sessionTable.get() != null)) { // одна из возможных причин - DataSession.updateSessionNotChangedEvents
-            ServerLoggers.assertLog(false, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()));
+            ServerLoggers.assertLog(false, "USED RETURNED TABLE : " + table.getName() + ", DEBUG INFO : " + sessionDebugInfo.get(table.getName()), true);
             wasSessionTableAssertion.set(true);
         }
     }

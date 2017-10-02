@@ -2302,4 +2302,14 @@ public class Settings implements Cloneable {
     public void setEnableCloseThreadLocalSqlInNativeThreads(boolean enableCloseThreadLocalSqlInNativeThreads) {
         this.enableCloseThreadLocalSqlInNativeThreads = enableCloseThreadLocalSqlInNativeThreads;
     }
+    
+    private boolean enableInteractiveAssertLog = false; // temporary
+
+    public boolean isEnableInteractiveAssertLog() {
+        return enableInteractiveAssertLog;
+    }
+
+    public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
+        this.enableInteractiveAssertLog = enableInteractiveAssertLog;
+    }
 }

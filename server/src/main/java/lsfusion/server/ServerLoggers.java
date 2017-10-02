@@ -4,6 +4,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.logging.FlushableRollingFileAppender;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -84,10 +85,16 @@ public class ServerLoggers {
                     }
                 }, FORCE_FLUSH_DELAY, FORCE_FLUSH_DELAY, TimeUnit.SECONDS);
     }
-    
+
     public static void assertLog(boolean assertion, String message) {
-        if(!assertion)
+        assertLog(assertion, message, false);
+    }
+    public static void assertLog(boolean assertion, String message, boolean interactive) {
+        if(!assertion) {
+            if(interactive && Settings.get().isEnableInteractiveAssertLog())
+                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction("{logics.server.interactive.assert}", true));
             assertLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
+        }
         assert assertion : message;
     }
 
