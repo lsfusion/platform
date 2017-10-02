@@ -259,7 +259,10 @@ public class ThreadLocalContext {
         assure(instance.getContext(), stack);
     }
     private static void aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadType threadType, SyncType mirror) {
-        aspectBeforeEvent(instance.getContext(), true, threadType, stack, mirror);
+        aspectBeforeEvent(instance, stack, threadType, true, mirror);
+    }
+    private static Context aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadType threadType, boolean assertTop, SyncType mirror) {
+        return aspectBeforeEvent(instance.getContext(), assertTop, threadType, stack, mirror);
     }
     private static void aspectAfterEvent(ThreadType threadType) {
         aspectAfterEvent(null, true, threadType);
@@ -293,14 +296,11 @@ public class ThreadLocalContext {
     public static void assureRmi(RmiServer remoteServer) { // Андрей уверяет что не всегда устанавливается
         assureEvent(remoteServer.getLogicsInstance(), rmiStack(remoteServer));
     }
-    public static void aspectBeforeRmi(RmiServer remoteServer) {
-        aspectBeforeRmi(remoteServer, null);
+    public static Context aspectBeforeRmi(RmiServer remoteServer, boolean assertTop) {
+        return aspectBeforeEvent(remoteServer.getLogicsInstance(), rmiStack(remoteServer), ThreadType.RMI, assertTop, null);
     }
-    public static void aspectBeforeRmi(RmiServer remoteServer, SyncType type) {
-        aspectBeforeEvent(remoteServer.getLogicsInstance(), rmiStack(remoteServer), ThreadType.RMI, type);
-    }
-    public static void aspectAfterRmi() {
-        aspectAfterEvent(ThreadType.RMI);
+    public static void aspectAfterRmi(Context prevContext, boolean assertTop) {
+        aspectAfterEvent(prevContext, assertTop, ThreadType.RMI);
     }
 
     // MONITOR вызовы, когда вызов осуществляется "чужим" потоком (чтение из socket'а, servlet'ом и т.п.)
