@@ -4,8 +4,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -30,6 +32,7 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.PGObjectReader;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -691,7 +694,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
-    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
@@ -772,17 +775,30 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         addIndex(table, getOrderFields(keyFields, order, fields), logger);
     }
 
-    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
+    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException, SQLHandledException {
         return checkIndex(table, getOrderFields(keyFields, order, fields), false);
      }
 
-    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException {
-        //in Postgres 9.5 will be 'create index if not exists'
-        boolean exists = true;
-        try {
-            executeDDL("SELECT 'public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "'::regclass");
-        } catch (SQLException e) {
-            exists = false;
+    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
+        //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
+        //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
+        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "')";
+
+        MExclSet<String> propertyNames = SetFact.mExclSet();
+        propertyNames.exclAdd("to_regclass");
+        propertyNames.immutable();
+
+        MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
+        propertyReaders.exclAdd("to_regclass", PGObjectReader.instance);
+        propertyReaders.immutable();
+
+        ImOrderMap rs = executeSelect(command, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                0, (ImRevMap) MapFact.EMPTYREV(), (ImMap) MapFact.EMPTY(), ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+
+        boolean exists = false;
+        for (Object rsValue : rs.values()) {
+            if (((HMap) rsValue).get("to_regclass") != null)
+                exists = true;
         }
         return exists;
     }
