@@ -90,7 +90,7 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
         sqlProcesses = sqlProcesses.filter(javaProcesses.keys().merge(freeSQLProcesses));
 
         if (!sqlProcesses.isEmpty())
-            ServerLoggers.processDumpLogger.info(String.format("PROCESS DUMP: %s %s\n", sqlProcesses.size(), sqlProcesses.size() > 1 ? "processes" : "process"));
+            ServerLoggers.processDumpLogger.info(String.format("PROCESS DUMP: %s SQL %s\n", sqlProcesses.size(), sqlProcesses.size() > 1 ? "processes" : "process"));
         for (String key : sqlProcesses.keys()) {
             SQLProcess sqlProcess = sqlProcesses.getObject(key);
             JavaProcess javaProcess = javaProcesses.getObject(key);
@@ -120,6 +120,9 @@ public class MakeProcessDumpActionProperty extends ScriptingActionProperty {
                     lastThreadAllocatedBytesProcess, lsfStackTraceProcess, stackTraceJavaProcess, sqlProcess.fullQuery));
         }
 
+        int javaProcessesCount = javaProcesses.size() - 1; //свой процесс есть всегда
+        if (javaProcessesCount > 0)
+            ServerLoggers.processDumpLogger.info(String.format("PROCESS DUMP: %s JAVA %s\n", javaProcessesCount, javaProcessesCount > 1 ? "processes" : "process"));
         for (String key : javaProcesses.keys()) {
             JavaProcess javaProcess = javaProcesses.getObject(key);
             if (!key.equals(String.valueOf(Thread.currentThread().getId())))
