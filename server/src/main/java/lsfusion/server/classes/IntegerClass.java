@@ -1,6 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
@@ -101,5 +102,9 @@ public class IntegerClass extends IntClass<Integer> {
     @Override
     public Number getInfiniteValue(boolean min) {
         return min ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+    }
+
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.integer}")));
     }
 }

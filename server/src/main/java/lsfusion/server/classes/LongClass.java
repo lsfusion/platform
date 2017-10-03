@@ -1,6 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -114,5 +115,9 @@ public class LongClass extends IntClass<Long> {
     @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
+    }
+
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.long.integer}")));
     }
 }
