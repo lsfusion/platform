@@ -17,6 +17,10 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         return true;
     }
 
+    public boolean supportNeedValue() {
+        return true;
+    }
+
     //считает, что последний expr - сепаратор
     @Override
     public String getSource(ExprSource source) {

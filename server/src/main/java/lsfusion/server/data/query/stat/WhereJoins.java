@@ -1874,7 +1874,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     // limitHeur, indexNotNulls
-    public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
+    public void fillCompileInfo(Result<Cost> mBaseCost, Result<Stat> mRows, Result<ImSet<BaseExpr>> usedNotNulls, Result<ImOrderSet<BaseJoin>> joinOrder, Result<Boolean> mOptAdjustLimit, ImSet<KeyExpr> keys, KeyStat keyStat, LimitOptions limit, ImOrderSet<Expr> orders, DebugInfoWriter debugInfoWriter) {
         Result<CompileInfo> compileInfo = new Result<>(); 
         StatType statType = StatType.COMPILE;
         StatKeys<KeyExpr> statKeys = getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);// newNotNull
@@ -1909,9 +1909,19 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 }
                 break;
             }
-            if(i>=size) // если не осталось порядков, значит все просматривать не надо
-                // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается), поэтому делим cost на 2(N(
-                baseCost = baseCost.div(stat.reduce(Settings.get().getReduceAdjustLimitHeur())).or(compileInfo.result.maxSubQueryCost);
+            if(i>=size) { // если не осталось порядков, значит все просматривать не надо
+                // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается)
+                Cost newBaseCost = baseCost.div(stat).or(compileInfo.result.maxSubQueryCost);
+
+                boolean optAdjLimit = false;
+                if(newBaseCost.less(baseCost.div(new Stat(Settings.get().getUsePessQueryHeurWhenReducedMore())))) // поэтому если уменьшаем на "слишком" много включаем пессимистичный режим
+                    optAdjLimit = true;
+                if(mOptAdjustLimit.result != null)
+                    optAdjLimit = optAdjLimit || mOptAdjustLimit.result;
+                mOptAdjustLimit.set(optAdjLimit);
+
+                baseCost = newBaseCost;
+            }
             stat = Stat.ONE; // предполагаем что limit отбирает мало записей
         }
             

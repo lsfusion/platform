@@ -34,9 +34,6 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ObjectClassField;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class CaseExpr extends Expr {
 
     private final ExprCaseList cases;
@@ -52,7 +49,7 @@ public class CaseExpr extends Expr {
         return cases;
     }
 
-    public String getSource(CompileSource compile) {
+    public String getSource(CompileSource compile, boolean needValue) {
 
         if (compile instanceof ToString) {
             String result = "";
@@ -70,7 +67,7 @@ public class CaseExpr extends Expr {
         boolean hasElse = true;
         for (int i = 0; i < cases.size(); i++) {
             ExprCase exprCase = cases.get(i);
-            String caseSource = exprCase.data.getSource(compile);
+            String caseSource = exprCase.data.getSource(compile, needValue);
 
             if (i == cases.size() - 1 && exprCase.where.isTrue()) {
                 source = source + " ELSE " + caseSource;

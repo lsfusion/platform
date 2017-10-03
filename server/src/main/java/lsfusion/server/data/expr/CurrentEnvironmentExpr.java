@@ -21,7 +21,7 @@ public class CurrentEnvironmentExpr extends StaticNullableExpr {
         return paramString.hashCode();
     }
 
-    public String getSource(CompileSource compile) {
+    public String getSource(CompileSource compile, boolean needValue) {
         return paramString;
     }
 }

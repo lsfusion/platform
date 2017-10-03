@@ -32,12 +32,16 @@ import java.sql.SQLException;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
-    public SQLQuery(String command, Cost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
+    public SQLQuery(String command, Cost baseCost, boolean optAdjustLimit, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
         super(command, baseCost, subQueries, env, recursionFunction);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;
+        this.optAdjustLimit = optAdjustLimit;
         this.union = union;
     }
+
+    final public boolean optAdjustLimit;
+    public SQLQuery pessQuery; // не будем пока в конструктор добавлять, так как очень ограниченное использование
 
     public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final GetValue<String, String> translator) {
         return subQueries.mapValues(new GetValue<SQLQuery, SQLQuery>() {
@@ -48,7 +52,10 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     public SQLQuery translate(GetValue<String, String> translator) {
-        return new SQLQuery(translator.getMapValue(command), baseCost, translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
+        SQLQuery result = new SQLQuery(translator.getMapValue(command), baseCost, optAdjustLimit, translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
+        if(pessQuery != null)
+            result.pessQuery = pessQuery.translate(translator);
+        return result;
     }
 
     final public ImMap<String, ? extends Reader> keyReaders;
@@ -61,12 +68,12 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     protected boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && keyReaders.equals(((SQLQuery) o).keyReaders) && propertyReaders.equals(((SQLQuery) o).propertyReaders) && union == (((SQLQuery) o).union) && recursionFunction == (((SQLQuery) o).recursionFunction);
+        return super.calcTwins(o) && keyReaders.equals(((SQLQuery) o).keyReaders) && propertyReaders.equals(((SQLQuery) o).propertyReaders) && union == (((SQLQuery) o).union) && recursionFunction == (((SQLQuery) o).recursionFunction) && BaseUtils.nullEquals(pessQuery, ((SQLQuery) o).pessQuery);
     }
 
     @Override
     public int immutableHashCode() {
-        return ((super.immutableHashCode() * 31 + keyReaders.hashCode()) * 31  + propertyReaders.hashCode()) * 31 + (union ? 1 : 0) + (recursionFunction ? 3 : 0);
+        return ((super.immutableHashCode() * 31 + keyReaders.hashCode()) * 31  + propertyReaders.hashCode()) * 31 + (union ? 1 : 0) + (recursionFunction ? 3 : 0) + (pessQuery!=null?pessQuery.hashCode():0);
     }
 
     public static <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
@@ -238,7 +245,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     public SQLQuery fixConcSelect(SQLSyntax syntax) {
         if(syntax.hasDriverCompositeProblem() && hasConc(keyReaders, propertyReaders)) {
             MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv(env);
-            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), baseCost, subQueries, mEnv.finish(), keyReaders, propertyReaders, union, recursionFunction);
+            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), baseCost, optAdjustLimit, subQueries, mEnv.finish(), keyReaders, propertyReaders, union, recursionFunction);
         }
         return this;
     }
@@ -284,6 +291,9 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     @StackMessage("{message.subquery.materialize}")
     public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
+        if(pessQuery != null && !Settings.get().isDisablePessQueries())
+            return pessQuery.materialize(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);
+        
         Result<Integer> actual = new Result<>();
         final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();
 

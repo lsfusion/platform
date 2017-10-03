@@ -7,8 +7,6 @@ import lsfusion.server.data.where.Where;
 
 public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T>, AndContext<T> {
 
-    String getSource(CompileSource compile);
-
     T translateExpr(ExprTranslator translator);
 
     //    void fillJoins(List<? extends JoinSelect> Joins);

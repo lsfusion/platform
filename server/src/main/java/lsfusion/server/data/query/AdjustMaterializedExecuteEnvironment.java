@@ -257,6 +257,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
             hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
             hasNotMaterializables = query != null && query.getEnv().hasNotMaterializable();
+            hasPessQuery = query != null && query.pessQuery != null;
         }
 
         public boolean isRoot() {
@@ -278,6 +279,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         private final int size;
         private final boolean hasTooLongKeys;
         private final boolean hasNotMaterializables;
+        private final boolean hasPessQuery;
         private Set<Node> children = new HashSet<>();
 
         private Integer priority = null;
@@ -321,6 +323,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             final int max = new Stat(settings.getSubQueriesRowsMax()).getWeight();
             final int rowCountCoeff = settings.getSubQueriesRowCountCoeff();
             final int parentCoeff = settings.getSubQueriesParentCoeff();
+            final int pessQueryCoeff = settings.getSubQueriesPessQueryCoeff();
 
             final int target = (int) Math.round(((double)topNode.getChildrenDegree()) / split);
 
@@ -337,7 +340,10 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                             return Integer.MAX_VALUE;
                     }
 
-                    return BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
+                    int result = BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
+                    if(o.hasPessQuery)
+                        result = result * pessQueryCoeff;
+                    return result;
                 }
             };
             Comparator<Node> comparator = new Comparator<Node>() {

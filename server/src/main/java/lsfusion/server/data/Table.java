@@ -907,7 +907,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
 
-            public String getSource(CompileSource compile) {
+            public String getSource(CompileSource compile, boolean needValue) {
                 return compile.getSource(this);
             }
 

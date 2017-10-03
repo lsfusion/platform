@@ -7,4 +7,6 @@ public interface FormulaUnionImpl extends FormulaImpl {
 //    boolean supportEmptySimplify(); // F()= null, его FormulaExpr.create убирает
 
     boolean supportSingleSimplify(); // F(a) = a
+
+    boolean supportNeedValue(); // при F(a,b) IS NOT NULL, одинаково для всех NOT NULL значений a и b 
 }

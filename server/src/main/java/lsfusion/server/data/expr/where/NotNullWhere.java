@@ -7,7 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.interop.Compare;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
@@ -15,10 +14,8 @@ import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprIndexedJoin;
-import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -35,12 +32,12 @@ public abstract class NotNullWhere extends DataWhere {
     }
 
     public String getSource(CompileSource compile) {
-        return getExpr().getSource(compile) + " IS NOT NULL";
+        return getExpr().getNotNullSource(compile);
     }
 
     @Override
     protected String getNotSource(CompileSource compile) {
-        return getExpr().getSource(compile) + " IS NULL";
+        return getExpr().getNullSource(compile);
     }
 
     protected Where translate(MapTranslate translator) {

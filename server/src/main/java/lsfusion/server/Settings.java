@@ -1461,6 +1461,7 @@ public class Settings implements Cloneable {
 
     private int subQueriesRowCountCoeff = 2; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
     private int subQueriesParentCoeff = 2; // коэффициент количество путей до вершины (по сути сколько раз подзапрос будет выполняться), для оценки  - определяет баланс между размером таблицы, количеством подзапросов
+    private int subQueriesPessQueryCoeff = 2; // коэффициент для оценки - на сколько ее увеличивать если есть пессимистичный вариант выполнения запроса, нужно чтобы сначала больше оптимистичных выполнилось  
 
     public int getSubQueriesRowCountCoeff() {
         return subQueriesRowCountCoeff;
@@ -1476,6 +1477,14 @@ public class Settings implements Cloneable {
 
     public void setSubQueriesParentCoeff(int subQueriesParentCoeff) {
         this.subQueriesParentCoeff = subQueriesParentCoeff;
+    }
+
+    public int getSubQueriesPessQueryCoeff() {
+        return subQueriesPessQueryCoeff;
+    }
+
+    public void setSubQueriesPessQueryCoeff(int subQueriesPessQueryCoeff) {
+        this.subQueriesPessQueryCoeff = subQueriesPessQueryCoeff;
     }
 
     private int explainThreshold = 100;
@@ -2248,14 +2257,14 @@ public class Settings implements Cloneable {
         this.disableAdjustLimitHeur = disableAdjustLimitHeur;
     }
 
-    private double reduceAdjustLimitHeur = 1.0;
+    private int usePessQueryHeurWhenReducedMore = 15;
 
-    public double getReduceAdjustLimitHeur() {
-        return reduceAdjustLimitHeur;
+    public int getUsePessQueryHeurWhenReducedMore() {
+        return usePessQueryHeurWhenReducedMore;
     }
 
-    public void setReduceAdjustLimitHeur(double reduceAdjustLimitHeur) {
-        this.reduceAdjustLimitHeur = reduceAdjustLimitHeur;
+    public void setUsePessQueryHeurWhenReducedMore(int usePessQueryHeurWhenReducedMore) {
+        this.usePessQueryHeurWhenReducedMore = usePessQueryHeurWhenReducedMore;
     }
 
     // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
@@ -2311,5 +2320,15 @@ public class Settings implements Cloneable {
 
     public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
         this.enableInteractiveAssertLog = enableInteractiveAssertLog;
+    }
+    
+    private boolean disablePessQueries = false;
+
+    public boolean isDisablePessQueries() {
+        return disablePessQueries;
+    }
+
+    public void setDisablePessQueries(boolean disablePessQueries) {
+        this.disablePessQueries = disablePessQueries;
     }
 }

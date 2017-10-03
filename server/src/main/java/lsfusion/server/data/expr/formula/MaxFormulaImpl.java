@@ -11,6 +11,10 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
         return true;
     }
 
+    public boolean supportNeedValue() {
+        return true;
+    }
+
     public final boolean isMin;
     public final boolean notObjectType;
 
