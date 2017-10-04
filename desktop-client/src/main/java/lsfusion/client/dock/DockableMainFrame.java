@@ -70,7 +70,7 @@ public class DockableMainFrame extends MainFrame {
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
             public void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException {
                 try {
-                    dockableManager.openForm(this, element.getCanonicalName(), element.getSID(), modifiers);
+                    dockableManager.openForm(this, element.formCanonicalName, element.formSID, modifiers);
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }

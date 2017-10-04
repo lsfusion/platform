@@ -24,7 +24,9 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.remote.StaticFormReportManager;
@@ -76,7 +78,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
 
 
     @Override
-    protected void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+    protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
 
         FormReportManager newFormManager;
 
@@ -86,7 +88,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
             if (!newFormInstance.areObjectsFound()) {
                 context.requestUserInteraction(
                         new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")),
-                                ThreadLocalContext.localize(form.caption)));
+                                ThreadLocalContext.localize(form.getCaption())));
                 return;
             }
 
@@ -117,7 +119,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
             List<ReportPath> reportPathList = SystemProperties.isDebug ? newFormManager.getReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
             List<ReportPath> autoReportPathList = SystemProperties.isDebug ? newFormManager.getAutoReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
 
-            exportClient(context, form.caption, reportData, reportPathList, autoReportPathList);
+            exportClient(context, form.getCaption(), reportData, reportPathList, autoReportPathList);
         }
     }
 }

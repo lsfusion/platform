@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
-public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
+public class PropertyFormEntity extends FormEntity {
 
     public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule<? extends BusinessLogics<?>> LM, CalcProperty<P> property, CalcProperty<X> messageProperty, AbstractGroup recognizeGroup) {
         super(null, property.caption, LM.getVersion());

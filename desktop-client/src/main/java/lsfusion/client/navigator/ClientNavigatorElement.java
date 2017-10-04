@@ -2,6 +2,7 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.IOUtils;
 import lsfusion.base.serialization.SerializationUtil;
+import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.Main;
 import lsfusion.interop.SerializableImageIconHolder;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ClientNavigatorElement {
+public abstract class ClientNavigatorElement {
 
     private int ID;
     private String sID;
@@ -101,7 +102,7 @@ public class ClientNavigatorElement {
 
         switch (type) {
             case 0: element = new ClientNavigatorForm(inStream); break;
-            case 1: element = new ClientNavigatorElement(inStream); break;
+            case 1: element = new ClientNavigatorFolder(inStream); break;
             case 2: element = new ClientNavigatorAction(inStream); break;
             default:
                 throw new IOException("Incorrect navigator element type");

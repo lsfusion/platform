@@ -5,4 +5,6 @@ import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public class GNavigatorForm extends GNavigatorElement {
     public GModalityType modalityType;
+    public String formCanonicalName;
+    public String formSID;
 }

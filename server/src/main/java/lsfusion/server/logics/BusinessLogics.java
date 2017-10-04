@@ -2205,6 +2205,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return findElement(canonicalName, null, new ModuleNavigatorElementFinder());
     }
 
+    public FormEntity findForm(String canonicalName) {
+        return findElement(canonicalName, null, new ModuleFormFinder());
+    }
+
     public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
         return findElement(canonicalName, paramCnt, new ModuleMetaCodeFinder());
     }
@@ -2232,9 +2236,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.getModuleNavigators())
-                if(entry instanceof FormEntity)
-                    mResult.exclAdd((FormEntity) entry);
+            for(FormEntity entry : logicsModule.getModuleForms())
+                mResult.exclAdd(entry);
         }
         return mResult.immutable();
     }
@@ -2249,10 +2252,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // в том числе и приватные
-    public ImSet<NavigatorElement> getAllNavigatorElements() {
-        MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
+    public ImSet<FormEntity> getAllForms() {
+        MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.getAllModuleNavigators())
+            for(FormEntity entry : logicsModule.getAllModuleForms())
                 mResult.exclAdd(entry);
         }
         return mResult.immutable();
@@ -2260,9 +2263,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
-            for (NavigatorElement element : logicsModule.getModuleNavigators()) {
-                if ((element instanceof FormEntity) && formSID.equals(element.getSID())) {
-                    return (FormEntity) element;
+            for (FormEntity element : logicsModule.getModuleForms()) {
+                if (formSID.equals(element.getSID())) {
+                    return element;
                 }
             }
         }
@@ -2307,6 +2310,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getModuleContainingObject(namespaceName, name, null, new ModuleNavigatorElementFinder());
     }
 
+    public LogicsModule getModuleContainingForm(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleFormFinder());
+    }
+    
     public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
         return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFinder());
     }

@@ -325,7 +325,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 if(entity.forceViewType == null)
                     entity.forceViewType = ClassViewType.GRID;
             }

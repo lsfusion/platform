@@ -45,7 +45,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected final IDGenerator idGenerator = new DefaultIDGenerator();
 
-    public FormEntity<?> entity;
+    public FormEntity entity;
 
     public KeyStroke keyStroke = null;
 
@@ -150,7 +150,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public FormView() {
     }
 
-    public FormView(FormEntity<?> entity, Version version) {
+    public FormView(FormEntity entity, Version version) {
         super(0);
 
         idGenerator.idRegister(0);

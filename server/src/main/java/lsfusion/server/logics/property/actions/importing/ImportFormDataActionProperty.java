@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
@@ -37,7 +36,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public abstract class ImportFormDataActionProperty extends SystemExplicitActionProperty {
-    private FormEntity<?> formEntity;
+    private FormEntity formEntity;
 
     public ImportFormDataActionProperty(ValueClass[] valueClasses, FormEntity formEntity) {
         super(valueClasses);

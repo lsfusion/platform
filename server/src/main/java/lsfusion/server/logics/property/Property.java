@@ -578,7 +578,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
-        void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form);
+        void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form);
         void proceedDefaultDesign(PropertyDrawView propertyView);
     }
 
@@ -626,7 +626,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
-        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity<?> form) {
+        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
             if (entity.shouldBeLast == null)
                 entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             if (entity.forceViewType == null)

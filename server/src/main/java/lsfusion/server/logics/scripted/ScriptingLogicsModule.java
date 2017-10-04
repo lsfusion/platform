@@ -90,6 +90,7 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.logics.ElementCanonicalNameUtils.createCanonicalName;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 
@@ -107,7 +108,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<String> warningList = new ArrayList<>();
     private Map<Property, String> alwaysNullProperties = new HashMap<>();
 
-    private String lastOpimizedJPropSID = null;
+    private String lastOptimizedJPropSID = null;
 
     public static List<String> getUsedNames(List<TypedParameter> context, List<Integer> usedParams) {
         List<String> usedNames = new ArrayList<>();
@@ -473,9 +474,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public FormEntity findForm(String name) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            NavigatorElement navigator = resolveNavigatorElement(name);
-            checkForm(navigator, name);
-            return (FormEntity) navigator;
+            FormEntity form = resolveForm(name);
+            checkForm(form, name);
+            return form;
         } catch (ResolvingError e) {
             convertResolveError(e);
         }
@@ -536,10 +537,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
                                                   ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
-        checkDuplicateNavigatorElement(formName);
+        checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
-        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), formName);
+        String canonicalName = createCanonicalName(getNamespace(), formName);
 
         ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, point.toString(), caption, icon, getVersion()));
         form.setModalityType(modalityType);
@@ -569,7 +570,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public void addScriptedForm(ScriptingFormEntity form, DebugInfo.DebugPoint point) {
         FormEntity formEntity = addFormEntity(form.getForm());
-        formEntity.creationPath = point.toString();
+        formEntity.setCreationPath(point.toString());
     }
 
     public void finalizeScriptedForm(ScriptingFormEntity form) {
@@ -769,7 +770,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPUsage checkPropertyIsNew(LPUsage property) {
-        if(property.lp.property.getSID().equals(lastOpimizedJPropSID))
+        if(property.lp.property.getSID().equals(lastOptimizedJPropSID))
             property = new LPUsage(addJProp(false, LocalizedString.create(""), (LCP) property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.signature);
         return property;
     }
@@ -791,7 +792,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNamedParams(property, paramNames);
         
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
-        if (property.property.getSID().equals(lastOpimizedJPropSID)) {
+        if (property.property.getSID().equals(lastOptimizedJPropSID)) {
             property = addJProp(false, LocalizedString.create(""), (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
         
@@ -1061,7 +1062,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP prop;
         if (isTrivialParamList(resultParams)) {
             prop = mainProp;
-            lastOpimizedJPropSID = mainProp.property.getSID();
+            lastOptimizedJPropSID = mainProp.property.getSID();
         } else {
             prop = addJProp(user, LocalizedString.create(""), (LCP) mainProp, resultParams.toArray());
         }
@@ -1540,7 +1541,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return requestDataClass;
     }
 
-    public LPWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedInputAProp(DataClass requestDataClass, LPWithParams oldValue, PropertyUsage targetProp, LPWithParams doAction, LPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, LPWithParams changeProp, DebugInfo.DebugPoint assignDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         LCP tprop = getInputProp(targetProp, requestDataClass, null);
 
         LAP property = addInputAProp(requestDataClass, (LCP<?>) tprop != null ? ((LCP<?>) tprop).property : null);
@@ -1548,9 +1549,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(oldValue == null)
             oldValue = new LPWithParams(baseLM.vnull, new ArrayList<Integer>());
         LPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
+        
+        if(changeProp == null)
+            changeProp = oldValue;
 
         return proceedDoClause(doAction, elseAction, oldContext, newContext, ListFact.singleton(tprop), inputAction,
-                ListFact.singleton(assign ? new Pair<>(oldValue, assignDebugPoint) : null));
+                ListFact.singleton(assign ? new Pair<>(changeProp, assignDebugPoint) : null));
     }
 
 
@@ -3176,33 +3180,86 @@ public class ScriptingLogicsModule extends LogicsModule {
         public InsertPosition position;
         public String windowName;
     }
-    
-    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point, NavigatorElement<?> parentElement,
-                                                           NavigatorElementOptions options, PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
-        checkDuplicateNavigatorElement(name);
 
-        NavigatorElement newElement;
-
-        if (caption == null) {
-            caption = LocalizedString.create(name);
+    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
+                                                           PropertyUsage actionUsage, String formName) throws ScriptingErrorLog.SemanticErrorException {
+        LAP<?> action = null;
+        FormEntity form = null;
+        if (actionUsage != null) {
+            action = findNavigatorAction(actionUsage);
+        } else if (formName != null) {
+            form = findForm(formName);
         }
         
-        if (actionUsage != null) {
-            if (actionUsage.classNames == null) {
-                actionUsage.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке
+        if (name == null) {
+            name = createDefaultNavigatorElementName(action, form);
+        }
+        assert name != null; // todo [dale]: нужно добавить семантическую ошибку, когда не задается имя фолдера
+
+        checkDuplicateNavigatorElement(name);
+        
+        if (caption == null) {
+            caption = createDefaultNavigatorElementCaption(action, form);
+            if (caption == null) {
+                caption = LocalizedString.create(name);
             }
-            LAP<?> findResult = findLAPByPropertyUsage(actionUsage);
-            checkNavigatorAction(findResult);
-            newElement = addNavigatorAction(name, caption, findResult, point.toString());
-        } else {
-            newElement = addNavigatorElement(name, caption, point.toString());
         }
 
-        setupNavigatorElement(newElement, caption, parentElement, options, true);
-        return newElement;
+        String canonicalName = createCanonicalName(getNamespace(), name);
+        return createNavigatorElement(canonicalName, caption, point, action, form);
+    }
+    
+    private String createDefaultNavigatorElementName(LAP<?> action, FormEntity form) {
+        if (action != null) {
+            return action.property.getName();
+        } else if (form != null) {
+            String cn = form.getCanonicalName();
+            return cn.substring(cn.indexOf(".") + 1); // todo [dale]: надо бы где-то сделать общую логику 
+        }
+        return null;
     }
 
-    public void setupNavigatorElement(NavigatorElement<?> element, LocalizedString caption, NavigatorElement<?> parentElement, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+    private LocalizedString createDefaultNavigatorElementCaption(LAP<?> action, FormEntity form) {
+        if (action != null) {
+            return action.property.caption;
+        } else if (form != null) {
+            return form.getCaption();
+        }
+        return null;
+    }
+
+    private NavigatorElement createNavigatorElement(String canonicalName, LocalizedString caption, DebugInfo.DebugPoint point, LAP<?> action, FormEntity form) throws ScriptingErrorLog.SemanticErrorException {
+        NavigatorElement newElement;
+        if (form != null) {
+            newElement = addNavigatorForm(form, canonicalName, caption);
+        } else if (action != null) {
+            newElement = addNavigatorAction(action, canonicalName, caption);
+        } else {
+            newElement = addNavigatorFolder(canonicalName, caption);
+        }
+        newElement.setCreationPath(point.toString());
+        return newElement;   
+    }
+    
+    private LAP<?> findNavigatorAction(PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
+        assert actionUsage != null;
+        if (actionUsage.classNames == null) {
+            actionUsage.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке
+        }
+        LP action = findLPByPropertyUsage(actionUsage);
+        checkNavigatorAction(action);
+        return (LAP<?>) action;
+    }
+    
+    public NavigatorElement findOrCreateNavigatorElement(String name, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
+        try {
+            return findNavigatorElement(name);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            return createScriptedNavigatorElement(null, null, point, null, name);
+        }
+    }
+    
+    public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
         if (caption != null) {
             element.caption = caption;
         }
@@ -3210,21 +3267,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         applyNavigatorElementOptions(element, parentElement, options, adding);
     }
     
-    public void applyNavigatorElementOptions(NavigatorElement<?> element, NavigatorElement<?> parent, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
-        if (options.windowName != null) {
-            setNavigatorElementWindow(element, options.windowName);    
-        }
-        
-        if (options.imagePath != null) {
-            element.setImage(options.imagePath);
-        } else if (element.defaultIcon != null) {
-            NavigatorElement root = baseLM.findNavigatorElement("root");
-            if (root != null && parent != null && root.equals(parent)) {
-                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
-                        element.defaultIcon == DefaultIcon.OPEN ? "/images/openTop.png" : "/images/formTop.png");
-            }
-            element.defaultIcon = null;
-        }
+    public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+        setNavigatorElementWindow(element, options.windowName);
+        setNavigatorElementImage(element, parent, options.imagePath);
         
         if (parent != null && (adding || options.position != InsertPosition.IN)) {
             moveElement(element, parent, options.position, options.anchor, adding);
@@ -3264,17 +3309,31 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        assert element != null && windowName != null;
+        assert element != null;
+        
+        if (windowName != null) {
+            AbstractWindow window = findWindow(windowName);
 
-        AbstractWindow window = findWindow(windowName);
-
-        if (window instanceof NavigatorWindow) {
-            element.window = (NavigatorWindow) window;
-        } else {
-            errLog.emitAddToSystemWindowError(parser, windowName);
+            if (window instanceof NavigatorWindow) {
+                element.window = (NavigatorWindow) window;
+            } else {
+                errLog.emitAddToSystemWindowError(parser, windowName);
+            }
         }
     }
 
+    public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) throws ScriptingErrorLog.SemanticErrorException {
+        if (imagePath != null) {
+            element.setImage(imagePath);
+        } else if (element.defaultIcon != null) {
+            if (baseLM.root != null && parent != null && baseLM.root.equals(parent)) {
+                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "/images/actionTop.png" :
+                        element.defaultIcon == DefaultIcon.OPEN ? "/images/openTop.png" : "/images/formTop.png");
+            }
+            element.defaultIcon = null;
+        }
+    }
+    
     public void propertyDefinitionCreated(LP property, DebugInfo.DebugPoint point) {
         if (property != null && property.property instanceof CalcProperty) {
             CalcProperty calcProp = (CalcProperty)property.property; 
@@ -3460,8 +3519,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkForm(NavigatorElement navElement, String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(navElement instanceof FormEntity)) {
+    private void checkForm(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (form == null) {
             errLog.emitFormNotFoundError(parser, name);
         }
     }
@@ -3521,7 +3580,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkDuplicateNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
         LogicsModule module = BL.getModuleContainingNavigatorElement(getNamespace(), name);
         if (module != null) {
-            errLog.emitAlreadyDefinedInModuleError(parser, "form or navigator", name, module.getName());
+            errLog.emitAlreadyDefinedInModuleError(parser, "navigator", name, module.getName());
+        }
+    }
+
+    private void checkDuplicateForm(String name) throws ScriptingErrorLog.SemanticErrorException {
+        LogicsModule module = BL.getModuleContainingForm(getNamespace(), name);
+        if (module != null) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "form", name, module.getName());
         }
     }
 

@@ -195,25 +195,25 @@ defaultForms 'Отображение форм при запуске' (User user)
 defaultNumber 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = defaultNumber(mainRole(user), navigatorElement);
 
-permit 'Разрешить форму' = DATA BOOLEAN (NavigatorElement);
-forbid 'Запретить форму' = DATA BOOLEAN (NavigatorElement);
-permitExport 'Разрешить экспорт формы' = DATA BOOLEAN (NavigatorElement);
+permit 'Разрешить' = DATA BOOLEAN (NavigatorElement);
+forbid 'Запретить' = DATA BOOLEAN (NavigatorElement);
+permitExport 'Разрешить экспорт' = DATA BOOLEAN (NavigatorElement);
 
-permitAllForms 'Разрешить отображение всех форм' = DATA BOOLEAN (UserRole);
-permitAllForms 'Разрешить отображение всех форм' (User user) = permitAllForms(mainRole(user));
-forbidAllForms 'Запретить отображение всех форм' = DATA BOOLEAN (UserRole);
-forbidAllForms 'Запретить отображение всех форм' (User user) = forbidAllForms(mainRole(user));
+permitAllForms 'Разрешить отображение всех элементов навигатора' = DATA BOOLEAN (UserRole);
+permitAllForms 'Разрешить отображение всех элементов навигатора' (User user) = permitAllForms(mainRole(user));
+forbidAllForms 'Запретить отображение всех элементов навигатора' = DATA BOOLEAN (UserRole);
+forbidAllForms 'Запретить отображение всех элементов навигатора' (User user) = forbidAllForms(mainRole(user));
 
-permit 'Разрешить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
-permit 'Разрешить форму' = permit(mainRole(User user), NavigatorElement navigatorElement);
-forbid 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
-forbid 'Запретить форму' = forbid(mainRole(User user), NavigatorElement navigatorElement);
+permit 'Разрешить' = DATA BOOLEAN (UserRole, NavigatorElement);
+permit 'Разрешить' = permit(mainRole(User user), NavigatorElement navigatorElement);
+forbid 'Запретить' = DATA BOOLEAN (UserRole, NavigatorElement);
+forbid 'Запретить' = forbid(mainRole(User user), NavigatorElement navigatorElement);
 
 overDefaultNumber 'Номер по умолчанию' (user, navigatorElement) = 
     GROUP MIN defaultNumber(UserRole userRole, NavigatorElement navigatorElement) IF has(User user, userRole) AND permit(userRole, navigatorElement) BY user, navigatorElement;
-overPermit 'Разрешить форму' (user, navigatorElement) = 
+overPermit 'Разрешить элемент навигатора' (user, navigatorElement) = 
     GROUP MAX permit(UserRole userRole, NavigatorElement navigatorElement) IF has(User user, userRole) BY user, navigatorElement;
-overForbid 'Запретить форму' (User user, navigatorElement) = 
+overForbid 'Запретить элемент навигатора' (User user, navigatorElement) = 
     TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(User user, userRole) BY user, navigatorElement] (user, navigatorElement);
 
 level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
@@ -344,11 +344,11 @@ FORM securityPolicy 'Политика безопасности'
     OBJECTS dpr=Property
     PROPERTIES(dpr) caption, canonicalName, permitView, forbidView, permitChange, forbidChange
 
-    TREE treeFormObject tf = NavigatorElement PARENT parent
-    PROPERTIES(tf) READONLY caption, canonicalName
-    PROPERTIES(tf) number
-    PROPERTIES(ur, tf) permit BACKGROUND backgroundPermit(ur, tf), forbid BACKGROUND backgroundForbid(ur, tf), defaultNumber
-    ORDER BY number(tf)
+    TREE navigatorElements te = NavigatorElement PARENT parent
+    PROPERTIES(te) READONLY caption, canonicalName
+    PROPERTIES(te) number
+    PROPERTIES(ur, te) permit BACKGROUND backgroundPermit(ur, te), forbid BACKGROUND backgroundForbid(ur, te), defaultNumber
+    ORDER BY number(te)
 
     TREE treePropertyObject tprs = PropertyGroup PARENT parent, prs = Property
     PROPERTIES(tprs) caption, SID, number
@@ -358,7 +358,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(ur, tprs) permitView, forbidView, permitChange, forbidChange
     ORDER BY number(prs)
 
-    TREE treeDefaultForm tdf = NavigatorElement PARENT parent
+    TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent
     PROPERTIES(tdf) READONLY caption, canonicalName
     PROPERTIES(tdf) number, permit, forbid, permitExport
     ORDER BY number(tdf)
@@ -395,10 +395,10 @@ DESIGN securityPolicy {
             type = TABBED;
             caption = 'Политика по умолчанию';
 
-            NEW defaultForms {
+            NEW defaultElements {
                 type = TABBED;
-                caption = 'Формы';
-                MOVE BOX(TREE treeDefaultForm);
+                caption = 'Элементы навигатора';
+                MOVE BOX(TREE navigatorElementsDefault);
                 MOVE BOX(df) {
                     caption = 'Таблица';
                 }
@@ -423,10 +423,10 @@ DESIGN securityPolicy {
                 fill = 2;
                 type = TABBED;
 
-                NEW formsContainer {
+                NEW elementsContainer {
                     type = TABBED;
-                    caption = 'Формы';
-                    MOVE BOX(TREE treeFormObject);
+                    caption = 'Элементы навигатора';
+                    MOVE BOX(TREE navigatorElements);
                     MOVE BOX(f) {
                         caption = 'Таблица';
                     }

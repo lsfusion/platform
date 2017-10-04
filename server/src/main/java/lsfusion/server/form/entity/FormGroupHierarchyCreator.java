@@ -9,9 +9,9 @@ import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import java.util.*;
 
 public class FormGroupHierarchyCreator {
-    private FormEntity<?> form;
+    private FormEntity form;
 
-    public FormGroupHierarchyCreator(FormEntity<?> form) {
+    public FormGroupHierarchyCreator(FormEntity form) {
         this.form = form;
     }
     

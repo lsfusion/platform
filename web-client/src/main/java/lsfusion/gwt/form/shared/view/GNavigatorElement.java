@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GNavigatorElement implements Serializable {
+public abstract class GNavigatorElement implements Serializable {
     public String sid;
     public String canonicalName;
     public String caption;

@@ -26,7 +26,10 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.instance.*;
+import lsfusion.server.form.instance.GroupObjectInstance;
+import lsfusion.server.form.instance.InstanceFactory;
+import lsfusion.server.form.instance.Instantiable;
+import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -41,7 +44,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.interop.ClassViewType.*;
+import static lsfusion.interop.ClassViewType.DEFAULT;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 

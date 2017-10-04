@@ -1658,7 +1658,7 @@ sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 		| 	'DROPPED' { type = IncrementType.DROP; }
 		| 	'SETCHANGED' { type = IncrementType.SETCHANGED; }
 		|	'DROPCHANGED' { type = IncrementType.DROPCHANGED; }
-		| 	'DROPSET' { type = IncrementType.DROPSET; }
+		| 	'SETDROPPED' { type = IncrementType.DROPSET; }
 		)
 		'('
 		expr=propertyExpression[context, dynamic] 
@@ -2913,15 +2913,20 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	boolean assign = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
+
+    LPWithParams changeProp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, assignDebugPoint);
+		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-        ( { assignDebugPoint = getCurrentDebugPoint(); } 'CHANGE' { assign = true; } )?
+        ( { assignDebugPoint = getCurrentDebugPoint(); } 
+            'CHANGE' { assign = true; }
+            ('=' consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
+        )?
 		('TO' pUsage=propertyUsage)?
         dDB=doInputBody[context, newContext]
 	;
@@ -3296,11 +3301,22 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
 @init {
     $debug = getEventDebugPoint();
 }
-    :	expr = propertyExpression[context, false] 
+    :	
+        et=baseEvent { $event = $et.event; }
+        {
+            if (inPropParseState()) {
+                self.setPrevScope($et.event);
+            }
+        }
+        expr = propertyExpression[context, false]
+        {
+            if (inPropParseState()) {
+                self.dropPrevScope($et.event);
+            }
+        }
 		('RESOLVE' 
 			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
 			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
-			et=baseEvent { $event = $et.event; } 
 		)? { $prop = $expr.property; }
 ;
 
@@ -3636,7 +3652,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	'ADD' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
+	:	('ADD' | 'MOVE') elem=navigatorElementSelectorCreator (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3649,13 +3665,24 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID (caption=localizedStringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
+	:	'NEW' (name=ID (caption=localizedStringLiteral)?)? b=navigatorElementDescription[$name.text, $caption.val] opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, getCurrentDebugPoint(), $parentElement, $opts.options, $au.propUsage);
+				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, true);
 			}
 		}
-		navigatorElementStatementBody[newElement]
+		navigatorElementStatementBody[$b.element]
+	;
+
+navigatorElementDescription[String name, LocalizedString caption] returns [NavigatorElement element]
+@after {
+	if (inPropParseState()) {
+ 		$element = self.createScriptedNavigatorElement($name, $caption, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
+ 	}	
+}
+	:	'FOLDER'? 
+	|	'FORM' formName=compoundID 
+	|	'ACTION' pu=propertyUsage 
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 
@@ -3696,6 +3723,16 @@ navigatorElementSelector returns [NavigatorElement element]
 			}
 		}
 	;
+
+navigatorElementSelectorCreator returns [NavigatorElement element]
+	:	cid=compoundID
+		{
+			if (inPropParseState()) {
+				$element = self.findOrCreateNavigatorElement($cid.sid, getCurrentDebugPoint());
+			}
+		}
+	;
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3793,6 +3830,7 @@ componentSelector returns [ComponentView component]
     :
         exc=formComponentSelector[$designStatement::design] { $component = $exc.component; }
     ;
+    
 formComponentSelector[ScriptingFormView formView] returns [ComponentView component]
 	:	'PARENT' '(' child=componentSelector ')'
 		{

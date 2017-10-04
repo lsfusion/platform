@@ -31,7 +31,7 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
         super(lm);
 
         drawOptions.addProcessor(new DefaultProcessor() {
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                 entity.propertyBackground = form.addPropertyObject(applyBackground);
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {

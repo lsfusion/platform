@@ -28,6 +28,8 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.*;
@@ -46,7 +48,10 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -277,8 +282,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
-        return securityManager.checkFormExportPermission(canonicalName);
+        return securityManager.checkNavigatorElementExportPermission(canonicalName);
     }
+
+    @Override
+    public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
+        NavigatorElement element = businessLogics.findNavigatorElement(navigatorElementCanonicalName);
+        if (element != null && element instanceof NavigatorForm) {
+            return ((NavigatorForm) element).getForm().getCanonicalName();
+        } else {
+            return null;
+        }
+    } 
 
     public boolean isSingleInstance() throws RemoteException {
         return Settings.get().isSingleInstance();

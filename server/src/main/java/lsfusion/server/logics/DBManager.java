@@ -15,10 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.ByteArrayClass;
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -30,6 +27,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -41,7 +39,6 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -450,10 +447,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public Long getForm(String canonicalName, ExecutionStack stack) {
         try {
             try (DataSession session = createSession(getSystemSql())) {
-                Long result = (Long) businessLogics.reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
+                Long result = (Long) businessLogics.reflectionLM.formByCanonicalName.read(session, new DataObject(canonicalName));
                 if (result == null) {
                     DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
-                    businessLogics.reflectionLM.canonicalNameNavigatorElement.change(canonicalName, session, addObject);
+                    businessLogics.reflectionLM.formCanonicalName.change(canonicalName, session, addObject);
                     result = (Long) addObject.object;
                     session.apply(businessLogics, stack);
                 }
@@ -664,7 +661,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
-
+        
+        checkFormsTable(oldDBStructure);
         checkModules(oldDBStructure);
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
@@ -915,6 +913,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), oldDBStructure.version <= 25))
                 throw new RuntimeException("Error while filling static objects ids");
 
+            if (oldDBStructure.version < NavElementDBVersion) {
+                modifyNavigatorElementsClasses(sql);
+            }
+            
             if (oldDBStructure.version < 0) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
@@ -953,6 +955,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             recalculateProperties.addAll(recalculateStatProperties);
             updateAggregationStats(recalculateProperties, tableStats);
+            updateAggregationStats(recalculateStatProperties, tableStats);
+            
+            if(oldDBStructure.version < NavElementDBVersion)
+                DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
+            
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -987,6 +994,109 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private void modifyNavigatorElementsClasses(SQLSession session) {
+        try {
+            Map<String, Long> oldIds = getOldIds(session);
+            for (NavigatorElement ne : businessLogics.getNavigatorElements()) {
+                if (!(ne instanceof NavigatorAction)) {
+                    CustomClass cls = getNavigatorFolderOrFormClass(ne);
+                    String canonicalName = ne.getCanonicalName();
+                    if (cls != null) {
+                        Long oldId = oldIds.get(canonicalName);
+                        modifyNavigatorElementClass(session, canonicalName, cls, oldId);
+                    }
+                }
+            }
+        } catch (SQLException | SQLHandledException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private CustomClass getNavigatorFolderOrFormClass(NavigatorElement element) {
+        if (element instanceof NavigatorFolder) {
+            return businessLogics.findClass("Reflection.NavigatorFolder");
+        } else if (element instanceof NavigatorForm) {
+            return businessLogics.findClass("Reflection.NavigatorForm");
+        }
+        return null;
+    }
+
+    private void modifyNavigatorElementClass(SQLSession session, String canonicalName, CustomClass cls, Long oldId) throws SQLException, SQLHandledException {
+        Long newId = modifyNETable(session, canonicalName, cls);        
+        if (!isFolder(cls)) {
+            if (newId != null && oldId != null) {
+                modifyRoleTable(session, newId, oldId);
+            } else {
+                System.out.println("Error updating role table, canonicalName: " + canonicalName);
+            }
+            
+        }
+    }
+
+    
+    private boolean isFolder(CustomClass cls) {
+        return cls.getCanonicalName().equals("Reflection.NavigatorFolder");
+    }
+    
+    private Long modifyNETable(SQLSession session, String canonicalName, CustomClass cls) throws SQLException, SQLHandledException {
+        SQLSyntax syntax = session.syntax;
+        String tableName = syntax.getTableName("reflection_navigatorelement");
+        String classFieldName = syntax.getFieldName("system__class_reflection_navigatorelement");
+        String cnFieldName = syntax.getFieldName("reflection_canonicalname_navigatorelement");
+        String query;
+
+        Long newId = null;
+        if (isFolder(cls)) {
+            query = "UPDATE " + tableName + " SET " + classFieldName + "=" + cls.ID + " WHERE " + cnFieldName + "='" + canonicalName + "'";
+        } else {
+            newId = generateID();
+            query = "UPDATE " + tableName + " SET " + classFieldName + "=" + cls.ID + ", " + "key0=" + newId + " WHERE " + cnFieldName + "='" + canonicalName + "'";
+        }
+        session.executeDML(query);
+        return newId;
+    }
+    
+    private Map<String, Long> getOldIds(SQLSession session) throws SQLException, SQLHandledException {
+        SQLSyntax syntax = session.syntax;
+        String tableName = syntax.getTableName("reflection_navigatorelement");
+        String cnFieldName = syntax.getFieldName("reflection_canonicalname_navigatorelement");
+
+        KeyField key = new KeyField("key0", LongClass.instance);
+        PropertyField field = new PropertyField(cnFieldName, StringClass.getv(100));
+
+        ImRevMap<KeyField, String> keyMap = MapFact.singletonRev(key, "key0");
+        ImRevMap<PropertyField, String> propertyMap = MapFact.singletonRev(field, cnFieldName);
+
+        ReadAllResultHandler<KeyField, PropertyField> mapResultHandler = new ReadAllResultHandler<>(); 
+        
+        String query = "SELECT key0, " + cnFieldName + " FROM " + tableName;
+        session.executeSelect(query, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, keyMap, keyMap.reverse().mapValues(Field.<KeyField>fnTypeGetter()), 
+                propertyMap, propertyMap.reverse().mapValues(Field.<PropertyField>fnTypeGetter()), mapResultHandler);
+        
+        ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> qresult = mapResultHandler.get();
+        Map<String, Long> result = new HashMap<>();
+        for (int i = 0; i < qresult.size(); ++i) {
+            result.put((String)qresult.getValue(i).singleValue(), (Long) qresult.getKey(i).singleValue());
+        }
+        return result;
+    }
+    
+    private void modifyRoleTable(SQLSession session, long id, long oldId) throws SQLException, SQLHandledException {
+        SQLSyntax syntax = session.syntax;
+        String roleTableName = syntax.getTableName("security_userrolenavigatorelement");
+        String query = "UPDATE " + roleTableName + " SET key1=" + id + " WHERE key1 = " + oldId;
+        session.executeDML(query);
+    } 
+    
+    private void checkFormsTable(OldDBStructure dbStruct) {
+        if (!dbStruct.isEmpty()) {
+            Table table = dbStruct.getTable("Reflection_form");
+            if (table == null) {
+                throw new RuntimeException("Run 1.3.1 version first");
+            }
+        }
+    }
+    
     private void setDefaultUserLocalePreferences() throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
@@ -2032,11 +2142,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return res;
     }
+
+    public static final int NavElementDBVersion = 27;
     
     private class NewDBStructure extends DBStructure<Field> {
-
+        
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 26;
+            version = NavElementDBVersion;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());
@@ -2136,6 +2248,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 for(int i = 0; i < prevConcreteNum; i++)
                     concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), version <= 24 ? inputDB.readInt() : inputDB.readLong()));
             }
+        }
+        
+        boolean isEmpty() {
+            return version < 0;
         }
     }
 

@@ -723,6 +723,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return dataObject;
     }
 
+    public DataObject addObject(ConcreteCustomClass customClass) throws SQLException, SQLHandledException {
+        return addObject(customClass, null);
+    }
+
     // с fill'ами addObject'ы
     public DataObject addObject(ConcreteCustomClass customClass, DataObject object) throws SQLException, SQLHandledException {
         if(object==null)
@@ -787,10 +791,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             
         // возвращаем таблицу
         return table;
-    }
-
-    public DataObject addObject(ConcreteCustomClass customClass) throws SQLException, SQLHandledException {
-        return addObject(customClass, null);
     }
 
     public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException {
@@ -1961,11 +1961,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
                 if (sessionEventFormEnv instanceof FormInstance) { // в будущем имеет смысл из стека тянуть, так как оттуда логи берутся
                     FormEntity formEntity = ((FormInstance) sessionEventFormEnv).entity;
-                    ObjectValue ne = !formEntity.isNamed()
+                    ObjectValue form = !formEntity.isNamed()
                             ? NullValue.instance
-                            : BL.reflectionLM.navigatorElementCanonicalName.readClasses(sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
-                    if (ne instanceof DataObject)
-                        BL.systemEventsLM.navigatorElementSession.change(ne, (ExecutionEnvironment) DataSession.this, applyObject);
+                            : BL.reflectionLM.formByCanonicalName.readClasses(sessionEventFormEnv, new DataObject(formEntity.getCanonicalName(), StringClass.get(50)));
+                    if (form instanceof DataObject)
+                        BL.systemEventsLM.formSession.change(form, (ExecutionEnvironment) DataSession.this, applyObject);
                 }
                 BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
                 BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);

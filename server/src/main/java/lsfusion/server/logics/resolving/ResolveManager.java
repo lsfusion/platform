@@ -3,6 +3,7 @@ package lsfusion.server.logics.resolving;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.LogicsModule;
@@ -22,7 +23,7 @@ public class ResolveManager {
     private ElementResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver;
     private ElementResolver<AbstractGroup, ?> groupResolver;
     private ElementResolver<NavigatorElement, ?> navigatorResolver;
-    private ElementResolver<NavigatorElement, ?> formResolver;
+    private ElementResolver<FormEntity, ?> formResolver;
     private ElementResolver<AbstractWindow, ?> windowResolver;
     private ElementResolver<ImplementTable, ?> tableResolver;
     private ElementResolver<CustomClass, ?> classResolver;
@@ -41,7 +42,7 @@ public class ResolveManager {
         indirectLPResolver = new LPResolver(LM, new ModuleSoftLPFinder(), false, false);
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
         navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
-        formResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
+        formResolver = new ElementResolver<>(LM, new ModuleFormFinder());
         windowResolver = new ElementResolver<>(LM, new ModuleWindowFinder());
         tableResolver = new ElementResolver<>(LM, new ModuleTableFinder());
         classResolver = new ElementResolver<>(LM, new ModuleClassFinder());
@@ -80,7 +81,7 @@ public class ResolveManager {
         return navigatorResolver.resolve(name);
     }
     
-    public NavigatorElement findForm(String name) throws ResolvingErrors.ResolvingError {
+    public FormEntity findForm(String name) throws ResolvingErrors.ResolvingError {
         return formResolver.resolve(name);
     }
     

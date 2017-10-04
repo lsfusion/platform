@@ -458,8 +458,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
-        PropertyFormEntity<T> form = new PropertyFormEntity<>(this, property, messageProperty, recognizeGroup);
+    public <P extends PropertyInterface> PropertyFormEntity getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
+        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, recognizeGroup);
         addFormEntity(form);
         return form;
     }
@@ -481,17 +481,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public Windows windows;
 
     // Навигаторы
-    public NavigatorElement<T> root;
+    public NavigatorElement root;
 
-    public NavigatorElement<T> administration;
+    public NavigatorElement administration;
 
-    public NavigatorElement<T> objects;
-
-    public NavigatorElement<T> application;
-    public NavigatorElement<T> systemEvents;
-    public NavigatorElement<T> configuration;
-
-    public FormEntity<T> objectForm;
+    public NavigatorElement application;
+    public NavigatorElement systemEvents;
+    public NavigatorElement configuration;
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
@@ -521,13 +517,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         configuration = findNavigatorElement("configuration");
 
         systemEvents = findNavigatorElement("systemEvents");
-
-        objects = findNavigatorElement("objects");
-    }
-
-    public void initClassForms() {
-        objectForm = baseClass.getBaseClassForm(this);
-        objects.add(objectForm, getVersion());
     }
 
 

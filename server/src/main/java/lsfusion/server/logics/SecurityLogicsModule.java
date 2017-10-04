@@ -141,7 +141,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
-        propertyPolicyForm = (FormEntity) findNavigatorElement("propertyPolicy");
+        propertyPolicyForm = findForm("propertyPolicy");
 
         dataCopyAccess = findProperty("dataCopyAccess[TEXT]");
         copyAccess = findAction("copyAccess[]");

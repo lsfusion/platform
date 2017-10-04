@@ -7,7 +7,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 
-public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends FormEntity<T> {
+public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends FormEntity {
 
     public final ObjectEntity object;
 

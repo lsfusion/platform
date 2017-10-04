@@ -32,6 +32,8 @@ import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.navigator.NavigatorFolder;
+import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.debug.ActionDelegationType;
@@ -72,6 +74,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
+import static lsfusion.server.logics.ElementCanonicalNameUtils.createCanonicalName;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
@@ -129,14 +132,15 @@ public abstract class LogicsModule {
     protected final Map<String, AbstractGroup> moduleGroups = new HashMap<>();
     protected final Map<String, CustomClass> moduleClasses = new HashMap<>();
     protected final Map<String, AbstractWindow> windows = new HashMap<>();
-    protected final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<>();
+    protected final Map<String, NavigatorElement> moduleNavigators = new HashMap<>();
+    protected final Map<String, FormEntity> namedModuleForms = new HashMap<>();
     protected final Map<String, ImplementTable> moduleTables = new HashMap<>();
+    protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
-    private final Set<NavigatorElement<?>> privateNavigators = new HashSet<>();
+    private final Set<FormEntity> privateForms = new HashSet<>();
     
     public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
-    protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
     
@@ -1768,7 +1772,7 @@ public abstract class LogicsModule {
 
         if(objectEntity != null) { // ADDFORM как оператор
             property.addProcessor(new Property.DefaultProcessor() {
-                public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
+                public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                     entity.toDraw = objectEntity.groupTo;
                 }
                 public void proceedDefaultDesign(PropertyDrawView propertyView) {
@@ -2114,62 +2118,82 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    protected NavigatorElement addNavigatorElement(String name, LocalizedString caption, String creationPath) {
-        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
-        
-        NavigatorElement elem = new NavigatorElement(null, canonicalName, caption, creationPath, null, getVersion());
+    protected NavigatorElement addNavigatorFolder(String canonicalName, LocalizedString caption) {
+        NavigatorElement elem = new NavigatorFolder(canonicalName, caption);
         addModuleNavigator(elem);
         return elem;
     }
 
-    protected NavigatorAction addNavigatorAction(String name, LocalizedString caption, LAP<?> property, String creationPath) {
-        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
-
-        NavigatorAction navigatorAction = new NavigatorAction(null, canonicalName, caption, creationPath, null, getVersion());
-        navigatorAction.setProperty(property.property);
+    protected NavigatorAction addNavigatorAction(LAP<?> property, String canonicalName, LocalizedString caption) {
+        NavigatorAction navigatorAction = new NavigatorAction(property.property, canonicalName, caption);
         addModuleNavigator(navigatorAction);
         return navigatorAction;
     }
 
-    public Collection<NavigatorElement<?>> getModuleNavigators() {
+    protected NavigatorForm addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
+        NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
+        addModuleNavigator(navigatorForm);
+        return navigatorForm;
+    }
+    
+    public Collection<NavigatorElement> getModuleNavigators() {
         return moduleNavigators.values();
     }
 
+    public Collection<FormEntity> getModuleForms() {
+        return namedModuleForms.values();
+    } 
+    
     // в том числе и приватные 
-    public Collection<NavigatorElement<?>> getAllModuleNavigators() {
-        List<NavigatorElement<?>> elements = new ArrayList<>();
-        elements.addAll(privateNavigators);
-        elements.addAll(moduleNavigators.values());
+    public Collection<FormEntity> getAllModuleForms() {
+        List<FormEntity> elements = new ArrayList<>();
+        elements.addAll(privateForms);
+        elements.addAll(namedModuleForms.values());
         return elements;
     }
     
     public NavigatorElement getNavigatorElement(String name) {
-        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
+        String canonicalName = createCanonicalName(getNamespace(), name);
         return getNavigatorElementByCanonicalName(canonicalName);
     }
 
+    public FormEntity getForm(String name) {
+        String canonicalName = createCanonicalName(getNamespace(), name);
+        return namedModuleForms.get(canonicalName);
+    }
+    
     private NavigatorElement getNavigatorElementByCanonicalName(String canonicalName) {
         return moduleNavigators.get(canonicalName);
     }
 
+    private FormEntity getFormByCanonicalName(String canonicalName) {
+        return namedModuleForms.get(canonicalName);
+    }
+    
     public <T extends FormEntity> T addFormEntity(T form) {
         if (form.isNamed()) {
-            addModuleNavigator(form);
+            addModuleForm(form);
         } else {
-            addPrivateModuleNavigator(form);
+            addPrivateForm(form);
         }
         return form;
     }
     
     @NFLazy
-    private void addModuleNavigator(NavigatorElement<?> element) {
+    private void addModuleNavigator(NavigatorElement element) {
         assert !moduleNavigators.containsKey(element.getCanonicalName());
         moduleNavigators.put(element.getCanonicalName(), element);
     }
 
     @NFLazy
-    private void addPrivateModuleNavigator(NavigatorElement<?> element) {
-        privateNavigators.add(element);
+    private void addModuleForm(FormEntity form) {
+        assert !namedModuleForms.containsKey(form.getCanonicalName());
+        namedModuleForms.put(form.getCanonicalName(), form);
+    }
+    
+    @NFLazy
+    private void addPrivateForm(FormEntity form) {
+        privateForms.add(form);
     }
     
     public void addObjectActions(FormEntity form, ObjectEntity object) {
@@ -2347,6 +2371,10 @@ public abstract class LogicsModule {
     
     public AbstractWindow resolveWindow(String name) throws ResolvingErrors.ResolvingError {
         return resolveManager.findWindow(name);    
+    }
+    
+    public FormEntity resolveForm(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findForm(name);
     }
     
     public NavigatorElement resolveNavigatorElement(String name) throws ResolvingErrors.ResolvingError {

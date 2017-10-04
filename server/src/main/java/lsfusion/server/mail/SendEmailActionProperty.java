@@ -278,7 +278,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             attachmentName = (String) attachmentNameProp.read(context, context.getKeys());
         }
         if (attachmentName == null) {
-            attachmentName = localize(form.caption);
+            attachmentName = localize(form.getCaption());
         }
         attachmentName = rtrim(attachmentName.replace('"', '\''));
 

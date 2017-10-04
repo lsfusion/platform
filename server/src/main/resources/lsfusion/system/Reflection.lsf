@@ -15,36 +15,41 @@ number 'Номер' = DATA INTEGER (PropertyGroup);
 SID 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
 propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup BY SID(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
+
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
-CLASS Form 'Форма' {
-    noForm 'NoForm'
-} : NavigatorElement;
+CLASS NavigatorForm 'Форма' : NavigatorElement;
+CLASS NavigatorFolder 'Папка' : NavigatorElement;    
+
 
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
-TABLE form (Form);
 
-caption 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
-sid 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
-canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (NavigatorElement);
-canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (Form);
-
+caption 'Название элемента навигатора' = DATA VARSTRING[250] (NavigatorElement);
+canonicalName 'Каноническое имя элемента навигатора' = DATA VARSTRING[100] (NavigatorElement);
 number 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElement 'Форма' (sID) = GROUP AGGR NavigatorElement navigatorElement BY sid(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+navigatorElementCanonicalName 'Элемент навигатора' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+parent 'Родительский элемент' = DATA NavigatorElement (NavigatorElement);
 
-TABLE navigatorElementNames (VARSTRING[100]);
+isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
+isNavigatorAction (NavigatorElement element) = element IS NavigatorAction;
+isNavigatorForm (NavigatorElement element) = element IS NavigatorForm;
+
+CLASS Form 'Форма' {
+    noForm 'NoForm'
+};
+
+TABLE form (Form);
 TABLE formNames (VARSTRING[100]);
 
-navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement MATERIALIZED TABLE navigatorElementNames; // для profiler'а
-form 'Форма' (VARSTRING[100] name) = GROUP AGGR Form form BY canonicalName(form) WHERE form IS Form MATERIALIZED TABLE formNames; 
-
-parent 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
-is (NavigatorElement navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
+caption 'Название формы' = DATA VARSTRING[250] (Form);
+canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (Form);
+form 'Форма' (sid) = GROUP AGGR Form form BY canonicalName(form) WHERE form IS Form MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
-is (NavigatorAction navigatorAction) = navigatorAction IS NavigatorAction;
 
 currentForm = NATIVE Form ();
+
+formCanonicalName 'Имя формы' (NavigatorElement e) = DATA VARSTRING[100] (NavigatorElement);
 
 CLASS Property 'Свойство';
 TABLE property (Property);
@@ -110,10 +115,10 @@ TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 sid 'Код свойства на форме' = DATA VARSTRING[100] (PropertyDraw) IN recognize;
 caption 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
 form 'Форма' = DATA Form (PropertyDraw) INDEXED;
-nameForm 'Форма' (PropertyDraw pd) = sid(form(pd)) IN recognize;
+nameForm 'Форма' (PropertyDraw pd) = canonicalName(form(pd)) IN recognize;
 groupObject 'Группа объектов' = DATA GroupObject (PropertyDraw);
 propertyDraw 'Свойство на форме' (form, sID) = GROUP AGGR PropertyDraw propertyDraw BY form (propertyDraw), sid (propertyDraw) WHERE propertyDraw IS PropertyDraw;
-propertyDrawSIDNavigatorElementNamePropertyDraw 'Код формы' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (navigatorElementCanonicalName(str1), str2);
+propertyDrawByFormNameAndPropertyDrawSid 'Код формы' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (form(str1), str2);
 
 show 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
 show 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
@@ -254,10 +259,10 @@ TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
 sid 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN recognize;
-navigatorElement 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
-canonicalNameNavigatorElement (GroupObject groupObject) = canonicalName (navigatorElement(groupObject)) IN recognize;
-captionNavigatorElement (GroupObject groupObject) = caption (navigatorElement(groupObject)) IN recognize; 
-groupSIDNavigatorElementGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject BY sid (groupObject), canonicalNameNavigatorElement (groupObject) WHERE groupObject IS GroupObject;
+form 'Форма' = DATA Form (GroupObject);
+canonicalNameForm (GroupObject groupObject) = canonicalName (form(groupObject)) IN recognize;
+captionForm (GroupObject groupObject) = caption (form(groupObject)) IN recognize; 
+groupSIDFormGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject BY sid (groupObject), canonicalNameForm (groupObject) WHERE groupObject IS GroupObject;
 
 CLASS FormGrouping 'Группировка';
 TABLE formGrouping (FormGrouping); 
@@ -386,8 +391,9 @@ FORM forms 'Формы'
     PROPERTIES(fg,p) groupOrder, sum, max, pivot 
 
     FILTERS
-        navigatorElement(g)==tf,
-        form(p)==tf,
+        NOT (tf IS NavigatorAction), 
+        form(g) == form(formCanonicalName(tf)),
+        form(p) == form(formCanonicalName(tf)),
         groupObject(fg)==g 
 
     FILTERGROUP filtersForm

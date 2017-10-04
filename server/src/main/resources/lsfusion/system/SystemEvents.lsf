@@ -168,7 +168,7 @@ nameUser 'Пользователь сессии' (Session session) = name(user(s
 nameContact 'Пользователь сессии' (Session session) = name[Contact](user(session));
 user (Session session) <- currentUser() WHEN SET(session IS Session);
 
-connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
+connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, Form);
 
 CLASS Session 'Сессия';
 TABLE session(Session);
@@ -185,8 +185,8 @@ dateTime 'Время' = DATA DATETIME (Session) IN recognize;
 date 'Дата' (Session s) = DATE(dateTime(s));
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
-navigatorElement 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
-captionNavigatorElement 'Название формы' (Session session) = caption(navigatorElement(session));
+form 'Форма сессии' = DATA Form (Session);
+captionForm 'Название формы' (Session session) = caption(form(session));
 
 connection 'Подключение сессии' = DATA Connection(Session) INDEXED;
 hostnameComputerConnection 'Имя компьютера' = hostnameComputer(connection(Session session))IN recognize;
@@ -243,20 +243,20 @@ FORM connections 'Журнал подключений'
                             totalMemory, maximumMemory, freeMemory, nameConnectionStatus, connectTime,
                             disconnectTime
 
-    OBJECTS n=NavigatorElement
+    OBJECTS n=Form
     PROPERTIES (n) READONLY caption, canonicalName
 
     PROPERTIES (c, n) READONLY connectionFormCount
 
     OBJECTS s=Session
-    PROPERTIES (s) READONLY captionNavigatorElement, nameUser, dateTime
+    PROPERTIES (s) READONLY captionForm, nameUser, dateTime
 
     FILTERS connectionFormCount(c, n)>0
     FILTERS connection(s)==c
     FILTERGROUP filtersConnection
                 FILTER 'Активные подключения' connectionStatus(c) == ConnectionStatus.connectedConnection 'F8'
     FILTERGROUP filtersNavigatorElement
-                FILTER 'Только выбранной формы' navigatorElement(s)==n 'F9'
+                FILTER 'Только выбранной формы' form(s)==n 'F9'
 ;
 
 DESIGN connections{
@@ -310,7 +310,7 @@ FORM launches 'Журнал запусков'
 FORM changes 'Журнал изменений'
 
     OBJECTS s=Session
-    PROPERTIES (s) READONLY captionNavigatorElement, hostnameComputerConnection,
+    PROPERTIES (s) READONLY captionForm, hostnameComputerConnection,
                             userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
                             quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes PANEL
     FILTERGROUP filtersChange

@@ -8,6 +8,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentFormFormulaProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -17,7 +18,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public ConcreteCustomClass propertyGroup;
     public ConcreteCustomClass navigatorElement;
+    public ConcreteCustomClass navigatorFolder;
     public ConcreteCustomClass navigatorAction;
+    public ConcreteCustomClass navigatorForm;
     public ConcreteCustomClass form;
     public ConcreteCustomClass propertyDraw;
     public ConcreteCustomClass propertyDrawShowStatus;
@@ -61,29 +64,33 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP notNullQuantityProperty;
     public LCP lastRecalculateProperty;
 
-    public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
+    
+    public ImplementTable navigatorElementTable;
 
     public LCP navigatorElementCanonicalName;
     public LCP canonicalNameNavigatorElement;
     public LCP formCanonicalName;
     public LCP formByCanonicalName;
 
-    public LCP navigatorElementSID;
     public LCP parentNavigatorElement;
-    public LCP isNavigatorElement;
+    public LCP formCanonicalNameByNavigatorElement; 
+    
+    public LCP formCaption;
     public LCP isForm;
     public LCP isNavigatorAction;
+    public LCP isNavigatorForm;
+    public LCP isNavigatorFolder;
 
     public LCP sidGroupObject;
-    public LCP navigatorElementGroupObject;
-    public LCP groupObjectSIDNavigatorElementNameGroupObject;
+    public LCP formGroupObject;
+    public LCP groupObjectSIDFormNameGroupObject;
 
     public LCP sidPropertyDraw;
     public LCP captionPropertyDraw;
     public LCP formPropertyDraw;
     public LCP groupObjectPropertyDraw;
-    public LCP propertyDrawSIDNavigatorElementNamePropertyDraw;
+    public LCP propertyDrawByFormNameAndPropertyDrawSid;
 
     public LCP showPropertyDraw;
     public LCP showPropertyDrawCustomUser;
@@ -164,6 +171,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
     public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
+    public final StringClass formCanonicalNameClass = StringClass.getv(100);
+    public final StringClass formCaptionClass = StringClass.getv(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
@@ -186,7 +195,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         super.initClasses();
         propertyGroup = (ConcreteCustomClass) findClass("PropertyGroup");
         navigatorElement = (ConcreteCustomClass) findClass("NavigatorElement");
+        navigatorFolder = (ConcreteCustomClass) findClass("NavigatorFolder");
         navigatorAction = (ConcreteCustomClass) findClass("NavigatorAction");
+        navigatorForm = (ConcreteCustomClass) findClass("NavigatorForm"); 
         form = (ConcreteCustomClass) findClass("Form");
         propertyDraw = (ConcreteCustomClass) findClass("PropertyDraw");
         propertyDrawShowStatus = (ConcreteCustomClass) findClass("PropertyDrawShowStatus");
@@ -209,7 +220,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Группы свойства
         captionPropertyGroup = findProperty("caption[PropertyGroup]");
-        captionNavigatorElement = findProperty("caption[NavigatorElement]");
         parentPropertyGroup = findProperty("parent[PropertyGroup]");
         numberPropertyGroup = findProperty("number[PropertyGroup]");
         SIDPropertyGroup = findProperty("SID[PropertyGroup]");
@@ -244,25 +254,30 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // ------- Логика представлений --------- //
 
         // Навигатор
-        sidNavigatorElement = findProperty("sid[NavigatorElement]");
-        navigatorElementSID = findProperty("navigatorElement[VARSTRING[50]]");
-        
         numberNavigatorElement = findProperty("number[NavigatorElement]");
         navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName[VARSTRING[100]]");
         canonicalNameNavigatorElement = findProperty("canonicalName[NavigatorElement]");
+        captionNavigatorElement = findProperty("caption[NavigatorElement]");
         parentNavigatorElement = findProperty("parent[NavigatorElement]");
-        isNavigatorElement = findProperty("is[NavigatorElement]");
-        isForm = findProperty("is[Form]");
-        isNavigatorAction = findProperty("is[NavigatorAction]");
+        
+        isNavigatorFolder = findProperty("isNavigatorFolder[?]");
+        isNavigatorAction = findProperty("isNavigatorAction[?]");
+        isNavigatorForm = findProperty("isNavigatorForm[?]");
 
+        navigatorElementTable = findTable("navigatorElement");
+        
         // ----- Формы ---- //
         formCanonicalName = findProperty("canonicalName[Form]");
         formByCanonicalName = findProperty("form[VARSTRING[100]]");
+        formCaption = findProperty("caption[Form]");
+        isForm = findProperty("is[Form]");
+
+        formCanonicalNameByNavigatorElement = findProperty("formCanonicalName[NavigatorElement]");
         
         // Группа объектов
         sidGroupObject = findProperty("sid[GroupObject]");
-        navigatorElementGroupObject = findProperty("navigatorElement[GroupObject]");
-        groupObjectSIDNavigatorElementNameGroupObject = findProperty("groupSIDNavigatorElementGroupObject[VARSTRING[100],VARSTRING[100]]");
+        formGroupObject = findProperty("form[GroupObject]");
+        groupObjectSIDFormNameGroupObject = findProperty("groupSIDFormGroupObject[VARSTRING[100],VARSTRING[100]]");
 
 
         // PropertyDraw
@@ -271,7 +286,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         formPropertyDraw = findProperty("form[PropertyDraw]");
         groupObjectPropertyDraw = findProperty("groupObject[PropertyDraw]");
         // todo : это свойство должно быть для форм, а не навигаторов
-        propertyDrawSIDNavigatorElementNamePropertyDraw = findProperty("propertyDrawSIDNavigatorElementNamePropertyDraw[VARSTRING[100],VARSTRING[100]]");
+        propertyDrawByFormNameAndPropertyDrawSid = findProperty("propertyDrawByFormNameAndPropertyDrawSid[VARSTRING[100],VARSTRING[100]]");
 
         // UserPreferences
         showPropertyDraw = findProperty("show[PropertyDraw]");

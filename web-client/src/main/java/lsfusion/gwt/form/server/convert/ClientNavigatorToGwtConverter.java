@@ -1,7 +1,9 @@
 package lsfusion.gwt.form.server.convert;
 
+import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.navigator.*;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
+import lsfusion.gwt.form.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.form.client.navigator.GNavigatorForm;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
@@ -42,18 +44,20 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         return element;
     }
 
-    @Cached
-    @Converter(from = ClientNavigatorElement.class)
-    public GNavigatorElement convertNavigatorElement(ClientNavigatorElement clientElement) {
-        return initNavigatorElement(clientElement, new GNavigatorElement());
+    public GNavigatorForm initNavigatorForm(ClientNavigatorForm clientForm, GNavigatorForm form) {
+        form = initNavigatorElement(clientForm, form);
+        
+        form.formCanonicalName = clientForm.formCanonicalName;
+        form.formSID = clientForm.formSID;
+        form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
+        
+        return form;
     }
-
+    
     @Cached
     @Converter(from = ClientNavigatorForm.class)
     public GNavigatorForm convertNavigatorForm(ClientNavigatorForm clientForm) {
-        GNavigatorForm form = initNavigatorElement(clientForm, new GNavigatorForm());
-        form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
-        return form;
+        return initNavigatorForm(clientForm, new GNavigatorForm());
     }
 
     @Cached
@@ -62,6 +66,12 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         return initNavigatorElement(clientAction, new GNavigatorAction());
     }
 
+    @Cached
+    @Converter(from = ClientNavigatorFolder.class)
+    public GNavigatorFolder convertNavigatorFolder(ClientNavigatorFolder clientFolder) {
+        return initNavigatorElement(clientFolder, new GNavigatorFolder());
+    }
+    
     public <E extends GAbstractWindow> E initAbstractNavigatorWindow(ClientAbstractWindow clientWindow, E window) {
         cacheInstance(clientWindow, window);
 
@@ -84,7 +94,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.drawScrollBars = clientWindow.drawScrollBars;
         window.type = clientWindow.type;
         for (ClientNavigatorElement clientElement : clientWindow.elements) {
-            GNavigatorElement element = convertOrCast(clientElement, new GNavigatorElement());
+            GNavigatorElement element = convertOrCast(clientElement);
             window.elements.add(element);
         }
         return window;
