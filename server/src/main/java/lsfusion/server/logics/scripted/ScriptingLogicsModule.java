@@ -30,6 +30,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
@@ -3253,7 +3254,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public NavigatorElement findOrCreateNavigatorElement(String name, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return findNavigatorElement(name);
+            NavigatorElement ne = findNavigatorElement(name);
+            if (ne instanceof NavigatorForm) {
+                try {
+                    FormEntity form = findForm(name);
+                    if (!form.getCanonicalName().equals(((NavigatorForm)ne).getForm().getCanonicalName())) {
+                        return createScriptedNavigatorElement(null, null, point, null, name);
+                    }
+                } catch (ScriptingErrorLog.SemanticErrorException e) {}
+            }
+            return ne;
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return createScriptedNavigatorElement(null, null, point, null, name);
         }
