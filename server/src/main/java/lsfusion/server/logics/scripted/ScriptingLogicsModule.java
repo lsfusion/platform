@@ -3215,7 +3215,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return action.property.getName();
         } else if (form != null) {
             String cn = form.getCanonicalName();
-            return cn.substring(cn.indexOf(".") + 1); // todo [dale]: надо бы где-то сделать общую логику 
+            return ElementCanonicalNameUtils.extractName(cn); 
         }
         return null;
     }

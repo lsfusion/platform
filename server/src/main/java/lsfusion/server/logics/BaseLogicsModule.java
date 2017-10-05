@@ -47,6 +47,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
+
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
     // classes
     // classes
@@ -619,7 +621,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         LCP result = addProp(new ObjectValueProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
             // issue #1725 Потенциальное совпадение канонических имен различных свойств
-            String name = "_OBJVALUE_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;
