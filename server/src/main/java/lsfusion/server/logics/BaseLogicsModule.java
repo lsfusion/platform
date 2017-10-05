@@ -427,7 +427,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         staticName = findProperty("staticName[Object]");
         staticCaption = findProperty("staticCaption[Object]");
-        ((CalcProperty)staticCaption.property).aggProp = true;
         
         sessionOwners = findProperty("sessionOwners[]");
         ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;

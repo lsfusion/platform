@@ -75,7 +75,7 @@ executeLocalEvents() = { executeLocalEvents(NULL); }
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX Object object BY staticName(object);
 
-staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
+staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object) AGGPROP;
 
 objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));
