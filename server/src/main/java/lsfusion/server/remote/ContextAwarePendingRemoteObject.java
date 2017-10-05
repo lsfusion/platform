@@ -106,6 +106,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             
         ThreadLocalContext.aspectBeforeRmi(this, true, ThreadType.UNREFERENCED);
         try {
+            ServerLoggers.remoteLifeLog("REMOTE OBJECT UNREFERENCED " + this);
+
             deactivateAndCloseLater(isUnreferencedSyncedClient());
         } finally {
             ThreadLocalContext.aspectAfterRmi(ThreadType.UNREFERENCED);
