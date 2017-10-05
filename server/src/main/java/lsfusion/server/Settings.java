@@ -2331,4 +2331,14 @@ public class Settings implements Cloneable {
     public void setDisablePessQueries(boolean disablePessQueries) {
         this.disablePessQueries = disablePessQueries;
     }
+    
+    private boolean enableAggProp = false; // temporary для проверки используется или нет
+
+    public boolean isEnableAggProp() {
+        return enableAggProp;
+    }
+
+    public void setEnableAggProp(boolean enableAggProp) {
+        this.enableAggProp = enableAggProp;
+    }
 }
