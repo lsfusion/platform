@@ -118,6 +118,8 @@ captionProcessType 'Фильтр процессов' () = staticCaption(processT
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
+threadNameSQLProcess 'Имя java-потока (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+threadStackTraceSQLProcess 'След java-потока (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 
 nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 computerProcess 'Компьютер (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
@@ -232,26 +234,20 @@ killProcess 'Убить процесс' (VARSTRING[10] i) = {
     updateProcessMonitorAction();
 }
 showExtraButtons(VARSTRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
-               
-//test1Action = CUSTOM 'lsfusion.erp.utils.TestActionProperty'();
-//test2Action = CUSTOM 'lsfusion.erp.utils.Test2ActionProperty'();
-//test3Action = CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
-//test4Action = CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
-              
+                      
 setDefaultProcessType() = {
     processType() <- ProcessType.activeSQL;
 }               
                
 FORM processMonitor 'Монитор процессов'
-    //PROPERTIES() test1Action, test2Action, test3Action, test4Action
     OBJECTS i = VARSTRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
                            dateTimeCallProcess, threadTypeProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
                            isActiveSQLProcess, inTransactionSQLProcess, startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess,
                            statusMessageSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                           lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
-                           stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
-                           idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID
+                           lastThreadAllocatedBytesProcess, nameJavaProcess, threadNameSQLProcess, statusJavaProcess,
+                           lockNameJavaProcess, stackTraceJavaProcess, threadStackTraceSQLProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
+                           queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
     FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
@@ -264,9 +260,9 @@ FORM processMonitor 'Монитор процессов'
                             querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                             startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                             addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                            lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
-                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
-                            idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
+                            lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
+                            lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
+                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2)
     FILTERGROUP filter FILTER 'Фильтр' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
@@ -277,14 +273,14 @@ FORM processMonitor 'Монитор процессов'
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                                   lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                                 lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess, 
+                                 lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess, threadTypeProcess,
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                                  addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
-                                 lastThreadAllocatedBytesProcess, nameJavaProcess, statusJavaProcess,
+                                 lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
