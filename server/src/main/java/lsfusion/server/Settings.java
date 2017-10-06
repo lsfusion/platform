@@ -1834,6 +1834,9 @@ public class Settings implements Cloneable {
     private boolean explainCompile = false;
 
     public boolean isExplainCompile() {
+        if(SystemProperties.isDebug) // для тестирования
+            return true;
+
         return explainCompile;
     }
 
