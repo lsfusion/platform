@@ -1,14 +1,12 @@
 from flask import Flask, make_response, request
-from sys import argv
-
+from os import path
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexer import RegexLexer, words
-from pygments.token import *
-from os import path
-
 from pygments.style import Style
-from pygments.token import Keyword, Whitespace, Name, Comment, String, Number, Literal, Generic, Punctuation
+from pygments.token import *
+from pygments.token import Keyword, Whitespace, Name, Comment, String, Number, Literal, Punctuation
+from sys import argv
 
 
 #inherited from TangoStyle (https://kite.com/docs/python/pygments.styles.tango.TangoStyle)
@@ -122,9 +120,9 @@ def getCodeFragment(lines, blockId):
     for line in lines:
         if line.startswith(specialCommentPrefix):
             filteredLines += 1
-            if line.startswith(endFragmentComment(blockId)):
+            if line.strip() == endFragmentComment(blockId):
                 return filteredCode(lines[startLine:lineIndex]), resultStartLine
-            elif line.startswith(startFragmentComment(blockId)):
+            elif line.strip() == startFragmentComment(blockId) and startLine is None:
                 startLine = lineIndex + 1
                 resultStartLine = startLine - filteredLines + 1
         lineIndex += 1
