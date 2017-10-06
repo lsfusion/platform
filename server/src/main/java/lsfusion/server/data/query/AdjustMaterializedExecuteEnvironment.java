@@ -165,7 +165,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         boolean failedBefore = outerEnv.getSnapshot() != null; // не очень красиво конечно
         ImOrderSet<Step> backSteps = mBackSteps.immutableOrder();
         if(failedBefore || !backSteps.isEmpty())
-            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
+            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (snapshot.usedPessQuery()?" USED PESSIMISTIC QUERY":"") + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
     }
 
     public void innerFailed(SQLCommand command, Snapshot snapshot, String outerMessage) {
@@ -545,6 +545,13 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public boolean needConnectionLock;
         public boolean disableNestedLoop;
         public int setTimeout;
+        
+        public boolean usedPessQuery() {
+            for(SQLQuery query : queries)
+                if(query.pessQuery != null)
+                    return true;
+            return false;
+        }
 
         public Snapshot getSnapshot() {
             return this;
