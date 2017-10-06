@@ -15,7 +15,6 @@ import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.context.ThreadType;
 import lsfusion.server.data.*;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
@@ -32,7 +31,6 @@ import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -69,11 +67,11 @@ public abstract class ProcessDumpActionProperty extends ScriptingActionProperty 
             threadIds[i] = threads.get(i).getId();
         }
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-        ThreadInfo[] threadInfos;
+        java.lang.management.ThreadInfo[] threadInfos;
         if (threadIds.length > 0) // https://bugs.openjdk.java.net/browse/JDK-8074815
             threadInfos = tBean.getThreadInfo(threadIds, Integer.MAX_VALUE);
         else
-            threadInfos = new ThreadInfo[]{};
+            threadInfos = new java.lang.management.ThreadInfo[]{};
 
         long[] allocatedBytes = null;
         if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
@@ -92,7 +90,7 @@ public abstract class ProcessDumpActionProperty extends ScriptingActionProperty 
         return mResultMap.immutable();
     }
 
-    private JavaProcess getJavaProcess(Thread thread, boolean onlyActive, ThreadInfo threadInfo, Long allocatedBytes) {
+    private JavaProcess getJavaProcess(Thread thread, boolean onlyActive, java.lang.management.ThreadInfo threadInfo, Long allocatedBytes) {
         String status = threadInfo == null ? null : String.valueOf(threadInfo.getThreadState());
         String stackTrace = threadInfo == null ? null : ThreadUtils.getJavaStack(threadInfo.getStackTrace());
         String name = threadInfo == null ? null : threadInfo.getThreadName();
@@ -142,19 +140,13 @@ public abstract class ProcessDumpActionProperty extends ScriptingActionProperty 
         String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
         Timestamp dateTimeCall = javaThread == null ? null : RemoteLoggerAspect.getDateTimeCall(javaThread.getId());
-        ThreadType threadType = getThreadType(javaThread, sessionThread);
         String threadName = sessionThread == null || sessionThread.javaThreadDebugInfo == null ? null : sessionThread.javaThreadDebugInfo.threadName;
         String threadStackTrace = sessionThread == null || sessionThread.javaThreadDebugInfo == null ? null : sessionThread.javaThreadDebugInfo.threadStackTrace;
 
 
-        return new SQLProcess(dateTimeCall, threadType, query, fullQuery, user, computer, addressUser, dateTime,
+        return new SQLProcess(dateTimeCall, query, fullQuery, user, computer, addressUser, dateTime,
                 isActive, fusionInTransaction, baseInTransaction, startTransaction, attemptCount, status,
                 statusMessage, lockOwnerId, lockOwnerName, sqlId, isDisabledNestLoop, queryTimeout, debugInfo, threadName, threadStackTrace);
-    }
-
-    private ThreadType getThreadType(Thread javaThread, SQLThreadInfo sessionThread) {
-        ThreadType threadType = javaThread == null ? null : RemoteLoggerAspect.getThreadType(javaThread.getId());
-        return threadType != null || sessionThread == null || sessionThread.javaThreadDebugInfo == null ? threadType : sessionThread.javaThreadDebugInfo.threadType;
     }
 
     private String getMonitorId(Thread javaThread, Integer processId) {

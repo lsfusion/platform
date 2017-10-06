@@ -30,7 +30,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.*;
-import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -303,7 +302,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         this.userProvider = userProvider;
         sqlSessionMap.put(this, 1);
         Thread currentThread = Thread.currentThread();
-        threadDebugInfo = new ThreadDebugInfo(currentThread.getName(), RemoteLoggerAspect.getThreadType(currentThread.getId()),
+        threadDebugInfo = new ThreadDebugInfo(currentThread.getName(),
                 Settings.get().isStacktraceInSQLSession() ? ThreadUtils.getJavaStack(currentThread.getStackTrace()) : null);
     }
 

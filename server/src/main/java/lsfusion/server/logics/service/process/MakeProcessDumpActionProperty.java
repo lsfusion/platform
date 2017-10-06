@@ -79,13 +79,13 @@ public class MakeProcessDumpActionProperty extends ProcessDumpActionProperty {
             if (javaProcess != null)
                 javaProcesses = javaProcesses.remove(key);
 
-            ServerLoggers.processDumpLogger.info(String.format("idThreadProcess: %s\n   dateTimeCallProcess: %s\n   threadTypeProcess: %s\n   addressUserSQLProcess: %s\n" +
+            ServerLoggers.processDumpLogger.info(String.format("idThreadProcess: %s\n   dateTimeCallProcess: %s\n   addressUserSQLProcess: %s\n" +
                             "   dateTimeSQLProcess: %s\n   isActiveSQLProcess: %s\n   inTransactionSQLProcess: %s\n   startTransactionSQLProcess: %s\n" +
                             "   attemptCountSQLProcess: %s\n   statusSQLProcess: %s\n   statusMessageSQLProcess: %s\n   computerProcess: %s\n   userProcess: %s\n" +
                             "   lockOwnerIdProcess: %s\n   lockOwnerNameProcess: %s\n   idSQLProcess: %s\n   isDisabledNestLoopProcess: %s\n" +
                             "   queryTimeout: %s\n   nameSQLProcess: %s\n   nameJavaProcess: %s\n   statusJavaProcess: %s\n   lockNameJavaProcess: %s\n" +
                             "   nameComputerJavaProcess: %s\n   nameUserJavaProcess: %s\n   threadAllocatedBytesProcess: %s\n   lastThreadAllocatedBytesProcess: %s\n" +
-                            "\nlsfStackTraceProcess: \n%s\n\nstackTraceJavaProcess: \n%s\nfullQuerySQLProcess: \n%s\n\n", key, sqlProcess.dateTimeCall, sqlProcess.threadType,
+                            "\nlsfStackTraceProcess: \n%s\n\nstackTraceJavaProcess: \n%s\nfullQuerySQLProcess: \n%s\n\n", key, sqlProcess.dateTimeCall,
                     sqlProcess.addressUser, sqlProcess.dateTime, sqlProcess.isActive, getInTransactionSQLProcess(sqlProcess), sqlProcess.startTransaction, sqlProcess.attemptCount,
                     sqlProcess.status, sqlProcess.statusMessage, sqlProcess.computer, sqlProcess.user, sqlProcess.lockOwnerId, sqlProcess.lockOwnerName, sqlProcess.sqlId, sqlProcess.isDisabledNestLoop,
                     sqlProcess.queryTimeout, sqlProcess.threadName, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, nameComputerJavaProcess, nameUserJavaProcess, threadAllocatedBytesProcess,
