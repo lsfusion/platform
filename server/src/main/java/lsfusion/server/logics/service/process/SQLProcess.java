@@ -27,11 +27,13 @@ public class SQLProcess {
     public Boolean isDisabledNestLoop;
     public Integer queryTimeout;
     public String debugInfo;
+    public String threadName;
+    public String threadStackTrace;
 
     public SQLProcess(Timestamp dateTimeCall, ThreadType threadType, String query, String fullQuery, Long user, Long computer, String addressUser,
                       Timestamp dateTime, Boolean isActive, Boolean fusionInTransaction, Boolean baseInTransaction,
                       Long startTransaction, String attemptCount, String status, StatusMessage statusMessage, String lockOwnerId, String lockOwnerName,
-                      Integer sqlId, Boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo) {
+                      Integer sqlId, Boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo, String threadName, String threadStackTrace) {
         this.dateTimeCall = dateTimeCall;
         this.threadType = threadType;
         this.query = query;
@@ -53,5 +55,7 @@ public class SQLProcess {
         this.isDisabledNestLoop = isDisabledNestLoop;
         this.queryTimeout = queryTimeout;
         this.debugInfo = debugInfo;
+        this.threadName = threadName;
+        this.threadStackTrace = threadStackTrace;
     }
 }

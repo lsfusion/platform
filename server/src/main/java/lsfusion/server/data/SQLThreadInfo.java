@@ -2,6 +2,7 @@ package lsfusion.server.data;
 
 public class SQLThreadInfo {
     public Thread javaThread;
+    public ThreadDebugInfo javaThreadDebugInfo;
     public boolean baseInTransaction;
     public Long startTransaction;
     public String attemptCount;
@@ -13,10 +14,11 @@ public class SQLThreadInfo {
     public String debugInfo;
     public StatusMessage statusMessage;
 
-    public SQLThreadInfo(Thread javaThread, boolean baseInTransaction, Long startTransaction, String attemptCount, Long userActiveTask,
-                         Long computerActiveTask, String fullQuery, boolean isDisabledNestLoop, Integer queryTimeout, String debugInfo,
-                         StatusMessage statusMessage) {
+    public SQLThreadInfo(Thread javaThread, ThreadDebugInfo javaThreadDebugInfo, boolean baseInTransaction, Long startTransaction,
+                         String attemptCount, Long userActiveTask, Long computerActiveTask, String fullQuery, boolean isDisabledNestLoop,
+                         Integer queryTimeout, String debugInfo, StatusMessage statusMessage) {
         this.javaThread = javaThread;
+        this.javaThreadDebugInfo = javaThreadDebugInfo;
         this.baseInTransaction = baseInTransaction;
         this.startTransaction = startTransaction;
         this.attemptCount = attemptCount;

@@ -2331,7 +2331,7 @@ public class Settings implements Cloneable {
     public void setDisablePessQueries(boolean disablePessQueries) {
         this.disablePessQueries = disablePessQueries;
     }
-    
+
     private boolean enableAggProp = false; // temporary для проверки используется или нет
 
     public boolean isEnableAggProp() {
@@ -2340,5 +2340,16 @@ public class Settings implements Cloneable {
 
     public void setEnableAggProp(boolean enableAggProp) {
         this.enableAggProp = enableAggProp;
+    }
+
+    //для записи stackTrace java потока в конструкторе SQLSession. Используется в мониторе процессов
+    private boolean stacktraceInSQLSession = false;
+
+    public boolean isStacktraceInSQLSession() {
+        return stacktraceInSQLSession;
+    }
+
+    public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
+        this.stacktraceInSQLSession = stacktraceInSQLSession;
     }
 }

@@ -29,10 +29,8 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.PGObjectReader;
+import lsfusion.server.logics.*;
+import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -122,7 +120,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             ExConnection connection = sqlSession.getDebugConnection();
             if (connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
+                        sqlSession.threadDebugInfo, sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
                         debugInfo, sqlSession.statusMessage));
@@ -296,12 +294,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
     private ReentrantReadWriteLock connectionLock = new ReentrantReadWriteLock(true);
 
+    public final ThreadDebugInfo threadDebugInfo;
+
     public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connectionPool = adapter;
         typePool = adapter;
         this.userProvider = userProvider;
         sqlSessionMap.put(this, 1);
+        Thread currentThread = Thread.currentThread();
+        threadDebugInfo = new ThreadDebugInfo(currentThread.getName(), RemoteLoggerAspect.getThreadType(currentThread.getId()),
+                Settings.get().isStacktraceInSQLSession() ? ThreadUtils.getJavaStack(currentThread.getStackTrace()) : null);
     }
 
     private void needPrivate() throws SQLException { // получает unique connection
