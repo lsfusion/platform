@@ -360,4 +360,97 @@ public class Words {
             return new String(stringArray);
         }
     }
+
+    //TODO: поскольку метод пока используется только для "руб-коп", не параметризуем female. Но в будущем может понадобиться.
+    public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, boolean upcase, boolean numericFraction) {
+        String result = numObject == null ? toStringCustom(null, decPostfix, fractPostfix, numericFraction) : toStringCustom(numObject.doubleValue(), decPostfix, fractPostfix, numericFraction);
+        if (result != null && upcase)
+            result = result.substring(0, 1).toUpperCase() + result.substring(1);
+        return result;
+    }
+
+    private static String toStringCustom(Double numObject, String decPostfix, String fractPostfix, boolean numericFraction) {
+        double num = numObject == null ? 0.0 : numObject;
+        Integer numOfDigits = getNumOfDigits(num, null);
+        long fract = Math.round(num * Math.pow(10, numOfDigits) - ((long) num) * Math.pow(10, numOfDigits));
+        String result;
+        if (fract != 0)
+            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + toStringCustom(fract, decPostfix, fractPostfix, numOfDigits, true, numericFraction);
+        else
+            result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false);
+        return result;
+    }
+
+    //передаём постфиксы самостоятельно
+    private static String toStringCustom(Long value, String decPostfix, String fractPostfix, Integer numOfDigits, Boolean female, boolean numericFraction) {
+
+        long sum = value == null ? 0 : value;
+
+        int i, mny;
+        StringBuilder result = new StringBuilder("");
+        long divisor; //делитель
+        long psum = sum;
+
+        int one = 1;
+        int four = 2;
+        int many = 3;
+
+        int hun = 4;
+        int dec = 3;
+        int dec2 = 2;
+
+        if (sum != 0) {
+            if (sum < 0) {
+                result.append("минус ");
+                psum = -psum;
+            }
+
+            for (i = 0, divisor = 1; i < DG_POWER; i++) divisor *= 1000;
+
+            for (i = DG_POWER - 1; i >= 0; i--) {
+                divisor /= 1000;
+                mny = (int) (psum / divisor);
+                psum %= divisor;
+                //str="";
+                if (mny == 0) {
+                    if (i > 0) continue;
+                    result.append(a_power[i][one]);
+                } else {
+                    if (mny >= 100) {
+                        result.append(digit[mny / 100][hun]);
+                        mny %= 100;
+                    }
+                    if (mny >= 20) {
+                        result.append(digit[mny / 10][dec]);
+                        mny %= 10;
+                    }
+                    if (mny >= 10) {
+                        result.append(digit[mny - 10][dec2]);
+                    } else {
+                        if (mny >= 1) result.append(digit[mny][female ? 1 : 0]);
+                    }
+                    switch (mny) {
+                        case 1:
+                            result.append(a_power[i][one]);
+                            break;
+                        case 2:
+                        case 3:
+                        case 4:
+                            result.append(a_power[i][four]);
+                            break;
+                        default:
+                            result.append(a_power[i][many]);
+                            break;
+                    }
+                }
+            }
+        } else result.append("ноль ");
+
+        String postfix;
+        if (numOfDigits != null && numOfDigits != 0)
+            postfix = fractPostfix;
+        else
+            postfix = decPostfix;
+        return (numericFraction ? appendZeroes(value, 2) + " " : result.toString()) + postfix + " ";
+    }
 }
