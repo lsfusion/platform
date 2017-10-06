@@ -104,7 +104,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
-        executeAction(action.getSID(), 1, null);
+        executeAction(action.getCanonicalName(), 1, null);
     }
 
     public void executeAction(final String actionSID, final int type, final Runnable action) {

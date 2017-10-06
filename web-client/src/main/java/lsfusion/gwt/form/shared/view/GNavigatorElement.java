@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class GNavigatorElement implements Serializable {
-    public String sid;
     public String canonicalName;
     public String caption;
     public String creationPath;
@@ -30,6 +29,6 @@ public abstract class GNavigatorElement implements Serializable {
 
     public String getTooltipText() {
         return MainFrame.configurationAccessAllowed ?
-                GwtSharedUtils.stringFormat("<html><b>%s</b><hr><b>sID:</b> %s<br><b>Путь:</b> %s</html>", caption, sid, creationPath) : caption;
+                GwtSharedUtils.stringFormat("<html><b>%s</b><hr><b>sID:</b> %s<br><b>Путь:</b> %s</html>", caption, canonicalName, creationPath) : caption;
     }
 }

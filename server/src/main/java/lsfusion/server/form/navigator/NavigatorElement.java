@@ -51,10 +51,6 @@ public abstract class NavigatorElement {
         return ID;
     }
 
-    public String getSID() {
-        return canonicalName;
-    }
-    
     public String getCanonicalName() {
         return canonicalName;
     }
@@ -119,7 +115,7 @@ public abstract class NavigatorElement {
             ImOrderMap<NavigatorElement, List<String>> childMap = child.getChildrenMap(securityPolicy);
             if (!childMap.isEmpty()) {
                 childrenMaps.add(childMap);
-                childrenSids.add(child.getSID());
+                childrenSids.add(child.getCanonicalName());
             }
         }
 
@@ -131,18 +127,7 @@ public abstract class NavigatorElement {
         return MapFact.EMPTYORDER();
     }
 
-    public NavigatorElement getChildElementBySID(String elementSID) {
-        if (getSID().equals(elementSID)) return this;
-
-        for (NavigatorElement child : getChildrenIt()) {
-            NavigatorElement element = child.getChildElementBySID(elementSID);
-            if (element != null) return element;
-        }
-
-        return null;
-    }
-
-    public NavigatorElement getChildElementByCanonicalName(String elementCanonicalName) {
+    public NavigatorElement getChildElement(String elementCanonicalName) {
         if (elementCanonicalName == null) {
             return null;
         }
@@ -150,7 +135,7 @@ public abstract class NavigatorElement {
         if (elementCanonicalName.equals(getCanonicalName())) return this;
 
         for (NavigatorElement child : getChildrenIt()) {
-            NavigatorElement element = child.getChildElementByCanonicalName(elementCanonicalName);
+            NavigatorElement element = child.getChildElement(elementCanonicalName);
             if (element != null) return element;
         }
 
@@ -234,14 +219,13 @@ public abstract class NavigatorElement {
 
     @Override
     public String toString() {
-        return getSID() + ": " + (caption != null ? ThreadLocalContext.localize(caption) : "");
+        return getCanonicalName() + ": " + (caption != null ? ThreadLocalContext.localize(caption) : "");
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
         outStream.writeInt(getID());
-        outStream.writeUTF(getSID());
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, creationPath);
 

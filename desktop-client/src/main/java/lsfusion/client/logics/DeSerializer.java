@@ -34,7 +34,7 @@ public class DeSerializer {
 
         Map<String, ClientNavigatorElement> elementsMap = new HashMap<>();
         for (ClientNavigatorElement element : elements) {
-            elementsMap.put(element.getSID(), element);
+            elementsMap.put(element.getCanonicalName(), element);
         }
 
         for (ClientNavigatorElement element : elements) {

@@ -25,7 +25,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public <E extends GNavigatorElement> E initNavigatorElement(ClientNavigatorElement clientElement, E element) {
         cacheInstance(clientElement, element);
 
-        element.sid = clientElement.getSID();
         element.canonicalName = clientElement.getCanonicalName();
         element.caption = clientElement.caption;
         element.creationPath = clientElement.creationPath;

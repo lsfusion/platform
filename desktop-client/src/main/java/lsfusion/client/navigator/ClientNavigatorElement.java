@@ -16,7 +16,6 @@ import java.util.Set;
 public abstract class ClientNavigatorElement {
 
     private int ID;
-    private String sID;
     private String canonicalName;
 
     public String creationPath;
@@ -32,7 +31,6 @@ public abstract class ClientNavigatorElement {
 
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         ID = inStream.readInt();
-        sID = inStream.readUTF();
         canonicalName = SerializationUtil.readString(inStream);
         creationPath = SerializationUtil.readString(inStream);
         
@@ -46,10 +44,6 @@ public abstract class ClientNavigatorElement {
 
     public int getID() {
         return ID;
-    }
-
-    public String getSID() {
-        return sID;
     }
 
     public String getCanonicalName() {

@@ -91,7 +91,7 @@ public class MainFrame implements EntryPoint {
         formsController = new DefaultFormsController() {
             @Override
             public void executeNavigatorAction(GNavigatorAction action) {
-                dispatcher.execute(new ExecuteNavigatorAction(action.sid, 1), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);

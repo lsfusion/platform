@@ -404,7 +404,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
             for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
+                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
                 if (valueMap.get("forbid") != null) {
                     policy.navigator.deny(element);
                 } else if (valueMap.get("permit") != null) {
@@ -467,7 +467,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
             for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
+                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
                 if (valueMap.get("forbid") != null)
                     policy.navigator.deny(element);
                 else if (valueMap.get("permit") != null)

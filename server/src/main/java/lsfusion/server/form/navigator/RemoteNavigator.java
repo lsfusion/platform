@@ -874,10 +874,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private void runAction(DataSession session, String actionSID, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final ActionProperty property;
+    private void runAction(DataSession session, String sid, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
+        final ActionProperty action;
         if (isNavigatorAction) {
-            final NavigatorElement element = businessLogics.LM.root.getChildElementBySID(actionSID);
+            final NavigatorElement element = businessLogics.LM.root.getChildElement(sid);
 
             if (!(element instanceof NavigatorAction)) {
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
@@ -887,11 +887,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            property = ((NavigatorAction) element).getAction();
+            action = ((NavigatorAction) element).getAction();
         } else {
-            property = (ActionProperty) businessLogics.findProperty(actionSID).property;
+            action = (ActionProperty) businessLogics.findProperty(sid).property;
         }
-        property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
+        action.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
     }
 
     @Override
