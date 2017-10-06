@@ -29,7 +29,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         alignmentY = window.getAlignmentY();
         verticalTextAlign = window.hasVerticalTextPosition();
 
-        vertical = window.type == 1;
+        vertical = window.isVertical();
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
@@ -54,7 +54,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final ImageButton button = new ImageButton(element.caption, verticalTextAlign);
+        final ImageButton button = new ImageButton(element.caption, verticalTextAlign, !vertical);
         button.setImage(element.icon);
         button.addMouseDownHandler(new MouseDownHandler() {
             @Override
@@ -112,6 +112,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
             button.addStyleName("toolbarSelectedNavigatorButton");
         }
         if (vertical) {
+            button.setWidth("100%");
             button.getElement().getStyle().setPaddingLeft(7 + PADDING_STEP * step, Style.Unit.PX);
         }
 

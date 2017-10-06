@@ -33,33 +33,33 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public float alignmentY;
     public float alignmentX;
 
+    public boolean isVertical() {
+        return type == 1;
+    }
+
+    public boolean isHorizontal() {
+        return type == 0;
+    }
+
     @Override
     public GNavigatorView createView(GINavigatorController navigatorController) {
         return new GToolbarNavigatorView(this, navigatorController);
     }
 
     public HasVerticalAlignment.VerticalAlignmentConstant getAlignmentY() {
-        if (alignmentY != 0) {
-            if (alignmentY == TOP_ALIGNMENT) {
-                return HasVerticalAlignment.ALIGN_TOP;
-            } else if (alignmentY == CENTER_ALIGNMENT) {
-                return HasVerticalAlignment.ALIGN_MIDDLE;
-            } else if (alignmentY == BOTTOM_ALIGNMENT) {
-                return HasVerticalAlignment.ALIGN_BOTTOM;
-            }
+        if (alignmentY == CENTER_ALIGNMENT) {
+            return HasVerticalAlignment.ALIGN_MIDDLE;
+        } else if (alignmentY == BOTTOM_ALIGNMENT) {
+            return HasVerticalAlignment.ALIGN_BOTTOM;
         }
         return HasVerticalAlignment.ALIGN_TOP;
     }
 
     public HasAlignment.HorizontalAlignmentConstant getAlignmentX() {
-        if (alignmentX != 0) {
-            if (alignmentX == LEFT_ALIGNMENT) {
-                return HasAlignment.ALIGN_LEFT;
-            } else if (alignmentX == CENTER_ALIGNMENT) {
-                return HasAlignment.ALIGN_CENTER;
-            } else if (alignmentX == RIGHT_ALIGNMENT) {
-                return HasAlignment.ALIGN_RIGHT;
-            }
+        if (alignmentX == CENTER_ALIGNMENT) {
+            return HasAlignment.ALIGN_CENTER;
+        } else if (alignmentX == RIGHT_ALIGNMENT) {
+            return HasAlignment.ALIGN_RIGHT;
         }
         return HasAlignment.ALIGN_LEFT;
     }

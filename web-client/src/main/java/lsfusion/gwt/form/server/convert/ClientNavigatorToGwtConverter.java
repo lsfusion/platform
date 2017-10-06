@@ -92,7 +92,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
         window.drawRoot = clientWindow.drawRoot;
         window.drawScrollBars = clientWindow.drawScrollBars;
-        window.type = clientWindow.type;
         for (ClientNavigatorElement clientElement : clientWindow.elements) {
             GNavigatorElement element = convertOrCast(clientElement);
             window.elements.add(element);

@@ -10,7 +10,6 @@ import static lsfusion.interop.AbstractWindowType.*;
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
     public List<ClientNavigatorElement> elements = new ArrayList<>();
 
-    public int type;
     public boolean drawRoot;
     public boolean drawScrollBars;
 
