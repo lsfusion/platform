@@ -109,7 +109,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
                 "threadAllocatedBytesProcess[VARSTRING[10]]", "lastThreadAllocatedBytesProcess[VARSTRING[10]]"));
 
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]",
-                "threadTypeProcess[VARSTRING[20]]", "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]",
+                "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]",
                 "dateTimeSQLProcess[VARSTRING[10]]", "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]",
                 "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusSQLProcess[VARSTRING[10]]",
                 "statusMessageSQLProcess[VARSTRING[10]]", "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]",
@@ -177,8 +177,6 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
             case "dateTimeCallProcess":
                 return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.instance);
-            case "threadTypeProcess":
-                return sqlProcess.threadType == null ? NullValue.instance : new DataObject(String.valueOf(sqlProcess.threadType));
             case "querySQLProcess":
                 return sqlProcess.query == null ? NullValue.instance : new DataObject(sqlProcess.query);
             case "fullQuerySQLProcess":

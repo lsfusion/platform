@@ -135,7 +135,6 @@ userObject (value) = GROUP AGGR User user BY objValue(user);
 nameUserSQL 'Пользователь (SQL)' (VARSTRING[10] process) = name(userObject(userProcess(process)));
 nameUser 'Пользователь' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
 dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME (VARSTRING[10]);
-threadTypeProcess 'Thread Type' = DATA LOCAL VARSTRING[20] (VARSTRING[10]);
 
 idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
@@ -242,7 +241,7 @@ setDefaultProcessType() = {
 FORM processMonitor 'Монитор процессов'
     OBJECTS i = VARSTRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
-                           dateTimeCallProcess, threadTypeProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
+                           dateTimeCallProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
                            isActiveSQLProcess, inTransactionSQLProcess, startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess,
                            statusMessageSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                            lastThreadAllocatedBytesProcess, nameJavaProcess, threadNameSQLProcess, statusJavaProcess,
@@ -256,7 +255,7 @@ FORM processMonitor 'Монитор процессов'
     
     TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlocked,
-                            activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess, threadTypeProcess,
+                            activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess,
                             querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                             startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                             addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
@@ -269,14 +268,14 @@ FORM processMonitor 'Монитор процессов'
     
     OBJECTS blocked = VARSTRING[10], blocking = VARSTRING[10]
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlock, 
-                                 sumBlocking, nameComputer, nameUser, dateTimeCallProcess, threadTypeProcess,
+                                 sumBlocking, nameComputer, nameUser, dateTimeCallProcess, 
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                                   lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
-    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess, threadTypeProcess,
+    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                                  addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
