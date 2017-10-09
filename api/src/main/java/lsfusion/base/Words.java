@@ -366,7 +366,7 @@ public class Words {
         return toStringCustom(numObject, decPostfix, fractPostfix, 2, upcase, numericFraction);
     }
 
-    public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, Integer numOfFractDigits, boolean upcase, boolean numericFraction) {
+    public static String toStringCustom(BigDecimal numObject, String decPostfix, String fractPostfix, int numOfFractDigits, boolean upcase, boolean numericFraction) {
         String result = numObject == null ? toStringCustom(null, decPostfix, fractPostfix, numOfFractDigits, numericFraction) : toStringCustom(numObject.doubleValue(), decPostfix, fractPostfix, numOfFractDigits, numericFraction);
         if (result != null && upcase)
             result = result.substring(0, 1).toUpperCase() + result.substring(1);
