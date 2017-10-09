@@ -2848,9 +2848,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return props;
     }
 
-    public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<TypedParameter> context, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportExcelActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, baseLM, format)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
+        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, baseLM)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {

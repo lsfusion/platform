@@ -1,14 +1,8 @@
-package lsfusion.server.logics.property.actions.importing.xlsx;
+package lsfusion.server.logics.property.actions.importing.xls;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.DateTimeClass;
-import lsfusion.server.classes.TimeClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;

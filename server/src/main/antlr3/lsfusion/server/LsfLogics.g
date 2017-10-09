@@ -1776,8 +1776,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-		if($type.format == ImportSourceFormat.XLS || $type.format == ImportSourceFormat.XLSX)
-			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $context, sheet);
+		if($type.format == ImportSourceFormat.XLS)
+			$property = self.addScriptedImportExcelActionProperty($expr.property, $plist.ids, $plist.propUsages, sheet);
 		else if($type.format == ImportSourceFormat.CSV)
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
@@ -1896,7 +1896,6 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
-	|	'XLSX'	{ $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
