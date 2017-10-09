@@ -271,11 +271,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean isInTransaction;
 
     private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
-        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
         ServerLoggers.assertLog(!isInSessionEvent(), "CANNOT START TRANSACTION IN SESSION EVENT");
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier("onlydata", new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
+        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCountMap, deadLockPriority, applyStartTime);
     }
     
     private void cleanOnlyDataModifier() throws SQLException {
@@ -2035,9 +2035,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
 
-        ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
-
         try {
+            ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
+
             boolean suceeded = recursiveApply(applyActions, BL, stack, keepProps, SetFact.<ValueClass>EMPTY());
             if(!suceeded) {
                 long timestamp = getTimestamp();
