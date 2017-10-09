@@ -1,8 +1,8 @@
 package lsfusion.server.logics.service.reflection;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.WrapperSettings;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -33,7 +33,7 @@ public class PushReflectionPropertyActionProperty extends ScriptingActionPropert
             String name = (String) context.getDataKeyValue(nameInterface).getValue();
             String value = (String) context.getDataKeyValue(valueInterface).getValue();
 
-            WrapperSettings.pushSettings(name, value);
+            ThreadLocalContext.pushSettings(name, value);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | CloneNotSupportedException e) {
             throw Throwables.propagate(e);
         }

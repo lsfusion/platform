@@ -285,7 +285,7 @@ public class Settings implements Cloneable {
     }
     
     public static Settings get() {
-        return WrapperSettings.getSettings() != null ? WrapperSettings.getSettings() : ThreadLocalContext.getSettings();
+        return ThreadLocalContext.getSettings();
     }
 
     public static Settings copy() throws CloneNotSupportedException {

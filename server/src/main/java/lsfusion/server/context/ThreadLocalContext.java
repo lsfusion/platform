@@ -27,6 +27,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
+import lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
@@ -35,6 +36,7 @@ import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
 import org.apache.log4j.MDC;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ import java.util.Locale;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
+    public static final ThreadLocal<Settings> wrappedSettings = new ThreadLocal<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentWeakHashMap<Thread, Boolean> activeMap = new ConcurrentWeakHashMap<>();
     public static Context get() { // временно, потом надо private сделать
@@ -68,6 +71,16 @@ public class ThreadLocalContext {
             }
         } else
             activeMap.put(Thread.currentThread(), false);
+    }
+
+    public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
+        Settings settings = Settings.copy();
+        SaveReflectionPropertyActionProperty.setPropertyValue(settings, nameProperty, valueProperty);
+        wrappedSettings.set(settings);
+    }
+
+    public static void popSettings() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        wrappedSettings.set(null);
     }
 
     public static Long getCurrentUser() {
@@ -107,7 +120,7 @@ public class ThreadLocalContext {
     }
 
     public static Settings getSettings() {
-        return getLogicsInstance().getSettings();
+        return wrappedSettings.get() != null ? wrappedSettings.get() : getLogicsInstance().getSettings();
     }
 
     public static FormInstance getFormInstance() {

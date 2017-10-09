@@ -1,7 +1,7 @@
 package lsfusion.server.logics.service.reflection;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.WrapperSettings;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -20,7 +20,7 @@ public class PopReflectionPropertyActionProperty extends ScriptingActionProperty
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            WrapperSettings.popSettings();
+            ThreadLocalContext.popSettings();
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw Throwables.propagate(e);
         }
