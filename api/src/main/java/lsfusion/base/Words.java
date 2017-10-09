@@ -375,7 +375,7 @@ public class Words {
 
     private static String toStringCustom(Double numObject, String decPostfix, String fractPostfix, int numOfFractDigits, boolean numericFraction) {
         double num = numObject == null ? 0.0 : numObject;
-        long fract = Math.round(num * Math.pow(10, numOfFractDigits) - ((long) num) * Math.pow(10, numOfFractDigits));
+        long fract = numOfFractDigits <= 0 ? 0 : Math.round(num * Math.pow(10, numOfFractDigits) - ((long) num) * Math.pow(10, numOfFractDigits));
         String result;
         if (fract != 0)
             result = toStringCustom((long) num, decPostfix, fractPostfix, null, false, false) + toStringCustom(fract, decPostfix, fractPostfix, numOfFractDigits, true, numericFraction);
