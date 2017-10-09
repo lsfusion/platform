@@ -76,7 +76,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return new IntegerPropertyEditor(value, ClientIntegerClass.instance.getDefaultFormat(), null, Integer.class);
+        return new IntegerPropertyEditor(value, ClientLongClass.instance.getDefaultFormat(), null, Long.class);
     }
 
     public boolean shouldBeDrawn(ClientFormController form) {

@@ -5,7 +5,7 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.IntegerGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.LongGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
@@ -40,7 +40,7 @@ public class GObjectType extends GType {
 
     @Override
     public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new IntegerGridCellEditor(editManager, editProperty);
+        return new LongGridCellEditor(editManager, editProperty);
     }
 
     @Override
