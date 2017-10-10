@@ -21,6 +21,8 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NavigatorsManager extends LogicsManager implements InitializingBean {
@@ -193,11 +195,14 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 //    }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException, SQLHandledException {
+        Set<RemoteNavigator> copyNavigators = new HashSet<>();
         synchronized (navigators) { // могут быть закрывающиеся навигаторы, проверка с синхронизацией внутри вызова
-            for (RemoteNavigator remoteNavigator : navigators)
-                if (remoteNavigator != null)
-                    remoteNavigator.updateEnvironmentProperty(property, value);
+            for(RemoteNavigator navigator : navigators)
+                copyNavigators.add(navigator);
         }
+        for (RemoteNavigator remoteNavigator : copyNavigators) // вообще в принципе опасное поведение, так как обращается к сессии не threadSafe, надо isServerRestarting на DATA переделать, а этот метод убрать
+            if (remoteNavigator != null)
+                remoteNavigator.updateEnvironmentProperty(property, value);
     }
 
     public void pushNotificationCustomUser(DataObject connectionObject, EnvStackRunnable run) {
