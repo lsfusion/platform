@@ -1808,6 +1808,17 @@ public class BaseUtils {
         else
             return string.substring(string.length() - length, string.length());
     }
+    
+    public static int countRepeatingChars(String string, char character, int index) {
+        int count = 0;
+        for (int i = index; i < string.length(); i++) {
+            if (string.charAt(i) != character) {
+                break;
+            }
+            count++;
+        }
+        return count;
+    }
 
     public static <K> K last(List<K> list) {
         if (list.size() > 0)

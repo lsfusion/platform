@@ -1083,7 +1083,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
                     String formattedValue;
                     try {
-                        formattedValue = cellProperty.baseType.formatString(value);
+                        formattedValue = cellProperty.formatString(value);
                     } catch (ParseException e1) {
                         formattedValue = String.valueOf(value);
                     }

@@ -2,6 +2,7 @@ package lsfusion.client.form.editor;
 
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientPropertyTableEditorComponent;
@@ -44,7 +45,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
     
     public Object dateToValue(Date date) {
-        return DateConverter.safeDateToSql(getDate());
+        return DateConverter.safeDateToSql(date);
     }
 
     @Override
@@ -215,7 +216,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
 
                 String timeSymbols = "HhKksm";
 
-                for (int i = 1; i < textLength - 1; ++i) {
+                for (int i = 0; i < textLength - 1; ++i) {
                     char patternCh = datePattern.charAt(i);
                     //благодаря преобразованию через createDateTimeEditFormat, мы точно знаем, что символы в паттерне повторятся
                     if (patternCh == 'S') {
@@ -224,6 +225,13 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                     } else if (patternCh == 'a') {
                         ifMatchThenReplace(dateText, dateBuilder, "  ", "PM", i);
                         i ++;
+                    } else if (patternCh == 'y') {
+                        int symbolCount = BaseUtils.countRepeatingChars(datePattern, 'y', i);
+                        String yearPattern = BaseUtils.replicate('y', symbolCount);
+                        String currentYear = new SimpleDateFormat(yearPattern).format(Calendar.getInstance().getTime());
+                        String spaces = BaseUtils.spaces(symbolCount);
+                        ifMatchThenReplace(dateText, dateBuilder, spaces, currentYear, i);
+                        i++;
                     } else if (timeSymbols.indexOf(patternCh) != -1) {
                         ifMatchThenReplace(dateText, dateBuilder, "  ", "00", i);
                         i ++;
