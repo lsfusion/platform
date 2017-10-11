@@ -217,6 +217,9 @@ is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(co
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
 onClientStarted = ABSTRACT LIST ();
+
+onClientStarted() +=  { setReflectionPropertiesCurrentUserAction(); };
+
 onWebClientStarted = ABSTRACT LIST ();
     
 EXTEND FORM options PROPERTIES countDaysClearPings();

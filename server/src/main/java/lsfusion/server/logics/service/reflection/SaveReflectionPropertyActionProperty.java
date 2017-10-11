@@ -21,13 +21,15 @@ import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SaveReflectionPropertyActionProperty extends ScriptingActionProperty {
-    private ClassPropertyInterface reflectionPropertyInterface;
+    private final ClassPropertyInterface reflectionPropertyInterface;
+    private final ClassPropertyInterface userInterface;
 
     public SaveReflectionPropertyActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         reflectionPropertyInterface = i.next();
+        userInterface = i.next();
     }
 
     @Override
@@ -36,9 +38,10 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
         try {
 
             DataObject reflectionPropertyObject = context.getDataKeyValue(reflectionPropertyInterface);
+            DataObject userObject = context.getDataKeyValue(userInterface);
 
             String nameReflectionProperty = trimToNull((String) findProperty("name[ReflectionProperty]").read(context, reflectionPropertyObject));
-            String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty]").read(context, reflectionPropertyObject));
+            String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty, CustomUser]").read(context, reflectionPropertyObject, userObject));
 
             if(nameReflectionProperty != null && valueReflectionProperty != null) {
                 

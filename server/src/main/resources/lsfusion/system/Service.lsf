@@ -291,20 +291,28 @@ TABLE reflectionProperty (ReflectionProperty);
 name 'Имя настройки' = DATA VARISTRING[100] (ReflectionProperty);
 reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
+baseValue 'Сохранённое значение для пользователя' = DATA VARSTRING[100] (ReflectionProperty, CustomUser);
+baseValueCurrentUser 'Сохранённое значение для текущего пользователя' (ReflectionProperty p) = baseValue(p, currentUser());
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
-value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE baseValue(reflectionProperty), defaultValue(reflectionProperty);
+value 'Значение' (ReflectionProperty p, CustomUser u) = OVERRIDE baseValue(p, u), baseValue(p), defaultValue(p);
 
 pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
-popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' ();
+popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
 
-readReflectionPropertiesAction 'Прочитать настройки свойств' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
+readReflectionPropertiesAction 'Прочитать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
+setReflectionPropertiesCurrentUserAction 'Применить настройки свойств для текущего пользователя' = CUSTOM 'lsfusion.server.logics.service.reflection.SetReflectionPropertiesCurrentUserActionProperty' ();
 onStarted() += { readReflectionPropertiesAction(); }
-saveAction 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty);
-WHEN CHANGED (baseValue(ReflectionProperty r)) DO saveAction(r);
+saveReflectionProperty 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, CustomUser);
+WHEN CHANGED (baseValue(ReflectionProperty r)) DO saveReflectionProperty(r, currentUser());
+WHEN CHANGED (baseValue(ReflectionProperty r, CustomUser u)) DO saveReflectionProperty(r, u);
 
 FORM reflectionProperties 'Настройки свойств'
+    OBJECTS u = CustomUser
+    PROPERTIES(u) READONLY nameMainRole, name, login 
     OBJECTS r = ReflectionProperty
-    PROPERTIES (r) name READONLY, value READONLY, defaultValue READONLY, baseValue
+    PROPERTIES(r) READONLY name, defaultValue, baseValue EDITABLE
+    PROPERTIES(r,u) value READONLY BEFORE defaultValue(r), baseValue
+    FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, u) 'F9'
 ;
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);

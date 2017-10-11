@@ -34,18 +34,19 @@ import lsfusion.server.remote.RmiServer;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.MDC;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
-    public static final ThreadLocal<Settings> wrappedSettings = new ThreadLocal<>();
+    private static final ThreadLocal<Settings> settings = new ThreadLocal<>();
+    private static ThreadLocal<Map<String, String>> overrideSettingsMap = new ThreadLocal<>();
+    private static ConcurrentWeakHashMap<Long, Settings> userSettingsMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentWeakHashMap<Thread, Boolean> activeMap = new ConcurrentWeakHashMap<>();
     public static Context get() { // временно, потом надо private сделать
@@ -73,14 +74,32 @@ public class ThreadLocalContext {
             activeMap.put(Thread.currentThread(), false);
     }
 
-    public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
-        Settings settings = Settings.copy();
-        SaveReflectionPropertyActionProperty.setPropertyValue(settings, nameProperty, valueProperty);
-        wrappedSettings.set(settings);
+    public static void setSettings() {
+        try {
+            if (settings.get() == null) {
+                Settings userSettings = getUserSettings();
+                settings.set(userSettings.cloneSettings());
+            }
+        } catch (CloneNotSupportedException e) {
+            ServerLoggers.systemLogger.error("SetSettings error: ", e);
+        }
     }
 
-    public static void popSettings() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        wrappedSettings.set(null);
+    public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
+        Map<String, String> overrideSettings = overrideSettingsMap.get();
+        if(overrideSettings == null)
+            overrideSettings = new HashMap<>();
+        String oldValue = BeanUtils.getProperty(settings.get(), nameProperty);
+        overrideSettings.put(nameProperty, oldValue);
+        overrideSettingsMap.set(overrideSettings);
+        SaveReflectionPropertyActionProperty.setPropertyValue(settings.get(), nameProperty, valueProperty);
+    }
+
+    public static void popSettings(String nameProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        String oldValue = overrideSettingsMap.get().remove(nameProperty);
+        if(oldValue == null)
+            ServerLoggers.assertLog(false, "POP PROPERTY WITHOUT PUSH: " + nameProperty);
+        BeanUtils.setProperty(settings.get(), nameProperty, oldValue);
     }
 
     public static Long getCurrentUser() {
@@ -120,7 +139,17 @@ public class ThreadLocalContext {
     }
 
     public static Settings getSettings() {
-        return wrappedSettings.get() != null ? wrappedSettings.get() : getLogicsInstance().getSettings();
+        return settings.get() != null ? settings.get() : getLogicsInstance().getSettings();
+    }
+
+    public static Settings getUserSettings() throws CloneNotSupportedException {
+        Long currentUser = getCurrentUser();
+        Settings userSettings = userSettingsMap.get(currentUser);
+        if(userSettings == null) {
+            userSettings = Settings.copy();
+            userSettingsMap.put(currentUser, userSettings);
+        }
+        return userSettings;
     }
 
     public static FormInstance getFormInstance() {
@@ -244,6 +273,8 @@ public class ThreadLocalContext {
                 currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + " - " + currentThread.getId());
             }
         }
+
+        ThreadLocalContext.setSettings();
 
         checkThread(prevContext, assertTop, threadInfo);
 

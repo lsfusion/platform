@@ -292,6 +292,10 @@ public class Settings implements Cloneable {
         return (Settings) get().clone();
     }
 
+    public Settings cloneSettings() throws CloneNotSupportedException {
+        return (Settings) clone();
+    }
+
     public int getInnerGroupExprs() {
         return innerGroupExprs;
     }
