@@ -734,7 +734,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 try {
                     updateStats(sql, true);
                 } catch (Exception ignored) {
-                    startLogger.info("Error updating stats, while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
+                    startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
                     ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
                 }
 
@@ -750,7 +750,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 sql.suppressErrorLogging = prevSuppressErrorLogging;
             }
         } catch (Exception ignored) {
-            startLogger.info("Error while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
+            startLogger.info("Error while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
             ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
         }
     }
