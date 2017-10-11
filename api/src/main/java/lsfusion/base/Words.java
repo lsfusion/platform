@@ -36,7 +36,7 @@ public class Words {
         decimalPostfix.put(("EUR"), new String[]{"евро ", "евро ", "евро "});
         decimalPostfix.put(("USD"), new String[]{"доллар США ", "доллара США ", "долларов США "});
         decimalPostfix.put(("RUB"), new String[]{"рубль ", "рубля ", "рублей "});
-        decimalPostfix.put(("BLR"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
+        decimalPostfix.put(("BYN"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
         decimalPostfix.put(("ton"), new String[]{"тонна ", "тонны ", "тонн "});
         decimalPostfix.put(("kg"), new String[]{"килограмм ", "килограмма ", "килограмм "});
         decimalPostfix.put(("gr"), new String[]{"грамм ", "грамма ", "грамм "});
@@ -50,7 +50,7 @@ public class Words {
         fractalPostfix.put("EUR2", new String[]{"евроцент ", "евроцента ", "евроцентов "});
         fractalPostfix.put("USD2", new String[]{"цент ", "цента ", "центов"});
         fractalPostfix.put("RUB2", new String[]{"копейка ", "копейки ", "копеек"});
-        fractalPostfix.put("BLR2", new String[]{"копейка ", "копейки ", "копеек"});
+        fractalPostfix.put("BYN2", new String[]{"копейка ", "копейки ", "копеек"});
         fractalPostfix.put("ton3", new String[]{"килограмм ", "килограмма ", "килограмм "});
         fractalPostfix.put("kg3", new String[]{"грамм ", "грамма ", "грамм "});
         fractalPostfix.put("gr3", new String[]{"тысячная ", "тысячных ", "тысячных "});
@@ -68,7 +68,7 @@ public class Words {
         sexMap.put(("EUR"), false);
         sexMap.put(("USD"), false);
         sexMap.put(("RUB"), false);
-        sexMap.put(("BLR"), false);
+        sexMap.put(("BYN"), false);
         sexMap.put(("ton"), true);
         sexMap.put(("kg"), false);
         sexMap.put(("gr"), false);
@@ -76,7 +76,7 @@ public class Words {
         sexMap.put(("EUR2"), false);
         sexMap.put(("USD2"), false);
         sexMap.put(("RUB2"), true);
-        sexMap.put(("BLR2"), true);
+        sexMap.put(("BYN2"), true);
         sexMap.put(("ton3"), false);
         sexMap.put(("kg3"), false);
         sexMap.put(("gr3"), true);
@@ -93,7 +93,7 @@ public class Words {
         numOfDigitsMap.put(("EUR"), 2);
         numOfDigitsMap.put(("USD"), 2);
         numOfDigitsMap.put(("RUB"), 2);
-        numOfDigitsMap.put(("BLR"), 2);
+        numOfDigitsMap.put(("BYN"), 2);
         numOfDigitsMap.put(("ton"), 3);
         numOfDigitsMap.put(("kg"), 3);
         numOfDigitsMap.put(("gr"), 3);
