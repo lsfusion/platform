@@ -383,7 +383,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             basePrefs[i] = basePref;
 
             Integer userWidth = getUserWidth(i);
-            int pref = userWidth != null ? Math.max(userWidth, basePref) : basePref;
+            int pref = flex && userWidth != null ? Math.max(userWidth, basePref) : basePref;
             prefs[i] = pref;
         }
         updateLayoutWidthColumns();
