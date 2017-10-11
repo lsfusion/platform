@@ -50,7 +50,11 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         getFormLayout().add(treeGroup, treeView, new DefaultFocusReceiver() {
             @Override
             public boolean focus() {
-                return focusFirstWidget();
+                boolean focused = focusFirstWidget();
+                if (focused) {
+                    scrollToTop();
+                }
+                return focused;
             }
         });
 
@@ -285,6 +289,11 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
         }
 
         return panel.focusFirstWidget();
+    }
+
+    @Override
+    public GComponent getGridComponent() {
+        return treeGroup;
     }
 
     @Override

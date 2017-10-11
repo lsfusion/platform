@@ -1227,12 +1227,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         for (GTreeGroupController treeController : treeControllers.values()) {
             if (treeController.focusFirstWidget()) {
+                treeController.scrollToTop();
                 return;
             }
         }
 
         for (GGroupObjectController controller : controllers.values()) { // в конце controllers лежит нулевой groupObject. его-то и следует оставить напоследок
             if (controller.focusFirstWidget()) {
+                controller.scrollToTop();
                 return;
             }
         }

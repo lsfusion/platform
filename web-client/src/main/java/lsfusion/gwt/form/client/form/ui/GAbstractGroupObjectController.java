@@ -1,11 +1,10 @@
 package lsfusion.gwt.form.client.form.ui;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.client.form.ui.filter.GFilterController;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.shared.view.GObject;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GToolbar;
+import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -105,8 +104,30 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
 
     protected abstract void changeFilter(List<GPropertyFilter> conditions);
     public abstract boolean focusFirstWidget();
+    public abstract GComponent getGridComponent();
 
     @Override
     public void updateFooterValues(GFooterReader reader, Map<GGroupObjectValue, Object> values) {
+    }
+
+    // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
+    // (если грид заключён в скролл и не влезает по высоте) до первого ряда таблицы, скрывая заголовок (видимо вызывается scrollIntoView(), 
+    // который, кстати, продолжает вызываться и при последующих изменениях фокуса в IE).
+    // поэтому крутим все скроллы-предки вверх при открытии формы.
+    // неоднозначное решение, т.к. вовсе необязательно фокусный компонент находится вверху скролла, но пока должно хватать. 
+    public void scrollToTop() {
+        scrollToTop(getGridComponent().container);
+    }
+
+    private void scrollToTop(GContainer container) {
+        if (container != null) {
+            if (container.isScroll()) {
+                Element childElement = getFormLayout().getFormContainer(container).getView().getElement().getFirstChildElement();
+                if (childElement != null && childElement.getScrollTop() != 0) {
+                    childElement.setScrollTop(0);
+                }
+            }
+            scrollToTop(container.container);
+        }
     }
 }

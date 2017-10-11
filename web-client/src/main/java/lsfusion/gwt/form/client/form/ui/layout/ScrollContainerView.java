@@ -19,6 +19,7 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
+        scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
 
         view = scrollPanel;
     }
@@ -40,7 +41,7 @@ public class ScrollContainerView extends GAbstractContainerView {
 //        }
         // возможно надо попроставлять как внизу компонентам MaxPreferredSize ??
         if(1!=1) GwtClientUtils.calculateMaxPreferredSize(view); // .height
-        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
+        view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
         add(scrollPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
     }
 
