@@ -25,4 +25,9 @@ public class GTimeDTO implements Serializable {
     public static GTimeDTO fromDate(Date date) {
         return new GTimeDTO(date.getHours(), date.getMinutes(), date.getSeconds());
     }
+
+    @Override
+    public String toString() {
+        return toTime().toString();
+    }
 }

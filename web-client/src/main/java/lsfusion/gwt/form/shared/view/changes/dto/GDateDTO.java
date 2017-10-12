@@ -24,4 +24,9 @@ public class GDateDTO implements Serializable {
     public static GDateDTO fromDate(Date date) {
         return new GDateDTO(date.getDate(), date.getMonth(), date.getYear());
     }
+    
+    @Override
+    public String toString() {
+        return toDate().toString();
+    }
 }
