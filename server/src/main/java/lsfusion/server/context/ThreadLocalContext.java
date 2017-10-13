@@ -41,12 +41,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
     private static final ThreadLocal<Settings> settings = new ThreadLocal<>();
     private static ThreadLocal<Map<String, String>> overrideSettingsMap = new ThreadLocal<>();
-    private static ConcurrentWeakHashMap<Long, Settings> userSettingsMap = new ConcurrentWeakHashMap<>();
+    private static ConcurrentHashMap<Long, Settings> roleSettingsMap = new ConcurrentHashMap<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentWeakHashMap<Thread, Boolean> activeMap = new ConcurrentWeakHashMap<>();
     public static Context get() { // временно, потом надо private сделать
@@ -77,12 +78,16 @@ public class ThreadLocalContext {
     public static void setSettings() {
         try {
             if (settings.get() == null) {
-                Settings userSettings = getUserSettings();
-                settings.set(userSettings.cloneSettings());
+                settings.set(getRoleSettings().cloneSettings());
             }
         } catch (CloneNotSupportedException e) {
             ServerLoggers.systemLogger.error("SetSettings error: ", e);
         }
+    }
+
+
+    public static void dropSettings() {
+        settings.set(null);
     }
 
     public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
@@ -104,6 +109,10 @@ public class ThreadLocalContext {
 
     public static Long getCurrentUser() {
         return get().getCurrentUser();
+    }
+
+    public static Long getCurrentRole() {
+        return get().getCurrentUserRole();
     }
 
     public static LogicsInstance getLogicsInstance() {
@@ -142,14 +151,20 @@ public class ThreadLocalContext {
         return settings.get() != null ? settings.get() : getLogicsInstance().getSettings();
     }
 
-    public static Settings getUserSettings() throws CloneNotSupportedException {
-        Long currentUser = getCurrentUser();
-        Settings userSettings = userSettingsMap.get(currentUser);
-        if(userSettings == null) {
-            userSettings = Settings.copy();
-            userSettingsMap.put(currentUser, userSettings);
+    public static Settings getRoleSettings() throws CloneNotSupportedException {
+        Long currentRole = getCurrentRole();
+        if (currentRole == null) //системный процесс или пользователь без роли
+            currentRole = 0L;
+        Settings roleSettings = roleSettingsMap.get(currentRole);
+        if (roleSettings == null) {
+            roleSettings = Settings.copy();
+            roleSettingsMap.put(currentRole, roleSettings);
         }
-        return userSettings;
+        return roleSettings;
+    }
+
+    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException {
+        return roleSettingsMap.get(role);
     }
 
     public static FormInstance getFormInstance() {
@@ -296,6 +311,7 @@ public class ThreadLocalContext {
 
 
         ThreadLocalContext.set(prevContext);
+        ThreadLocalContext.dropSettings();
     }
 
     private static void assureEvent(Context context, NewThreadExecutionStack stack) {

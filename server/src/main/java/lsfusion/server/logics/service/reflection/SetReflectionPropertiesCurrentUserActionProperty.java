@@ -35,14 +35,12 @@ public class SetReflectionPropertiesCurrentUserActionProperty extends ScriptingA
         try {
 
             Map<String, String> savedReflectionProperties = readSavedReflectionProperties(context);
-
-            Settings settings = ThreadLocalContext.getUserSettings();
+            Settings settings = ThreadLocalContext.getRoleSettings();
             Field[] attributes = settings.getClass().getDeclaredFields();
-
             for (Field field : attributes) {
                 String name = field.getName();
                 String savedValue = savedReflectionProperties.get(name);
-                if(savedValue != null)
+                if (savedValue != null)
                     SaveReflectionPropertyActionProperty.setPropertyValue(settings, name, savedValue);
             }
 
@@ -59,9 +57,9 @@ public class SetReflectionPropertiesCurrentUserActionProperty extends ScriptingA
 
         QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<>(reflectionPropertyKeys);
         reflectionPropertyQuery.addProperty("name", findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr));
-        reflectionPropertyQuery.addProperty("baseValue", findProperty("baseValueCurrentUser[ReflectionProperty]").getExpr(reflectionPropertyExpr));
+        reflectionPropertyQuery.addProperty("baseValue", findProperty("baseValueCurrentUserRole[ReflectionProperty]").getExpr(reflectionPropertyExpr));
         reflectionPropertyQuery.and(findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
-        reflectionPropertyQuery.and(findProperty("baseValueCurrentUser[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
+        reflectionPropertyQuery.and(findProperty("baseValueCurrentUserRole[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
 
         Map<String, String> reflectionPropertiesMap = new HashMap<>();
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = reflectionPropertyQuery.execute(context);

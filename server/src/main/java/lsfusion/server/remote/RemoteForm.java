@@ -1043,6 +1043,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return (Long) form.session.user.getCurrentUser().getValue();
     }
 
+    public Long getCurrentUserRole() {
+        return form.session.user.getCurrentUserRole();
+    }
+
     public Long getCurrentComputer() {
         return (Long) form.session.computer.getCurrentComputer().getValue();
     }

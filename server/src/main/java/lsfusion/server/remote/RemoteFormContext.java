@@ -77,6 +77,11 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.getCurrentUser();
     }
 
+    @Override
+    public Long getCurrentUserRole() {
+        return form.getCurrentUserRole();
+    }
+
     public DataObject getConnection() {
         return form.form.instanceFactory.connection;
     }

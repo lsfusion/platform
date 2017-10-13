@@ -144,6 +144,8 @@ public abstract class AbstractContext implements Context {
 
     public abstract Long getCurrentUser();
 
+    public abstract Long getCurrentUserRole();
+
     public abstract DataObject getConnection();
 
     @Override

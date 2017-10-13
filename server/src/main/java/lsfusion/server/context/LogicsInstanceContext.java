@@ -59,6 +59,11 @@ public class LogicsInstanceContext extends AbstractContext {
         return logicsInstance.getDbManager().getSystemUserObject();
     }
 
+    @Override
+    public Long getCurrentUserRole() {
+        return null;
+    }
+
     public DataObject getConnection() {
         return null;
     }

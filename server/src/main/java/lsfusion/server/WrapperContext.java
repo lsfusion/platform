@@ -64,6 +64,11 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getCurrentUser();
     }
 
+    @Override
+    public Long getCurrentUserRole() {
+        return wrappedContext.getCurrentUserRole();
+    }
+
     public DataObject getConnection() {
         return wrappedContext.getConnection();
     }

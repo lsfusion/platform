@@ -323,6 +323,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     public ObjectValue getCurrentUser() {
                         return new DataObject(systemUserObject, businessLogics.authenticationLM.systemUser);
                     }
+
+                    @Override
+                    public Long getCurrentUserRole() {
+                        return null;
+                    }
                 },
                 new ComputerController() {
                     public ObjectValue getCurrentComputer() {

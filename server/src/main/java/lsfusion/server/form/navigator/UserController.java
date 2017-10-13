@@ -11,4 +11,5 @@ public interface UserController {
 
     boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException;
     ObjectValue getCurrentUser();
+    Long getCurrentUserRole();
 }

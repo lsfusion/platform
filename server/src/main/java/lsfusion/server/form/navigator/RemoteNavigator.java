@@ -340,6 +340,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
         }
+
+        public Long getCurrentUserRole() {
+            RemoteNavigator remoteNavigator = weakThis.get();
+            return remoteNavigator == null ? null : remoteNavigator.getRole();
+        }
     }
 
     private static class WeakLocaleController implements LocaleController { // чтобы помочь сборщику мусора и устранить цикл
@@ -733,6 +738,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public DataObject getUser() {
         return user;
+    }
+
+    public Long getRole() {
+        try {
+            return (Long) securityManager.getUserMainRole(user);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public DataObject getComputer() {

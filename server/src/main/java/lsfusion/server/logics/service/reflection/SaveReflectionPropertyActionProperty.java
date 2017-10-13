@@ -3,8 +3,9 @@ package lsfusion.server.logics.service.reflection;
 import com.google.common.base.Throwables;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -22,14 +23,14 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SaveReflectionPropertyActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface reflectionPropertyInterface;
-    private final ClassPropertyInterface userInterface;
+    private final ClassPropertyInterface userRoleInterface;
 
     public SaveReflectionPropertyActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         reflectionPropertyInterface = i.next();
-        userInterface = i.next();
+        userRoleInterface = i.next();
     }
 
     @Override
@@ -37,23 +38,28 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
 
         try {
 
-            DataObject reflectionPropertyObject = context.getDataKeyValue(reflectionPropertyInterface);
-            DataObject userObject = context.getDataKeyValue(userInterface);
+            ObjectValue reflectionPropertyObject = context.getKeyValue(reflectionPropertyInterface);
+            ObjectValue userRoleObject = context.getKeyValue(userRoleInterface);
 
             String nameReflectionProperty = trimToNull((String) findProperty("name[ReflectionProperty]").read(context, reflectionPropertyObject));
-            String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty, CustomUser]").read(context, reflectionPropertyObject, userObject));
+            String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty, UserRole]").read(context, reflectionPropertyObject, userRoleObject));
 
             if(nameReflectionProperty != null && valueReflectionProperty != null) {
-                
-                String oldValue = BeanUtils.getProperty(Settings.get(), nameReflectionProperty);
 
-                if(!oldValue.equals(valueReflectionProperty)) {
-                    setPropertyValue(Settings.get(), nameReflectionProperty, valueReflectionProperty);
+                Long userRole = (Long) userRoleObject.getValue();
+                Settings settings = ThreadLocalContext.getRoleSettings(userRole != null ? userRole : 0);
+                if(settings != null) {
+
+                    String oldValue = BeanUtils.getProperty(settings, nameReflectionProperty);
+
+                    if (!oldValue.equals(valueReflectionProperty)) {
+                        setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
+                    }
                 }
             }
             
 
-        } catch (ScriptingErrorLog.SemanticErrorException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | CloneNotSupportedException e) {
             throw Throwables.propagate(e);
         }
 
@@ -71,5 +77,10 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
             BeanUtils.setProperty(settings, nameProperty, Long.valueOf(valueProperty));
         else
             BeanUtils.setProperty(settings, nameProperty, trimToEmpty(valueProperty));
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
