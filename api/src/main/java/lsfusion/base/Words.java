@@ -430,7 +430,7 @@ public class Words {
                     if (mny >= 10) {
                         result.append(digit[mny - 10][dec2]);
                     } else {
-                        if (mny >= 1) result.append(digit[mny][female ? 1 : 0]);
+                        if (mny >= 1) result.append(digit[mny]["1".equals(a_power[i][0]) || female ? 1 : 0]);
                     }
                     switch (mny) {
                         case 1:
