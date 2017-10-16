@@ -37,16 +37,16 @@ $BODY$
 $BODY$
   LANGUAGE plpgsql VOLATILE STRICT;
     
-CREATE OR REPLACE FUNCTION jumpworkdays(bigint, date, bigint)
+CREATE OR REPLACE FUNCTION jumpworkdays(bigint, date, integer)
   RETURNS date AS
 $BODY$
     DECLARE
-        quantity BIGINT := @$3;
-        bufferSize BIGINT := CASE WHEN quantity > 1 THEN quantity / 2 ELSE 1 END;
-        counter BIGINT := 0;
+        quantity INTEGER := @$3;
+        bufferSize INTEGER := CASE WHEN quantity > 1 THEN quantity / 2 ELSE 1 END;
+        counter INTEGER := 0;
         date date := $2;
         daysOff date[];
-        add BIGINT;
+        add INTEGER;
         lastOff date := date;
         forward BOOLEAN := $3 > 0;
     BEGIN
