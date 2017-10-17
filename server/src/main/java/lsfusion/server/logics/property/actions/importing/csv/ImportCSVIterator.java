@@ -30,7 +30,7 @@ public class ImportCSVIterator extends ImportIterator {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
         scanner = new Scanner(inputStream, this.charset);
 
-        if (!noHeader) {
+        if (!noHeader && lastRow > 0) {
             scanner.nextLine();
         }
     }
@@ -66,17 +66,19 @@ public class ImportCSVIterator extends ImportIterator {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
         scanner = new Scanner(inputStream, charset);
 
-        if (!noHeader) {
-            scanner.nextLine();
-        }
-
-        int row = 0;
         int lastNonEmptyRow = 0;
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            row++;
-            if(!line.isEmpty())
-                lastNonEmptyRow = row;
+        if(scanner.hasNextLine()) { //защита от пустых файлов
+            if (!noHeader) {
+                scanner.nextLine();
+            }
+
+            int row = 0;
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                row++;
+                if (!line.isEmpty())
+                    lastNonEmptyRow = row;
+            }
         }
         return lastNonEmptyRow;
     }
