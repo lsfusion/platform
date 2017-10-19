@@ -72,9 +72,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         // column caption settings        
         columnCaptionBox = new TextBox();
         columnCaptionBox.addStyleName("userPreferencesColumnTextBox");
-        columnCaptionBox.addChangeHandler(new ChangeHandler() {
+        columnCaptionBox.addKeyUpHandler(new KeyUpHandler() {
             @Override
-            public void onChange(ChangeEvent changeEvent) {
+            public void onKeyUp(KeyUpEvent event) {
                 columnsDualListBox.columnCaptionBoxTextChanged(columnCaptionBox.getText());
             }
         });
