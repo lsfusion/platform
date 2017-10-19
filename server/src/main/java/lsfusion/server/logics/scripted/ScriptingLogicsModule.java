@@ -2858,9 +2858,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(ids, props, attr, baseLM)), Collections.singletonList(fileProp));
+        List<LPWithParams> params = new ArrayList<>();
+        params.add(fileProp);
+        if(rootProp != null)
+            params.add(rootProp);
+        return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(params.size(), ids, props, attr, baseLM)), params);
     }
 
     public LPWithParams addScriptedImportFormCSVActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {
