@@ -3682,7 +3682,7 @@ navigatorElementDescription[String name, LocalizedString caption] returns [Navig
  	}	
 }
 	:	'FOLDER'? 
-	|	'FORM' formName=compoundID 
+	|	'FORM'? formName=compoundID 
 	|	'ACTION' pu=propertyUsage 
 	;
 
