@@ -1,5 +1,6 @@
 package lsfusion.server.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
@@ -193,6 +194,20 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         onClose();
 
         closed = true;
+    }
+
+    public String toString() { // чтобы избегать ситуации когда включается log, toString падает по ошибке, а в месте log'а exception'ы не предполагаются (например dgc log, где поток checkLeases просто останавливается) 
+        try {
+            return notSafeToString();
+        } catch (Throwable t) {
+            return getDefaultToString(); 
+        }
+    }
+    private String getDefaultToString() {
+        return BaseUtils.defaultToString(this);
+    }
+    protected String notSafeToString() {
+        return getDefaultToString();
     }
 
     public boolean isClosed() {

@@ -2702,5 +2702,9 @@ public class BaseUtils {
                 index++;
         }
         return index;
-    } 
+    }
+    
+    public static String defaultToString(Object o) {
+        return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
+    }
 }

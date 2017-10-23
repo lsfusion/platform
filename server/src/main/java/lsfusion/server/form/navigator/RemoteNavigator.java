@@ -1061,8 +1061,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private ChangesSync changesSync = new ChangesSync();
 
     @Override
-    public String toString() {
-        return "RemoteNavigator[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
+    protected String notSafeToString() {
+        return "RN[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
     }
 
     @Override

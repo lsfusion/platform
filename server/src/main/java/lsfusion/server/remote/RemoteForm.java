@@ -1087,8 +1087,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public String toString() {
-        return "RF - " + form;
+    protected String notSafeToString() {
+        return "RF[" + form + "]";
     }
 
 
