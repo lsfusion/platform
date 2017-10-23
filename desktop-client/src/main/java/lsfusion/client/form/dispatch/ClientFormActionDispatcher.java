@@ -67,14 +67,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         getFormController().unblock(unblockView);
     }
 
-    public void execute(RunPrintReportClientAction action) {
-        getFormController().runPrintReport(action.isDebug);
-    }
-
-    public void execute(RunOpenInExcelClientAction action) {
-        getFormController().runOpenInExcel();
-    }
-
     public void execute(RunEditReportClientAction action) {
         getFormController().runEditReport(false);
     }

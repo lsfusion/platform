@@ -35,10 +35,6 @@ public interface ClientActionDispatcher {
 
     void execute(AudioClientAction action);
 
-    void execute(RunPrintReportClientAction action);
-
-    void execute(RunOpenInExcelClientAction action);
-
     void execute(RunEditReportClientAction action);
 
     void execute(HideFormClientAction action);

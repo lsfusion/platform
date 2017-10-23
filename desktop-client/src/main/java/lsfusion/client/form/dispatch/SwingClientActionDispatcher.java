@@ -435,12 +435,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(RunPrintReportClientAction action) {
-    }
-
-    public void execute(RunOpenInExcelClientAction action) {
-    }
-
     public void execute(RunEditReportClientAction action) {
     }
 

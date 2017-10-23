@@ -1380,65 +1380,6 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
-    public void runPrintReport(final boolean isDebug) {
-        assert Main.module.isFull();
-
-        try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runPrintReport") {
-                @Override
-                protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, null, false, getUserPreferences());
-                }
-
-                @Override
-                public void onResponse(long requestIndex, final ReportGenerationData generationData) throws Exception {
-                    if (generationData != null) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                Main.frame.runReport(false, generationData, isDebug ? editReportInvoker : null);
-                                } catch (Exception e) {
-                                    throw new RuntimeException(getString("form.error.printing.form"), e);
-                                }
-                            }
-                        });
-
-                    }
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(getString("form.error.printing.form"), e);
-        }
-    }
-
-    public void runOpenInExcel() {
-        assert Main.module.isFull();
-
-        try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runOpenInExcel") {
-                @Override
-                protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, null, true, getUserPreferences());
-                }
-
-                @Override
-                public void onResponse(long requestIndex, final ReportGenerationData generationData) throws Exception {
-                    if (generationData != null) {
-                        RmiQueue.runAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                Main.module.openInExcel(generationData);
-                            }
-                        });
-                    }
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(getString("form.error.running.excel"), e);
-        }
-    }
-
     public void runEditReport(final boolean useAuto) {
         assert Main.module.isFull();
 

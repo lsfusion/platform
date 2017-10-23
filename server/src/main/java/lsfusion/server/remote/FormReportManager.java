@@ -120,10 +120,6 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, 0);
     }
 
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences, int selectTop) {
-        return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, selectTop);
-    }
-
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) {
         GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isPrintJasper());
          

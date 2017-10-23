@@ -2669,7 +2669,10 @@ customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature
 	}
 }
 	:	'CUSTOM'
-		(classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? | code = codeLiteral)
+        (   
+            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
+		|   code = codeLiteral
+        )
 	    ('NULL' { allowNullValue = true; })?
 	;
 

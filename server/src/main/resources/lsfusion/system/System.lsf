@@ -32,9 +32,7 @@ subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER
 
 formApply '{action.form.save}' = CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel '{action.form.cancel}' = CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
-formPrint '{action.form.print}' = CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportPrintActionProperty' ();
 formEditReport '{action.form.edit}' = CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
-formXls '{action.form.xlsExport}' = CUSTOM 'lsfusion.server.logics.property.actions.form.RunReportXlsActionProperty' ();
 formDrop '{action.form.drop}' = CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
 formRefresh '{action.form.refresh}' = CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
 formOk '{action.form.ok}' = CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();

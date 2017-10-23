@@ -135,16 +135,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return valuesConverter.convertOrCast(deserializeObject(valueBytes));
     }
 
-    @Converter(from = RunPrintReportClientAction.class)
-    public GRunOpenReportAction convertAction(RunPrintReportClientAction action, FormSessionObject form) throws IOException {
-        return new GRunOpenReportAction(false);
-    }
-
-    @Converter(from = RunOpenInExcelClientAction.class)
-    public GRunOpenReportAction convertAction(RunOpenInExcelClientAction action, FormSessionObject form) throws IOException {
-        return new GRunOpenReportAction(true);
-    }
-
     @Converter(from = UpdateEditValueClientAction.class)
     public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action, FormDispatchServlet servlet) throws IOException {
         return new GUpdateEditValueAction(valuesConverter.convertOrCast(deserializeServerValue(action.value), servlet.getBLProvider()));
