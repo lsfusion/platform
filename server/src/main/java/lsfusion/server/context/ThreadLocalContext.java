@@ -425,14 +425,31 @@ public class ThreadLocalContext {
     }
 
     public static String localize(LocalizedString s) {
-        return s == null ? null : get().localize(s);    
+        return s == null ? null : safeLocalize(s);    
     }
     
     public static String localize(String s) {
-        return s == null ? null : get().localize(LocalizedString.create(s));
+        return s == null ? null : safeLocalize(LocalizedString.create(s));
     } 
 
     public static String localize(LocalizedString s, Locale locale) {
-        return s == null ? null : get().localize(s, locale);
+        return s == null ? null : safeLocalize(s, locale);
+    }
+    
+    private static String safeLocalize(LocalizedString s) {
+        Context context = get();
+        if(context == null) { // так как может вызываться в toString, а он в свою очередь может вызываться в случайных потоках (например см. ContextAwarePendingRemoteObject.toString), поэтому на всякий случай проверяем 
+            ServerLoggers.assertLog(false, "NO CONTEXT WHEN LOCALIZED");
+            return s.getSourceString();
+        }
+        return context.localize(s); 
+    }
+    private static String safeLocalize(LocalizedString s, Locale locale) {
+        Context context = get();
+        if(context == null) { // так как может вызываться в toString, а он в свою очередь может вызываться в случайных потоках (например см. ContextAwarePendingRemoteObject.toString), поэтому на всякий случай проверяем
+            ServerLoggers.assertLog(false, "NO CONTEXT WHEN LOCALIZED");
+            return s.getSourceString();
+        }
+        return context.localize(s, locale);
     }
 }
