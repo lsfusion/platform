@@ -224,7 +224,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementChange)
             return implement.property.getChangeProps();
 
-        if(implement.mapping.size() == 1 && implement.property.aggProp)
+        if(implement.mapping.size() == 1 && implement.property.aggProp && Settings.get().isEnableAggProp())
             return implement.mapping.singleValue().mapChangeProps();
 
         return super.getChangeProps();
