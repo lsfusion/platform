@@ -27,10 +27,21 @@ CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
 template 'Шаблон' = DATA Template (TemplateEntry);
-isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+
+// Таблица
+isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+
+dataFirstRow = DATA INTEGER (TemplateEntry);
+firstRow 'Первый ряд с данными (начиная с 0)' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
+
+dataColumnSeparator = DATA VARSTRING[20] (TemplateEntry);
+columnSeparator 'Разделитель колонок' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
+
+dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry BY  key(templateEntry), id(template(templateEntry)) WHERE templateEntry IS TemplateEntry;
 
@@ -42,6 +53,7 @@ FORM template 'Шаблон Word'
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) PANEL SHOWIF isTable(te) firstRow, columnSeparator, rowSeparator
     PROPERTIES (t) TODRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t

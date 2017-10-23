@@ -64,6 +64,9 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     templateEntryQuery.addProperty("keyTemplateEntry", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("valueTemplateEntry", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("isTableTemplateEntry", findProperty("isTable[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("firstRowTemplateEntry", findProperty("firstRow[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("columnSeparatorTemplateEntry", findProperty("columnSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("rowSeparatorTemplateEntry", findProperty("rowSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
 
                     templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
@@ -74,9 +77,13 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         String keyTemplateEntry = (String) templateEntry.get("keyTemplateEntry");
                         String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
                         boolean isTableTemplateEntry = templateEntry.get("isTableTemplateEntry") != null;
+                        Integer firstRowTemplateEntry = (Integer) templateEntry.get("firstRowTemplateEntry");
+                        String columnSeparatorTemplateEntry = (String) templateEntry.get("columnSeparatorTemplateEntry");
+                        String rowSeparatorTemplateEntry = (String) templateEntry.get("rowSeparatorTemplateEntry");
 
                         if (keyTemplateEntry != null && valueTemplateEntry != null)
-                            templateEntriesList.add(Arrays.asList((Object) keyTemplateEntry, valueTemplateEntry.replace('\n', '\r'), isTableTemplateEntry));
+                            templateEntriesList.add(Arrays.asList((Object) keyTemplateEntry, valueTemplateEntry.replace('\n', '\r'), 
+                                                                  isTableTemplateEntry, firstRowTemplateEntry, columnSeparatorTemplateEntry, rowSeparatorTemplateEntry));
                     }
 
                     byte[] fileObject = (byte[]) fileObjectValue.getValue();
@@ -91,8 +98,11 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             String key = (String) entry.get(0);
                             String value = (String) entry.get(1);
                             boolean isTable = (boolean) entry.get(2);
+                            Integer firstRow = (Integer) entry.get(3);
+                            String columnSeparator = (String) entry.get(4);
+                            String rowSeparator = (String) entry.get(5);
                             for (XWPFTable tbl : document.getTables()) {
-                                replaceTableDataDocx(tbl, key, value, isTable);
+                                replaceTableDataDocx(tbl, key, value, isTable, firstRow, columnSeparator, rowSeparator);
                             }
                             replaceRegularDataDocx(docParagraphs, key, value);
                         }
@@ -114,19 +124,19 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void replaceTableDataDocx(XWPFTable tbl, String key, String value, boolean isTable) {
+    private void replaceTableDataDocx(XWPFTable tbl, String key, String value, boolean isTable, Integer firstRow, String columnSeparator, String rowSeparator) {
         if(isTable) {
-            XWPFTableRow row = tbl.getRow(0);
+            XWPFTableRow row = tbl.getRow(firstRow);
             XWPFTableCell cell = row.getCell(0);
             String text = cell.getText();
             if (text != null && text.contains(key)) {
-                String[] tableRows = value.split("\r");
-                int i = 0;
+                String[] tableRows = value.split(rowSeparator);
+                int i = firstRow;
                 for (String tableRow : tableRows) {
-                    if (i == 0) {
-                        XWPFTableRow newRow = tbl.getRow(0);
+                    if (i == firstRow) {
+                        XWPFTableRow newRow = tbl.getRow(i);
                         int j = 0;
-                        for (String tableCell : tableRow.split(";")) {
+                        for (String tableCell : tableRow.split(columnSeparator)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             if (newCell.getText().isEmpty())
                                 newCell.setText(tableCell);
@@ -138,7 +148,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     } else {
                         XWPFTableRow newRow = tbl.createRow();
                         int j = 0;
-                        for (String tableCell : tableRow.split(";")) {
+                        for (String tableCell : tableRow.split(columnSeparator)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             newCell.setText(tableCell);
                             j++;
