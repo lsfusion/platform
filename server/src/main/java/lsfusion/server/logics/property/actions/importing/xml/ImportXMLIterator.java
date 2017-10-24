@@ -18,10 +18,12 @@ public abstract class ImportXMLIterator extends ImportIterator {
     private boolean attr;
     private Iterator iterator;
     private final List<LCP> properties;
+    private final List<String> ids;
 
-    public ImportXMLIterator(byte[] file, List<LCP> properties, String root, boolean attr) throws JDOMException, IOException {
+    public ImportXMLIterator(byte[] file, List<LCP> properties, List<String> ids, String root, boolean attr) throws JDOMException, IOException {
         this.properties = properties;
         this.attr = attr;
+        this.ids = ids;
         SAXBuilder builder = new SAXBuilder();
         Document document = builder.build(new ByteArrayInputStream(file));
         if (root != null) {
@@ -55,19 +57,15 @@ public abstract class ImportXMLIterator extends ImportIterator {
         if (iterator.hasNext()) {
             List<String> listRow = new ArrayList<>();
             if (attr) {
-                List<Attribute> attributes = ((Element) iterator.next()).getAttributes();
-                Map<String, Integer> mapping = new HashMap<>();
-                for (int i = 0; i < attributes.size(); i++) {
-                    mapping.put(attributes.get(i).getName(), i);
-                }
-                List<Integer> columns = getColumns(mapping);
+                Element element = (Element) iterator.next();
+                List<Integer> columns = new ArrayList<Integer>();
 
+                for (String id : ids) {
+                    int column = ids.indexOf(id);
+                    columns.add(column);
 
-                for (Integer column : columns) {
-                    if (column < attributes.size()) {
-                        Attribute attribute = attributes.get(column);
-                        listRow.add(formatValue(properties, columns, column, attribute.getValue()));
-                    }
+                    Attribute attribute = element.getAttribute(id);
+                    listRow.add(attribute == null ? null : formatValue(properties, columns, column, attribute.getValue()));
                 }
             } else {
                 List<Element> children = ((Element) iterator.next()).getChildren();
