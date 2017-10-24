@@ -588,7 +588,7 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
         return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LAP addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
+    protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
@@ -1956,9 +1956,10 @@ public abstract class LogicsModule {
         property.checkChange = type;
         property.checkProperties = checkProperties;
 
-        ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
+        ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
+//        logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-//        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, property.caption, new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
+        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, property.caption, new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
