@@ -8,7 +8,7 @@ import java.util.Collection;
 public class DynamicFormatFileClass extends FileClass {
 
     protected String getFileSID() {
-        return "CustomClass"; // для обратной совместимости такое название
+        return "CUSTOMFILE"; // для обратной совместимости такое название
     }
 
     private static Collection<DynamicFormatFileClass> instances = new ArrayList<>();

@@ -10,7 +10,7 @@ import java.util.Collection;
 public class DynamicFormatLinkClass extends LinkClass {
 
     protected String getFileSID() {
-        return "CustomLink";
+        return "CUSTOMLINK";
     }
 
     private static Collection<DynamicFormatLinkClass> instances = new ArrayList<>();

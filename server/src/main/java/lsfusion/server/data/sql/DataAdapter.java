@@ -475,6 +475,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         if(ensured != null)
             return;
 
+        // assert type.hasSafeCast;
         Properties properties = new Properties();
         properties.put("function.name", genSafeCastName(type));
         properties.put("param.type", type.getDB(this, recTypes));

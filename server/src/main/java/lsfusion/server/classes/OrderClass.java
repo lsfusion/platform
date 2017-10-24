@@ -180,6 +180,11 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         return "OrderClass" + result;
     }
 
+    @Override
+    public String getParsedName() {
+        throw new UnsupportedOperationException();
+    }
+
     public Object read(Object value) {
         return value; // может зайти так как сейчас order вынужден быть в запросе
     }

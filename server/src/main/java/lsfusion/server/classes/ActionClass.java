@@ -97,6 +97,11 @@ public class ActionClass extends DataClass<Object> {
     }
 
     @Override
+    public String getParsedName() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Stat getTypeStat() {
         return Stat.ONE;
     }
