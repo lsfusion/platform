@@ -1,5 +1,6 @@
 package lsfusion.client.navigator;
 
+import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.layout.FlexConstraints;
@@ -60,7 +61,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setFocusable(false);
         button.getModel().setArmed(true);
 
-        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorElement.class)) {
+        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
             button.setForeground(Color.blue);
             button.setSelected(true);
         }
