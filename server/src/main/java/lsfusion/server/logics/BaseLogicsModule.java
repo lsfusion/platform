@@ -153,29 +153,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityLazy
-    public LAP getFormPrint() {
-        try {
-            return findAction("formPrint[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            Throwables.propagate(e);
-        }
-        return null;
-    }
-
-    @IdentityLazy
     public LAP getFormEditReport() {
         try {
             return findAction("formEditReport[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            Throwables.propagate(e);
-        }
-        return null;
-    }
-
-    @IdentityLazy
-    public LAP getFormXls() {
-        try {
-            return findAction("formXls[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
