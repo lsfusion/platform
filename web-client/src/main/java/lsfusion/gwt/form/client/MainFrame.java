@@ -79,7 +79,7 @@ public class MainFrame implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GExceptionManager.logClientError(messages.uncaughtGWTException() + ": ", t);
+                GExceptionManager.logClientError("Uncaught GWT : " + messages.uncaughtGWTException() + ": ", t);
             }
         });
 
