@@ -78,8 +78,9 @@ onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
+floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
 ceil = FORMULA 'ceiling($1)';
-ceil = FORMULA 'ceiling(($1)/($2))*($2)';
+ceil = FORMULA NULL 'ceiling(($1)/notZero($2))*($2)';
 min = FORMULA '($1+$2-ABS($1-$2))/2';
 max = FORMULA '($1+$2+ABS($1-$2))/2';
 trunc = FORMULA 'trunc($1,$2)';
