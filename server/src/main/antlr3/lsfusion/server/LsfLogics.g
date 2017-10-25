@@ -531,7 +531,7 @@ formGroupObjectInitViewType returns [boolean isInitType]
 	;
 
 classViewType returns [ClassViewType type]
-	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;} | 'TOOLBAR' {$type = ClassViewType.TOOLBAR;} | 'LIST' {$type = ClassViewType.GRID;} | 'SINGLE' {$type = ClassViewType.PANEL;} )
+	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;} | 'TOOLBAR' {$type = ClassViewType.TOOLBAR;})
 	;
 
 formGroupObjectPageSize returns [Integer value = null]
@@ -994,7 +994,7 @@ formOrderByList
 		$formStatement::form.addScriptedDefaultOrder(properties, orders, self.getVersion());
 	}
 }
-	:	'ORDER' 'BY' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
+	:	'ORDER' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
 		(',' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); } )*
 	;
 	
@@ -2146,7 +2146,7 @@ editKeySetting [LP property]
 		self.setEditKey(property, $key.val, show);
 	}
 }
-	:	'EDITKEY' key = stringLiteral
+	:	'CHANGEKEY' key = stringLiteral
 		(	('SHOW' { show = true; })
 		|	('HIDE' { show = false; })
 		)?
@@ -2502,11 +2502,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	;
 	
 manageSessionClause returns [ManageSessionType result]
-    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
-	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
-	|	'MANAGESESSIONX' { $result = ManageSessionType.MANAGESESSIONX; }
-	|	'NOMANAGESESSIONX' { $result = ManageSessionType.NOMANAGESESSIONX; }
-	|	'AUTOX' { $result = ManageSessionType.AUTO; }
+    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSIONX; }
+	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSIONX; }
     ;
 
 formSessionScopeClause returns [FormSessionScope result]
@@ -2563,8 +2560,10 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
                 ('TOP' top = intLiteral { selectTop = $top.val; } )?
             )
         |   ( // static - interactive
+            (   'PREVIEW'
+            |   'NOPREVIEW' { printType = FormPrintType.AUTO; }
+            )?
 		    (sync = syncTypeLiteral { syncType = $sync.val; })?
-            ('AUTO' { printType = FormPrintType.AUTO; })?
             ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?            
             )
         )		
@@ -2634,7 +2633,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
                 'CHANGE' { assign = true; outNull = true; constraintFilter = true; }
                 ('=' consExpr=propertyExpression[context, dynamic])? { changeProp = $consExpr.property; }
                 ('NOCONSTRAINTFILTER' { constraintFilter = false; } )?
-                ('NOASSIGN' { assign = false; assignDebugPoint = null; } )?
+                ('NOCHANGE' { assign = false; assignDebugPoint = null; } )?
                 )
             )
             { out = true; inNull = true; }
@@ -2804,8 +2803,8 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'MESSAGE'
-	    ('NOWAIT' { noWait = true; })?
 	    pe=propertyExpression[context, dynamic]
+	    (sync = syncTypeLiteral { noWait = !$sync.val; })?
 	;
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -3061,7 +3060,7 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 		$property = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
 	}
 }
-	:	('ASSIGN')?
+	:	('CHANGE')?
 		propUsage=propertyUsage
 		'(' params=singleParameterList[newContext, true] ')'
 		'<-'
@@ -3859,8 +3858,8 @@ formComponentSelector[ScriptingFormView formView] returns [ComponentView compone
 formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
     |   gs = globalSingleSelectorType { $sid = $gs.sid; }
-    |   'GROUP' '(' (   ggo = groupObjectTreeSelector ',' { $sid = $ggo.sid + ".panel.props"; }
-                    |   ggo = groupObjectTreeSelector ',' ggr = ID { $sid = $ggo.sid + "." + $ggr.text; }
+    |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = $ggo.sid + ".panel.props"; }
+                    |   ggr = ID ',' ggo = groupObjectTreeSelector { $sid = $ggo.sid + "." + $ggr.text; }
                     |   ggr = ID { $sid = "NOGROUP." + $ggr.text; }
                     |   { $sid = "nogroup.panel.props"; }
                     ) ')'
@@ -4431,7 +4430,7 @@ flexAlignmentLiteral returns [FlexAlignment val]
     ;
 
 propertyEditTypeLiteral returns [PropertyEditType val]
-	:	'EDITABLE' { $val = PropertyEditType.EDITABLE; }
+	:	'CHANGEABLE' { $val = PropertyEditType.EDITABLE; }
 	|	'READONLY' { $val = PropertyEditType.READONLY; }
 	|	'SELECTOR' { $val = PropertyEditType.SELECTOR; }
 	;
