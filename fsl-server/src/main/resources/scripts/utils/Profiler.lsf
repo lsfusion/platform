@@ -231,7 +231,7 @@ EXTEND FORM profiler
 
     OBJECTS ohs = ProfileObject
     PROPERTIES READONLY text(ohs), order(ohs), value(ohs, ihs) COLUMNS (ihs) HEADER staticCaption(ihs)
-    ORDER BY order(ohs) DESC
+    ORDER order(ohs) DESC
     FILTERS order(ohs)
 
 //raw data
@@ -245,7 +245,7 @@ EXTEND FORM profiler
     PROPERTIES(form) READONLY canonicalName
     PROPERTIES(po1, po2, user, form) READONLY order
     PROPERTIES(po1, po2, user, form, i) READONLY value COLUMNS (i) HEADER staticCaption(i)
-    ORDER BY order(po1, po2, user, form) DESC 
+    ORDER order(po1, po2, user, form) DESC 
     FILTERS order(po1, po2, user, form)
 
 //дерево
@@ -254,7 +254,7 @@ EXTEND FORM profiler
     TREE pT down=ProfileObject PARENT parent
     PROPERTIES (down) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                         totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER BY order(down) DESC
+    ORDER order(down) DESC
     
     OBJECTS iupToDown = ProfilerIndex GRID
     FILTERS active(iupToDown)
@@ -263,7 +263,7 @@ EXTEND FORM profiler
     PROPERTIES (upToDown) READONLY text
     PROPERTIES (down, upToDown) READONLY order
     PROPERTIES (down, upToDown, iupToDown) READONLY value COLUMNS (iupToDown) HEADER staticCaption(iupToDown)
-    ORDER BY order(down, upToDown) DESC
+    ORDER order(down, upToDown) DESC
     FILTERS order(down, upToDown)
     FILTERGROUP  upToDown
         FILTER 'Дополнительные' parent(upToDown) != down 'F6'
@@ -282,7 +282,7 @@ EXTEND FORM profiler
     TREE pB up=ProfileObject PARENT child
     PROPERTIES (up) READONLY text, order, totalTimeNoWait SHOWIF isTotalTimeNoWait(), totalJavaTime SHOWIF isTotalJavaTime(), 
                              totalSQLTime SHOWIF isTotalSQLTime(), inherentTimeNoWait SHOWIF isInherentTimeNoWait(), inherentJavaTime SHOWIF isInherentJavaTime()
-    ORDER BY order(up) DESC
+    ORDER order(up) DESC
     
     OBJECTS idownToUp = ProfilerIndex GRID
     FILTERS active(iupToDown)
@@ -291,7 +291,7 @@ EXTEND FORM profiler
     PROPERTIES (downToUp) READONLY text
     PROPERTIES (downToUp, up) READONLY order
     PROPERTIES (downToUp, up, iupToDown) READONLY value COLUMNS (idownToUp) HEADER staticCaption(idownToUp)
-    ORDER BY order(downToUp, up) DESC
+    ORDER order(downToUp, up) DESC
     FILTERS order(downToUp, up)
     FILTERGROUP  downToUp
         FILTER 'Дополнительные' child(downToUp) != up 'F6'

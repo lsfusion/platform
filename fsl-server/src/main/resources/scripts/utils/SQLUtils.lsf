@@ -246,7 +246,7 @@ FORM processMonitor 'Монитор процессов'
                            statusMessageSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                            lastThreadAllocatedBytesProcess, nameJavaProcess, threadNameSQLProcess, statusJavaProcess,
                            lockNameJavaProcess, stackTraceJavaProcess, threadStackTraceSQLProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
-                           queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID
+                           queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
     FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
@@ -261,7 +261,7 @@ FORM processMonitor 'Монитор процессов'
                             addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                             lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
                             lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
-                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
+                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2)
     FILTERGROUP filter FILTER 'Фильтр' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
@@ -274,18 +274,18 @@ FORM processMonitor 'Монитор процессов'
                                   lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
-                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
+                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
                                  addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
-                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess EDITABLE GRID 
+                                 queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlocking(blocked) > 0, sumBlocked(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
-    ORDER BY sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
+    ORDER sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
     
     PROPERTIES() captionProcessType, updateProcessMonitorAction
 ;

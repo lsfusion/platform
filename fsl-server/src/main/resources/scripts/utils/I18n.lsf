@@ -75,7 +75,7 @@ translateTerm 'Перевести'(DictionaryEntry dictionaryEntry) = {
     EXEC translate (TEXT(term(dictionaryEntry)),
             languageFrom(dictionary(dictionaryEntry)),
             languageTo(dictionary(dictionaryEntry)));
-    ASSIGN translation(dictionaryEntry) <- VARSTRING[50](translationResult());
+    translation(dictionaryEntry) <- VARSTRING[50](translationResult());
 }
 
 translateText 'Перевести'() = {

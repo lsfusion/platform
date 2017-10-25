@@ -171,8 +171,8 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
     seekLastMessageInFullChat();
 }
 
-sendMessage 'Отправить' = ABSTRACT LIST (Chat, CustomUser) EDITKEY 'ctrl ENTER';
-saveMessage 'Сохранить' = ABSTRACT LIST (Chat) EDITKEY 'ctrl ENTER';
+sendMessage 'Отправить' = ABSTRACT LIST (Chat, CustomUser) CHANGEKEY 'ctrl ENTER';
+saveMessage 'Сохранить' = ABSTRACT LIST (Chat) CHANGEKEY 'ctrl ENTER';
 
 sendRestartMessage 'Отправить сообщение об остановке сервера' = DATA BOOLEAN ();
 sendRestartServerMessage 'Отправить сообщение об остановке сервера' () = { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
@@ -294,7 +294,7 @@ FORM fullChat 'Чат'
     EVENTS ON INIT markSeenOnChange(c)
     EVENTS ON CHANGE c markSeenOnChange(c), ON CHANGE c stopEditing(c)
     EVENTS ON CLOSE markSeenOnChange(c)
-    ORDER BY lastMessageDateTime(c) DESC
+    ORDER lastMessageDateTime(c) DESC
     
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY BACKGROUND backgroundUser(u) login, name, lastMessageDateTime , unreadMessages BACKGROUND backgroundUnread(u) 
@@ -304,14 +304,14 @@ FORM fullChat 'Чат'
     
     FILTERGROUP in FILTER 'Только активные' away(u)  
     FILTERS u != currentUser(), login(u), lastActivity(u)
-    ORDER BY lastMessageDateTime(u) DESC
+    ORDER lastMessageDateTime(u) DESC
     
     PROPERTIES(c, u)  sendMessage SHOWIF noEditingMessage(c)
     PROPERTIES(c)  saveMessage SHOWIF editingMessage(c)
     
     OBJECTS m = Message LAST
     PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m) 
-                  ON SHORTCUT openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR EDITABLE
+                  ON SHORTCUT openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR CHANGEABLE
     
     EVENTS ON CHANGE m markSeenOnChange(m), ON CHANGE m stopEditing(c)
         
@@ -456,7 +456,7 @@ replyChat 'Ответить' (Chat c, Message m) = {
 
 replyChat 'Ответить' (Message m) = { 
     replyChat(chat(m), m);
-} EDITKEY 'ctrl ENTER';
+} CHANGEKEY 'ctrl ENTER';
 
 openChat 'Перейти в чат' (Chat c, Message m) = {
     markSeenMessages(currentUser());
@@ -512,7 +512,7 @@ showOnStart() = {
     IF sumUnreadMessages(currentUser()) > 0 THEN {
         deliveredNotificationAction(currentUser());
         apply();
-        SHOW shortChat NOMANAGESESSIONX;
+        SHOW shortChat NOMANAGESESSION;
     }
 }
 
@@ -534,7 +534,7 @@ pushAction(BOOLEAN system, BOOLEAN notificate) = {
         ELSE {
             IF system OR notificate THEN {
                 NEWSESSION {
-                    SHOW shortChat NOMANAGESESSIONX;
+                    SHOW shortChat NOMANAGESESSION;
                 }
             }
         }

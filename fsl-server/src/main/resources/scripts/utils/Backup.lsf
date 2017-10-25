@@ -128,7 +128,7 @@ FORM customRestore 'Восстановление данных'
     
     OBJECTS b = Backup PANEL
     PROPERTIES(b) name SELECTOR, customRestore
-    ORDER BY name(b) DESC
+    ORDER name(b) DESC
 ;
 
 NAVIGATOR {
