@@ -58,8 +58,8 @@ public class PropertyDrawView extends ComponentView {
     public Dimension maximumValueSize;
     public Dimension preferredValueSize;
 
-    public KeyStroke editKey;
-    public Boolean showEditKey;
+    public KeyStroke changeKey;
+    public Boolean showChangeKey;
 
     public boolean drawAsync = false;
 
@@ -193,9 +193,9 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, getMaximumValueSize());
         pool.writeObject(outStream, getPreferredValueSize());
 
-        pool.writeObject(outStream, editKey);
+        pool.writeObject(outStream, changeKey);
 
-        outStream.writeBoolean(showEditKey);
+        outStream.writeBoolean(showChangeKey);
 
         outStream.writeBoolean(drawAsync);
 
@@ -358,8 +358,8 @@ public class PropertyDrawView extends ComponentView {
         setMaximumValueSize(pool.<Dimension>readObject(inStream));
         setPreferredValueSize(pool.<Dimension>readObject(inStream));
 
-        editKey = pool.readObject(inStream);
-        showEditKey = inStream.readBoolean();
+        changeKey = pool.readObject(inStream);
+        showChangeKey = inStream.readBoolean();
 
         format = pool.readObject(inStream);
 

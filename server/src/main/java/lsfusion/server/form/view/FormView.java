@@ -749,30 +749,30 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         entity.setEditType(property.entity, PropertyEditType.getReadonlyType(!enabled));
     }
 
-    public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
-        setEditKey(property.property, keyStroke, groupObject);
+    public void setChangeKey(LP property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
+        setChangeKey(property.property, keyStroke, groupObject);
     }
 
-    public void setEditKey(LP property, KeyStroke keyStroke) {
-        setEditKey(property.property, keyStroke);
+    public void setChangeKey(LP property, KeyStroke keyStroke) {
+        setChangeKey(property.property, keyStroke);
     }
 
-    public void setEditKey(Property property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
+    public void setChangeKey(Property property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-            setEditKey(propertyView, keyStroke);
+            setChangeKey(propertyView, keyStroke);
         }
     }
 
-    public void setEditKey(Property property, KeyStroke keyStroke) {
+    public void setChangeKey(Property property, KeyStroke keyStroke) {
 
         for (PropertyDrawView propertyView : getProperties(property)) {
-            setEditKey(propertyView, keyStroke);
+            setChangeKey(propertyView, keyStroke);
         }
     }
 
-    public void setEditKey(PropertyDrawView property, KeyStroke keyStroke) {
-        property.editKey = keyStroke;
+    public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {
+        property.changeKey = keyStroke;
     }
 
     public void setPanelCaptionAbove(AbstractGroup group, boolean panelCaptionAbove, GroupObjectEntity groupObject) {

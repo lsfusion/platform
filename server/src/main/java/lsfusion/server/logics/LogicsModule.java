@@ -1714,8 +1714,8 @@ public abstract class LogicsModule {
         setFormActions(property);
 
         property.setImage("delete.png");
-        property.setEditKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
-        property.setShowEditKey(false);
+        property.setChangeKey(KeyStrokes.getDeleteActionPropertyKeyStroke());
+        property.setShowChangeKey(false);
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -1767,8 +1767,8 @@ public abstract class LogicsModule {
         setFormActions(property);
 
         property.setImage("add.png");
-        property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
-        property.setShowEditKey(false);
+        property.setChangeKey(KeyStrokes.getAddActionPropertyKeyStroke());
+        property.setShowChangeKey(false);
 
         if(objectEntity != null) { // ADDFORM как оператор
             property.addProcessor(new Property.DefaultProcessor() {
@@ -1800,8 +1800,8 @@ public abstract class LogicsModule {
         setFormActions(result);
         
         result.setImage("edit.png");
-        result.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
-        result.setShowEditKey(false);
+        result.setChangeKey(KeyStrokes.getEditActionPropertyKeyStroke());
+        result.setShowChangeKey(false);
     }
 
     public LAP addProp(ActionProperty prop) {

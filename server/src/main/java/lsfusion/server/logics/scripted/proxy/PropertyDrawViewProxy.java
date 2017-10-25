@@ -1,6 +1,5 @@
 package lsfusion.server.logics.scripted.proxy;
 
-import lsfusion.interop.Compare;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.type.Type;
@@ -154,12 +153,12 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         setPreferredValueWidth(width);
     }
 
-    public void setEditKey(KeyStroke editKey) {
-        target.editKey = editKey;
+    public void setChangeKey(KeyStroke editKey) {
+        target.changeKey = editKey;
     }
 
-    public void setShowEditKey(boolean showEditKey) {
-        target.showEditKey = showEditKey;
+    public void setShowChangeKey(boolean showEditKey) {
+        target.showChangeKey = showEditKey;
     }
 
     public void setFocusable(Boolean focusable) {

@@ -131,12 +131,12 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         property.drawOptions.setDefaultCompare(defaultCompare);
     }
 
-    public void setEditKey(KeyStroke editKey) {
-        property.drawOptions.setEditKey(editKey);
+    public void setChangeKey(KeyStroke editKey) {
+        property.drawOptions.setChangeKey(editKey);
     }
 
-    public void setShowEditKey(boolean showEditKey) {
-        property.drawOptions.setShowEditKey(showEditKey);
+    public void setShowChangeKey(boolean showEditKey) {
+        property.drawOptions.setShowChangeKey(showEditKey);
     }
     
     public void addProcessor(Property.DefaultProcessor processor) {

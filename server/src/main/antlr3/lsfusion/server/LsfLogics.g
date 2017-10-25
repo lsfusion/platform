@@ -2143,7 +2143,7 @@ editKeySetting [LP property]
 }
 @after {
 	if (inPropParseState()) {
-		self.setEditKey(property, $key.val, show);
+		self.setChangeKey(property, $key.val, show);
 	}
 }
 	:	'CHANGEKEY' key = stringLiteral

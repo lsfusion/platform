@@ -614,8 +614,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private Compare defaultCompare;
 
         // для всех
-        private KeyStroke editKey;
-        private Boolean showEditKey;
+        private KeyStroke changeKey;
+        private Boolean showChangeKey;
 
         // для всех
         private Boolean shouldBeLast;
@@ -664,10 +664,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 propertyView.design.imagePath = iconPath;
                 propertyView.design.setImage(image);
             }
-            if (propertyView.editKey == null)
-                propertyView.editKey = editKey;
-            if (propertyView.showEditKey == null)
-                propertyView.showEditKey = BaseUtils.nvl(showEditKey, true);
+            if (propertyView.changeKey == null)
+                propertyView.changeKey = changeKey;
+            if (propertyView.showChangeKey == null)
+                propertyView.showChangeKey = BaseUtils.nvl(showChangeKey, true);
             if (propertyView.regexp == null)
                 propertyView.regexp = regexp;
             if (propertyView.regexpMessage == null)
@@ -710,10 +710,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             if(eventID == null)
                 setEventID(options.eventID);
             
-            if(editKey == null)
-                setEditKey(options.editKey);
-            if(showEditKey == null)
-                setShowEditKey(options.showEditKey);
+            if(changeKey == null)
+                setChangeKey(options.changeKey);
+            if(showChangeKey == null)
+                setShowChangeKey(options.showChangeKey);
             
             if(shouldBeLast == null)
                 setShouldBeLast(options.shouldBeLast);
@@ -798,12 +798,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             this.iconPath = iconPath;
         }
 
-        public void setEditKey(KeyStroke editKey) {
-            this.editKey = editKey;
+        public void setChangeKey(KeyStroke changeKey) {
+            this.changeKey = changeKey;
         }
 
-        public void setShowEditKey(Boolean showEditKey) {
-            this.showEditKey = showEditKey;
+        public void setShowChangeKey(Boolean showEditKey) {
+            this.showChangeKey = showEditKey;
         }
 
         public void setShouldBeLast(Boolean shouldBeLast) {

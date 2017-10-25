@@ -915,10 +915,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setDefaultCompare(defaultCompare);
     }
 
-    public void setEditKey(LP property, String code, Boolean showEditKey) {
-        property.setEditKey(KeyStroke.getKeyStroke(code));
+    public void setChangeKey(LP property, String code, Boolean showEditKey) {
+        property.setChangeKey(KeyStroke.getKeyStroke(code));
         if (showEditKey != null)
-            property.setShowEditKey(showEditKey);
+            property.setShowChangeKey(showEditKey);
     }
 
     public void setAutoset(LP property, boolean autoset) {
