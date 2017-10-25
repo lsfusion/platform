@@ -55,6 +55,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName("com.informix.jdbc.IfxDriver");
         } catch (ClassNotFoundException e) {
             throw Throwables.propagate(e);
         }
