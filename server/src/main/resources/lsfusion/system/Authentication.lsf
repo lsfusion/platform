@@ -164,7 +164,7 @@ unlock(Object object) = {
 changeSHA256Password(CustomUser customUser) = {
     INPUT st=STRING[30] DO {
         EXEC calculateBase64Hash('SHA-256', st);
-        ASSIGN sha256Password(customUser) <- calculatedHash();
+        sha256Password(customUser) <- calculatedHash();
     }
 }
 
@@ -185,7 +185,7 @@ DESIGN customUser {
         MOVE BOX(u) {
             flex = 0.3;
         };
-        GROUP(u,) {
+        GROUP(,u) {
             type = COLUMNS;
             columns = 1;
         }
@@ -194,9 +194,9 @@ DESIGN customUser {
 
 edit 'Редактировать' (CustomUser u) = {
 	NEWSESSION {
-        SHOW customUser OBJECTS u = u MANAGESESSION  DOCKED;
+        SHOW customUser OBJECTS u = u DOCKED;
 	}
-} IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
+} IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
 
 FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
@@ -264,7 +264,7 @@ DESIGN reloginLoginUser {
 reloginLoginUser() = {
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
-        ASSIGN user() <- customUser(login);
+        user() <- customUser(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
                 MESSAGE 'Данный пользователь заблокирован';
@@ -375,9 +375,9 @@ changePassword(CustomUser customUser) = {
             MESSAGE 'Введённые пароли не совпадают';
             BREAK;
         }
-        //ASSIGN passwordCustomUser(customUser) <- chosenString('new1');
+        //passwordCustomUser(customUser) <- chosenString('new1');
         EXEC calculateBase64Hash('SHA-256', new1);
-        ASSIGN sha256Password(customUser) <- calculatedHash();
+        sha256Password(customUser) <- calculatedHash();
         MESSAGE 'Пароль изменён';
         }
 }

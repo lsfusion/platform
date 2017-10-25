@@ -279,30 +279,30 @@ FORM memoryLimits 'Параметры старта JNLP'
 overCopy = ABSTRACT LIST (UserRole, UserRole);
 
 copyData(UserRole userRole, UserRole ur) = {
-    ASSIGN name(ur) <- name(userRole);
-    ASSIGN permitViewAllProperty(ur) <- permitViewAllProperty(userRole);
-    ASSIGN forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
-    ASSIGN permitChangeAllProperty(ur) <- permitChangeAllProperty(userRole);
-    ASSIGN forbidChangeAllProperty(ur) <- forbidChangeAllProperty(userRole);
-    ASSIGN defaultForms(ur) <- defaultForms(userRole);
-    ASSIGN permitAllForms(ur) <- permitAllForms(userRole);
-    ASSIGN forbidAllForms(ur) <- forbidAllForms(userRole);
+    name(ur) <- name(userRole);
+    permitViewAllProperty(ur) <- permitViewAllProperty(userRole);
+    forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
+    permitChangeAllProperty(ur) <- permitChangeAllProperty(userRole);
+    forbidChangeAllProperty(ur) <- forbidChangeAllProperty(userRole);
+    defaultForms(ur) <- defaultForms(userRole);
+    permitAllForms(ur) <- permitAllForms(userRole);
+    forbidAllForms(ur) <- forbidAllForms(userRole);
 
-    ASSIGN dataPermitView(ur, Property property) <- dataPermitView(userRole, property);
-    ASSIGN dataForbidView(ur, Property property) <- dataForbidView(userRole, property);
-    ASSIGN dataPermitChange(ur, Property property) <- dataPermitChange(userRole, property);
-    ASSIGN dataForbidChange(ur, Property property) <- dataForbidChange(userRole, property);
+    dataPermitView(ur, Property property) <- dataPermitView(userRole, property);
+    dataForbidView(ur, Property property) <- dataForbidView(userRole, property);
+    dataPermitChange(ur, Property property) <- dataPermitChange(userRole, property);
+    dataForbidChange(ur, Property property) <- dataForbidChange(userRole, property);
     
-    ASSIGN dataPermitView(ur, PropertyGroup propertyGroup) <- dataPermitView(userRole, propertyGroup);
-    ASSIGN dataForbidView(ur, PropertyGroup propertyGroup) <- dataForbidView(userRole, propertyGroup);
-    ASSIGN dataPermitChange(ur, PropertyGroup propertyGroup) <- dataPermitChange(userRole, propertyGroup);
-    ASSIGN dataForbidChange(ur, PropertyGroup propertyGroup) <- dataForbidChange(userRole, propertyGroup);
+    dataPermitView(ur, PropertyGroup propertyGroup) <- dataPermitView(userRole, propertyGroup);
+    dataForbidView(ur, PropertyGroup propertyGroup) <- dataForbidView(userRole, propertyGroup);
+    dataPermitChange(ur, PropertyGroup propertyGroup) <- dataPermitChange(userRole, propertyGroup);
+    dataForbidChange(ur, PropertyGroup propertyGroup) <- dataForbidChange(userRole, propertyGroup);
     
-    ASSIGN defaultNumber(ur, NavigatorElement navigatorElement) <- defaultNumber(userRole, navigatorElement);
-    ASSIGN permit(ur, NavigatorElement navigatorElement) <- permit(userRole, navigatorElement);
-    ASSIGN forbid(ur, NavigatorElement navigatorElement) <- forbid(userRole, navigatorElement);
+    defaultNumber(ur, NavigatorElement navigatorElement) <- defaultNumber(userRole, navigatorElement);
+    permit(ur, NavigatorElement navigatorElement) <- permit(userRole, navigatorElement);
+    forbid(ur, NavigatorElement navigatorElement) <- forbid(userRole, navigatorElement);
     
-    ASSIGN order(ur, Policy userPolicy) <- order(userRole, userPolicy);
+    order(ur, Policy userPolicy) <- order(userRole, userPolicy);
             
     EXEC overCopy(userRole, ur);
 }
@@ -311,7 +311,7 @@ copy 'Копировать'(UserRole userRole) = {
 	NEWSESSION {
 	    NEW ur = UserRole {
 	        EXEC copyData(userRole, ur);
-	        SHOW userRole OBJECTS ur = ur MANAGESESSION DOCKED;
+	        SHOW userRole OBJECTS ur = ur DOCKED;
 	    }
 	}
 } TOOLBAR;
@@ -334,12 +334,12 @@ FORM securityPolicy 'Политика безопасности'
     OBJECTS pr=Property
     PROPERTIES(pr) caption, canonicalName
     PROPERTIES(ur, pr) permitView, forbidView, permitChange, forbidChange
-    ORDER BY canonicalName(pr)
+    ORDER canonicalName(pr)
 
     OBJECTS df=NavigatorElement
     PROPERTIES(df) READONLY caption, canonicalName
     PROPERTIES(df) number, permit, forbid, permitExport
-    ORDER BY canonicalName(pr)
+    ORDER canonicalName(pr)
 
     OBJECTS dpr=Property
     PROPERTIES(dpr) caption, canonicalName, permitView, forbidView, permitChange, forbidChange
@@ -348,27 +348,27 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(te) READONLY caption, canonicalName
     PROPERTIES(te) number
     PROPERTIES(ur, te) permit BACKGROUND backgroundPermit(ur, te), forbid BACKGROUND backgroundForbid(ur, te), defaultNumber
-    ORDER BY number(te)
+    ORDER number(te)
 
     TREE treePropertyObject tprs = PropertyGroup PARENT parent, prs = Property
     PROPERTIES(tprs) caption, SID, number
-    ORDER BY number(tprs)
+    ORDER number(tprs)
     PROPERTIES(prs) caption, canonicalName, number
     PROPERTIES(ur, prs) permitView, forbidView, permitChange, forbidChange
     PROPERTIES(ur, tprs) permitView, forbidView, permitChange, forbidChange
-    ORDER BY number(prs)
+    ORDER number(prs)
 
     TREE navigatorElementsDefault tdf = NavigatorElement PARENT parent
     PROPERTIES(tdf) READONLY caption, canonicalName
     PROPERTIES(tdf) number, permit, forbid, permitExport
-    ORDER BY number(tdf)
+    ORDER number(tdf)
 
     TREE treeDefaultProperty tdprs = PropertyGroup PARENT parent, dprs = Property
     PROPERTIES (tdprs) caption, SID, number, permitView, forbidView, permitChange, forbidChange
-    ORDER BY number(tdprs)
+    ORDER number(tdprs)
 
     PROPERTIES (dprs)  caption, canonicalName,      number,      permitView,          forbidView,          permitChange,          forbidChange
-    ORDER BY number(dprs)
+    ORDER number(dprs)
 
     PROPERTIES(ur, p) order COLUMNS (ur) HEADER overSID(ur)
 

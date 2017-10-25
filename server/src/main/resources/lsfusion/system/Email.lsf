@@ -156,7 +156,7 @@ FORM mail 'Почта'
     OBJECTS e=Email LAST
   
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                   dateTimeReceived, importErrors, openEMLFile EDITABLE GRID, message PANEL
+                   dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
     PROPERTIES(e) NEWSESSION DELETE GRID
     PROPERTIES(a)  receiveEmailAction TODRAW e 
     FILTERS account(e)==a
@@ -173,7 +173,7 @@ FORM mail 'Почта'
     PROPERTIES(n, p) in
     PROPERTIES(n) subject, text PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
     PROPERTIES(p) READONLY caption, canonicalName
-    ORDER BY canonicalName(p)
+    ORDER canonicalName(p)
         
     FILTERGROUP emailFilter
         FILTER 'Только отмеченные' in(n, p) 'F9'

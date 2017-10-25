@@ -42,7 +42,7 @@ seek 'Найти объект' = CUSTOM 'lsfusion.server.logics.SeekScriptingAct
 
 sleep 'Sleep' = CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
-sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
+sessionOwners = DATA LOCAL NESTED INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
 applyOnlyWithoutRecalc = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
@@ -163,12 +163,12 @@ END
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-edit 'Редактировать' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'edit.png' EDITKEY 'BACK_SPACE' HIDE TOOLBAR;
-edit(Object o) += { DIALOG EDIT Object =o AUTOX DOCKED; }
+edit 'Редактировать' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit(Object o) += { DIALOG EDIT Object =o DOCKED; }
 formEdit(Object o) = { edit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
-delete 'Удалить' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'delete.png' EDITKEY 'DELETE' HIDE TOOLBAR;
+delete 'Удалить' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
 delete(Object o) += { DELETE o; } 
 formDelete(Object o) = {
     IF sessionOwners() THEN

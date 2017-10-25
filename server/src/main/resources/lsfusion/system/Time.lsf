@@ -105,7 +105,7 @@ currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
 FORM months 'Месяца'
     OBJECTS m = Month
     PROPERTIES(m) READONLY staticCaption, number
-    ORDER BY number(m)
+    ORDER number(m)
     LIST Month OBJECT m
 ;
 
@@ -147,7 +147,7 @@ onStarted() += {
 FORM DOWs 'Дни недели'
     OBJECTS d = DOW
     PROPERTIES(d) READONLY staticCaption, numberM
-    ORDER BY numberM(d)
+    ORDER numberM(d)
     LIST DOW OBJECT d
 ;
 

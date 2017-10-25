@@ -316,7 +316,7 @@ FORM reflectionProperties 'Настройки свойств'
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid 
     OBJECTS r = ReflectionProperty
-    PROPERTIES(r) READONLY name, defaultValue, baseValue EDITABLE
+    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
     PROPERTIES(r,ur) value READONLY BEFORE defaultValue(r), baseValue
     FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
 ;

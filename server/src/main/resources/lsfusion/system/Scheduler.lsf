@@ -149,7 +149,7 @@ FORM scheduledTask 'Планировщик'
     
     PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
     
-    ORDER BY number(dow)
+    ORDER number(dow)
     
     FILTERS scheduledTask(td)==t,
             scheduledTask(tl) == t,
