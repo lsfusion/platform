@@ -245,7 +245,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             for(GroupSplitWhere<K> statJoin : sortedStatJoins) {
                 Where statExclWhere = statJoin.where.and(prevWhere.translateExpr(statJoin.keyEqual.getTranslator()).not());
                 if(!statExclWhere.isFalse()) { // потому как не рекурсия, могут быть ситуации когда становится false, или появляется несколько keyEqual
-                    exclJoins.add(new GroupSplitWhere<>(statJoin.keyEqual, statJoin.stats, statExclWhere));
+                    exclJoins.add(new GroupSplitWhere<>(statJoin.keyEqual, statJoin.stats, statExclWhere, true)); // тут спокойно могут появится еще equals'ы в свете translateExpr + not
                     prevWhere = prevWhere.or(statJoin.getFullWhere());
                 }
             }

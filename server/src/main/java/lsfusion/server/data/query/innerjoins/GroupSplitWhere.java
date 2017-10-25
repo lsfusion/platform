@@ -14,6 +14,7 @@ import lsfusion.server.data.where.Where;
 public class GroupSplitWhere<K> extends GroupWhere {
 
     public final StatKeys<K> stats;
+    private final boolean exclusiveSimpleCount;
 
 //    public static <K extends BaseExpr> StatKeys<K> getStatKeys(ImCol<GroupJoinsWhere> groupStats, final ImSet<K> groups, final StatType statType) {
 //        return StatKeys.or(groupStats, new GetValue<StatKeys<K>, GroupJoinsWhere>() {
@@ -23,16 +24,20 @@ public class GroupSplitWhere<K> extends GroupWhere {
 //    }
 //
     public GroupSplitWhere(KeyEqual keyEqual, StatKeys<K> stats, Where where) {
+        this(keyEqual, stats, where, false);
+    }
+    public GroupSplitWhere(KeyEqual keyEqual, StatKeys<K> stats, Where where, boolean exclusiveSimpleCount) {
         super(keyEqual, where);
         this.stats = stats;
+        this.exclusiveSimpleCount = exclusiveSimpleCount;
 
-        assert where.getKeyEquals().singleKey().isEmpty();
+        assert exclusiveSimpleCount || where.getKeyEquals().singleKey().isEmpty();
     }
 
     public static <K, V> ImCol<GroupSplitWhere<V>> mapBack(ImCol<GroupSplitWhere<K>> col, final ImMap<V,K> map) {
         return col.mapColValues(new GetValue<GroupSplitWhere<V>, GroupSplitWhere<K>>() {
             public GroupSplitWhere<V> getMapValue(GroupSplitWhere<K> group) {
-                return new GroupSplitWhere<>(group.keyEqual, group.stats.mapBack(map), group.where);
+                return new GroupSplitWhere<>(group.keyEqual, group.stats.mapBack(map), group.where, group.exclusiveSimpleCount);
             }});
     }
 
