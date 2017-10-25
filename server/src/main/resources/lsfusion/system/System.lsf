@@ -42,7 +42,7 @@ seek 'Найти объект' = CUSTOM 'lsfusion.server.logics.SeekScriptingAct
 
 sleep 'Sleep' = CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
-sessionOwners = DATA LOCAL NESTED INTEGER ();
+sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
 applyOnlyWithoutRecalc = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
