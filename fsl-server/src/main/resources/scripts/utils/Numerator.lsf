@@ -224,7 +224,7 @@ META defineNumerated(object1, object2)
         number(object1, object2) <- curStringValue(numerator(object1, object2));
         series(object1, object2) <- series(numerator(object1, object2));
         EXEC incrementValueSession(numerator(object1, object2));
-    } SHORTCUT number[###object1,###object2];
+    } CONTEXTMENU number[###object1,###object2];
 
     WHEN CHANGED(numerator(###object1 object1, ###object2 object2)) AND
          NOT CHANGED(number(object1, object2)) AND

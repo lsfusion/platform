@@ -286,7 +286,7 @@ deleteMessage 'Удалить сообщение' (Message m) = {
 
 FORM fullChat 'Чат'
     OBJECTS c = Chat
-    PROPERTIES(c) READONLY name ON SHORTCUT editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
+    PROPERTIES(c) READONLY name ON CONTEXTMENU editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
     PROPERTIES(c) READONLYIF readonlyFullChat(c) PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
                   loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
@@ -310,8 +310,8 @@ FORM fullChat 'Чат'
     PROPERTIES(c)  saveMessage SHOWIF editingMessage(c)
     
     OBJECTS m = Message LAST
-    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON SHORTCUT editMessage(c, m) ON SHORTCUT deleteMessage(m) 
-                  ON SHORTCUT openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR CHANGEABLE
+    PROPERTIES(m) READONLY BACKGROUND backgroundMessage(m) nameAuthor, showText ON CONTEXTMENU editMessage(c, m) ON CONTEXTMENU deleteMessage(m) 
+                  ON CONTEXTMENU openAttachment(m), hasAttachment, status, dateTime, openAttachment SHOWIF attachment(m) TOOLBAR CHANGEABLE
     
     EVENTS ON CHANGE m markSeenOnChange(m), ON CHANGE m stopEditing(c)
         
