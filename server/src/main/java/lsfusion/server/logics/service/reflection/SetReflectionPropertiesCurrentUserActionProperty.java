@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.Settings;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.ServiceLogicsModule;
@@ -56,10 +57,13 @@ public class SetReflectionPropertiesCurrentUserActionProperty extends ScriptingA
         ImRevMap<Object, KeyExpr> reflectionPropertyKeys = MapFact.singletonRev((Object) "reflectionProperty", reflectionPropertyExpr);
 
         QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<>(reflectionPropertyKeys);
-        reflectionPropertyQuery.addProperty("name", findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr));
-        reflectionPropertyQuery.addProperty("baseValue", findProperty("baseValueCurrentUserRole[ReflectionProperty]").getExpr(reflectionPropertyExpr));
-        reflectionPropertyQuery.and(findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
-        reflectionPropertyQuery.and(findProperty("baseValueCurrentUserRole[ReflectionProperty]").getExpr(reflectionPropertyExpr).getWhere());
+        Expr nameExpr = findProperty("name[ReflectionProperty]").getExpr(reflectionPropertyExpr);
+        Expr baseValueExpr = findProperty("baseValueCurrentUserRole[ReflectionProperty]").getExpr(reflectionPropertyExpr);
+
+        reflectionPropertyQuery.addProperty("name", nameExpr);
+        reflectionPropertyQuery.addProperty("baseValue", baseValueExpr);
+        reflectionPropertyQuery.and(nameExpr.getWhere());
+        reflectionPropertyQuery.and(baseValueExpr.getWhere());
 
         Map<String, String> reflectionPropertiesMap = new HashMap<>();
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = reflectionPropertyQuery.execute(context);
