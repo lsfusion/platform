@@ -637,7 +637,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionPropertyObject { $options.addEditAction($et.type, $prop.action); }
-		|	'ON' 'SHORTCUT' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
+		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
@@ -2058,7 +2058,7 @@ shortcutSetting [LP property, LocalizedString caption]
 		self.addToContextMenuFor(property, caption, $usage.propUsage);
 	}
 }
-	:	'SHORTCUT' usage = propertyUsage 
+	:	'CONTEXTMENU' usage = propertyUsage 
 	;
 
 asonEditActionSetting [LP property]
