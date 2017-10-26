@@ -49,7 +49,6 @@ public enum ClassType {
     
     public static final ClassType iteratePolicy = ASSERTFULL_NOPREV; 
     public static final ClassType logPolicy = iteratePolicy; // PREV'ов нет
-    public static final ClassType aggrPolicy = iteratePolicy; // PREV'ов нет
     public static final ClassType materializeChangePolicy = iteratePolicy; // вообще как бы PREV'ов тоже не должно быть (так как получается CHANGED для PREV'а), но явной проверки нет, поэтому и assert на PREV вставлять не будем
     public static final ClassType storedPolicy = iteratePolicy; // PREV'ов нет
     

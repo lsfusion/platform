@@ -587,10 +587,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         private final T mapInterface;
         private final CustomClass customClass;
 
-        public PropCorrelation(CalcProperty<K> property, T mapInterface) {
+        public PropCorrelation(CalcProperty<K> property, T mapInterface, ClassType classType) {
             this.property = property;
             this.mapInterface = mapInterface;
-            this.customClass = (CustomClass) property.getInterfaceClasses(ClassType.aggrPolicy).singleValue(); // тут логично читать класс aggr свойства, а не изменяемого (так как по идее класс может менять внутри класса aggr свойства и это разрешено, правда с точки зрения consistency (checkClasses, а пока customClass используется только там) не факт, но пока не принципиально) 
+            this.customClass = (CustomClass) property.getInterfaceClasses(classType).singleValue(); // тут логично читать класс aggr свойства, а не изменяемого (так как по идее класс может менять внутри класса aggr свойства и это разрешено, правда с точки зрения consistency (checkClasses, а пока customClass используется только там) не факт, но пока не принципиально) 
         }
 
         public Expr getExpr(ImMap<T, ? extends Expr> mapExprs) {
@@ -614,11 +614,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return filterInterfaces == null ? getOrderInterfaces() : getOrderInterfaces().filterOrder(filterInterfaces);
     }
     @IdentityLazy
-    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ImSet<T> filterInterfaces) {
+    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ImSet<T> filterInterfaces, ClassType classType) {
         // берем классы свойства и докидываем все корреляции, которые найдем
         MOrderExclSet<Correlation<T>> mResult = SetFact.mOrderExclSet();
 
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.aggrPolicy);
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(classType);
         ImOrderSet<T> orderInterfaces = getOrderInterfaces(filterInterfaces);
         for(int i=0,size=orderInterfaces.size();i<size;i++) { // для детерминированности на всякий случай
             T propertyInterface = orderInterfaces.get(i);
@@ -627,23 +627,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                 CustomClass customClass = (CustomClass) valueClass;
                 for(CalcProperty<K> aggrProp : customClass.getUpAggrProps())
 //                    if(!BaseUtils.hashEquals(aggrProp, this)) // себя тоже надо коррелировать (в общем-то для удаления, как правило удаляется тоже объекты агрегированные в один объект)
-                    mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface));
+                    mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface, classType));
             }
         }
 
         return mResult.immutableOrder();
     }
 
-    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations() {
-        return getCorrelations(null);
+    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ClassType classType) {
+        return getCorrelations(null, classType);
     }    
 
     public PropertyChangeTableUsage<T> createChangeTable(String debugInfo) {
-        return new PropertyChangeTableUsage<>(getCorrelations(), getTableDebugInfo(debugInfo), getOrderInterfaces(), interfaceTypeGetter, getType());
+        return new PropertyChangeTableUsage<>(getCorrelations(ClassType.materializeChangePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(), interfaceTypeGetter, getType());
     }
     
     public NoPropertyWhereTableUsage<T> createWhereTable(String debugInfo, ImSet<T> filterInterfaces) {
-        return new NoPropertyWhereTableUsage<>(getCorrelations(filterInterfaces), getTableDebugInfo(debugInfo), getOrderInterfaces(filterInterfaces), interfaceTypeGetter);
+        return new NoPropertyWhereTableUsage<>(getCorrelations(filterInterfaces, ClassType.wherePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(filterInterfaces), interfaceTypeGetter);
     }
 
     @StackMessage("{message.increment.read.properties}")

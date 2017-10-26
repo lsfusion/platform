@@ -688,7 +688,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             
         for(int i=0,size=queue.size();i<size;i++) {
             CalcProperty<?> property = queue.get(i);
-            ImMap<?, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.aggrPolicy);
+            ImMap<?, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.materializeChangePolicy);
             if(interfaceClasses.size() == 1) {
                 ValueClass valueClass = interfaceClasses.singleValue();
                 if(valueClass instanceof CustomClass) {
