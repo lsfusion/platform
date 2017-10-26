@@ -2640,7 +2640,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             varID=ID?
             { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(objectClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
-            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
+//            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) ('=' consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
         )?
     ;
@@ -2917,11 +2917,12 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 	boolean assign = false;
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
+    PropertyUsage outProp = null;
     LPWithParams changeProp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, $pUsage.propUsage, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
+		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
 	}
 }
 	:	'INPUT'
@@ -2930,7 +2931,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
             'CHANGE' { assign = true; }
             ('=' consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
         )?
-		('TO' pUsage=propertyUsage)?
+//		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 	
