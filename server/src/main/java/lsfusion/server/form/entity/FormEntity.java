@@ -51,7 +51,7 @@ import java.util.List;
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     
-    public static boolean DEFAULT_NOCANCEL = false;
+    public static Boolean DEFAULT_NOCANCEL = null;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;

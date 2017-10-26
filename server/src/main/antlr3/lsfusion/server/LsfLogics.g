@@ -2443,7 +2443,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	Boolean syncType = null;
 	WindowFormType windowType = null;
 
-    ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
+    ManageSessionType manageSession = ManageSessionType.AUTO;
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
@@ -2475,7 +2475,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
-	ManageSessionType manageSession = ManageSessionType.NOMANAGESESSION; // temporary, should be AUTO
+	ManageSessionType manageSession = ManageSessionType.AUTO;
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
@@ -2502,8 +2502,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	;
 	
 manageSessionClause returns [ManageSessionType result]
-    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSIONX; }
-	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSIONX; }
+    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
+	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
     ;
 
 formSessionScopeClause returns [FormSessionScope result]

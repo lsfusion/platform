@@ -115,8 +115,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final SecurityPolicy securityPolicy;
 
-    private final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects;
-
     private final ImOrderSet<GroupObjectInstance> groups;
 
     private final ImSet<PullChangeProperty> pullProps;
@@ -313,25 +311,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
         
-        if(interactive) {            
-            boolean heurNoCancel = heuristicNoCancel(mapObjects);
+        boolean adjNoCancel, adjManageSession;
+        if(interactive) {
+            int prevOwners = updateSessionOwner(true, stack);
+
+            if(manageSession == ManageSessionType.AUTO) // если нет других собственников и не readonly 
+                adjManageSession = heuristicManageSession(entity, showReadOnly, prevOwners); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
+            else
+                adjManageSession = manageSession.isManageSession();
+
             if(noCancel == null)
-                noCancel = heurNoCancel;
-            else {
-//                if (noCancel != heurNoCancel)
-//                    regAutoDiff("CANCEL", noCancel, heurNoCancel);
-                
-                if(Settings.get().isEnableHeurNoCancel())
-                    noCancel = heurNoCancel;
-            }
-        } else 
-            noCancel = false; // temp
-        
-        boolean adjManageSession = manageSession != ManageSessionType.AUTO && manageSession.isManageSession();
-        boolean heurReadOnly = showReadOnly || entity.hasNoChange(); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
-        adjManageSession = adjManageSession && !heurReadOnly; // вставить потом if manageSession == ManageSessionType.AUTO (хотя возможно и не надо)
-        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, noCancel, adjManageSession, showDrop);
-        
+                adjNoCancel = heuristicNoCancel(mapObjects);
+            else
+                adjNoCancel = noCancel;
+        } else { // deprecated ветка, в будущем должна уйти
+            adjManageSession = false;
+            adjNoCancel = false; // temp
+        }
+
+        this.manageSession = adjManageSession;
+        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, adjNoCancel, adjManageSession, showDrop);
+
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
             ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
@@ -339,39 +339,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
-
-        if (!interactive) {
+        
+        if (!interactive) // deprecated ветка, в будущем должна уйти
             endApply(stack);
-            this.mapObjects = mapObjects;
-        } else {
-            int prevOwners = updateSessionOwner(true, stack);
-     
-            boolean heurManageSession = heuristicManageSession(prevOwners) && !heurReadOnly;
-            if(manageSession == ManageSessionType.AUTO) {
-                if(heurManageSession) { // если нет owner'ов
-                    assert !heurReadOnly;
-                    adjManageSession = true; 
-                    environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
-                }
-            } else {
-                if(!manageSession.isX()) {
-                    if (adjManageSession != heurManageSession) {
-                        regAutoDiff("MANAGESESSION [" + heurReadOnly + "," + session.isStoredDataChanged() + "," + session.getStoredChanges() + "]", adjManageSession, heurManageSession);
-                    }
-                    
-                    if(Settings.get().isEnableHeurManageSession()) {
-                        if(adjManageSession != heurManageSession) {
-                            environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(heurManageSession));
-                        }
-                         adjManageSession = heurManageSession;
-                    }
-                }
-            }
-
-            this.mapObjects = null;
-        }
-
-        this.manageSession = adjManageSession;
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -427,8 +397,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         diffForms.put(new DiffForm(type, entity, stackString, explicit, heur), true);
     }
 
-    private boolean heuristicManageSession(int prevOwners) {
-        return prevOwners <= 0;
+    private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners) {
+        return prevOwners <= 0 && !showReadOnly && !entity.hasNoChange();
     }
 
     private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
@@ -741,14 +711,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             userObjectList.add(values.get("customUser"));
         }
         return userObjectList;
-    }
-
-    public boolean areObjectsFound() {
-        assert !interactive;
-        for (int i = 0, size = mapObjects.size(); i < size; i++)
-            if (!instanceFactory.getInstance(mapObjects.getKey(i)).getObjectValue().equals(mapObjects.getValue(i)))
-                return false;
-        return true;
     }
 
     protected FunctionSet<CalcProperty> getNoHints() {
@@ -1448,10 +1410,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
+        ExecutionEnvironment env = getSession();
         LCP<?> sessionOwners = BL.LM.sessionOwners;
-        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(this), 0);
+        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
         int newOwners = prevOwners + (set ? 1 : -1);
-        sessionOwners.change(newOwners == 0 ? null : newOwners, this);
+        sessionOwners.change(newOwners == 0 ? null : newOwners, env);
         return prevOwners;
     }
 
@@ -1768,7 +1731,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @AssertSynchronized
     public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
 
-        assert interactive;
         checkNavigatorDeactivated();
 
         final MFormChanges result = new MFormChanges();
@@ -2293,7 +2255,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 instanceFactory.computer, instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 outerStack,
-                                true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.NOMANAGESESSION, false, true, true, true,
+                                true, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, true, true, true,
                                 additionalFilters, pullProps, false, locale);
     }
 

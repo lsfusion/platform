@@ -614,7 +614,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, mapObjects, session, false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.NOMANAGESESSION, false, false, false, null, null, false);
+        return createFormInstance(formEntity, mapObjects, session, false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, null, null, false);
     }
 
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {

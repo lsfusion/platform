@@ -80,21 +80,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     @Override
     protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
 
-        FormReportManager newFormManager;
-
-        if(Settings.get().isUseInteractiveReportManagerInsteadOfStatic() && !SystemProperties.isDebug) {
-            FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues);
-            
-            if (!newFormInstance.areObjectsFound()) {
-                context.requestUserInteraction(
-                        new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")),
-                                ThreadLocalContext.localize(form.getCaption())));
-                return;
-            }
-
-            newFormManager = new InteractiveFormReportManager(newFormInstance);
-        } else
-            newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
+        FormReportManager newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();
         int top = selectTop == null ? staticType == FormPrintType.MESSAGE ? 30 : 0 : selectTop;
