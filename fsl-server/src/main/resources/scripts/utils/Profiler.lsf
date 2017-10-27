@@ -9,11 +9,11 @@ CLASS ProfileObject {
 TABLE profileObject(ProfileObject); 
 TABLE profileData(ProfileObject, ProfileObject, User, Form);
 
-text 'Действие' = DATA TEXT (ProfileObject) IN recognize;
+text 'Действие' = DATA STRING[1000] (ProfileObject) IN recognize;
 onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
-profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject) MATERIALIZED;
+profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
