@@ -14,19 +14,14 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         this.forceCaseInsensitivity = forceCaseInsensitivity;
     }
 
-    protected String getExprSource(ExprSource source, Type selfType, int i) {
+    protected String getExprSource(ExprSource source, StringClass selfType, int i) {
         Type exprType = source.getType(i);
         String exprSource = source.getSource(i);
-        if (exprType instanceof StringClass && ((StringClass)exprType).blankPadded) {
-            exprSource = ((StringClass)exprType).getRTrim(exprSource);
-        } else {
-            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getMEnv(), exprType);
-        }
-        return exprSource;
+        return SumFormulaImpl.castToVarString(exprSource, selfType, exprType, source.getSyntax(), source.getMEnv());
     }
 
     @Override
-    public Type getType(ExprType source) {
+    public StringClass getType(ExprType source) {
 
         int separatorLength = separator.length();
 

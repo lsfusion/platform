@@ -2525,10 +2525,6 @@ public class BaseUtils {
         return result.toString();
     }
 
-    public static boolean hasRightSpace(String string) {
-        return BaseUtils.rtrim(string).length() != string.length();
-    }
-
     public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
         return new Iterable<T>() {
             public Iterator<T> iterator() {

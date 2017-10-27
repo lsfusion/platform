@@ -19,13 +19,13 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ByteArrayClass;
 import lsfusion.server.classes.DateClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
+import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
@@ -404,7 +404,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
+    public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
         ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(new SFunctionSet<CompileOrder>() {
             public boolean contains(CompileOrder element) {
                 return element.reader instanceof Type;
@@ -439,13 +439,7 @@ public class MSSQLDataAdapter extends DataAdapter {
             assert exprs.size() == 2;
             StringClass textClass = StringClass.getv(ExtInt.UNLIMITED);
             fixedTypes = ListFact.<Type>toList(textClass, textClass);
-            exprs = exprs.mapListValues(new GetIndexValue<String, String>() {
-                public String getMapValue(int i, String value) {
-                    ClassReader reader = readers.get(i);
-                    if(reader instanceof StringClass && ((StringClass)reader).blankPadded)
-                        return ((StringClass)reader).getRTrim(value);
-                    return value;
-                }});
+            exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, getSyntax(), typeEnv);
         } else {
             fixedTypes = readers.mapListValues(new GetValue<Type, ClassReader>() {
                 public Type getMapValue(ClassReader value) {
@@ -1028,6 +1022,10 @@ public class MSSQLDataAdapter extends DataAdapter {
 
     @Override
     public boolean doesNotTrimWhenCastToVarChar() {
+        return true;
+    }
+    @Override
+    public boolean doesNotTrimWhenSumStrings() {
         return true;
     }
 

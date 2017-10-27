@@ -161,11 +161,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
         assert aspectNoCorrelations();
         
-        ImMap<KeyField, DataObject> keyFieldObjects = mapKeys.join(keyObjects);
-        ImMap<PropertyField, ObjectValue> propFieldObjects = mapProps.join(propertyObjects);
-
-        if(table instanceof SessionRows) // проверка - оптимизация, можно во всех случаях делать
-            keyFieldObjects = SessionData.castTypes(keyFieldObjects); // так как иначе можно unique violation получить
+        ImMap<KeyField, DataObject> keyFieldObjects = SessionData.castTypes(mapKeys.join(keyObjects)); // так как иначе можно unique violation получить
+        ImMap<PropertyField, ObjectValue> propFieldObjects = SessionData.castTypes(mapProps.join(propertyObjects)); // иначе будет храниться значение другого типа
         
         Result<Boolean> changed = new Result<>();
         try {
@@ -183,12 +180,13 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows, OperationOwner opOwner) throws SQLException, SQLHandledException {
         assert aspectNoCorrelations();
         
+        // тут castTypes может идти как по safe веткам (где тип field гарантировано тот же, что и в ObjectValue), но все же большинство не safe поэтому на всякий случай сделаем
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
             public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
-                return mapKeys.join(value);
+                return SessionData.castTypes(mapKeys.join(value));
             }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<V, ObjectValue>>() {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
-                return mapProps.join(value);
+                return SessionData.castTypes(mapProps.join(value));
             }});
         try {
             table = table.rewrite(session, mapWriteRows, this, opOwner);

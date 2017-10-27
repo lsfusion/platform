@@ -174,13 +174,13 @@ public enum GroupType implements AggrType {
                 return syntax.getNotZero("SUM(" + exprSource + ")", type, typeEnv);
             case STRING_AGG:
                 assert exprs.size()==2;
-                return type.getCast(syntax.getOrderGroupAgg(this, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
+                return type.getCast(syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
             case AGGAR_SETADD:
                 assert exprs.size()==1 && orders.isEmpty();
                 return syntax.getArrayAgg(exprs.get(0), exprReaders.get(0), typeEnv);
             case LAST:
                 assert exprs.size()==2;
-                return syntax.getOrderGroupAgg(this, ListFact.<String>singleton(exprs.get(1)), ListFact.<ClassReader>singleton(exprReaders.get(1)), orders, typeEnv);
+                return syntax.getOrderGroupAgg(this, type, ListFact.<String>singleton(exprs.get(1)), ListFact.<ClassReader>singleton(exprReaders.get(1)), orders, typeEnv);
             default:
                 throw new RuntimeException("can not be");
         }

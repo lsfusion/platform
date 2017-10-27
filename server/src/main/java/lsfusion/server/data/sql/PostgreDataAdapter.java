@@ -752,7 +752,10 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public boolean doesNotTrimWhenCastToVarChar() {
-        return true;
+        return false;
+    }
+    public boolean doesNotTrimWhenSumStrings() {
+        return false;
     }
 
     public String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv) {

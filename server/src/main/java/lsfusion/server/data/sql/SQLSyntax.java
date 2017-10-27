@@ -179,7 +179,7 @@ public interface SQLSyntax {
 
     String getStringCFunc();
 
-    String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv);
+    String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv);
 
     String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv);
 
@@ -227,6 +227,7 @@ public interface SQLSyntax {
     String getAndExpr(String where, String expr, Type type, TypeEnvironment typeEnv);
 
     boolean doesNotTrimWhenCastToVarChar();
+    boolean doesNotTrimWhenSumStrings();
 
     String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env);
 
