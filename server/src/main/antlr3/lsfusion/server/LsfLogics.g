@@ -1471,7 +1471,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 			)
 			(opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast != null) isLast = $opt.isLast;})?
 		)?
-		('CHECKED' { isChecked = true; })?
+		('FULL' { isChecked = true; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
@@ -1497,7 +1497,7 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
 		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; isLast = true; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
-		('CHECKED' { isChecked = true; })?
+		('FULL' { isChecked = true; })?
 		'(' 
 			paramClassNames=classIdList
 		')'	
