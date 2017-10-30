@@ -708,10 +708,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             checkIndices(sql, oldDBStructure, newDBStructure);
 
-            startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
+            if (!oldDBStructure.isEmpty()) {
+                startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
 
-            // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
-            alterDBStructure(oldDBStructure, newDBStructure, sql);
+                // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
+                alterDBStructure(oldDBStructure, newDBStructure, sql);
+            }
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
@@ -918,11 +920,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), oldDBStructure.version <= 25))
                 throw new RuntimeException("Error while filling static objects ids");
 
-            if (oldDBStructure.version < NavElementDBVersion) {
+            if (oldDBStructure.version < NavElementDBVersion && !oldDBStructure.isEmpty()) {
                 modifyNavigatorElementsClasses(sql);
             }
             
-            if (oldDBStructure.version < 0) {
+            if (oldDBStructure.isEmpty()) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
                     businessLogics.recalculateClassStat(session, false);
