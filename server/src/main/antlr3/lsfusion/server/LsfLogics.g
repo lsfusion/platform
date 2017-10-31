@@ -1579,8 +1579,8 @@ multiPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 	}
 }
 	:	'MULTI' 
-		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
 		(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
+		exprList=nonEmptyPropertyExpressionList[context, dynamic]		
 	;
 
 recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
