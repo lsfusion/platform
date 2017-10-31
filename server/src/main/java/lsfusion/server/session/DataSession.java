@@ -1982,10 +1982,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         executeSessionEvents(sessionEventFormEnv, stack);
 
-        // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
-        clearDataHints(getOwner());
-
         dataModifier.updateSourceChanges(); // вызываем все getPropertyChanges, чтобы notifySourceChange, так как иначе начнется транзакция и уже ничего не получится обновлять
+
+        // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
+        clearDataHints(getOwner()); // важно, что после updateSourceChanges, потому как updateSourceChanges тоже может хинты создать (соответственно нарушится checkSessionCount -> Unique violation)
         return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
     }
     
