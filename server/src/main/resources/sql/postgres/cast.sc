@@ -1,4 +1,4 @@
-1CREATE OR REPLACE FUNCTION casttocustomfile(file bytea, ext VARCHAR) RETURNS bytea AS 
+CREATE OR REPLACE FUNCTION casttocustomfile(file bytea, ext VARCHAR) RETURNS bytea AS 
 $$
 BEGIN
 	if ((ext = 'doc' or ext = 'xls') and (length(file) > 3) and (get_byte(file, 0) = 80) and (get_byte(file, 1) = 75) and (get_byte(file, 2) = 3) and (get_byte(file, 3) = 4)) then
