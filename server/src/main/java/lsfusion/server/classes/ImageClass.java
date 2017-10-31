@@ -45,4 +45,9 @@ public class ImageClass extends StaticFormatFileClass {
     public String getOpenExtension(byte[] file) {
         return "jpg"; //, jpeg, bmp, png";
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "jpg";
+    }
 }

@@ -45,4 +45,9 @@ public class PDFClass extends StaticFormatFileClass {
     public String getOpenExtension(byte[] file) {
         return "pdf";
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "pdf";
+    }
 }

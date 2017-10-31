@@ -43,6 +43,10 @@ public class WordClass extends StaticFormatFileClass {
 
     public String getOpenExtension(byte[] file) {
         return file.length<=2 ? "doc" : ((file[0] == 80 && file[1] == 75) ? "docx" : "doc");
+    }
 
+    @Override
+    public String getDefaultCastExtension() {
+        return "doc";
     }
 }

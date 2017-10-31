@@ -22,10 +22,6 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.postgresql.Driver;
-import org.postgresql.PGConnection;
-import org.postgresql.core.BaseConnection;
-import org.postgresql.jdbc.AutoSave;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 import org.postgresql.util.ServerErrorMessage;
@@ -108,6 +104,7 @@ public class PostgreDataAdapter extends DataAdapter {
         executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/aggf.sc")));
         recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.sc"));
         safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.sc"));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/cast.sc")));
     }
 
     @Override

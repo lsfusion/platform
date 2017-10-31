@@ -1,6 +1,9 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.Type;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,5 +37,17 @@ public class DynamicFormatFileClass extends FileClass {
 
     public byte getTypeID() {
         return Data.DYNAMICFORMATFILE;
+    }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        String extension = null;
+        if (typeFrom instanceof StaticFormatFileClass) {
+            extension = ((StaticFormatFileClass) typeFrom).getDefaultCastExtension();
+        }
+        if (extension != null) {
+            return "casttocustomfile(" + value + ", CAST('" + extension + "' AS VARCHAR))";
+        }
+        return super.getCast(value, syntax, typeEnv, typeFrom);
     }
 }

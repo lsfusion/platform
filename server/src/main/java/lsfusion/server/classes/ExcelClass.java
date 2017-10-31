@@ -52,4 +52,9 @@ public class ExcelClass extends StaticFormatFileClass {
             return "xls";
         }
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "xls";
+    }
 }
