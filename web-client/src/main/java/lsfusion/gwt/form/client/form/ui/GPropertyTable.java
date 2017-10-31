@@ -248,6 +248,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     @Override
     public void takeFocusAfterEdit() {
         setFocus(true);
+        cellIsEditing = false;
     }
 
     @Override
