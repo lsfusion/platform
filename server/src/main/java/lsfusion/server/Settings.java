@@ -2146,7 +2146,7 @@ public class Settings implements Cloneable {
         this.checkSessionCount = checkSessionCount;
     }
 
-    private boolean disablePrereadCaches = false;
+    private boolean disablePrereadCaches = true;
 
     public boolean isDisablePrereadCaches() {
         return disablePrereadCaches;
