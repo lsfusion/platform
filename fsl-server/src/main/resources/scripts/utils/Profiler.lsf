@@ -363,7 +363,7 @@ DESIGN profiler {
 setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = {
     dataSelectedTop() <- po;
     ACTIVATE TAB profiler.call;
-} CONTEXTMENU text[ProfileObject];
+} ASON CONTEXTMENU text[ProfileObject];
 
 NAVIGATOR {
     systemEvents {

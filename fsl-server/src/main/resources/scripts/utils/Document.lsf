@@ -483,7 +483,7 @@ META defineDocumentDetailSortOrder (object, detailClass)
         } ELSE {
             MESSAGE 'Не задано условие сортировки';
         }
-    } CONTEXTMENU index[detailClass];  
+    } ASON CONTEXTMENU index[detailClass];  
     
 END
 META defineDocumentDetailSortOrder(object)
