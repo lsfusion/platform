@@ -9,6 +9,7 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.Property;
 
 import java.util.HashMap;
 import java.util.List;
@@ -185,17 +186,22 @@ public class FormPropertyOptions {
 
     public void addContextMenuEditAction(LocalizedString caption, ActionPropertyObjectEntity action) {
         if (action != null) {
-            if (caption == null || isRedundantString(caption.getSourceString())) {
-                caption = action.property.caption;
-            }
-            if (caption == null || isRedundantString(caption.getSourceString())) {
-                caption = LocalizedString.create(action.property.getSID());
-            }
+            ActionProperty property = (ActionProperty) action.property;
 
-            addEditAction(action.property.getSID(), action);
-            addContextMenuBinding(action.property.getSID(), caption);
-            ((ActionProperty) action.property).checkReadOnly = false;
+            addEditAction(property.getSID(), action);
+            addContextMenuBinding(property.getSID(), getContextMenuCaption(caption, property));
+            property.checkReadOnly = false;
         }
+    }
+
+    public static LocalizedString getContextMenuCaption(LocalizedString caption, ActionProperty property) {
+        if (caption == null || isRedundantString(caption.getSourceString())) {
+            caption = property.caption;
+        }
+        if (caption == null || isRedundantString(caption.getSourceString())) {
+            caption = LocalizedString.create(property.getSID());
+        }
+        return caption;
     }
 
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {

@@ -78,12 +78,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         return new ActionPropertyMapImplement<>(property, getRevMap(mapping));
     }
 
-    public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
-        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : LocalizedString.create(property.getSID()));
-    }
-
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, LocalizedString contextMenuCaption) {
-        setAsEditActionFor(property.getSID(), mainProperty);
         mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
     }
 

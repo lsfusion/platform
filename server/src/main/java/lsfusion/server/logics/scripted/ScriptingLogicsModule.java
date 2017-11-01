@@ -871,6 +871,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP onContextLAP = (LAP) onContextAction;
         onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
         ((ActionProperty) onContextLAP.property).checkReadOnly = false;
+
+        onContextLAP.setAsEditActionFor(onContextLAP.property.getSID(), mainProperty);
     }
 
     public void setAsEditActionFor(LP onEditAction, String editActionSID, PropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
@@ -959,6 +961,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         property.property.setEditAction(actionType, actionImplements.get(0));
+    }
+
+    public void setScriptedContextMenuAction(LP property, LocalizedString contextMenuCaption, LPWithParams action) {
+        List<Object> params = getParamsPlainList(Collections.singletonList(action));
+        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
+
+        String actionSID = actionImplement.property.getSID();
+        property.property.setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.property));
+        actionImplement.property.checkReadOnly = false;
+
+        property.property.setEditAction(actionSID, actionImplement);
     }
 
     public void setEventId(LP property, String id) {

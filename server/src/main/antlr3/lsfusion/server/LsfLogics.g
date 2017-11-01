@@ -1994,6 +1994,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :
         onEditEventSetting [property, context]
+    |   onContextMenuEventSetting [property, context]
     ;
 
 inSetting [PropertySettings ps]
@@ -2055,10 +2056,10 @@ notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve 
 shortcutSetting [LP property, LocalizedString caption]
 @after {
 	if (inPropParseState()) {
-		self.addToContextMenuFor(property, caption, $usage.propUsage);
+		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
 	}
 }
-	:	'CONTEXTMENU' usage = propertyUsage 
+	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = propertyUsage
 	;
 
 asonEditActionSetting [LP property]
@@ -2238,6 +2239,16 @@ formEventType returns [String type]
 	|	'CHANGEWYS' { $type = ServerResponse.CHANGE_WYS; }
 	|	'EDIT' { $type = ServerResponse.EDIT_OBJECT; }
 	|	'GROUPCHANGE' { $type = ServerResponse.GROUP_CHANGE; }
+	;
+
+onContextMenuEventSetting [LP property, List<TypedParameter> context]
+@after {
+	if (inPropParseState()) {
+		self.setScriptedContextMenuAction(property, $c.val, $action.property);
+	}
+}
+	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)?
+		action=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
 eventIdSetting [LP property]
