@@ -30,7 +30,7 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
 
     @Override
     protected boolean prerun() {
-        if (SystemProperties.isDebug) {
+        if (SystemProperties.isDebug || Settings.get().isDisablePrereadCaches()) {
             return false;
         }
         return true;
