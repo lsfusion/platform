@@ -2429,13 +2429,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 allocatedBytesLogger.info(info);
             }
             
-            // временно сюда лог
-            HashMap<FormInstance.DiffForm, Boolean> diffForms = new HashMap<>(FormInstance.diffForms);
-            String diffLog = "" + '\n';
-            for(FormInstance.DiffForm diffForm : diffForms.keySet())
-                diffLog += "EXPLICIT " + diffForm.type + " " + diffForm.explicit + " " + diffForm.entity + " " + diffForm.stackString + " " + diffForm.heur + '\n'; 
-            ServerLoggers.exInfoLogger.info(diffLog);
-
             if (logTotal) {
                 allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
                         humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));

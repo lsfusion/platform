@@ -382,20 +382,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return Objects.hashCode(type, entity, stackString, explicit, heur);
         }
     }
-    public static ConcurrentHashMap<DiffForm, Boolean> diffForms = MapFact.getGlobalConcurrentHashMap();
-    private void regAutoDiff(String type, boolean explicit, boolean heur) {
-        Stack<ExecutionStackItem> stack = ExecutionStackAspect.getStack();
-        String stackString = "";
-        if(stack != null) {
-            int logSize = Settings.get().getLogHeurStackSize();
-            for(int i=0,size=stack.size();i<size;i++) {
-                if(i >= logSize)
-                    break;
-                stackString = (stackString.isEmpty() ? "" : stackString + '\n') + stack.get(i).toString();
-            }
-        }
-        diffForms.put(new DiffForm(type, entity, stackString, explicit, heur), true);
-    }
 
     private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners) {
         return prevOwners <= 0 && !showReadOnly && !entity.hasNoChange();
