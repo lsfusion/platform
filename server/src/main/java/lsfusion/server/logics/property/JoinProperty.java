@@ -301,7 +301,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 DefaultChangeAggActionProperty<T> aggChangeActionProperty =
-                        new DefaultChangeAggActionProperty<>(LocalizedString.create("sys"), listInterfaces, aggProp, aggClass, changeActionImplement);
+                        new DefaultChangeAggActionProperty<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)

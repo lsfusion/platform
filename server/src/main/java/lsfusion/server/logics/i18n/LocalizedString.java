@@ -32,7 +32,7 @@ public final class LocalizedString {
     public static final char CLOSE_CH = '}';
     
     private final String source;
-    private boolean needToBeLocalized;
+    private final boolean needToBeLocalized;
     
     private boolean isFormatted;
     private Object[] params = null;
@@ -192,6 +192,8 @@ public final class LocalizedString {
             return new LocalizedString(source, true, true, params);
         }
     }
+    
+    public final static LocalizedString NONAME = LocalizedString.create(""); 
     
     /**
      * Создает LocalizedString без проверки на корректность

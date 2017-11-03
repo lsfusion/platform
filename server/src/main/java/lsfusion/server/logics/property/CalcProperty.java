@@ -1433,7 +1433,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.create("sys"), this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 
@@ -1887,15 +1887,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         
     }
     
-    @Override
-    public String toString() {
-        String string = super.toString();
-        if (debugInfo != null) {
-            string = string + ":" + debugInfo;
-        }
-        return string;
-    }
-
     public void printDepends(boolean events, String tab) {
         System.out.println(tab + this);
         for(CalcProperty prop : getDepends(events)) {

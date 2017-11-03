@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class AbstractWindow extends IdentityObject {
 
-    public LocalizedString caption = LocalizedString.create("");
+    public LocalizedString caption = LocalizedString.NONAME;
 
     public int position;
 

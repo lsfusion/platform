@@ -19,7 +19,7 @@ import java.sql.SQLException;
 // с явным задание классов параметров (where определяется этими классами)
 public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
     protected ExplicitActionProperty(ValueClass... classes) {
-        this(LocalizedString.create("sys"), classes);
+        this(LocalizedString.NONAME, classes);
     }
 
     protected ExplicitActionProperty(LocalizedString caption, ValueClass[] classes) {

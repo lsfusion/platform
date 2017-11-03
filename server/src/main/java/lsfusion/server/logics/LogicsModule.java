@@ -482,10 +482,6 @@ public abstract class LogicsModule {
         return addDProp(null, false, caption, value, params);
     }
 
-    protected LCP addDProp(AbstractGroup group, LocalizedString caption, ValueClass value, ValueClass... params) {
-        return addDProp(group, false, caption, value, params);
-    }
-
     protected LCP addDProp(AbstractGroup group, boolean persistent, LocalizedString caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(caption, params, value);
         LCP lp = addProperty(group, persistent, new LCP<>(dataProperty));
@@ -532,7 +528,7 @@ public abstract class LogicsModule {
                             }
                         }), andProperty.objectInterface, mapCalcListImplement(derivedProp, listInterfaces));
 
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.create("sys"), listInterfaces,
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.NONAME, listInterfaces,
                 new CalcPropertyImplement<>(andProperty, mapImplement));
         LCP<JoinProperty.Interface> listProperty = new LCP<>(joinProperty, listInterfaces);
 
@@ -617,7 +613,7 @@ public abstract class LogicsModule {
     // ------------------- Set property action ----------------- //
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(int resInterfaces,boolean conditional, Object... params) {
-        return addSetPropertyAProp(null, LocalizedString.create("sys"), resInterfaces, conditional, params);
+        return addSetPropertyAProp(null, LocalizedString.NONAME, resInterfaces, conditional, params);
     }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, LocalizedString caption, int resInterfaces,
@@ -637,10 +633,10 @@ public abstract class LogicsModule {
         return addListAProp(SetFact.<SessionDataProperty>EMPTY(), params);
     }
     protected LAP addListAProp(ImSet<SessionDataProperty> localsInScope, Object... params) {
-        return addListAProp(null, 0, LocalizedString.create("sys"), localsInScope, params);
+        return addListAProp(null, 0, LocalizedString.NONAME, localsInScope, params);
     }
     protected LAP addListAProp(int removeLast, Object... params) {
-        return addListAProp(null, removeLast, LocalizedString.create("sys"), SetFact.<SessionDataProperty>EMPTY(), params);
+        return addListAProp(null, removeLast, LocalizedString.NONAME, SetFact.<SessionDataProperty>EMPTY(), params);
     }
     protected LAP addListAProp(LocalizedString caption, Object... params) {
         return addListAProp(null, 0, caption, SetFact.<SessionDataProperty>EMPTY(), params);        
@@ -653,7 +649,7 @@ public abstract class LogicsModule {
 
     protected LAP addAbstractListAProp(boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP<>(new ListActionProperty(LocalizedString.create("sys"), isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP<>(new ListActionProperty(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- Try action ----------------- //
@@ -670,7 +666,7 @@ public abstract class LogicsModule {
     // ------------------- If action ----------------- //
 
     protected LAP addIfAProp(Object... params) {
-        return addIfAProp(null, LocalizedString.create("sys"), false, params);
+        return addIfAProp(null, LocalizedString.NONAME, false, params);
     }
 
     protected LAP addIfAProp(LocalizedString caption, Object... params) {
@@ -699,7 +695,7 @@ public abstract class LogicsModule {
         if(readImplements.size() % 2 != 0) {
             mCases.add(new ActionCase<>(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
-        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create(""), isExclusive, listInterfaces, mCases.immutableList())));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, mCases.immutableList())));
     }
 
     protected LAP addMultiAProp(boolean isExclusive, Object... params) {
@@ -710,12 +706,12 @@ public abstract class LogicsModule {
         for (int i = 0; i < readImplements.size(); i++) {
             mCases.add((ActionPropertyMapImplement) readImplements.get(i));
         }
-        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create(""), isExclusive, mCases.immutableList(), listInterfaces)));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, mCases.immutableList(), listInterfaces)));
     }
 
     protected LAP addAbstractCaseAProp(ListCaseActionProperty.AbstractType type, boolean isExclusive, boolean isChecked, boolean isLast, ValueClass[] params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(params.length);
-        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.create("sys"), isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
+        return addProperty(null, new LAP<>(new CaseActionProperty(LocalizedString.NONAME, isExclusive, isChecked, isLast, type, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
     // ------------------- For action ----------------- //
@@ -751,7 +747,7 @@ public abstract class LogicsModule {
     // ------------------- JOIN ----------------- //
 
     public LAP addJoinAProp(LAP action, Object... params) {
-        return addJoinAProp(LocalizedString.create("sys"), action, params);
+        return addJoinAProp(LocalizedString.NONAME, action, params);
     }
 
     protected LAP addJoinAProp(LocalizedString caption, LAP action, Object... params) {
@@ -812,7 +808,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         NewSessionActionProperty actionProperty = new NewSessionActionProperty(
-                LocalizedString.create("sys"), listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
+                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
         
         actionProperty.drawOptions.inheritDrawOptions(action.property.drawOptions);
         actionProperty.inheritCaption(action.property);
@@ -977,7 +973,7 @@ public abstract class LogicsModule {
     // ------------------- JOIN (продолжение) ----------------- //
 
     public LCP addJProp(LCP mainProp, Object... params) {
-        return addJProp((AbstractGroup) null, LocalizedString.create("sys"), mainProp, params);
+        return addJProp((AbstractGroup) null, LocalizedString.NONAME, mainProp, params);
     }
 
     protected LCP addJProp(boolean user, LocalizedString caption, LCP mainProp, Object... params) {
@@ -1351,10 +1347,6 @@ public abstract class LogicsModule {
                 new CaseUnionProperty(isExclusive, isChecked, isLast, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
     }
 
-    protected LCP addCaseUProp(AbstractGroup group, boolean persistent, LocalizedString caption, Object... params) {
-        return addCaseUProp(group, persistent, caption, false, params);
-    }
-
     protected LCP addCaseUProp(AbstractGroup group, boolean persistent, LocalizedString caption, boolean isExclusive, Object... params) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(getIntNum(params));
         MList<CalcCase<UnionProperty.Interface>> mListCases = ListFact.mList();
@@ -1442,7 +1434,7 @@ public abstract class LogicsModule {
         LCP logDropProperty = addLogProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
 
         LCP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
-        LCP whereProperty = addJProp(false, LocalizedString.create(""), baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
+        LCP whereProperty = addJProp(false, LocalizedString.NONAME, baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
 
         Object[] params = directLI(baseLM.vtrue);
         if (whereProperty != null) {
@@ -1454,16 +1446,6 @@ public abstract class LogicsModule {
         ((StoredDataProperty)logDropProperty.property).markStored(baseLM.tableFactory);
 
         return logDropProperty;
-    }
-
-    // ------------------- UNION SUM ----------------- //
-
-    protected LCP addSUProp(boolean persistent, LocalizedString caption, Union unionType, LCP... props) {
-        return addSUProp(null, persistent, caption, unionType, props);
-    }
-
-    protected LCP addSUProp(AbstractGroup group, boolean persistent, LocalizedString caption, Union unionType, LCP... props) {
-        return addUProp(group, persistent, caption, unionType, null, (unionType == Union.SUM ? BaseUtils.genArray(1, props.length) : null), getUParams(props));
     }
 
     // ------------------- CONCAT ----------------- //
@@ -1489,7 +1471,7 @@ public abstract class LogicsModule {
     // ------------------- MESSAGE ----------------- //
 
     protected LAP addMAProp(String title, boolean noWait, Object... params) {
-        return addMAProp(null, LocalizedString.create(""), title, noWait, params);
+        return addMAProp(null, LocalizedString.NONAME, title, noWait, params);
     }
 
     protected LAP addMAProp(AbstractGroup group, LocalizedString caption, String title, boolean noWait, Object... params) {
@@ -1509,7 +1491,7 @@ public abstract class LogicsModule {
 
 
     protected LAP addConfirmAProp(String title, boolean yesNo, LCP targetProp, Object... params) {
-        return addConfirmAProp(null, LocalizedString.create(""), title, yesNo, targetProp, params);
+        return addConfirmAProp(null, LocalizedString.NONAME, title, yesNo, targetProp, params);
     }
 
     protected LAP addConfirmAProp(AbstractGroup group, LocalizedString caption, String title, boolean yesNo, LCP<?> targetProp, Object... params) {
@@ -1524,7 +1506,7 @@ public abstract class LogicsModule {
     // ------------------- Async Update Action ----------------- //
 
     protected LAP addAsyncUpdateAProp(Object... params) {
-        return addAsyncUpdateAProp(LocalizedString.create(""), params);
+        return addAsyncUpdateAProp(LocalizedString.NONAME, params);
     }
 
     protected LAP addAsyncUpdateAProp(LocalizedString caption, Object... params) {
@@ -1563,7 +1545,7 @@ public abstract class LogicsModule {
     // ------------------- EVAL ----------------- //
 
     public LAP addEvalAProp(LCP<?> scriptSource) {
-        return addAProp(null, new EvalActionProperty(LocalizedString.create(""), scriptSource));
+        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource));
     }
 
     // ------------------- DRILLDOWN ----------------- //
@@ -1723,7 +1705,7 @@ public abstract class LogicsModule {
     protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
         LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
 
-        LocalizedString caption = LocalizedString.create("sys");
+        LocalizedString caption = LocalizedString.NONAME;
 
         // NEW AUTOSET x=X DO {
         //      REQUEST
@@ -1891,7 +1873,7 @@ public abstract class LogicsModule {
     }
     
     protected LAP addOSAProp(ObjectEntity object, boolean last, Object... params) {
-        return addOSAProp(null, LocalizedString.create(""), object, last, params);
+        return addOSAProp(null, LocalizedString.NONAME, object, last, params);
     }
 
     protected LAP addOSAProp(AbstractGroup group, LocalizedString caption, ObjectEntity object, boolean last, Object... params) {
@@ -1905,7 +1887,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
-        return addGOSAProp(null, LocalizedString.create(""), object, objects, last, params);
+        return addGOSAProp(null, LocalizedString.NONAME, object, objects, last, params);
     }
 
     protected LAP addGOSAProp(AbstractGroup group, LocalizedString caption, GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
@@ -1959,7 +1941,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //        logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, property.caption, new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
+        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),

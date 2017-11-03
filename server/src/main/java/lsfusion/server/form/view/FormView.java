@@ -49,7 +49,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public KeyStroke keyStroke = null;
 
-    public LocalizedString caption = LocalizedString.create("");
+    public LocalizedString caption = LocalizedString.NONAME;
     public String canonicalName = "";
     public String creationPath = "";
 

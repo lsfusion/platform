@@ -80,8 +80,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     
     public String toString() {
         String result = "'" + ThreadLocalContext.localize(caption) + "'";
-        if (canonicalName != null) {
-            result = result + " (" + canonicalName + ")";
+        if (canonicalName == null && debugInfo == null) {
+            result += "-" + System.identityHashCode(this);
+        } else { 
+            if (canonicalName != null)
+                result = result + " (" + canonicalName + ")";
+            if (debugInfo != null)
+                result += ":" + debugInfo;
         }
         return result;
     }

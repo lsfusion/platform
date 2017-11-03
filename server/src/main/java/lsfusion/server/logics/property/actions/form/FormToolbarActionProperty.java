@@ -41,7 +41,7 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {
                 if (!showCaption) {
-                    propertyView.caption = LocalizedString.create("");
+                    propertyView.caption = LocalizedString.NONAME;
                 }
             }
         });
