@@ -95,7 +95,7 @@ hostnameServerComputer 'Сервер' () = hostname(serverComputer());
 @defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
 
 setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
-explainAnalyzeMode 'Включён Explain Analyze' = DATA BOOLEAN (User);
+explainAnalyzeMode 'Включён Explain' = DATA BOOLEAN (User);
 refreshExplainAnalyzeMode 'Обновить Explain Analyze'(User user) = {
     setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
 }

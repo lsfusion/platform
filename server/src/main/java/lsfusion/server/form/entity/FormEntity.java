@@ -1318,6 +1318,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @Override
+    public String toString() {
+        return getSID() + "'" + ThreadLocalContext.localize(caption) + "'";
+    }
+
+    @Override
     public FormEntity getStaticForm() {
         return this;
     }

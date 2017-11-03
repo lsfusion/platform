@@ -1213,24 +1213,32 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 ImOrderMap<String, String> orderKeySelect = SQLSession.mapNames(keySelect.result.filterIncl(keys.keys()), keyOrder);
                 ImOrderMap<String, String> orderPropertySelect = SQLSession.mapNames(propertySelect.result, propOrder);
+                
                 ImSet<String> areKeyValues = compiledQuery.areKeyValues.filter(keys.keys());
-
                 if(useRecursionFunction) {
-                    ImOrderMap<String, String> orderCastKeySelect = orderKeySelect.mapOrderValues(new GetKeyValue<String, String, String>() {
-                        public String getMapValue(String key, String value) {
-                            return columnTypes.get(key).getCast(value, syntax, env);
-                        }});
-                    ImOrderMap<String, String> orderGroupPropertySelect = orderPropertySelect.mapOrderValues(new GetKeyValue<String, String, String>() {
+                    orderPropertySelect = orderPropertySelect.mapOrderValues(new GetKeyValue<String, String, String>() {
                         public String getMapValue(String key, String value) {
                             Type type = columnTypes.get(key);
-                            return type.getCast((type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(
-                                    ListFact.<String>singleton(value), ListFact.<ClassReader>singleton(type), MapFact.<String, CompileOrder>EMPTYORDER(), type, syntax, env), syntax, env);
-                        }});
-                    return getGroupSelect(fromSelect, orderCastKeySelect, orderGroupPropertySelect, whereSelect.result, SetFact.<String>EMPTY(), areKeyValues);
-                } else
+                            return (type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(
+                                    ListFact.<String>singleton(value), ListFact.<ClassReader>singleton(type), MapFact.<String, CompileOrder>EMPTYORDER(), type, syntax, env);
+                        }
+                    });
+                }
+
+                // у рекурсий есть проблемы с cast'ом (в WITH RECURSIVE странная ошибка столбец имеет тип int, а результат bigint);
+                GetKeyValue<String, String, String> castTypes = new GetKeyValue<String, String, String>() {
+                    public String getMapValue(String key, String value) {
+                        return columnTypes.get(key).getCast(value, syntax, env);
+                    }
+                };
+                orderKeySelect = orderKeySelect.mapOrderValues(castTypes);
+                orderPropertySelect = orderPropertySelect.mapOrderValues(castTypes);
+                if(useRecursionFunction)
+                    return getGroupSelect(fromSelect, orderKeySelect, orderPropertySelect, whereSelect.result, SetFact.<String>EMPTY(), areKeyValues);
+                else
                     return syntax.getSelect(fromSelect, SQLSession.stringExpr(orderKeySelect, orderPropertySelect), whereSelect.result.toString(" AND "),"","","", "");
             }
-
+            
             public SQLQuery getParamSource(final boolean useRecursionFunction, final boolean wrapStep, DebugInfoWriter debugInfoWriter) {
                 ImRevMap<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
