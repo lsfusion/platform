@@ -9,7 +9,7 @@ CLASS ProfileObject {
 TABLE profileObject(ProfileObject); 
 TABLE profileData(ProfileObject, ProfileObject, User, Form);
 
-text 'Действие' = DATA STRING[1000] (ProfileObject) IN recognize;
+text 'Действие' = DATA STRING[1000] (ProfileObject) IN recognize MINCHARWIDTH 40;
 onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
