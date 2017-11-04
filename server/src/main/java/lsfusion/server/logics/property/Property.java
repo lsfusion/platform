@@ -169,8 +169,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return name;
     }
 
-    public boolean cached = false;
-
     // для всех    
     private String mouseBinding;
     private Object keyBindings;
