@@ -62,6 +62,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     public void activateTab(int i) {
+        currentChild = container.children.get(i);  // изменение сервер уже в курсе об изменениях, поэтому пометим так
         tabbedDelegate.selectTab(i);
     }
 

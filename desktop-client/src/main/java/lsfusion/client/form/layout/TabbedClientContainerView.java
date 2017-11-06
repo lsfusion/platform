@@ -139,6 +139,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     public void activateTab(int index) {
+        currentChild = container.children.get(index); // изменение сервер уже в курсе об изменениях, поэтому пометим так
         tabbedPane.activateTab(index);
     }
 
@@ -208,8 +209,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
         }
 
         private void activateTab(int index) {
-            if(getTabCount() > index)
-                setSelectedIndex(index);
+            setSelectedIndex(index);
         }
 
         private void updatePageSizes(Container container) {
