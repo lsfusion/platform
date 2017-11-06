@@ -382,7 +382,7 @@ public class PropertyDrawView extends ComponentView {
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(getCaption());
+        return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
     }
 
     public int getMinimumCharWidth() {

@@ -250,6 +250,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(caption);
+        return ThreadLocalContext.localize(caption) + " " + super.toString();
     }
 }

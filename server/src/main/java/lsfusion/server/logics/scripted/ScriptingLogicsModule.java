@@ -2787,7 +2787,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) {
-        return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
+        return new LPWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
     
     public LPWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage, LPWithParams movePathProp, boolean delete) throws ScriptingErrorLog.SemanticErrorException {

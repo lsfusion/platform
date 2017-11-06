@@ -61,7 +61,7 @@ public class TabbedContainerView extends GAbstractContainerView {
         });
     }
 
-    public void selectTab(int i) {
+    public void activateTab(int i) {
         tabbedDelegate.selectTab(i);
     }
 
@@ -145,7 +145,7 @@ public class TabbedContainerView extends GAbstractContainerView {
         return tabCaption;
     }
 
-    public boolean isTabVisible(int tab) {
-        return visibleChildren.contains(getChild(tab));
+    public boolean isTabVisible(GComponent component) {
+        return visibleChildren.contains(component);
     }
 }

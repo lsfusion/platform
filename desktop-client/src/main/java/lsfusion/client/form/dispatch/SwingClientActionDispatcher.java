@@ -192,10 +192,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(ActivateTabClientAction action) {
-        Main.frame.activateTab(action.formSID, action.tabSID);
-    }
-
     protected void beforeModalActionInSameEDT(boolean blockView) {
     }
 
@@ -468,11 +464,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 Main.restart();
         } else
             Main.shutdown();
-    }
-
-    @Override
-    public void execute(FocusClientAction action) {
-        //do nothing by default
     }
 
     public void execute(ExceptionClientAction action) {

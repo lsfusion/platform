@@ -107,12 +107,6 @@ public class DockableManager {
         return page;
     }
 
-    public void activateTab(String formSID, String tabSID) throws IOException, ClassNotFoundException, JRException {
-        CDockable page = control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-        if(page instanceof ClientFormDockable)
-            ((ClientFormDockable) page).activateTab(tabSID);
-    }
-
     public Integer openReport(ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         ClientReportDockable page = new ClientReportDockable(generationData, this, printerName, editInvoker);
         openForm(page);

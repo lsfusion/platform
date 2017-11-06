@@ -27,6 +27,9 @@ public class ClientFormChanges {
 
     public final Set<ClientPropertyDraw> panelProperties;
     public final Set<ClientPropertyDraw> dropProperties;
+    
+    public final List<ClientComponent> activateTabs;
+    public final List<ClientPropertyDraw> activateProps;
 
     public ClientFormChanges(DataInputStream inStream, ClientForm clientForm) throws IOException {
 
@@ -90,6 +93,20 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             dropProperties.add(clientForm.getProperty(inStream.readInt()));
+        }
+
+        //ActivateTabs
+        activateTabs = new ArrayList<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            activateTabs.add(clientForm.findContainerByID(inStream.readInt()));
+        }
+
+        //ActivateProps
+        activateProps = new ArrayList<>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            activateProps.add(clientForm.getProperty(inStream.readInt()));
         }
     }
 

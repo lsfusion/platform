@@ -29,7 +29,6 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance<?> form = context.getFormInstance(false, true);
-        ServerLoggers.assertLog(form != null, "FORM ALWAYS SHOULD EXIST");
 
         ImSet<ObjectInstance> objects;
         ObjectValue value;

@@ -36,7 +36,9 @@ import lsfusion.gwt.form.client.form.dispatch.GSimpleChangePropertyDispatcher;
 import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.form.client.form.ui.classes.GResizableClassDialog;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
+import lsfusion.gwt.form.client.form.ui.layout.TabbedContainerView;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.*;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
@@ -488,6 +490,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         formLayout.hideEmptyContainerViews();
 
+        activateElements(fc);
+
         onResize();
 
         // в конце скроллим все таблицы к текущим ключам
@@ -497,6 +501,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             onInitialFormChangesReceived();
             initialFormChangesReceived = true;
         }
+    }
+
+    private void activateElements(GFormChanges fc) {
+        for(GComponent component : fc.activateTabs)
+            activateTab(component);
+
+        for(GPropertyDraw propertyDraw : fc.activateProps)
+            focusProperty(propertyDraw);            
     }
 
     private void applyScrollPositions() {
@@ -925,19 +937,38 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
-    public void focusProperty(int propertyDrawId) {
-        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
-        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+    public void focusProperty(GPropertyDraw propertyDraw) {
+        if (controllers.containsKey(propertyDraw.groupObject)) {
             controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
     }
 
-    public void activateTab(String formID, String tabID) {
-        formsController.selectTab(formID, tabID);
-//        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
-//        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-//            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
-//        }
+    private Map<Integer, Integer> getTabMap(TabbedContainerView containerView, GContainer component) {
+        Map<Integer, Integer> tabMap = new HashMap<>();
+        ArrayList<GComponent> tabs = component.children;
+        if (tabs != null) {
+            int c = 0;
+            for (int i = 0; i < tabs.size(); i++) {
+                GComponent tab = tabs.get(i);
+                if (containerView.isTabVisible(tab)) {
+                    tabMap.put(tab.ID, c++);
+                }
+            }
+        }
+        return tabMap;
+    }
+
+    public void activateTab(GComponent component) {
+        GContainer parentContainer = component.container;
+        if(parentContainer != null && parentContainer.isTabbed()) {
+            GAbstractContainerView containerView = getFormLayout().getFormContainer(parentContainer);
+            if(containerView instanceof TabbedContainerView) {
+                Map<Integer, Integer> tabMap = getTabMap((TabbedContainerView) containerView, parentContainer);
+                Integer index = tabMap.get(component.ID);
+                if(index != null)
+                    ((TabbedContainerView) containerView).activateTab(index);
+            }
+        }
     }
 
     public void countRecords(final GGroupObject groupObject) {

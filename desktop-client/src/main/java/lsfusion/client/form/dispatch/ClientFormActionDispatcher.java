@@ -48,11 +48,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    public void execute(ActivateTabClientAction action) {
-        super.execute(action);
-    }
-
-    @Override
     protected void beforeModalActionInSameEDT(boolean blockView) {
         getFormController().block(blockView);
     }
@@ -102,11 +97,6 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public void execute(FocusClientAction action) {
-        getFormController().focusProperty(action.propertyId);
     }
 
     public void execute(EditNotPerformedClientAction action) {

@@ -1,5 +1,6 @@
 package lsfusion.server.form.instance;
 
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -7,7 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.interop.ClassViewType;
+import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 
@@ -30,6 +33,9 @@ public class MFormChanges {
 
     public MExclSet<PropertyDrawInstance> panelProperties = SetFact.mExclSet();
     public MExclSet<PropertyDrawInstance> dropProperties = SetFact.mExclSet();
+    
+    public MList<ComponentView> activateTabs = ListFact.mList();
+    public MList<PropertyDrawInstance> activateProps = ListFact.mList();
 
     public FormChanges immutable() {
 
@@ -41,7 +47,9 @@ public class MFormChanges {
                 expandables.immutable(),
                 properties.immutable(),
                 panelProperties.immutable(),
-                dropProperties.immutable()
+                dropProperties.immutable(),
+                activateTabs.immutableList(),
+                activateProps.immutableList()
         );
     }
 }

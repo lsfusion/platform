@@ -8,7 +8,6 @@ import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GUserInputResult;
-import lsfusion.gwt.form.shared.view.actions.GFocusAction;
 import lsfusion.gwt.form.shared.view.actions.GRequestUserInputAction;
 import lsfusion.gwt.form.shared.view.actions.GUpdateEditValueAction;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -153,11 +152,5 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     @Override
     public void execute(GUpdateEditValueAction action) {
         editHandler.updateEditValue(action.value);
-    }
-
-    @Override
-    public void execute(GFocusAction action) {
-        transferFocusAfterEdit = false;
-        super.execute(action);
     }
 }

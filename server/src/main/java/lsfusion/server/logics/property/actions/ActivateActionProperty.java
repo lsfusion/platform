@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.interop.action.ActivateTabClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -28,7 +28,8 @@ public class ActivateActionProperty extends SystemExplicitActionProperty {
                 //todo: activate form пока не реализована
             } else {
                 //activate tab
-                context.requestUserInteraction(new ActivateTabClientAction(requestedForm.getSID(), requestedTab.getSID()));
+                FormInstance<?> formInstance = context.getFormInstance(false, true);
+                formInstance.activateTab(requestedTab);
             }
         }
 

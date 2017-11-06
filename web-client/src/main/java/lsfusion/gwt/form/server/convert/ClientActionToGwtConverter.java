@@ -101,11 +101,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GMessageAction(action.message, action.caption);
     }
 
-    @Converter(from = FocusClientAction.class)
-    public GFocusAction convertAction(FocusClientAction action) {
-        return new GFocusAction(action.propertyId);
-    }
-
     @Converter(from = ProcessFormChangesClientAction.class)
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, FormDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
@@ -182,11 +177,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ProgressBar.class)
     public GProgressBar convertProgressBar(ProgressBar progressBar) {
         return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.params);
-    }
-
-    @Converter(from = ActivateTabClientAction.class)
-    public GActivateTabAction convertAction(ActivateTabClientAction action) {
-        return new GActivateTabAction(action.formSID, action.tabSID);
     }
 
     @Converter(from = LoadLinkClientAction.class)

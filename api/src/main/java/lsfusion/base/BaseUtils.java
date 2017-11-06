@@ -44,10 +44,8 @@ public class BaseUtils {
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
-    private static final int NavElementApiVersion = 48;
-    
     public static Integer getApiVersion() {
-        return NavElementApiVersion;
+        return 49;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

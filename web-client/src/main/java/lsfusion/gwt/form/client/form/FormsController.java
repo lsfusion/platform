@@ -25,5 +25,4 @@ public interface FormsController {
 
     void dropCurForm(GFormController form);
 
-    void selectTab(String formID, String tabID);
 }

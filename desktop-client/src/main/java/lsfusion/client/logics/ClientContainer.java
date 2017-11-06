@@ -223,6 +223,17 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return null;
     }
 
+    public ClientContainer findContainerByID(int id) {
+        if (id == this.ID) return this;
+        for (ClientComponent comp : children) {
+            if (comp instanceof ClientContainer) {
+                ClientContainer result = ((ClientContainer) comp).findContainerByID(id);
+                if (result != null) return result;
+            }
+        }
+        return null;
+    }
+
     public ClientContainer findParentContainerBySID(ClientContainer parent, String sID) {
         if (sID.equals(this.sID)) return parent;
         for (ClientComponent comp : children) {

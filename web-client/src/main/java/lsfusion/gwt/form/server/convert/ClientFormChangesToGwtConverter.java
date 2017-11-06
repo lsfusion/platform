@@ -132,6 +132,18 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             dto.dropPropertiesIds[i++] = dropProperty.ID;
         }
 
+        dto.activateTabsIds = new int[changes.activateTabs.size()];
+        i = 0;
+        for (ClientComponent tab : changes.activateTabs) {
+            dto.activateTabsIds[i++] = tab.ID;
+        }
+
+        dto.activatePropsIds = new int[changes.activateProps.size()];
+        i = 0;
+        for (ClientPropertyDraw activateProperty : changes.activateProps) {
+            dto.activatePropsIds[i++] = activateProperty.ID;
+        }
+
         return dto;
     }
 

@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.shared.view;
 
+import lsfusion.client.logics.ClientComponent;
+import lsfusion.client.logics.ClientContainer;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GAlignment;
 
@@ -92,6 +94,17 @@ public class GContainer extends GComponent {
             }
         }
         return draws;
+    }
+
+    public GContainer findContainerByID(int id) {
+        if (id == this.ID) return this;
+        for (GComponent comp : children) {
+            if (comp instanceof GContainer) {
+                GContainer result = ((GContainer) comp).findContainerByID(id);
+                if (result != null) return result;
+            }
+        }
+        return null;
     }
 
     public boolean isSplitVertical() {

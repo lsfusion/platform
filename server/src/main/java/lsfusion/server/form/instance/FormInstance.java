@@ -1482,6 +1482,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             object.groupTo.addSeek(object, value, last);
         }
     }
+    
+    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY(); 
+    // программный activate tab
+    public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
+        setTabVisible(view.getContainer(), view);
+        
+        userActivateTabs = userActivateTabs.addList(view);
+    }
+
+    private ImList<PropertyDrawInstance> userActivateProps = ListFact.EMPTY(); 
+    // программный activate property
+    public void activateProperty(PropertyDrawEntity view) throws SQLException, SQLHandledException {
+        userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
+    }
 
     public void changeObject(ObjectInstance object, ObjectValue objectValue) throws SQLException, SQLHandledException {
         seekObject(object, objectValue);
@@ -1747,8 +1761,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         updateData(mChangedProps, stack); // повторная проверка для VIEW свойств
 
         fillChangedDrawProps(result, mChangedProps.result);
+        
+        result.activateTabs.addAll(userActivateTabs);
+        result.activateProps.addAll(userActivateProps);
 
         // сбрасываем все пометки
+        userActivateTabs = ListFact.EMPTY();
+        userActivateProps = ListFact.EMPTY();
         for (GroupObjectInstance group : getGroups()) {
             for (ObjectInstance object : group.objects)
                 object.updated = 0;

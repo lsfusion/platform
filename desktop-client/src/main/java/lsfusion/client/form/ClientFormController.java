@@ -243,27 +243,29 @@ public class ClientFormController implements AsyncListener {
     public DispatcherListener getDispatcherListener() { 
         return rmiQueue;
     }
-
-    public void activateTab(String tabSID) {
-        ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
+    
+    public void activateTab(ClientComponent component) {
+        ClientContainer parentContainer = component.container;
         if(parentContainer != null && parentContainer.isTabbed()) {
             ClientContainerView containerView = getLayout().getContainerView(parentContainer);
             if(containerView instanceof TabbedClientContainerView) {
-                Map<String, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
-                ((TabbedClientContainerView) containerView).activateTab(tabMap.get(tabSID));
+                Map<Integer, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
+                Integer index = tabMap.get(component.getID());
+                if(index != null)
+                    ((TabbedClientContainerView) containerView).activateTab(index);
             }
         }
     }
 
-    private Map<String, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
-        Map<String, Integer> tabMap = new HashMap<>();
+    private Map<Integer, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
+        Map<Integer, Integer> tabMap = new HashMap<>();
         List<ClientComponent> tabs = component.getChildren();
         if (tabs != null) {
             int c = 0;
             for (int i = 0; i < tabs.size(); i++) {
                 ClientComponent tab = tabs.get(i);
                 if (containerView.isTabVisible(tab)) {
-                    tabMap.put(tab.getSID(), c++);
+                    tabMap.put(tab.getID(), c++);
                 }
             }
         }
@@ -500,9 +502,8 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void focusProperty(int propertyDrawId) {
-        ClientPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
-        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+    public void focusProperty(ClientPropertyDraw propertyDraw) {
+        if (controllers.containsKey(propertyDraw.groupObject)) {
             controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
     }
@@ -700,6 +701,10 @@ public class ClientFormController implements AsyncListener {
         for (TreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
+        
+        formLayout.preValidateMainContainer();
+        
+        activateElements(formChanges);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -707,6 +712,14 @@ public class ClientFormController implements AsyncListener {
                 ClientExternalScreen.repaintAll(getID());
             }
         });
+    }
+    
+    private void activateElements(ClientFormChanges formChanges) {
+        for(ClientComponent tab : formChanges.activateTabs)
+            activateTab(tab);
+
+        for(ClientPropertyDraw prop : formChanges.activateProps)
+            focusProperty(prop);
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {

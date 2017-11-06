@@ -263,6 +263,10 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         return mainContainer.findContainerBySID(sID);
     }
 
+    public ClientContainer findContainerByID(int id) {
+        return mainContainer.findContainerByID(id);
+    }
+
     public ClientContainer findParentContainerBySID(String sID) {
         return mainContainer.findParentContainerBySID(null, sID);
     }

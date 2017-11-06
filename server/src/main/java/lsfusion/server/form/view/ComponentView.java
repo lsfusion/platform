@@ -32,6 +32,11 @@ import static java.lang.Math.max;
 
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent {
 
+    @Override
+    public String toString() {
+        return getSID();
+    }
+
     public ComponentDesign design = new ComponentDesign();
 
     public Dimension minimumSize;

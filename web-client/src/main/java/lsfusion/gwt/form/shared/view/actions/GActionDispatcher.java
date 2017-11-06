@@ -34,10 +34,6 @@ public interface GActionDispatcher {
     void execute(GOpenFileAction action);
 
     void execute(GExportFileAction action);
-    
-    void execute(GFocusAction action);
-
-    void execute(GActivateTabAction action);
 
     String execute(GLoadLinkAction action);
 

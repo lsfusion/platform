@@ -1483,8 +1483,8 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new MessageActionProperty(LocalizedString.create("Message"), title, noWait)));
     }
 
-    public LAP addFocusActionProp(int propertyId) {
-        return addProperty(null, new LAP(new FocusActionProperty(propertyId)));
+    public LAP addFocusActionProp(PropertyDrawEntity propertyDrawEntity) {
+        return addProperty(null, new LAP(new FocusActionProperty(propertyDrawEntity)));
     }
 
     // ------------------- CONFIRM ----------------- //

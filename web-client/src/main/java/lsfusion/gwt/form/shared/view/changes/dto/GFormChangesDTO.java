@@ -29,6 +29,8 @@ public class GFormChangesDTO implements Serializable {
     public HashMap<GGroupObjectValue, Object>[] propertiesValues;
 
     public int[] panelPropertiesIds;
-
     public int[] dropPropertiesIds;
+
+    public int[] activateTabsIds;
+    public int[] activatePropsIds;
 }
