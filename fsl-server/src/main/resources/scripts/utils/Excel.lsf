@@ -29,6 +29,10 @@ key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
+isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\n'; 
+
 FORM template 'Шаблон Excel'
 
     OBJECTS t = Template PANEL
@@ -36,7 +40,7 @@ FORM template 'Шаблон Excel'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) isTable, key, description, value, rowSeparator SHOWIF isTable(te), NEW, DELETE GRID
     PROPERTIES (t) TODRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -72,7 +76,7 @@ FORM templates 'Шаблоны Excel'
     PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY key, description, value
+    PROPERTIES (te) READONLY isTable, key, description, value
 
     FILTERS template (te) == t
 ;

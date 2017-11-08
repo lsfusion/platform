@@ -23,9 +23,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+
+import static lsfusion.base.BaseUtils.trim;
 
 public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
@@ -50,14 +50,16 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 if (fileObject != null) {
 
                     DataObject excelObject = (DataObject) findProperty("file[Template]").readClasses(context, templateObject);
-                    Map<String, String> templateEntriesMap = new HashMap<>();
+                    List<TemplateEntry> templateEntriesList = new ArrayList<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
-                    templateEntryQuery.addProperty("keyTemplateEntry", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("valueTemplateEntry", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("key", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("value", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("isTable", findProperty("isTable[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("rowSeparator", findProperty("rowSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
 
                     templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
@@ -65,33 +67,21 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     for (ImMap<Object, Object> templateEntry : templateEntryResult.values()) {
 
-                        String keyTemplateEntry = (String) templateEntry.get("keyTemplateEntry");
-                        String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
+                        String key = trim((String) templateEntry.get("key"));
+                        String value = trim((String) templateEntry.get("value"));
+                        boolean isTable = templateEntry.get("isTable") != null;
+                        String rowSeparator = (String) templateEntry.get("rowSeparator");
 
-                        if (keyTemplateEntry != null && valueTemplateEntry != null)
-                            templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim());
+                        if (key != null && value != null)
+                            templateEntriesList.add(new TemplateEntry(key, value, isTable, rowSeparator));
                     }
 
                     ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[]) excelObject.object);
 
                     Workbook wb = WorkbookFactory.create(inputStream);
-                    for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                        Sheet sheet = wb.getSheetAt(i);
-                        for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
-                            Row row = sheet.getRow(j);
-                            if (row != null) {
-                                for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
-                                    Cell cell = row.getCell(k);
-                                    if (cell != null) {
-                                        String cellContents = cell.getStringCellValue();
-                                        for (Map.Entry<String, String> entry : templateEntriesMap.entrySet()) {
-                                            cellContents = cellContents.replace(entry.getKey(), entry.getValue());
-                                        }
-                                        cell.setCellValue(cellContents);
-                                    }
-                                }
-                            }
-                        }
+
+                    for (TemplateEntry templateEntry : templateEntriesList) {
+                        replaceData(wb, templateEntry);
                     }
 
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -103,6 +93,65 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
         } catch (ScriptingErrorLog.SemanticErrorException | InvalidFormatException | IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void replaceData(Workbook wb, TemplateEntry templateEntry) {
+        for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+            Sheet sheet = wb.getSheetAt(i);
+            for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
+                Row row = sheet.getRow(j);
+                if (row != null) {
+                    if (templateEntry.isTable) {
+                        for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
+                            Cell cell = row.getCell(k);
+                            if (cell != null) {
+                                String cellContents = cell.getStringCellValue();
+                                if (cellContents.contains(templateEntry.key)) {
+                                    String[] rows = templateEntry.value.split(templateEntry.rowSeparator);
+                                    for (int r = 0; r < rows.length; r++) {
+                                        if (r == 0) {
+                                            cellContents = cellContents.replace(templateEntry.key, rows[r]);
+                                            cell.setCellValue(cellContents);
+                                        } else {
+                                            Row newRow = sheet.getRow(j + r);
+                                            if (newRow == null)
+                                                newRow = sheet.createRow(j + r);
+                                            Cell newCell = newRow.getCell(k);
+                                            if (newCell == null)
+                                                newCell = newRow.createCell(k);
+                                            newCell.setCellValue(rows[r]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
+                            Cell cell = row.getCell(k);
+                            if (cell != null) {
+                                String cellContents = cell.getStringCellValue();
+                                cellContents = cellContents.replace(templateEntry.key, templateEntry.value);
+                                cell.setCellValue(cellContents);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private class TemplateEntry {
+        String key;
+        String value;
+        boolean isTable;
+        String rowSeparator;
+
+        public TemplateEntry(String key, String value, boolean isTable, String rowSeparator) {
+            this.key = key;
+            this.value = value;
+            this.isTable = isTable;
+            this.rowSeparator = rowSeparator;
         }
     }
 }
