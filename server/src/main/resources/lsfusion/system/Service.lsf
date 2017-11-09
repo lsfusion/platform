@@ -299,11 +299,11 @@ value 'Значение' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValu
 pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
 popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
 
-readReflectionPropertiesAction 'Прочитать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
+writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
 saveReflectionProperty 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
 
 onStarted() += { 
-    readReflectionPropertiesAction();
+    writeDefaultReflectionPropertiesAction();
     FOR baseValue(ReflectionProperty r) DO saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
     FOR baseValue(ReflectionProperty r, UserRole ur) DO saveReflectionProperty(r, ur);
 }

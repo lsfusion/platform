@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ReadReflectionPropertiesActionProperty extends ScriptingActionProperty {
+public class WriteDefaultReflectionPropertiesActionProperty extends ScriptingActionProperty {
 
-    public ReadReflectionPropertiesActionProperty(ServiceLogicsModule LM) {
+    public WriteDefaultReflectionPropertiesActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }
 

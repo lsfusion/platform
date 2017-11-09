@@ -11,7 +11,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import org.apache.commons.beanutils.BeanUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -42,20 +41,8 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
             String nameReflectionProperty = trimToNull((String) findProperty("name[ReflectionProperty]").read(context, reflectionPropertyObject));
             String valueReflectionProperty = trimToNull((String) findProperty("value[ReflectionProperty, UserRole]").read(context, reflectionPropertyObject, userRoleObject));
 
-            if(nameReflectionProperty != null && valueReflectionProperty != null) {
-
-                Long userRole = (Long) userRoleObject.getValue();
-                Settings settings = ThreadLocalContext.getRoleSettings(userRole);
-                if(settings != null) {
-
-                    String oldValue = BeanUtils.getProperty(settings, nameReflectionProperty);
-
-                    if (!oldValue.equals(valueReflectionProperty)) {
-                        ThreadLocalContext.setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
-                    }
-                }
-            }
-            
+            Settings settings = ThreadLocalContext.getRoleSettings((Long) userRoleObject.getValue());
+            ThreadLocalContext.setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
 
         } catch (ScriptingErrorLog.SemanticErrorException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | CloneNotSupportedException e) {
             throw Throwables.propagate(e);

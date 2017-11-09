@@ -168,7 +168,7 @@ public class ThreadLocalContext {
     }
 
     public static Settings getSettings() {
-        return settings.get() != null ? settings.get() : getLogicsInstance().getSettings();
+        return settings.get();
     }
 
     public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
