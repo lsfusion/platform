@@ -75,22 +75,14 @@ public class ThreadLocalContext {
             activeMap.put(Thread.currentThread(), false);
     }
 
-    public static void setSettings() {
-        try {
-            if (settings.get() == null) {
-                settings.set(getRoleSettings().cloneSettings());
-            }
-        } catch (CloneNotSupportedException e) {
-            ServerLoggers.systemLogger.error("SetSettings error: ", e);
-        }
-    }
-
-
     public static void dropSettings() {
         settings.set(null);
     }
 
     public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
+        if (settings.get() == null) {
+            settings.set(getRoleSettings(getCurrentRole()).cloneSettings());
+        }
         Map<String, String> overrideSettings = overrideSettingsMap.get();
         if(overrideSettings == null)
             overrideSettings = new HashMap<>();
@@ -151,20 +143,22 @@ public class ThreadLocalContext {
         return settings.get() != null ? settings.get() : getLogicsInstance().getSettings();
     }
 
-    public static Settings getRoleSettings() throws CloneNotSupportedException {
-        Long currentRole = getCurrentRole();
-        if (currentRole == null) //системный процесс или пользователь без роли
-            currentRole = 0L;
-        Settings roleSettings = roleSettingsMap.get(currentRole);
-        if (roleSettings == null) {
-            roleSettings = Settings.copy();
-            roleSettingsMap.put(currentRole, roleSettings);
+    public static Settings createRoleSettings(Long role) throws CloneNotSupportedException {
+        Settings roleSettings;
+        if (role == null) //системный процесс или пользователь без роли
+            roleSettings = getLogicsInstance().getSettings();
+        else {
+            roleSettings = getLogicsInstance().getSettings().cloneSettings();
+            roleSettingsMap.put(role, roleSettings);
         }
         return roleSettings;
     }
 
     public static Settings getRoleSettings(Long role) throws CloneNotSupportedException {
-        return roleSettingsMap.get(role);
+        if (role == null) //системный процесс или пользователь без роли
+            return getLogicsInstance().getSettings();
+        else
+            return roleSettingsMap.get(role);
     }
 
     public static FormInstance getFormInstance() {
@@ -288,8 +282,6 @@ public class ThreadLocalContext {
                 currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + " - " + currentThread.getId());
             }
         }
-
-        ThreadLocalContext.setSettings();
 
         checkThread(prevContext, assertTop, threadInfo);
 

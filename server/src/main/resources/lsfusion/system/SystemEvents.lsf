@@ -218,8 +218,6 @@ countDaysClearPings 'За сколько дней хранить статист�
 
 onClientStarted = ABSTRACT LIST ();
 
-onClientStarted() +=  { setReflectionPropertiesCurrentUserAction(); };
-
 onWebClientStarted = ABSTRACT LIST ();
     
 EXTEND FORM options PROPERTIES countDaysClearPings();

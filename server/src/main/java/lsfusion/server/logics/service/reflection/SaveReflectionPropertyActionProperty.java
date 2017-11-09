@@ -47,7 +47,7 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
             if(nameReflectionProperty != null && valueReflectionProperty != null) {
 
                 Long userRole = (Long) userRoleObject.getValue();
-                Settings settings = ThreadLocalContext.getRoleSettings(userRole != null ? userRole : 0);
+                Settings settings = ThreadLocalContext.getRoleSettings(userRole);
                 if(settings != null) {
 
                     String oldValue = BeanUtils.getProperty(settings, nameReflectionProperty);
