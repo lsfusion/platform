@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.Compare;
-import lsfusion.server.classes.ExcelClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -23,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static lsfusion.base.BaseUtils.trim;
 
@@ -83,6 +84,9 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     for (TemplateEntry templateEntry : templateEntriesList) {
                         replaceData(wb, templateEntry);
                     }
+
+                    //после изменения данных пересчитаем все формулы
+                    wb.getCreationHelper().createFormulaEvaluator().evaluateAll();
 
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     wb.write(outputStream);
