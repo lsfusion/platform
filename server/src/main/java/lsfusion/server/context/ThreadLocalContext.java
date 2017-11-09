@@ -89,9 +89,7 @@ public class ThreadLocalContext {
 
     public static void setSettings() {
         try {
-            if (settings.get() == null) {
-                settings.set(getRoleSettings(getCurrentRole()));
-            }
+            settings.set(getRoleSettings(getCurrentRole()));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
