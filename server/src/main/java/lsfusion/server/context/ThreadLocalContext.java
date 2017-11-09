@@ -181,47 +181,10 @@ public class ThreadLocalContext {
                 //клонируем settings для новой роли
                 roleSettings = getLogicsInstance().getSettings().cloneSettings();
 
-                //считываем перегруженные свойства для новой роли
-                try(DataSession session = getDbManager().createSession()) {
-
-                    Map<String, String> savedReflectionProperties = readSavedReflectionProperties(session, session.getDataObject(getBusinessLogics().securityLM.userRole, role));
-
-                    Field[] attributes = roleSettings.getClass().getDeclaredFields();
-                    for (Field field : attributes) {
-                        String name = field.getName();
-                        String savedValue = savedReflectionProperties.get(name);
-                        if (savedValue != null)
-                            setPropertyValue(roleSettings, name, savedValue);
-                    }
-                }
-
                 roleSettingsMap.put(role, roleSettings);
             }
             return roleSettings;
         }
-    }
-
-    public static Map<String, String> readSavedReflectionProperties(DataSession session, ObjectValue userRoleObject) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        KeyExpr reflectionPropertyExpr = new KeyExpr("reflectionProperty");
-        ImRevMap<Object, KeyExpr> reflectionPropertyKeys = MapFact.singletonRev((Object) "reflectionProperty", reflectionPropertyExpr);
-
-        QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<>(reflectionPropertyKeys);
-        Expr nameExpr = getBusinessLogics().serviceLM.nameReflectionProperty.getExpr(reflectionPropertyExpr);
-        Expr baseValueExpr = getBusinessLogics().serviceLM.overBaseValueReflectionPropertyUserRole.getExpr(reflectionPropertyExpr, userRoleObject.getExpr());
-
-        reflectionPropertyQuery.addProperty("name", nameExpr);
-        reflectionPropertyQuery.addProperty("baseValue", baseValueExpr);
-        reflectionPropertyQuery.and(nameExpr.getWhere());
-        reflectionPropertyQuery.and(baseValueExpr.getWhere());
-
-        Map<String, String> reflectionPropertiesMap = new HashMap<>();
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = reflectionPropertyQuery.execute(session);
-        for (ImMap<Object, Object> receiptDetailValues : receiptDetailResult.valueIt()) {
-            String name = trimToNull((String) receiptDetailValues.get("name"));
-            String baseValue = trimToNull((String) receiptDetailValues.get("baseValue"));
-            reflectionPropertiesMap.put(name, baseValue);
-        }
-        return reflectionPropertiesMap;
     }
 
     public static FormInstance getFormInstance() {
