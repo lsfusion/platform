@@ -12,13 +12,11 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static org.apache.commons.lang3.StringUtils.trimToEmpty;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SaveReflectionPropertyActionProperty extends ScriptingActionProperty {
@@ -53,7 +51,7 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
                     String oldValue = BeanUtils.getProperty(settings, nameReflectionProperty);
 
                     if (!oldValue.equals(valueReflectionProperty)) {
-                        setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
+                        ThreadLocalContext.setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
                     }
                 }
             }
@@ -63,20 +61,6 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
             throw Throwables.propagate(e);
         }
 
-    }
-
-    public static void setPropertyValue(Settings settings, String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Class type = PropertyUtils.getPropertyType(settings, nameProperty);
-        if(type == Boolean.TYPE)
-            BeanUtils.setProperty(settings, nameProperty, valueProperty.equals("true"));
-        else if(type == Integer.TYPE)
-            BeanUtils.setProperty(settings, nameProperty, Integer.valueOf(valueProperty));
-        else if(type == Double.TYPE)
-            BeanUtils.setProperty(settings, nameProperty, Double.valueOf(valueProperty));
-        else if(type == Long.TYPE)
-            BeanUtils.setProperty(settings, nameProperty, Long.valueOf(valueProperty));
-        else
-            BeanUtils.setProperty(settings, nameProperty, trimToEmpty(valueProperty));
     }
 
     @Override

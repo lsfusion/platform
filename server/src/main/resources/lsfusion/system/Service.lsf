@@ -300,11 +300,10 @@ pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 
 popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
 
 readReflectionPropertiesAction 'Прочитать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
-setReflectionPropertiesAction 'Применить настройки свойств для роли' = CUSTOM 'lsfusion.server.logics.service.reflection.SetReflectionPropertiesActionProperty' (UserRole);
+setReflectionPropertiesAction 'Применить общие настройки свойств' = CUSTOM 'lsfusion.server.logics.service.reflection.SetReflectionPropertiesActionProperty' ();
 onStarted() += { 
     readReflectionPropertiesAction();
-    setReflectionPropertiesAction(NULL); //системный пользователь и пользователи без роли
-    FOR overSID(UserRole ur) DO setReflectionPropertiesAction(ur); 
+    setReflectionPropertiesAction();
 }
 saveReflectionProperty 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
 WHEN CHANGED (baseValue(ReflectionProperty r)) DO {

@@ -1,7 +1,11 @@
 package lsfusion.server.context;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
@@ -11,6 +15,9 @@ import lsfusion.server.WrapperContext;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -27,7 +34,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
@@ -35,18 +42,23 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.MDC;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
+
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
     private static final ThreadLocal<Settings> settings = new ThreadLocal<>();
-    private static ThreadLocal<Map<String, String>> overrideSettingsMap = new ThreadLocal<>();
+    private static final ThreadLocal<Stack<Settings>> prevSettings = new ThreadLocal<>();
     private static ConcurrentHashMap<Long, Settings> roleSettingsMap = new ConcurrentHashMap<>();
     public static ConcurrentWeakHashMap<Thread, LogInfo> logInfoMap = new ConcurrentWeakHashMap<>();
     public static ConcurrentWeakHashMap<Thread, Boolean> activeMap = new ConcurrentWeakHashMap<>();
@@ -75,28 +87,46 @@ public class ThreadLocalContext {
             activeMap.put(Thread.currentThread(), false);
     }
 
+    public static void setSettings() {
+        try {
+            if (settings.get() == null) {
+                settings.set(getRoleSettings(getCurrentRole()));
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public static void dropSettings() {
         settings.set(null);
     }
 
     public static void pushSettings(String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, CloneNotSupportedException {
-        if (settings.get() == null) {
-            settings.set(getRoleSettings(getCurrentRole()).cloneSettings());
-        }
-        Map<String, String> overrideSettings = overrideSettingsMap.get();
-        if(overrideSettings == null)
-            overrideSettings = new HashMap<>();
-        String oldValue = BeanUtils.getProperty(settings.get(), nameProperty);
-        overrideSettings.put(nameProperty, oldValue);
-        overrideSettingsMap.set(overrideSettings);
-        SaveReflectionPropertyActionProperty.setPropertyValue(settings.get(), nameProperty, valueProperty);
+        Settings overrideSettings = settings.get().cloneSettings();
+        setPropertyValue(overrideSettings, nameProperty, valueProperty);
+        if(prevSettings.get() == null)
+            prevSettings.set(new Stack());
+        prevSettings.get().push(settings.get());
+        settings.set(overrideSettings);
     }
 
     public static void popSettings(String nameProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        String oldValue = overrideSettingsMap.get().remove(nameProperty);
-        if(oldValue == null)
-            ServerLoggers.assertLog(false, "POP PROPERTY WITHOUT PUSH: " + nameProperty);
-        BeanUtils.setProperty(settings.get(), nameProperty, oldValue);
+        //на данный момент не важно, какое свойство передано в pop, выбирается верхнее по стеку и нет никакой проверки
+        settings.set(prevSettings.get().pop());
+    }
+
+    public static void setPropertyValue(Settings settings, String nameProperty, String valueProperty) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Class type = PropertyUtils.getPropertyType(settings, nameProperty);
+        if(type == Boolean.TYPE)
+            BeanUtils.setProperty(settings, nameProperty, valueProperty.equals("true"));
+        else if(type == Integer.TYPE)
+            BeanUtils.setProperty(settings, nameProperty, Integer.valueOf(valueProperty));
+        else if(type == Double.TYPE)
+            BeanUtils.setProperty(settings, nameProperty, Double.valueOf(valueProperty));
+        else if(type == Long.TYPE)
+            BeanUtils.setProperty(settings, nameProperty, Long.valueOf(valueProperty));
+        else
+            BeanUtils.setProperty(settings, nameProperty, trimToEmpty(valueProperty));
     }
 
     public static Long getCurrentUser() {
@@ -143,22 +173,57 @@ public class ThreadLocalContext {
         return settings.get() != null ? settings.get() : getLogicsInstance().getSettings();
     }
 
-    public static Settings createRoleSettings(Long role) throws CloneNotSupportedException {
-        Settings roleSettings;
-        if (role == null) //системный процесс или пользователь без роли
-            roleSettings = getLogicsInstance().getSettings();
-        else {
-            roleSettings = getLogicsInstance().getSettings().cloneSettings();
-            roleSettingsMap.put(role, roleSettings);
-        }
-        return roleSettings;
-    }
-
-    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException {
+    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         if (role == null) //системный процесс или пользователь без роли
             return getLogicsInstance().getSettings();
-        else
-            return roleSettingsMap.get(role);
+        else {
+            Settings roleSettings = roleSettingsMap.get(role);
+            if (roleSettings == null) {
+
+                //клонируем settings для новой роли
+                roleSettings = getLogicsInstance().getSettings().cloneSettings();
+
+                //считываем перегруженные свойства для новой роли
+                try(DataSession session = getDbManager().createSession()) {
+
+                    Map<String, String> savedReflectionProperties = readSavedReflectionProperties(session, session.getDataObject(getBusinessLogics().securityLM.userRole, role));
+
+                    Field[] attributes = roleSettings.getClass().getDeclaredFields();
+                    for (Field field : attributes) {
+                        String name = field.getName();
+                        String savedValue = savedReflectionProperties.get(name);
+                        if (savedValue != null)
+                            setPropertyValue(roleSettings, name, savedValue);
+                    }
+                }
+
+                roleSettingsMap.put(role, roleSettings);
+            }
+            return roleSettings;
+        }
+    }
+
+    public static Map<String, String> readSavedReflectionProperties(DataSession session, ObjectValue userRoleObject) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        KeyExpr reflectionPropertyExpr = new KeyExpr("reflectionProperty");
+        ImRevMap<Object, KeyExpr> reflectionPropertyKeys = MapFact.singletonRev((Object) "reflectionProperty", reflectionPropertyExpr);
+
+        QueryBuilder<Object, Object> reflectionPropertyQuery = new QueryBuilder<>(reflectionPropertyKeys);
+        Expr nameExpr = getBusinessLogics().serviceLM.nameReflectionProperty.getExpr(reflectionPropertyExpr);
+        Expr baseValueExpr = getBusinessLogics().serviceLM.overBaseValueReflectionPropertyUserRole.getExpr(reflectionPropertyExpr, userRoleObject.getExpr());
+
+        reflectionPropertyQuery.addProperty("name", nameExpr);
+        reflectionPropertyQuery.addProperty("baseValue", baseValueExpr);
+        reflectionPropertyQuery.and(nameExpr.getWhere());
+        reflectionPropertyQuery.and(baseValueExpr.getWhere());
+
+        Map<String, String> reflectionPropertiesMap = new HashMap<>();
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> receiptDetailResult = reflectionPropertyQuery.execute(session);
+        for (ImMap<Object, Object> receiptDetailValues : receiptDetailResult.valueIt()) {
+            String name = trimToNull((String) receiptDetailValues.get("name"));
+            String baseValue = trimToNull((String) receiptDetailValues.get("baseValue"));
+            reflectionPropertiesMap.put(name, baseValue);
+        }
+        return reflectionPropertiesMap;
     }
 
     public static FormInstance getFormInstance() {
@@ -281,6 +346,7 @@ public class ThreadLocalContext {
             if(threadInfo instanceof EventThreadInfo) { // можно было попытаться старое имя сохранить, но оно по идее может меняться тогда очень странная логика получится
                 currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + " - " + currentThread.getId());
             }
+            ThreadLocalContext.setSettings();
         }
 
         checkThread(prevContext, assertTop, threadInfo);
@@ -299,11 +365,11 @@ public class ThreadLocalContext {
                 if (Settings.get().isEnableCloseThreadLocalSqlInNativeThreads()) // закрываем connection, чтобы не мусорить
                     ThreadLocalContext.getLogicsInstance().getDbManager().closeThreadLocalSql();
             }
+            ThreadLocalContext.dropSettings();
         }
 
 
         ThreadLocalContext.set(prevContext);
-        ThreadLocalContext.dropSettings();
     }
 
     private static void assureEvent(Context context, NewThreadExecutionStack stack) {
