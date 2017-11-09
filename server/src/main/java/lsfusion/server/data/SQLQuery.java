@@ -327,13 +327,6 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         return new SQLExecute(dml, queryParams, queryExecEnv, transactTimeout, owner, tableOwner, registerChange);
     }
 
-    public int getLength() {
-        int result = command.length();
-        for(SQLQuery subQuery : subQueries.valueIt())
-            result += subQuery.getLength();
-        return result;
-    }
-
     public static int countMatches(String command, String name, ImMap<String, SQLQuery> queries) {
         int result = StringUtils.countMatches(command, name);
         for(SQLQuery query : queries.valueIt()) {

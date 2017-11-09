@@ -1890,7 +1890,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
     public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime, boolean setRepeatDate) throws SQLException, SQLHandledException {
-        if(command.command.length() > Settings.get().getQueryLengthLimit())
+        if(command.getLength() > Settings.get().getQueryLengthLimit())
             throw new SQLTooLongQueryException(command.command);
 
         S snapEnv = queryExecEnv.getSnapshot(command, transactTimeout, outerEnv);

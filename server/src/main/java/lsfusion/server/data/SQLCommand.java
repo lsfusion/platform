@@ -117,5 +117,12 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         return command.length() > Settings.get().getCommandLengthVolatileStats();
     }
 
+    public int getLength() {
+        int result = command.length();
+        for(SQLQuery subQuery : subQueries.valueIt())
+            result += subQuery.getLength();
+        return result;
+    }
+
     public abstract boolean isDML();
 }
