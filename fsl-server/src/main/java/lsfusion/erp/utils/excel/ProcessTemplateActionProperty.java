@@ -102,11 +102,12 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             for (int j = sheet.getFirstRowNum(); j <= sheet.getLastRowNum(); j++) {
                 Row row = sheet.getRow(j);
                 if (row != null) {
-                    if (templateEntry.isTable) {
-                        for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
-                            Cell cell = row.getCell(k);
-                            if (cell != null) {
-                                String cellContents = cell.getStringCellValue();
+                    for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
+                        Cell cell = row.getCell(k);
+                        //если вдруг понадобится заменять ячейки не строкового типа, будем думать, но пока это представляется крайне маловероятным
+                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                            String cellContents = cell.getStringCellValue();
+                            if (templateEntry.isTable) {
                                 if (cellContents.contains(templateEntry.key)) {
                                     String[] rows = templateEntry.value.split(templateEntry.rowSeparator);
                                     for (int r = 0; r < rows.length; r++) {
@@ -124,13 +125,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                                         }
                                     }
                                 }
-                            }
-                        }
-                    } else {
-                        for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); k++) {
-                            Cell cell = row.getCell(k);
-                            if (cell != null) {
-                                String cellContents = cell.getStringCellValue();
+                            } else {
                                 cellContents = cellContents.replace(templateEntry.key, templateEntry.value);
                                 cell.setCellValue(cellContents);
                             }
