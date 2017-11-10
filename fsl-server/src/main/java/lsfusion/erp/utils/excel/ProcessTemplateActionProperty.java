@@ -10,6 +10,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,6 +18,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,10 +59,13 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
-                    templateEntryQuery.addProperty("key", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("value", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("isTable", findProperty("isTable[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("rowSeparator", findProperty("rowSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+
+                    String[] names = new String[]{"key", "value", "isTable", "rowSeparator", "isNumeric", "format"};
+                    LCP[] properties = findProperties("key[TemplateEntry]", "value[TemplateEntry]", "isTable[TemplateEntry]",
+                            "rowSeparator[TemplateEntry]", "isNumeric[TemplateEntry]", "format[TemplateEntry]");
+                    for (int j = 0; j < properties.length; j++) {
+                        templateEntryQuery.addProperty(names[j], properties[j].getExpr(context.getModifier(), templateEntryExpr));
+                    }
 
                     templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
@@ -72,9 +77,11 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         String value = trim((String) templateEntry.get("value"));
                         boolean isTable = templateEntry.get("isTable") != null;
                         String rowSeparator = (String) templateEntry.get("rowSeparator");
+                        boolean isNumeric = templateEntry.get("isNumeric") != null;
+                        String format = trim((String) templateEntry.get("format"));
 
                         if (key != null && value != null)
-                            templateEntriesList.add(new TemplateEntry(key, value, isTable, rowSeparator));
+                            templateEntriesList.add(new TemplateEntry(key, value, isTable, rowSeparator, isNumeric, format));
                     }
 
                     ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[]) excelObject.object);
@@ -111,13 +118,14 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         //если вдруг понадобится заменять ячейки не строкового типа, будем думать, но пока это представляется крайне маловероятным
                         if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING) {
                             String cellContents = cell.getStringCellValue();
-                            if (templateEntry.isTable) {
-                                if (cellContents.contains(templateEntry.key)) {
+                            DataFormat dataFormat = wb.createDataFormat();
+                            if (cellContents.contains(templateEntry.key)) {
+                                if (templateEntry.isTable) {
                                     String[] rows = templateEntry.value.split(templateEntry.rowSeparator);
                                     for (int r = 0; r < rows.length; r++) {
                                         if (r == 0) {
                                             cellContents = cellContents.replace(templateEntry.key, rows[r]);
-                                            cell.setCellValue(cellContents);
+                                            setCellValue(cell, rows[r], templateEntry, dataFormat);
                                         } else {
                                             Row newRow = sheet.getRow(j + r);
                                             if (newRow == null)
@@ -125,13 +133,13 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                                             Cell newCell = newRow.getCell(k);
                                             if (newCell == null)
                                                 newCell = newRow.createCell(k);
-                                            newCell.setCellValue(rows[r]);
+                                            setCellValue(newCell, rows[r], templateEntry, dataFormat);
                                         }
                                     }
+                                } else {
+                                    cellContents = cellContents.replace(templateEntry.key, templateEntry.value);
+                                    setCellValue(cell, cellContents, templateEntry, dataFormat);
                                 }
-                            } else {
-                                cellContents = cellContents.replace(templateEntry.key, templateEntry.value);
-                                cell.setCellValue(cellContents);
                             }
                         }
                     }
@@ -140,17 +148,33 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
         }
     }
 
+    private void setCellValue(Cell cell, String value, TemplateEntry templateEntry, DataFormat dataFormat) {
+
+        if (templateEntry.isNumeric) {
+            cell.setCellValue(Double.parseDouble(value));
+            cell.setCellType(XSSFCell.CELL_TYPE_NUMERIC);
+        } else {
+            cell.setCellValue(value);
+        }
+        if (templateEntry.format != null)
+            cell.getCellStyle().setDataFormat(dataFormat.getFormat(templateEntry.format));
+    }
+
     private class TemplateEntry {
         String key;
         String value;
         boolean isTable;
         String rowSeparator;
+        boolean isNumeric;
+        String format;
 
-        public TemplateEntry(String key, String value, boolean isTable, String rowSeparator) {
+        public TemplateEntry(String key, String value, boolean isTable, String rowSeparator, boolean isNumeric, String format) {
             this.key = key;
             this.value = value;
             this.isTable = isTable;
             this.rowSeparator = rowSeparator;
+            this.isNumeric = isNumeric;
+            this.format = format;
         }
     }
 }

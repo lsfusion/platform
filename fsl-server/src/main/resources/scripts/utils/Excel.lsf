@@ -27,6 +27,8 @@ TABLE templateEntry(TemplateEntry);
 template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
+isNumeric 'Числовые данные' = DATA BOOLEAN (TemplateEntry);
+format 'Формат' = DATA VARSTRING[100] (TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
@@ -40,7 +42,7 @@ FORM template 'Шаблон Excel'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) isTable, key, description, value, rowSeparator SHOWIF isTable(te), NEW, DELETE GRID
+    PROPERTIES (te) isTable, key, description, isNumeric, format, value, rowSeparator SHOWIF isTable(te), NEW, DELETE GRID
     PROPERTIES (t) TODRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
