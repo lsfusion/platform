@@ -4,7 +4,7 @@ SetCompressor lzma
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.3.1
+!define VERSION 1.3.2
 !define COMPANY luxsoft
 !define URL lsfusion.ru
 
