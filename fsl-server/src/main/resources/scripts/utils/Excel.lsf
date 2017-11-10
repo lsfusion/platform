@@ -28,7 +28,7 @@ template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 isNumeric 'Числовые данные' = DATA BOOLEAN (TemplateEntry);
-format 'Формат' = DATA VARSTRING[100] (TemplateEntry);
+format 'Формат' = DATA VARSTRING[20] (TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
@@ -78,7 +78,7 @@ FORM templates 'Шаблоны Excel'
     PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY isTable, key, description, value
+    PROPERTIES (te) READONLY isTable, key, description, isNumeric, value
 
     FILTERS template (te) == t
 ;
