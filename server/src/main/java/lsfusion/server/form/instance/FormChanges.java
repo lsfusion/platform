@@ -1,14 +1,11 @@
 package lsfusion.server.form.instance;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClassViewType;
-import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import org.apache.log4j.Logger;
@@ -40,9 +37,6 @@ public class FormChanges {
     private final ImSet<PropertyDrawInstance> panelProperties;
     private final ImSet<PropertyDrawInstance> dropProperties;
 
-    private final ImList<ComponentView> activateTabs;
-    private final ImList<PropertyDrawInstance> activateProps;
-
     public static FormChanges EMPTY = new MFormChanges().immutable();
 
     public FormChanges(ImMap<GroupObjectInstance, ClassViewType> classViews, ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
@@ -50,8 +44,7 @@ public class FormChanges {
                        ImMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects,
                        ImMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables,
                        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
-                       ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties, 
-                       ImList<ComponentView> activateTabs, ImList<PropertyDrawInstance> activateProps) {
+                       ImSet<PropertyDrawInstance> panelProperties, ImSet<PropertyDrawInstance> dropProperties) {
         this.classViews = classViews;
         this.objects = objects;
         this.gridObjects = gridObjects;
@@ -60,8 +53,6 @@ public class FormChanges {
         this.properties = properties;
         this.panelProperties = panelProperties;
         this.dropProperties = dropProperties;
-        this.activateTabs = activateTabs;
-        this.activateProps = activateProps;
     }
 
     void out(FormInstance<?> bv) {
@@ -95,14 +86,6 @@ public class FormChanges {
         System.out.println(" ------- Drop ---------------");
         for (PropertyDrawInstance property : dropProperties)
             System.out.println(property);
-
-        System.out.println(" ------- Activate tab ---------------");
-        for (ComponentView tab : activateTabs)
-            System.out.println(tab);
-
-        System.out.println(" ------- Activate property ---------------");
-        for (PropertyDrawInstance prop : activateProps)
-            System.out.println(prop);
 
         System.out.println(" ------- CLASSVIEWS ---------------");
         for (int i=0,size=classViews.size();i<size;i++) {
@@ -165,16 +148,6 @@ public class FormChanges {
 
         outStream.writeInt(dropProperties.size());
         for (PropertyDrawInstance propertyView : dropProperties) {
-            outStream.writeInt(propertyView.getID());
-        }
-
-        outStream.writeInt(activateTabs.size());
-        for (ComponentView activateTab : activateTabs) {
-            outStream.writeInt(activateTab.getID());
-        }
-
-        outStream.writeInt(activateProps.size());
-        for (PropertyDrawInstance propertyView : activateProps) {
             outStream.writeInt(propertyView.getID());
         }
     }
@@ -244,15 +217,6 @@ public class FormChanges {
 
         logger.trace("   Droped ---------------");
         for (PropertyDrawInstance property : dropProperties)
-            logger.trace("     " + property);
-
-        logger.trace("   Activate tabs ---------------");
-        for (ComponentView tab : activateTabs) {
-            logger.trace("     " + tab);
-        }
-
-        logger.trace("   Activate props ---------------");
-        for (PropertyDrawInstance property : activateProps)
             logger.trace("     " + property);
 
         logger.trace("  CLASSVIEWS ---------------");

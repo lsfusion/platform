@@ -36,12 +36,12 @@ public class ExecutorFactory {
             return wrapService(executorService, new TaskAspect() {
                 @Override
                 public void aspectBeforeRun() {
-                    ThreadLocalContext.aspectBeforeMonitor(monitorServer, ExecutorFactoryThreadInfo.instance);
+                    ThreadLocalContext.aspectBeforeMonitor(monitorServer, ThreadType.EXECUTORFACTORY);
                 }
 
                 @Override
                 public void aspectAfterRun() {
-                    ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                    ThreadLocalContext.aspectAfterMonitor(ThreadType.EXECUTORFACTORY);
                 }
             });
 //
@@ -74,12 +74,12 @@ public class ExecutorFactory {
             return wrapService(executorService, new TaskAspect() {
                 @Override
                 public void aspectBeforeRun() {
-                    ThreadLocalContext.aspectBeforeMonitor(monitorServer, ExecutorFactoryThreadInfo.instance);
+                    ThreadLocalContext.aspectBeforeMonitor(monitorServer, ThreadType.EXECUTORFACTORY);
                 }
 
                 @Override
                 public void aspectAfterRun() {
-                    ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                    ThreadLocalContext.aspectAfterMonitor(ThreadType.EXECUTORFACTORY);
                 }
             });
     }
@@ -103,12 +103,12 @@ public class ExecutorFactory {
 
             @Override
             public void aspectBeforeRun(Object submit) {
-                ThreadLocalContext.aspectBeforeRmi(object, true, ExecutorFactoryThreadInfo.instance, type);
+                ThreadLocalContext.aspectBeforeRmi(object, true, ThreadType.EXECUTORFACTORY, type);
             }
 
             @Override
             public void aspectAfterRun() {
-                ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
+                ThreadLocalContext.aspectAfterRmi(ThreadType.EXECUTORFACTORY);
             }
         });
     }
@@ -129,12 +129,12 @@ public class ExecutorFactory {
 
             @Override
             public void aspectBeforeRun(Object submit) {
-                ThreadLocalContext.aspectBeforeMonitor(monitor, ExecutorFactoryThreadInfo.instance, type);
+                ThreadLocalContext.aspectBeforeMonitor(monitor, ThreadType.EXECUTORFACTORY, type);
             }
 
             @Override
             public void aspectAfterRun() {
-                ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                ThreadLocalContext.aspectAfterMonitor(ThreadType.EXECUTORFACTORY);
             }
         });
     }
@@ -157,12 +157,12 @@ public class ExecutorFactory {
 
             @Override
             public void aspectBeforeRun(Object submit) {
-                ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ExecutorFactoryThreadInfo.instance, type);
+                ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ThreadType.EXECUTORFACTORY, type);
             }
 
             @Override
             public void aspectAfterRun() {
-                ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                ThreadLocalContext.aspectAfterMonitor(ThreadType.EXECUTORFACTORY);
             }
         });
     }
@@ -203,12 +203,12 @@ public class ExecutorFactory {
 
             @Override
             public void aspectBeforeRun(Object submit) {
-                ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ExecutorFactoryThreadInfo.instance, type);
+                ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ThreadType.EXECUTORFACTORY, type);
             }
 
             @Override
             public void aspectAfterRun() {
-                ThreadLocalContext.aspectAfterLifecycle(ExecutorFactoryThreadInfo.instance);
+                ThreadLocalContext.aspectAfterLifecycle(ThreadType.EXECUTORFACTORY);
             }
         });
     }
@@ -327,11 +327,11 @@ public class ExecutorFactory {
                 MonitorServer monitor = wMonitor.get();
                 try {
                     if (monitor != null)
-                        ThreadLocalContext.aspectBeforeMonitor(monitor, ExecutorFactoryThreadInfo.instance);
+                        ThreadLocalContext.aspectBeforeMonitor(monitor, ThreadType.EXECUTORFACTORY);
                     super.run();
                 } finally {
                     if (monitor != null)
-                        ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                        ThreadLocalContext.aspectAfterMonitor(ThreadType.EXECUTORFACTORY);
                 }
             }
         }

@@ -3,7 +3,6 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -49,12 +48,8 @@ public class StringClass extends DataClass {
 
     @Override
     public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
-        if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded) { // по идее не актуально, так как SessionData.castTypes должен быть сделан, везде по синтаксису  
-            String string = (String) object;
-            String result = BaseUtils.rtrim(string);
-            ServerLoggers.assertLog(result.length() == string.length(), "SHOULD BE TRIMMED BY CASTTYPES");
-            return result;
-        }
+        if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded)
+            return BaseUtils.rtrim((String)object);
         return super.castValue(object, typeFrom, syntax);
     }
     
@@ -65,10 +60,9 @@ public class StringClass extends DataClass {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        String result = super.getCast(value, syntax, typeEnv, typeFrom);
-        if(!blankPadded && typeFrom != null && syntax.doesNotTrimWhenCastToVarChar() && typeFrom instanceof StringClass && ((StringClass) typeFrom).blankPadded)
-            result = ((StringClass)typeFrom).getRTrim(result);
-        return result;
+        if(!blankPadded && typeFrom!= null && syntax.doesNotTrimWhenCastToVarChar() && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded) // тут по
+            return ((StringClass)typeFrom).getRTrim("CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")");
+        return super.getCast(value, syntax, typeEnv, typeFrom);
     }
 
     @Override
@@ -190,8 +184,7 @@ public class StringClass extends DataClass {
         if(blankPadded) {
             if(length.isUnlimited())
                 return ((String)value);
-//            return BaseUtils.padr((String) value, length.getValue());
-            return BaseUtils.rtrim(BaseUtils.truncate((String) value, length.getValue()));
+            return BaseUtils.padr((String) value, length.getValue());
         }
 
         if(length.isUnlimited())
@@ -252,11 +245,6 @@ public class StringClass extends DataClass {
         if(length.isUnlimited())
             return this;
         return get(blankPadded, caseInsensitive, rich, new ExtInt(BaseUtils.min(length.getValue() * times, 4000)));
-    }
-    public StringClass toVar() {
-        if(!blankPadded) // оптимизация
-            return this;
-        return get(true, caseInsensitive, rich, length);
     }
 
     public String toString() {

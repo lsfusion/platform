@@ -22,11 +22,14 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
+import lsfusion.server.form.navigator.DefaultIcon;
+import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
@@ -43,15 +46,17 @@ import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class FormEntity implements FormSelector<ObjectEntity> {
+public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     
-    public static Boolean DEFAULT_NOCANCEL = null;
+    public static boolean DEFAULT_NOCANCEL = false;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
@@ -71,14 +76,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public PropertyDrawEntity okActionPropertyDraw;
     public PropertyDrawEntity closeActionPropertyDraw;
 
-    private int ID;
-    
-    private String canonicalName;
-    private LocalizedString caption;
-    private String creationPath;
+    public String creationPath;
 
-    private String defaultImagePath;
-    
     public NFMapList<Object, ActionPropertyObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> getEventActions() {
         return eventActions.getOrderMap();
@@ -166,17 +165,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public CalcPropertyObjectEntity<?> reportPathProp;
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
-        this(canonicalName, null, caption, null, version);
+        this(null, canonicalName, null, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String imagePath, Version version) {
-        this.ID = BaseLogicsModule.generateStaticNewID();
-        this.caption = caption;
-        this.canonicalName = canonicalName;
-        this.creationPath = creationPath;
-        
-        this.defaultImagePath = imagePath;
-        
+    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
+        this(null, canonicalName, creationPath, caption, icon, version);
+    }
+
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, String creationPath, LocalizedString caption, String icon, Version version) {
+        super(parent, canonicalName, caption, creationPath, null, version);
+        setImage(icon != null ? icon : "/images/form.png", icon != null ? null : DefaultIcon.FORM);
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
@@ -198,6 +196,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void finalizeInit(Version version) {
 //        getNFRichDesign(version);
         setRichDesign(createDefaultRichDesign(version), version);
+    }
+
+    @Override
+    protected String getAnonymousSIDPrefix() {
+        return FORM_ANONYMOUS_SID_PREFIX;
     }
 
     public void addFixedFilter(FilterEntity filter, Version version) {
@@ -934,6 +937,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return groupHierarchy;
     }
 
+    public byte getTypeID() {
+        return 0;
+    }
+
+    @Override
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+        outStream.writeUTF(modalityType.name());
+    }
+
     public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionPropertyObjectEntity... actions) {
         addActionsOnObjectChange(object, false, version, actions);
     }
@@ -972,6 +985,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+                        
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
         propertyDraws.finalizeChanges();
@@ -987,47 +1002,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             regularFilterGroup.finalizeAroundInit();
         
         getRichDesign().finalizeAroundInit();
-    }
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public LocalizedString getCaption() {
-        return caption;
-    }
-
-    public String getCreationPath() {
-        return creationPath;
-    }
-
-    public void setCreationPath(String creationPath) {
-        this.creationPath = creationPath;
-    }
-    
-    public int getID() {
-        return ID;
-    }
-
-    public String getSID() {
-        if (canonicalName != null) {
-            return canonicalName;
-        } else {
-            // todo [dale]: временно также, как было в NavigatorElement
-            return "_FORM_" + getID();
-        }
-    }
-
-    public boolean isNamed() {
-        return canonicalName != null;
-    }
-
-    public boolean needsToBeSynchronized() {
-        return isNamed();
-    }
-
-    public String getDefaultImagePath() {
-        return defaultImagePath;
     }
 
     // сохраняет нижние компоненты

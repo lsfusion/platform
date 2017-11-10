@@ -95,11 +95,6 @@ public class ArrayClass<T> extends DataClass<T[]> {
         return "ar_" + type.getSID();
     }
 
-    @Override
-    public String getParsedName() {
-        throw new UnsupportedOperationException();
-    }
-
     public T[] getDefaultValue() {
         throw new RuntimeException("not supported");
     }

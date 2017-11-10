@@ -91,11 +91,11 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @StackMessage("{message.check.data.properties}")
     @ThisMessage
-    public ModifyResult checkClasses(PropertyChangeTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, Modifier modifier, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+    public ModifyResult checkClasses(SinglePropertyTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, Modifier modifier, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
         return checkClasses(change, sql, baseClass, env, modifier.getPropertyChanges(), owner, checkTransaction, classRemove, timestamp);        
     }
     
-    public ModifyResult checkClasses(PropertyChangeTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, PropertyChanges propertyChanges, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
+    public ModifyResult checkClasses(SinglePropertyTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, PropertyChanges propertyChanges, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
         if(noClasses())
             return ModifyResult.NO;
 

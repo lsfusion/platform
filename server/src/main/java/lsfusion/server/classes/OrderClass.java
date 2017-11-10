@@ -35,10 +35,6 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         return true;
     }
 
-    public boolean supportNeedValue() {
-        return true; // по идее аналогично concatenate 
-    }
-
     private final ImList<Type> types; // типы придется в явную хранить, так как выводить их из expr'ов не всегда получится (могут быть NULL'ы) и тогда непонятно к чему cast'ить
     private final ImList<Boolean> desc;
 
@@ -178,11 +174,6 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         for(int i=0,size=types.size();i<size;i++)
             result += "_" + types.get(i).getSID() + "_" + (desc.get(i) ? "t" : "f");
         return "OrderClass" + result;
-    }
-
-    @Override
-    public String getParsedName() {
-        throw new UnsupportedOperationException();
     }
 
     public Object read(Object value) {

@@ -2,7 +2,6 @@ package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -32,7 +31,6 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -224,17 +222,17 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public ModifyResult modifyRows(PropertyChangeTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null && !table.hasCorrelations())
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null)
             return table.modifyRecord(session, mapValues, exprValue, type, owner);
         else
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
     }
 
-    public void writeRows(PropertyChangeTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv, boolean updateClasses) throws SQLException, SQLHandledException {
+    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
-        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null && !table.hasCorrelations()) // последняя проверка нужна чтобы не нарушался assertion'а в SessionTableUsage.writeRows batch (ImMap<> rows) 
+        if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue(queryEnv))!=null)
             table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)), queryEnv.getOpOwner());
         else
             table.writeRows(session, getQuery(), baseClass, queryEnv, updateClasses);
@@ -288,13 +286,13 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize() || expr.needMaterialize() || (table != null && table.used(getQuery()));
     }
 
-    public PropertyChangeTableUsage<T> materialize(String debugInfo, CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
+    public SinglePropertyTableUsage<T> materialize(String debugInfo, CalcProperty<T> property, DataSession session) throws SQLException, SQLHandledException {
         return materialize(debugInfo, property, session.sql, session.baseClass, session.env);
     }
 
     @StackMessage("{message.property.materialize}")
-    public PropertyChangeTableUsage<T> materialize(String debugInfo, @ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        PropertyChangeTableUsage<T> result = property.createChangeTable(debugInfo);
+    public SinglePropertyTableUsage<T> materialize(String debugInfo, @ParamMessage CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> result = property.createChangeTable(debugInfo);
         writeRows(result, sql, baseClass, env, SessionTable.matLocalQuery);
         return result;
     }
@@ -303,39 +301,14 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize();
     }
 
-    public static <T extends PropertyInterface, K extends PropertyInterface> Where materializeWhere(String debugInfo, CalcPropertyMapImplement<T, K> whereProp, DataSession session, ImRevMap<K, KeyExpr> mapKeys, ImMap<K, ? extends ObjectValue> mapValues, ImMap<K, Expr> innerExprs, final Where where, Result<SessionTableUsage> usedTable) throws SQLException, SQLHandledException {
-
-        if(Settings.get().isDisableCorrelations()) {
-            final ImRevMap<K, KeyExpr> fMapKeys = mapKeys;
-            NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(debugInfo, mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
-                public Type getType(K key) {
-                    return where.getKeyType(fMapKeys.get(key));
-                }
-            });
-            usedTable.set(result);
-            
-            result.writeRows(session.sql, new Query<K, String>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
-            return result.join(mapKeys).getWhere();
-        }
-
-        ImSet<T> filterInterfaces = null;
-        ImRevMap<T, K> usedMapping = whereProp.mapping;
-
-        Result<ImSet<K>> rNulls = new Result<>();
-        mapValues = mapValues.filter(whereProp.mapping.valuesSet()); // mapValues могут быть лишние 
-        ImMap<K, DataObject> mapDataValues = DataObject.splitDataObjects(mapValues, rNulls);
-        if(!rNulls.result.isEmpty()) { // убираем null'ы (оптимизация)
-            usedMapping = usedMapping.removeValuesRev(rNulls.result);
-            filterInterfaces = usedMapping.keys();
-        }            
-        
-        // тут можно было бы еще дополнитенльо отфильтровать values, у которых нет correlations, но пока не будем, так как используется только при isComplex'ах (то есть редко)
-        NoPropertyWhereTableUsage<T> table = whereProp.property.createWhereTable(debugInfo, filterInterfaces);
-        usedTable.set(table);
-
-        mapKeys = mapKeys.addRevExcl(KeyExpr.getMapKeys(mapDataValues.keys()));
-        table.writeRows(session.sql, new Query<T, String>(usedMapping.join(mapKeys), where, usedMapping.rightJoin(mapDataValues)), session.baseClass, session.env, SessionTable.matExprLocalQuery);
-        return table.join(usedMapping.join(innerExprs)).getWhere();
+    public static <K> NoPropertyTableUsage<K> materializeWhere(String debugInfo, DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException, SQLHandledException {
+        NoPropertyTableUsage<K> result = new NoPropertyTableUsage<>(debugInfo, mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
+            public Type getType(K key) {
+                return where.getKeyType(mapKeys.get(key));
+            }
+        });
+        result.writeRows(session.sql, new Query<>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
+        return result;
     }
 
 /*    public StatKeys<T> getStatKeys() {

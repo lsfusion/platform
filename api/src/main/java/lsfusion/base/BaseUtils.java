@@ -45,7 +45,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 49;
+        return 46;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
@@ -1806,17 +1806,6 @@ public class BaseUtils {
         else
             return string.substring(string.length() - length, string.length());
     }
-    
-    public static int countRepeatingChars(String string, char character, int index) {
-        int count = 0;
-        for (int i = index; i < string.length(); i++) {
-            if (string.charAt(i) != character) {
-                break;
-            }
-            count++;
-        }
-        return count;
-    }
 
     public static <K> K last(List<K> list) {
         if (list.size() > 0)
@@ -2523,6 +2512,10 @@ public class BaseUtils {
         return result.toString();
     }
 
+    public static boolean hasRightSpace(String string) {
+        return BaseUtils.rtrim(string).length() != string.length();
+    }
+
     public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
         return new Iterable<T>() {
             public Iterator<T> iterator() {
@@ -2696,9 +2689,5 @@ public class BaseUtils {
                 index++;
         }
         return index;
-    }
-    
-    public static String defaultToString(Object o) {
-        return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
-    }
+    } 
 }

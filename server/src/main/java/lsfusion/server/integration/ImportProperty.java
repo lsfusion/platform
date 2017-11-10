@@ -19,6 +19,12 @@ import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 
+/**
+ * User: DAle
+ * Date: 27.01.11
+ * Time: 18:11
+ */
+
 public class ImportProperty <P extends PropertyInterface> {
     private CalcPropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;

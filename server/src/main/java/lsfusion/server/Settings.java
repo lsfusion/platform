@@ -285,15 +285,11 @@ public class Settings implements Cloneable {
     }
     
     public static Settings get() {
-        return ThreadLocalContext.getSettings();
+        return WrapperSettings.getSettings() != null ? WrapperSettings.getSettings() : ThreadLocalContext.getSettings();
     }
 
     public static Settings copy() throws CloneNotSupportedException {
         return (Settings) get().clone();
-    }
-
-    public Settings cloneSettings() throws CloneNotSupportedException {
-        return (Settings) clone();
     }
 
     public int getInnerGroupExprs() {
@@ -1465,7 +1461,6 @@ public class Settings implements Cloneable {
 
     private int subQueriesRowCountCoeff = 2; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
     private int subQueriesParentCoeff = 2; // коэффициент количество путей до вершины (по сути сколько раз подзапрос будет выполняться), для оценки  - определяет баланс между размером таблицы, количеством подзапросов
-    private int subQueriesPessQueryCoeff = 2; // коэффициент для оценки - на сколько ее увеличивать если есть пессимистичный вариант выполнения запроса, нужно чтобы сначала больше оптимистичных выполнилось  
 
     public int getSubQueriesRowCountCoeff() {
         return subQueriesRowCountCoeff;
@@ -1481,14 +1476,6 @@ public class Settings implements Cloneable {
 
     public void setSubQueriesParentCoeff(int subQueriesParentCoeff) {
         this.subQueriesParentCoeff = subQueriesParentCoeff;
-    }
-
-    public int getSubQueriesPessQueryCoeff() {
-        return subQueriesPessQueryCoeff;
-    }
-
-    public void setSubQueriesPessQueryCoeff(int subQueriesPessQueryCoeff) {
-        this.subQueriesPessQueryCoeff = subQueriesPessQueryCoeff;
     }
 
     private int explainThreshold = 100;
@@ -2175,6 +2162,16 @@ public class Settings implements Cloneable {
         this.subQueryInfiniteDepth = subQueryInfiniteDepth;
     }
     
+    boolean useInteractiveReportManagerInsteadOfStatic = false; // потом нужно убрать
+
+    public boolean isUseInteractiveReportManagerInsteadOfStatic() {
+        return useInteractiveReportManagerInsteadOfStatic;
+    }
+
+    public void setUseInteractiveReportManagerInsteadOfStatic(boolean useInteractiveReportManagerInsteadOfStatic) {
+        this.useInteractiveReportManagerInsteadOfStatic = useInteractiveReportManagerInsteadOfStatic;
+    }
+
     // преобразует все partition'ы в ключи и "выносит их наружу" (добавляет избыточное связывание) - так улучшается push down (избыточное связывание может быть например по выражение vk=e, на которое есть предикат равенства снаружи e=0, в этом случае именно этот предикат и протолкнется) ну и теоретически статистика точнее, насчет sql пока не понятно (хотя с другой стороны больше не меньше, хотя с константами в partition у sql были вопросы) 
     private boolean transformPartitionExprsToKeys = true;
 
@@ -2187,6 +2184,24 @@ public class Settings implements Cloneable {
     }
 
     private int logHeurStackSize = 1;
+    private boolean enableHeurManageSession = true;
+    private boolean enableHeurNoCancel = true;
+
+    public boolean isEnableHeurManageSession() {
+        return enableHeurManageSession;
+    }
+
+    public void setEnableHeurManageSession(boolean enableHeurManageSession) {
+        this.enableHeurManageSession = enableHeurManageSession;
+    }
+
+    public boolean isEnableHeurNoCancel() {
+        return enableHeurNoCancel;
+    }
+    
+    public void setEnableHeurNoCancel(boolean enableHeurNoCancel) {
+        this.enableHeurNoCancel = enableHeurNoCancel;
+    }
 
     public int getLogHeurStackSize() {
         return logHeurStackSize;
@@ -2236,14 +2251,14 @@ public class Settings implements Cloneable {
         this.disableAdjustLimitHeur = disableAdjustLimitHeur;
     }
 
-    private int usePessQueryHeurWhenReducedMore = 15;
+    private double reduceAdjustLimitHeur = 2.0;
 
-    public int getUsePessQueryHeurWhenReducedMore() {
-        return usePessQueryHeurWhenReducedMore;
+    public double getReduceAdjustLimitHeur() {
+        return reduceAdjustLimitHeur;
     }
 
-    public void setUsePessQueryHeurWhenReducedMore(int usePessQueryHeurWhenReducedMore) {
-        this.usePessQueryHeurWhenReducedMore = usePessQueryHeurWhenReducedMore;
+    public void setReduceAdjustLimitHeur(double reduceAdjustLimitHeur) {
+        this.reduceAdjustLimitHeur = reduceAdjustLimitHeur;
     }
 
     // выключен так как обычно выталкиваемы предикаты в GroupLast не делают и они как правило приходят извне, во всяком случае пока подтвержденных случаев (кроме одного когда только 3 помогает не видели)
@@ -2269,18 +2284,6 @@ public class Settings implements Cloneable {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
     
-    private boolean disableCorrelations = true;
-
-    public boolean isDisableCorrelations() {
-        if(SystemProperties.isDebug) // для тестирования
-            return false;
-        return disableCorrelations;
-    }
-
-    public void setDisableCorrelations(boolean disableCorrelations) {
-        this.disableCorrelations = disableCorrelations;
-    }
-    
     private boolean enableCloseThreadLocalSqlInNativeThreads = true;
 
     public boolean isEnableCloseThreadLocalSqlInNativeThreads() {
@@ -2299,36 +2302,5 @@ public class Settings implements Cloneable {
 
     public void setEnableInteractiveAssertLog(boolean enableInteractiveAssertLog) {
         this.enableInteractiveAssertLog = enableInteractiveAssertLog;
-    }
-    
-    private boolean disablePessQueries = false;
-
-    public boolean isDisablePessQueries() {
-        return disablePessQueries;
-    }
-
-    public void setDisablePessQueries(boolean disablePessQueries) {
-        this.disablePessQueries = disablePessQueries;
-    }
-
-    private boolean enableAggProp = false; // temporary для проверки используется или нет
-
-    public boolean isEnableAggProp() {
-        return enableAggProp;
-    }
-
-    public void setEnableAggProp(boolean enableAggProp) {
-        this.enableAggProp = enableAggProp;
-    }
-
-    //для записи stackTrace java потока в конструкторе SQLSession. Используется в мониторе процессов
-    private boolean stacktraceInSQLSession = false;
-
-    public boolean isStacktraceInSQLSession() {
-        return stacktraceInSQLSession;
-    }
-
-    public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
-        this.stacktraceInSQLSession = stacktraceInSQLSession;
     }
 }

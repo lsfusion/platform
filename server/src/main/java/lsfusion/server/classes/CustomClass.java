@@ -51,6 +51,10 @@ import lsfusion.server.session.DataSession;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
@@ -280,12 +284,48 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             cls.serialize(outStream);
     }
 
+    private FormEntity baseClassForm = null;
+
+    @ManualLazy
+    public FormEntity getBaseClassForm(BaseLogicsModule LM) {
+        if (baseClassForm == null) {
+            Version version = LM.getVersion();
+
+            baseClassForm = new ListFormEntity(LM, this);
+            List<FormEntity> childrenList = new ArrayList<>();
+            for (CustomClass child : getChildrenIt()) {
+                FormEntity childForm = child.getBaseClassForm(LM);
+                if (childForm.getNFParent(version) == null)
+                    childrenList.add(childForm);
+            }
+
+            Collections.sort(childrenList, new FormEntityComparator());
+
+            for (FormEntity childForm : childrenList) {
+                baseClassForm.add(childForm, version);
+            }
+        }
+        return baseClassForm;
+    }
+
     public ClassDebugInfo getDebugInfo() {
         return debugInfo;
     }
 
     public void setDebugInfo(ClassDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
+    }
+
+    static class FormEntityComparator implements Comparator<FormEntity> {
+        public int compare(FormEntity f1, FormEntity f2) {
+            if (f1.caption == null && f2.caption == null)
+                return 0;
+            if (f1.caption == null)
+                return -1;
+            if (f2.caption == null)
+                return 1;
+            return f1.caption.getSourceString().compareTo(f2.caption.getSourceString());
+        }
     }
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е
@@ -664,22 +704,4 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public boolean hasComplex() {
         return hasComplex(true) || hasComplex(false);
     }
-    
-    public ImSet<CalcProperty> aggrProps = SetFact.EMPTY(); // все свойство с одним параметром
-
-    @IdentityLazy
-    public ImSet<CalcProperty> getUpAggrProps() {
-        MSet<CalcProperty> mUpAggrProps = SetFact.mSet(aggrProps);
-        for(CustomClass parent : getParentsIt())
-            mUpAggrProps.addAll(parent.getUpAggrProps());        
-        final ImSet<CalcProperty> upAggrProps = mUpAggrProps.immutable();
-        
-        // вырезаем те для кого implements уже есть
-        return upAggrProps.filterFn(new SFunctionSet<CalcProperty>() {
-            public boolean contains(CalcProperty element) {
-                return !upAggrProps.intersect(((CalcProperty<?>)element).getImplements());
-            }
-        });
-    }
-
 }

@@ -8,6 +8,8 @@ import lsfusion.client.form.renderer.PDFPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
+import java.awt.*;
+
 public class ClientPDFClass extends ClientStaticFormatFileClass {
 
     public final static ClientPDFClass instance = new ClientPDFClass(false, false);
@@ -37,6 +39,21 @@ public class ClientPDFClass extends ClientStaticFormatFileClass {
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
         return new FilePropertyEditor(multiple, storeName, ClientResourceBundle.getString("logics.classes.pdf"), getExtensions());
+    }
+
+    @Override
+    public int getPreferredHeight(FontMetrics font) {
+        return 18;
+    }
+
+    @Override
+    public int getPreferredWidth(int prefCharWidth, FontMetrics font) {
+        return 18;
+    }
+
+    @Override
+    public int getMinimumWidth(int minCharWidth, FontMetrics font) {
+        return 15;
     }
 
     @Override

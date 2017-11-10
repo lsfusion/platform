@@ -9,10 +9,10 @@ public class PDFLinkPropertyRenderer extends LinkPropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value) {
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
-            getComponent().setIcon(SwingUtils.getSystemIcon("pdf"));
+            setIcon(SwingUtils.getSystemIcon("pdf"));
         }
-        super.setValue(value);
+        super.setValue(value, isSelected, hasFocus);
     }
 }

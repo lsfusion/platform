@@ -152,9 +152,4 @@ public class DateClass extends DataClass<Date> {
     public boolean useIndexedJoin() {
         return true;
     }
-
-    @Override
-    public boolean isFlex() {
-        return false;
-    }
 }

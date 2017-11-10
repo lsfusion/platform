@@ -7,6 +7,10 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Created by DAle on 09.07.2014
+ */
+
 public abstract class AbstractPropertyNameParser {
     protected static class ParseInnerException extends RuntimeException {
         public ParseInnerException(String msg) {

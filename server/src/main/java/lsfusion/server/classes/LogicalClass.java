@@ -69,6 +69,7 @@ public class LogicalClass extends DataClass<Boolean> {
     public int getBaseDotNetSize() {
         return 4;
     }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getBitSQL();
     }
@@ -143,11 +144,6 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public boolean calculateStat() {
-        return false;
-    }
-
-    @Override
-    public boolean isFlex() {
         return false;
     }
 }

@@ -464,9 +464,4 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public Where translateExpr(ExprTranslator translator) {
         return super.translateExpr(translator);
     }
-
-    @Override
-    public String toString() {
-        return getSource(new ToString(getOuterValues()));
-    }
 }

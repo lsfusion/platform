@@ -117,6 +117,8 @@ public class GridTable extends ClientPropertyTable {
 
     private int pageSize = 50;
 
+    private Integer headerHeight;
+
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
@@ -154,20 +156,11 @@ public class GridTable extends ClientPropertyTable {
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
 
+        headerHeight = igridView.getHeaderHeight();
+
         generalGridPreferences = iuserPreferences != null && iuserPreferences[0] != null ? iuserPreferences[0] : new GridUserPreferences(groupObject);
         userGridPreferences = iuserPreferences != null && iuserPreferences[1] != null ? iuserPreferences[1] : new GridUserPreferences(groupObject);
         resetCurrentPreferences(true);
-
-        FontInfo userFont = getUserFont();
-        if (userFont != null) {
-            if (userFont.fontSize == 0) {
-                setFont(getFont().deriveFont(userFont.getStyle()));
-            } else {
-                setFont(getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
-            }
-        } else if (getDesignFont() != null) {
-            setFont(groupObject.grid.design.getFont(this));
-        }
 
         setName(groupObject.toString());
 
@@ -175,6 +168,10 @@ public class GridTable extends ClientPropertyTable {
 
         setAutoCreateColumnsFromModel(false);
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+
+        if (groupObject.grid.design.font != null) {
+            setFont(groupObject.grid.design.getFont(this));
+        }
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
             protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType) {
@@ -327,10 +324,13 @@ public class GridTable extends ClientPropertyTable {
         initializeActionMap();
     }
 
+    public void setHeaderHeight(Integer headerHeight) {
+        this.headerHeight = headerHeight;
+    }
+
     public int getHeaderHeight() {
-        Integer userHeaderHeight = getUserHeaderHeight();
-        if (userHeaderHeight != null && userHeaderHeight >= 0) {
-            return userHeaderHeight;
+        if (headerHeight != null && headerHeight >= 0) {
+            return headerHeight;
         }
         // заданная в дизайне
         int predefinedHeaderHeight = gridController.getGridView().getHeaderHeight();
@@ -1584,6 +1584,7 @@ public class GridTable extends ClientPropertyTable {
 
     public void setUserHeaderHeight(Integer userHeaderHeight) {
         currentGridPreferences.headerHeight = userHeaderHeight;
+        setHeaderHeight(userHeaderHeight);
     }
 
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
@@ -1819,6 +1820,8 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public class GridTableColumn extends TableColumn {
+        public int flex; // равен preferred'у
+
         public GridTableColumn(int index) {
             super(index);
         }

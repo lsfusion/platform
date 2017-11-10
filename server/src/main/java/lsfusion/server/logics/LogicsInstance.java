@@ -8,10 +8,9 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.context.EventThreadInfo;
 import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.context.ThreadInfo;
+import lsfusion.server.context.ThreadType;
 import lsfusion.server.lifecycle.LifecycleManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -191,15 +190,14 @@ public class LogicsInstance implements InitializingBean {
     public void start() {
         logger.info("Logics instance is starting...");
         try {
-            ThreadInfo threadInfo = EventThreadInfo.START();
-            ThreadLocalContext.aspectBeforeLifecycle(this, threadInfo);
+            ThreadLocalContext.aspectBeforeLifecycle(this, ThreadType.START);
             try {
                 lifecycle.fireStarting();
                 lifecycle.fireStarted();
 
                 businessLogics.cleanCaches();
             } finally {
-                ThreadLocalContext.aspectAfterLifecycle(threadInfo);
+                ThreadLocalContext.aspectAfterLifecycle(ThreadType.START);
             }
 
             logger.info("Logics instance has successfully started");

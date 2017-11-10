@@ -1,5 +1,6 @@
 package lsfusion.client.logics;
 
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
 
@@ -20,6 +21,10 @@ public class ClientToolbar extends ClientComponent {
     public boolean showSettings = true;
 
     public ClientToolbar() {
+    }
+
+    public ClientToolbar(ApplicationContext context) {
+        super(context);
     }
 
     @Override

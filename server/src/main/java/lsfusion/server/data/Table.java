@@ -290,10 +290,9 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 ObjectValueClassSet valueClassSet = classSet.getValueClassSet();
                 // если есть unknown или complex или inconsistent
                 boolean checkClasses;
-                ValueClass inconsistentTableClass;
-                if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
+                if(inconsistent) {
                     Result<Boolean> rereadChange = new Result<Boolean>();
-                    checkClasses = checkClasses(classSet, inconsistentTableClass, rereadChange, classRemove, timestamp);
+                    checkClasses = checkClasses(classSet, inconsistentTableClasses.get(field), rereadChange, classRemove, timestamp);
                     if(rereadChange.result)
                         mInconsistentCheckChanges.exclAdd(field);
                 } else {
@@ -907,7 +906,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
 
-            public String getSource(CompileSource compile, boolean needValue) {
+            public String getSource(CompileSource compile) {
                 return compile.getSource(this);
             }
 

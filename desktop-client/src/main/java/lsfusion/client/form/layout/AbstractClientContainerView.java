@@ -122,21 +122,21 @@ public abstract class AbstractClientContainerView implements ClientContainerView
             return isTopContainerView();
         }
 
-//        @Override
-//        public void validate() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validate();
-//        }
-//
-//        @Override
-//        protected void validateTree() {
-//            if (isTopContainerView()) {
-//                formLayout.preValidateMainContainer();
-//            }
-//            super.validateTree();
-//        }
+        @Override
+        public void validate() {
+            if (isTopContainerView()) {
+                formLayout.preValidateMainContainer();
+            }
+            super.validate();
+        }
+
+        @Override
+        protected void validateTree() {
+            if (isTopContainerView()) {
+                formLayout.preValidateMainContainer();
+            }
+            super.validateTree();
+        }
 
         @Override
         public Dimension getMaxPreferredSize() {

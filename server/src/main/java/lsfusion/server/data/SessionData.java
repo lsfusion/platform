@@ -63,7 +63,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract ClassWhere<KeyField> getClassWhere();
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);
     
-    public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField);
+    public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses);
     public abstract SessionData updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException;
 
     public abstract boolean isEmpty();
@@ -112,7 +112,6 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return null;
     }
 
-    // есть оптимизации вроде table instanceof SessionRows, writeRows.size() <= SESSION_ROWS, то есть полагаемся на инвариант что при передаче в JDBC СУБД само закастит (этот инвариант все равно будет, потому как когда идет insertSessionSelect там никаких Cast'ов нет и мы опять таки полагаемся на cast СУБД)
     public static <F extends Field, D extends ObjectValue> ImMap<F, D> castTypes(ImMap<F, D> values) {
         return values.mapValues(new GetKeyValue<D, F, D>() {
             @Override

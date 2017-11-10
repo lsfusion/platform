@@ -489,6 +489,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             FontInfo font = mergeFont();
             refreshValues(font);
             initialTable.setFont(font.deriveFrom(initialTable));
+            initialTable.setHeaderHeight(getHeaderHeight());
 
             initialTable.updateTable();
 

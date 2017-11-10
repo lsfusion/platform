@@ -86,7 +86,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LCP currentSession;
     public LCP connectionSession;
-    public LCP formSession;
+    public LCP navigatorElementSession;
     public LCP quantityAddedClassesSession;
     public LCP quantityRemovedClassesSession;
     public LCP quantityChangedClassesSession;
@@ -170,12 +170,12 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         abandonedNonFatalHandledException = findProperty("abandoned[NonFatalHandledException]");
 
         // Открытые формы во время подключения
-        connectionFormCount = findProperty("connectionFormCount[Connection,Form]");
+        connectionFormCount = findProperty("connectionFormCount[Connection,NavigatorElement]");
 
         // Сессия
         currentSession = findProperty("currentSession[]");
         connectionSession = findProperty("connection[Session]");
-        formSession = findProperty("form[Session]");
+        navigatorElementSession = findProperty("navigatorElement[Session]");
         quantityAddedClassesSession = findProperty("quantityAddedClasses[Session]");
         quantityRemovedClassesSession = findProperty("quantityRemovedClasses[Session]");
         quantityChangedClassesSession = findProperty("quantityChangedClasses[Session]");

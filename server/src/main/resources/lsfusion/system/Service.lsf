@@ -95,7 +95,7 @@ hostnameServerComputer 'Сервер' () = hostname(serverComputer());
 @defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
 
 setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
-explainAnalyzeMode 'Включён Explain' = DATA BOOLEAN (User);
+explainAnalyzeMode 'Включён Explain Analyze' = DATA BOOLEAN (User);
 refreshExplainAnalyzeMode 'Обновить Explain Analyze'(User user) = {
     setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
 }
@@ -291,36 +291,20 @@ TABLE reflectionProperty (ReflectionProperty);
 name 'Имя настройки' = DATA VARISTRING[100] (ReflectionProperty);
 reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
-baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (ReflectionProperty, UserRole);
-overBaseValue 'Сохранённое значение для текущего пользователя' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
-value 'Значение' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+value 'Значение' (ReflectionProperty reflectionProperty) = OVERRIDE baseValue(reflectionProperty), defaultValue(reflectionProperty);
 
 pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
-popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
+popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' ();
 
-writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
-saveReflectionProperty 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
-
-onStarted() += { 
-    writeDefaultReflectionPropertiesAction();
-    FOR baseValue(ReflectionProperty r) DO saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
-    FOR baseValue(ReflectionProperty r, UserRole ur) DO saveReflectionProperty(r, ur);
-}
-
-WHEN CHANGED (baseValue(ReflectionProperty r)) DO {
-    saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
-    FOR overSID(UserRole ur) DO saveReflectionProperty(r, ur);
-}
-WHEN CHANGED (baseValue(ReflectionProperty r, UserRole ur)) DO saveReflectionProperty(r, ur);
+readReflectionPropertiesAction 'Прочитать настройки свойств' = CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
+onStarted() += { readReflectionPropertiesAction(); }
+saveAction 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty);
+WHEN CHANGED (baseValue(ReflectionProperty r)) DO saveAction(r);
 
 FORM reflectionProperties 'Настройки свойств'
-    OBJECTS ur = UserRole
-    PROPERTIES(ur) READONLY name, sid 
     OBJECTS r = ReflectionProperty
-    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
-    PROPERTIES(r,ur) value READONLY BEFORE defaultValue(r), baseValue
-    FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
+    PROPERTIES (r) name READONLY, value READONLY, defaultValue READONLY, baseValue
 ;
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);

@@ -13,13 +13,13 @@ public class CustomStaticFormatFileRenderer extends FilePropertyRenderer {
         this.drawExtension = drawExtension;
     }
 
-    public void setValue(Object value) {
-        super.setValue(value);
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        super.setValue(value, isSelected, hasFocus);
         
         if (drawExtension != null) {
-            getComponent().setIcon(SwingUtils.getSystemIcon(drawExtension));
+            setIcon(SwingUtils.getSystemIcon(drawExtension));
         } else {
-            getComponent().setIcon(null);
+            setIcon(null);
         }
     }
 }

@@ -1,6 +1,9 @@
 package lsfusion.gwt.form.shared.view.changes;
 
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.form.shared.view.GClassViewType;
+import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.form.shared.view.GGroupObject;
+import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
 import lsfusion.gwt.form.shared.view.reader.GPropertyReader;
@@ -18,9 +21,6 @@ public class GFormChanges {
     public final HashMap<GPropertyReader, HashMap<GGroupObjectValue, Object>> properties = new HashMap<>();
     public final HashSet<GPropertyReader> panelProperties = new HashSet<>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
-
-    public final ArrayList<GComponent> activateTabs = new ArrayList<>();
-    public final ArrayList<GPropertyDraw> activateProps = new ArrayList<>();
 
     public final HashSet<GPropertyDraw> updateProperties = new HashSet<>();
 
@@ -57,14 +57,6 @@ public class GFormChanges {
 
         for (Integer propertyID : dto.dropPropertiesIds) {
             remapped.dropProperties.add(form.getProperty(propertyID));
-        }
-
-        for (int activateTab : dto.activateTabsIds) {
-            remapped.activateTabs.add(form.findContainerByID(activateTab));
-        }
-
-        for (int activateProp : dto.activatePropsIds) {
-            remapped.activateProps.add(form.getProperty(activateProp));
         }
 
         return remapped;

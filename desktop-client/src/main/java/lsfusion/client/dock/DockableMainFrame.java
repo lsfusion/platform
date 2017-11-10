@@ -23,7 +23,6 @@ import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
 import lsfusion.interop.AbstractWindowType;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -70,7 +69,7 @@ public class DockableMainFrame extends MainFrame {
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
             public void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException {
                 try {
-                    dockableManager.openForm(this, element.formCanonicalName, element.formSID, modifiers);
+                    dockableManager.openForm(this, element.getCanonicalName(), element.getSID(), modifiers);
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
@@ -104,7 +103,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
-        executeAction(action.getCanonicalName(), 1, null);
+        executeAction(action.getSID(), 1, null);
     }
 
     public void executeAction(final String actionSID, final int type, final Runnable action) {
@@ -278,30 +277,16 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final List<ReportPath> reportPathList, final List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final Map<String, String> reportPath, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
-            public void invokeEditReport(boolean useAuto) throws RemoteException {
+            public void invokeEditReport() throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.processReportPathList(useAuto ? autoReportPathList : reportPathList, useAuto);
+                    Main.processPathMap(reportPath);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
-            }
-
-            @Override
-            public void invokeDeleteReport() throws RemoteException {
-                try {
-                    Main.deleteReportPathList(reportPathList);
-                } catch (Exception e) {
-                    throw new RuntimeException(getString("form.error.printing.form"), e);
-                }
-            }
-
-            @Override
-            public boolean hasCustomReports() throws RemoteException {
-                return !reportPathList.isEmpty();
             }
         });
     }
@@ -326,6 +311,15 @@ public class DockableMainFrame extends MainFrame {
             Throwables.propagate(e);
         }
         return null;
+    }
+
+    @Override
+    public void activateTab(String formSID, String tabSID) {
+        try {
+            dockableManager.activateTab(formSID, tabSID);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     private void initWindows() {

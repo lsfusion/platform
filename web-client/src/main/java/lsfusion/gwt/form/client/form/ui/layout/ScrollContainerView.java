@@ -19,7 +19,6 @@ public class ScrollContainerView extends GAbstractContainerView {
         assert container.isScroll();
 
         scrollPanel = new FlexPanel(vertical);
-        scrollPanel.getElement().getStyle().setOverflowY(Style.Overflow.AUTO);
 
         view = scrollPanel;
     }
@@ -28,7 +27,7 @@ public class ScrollContainerView extends GAbstractContainerView {
     private Widget proxyView;
     @Override
     protected void addImpl(int index, GComponent child, Widget view) {
-        assert child.getFlex() == 1 && child.getAlignment() == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
+        assert child.flex == 1 && child.alignment == GFlexAlignment.STRETCH; // временные assert'ы чтобы проверить обратную совместимость
 //        if(child.preferredHeight == 1) { // panel тем же базисом и flex'ом (assert что 1)
 //            proxyPanel = new FlexPanel(vertical);
 //
@@ -41,8 +40,8 @@ public class ScrollContainerView extends GAbstractContainerView {
 //        }
         // возможно надо попроставлять как внизу компонентам MaxPreferredSize ??
         if(1!=1) GwtClientUtils.calculateMaxPreferredSize(view); // .height
-        view.getElement().getStyle().setOverflowY(Style.Overflow.VISIBLE);
-        add(scrollPanel, view, 0, child.getAlignment(), child.getFlex(), child, vertical);
+        view.getElement().getStyle().setOverflowY(Style.Overflow.AUTO); // scroll
+        add(scrollPanel, view, 0, child.alignment, child.flex, child, vertical);
     }
 
     @Override

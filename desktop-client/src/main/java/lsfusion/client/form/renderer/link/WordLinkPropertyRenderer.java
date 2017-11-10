@@ -8,10 +8,10 @@ public class WordLinkPropertyRenderer extends LinkPropertyRenderer {
         super(property);
     }
 
-    public void setValue(Object value) {
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
-            getComponent().setIcon(SwingUtils.getSystemIcon("doc"));
+            setIcon(SwingUtils.getSystemIcon("doc"));
         }
-        super.setValue(value);
+        super.setValue(value, isSelected, hasFocus);
     }
 }

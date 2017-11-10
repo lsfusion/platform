@@ -1,5 +1,6 @@
 package lsfusion.client.logics;
 
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.base.serialization.IdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
@@ -29,17 +30,36 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     
     public boolean autoSize;
 
-    public double flex;
-    public FlexAlignment alignment;
+    public double flex = 0;
+    public FlexAlignment alignment = FlexAlignment.LEADING;
 
     public int marginTop;
     public int marginBottom;
     public int marginLeft;
     public int marginRight;
 
-    public boolean defaultComponent;
+    public boolean defaultComponent = false;
 
     public ClientComponent() {
+    }
+
+    public ClientComponent(ApplicationContext context) {
+        super(context);
+        initAggregateObjects(context);
+    }
+
+    public ClientComponent(int ID, ApplicationContext context) {
+        super(ID, context);
+        initAggregateObjects(context);
+    }
+
+    protected void initAggregateObjects(ApplicationContext context) {
+        design = new ComponentDesign(context);
+
+        initDefaultConstraints();
+    }
+
+    protected void initDefaultConstraints() {
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

@@ -25,7 +25,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return objectClass.hashCode() + 17;
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         return objectClass.getString(objectClass.getInfiniteValue(false), compile.syntax);
     }
 

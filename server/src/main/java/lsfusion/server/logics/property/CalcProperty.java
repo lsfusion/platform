@@ -325,7 +325,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
                 if(entity.forceViewType == null)
                     entity.forceViewType = ClassViewType.GRID;
             }
@@ -353,7 +353,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getImplement().change(keys, env, value);
     }
 
-    public Pair<PropertyChangeTableUsage<T>, PropertyChangeTableUsage<T>> splitSingleApplyClasses(String debugInfo, PropertyChangeTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(String debugInfo, SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         assert isSingleApplyStored();
 
         if(DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
@@ -361,7 +361,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(DataSession.fitClasses(this, changeTable))
             return new Pair<>(changeTable, createChangeTable(debugInfo+"-ssas:fit"));
 
-        PropertyChange<T> change = PropertyChangeTableUsage.getChange(changeTable);
+        PropertyChange<T> change = SinglePropertyTableUsage.getChange(changeTable);
 
         ImMap<KeyField, Expr> mapKeys = mapTable.mapKeys.crossJoin(change.getMapExprs());
         Where classWhere = fieldClassWhere.getWhere(MapFact.addExcl(mapKeys, field, change.expr))
@@ -374,8 +374,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         OperationOwner owner = env.getOpOwner();
         try {
-            PropertyChangeTableUsage<T> fit = readChangeTable(debugInfo+"-ssas:fit", sql, change.and(classWhere), baseClass, env);
-            PropertyChangeTableUsage<T> notFit;
+            SinglePropertyTableUsage<T> fit = readChangeTable(debugInfo+"-ssas:fit", sql, change.and(classWhere), baseClass, env);
+            SinglePropertyTableUsage<T> notFit;
             try {
                 notFit = readChangeTable(debugInfo+"-ssas:notfit", sql, change.and(classWhere.not()), baseClass, env);
             } catch (Throwable e) {
@@ -580,80 +580,19 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public PropertyChange<T> getNoChange() {
         return new PropertyChange<>(getMapKeys(), CaseExpr.NULL);
     }
-    
-    private static class PropCorrelation<K extends PropertyInterface, T extends PropertyInterface> implements Correlation<T> {
-        
-        private final CalcProperty<K> property;
-        private final T mapInterface;
-        private final CustomClass customClass;
 
-        public PropCorrelation(CalcProperty<K> property, T mapInterface, ClassType classType) {
-            this.property = property;
-            this.mapInterface = mapInterface;
-            this.customClass = (CustomClass) property.getInterfaceClasses(classType).singleValue(); // тут логично читать класс aggr свойства, а не изменяемого (так как по идее класс может менять внутри класса aggr свойства и это разрешено, правда с точки зрения consistency (checkClasses, а пока customClass используется только там) не факт, но пока не принципиально) 
-        }
-
-        public Expr getExpr(ImMap<T, ? extends Expr> mapExprs) {
-            return property.getExpr(MapFact.singleton(property.interfaces.single(), mapExprs.get(mapInterface)));
-        }
-        public Expr getExpr(ImMap<T, ? extends Expr> mapExprs, Modifier modifier) throws SQLException, SQLHandledException {
-            return property.getExpr(MapFact.singleton(property.interfaces.single(), mapExprs.get(mapInterface)), modifier);
-        }
-
-        public Type getType() {
-            return property.getType();
-        }
-
-        @Override
-        public CustomClass getCustomClass() {
-            return customClass;
-        }
-    }
-
-    private ImOrderSet<T> getOrderInterfaces(ImSet<T> filterInterfaces) {
-        return filterInterfaces == null ? getOrderInterfaces() : getOrderInterfaces().filterOrder(filterInterfaces);
-    }
-    @IdentityLazy
-    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ImSet<T> filterInterfaces, ClassType classType) {
-        // берем классы свойства и докидываем все корреляции, которые найдем
-        MOrderExclSet<Correlation<T>> mResult = SetFact.mOrderExclSet();
-
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(classType);
-        ImOrderSet<T> orderInterfaces = getOrderInterfaces(filterInterfaces);
-        for(int i=0,size=orderInterfaces.size();i<size;i++) { // для детерминированности на всякий случай
-            T propertyInterface = orderInterfaces.get(i);
-            ValueClass valueClass = interfaceClasses.get(propertyInterface);
-            if(valueClass instanceof CustomClass) {
-                CustomClass customClass = (CustomClass) valueClass;
-                for(CalcProperty<K> aggrProp : customClass.getUpAggrProps())
-//                    if(!BaseUtils.hashEquals(aggrProp, this)) // себя тоже надо коррелировать (в общем-то для удаления, как правило удаляется тоже объекты агрегированные в один объект)
-                    mResult.exclAdd(new PropCorrelation<K, T>(aggrProp, propertyInterface, classType));
-            }
-        }
-
-        return mResult.immutableOrder();
-    }
-
-    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ClassType classType) {
-        return getCorrelations(null, classType);
-    }    
-
-    public PropertyChangeTableUsage<T> createChangeTable(String debugInfo) {
-        return new PropertyChangeTableUsage<>(getCorrelations(ClassType.materializeChangePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(), interfaceTypeGetter, getType());
-    }
-    
-    public NoPropertyWhereTableUsage<T> createWhereTable(String debugInfo, ImSet<T> filterInterfaces) {
-        return new NoPropertyWhereTableUsage<>(getCorrelations(filterInterfaces, ClassType.wherePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(filterInterfaces), interfaceTypeGetter);
+    public SinglePropertyTableUsage<T> createChangeTable(String debugInfo) {
+        return new SinglePropertyTableUsage<>(getTableDebugInfo(debugInfo), getOrderInterfaces(), interfaceTypeGetter, getType());
     }
 
     @StackMessage("{message.increment.read.properties}")
     @ThisMessage
-    public PropertyChangeTableUsage<T> readChangeTable(String group, SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public SinglePropertyTableUsage<T> readChangeTable(String group, SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readFixChangeTable(group, session, getIncrementChange(modifier), baseClass, env);
     }
 
-    public PropertyChangeTableUsage<T> readFixChangeTable(String group, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        PropertyChangeTableUsage<T> readTable = readChangeTable(group, session, change, baseClass, env);
+    public SinglePropertyTableUsage<T> readFixChangeTable(String group, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> readTable = readChangeTable(group, session, change, baseClass, env);
 
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
@@ -663,8 +602,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return readTable;
     }
 
-    public PropertyChangeTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        PropertyChangeTableUsage<T> changeTable = createChangeTable(debugInfo);
+    public SinglePropertyTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
+        SinglePropertyTableUsage<T> changeTable = createChangeTable(debugInfo);
         change.writeRows(changeTable, session, baseClass, env, SessionTable.matGlobalQuery);
         return changeTable;
     }
@@ -1433,7 +1372,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.NONAME, this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<>(LocalizedString.create("sys"), this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 
@@ -1740,7 +1679,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, T> getClassProperty(ImSet<T> interfaces) {
-        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy).filter(interfaces));
+        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy).filterIncl(interfaces));
     }
 
     @IdentityInstanceLazy
@@ -1887,6 +1826,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         
     }
     
+    @Override
+    public String toString() {
+        String string = super.toString();
+        if (debugInfo != null) {
+            string = string + ":" + debugInfo;
+        }
+        return string;
+    }
+
     public void printDepends(boolean events, String tab) {
         System.out.println(tab + this);
         for(CalcProperty prop : getDepends(events)) {
@@ -1917,28 +1865,5 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public LAP getLogFormProperty() {
         return logFormProperty;
-    }
-    
-    private boolean aggr;
-
-    @IdentityStartLazy
-    public boolean isAggr() {
-        if(aggr)
-            return true;
-        ImSet<CalcProperty> anImplements = getImplements();
-        if(anImplements.isEmpty())
-            return false;
-        for(CalcProperty implement : anImplements)
-            if(!implement.isAggr())
-                return false;
-        return true;
-    }
-
-    public void setAggr(boolean aggr) {
-        this.aggr = aggr;
-    }
-    
-    public ImSet<CalcProperty> getImplements() {
-        return SetFact.EMPTY();
     }
 }

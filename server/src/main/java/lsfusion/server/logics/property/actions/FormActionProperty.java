@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.Pair;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.*;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -9,10 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.FormSelector;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.ObjectSelector;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
@@ -95,7 +91,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
         this.notNullInterfaces = notNullInterfaces;
     }
 
-    protected abstract void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException;
+    protected abstract void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException;
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<O, ? extends ObjectValue> mapObjectValues = mapObjects.join(context.getKeys());

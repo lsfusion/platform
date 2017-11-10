@@ -21,7 +21,10 @@ public abstract class SeekActionProperty extends SystemExplicitActionProperty {
     
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FormInstance<?> formInstance = context.getFormInstance(false, true);
-        executeForm(formInstance, context);
+        if(formInstance != null)
+            executeForm(formInstance, context);
+        else
+            ServerLoggers.assertLog(false, "FORM ALWAYS SHOULD EXIST");
     }
 
     protected abstract void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;

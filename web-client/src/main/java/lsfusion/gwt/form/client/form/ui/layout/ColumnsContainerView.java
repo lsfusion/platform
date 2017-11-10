@@ -1,11 +1,12 @@
 package lsfusion.gwt.form.client.form.ui.layout;
 
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
@@ -21,7 +22,7 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
     protected final P panel;
 
-    protected final FlexPanel[] columns;
+    protected final ResizableComplexPanel[] columns;
 
     protected final List<GComponent>[] columnsChildren;
 
@@ -34,16 +35,13 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
         panel = createHorizontalPanel();
 
-        columnsCount = container.columns ;
+        columnsCount = container.columns;
 
-        columns = new FlexPanel[columnsCount];
+        columns = new ResizableComplexPanel[columnsCount];
         columnsChildren = new List[columnsCount];
-        
-        double columnFlex = getColumnFlex(container);
         for (int i = 0; i < columnsCount; ++i) {
-            FlexPanel column = new FlexPanel(true);
+            ResizableComplexPanel column = new ResizableComplexPanel();
             panel.add(column);
-            column.getElement().getStyle().setProperty("flex", columnFlex + " 0 auto");
 
             columns[i] = column;
             columnsChildren[i] = new ArrayList<>();
@@ -51,14 +49,6 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
         panel.getElement().getStyle().setOverflow(Style.Overflow.HIDDEN);
 
         view = wrapWithCaption(panel);
-    }
-    
-    private double getColumnFlex(GContainer container) {
-        GContainer container2 = container.container;
-        if (container2 == null || !container2.isHorizontal()) {
-            return container.getAlignment() == GFlexAlignment.STRETCH ? 1 : 0;
-        }
-        return container.getFlex();
     }
 
     protected abstract P createHorizontalPanel();
@@ -96,11 +86,13 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
         columnChildren.add(rowIndex, child);
 
-        columns[colIndex].add(new ProxyPanel(child, view), child.getAlignment());
+        columns[colIndex].insert(new ProxyPanel(child, view), 2 * rowIndex);
+        columns[colIndex].insert(new Clear(), 2 * rowIndex + 1);
     }
 
     @Override
     protected void removeImpl(int index, GComponent child, Widget view) {
+        panel.remove(view);
         int childIndex = container.children.indexOf(child);
         int colIndex = childIndex % columnsCount;
         columnsChildren[colIndex].remove(child);
@@ -110,10 +102,29 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
             throw new IllegalStateException("Trying to delete something, that wasn't added");
         }
 
-        FlexPanel column = columns[colIndex];
+        ResizableComplexPanel column = columns[colIndex];
         int proxyIndex = column.getWidgetIndex((Widget) columnsProxy);
 
+        column.remove(proxyIndex + 1);
         column.remove(proxyIndex);
+    }
+
+    @Override
+    public void updateLayout() {
+        super.updateLayout();
+        if (container.columnLabelsWidth > 0) {
+            for (int i = 0; i < columnsCount; ++i) {
+                ResizableComplexPanel column = columns[i];
+                int childCount = column.getWidgetCount();
+                for (int j = 0; j < childCount; j += 2) {
+                    ProxyPanel childProxy = (ProxyPanel)column.getWidget(j);
+                    Widget childWidget = childProxy.getWidget();
+                    if (childWidget.isVisible() && childWidget instanceof HasLabel) {
+                        ((HasLabel) childWidget).setLabelWidth(container.columnLabelsWidth);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -153,7 +164,18 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
 
             child.getElement().setPropertyObject(COLUMN_PROXY_KEY, this);
 
+            getElement().getStyle().setFloat(Style.Float.LEFT);
+
             component.installPaddings(this);
+        }
+    }
+
+    private static final class Clear extends Widget {
+        private Clear() {
+            DivElement divElement = Document.get().createDivElement();
+            divElement.getStyle().setClear(Style.Clear.BOTH);
+
+            setElement(divElement);
         }
     }
 }

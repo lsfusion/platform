@@ -14,17 +14,17 @@ import lsfusion.server.logics.ObjectValue;
 
 import java.sql.SQLException;
 
-public class NoPropertyTableUsage<K> extends SessionTableUsage<K,String> {
+public class NoPropertyTableUsage<K> extends SessionTableUsage<K,Object> {
 
     public NoPropertyTableUsage(String debugInfo, ImOrderSet<K> keys, Type.Getter<K> keyType) {
-        super(debugInfo, keys, SetFact.<String>EMPTYORDER(), keyType, new Type.Getter<String>() {
-            public Type getType(String key) {
+        super(debugInfo, keys, SetFact.<Object>EMPTYORDER(), keyType, new Type.Getter<Object>() {
+            public Type getType(Object key) {
                 throw new RuntimeException("not supported");
             }
         });
     }
 
     public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
-        modifyRecord(session, keyFields, MapFact.<String, ObjectValue>EMPTY(), type, owner);
+        modifyRecord(session, keyFields, MapFact.<Object, ObjectValue>EMPTY(), type, owner);
     }
 }

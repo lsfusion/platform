@@ -61,8 +61,7 @@ public class TabbedContainerView extends GAbstractContainerView {
         });
     }
 
-    public void activateTab(int i) {
-        currentChild = container.children.get(i);  // изменение сервер уже в курсе об изменениях, поэтому пометим так
+    public void selectTab(int i) {
         tabbedDelegate.selectTab(i);
     }
 
@@ -146,7 +145,7 @@ public class TabbedContainerView extends GAbstractContainerView {
         return tabCaption;
     }
 
-    public boolean isTabVisible(GComponent component) {
-        return visibleChildren.contains(component);
+    public boolean isTabVisible(int tab) {
+        return visibleChildren.contains(getChild(tab));
     }
 }

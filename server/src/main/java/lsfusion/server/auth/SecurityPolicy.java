@@ -15,15 +15,11 @@ public class SecurityPolicy {
     public ClassSecurityPolicy cls = new ClassSecurityPolicy();
     public PropertySecurityPolicy property = new PropertySecurityPolicy();
     public NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
-    // todo [dale]: Нужна ли FormSecurityPolicy?
-    public FormSecurityPolicy form = new FormSecurityPolicy();
 
     public void override(SecurityPolicy policy) {
         cls.override(policy.cls);
         property.override(policy.property);
         navigator.override(policy.navigator);
-        form.override(policy.form);
-        
         if (policy.configurator != null) {
             configurator = policy.configurator;
         }
@@ -32,7 +28,6 @@ public class SecurityPolicy {
     public void setReplaceMode(boolean replaceMode) {
         cls.setReplaceMode(replaceMode);
         property.setReplaceMode(replaceMode);
-        navigator.replaceMode = replaceMode;
-        form.replaceMode = replaceMode;
+        navigator.replaceMode = true;
     }
 }

@@ -109,7 +109,7 @@ public class DerivedProperty {
         // создаем свойство - перемаппим интерфейсы
         ImRevMap<T,JoinProperty.Interface> joinMap = usedInterfaces.mapRevValues(JoinProperty.genInterface); // строим карту
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
-        JoinProperty<L> joinProperty = new JoinProperty<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
+        JoinProperty<L> joinProperty = new JoinProperty<>(LocalizedString.create("sys"), revJoinMap.keys().toOrderSet(),
                 new CalcPropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
         return new CalcPropertyMapImplement<>(joinProperty, revJoinMap);
     }
@@ -121,7 +121,7 @@ public class DerivedProperty {
         // создаем свойство - перемаппим интерфейсы
         ImRevMap<T,PropertyInterface> joinMap = usedInterfaces.mapRevValues(Property.genInterface); // строим карту
         ImRevMap<PropertyInterface, T> revJoinMap = joinMap.reverse();
-        JoinActionProperty<L> joinProperty = new JoinActionProperty<>(LocalizedString.NONAME, revJoinMap.keys().toOrderSet(),
+        JoinActionProperty<L> joinProperty = new JoinActionProperty<>(LocalizedString.create("sys"), revJoinMap.keys().toOrderSet(),
                 new ActionPropertyImplement<>(implement.property, mapImplements(implement.mapping, joinMap)));
         return new ActionPropertyMapImplement<>(joinProperty, revJoinMap);
     }
@@ -142,7 +142,7 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<>(joinProperty, revJoinMap);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
-        return createCompare(LocalizedString.NONAME, interfaces, distribute, previous, compare);
+        return createCompare(LocalizedString.create("sys"), interfaces, distribute, previous, compare);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
         return createCompare(getUsedInterfaces(SetFact.toSet(distribute, previous)), distribute, previous, compare);
@@ -152,7 +152,7 @@ public class DerivedProperty {
         ImRevMap<T, JoinProperty.Interface> joinMap = innerInterfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 
-        return new CalcPropertyMapImplement<>(new JoinProperty<>(LocalizedString.NONAME,
+        return new CalcPropertyMapImplement<>(new JoinProperty<>(LocalizedString.create("sys"),
                 revJoinMap.keys().toOrderSet(), NotFormulaProperty.instance.getImplement(implement.map(joinMap))), revJoinMap);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNot(CalcPropertyInterfaceImplement<T> implement) {
@@ -168,7 +168,7 @@ public class DerivedProperty {
             }});
     }
     public static <P extends PropertyInterface> CalcPropertyMapImplement<?,P> createAnd(ImOrderSet<P> listInterfaces, ImList<Boolean> nots) {
-        return createAnd(LocalizedString.NONAME, listInterfaces.getSet(), listInterfaces.get(0), BaseUtils.<ImOrderSet<CalcPropertyInterfaceImplement<P>>>immutableCast(listInterfaces.subList(1, listInterfaces.size())), nots);
+        return createAnd(LocalizedString.create("sys"), listInterfaces.getSet(), listInterfaces.get(0), BaseUtils.<ImOrderSet<CalcPropertyInterfaceImplement<P>>>immutableCast(listInterfaces.subList(1, listInterfaces.size())), nots);
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(LocalizedString caption, ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> object, ImList<CalcPropertyInterfaceImplement<T>> ands, ImList<Boolean> nots) {
@@ -176,10 +176,10 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> object, ImList<CalcPropertyInterfaceImplement<T>> ands, ImList<Boolean> nots) {
-        return createAnd(LocalizedString.NONAME, interfaces, object, ands, nots);
+        return createAnd(LocalizedString.create("sys"), interfaces, object, ands, nots);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> object, ImCol<? extends CalcPropertyInterfaceImplement<T>> ands) {
-        return createAnd(LocalizedString.NONAME, interfaces, object, ands);
+        return createAnd(LocalizedString.create("sys"), interfaces, object, ands);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAnd(ImCol<? extends CalcPropertyInterfaceImplement<T>> ands) {
         ImList<? extends CalcPropertyInterfaceImplement<T>> andsList = ands.toList();
@@ -206,7 +206,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAndNot(ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> object, CalcPropertyInterfaceImplement<T> not) {
-        return createAnd(LocalizedString.NONAME, innerInterfaces, object, ListFact.singleton(not), ListFact.singleton(true));
+        return createAnd(LocalizedString.create("sys"), innerInterfaces, object, ListFact.singleton(not), ListFact.singleton(true));
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createAndNot(CalcProperty<T> property, CalcPropertyInterfaceImplement<T> not) {
@@ -262,14 +262,14 @@ public class DerivedProperty {
 
         ImList<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands =
                 DerivedProperty.mapCalcImplements(mapInterfaces, (ImList<CalcPropertyInterfaceImplement<T>>) props);
-        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(), operands, false, isExclusive, false);
+        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(), operands, false, isExclusive, false);
         return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
 
     public static <T extends PropertyInterface, C extends PropertyInterface> CalcPropertyMapImplement<UnionProperty.Interface,T> createUnion(boolean checkExclusive, boolean checkAll, boolean isLast, CaseUnionProperty.Type type, ImSet<T> interfaces, ValueClass valueClass, ImMap<T, ValueClass> interfaceClasses) {
         ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
-        CaseUnionProperty unionProperty = new CaseUnionProperty(checkExclusive, checkAll, isLast, type, LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
+        CaseUnionProperty unionProperty = new CaseUnionProperty(checkExclusive, checkAll, isLast, type, LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(), valueClass, revMapInterfaces.join(interfaceClasses));
         return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
 
@@ -282,7 +282,7 @@ public class DerivedProperty {
                 return value.map(mapInterfaces);
             }
         });
-        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(), isExclusive, cases);
+        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(), isExclusive, cases);
         return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
 
@@ -291,7 +291,7 @@ public class DerivedProperty {
         ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
 
         ImList<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands = DerivedProperty.mapCalcImplements(mapInterfaces, props);
-        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.NONAME, revMapInterfaces.keys().toOrderSet(),operands.getCol(), false);
+        CaseUnionProperty unionProperty = new CaseUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(),operands.getCol(), false);
         return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
     }
 
@@ -301,6 +301,23 @@ public class DerivedProperty {
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createXUnion(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> first, CalcPropertyInterfaceImplement<T> rest) {
         return createXUnion(interfaces, ListFact.toList(first, rest));
+    }
+
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createDiff(CalcProperty<T> restriction, CalcPropertyInterfaceImplement<T> from) {
+        ImRevMap<T,UnionProperty.Interface> mapInterfaces = restriction.interfaces.mapRevValues(UnionProperty.genInterface);
+        ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
+
+        ImMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = MapFact.toRevMap(from.map(mapInterfaces), 1, new CalcPropertyMapImplement<>(restriction, mapInterfaces), -1);
+        SumUnionProperty unionProperty = new SumUnionProperty(LocalizedString.create("sys"), revMapInterfaces.keys().toOrderSet(),operands);
+        return new CalcPropertyMapImplement<>(unionProperty, revMapInterfaces);
+    }
+
+    private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createSum(LocalizedString caption, ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> sum1, CalcPropertyInterfaceImplement<T> sum2) {
+        ImRevMap<T,UnionProperty.Interface> mapInterfaces = interfaces.mapRevValues(UnionProperty.genInterface);
+        ImRevMap<UnionProperty.Interface, T> revMapInterfaces = mapInterfaces.reverse();
+
+        ImMap<CalcPropertyInterfaceImplement<UnionProperty.Interface>, Integer> operands = MapFact.toMap(sum1.map(mapInterfaces), 1, sum2.map(mapInterfaces), 1);
+        return new CalcPropertyMapImplement<>(new SumUnionProperty(caption, revMapInterfaces.keys().toOrderSet(), operands), revMapInterfaces);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, PropertyInterface> createLogical(boolean value) {
@@ -316,7 +333,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createFalse() {
-        return new CalcPropertyMapImplement<>(new SessionDataProperty(LocalizedString.NONAME, LogicalClass.instance));
+        return new CalcPropertyMapImplement<>(new SessionDataProperty(LocalizedString.create("sys"), LogicalClass.instance));
 //        return new CalcPropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance, new HashMap<PropertyInterface, T>());
     }
 
@@ -324,7 +341,7 @@ public class DerivedProperty {
         return createAnd(getUsedInterfaces(notNull), DerivedProperty.<T>createTrue(), notNull);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
-        return new CalcPropertyMapImplement<>(new ValueProperty(LocalizedString.NONAME, value, valueClass), MapFact.<PropertyInterface, T>EMPTYREV());
+        return new CalcPropertyMapImplement<>(new ValueProperty(LocalizedString.create("sys"), value, valueClass), MapFact.<PropertyInterface, T>EMPTYREV());
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNull() {
@@ -351,17 +368,17 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createLastGProp(CalcProperty<T> where, CalcPropertyInterfaceImplement<T> last, ImSet<T> groupInterfaces, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
-        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.NONAME, where.interfaces, BaseUtils.<ImCol<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), ListFact.toList(where.getImplement(), last), GroupType.LAST, orders, ordersNotNull);
+        OrderGroupProperty<T> groupProperty = new OrderGroupProperty<>(LocalizedString.create("sys"), where.interfaces, BaseUtils.<ImCol<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), ListFact.toList(where.getImplement(), last), GroupType.LAST, orders, ordersNotNull);
         return new CalcPropertyMapImplement<>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, GroupProperty.Interface<T>> createSumGProp(ImSet<T> innerInterfaces,  ImCol<? extends CalcPropertyInterfaceImplement<T>> groupInterfaces, CalcPropertyInterfaceImplement<T> property) {
-        SumGroupProperty<T> groupProperty = new SumGroupProperty<T>(LocalizedString.NONAME, innerInterfaces, groupInterfaces, property);
+        SumGroupProperty<T> groupProperty = new SumGroupProperty<T>(LocalizedString.create("sys"), innerInterfaces, groupInterfaces, property);
         return groupProperty.getImplement();
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
-        return createFormula(LocalizedString.NONAME, interfaces, formula, valueClass, params);
+        return createFormula(LocalizedString.create("sys"), interfaces, formula, valueClass, params);
     }
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createFormula(LocalizedString caption, ImSet<T> interfaces, String formula, DataClass valueClass, ImList<? extends CalcPropertyInterfaceImplement<T>> params) {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
@@ -412,7 +429,7 @@ public class DerivedProperty {
     private static <P extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,JoinProperty.Interface> createCompareProp(CalcPropertyMapImplement<P, T> implement, ImRevMap<T, JoinProperty.Interface> map1, ImRevMap<T, JoinProperty.Interface> map2, ImRevMap<T, JoinProperty.Interface> mapCommon, Compare compare) {
         Result<ImRevMap<P,JoinProperty.Interface>> join1 = new Result<>(); Result<ImRevMap<P,JoinProperty.Interface>> join2 = new Result<>(); Result<ImRevMap<P, JoinProperty.Interface>> joinCommon = new Result<>();
         ImOrderSet<JoinProperty.Interface> listInterfaces = createSelfProp(implement.property.interfaces, join1, join2, joinCommon, implement.mapping.filterValuesRev(mapCommon.keys()).keys());
-        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.NONAME, listInterfaces,
+        JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<>(LocalizedString.create("sys"), listInterfaces,
                 compareJoin(compare, new CalcPropertyMapImplement<>(implement.property, join1.result.addRevExcl(joinCommon.result)), new CalcPropertyMapImplement<>(implement.property, join2.result.addRevExcl(joinCommon.result))));
         
         return new CalcPropertyMapImplement<>(joinProperty,
@@ -464,12 +481,12 @@ public class DerivedProperty {
                         }), andPrevious.objectInterface, property.map(map2.result.addRevExcl(mapCommon.result)));
         mapMain.set(map1.result.addRevExcl(mapCommon.result));
 
-        return new JoinProperty<>(LocalizedString.NONAME, listInterfaces,
+        return new JoinProperty<>(LocalizedString.create("sys"), listInterfaces,
                 new CalcPropertyImplement<>(andPrevious, mapImplement));
     }
 
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(CalcProperty<T> property, ImSet<CalcPropertyInterfaceImplement<T>> partitions, ImOrderMap<CalcPropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createOProp(LocalizedString.NONAME, PartitionType.SUM, property, partitions, orders, includeLast);
+        return createOProp(LocalizedString.create("sys"), PartitionType.SUM, property, partitions, orders, includeLast);
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOProp(LocalizedString caption, PartitionType partitionType, CalcProperty<T> property, ImSet<CalcPropertyInterfaceImplement<T>> partitions, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         if(true) {
@@ -503,11 +520,15 @@ public class DerivedProperty {
     }
 
     public static <T> CalcPropertyRevImplement<?,T> createCProp(StaticClass valueClass, Object value, ImMap<T, ValueClass> params) {
-        return createCProp(LocalizedString.NONAME, valueClass, value, params);
+        return createCProp(LocalizedString.create("sys"), valueClass, value, params);
     }
 
     public static <T> CalcPropertyRevImplement<?,T> createCProp(LocalizedString caption, StaticClass valueClass, Object value, ImMap<T, ValueClass> params) {
-        return createCProp(caption, valueClass instanceof LogicalClass && params.size() > 0 ? null : new ValueProperty(LocalizedString.NONAME, value, valueClass), params);
+        return createCProp(caption, valueClass instanceof LogicalClass && params.size() > 0 ? null : new ValueProperty(LocalizedString.create("sys"), value, valueClass), params);
+    }
+
+    public static <T> CalcPropertyRevImplement<?,T> createCProp(LocalizedString caption, DataClass valueClass, ImMap<T, ValueClass> params) {
+        return createCProp(caption, new InfiniteProperty(LocalizedString.create("sys"), valueClass), params);
     }
 
     public static <T,V extends PropertyInterface> CalcPropertyRevImplement<?,T> createCProp(LocalizedString caption, CalcProperty<V> valueProperty, ImMap<T, ValueClass> params) {
@@ -534,13 +555,13 @@ public class DerivedProperty {
     
     // строится partition с пустым order'ом
     private static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createPProp(ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<CalcPropertyInterfaceImplement<T>> partitions, GroupType type) {
-        GroupProperty<T> partitionGroup = type.createProperty(LocalizedString.NONAME, innerInterfaces.getSet(), property, partitions);
+        GroupProperty<T> partitionGroup = type.createProperty(LocalizedString.create("sys"), innerInterfaces.getSet(), property, partitions);
         partitionGroup.setExplicitInnerClasses(innerInterfaces, explicitInnerInterfaces);
         return createJoin(new CalcPropertyImplement<>(partitionGroup, partitionGroup.getMapInterfaces()));
     }
 
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, CalcProperty<T> restriction, boolean over) {
-        return createUGProp(LocalizedString.NONAME, restriction.interfaces, group, orders, Settings.get().isDefaultOrdersNotNull(), restriction.getImplement(), over);
+        return createUGProp(LocalizedString.create("sys"), restriction.interfaces, group, orders, Settings.get().isDefaultOrdersNotNull(), restriction.getImplement(), over);
     }
     public static <L extends PropertyInterface, T extends PropertyInterface> CalcPropertyMapImplement<?,T> createUGProp(LocalizedString caption, ImSet<T> innerInterfaces, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<T>> group, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, CalcPropertyInterfaceImplement<T> restriction, boolean over) {
         ImSet<CalcPropertyInterfaceImplement<T>> partitions = group.mapping.values().toSet();
@@ -607,7 +628,7 @@ public class DerivedProperty {
         // общая сумма по пропорции в partition'е
         CalcPropertyMapImplement<?, T> propSum = createPProp(innerInterfaces, explicitInnerInterfaces, proportion, partitions, GroupType.SUM);
 
-        LocalizedString distrCaption = !roundfirst ? caption : LocalizedString.NONAME;
+        LocalizedString distrCaption = !roundfirst ? caption : LocalizedString.create("sys");
         // округляем
 
         int numericLength = 15 + roundlen;
@@ -702,14 +723,14 @@ public class DerivedProperty {
     }
 
     public static SessionDataProperty createInputDataProp(ValueClass valueClass) {
-        return new SessionDataProperty(LocalizedString.NONAME, valueClass);
+        return new SessionDataProperty(LocalizedString.create("sys"), valueClass);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.NONAME, interfaceClasses, valueClass, true);
+        SessionDataProperty dataProperty = new SessionDataProperty(LocalizedString.create("sys"), interfaceClasses, valueClass, true);
         mLocals.add(dataProperty);
         return dataProperty.getImplement(listInterfaces);
     }
@@ -725,13 +746,13 @@ public class DerivedProperty {
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createIfAction(ImSet<L> innerInterfaces, CalcPropertyMapImplement<?, L> where, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ActionProperty actionProperty = CaseActionProperty.createIf(LocalizedString.NONAME, false, listInterfaces, where, action, elseAction);
+        ActionProperty actionProperty = CaseActionProperty.createIf(LocalizedString.create("sys"), false, listInterfaces, where, action, elseAction);
         return actionProperty.getImplement(listInterfaces);
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createCaseAction(ImSet<L> innerInterfaces, boolean isExclusive, ImList<ActionCase<L>> cases) {
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ActionProperty actionProperty = new CaseActionProperty(LocalizedString.NONAME, isExclusive, listInterfaces, cases);
+        ActionProperty actionProperty = new CaseActionProperty(LocalizedString.create("sys"), isExclusive, listInterfaces, cases);
         return actionProperty.getImplement(listInterfaces);
     }
 
@@ -744,7 +765,7 @@ public class DerivedProperty {
             return actions.single();
 
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ListActionProperty actionProperty = new ListActionProperty(LocalizedString.NONAME, listInterfaces, actions, localsInScope);
+        ListActionProperty actionProperty = new ListActionProperty(LocalizedString.create("sys"), listInterfaces, actions, localsInScope);
         return actionProperty.getImplement(listInterfaces);
     }
 
@@ -783,7 +804,7 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createForAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<?, L> forProp, ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders, boolean ordersNotNull, ActionPropertyMapImplement<?, L> action, ActionPropertyMapImplement<?, L> elseAction, L addObject, CustomClass customClass, boolean autoSet, boolean recursive, ImSet<L> noInline, boolean forceInline) {
-        ForActionProperty<L> actionProperty = new ForActionProperty<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
+        ForActionProperty<L> actionProperty = new ForActionProperty<>(LocalizedString.create("sys"), innerInterfaces, mapInterfaces, forProp, orders, ordersNotNull, action, elseAction, addObject, customClass, autoSet, recursive, noInline, forceInline);
         return actionProperty.getMapImplement();
     }
 
@@ -797,7 +818,7 @@ public class DerivedProperty {
         return createSetAction(innerInterfaces, context.toOrderSet(), whereProp, writeToProp, writeFrom);
     }
     public static <L extends PropertyInterface, P extends PropertyInterface, W extends PropertyInterface> ActionPropertyMapImplement<?, L> createSetAction(ImSet<L> innerInterfaces, ImOrderSet<L> mapInterfaces, CalcPropertyMapImplement<W, L> whereProp, CalcPropertyMapImplement<P, L> writeToProp, CalcPropertyInterfaceImplement<L> writeFrom) {
-        SetActionProperty<P, W, L> actionProperty = new SetActionProperty<>(LocalizedString.NONAME, innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
+        SetActionProperty<P, W, L> actionProperty = new SetActionProperty<>(LocalizedString.create("sys"), innerInterfaces, mapInterfaces, whereProp, writeToProp, writeFrom);
         return actionProperty.getMapImplement();
     }
 

@@ -1,7 +1,7 @@
 package lsfusion.server.form.instance;
 
+import com.google.common.base.*;
 import com.google.common.base.Objects;
-import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -18,10 +18,7 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.form.ColorPreferences;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
@@ -109,11 +106,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final T BL;
 
-    public final FormEntity entity;
+    public final FormEntity<T> entity;
 
     public final InstanceFactory instanceFactory;
 
     public final SecurityPolicy securityPolicy;
+
+    private final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects;
 
     private final ImOrderSet<GroupObjectInstance> groups;
 
@@ -151,7 +150,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
@@ -162,7 +161,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
     }
 
-    public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
@@ -311,27 +310,25 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
         
-        boolean adjNoCancel, adjManageSession;
-        if(interactive) {
-            int prevOwners = updateSessionOwner(true, stack);
-
-            if(manageSession == ManageSessionType.AUTO) // если нет других собственников и не readonly 
-                adjManageSession = heuristicManageSession(entity, showReadOnly, prevOwners); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
-            else
-                adjManageSession = manageSession.isManageSession();
-
+        if(interactive) {            
+            boolean heurNoCancel = heuristicNoCancel(mapObjects);
             if(noCancel == null)
-                adjNoCancel = heuristicNoCancel(mapObjects);
-            else
-                adjNoCancel = noCancel;
-        } else { // deprecated ветка, в будущем должна уйти
-            adjManageSession = false;
-            adjNoCancel = false; // temp
-        }
-
-        this.manageSession = adjManageSession;
-        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, adjNoCancel, adjManageSession, showDrop);
-
+                noCancel = heurNoCancel;
+            else {
+//                if (noCancel != heurNoCancel)
+//                    regAutoDiff("CANCEL", noCancel, heurNoCancel);
+                
+                if(Settings.get().isEnableHeurNoCancel())
+                    noCancel = heurNoCancel;
+            }
+        } else 
+            noCancel = false; // temp
+        
+        boolean adjManageSession = manageSession != ManageSessionType.AUTO && manageSession.isManageSession();
+        boolean heurReadOnly = showReadOnly || entity.hasNoChange(); // по идее при showreadonly редактирование все равно могут включить политикой безопасности, но при определении manageSession не будем на это обращать внимание
+        adjManageSession = adjManageSession && !heurReadOnly; // вставить потом if manageSession == ManageSessionType.AUTO (хотя возможно и не надо)
+        environmentIncrement = createEnvironmentIncrement(isSync, isFloat, noCancel, adjManageSession, showDrop);
+        
         MExclMap<SessionDataProperty, Pair<GroupObjectInstance, GroupObjectProp>> mEnvironmentIncrementSources = MapFact.mExclMap();
         for (GroupObjectInstance groupObject : groupObjects) {
             ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props = groupObject.props;
@@ -339,9 +336,39 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 mEnvironmentIncrementSources.exclAdd((SessionDataProperty) props.getValue(i).property, new Pair<>(groupObject, props.getKey(i)));
         }
         environmentIncrementSources = mEnvironmentIncrementSources.immutable();
-        
-        if (!interactive) // deprecated ветка, в будущем должна уйти
+
+        if (!interactive) {
             endApply(stack);
+            this.mapObjects = mapObjects;
+        } else {
+            int prevOwners = updateSessionOwner(true, stack);
+     
+            boolean heurManageSession = heuristicManageSession(prevOwners) && !heurReadOnly;
+            if(manageSession == ManageSessionType.AUTO) {
+                if(heurManageSession) { // если нет owner'ов
+                    assert !heurReadOnly;
+                    adjManageSession = true; 
+                    environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(true));
+                }
+            } else {
+                if(!manageSession.isX()) {
+                    if (adjManageSession != heurManageSession) {
+                        regAutoDiff("MANAGESESSION [" + heurReadOnly + "," + session.isStoredDataChanged() + "," + session.getStoredChanges() + "]", adjManageSession, heurManageSession);
+                    }
+                    
+                    if(Settings.get().isEnableHeurManageSession()) {
+                        if(adjManageSession != heurManageSession) {
+                            environmentIncrement.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(heurManageSession));
+                        }
+                         adjManageSession = heurManageSession;
+                    }
+                }
+            }
+
+            this.mapObjects = null;
+        }
+
+        this.manageSession = adjManageSession;
 
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
@@ -382,9 +409,23 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return Objects.hashCode(type, entity, stackString, explicit, heur);
         }
     }
+    public static ConcurrentHashMap<DiffForm, Boolean> diffForms = MapFact.getGlobalConcurrentHashMap();
+    private void regAutoDiff(String type, boolean explicit, boolean heur) {
+        Stack<ExecutionStackItem> stack = ExecutionStackAspect.getStack();
+        String stackString = "";
+        if(stack != null) {
+            int logSize = Settings.get().getLogHeurStackSize();
+            for(int i=0,size=stack.size();i<size;i++) {
+                if(i >= logSize)
+                    break;
+                stackString = (stackString.isEmpty() ? "" : stackString + '\n') + stack.get(i).toString();
+            }
+        }
+        diffForms.put(new DiffForm(type, entity, stackString, explicit, heur), true);
+    }
 
-    private boolean heuristicManageSession(FormEntity entity, boolean showReadOnly, int prevOwners) {
-        return prevOwners <= 0 && !showReadOnly && !entity.hasNoChange();
+    private boolean heuristicManageSession(int prevOwners) {
+        return prevOwners <= 0;
     }
 
     private boolean heuristicNoCancel(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
@@ -436,7 +477,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<>();
         try {
 
-            ObjectValue formValue = BL.reflectionLM.formByCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            ObjectValue formValue = BL.reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
             DataObject formObject = (DataObject) formValue;
@@ -615,7 +656,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             DataObject userObject = (!forAllUsers && !completeOverride) ? (DataObject) BL.authenticationLM.currentUser.readClasses(dataSession) : null;
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
-                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(
                         dataSession,
                         new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
                         new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
@@ -643,7 +684,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
                 }
             }
-            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
             if (completeOverride) {
                 for (DataObject user : userObjectList) {
                     changeUserGOPreferences(preferences, dataSession, groupObjectObject, user);
@@ -697,6 +738,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             userObjectList.add(values.get("customUser"));
         }
         return userObjectList;
+    }
+
+    public boolean areObjectsFound() {
+        assert !interactive;
+        for (int i = 0, size = mapObjects.size(); i < size; i++)
+            if (!instanceFactory.getInstance(mapObjects.getKey(i)).getObjectValue().equals(mapObjects.getValue(i)))
+                return false;
+        return true;
     }
 
     protected FunctionSet<CalcProperty> getNoHints() {
@@ -1238,7 +1287,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         
         Map<String, FormGrouping> groupings = new LinkedHashMap<>();
         
-        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
         
         if (groupObjectObjectValue instanceof DataObject) {
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
@@ -1282,7 +1331,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
         
         try (DataSession dataSession = session.createSession()) {
-            ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDFormNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
             if (!(groupObjectObjectValue instanceof DataObject)) {
                 throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");
             }
@@ -1307,7 +1356,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
 
             for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
-                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawByFormNameAndPropertyDrawSid.readClasses(dataSession,
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(dataSession,
                         new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
                         new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
@@ -1396,11 +1445,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {
-        ExecutionEnvironment env = getSession();
         LCP<?> sessionOwners = BL.LM.sessionOwners;
-        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(env), 0);
+        int prevOwners = BaseUtils.nvl((Integer) sessionOwners.read(this), 0);
         int newOwners = prevOwners + (set ? 1 : -1);
-        sessionOwners.change(newOwners == 0 ? null : newOwners, env);
+        sessionOwners.change(newOwners == 0 ? null : newOwners, this);
         return prevOwners;
     }
 
@@ -1481,20 +1529,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             object.groupTo.addSeek(object, value, last);
         }
-    }
-    
-    private ImList<ComponentView> userActivateTabs = ListFact.EMPTY(); 
-    // программный activate tab
-    public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
-        setTabVisible(view.getContainer(), view);
-        
-        userActivateTabs = userActivateTabs.addList(view);
-    }
-
-    private ImList<PropertyDrawInstance> userActivateProps = ListFact.EMPTY(); 
-    // программный activate property
-    public void activateProperty(PropertyDrawEntity view) throws SQLException, SQLHandledException {
-        userActivateProps = userActivateProps.addList(instanceFactory.getInstance(view));
     }
 
     public void changeObject(ObjectInstance object, ObjectValue objectValue) throws SQLException, SQLHandledException {
@@ -1731,6 +1765,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @AssertSynchronized
     public FormChanges endApply(ExecutionStack stack) throws SQLException, SQLHandledException {
 
+        assert interactive;
         checkNavigatorDeactivated();
 
         final MFormChanges result = new MFormChanges();
@@ -1761,13 +1796,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         updateData(mChangedProps, stack); // повторная проверка для VIEW свойств
 
         fillChangedDrawProps(result, mChangedProps.result);
-        
-        result.activateTabs.addAll(userActivateTabs);
-        result.activateProps.addAll(userActivateProps);
 
         // сбрасываем все пометки
-        userActivateTabs = ListFact.EMPTY();
-        userActivateProps = ListFact.EMPTY();
         for (GroupObjectInstance group : getGroups()) {
             for (ObjectInstance object : group.objects)
                 object.updated = 0;
@@ -2121,7 +2151,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new FormData(mResult.immutableOrder());
     }
 
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getEditFixedFilters(ClassFormEntity editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
         return getContextFilters(editForm.object, implement, selectionGroupObject, pullProps);
     }
 
@@ -2154,7 +2184,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return mFixedFilters.immutable();
     }
 
-    public ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity<T> editForm, GroupObjectInstance selectionGroupObject) {
         MSet<FilterEntity> mFixedFilters = SetFact.mSet();
         ObjectEntity object = editForm.object;
         for (FilterEntity filterEntity : entity.getFixedFilters()) {
@@ -2180,7 +2210,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new DialogRequestAdapter() {
             @Override
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity classForm = objectClass.getDialogForm(BL.LM);
+                ClassFormEntity<T> classForm = objectClass.getDialogForm(BL.LM);
                 dialogObject = classForm.object;
                 return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, null, stack);
             }
@@ -2196,7 +2226,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     return null;
                 
                 CustomClass objectClass = propertyValues.getDialogClass(session);
-                ClassFormEntity classForm = objectClass.getEditForm(BL.LM, getSession(), currentObject);
+                ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM, getSession(), currentObject);
                 if(classForm == null)
                     return null;                        
 
@@ -2217,7 +2247,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
+                ClassFormEntity<T> formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
                 Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
                 ImSet<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
 
@@ -2238,7 +2268,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity formEntity = dialogClass.getDialogForm(BL.LM);
+                ClassFormEntity<T> formEntity = dialogClass.getDialogForm(BL.LM);
                 ImSet<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
 
                 dialogObject = formEntity.object;
@@ -2251,7 +2281,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
-    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue,
+    private FormInstance createDialogInstance(FormEntity<T> entity, ObjectEntity dialogEntity, ObjectValue dialogValue,
                                               ImSet<FilterEntity> additionalFilters, PropertyDrawEntity initFilterPropertyDraw,
                                               ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,

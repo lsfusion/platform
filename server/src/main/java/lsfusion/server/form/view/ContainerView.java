@@ -17,8 +17,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import static lsfusion.interop.form.layout.ContainerType.*;
-
 public class ContainerView extends ComponentView implements AbstractContainer<ComponentView, LocalizedString> {
 
     public NFOrderSet<ComponentView> children = NFFact.orderSet();
@@ -32,6 +30,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     public int columns = 4;
     
+    public int columnLabelsWidth = 0;
+
     public CalcPropertyObjectEntity<?> showIf;
 
     public ContainerView() {
@@ -58,43 +58,13 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public boolean isTabbedPane() {
         return getType() == ContainerType.TABBED_PANE;
     }
-
-    public boolean isColumns() {
-        return type == COLUMNS;
-    }
-    
     public boolean isScroll() {
         return getType() == ContainerType.SCROLL;
     }
-
-    public boolean isSplitVertical() {
-        return type == VERTICAL_SPLIT_PANE;
-    }
-
-    public boolean isSplitHorizontal() {
-        return type == HORIZONTAL_SPLIT_PANE;
-    }
-
     public boolean isSplit() {
-        return isSplitHorizontal() || isSplitVertical();
+        ContainerType type = getType();
+        return type == ContainerType.HORIZONTAL_SPLIT_PANE || type == ContainerType.VERTICAL_SPLIT_PANE;
     }
-
-    public boolean isLinearVertical() {
-        return type == CONTAINERV;
-    }
-
-    public boolean isLinearHorizontal() {
-        return type == CONTAINERH;
-    }
-
-    public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical();
-    }
-    
-    public boolean isHorizontal() {
-        return isLinearHorizontal() || isSplitHorizontal();
-    }
-    
     public ContainerType getType() {
         return type;
     }
@@ -220,6 +190,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
+        outStream.writeInt(columnLabelsWidth);
     }
 
     @Override
@@ -238,6 +209,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
+        columnLabelsWidth = inStream.readInt();
     }
 
     @Override
@@ -250,6 +222,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     @Override
     public String toString() {
-        return ThreadLocalContext.localize(caption) + " " + super.toString();
+        return ThreadLocalContext.localize(caption);
     }
 }

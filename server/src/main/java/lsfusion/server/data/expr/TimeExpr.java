@@ -28,7 +28,7 @@ public class TimeExpr extends StaticExpr<DataClass> {
         return 6543 + time.hashCode();
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         return time.getSource(compile);
     }
 }

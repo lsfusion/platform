@@ -96,8 +96,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
                 throw new RuntimeException("Невозможно прочитать данные формы: нет прав.");
             }
 
-            String formCanonicalName = blProvider.getLogics().getFormCanonicalName(canonicalName);
-            RemoteFormInterface form = navigator.createForm(formCanonicalName, initialObjects, false, false);
+            RemoteFormInterface form = navigator.createForm(canonicalName, initialObjects, false, false);
             reportData = form.getReportData(-1, -1, null, false, null);
 
         } catch (RemoteException e) {

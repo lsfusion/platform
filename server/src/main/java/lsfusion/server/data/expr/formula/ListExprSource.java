@@ -5,20 +5,19 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 
 public abstract class ListExprSource extends ContextListExprType implements ExprSource {
 
-    private final boolean needValue;
-    public ListExprSource(ImList<? extends Expr> exprs, boolean needValue) {
+    public ListExprSource(ImList<? extends Expr> exprs) {
         super(exprs);
-        this.needValue = needValue;
     }
 
     public abstract CompileSource getCompileSource();
 
     public String getSource(int i) {
-        return exprs.get(i).getSource(getCompileSource(), needValue);
+        return exprs.get(i).getSource(getCompileSource());
     }
 
     public SQLSyntax getSyntax() {

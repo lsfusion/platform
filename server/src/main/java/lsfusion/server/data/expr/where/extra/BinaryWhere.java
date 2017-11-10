@@ -116,9 +116,9 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         assert !getCompare().equals(Compare.EQUALS); // перегружена реализация по идее
         Result<Boolean> isOrderTop = new Result<>();
         if(needIndexedJoin(operator2, orderTop, operator1, isOrderTop)) // для Like'ов тоже надо так как там может быть git индекс
-            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, isOrderTop.result);
+            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, false, isOrderTop.result);
         if(needIndexedJoin(operator1, orderTop, operator2, isOrderTop))
-            return new ExprIndexedJoin(operator1, getCompare(), operator2, isOrderTop.result);
+            return new ExprIndexedJoin(operator1, getCompare(), operator2, false, isOrderTop.result);
         return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {

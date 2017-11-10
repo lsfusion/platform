@@ -23,8 +23,8 @@ public class GComponent implements Serializable {
     
     public boolean autoSize;
 
-    protected double flex = 0;
-    protected GFlexAlignment alignment;
+    public double flex = 0;
+    public GFlexAlignment alignment;
 
     public int marginTop;
     public int marginBottom;
@@ -46,22 +46,6 @@ public class GComponent implements Serializable {
                ", defaultComponent=" + defaultComponent +
                '}';
     }
-    
-    public double getFlex() {
-        return flex;
-    }
-
-    public void setFlex(double flex) {
-        this.flex = flex;
-    }
-
-    public GFlexAlignment getAlignment() {
-        return alignment;
-    }
-
-    public void setAlignment(GFlexAlignment alignment) {
-        this.alignment = alignment;
-    }
 
     public boolean isVerticallyStretched() {
         if (container != null) {
@@ -72,7 +56,7 @@ public class GComponent implements Serializable {
             }
 
             assert container.isLinear();
-            return container.isLinearVertical() && getFlex() > 0 || container.isLinearHorizontal() && getAlignment() == GFlexAlignment.STRETCH;
+            return container.isLinearVertical() && flex > 0 || container.isLinearHorizontal() && alignment == GFlexAlignment.STRETCH;
 
         }
         return false;
@@ -87,7 +71,7 @@ public class GComponent implements Serializable {
             }
 
             assert container.isLinear();
-            return container.isLinearHorizontal() && getFlex() > 0 || container.isLinearVertical() && getAlignment() == GFlexAlignment.STRETCH;
+            return container.isLinearHorizontal() && flex > 0 || container.isLinearVertical() && alignment == GFlexAlignment.STRETCH;
         }
         return false;
     }

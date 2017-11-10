@@ -14,7 +14,6 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.data.type.AbstractParseInterface;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -98,12 +97,44 @@ public class NullValue extends ObjectValue<NullValue> {
         return ClassWhere.FALSE();
     }
 
+    private static class Parse implements ParseInterface {
+        
+        private final Type type;
+
+        private Parse(Type type) {
+            this.type = type;
+        }
+
+        public boolean isSafeString() {
+            return true;
+        }
+
+        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+            return SQLSyntax.NULL;
+        }
+
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+            type.writeNullParam(statement, paramNum, syntax);
+        }
+
+        public boolean isSafeType() {
+            return false;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public SessionTable getSessionTable() {
+            return null;
+        }
+    }
     public ParseInterface getParse(Field field, SQLSyntax syntax) {
-        return AbstractParseInterface.NULL(field.type);
+        return new Parse(field.type);
     }
 
     public ParseInterface getParse(Type type) {
-        return AbstractParseInterface.NULL(type);
+        return new Parse(type);
     }
 
     @Override

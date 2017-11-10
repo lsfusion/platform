@@ -205,9 +205,4 @@ public abstract class FileClass extends DataClass<byte[]> {
     public Map<String, byte[]> getNamedFiles(Object value) {
         return getNamedFiles((byte[]) value);
     }
-
-    @Override
-    public boolean isFlex() {
-        return false;
-    }
 }

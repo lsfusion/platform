@@ -30,7 +30,10 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.session.*;
+import lsfusion.server.session.DataChanges;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.StructChanges;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -335,8 +338,6 @@ public class MapCacheAspect {
             return calcType;
         }
 
-        private boolean cachedPrereadHintEnabled; // transient
-
         QueryInterfaceImplement(CalcProperty<?> property, CalcType calcType, PropertyChanges changes, PropertyQueryType changed, ImMap<K, ? extends Expr> values) {
             usedChanges = property.getUsedChanges(changes);
             this.calcType = calcType;
@@ -383,21 +384,17 @@ public class MapCacheAspect {
         if(disableCaches)
             return (IQuery<K, String>) thisJoinPoint.proceed();
 
+        property.cached = true;
+
         QueryInterfaceImplement<K> implement = new QueryInterfaceImplement<>(property, calcType, propChanges, queryType, interfaceValues);
 
         ValuesContext query = null;
         ValuesContext cacheQuery = null;
-        QueryInterfaceImplement<K> cachedImplement = null;
         MAddCol<CacheResult<QueryInterfaceImplement<K>, ValuesContext>> hashCaches = getCachedCol(property, implement.getValueComponents().hash, MapCacheAspect.Type.QUERY);
         synchronized(hashCaches) {
             for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
-                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
-                            cachedImplement = cache.implement;
-                            break;
-                        }
-
                         ValuesContext<?> cacheResult = (ValuesContext<?>) cache.result;
                         cacheQuery = cacheResult.translateValues(mapValues.filter(cacheResult.getContextValues())); // так как могут не использоваться values в Query
                         break;
@@ -412,13 +409,9 @@ public class MapCacheAspect {
                 if(cacheQuery != null)
                     logCaches(((IQuery<K, String>)cacheQuery).getQuery(), query, thisJoinPoint, "QUERY", property);
 
-                if(cachedImplement == null) { // если кэша не было
-                    if(!(checkCaches && cacheQuery!=null)) {
-                        cacheNoBig(implement, hashCaches, query);
-                    }
-                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property); 
-                } else
-                    cachedImplement.cachedPrereadHintEnabled = true;
+                if(!(checkCaches && cacheQuery!=null)) {
+                    cacheNoBig(implement, hashCaches, query);
+                }
 
                 logger.debug("getExpr - not cached "+property);
                 incrementMissed(CacheType.EXPR);
@@ -452,8 +445,6 @@ public class MapCacheAspect {
         public CalcType getCalcType() {
             return calcType;
         }
-        
-        private boolean cachedPrereadHintEnabled; // transient
 
         public JoinExprInterfaceImplement(CalcProperty<P> property, ImMap<P, Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, boolean where) {
             usedChanges = property.getUsedChanges(propChanges);
@@ -516,15 +507,6 @@ public class MapCacheAspect {
     }
 
     public static boolean disableCaches = false;
-    
-    // должно быть consistent с SessionModifier.allowPrereadValues
-    // нужен чтобы не подцелялись кэши, когда хинты были отключены (так как тогда preread тогда срабатывать не будут)
-    private static boolean prereadHintEnabled(CalcProperty property) {
-        if(!property.isComplex()) // если не complex, то preread'ов не может быть
-            return true;
-        SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
-        return modifier != null && modifier.prereadProps.isEmpty(); // если есть SessionModifier и это не preread разрешаем использовать кэш (предполагается что остальные параметры allowPrereadValues уже включены в ключи кэша) 
-    }
 
     public <K extends PropertyInterface> Expr getJoinExpr(CalcProperty<K> property, ImMap<K, Expr> joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
@@ -534,20 +516,16 @@ public class MapCacheAspect {
         if(disableCaches || property instanceof FormulaProperty)
             return (Expr) thisJoinPoint.proceed();
 
+        property.cached = true;
+
         JoinExprInterfaceImplement<K> implement = new JoinExprInterfaceImplement<>(property, joinExprs, calcType, propChanges, changedWheres != null);
 
-        JoinExprInterfaceImplement<K> cachedImplement = null;
         MAddCol<CacheResult<JoinExprInterfaceImplement, ExprResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.JOINEXPR);
         synchronized(hashCaches) {
             Expr cacheResult = null;
             for(CacheResult<JoinExprInterfaceImplement, ExprResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
-                        cachedImplement = cache.implement;
-                        break;
-                    }
-                        
                     logger.debug("getExpr - cached "+property);
                     incrementHit(CacheType.JOIN_EXPR);
                     if(changedWheres!=null) changedWheres.add(cache.result.where.translateOuter(translator));
@@ -564,11 +542,7 @@ public class MapCacheAspect {
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, implement.usedChanges, cacheWheres});
 
             logger.debug("getExpr - not cached "+property);
-            if(cachedImplement == null) { // если кэша не было
-                cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
-                implement.cachedPrereadHintEnabled = prereadHintEnabled(property);
-            } else
-                cachedImplement.cachedPrereadHintEnabled = true;
+            cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
             if(checkCaches && cacheResult != null)
                 logCaches(cacheResult, expr, thisJoinPoint, "JOINEXPR", property);
 

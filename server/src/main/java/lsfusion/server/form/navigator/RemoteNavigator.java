@@ -81,7 +81,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
-    Long userRole;
 
     private DataObject user;
 
@@ -135,7 +134,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try(DataSession session = dbManager.createSession()) {
             this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
         }
-        this.userRole = getRole();
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
         this.currentForm = NullValue.instance;
 
@@ -172,7 +170,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             setUser(user, stack);
             Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
-            this.userRole = getRole();
             this.transactionTimeout = timeout.result;
             updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
             return true;
@@ -342,11 +339,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         public ObjectValue getCurrentUser() {
             RemoteNavigator remoteNavigator = weakThis.get();
             return remoteNavigator == null ? NullValue.instance : remoteNavigator.user;
-        }
-
-        public Long getCurrentUserRole() {
-            RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? null : remoteNavigator.userRole;
         }
     }
 
@@ -583,15 +575,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                         continue;
                     }
 
-                    Long formId = (Long) businessLogics.reflectionLM.formByCanonicalName.read(
+                    Long formId = (Long) businessLogics.reflectionLM.navigatorElementCanonicalName.read(
                             session,
-                            new DataObject(canonicalName, businessLogics.reflectionLM.formCanonicalNameClass));
+                            new DataObject(canonicalName, businessLogics.reflectionLM.navigatorElementCanonicalNameClass));
 
                     if (formId == null) {
                         continue;
                     }
 
-                    DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.form);
+                    DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
 
                     int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
                     businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
@@ -688,21 +680,21 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return form;
     }
 
-    private FormEntity getFormEntity(String formSID) {
-        FormEntity formEntity = businessLogics.getFormEntityBySID(formSID);
+    private FormEntity<T> getFormEntity(String formSID) {
+        FormEntity<T> formEntity = (FormEntity<T>) businessLogics.getFormEntityBySID(formSID);
 
         if (formEntity == null) {
             throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.form.with.id.not.found}") + " : " + formSID);
         }
-//      todo [dale]: Должна ли быть FormSecurityPolicy?
-//        if (!securityPolicy.form.checkPermission(formEntity)) {
-//            return null;
-//        }
+
+        if (!securityPolicy.navigator.checkPermission(formEntity)) {
+            return null;
+        }
 
         return formEntity;
     }
 
-    private RemoteFormInterface createForm(FormEntity formEntity, boolean isModal, boolean interactive) {
+    private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean interactive) {
         //todo: вернуть, когда/если починиться механизм восстановления сессии
 //        try {
 //            RemoteForm remoteForm = invalidatedForms.remove(formEntity);
@@ -741,14 +733,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public DataObject getUser() {
         return user;
-    }
-
-    public Long getRole() {
-        try {
-            return (Long) securityManager.getUserMainRole(user);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     public DataObject getComputer() {
@@ -799,7 +783,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
 
-        ImOrderMap<NavigatorElement, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
+        ImOrderMap<NavigatorElement<T>, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -890,10 +874,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private void runAction(DataSession session, String sid, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final ActionProperty action;
+    private void runAction(DataSession session, String actionSID, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
+        final ActionProperty property;
         if (isNavigatorAction) {
-            final NavigatorElement element = businessLogics.LM.root.getChildElement(sid);
+            final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(actionSID);
 
             if (!(element instanceof NavigatorAction)) {
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
@@ -903,11 +887,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            action = ((NavigatorAction) element).getAction();
+            property = ((NavigatorAction) element).getProperty();
         } else {
-            action = (ActionProperty) businessLogics.findProperty(sid).property;
+            property = (ActionProperty) businessLogics.findProperty(actionSID).property;
         }
-        action.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
+        property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
     }
 
     @Override
@@ -1064,8 +1048,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private ChangesSync changesSync = new ChangesSync();
 
     @Override
-    protected String notSafeToString() {
-        return "RN[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
+    public String toString() {
+        return "RemoteNavigator[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
     }
 
     @Override

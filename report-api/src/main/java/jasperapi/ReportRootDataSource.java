@@ -4,6 +4,12 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 
+/**
+ * User: DAle
+ * Date: 16.09.2010
+ * Time: 15:15:04
+ */
+
 public class ReportRootDataSource implements JRDataSource {
     private int index = 0;
     public boolean next() throws JRException {

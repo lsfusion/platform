@@ -48,6 +48,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
+    public void execute(ActivateTabClientAction action) {
+        super.execute(action);
+    }
+
+    @Override
     protected void beforeModalActionInSameEDT(boolean blockView) {
         getFormController().block(blockView);
     }
@@ -62,8 +67,16 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         getFormController().unblock(unblockView);
     }
 
+    public void execute(RunPrintReportClientAction action) {
+        getFormController().runPrintReport(action.isDebug);
+    }
+
+    public void execute(RunOpenInExcelClientAction action) {
+        getFormController().runOpenInExcel();
+    }
+
     public void execute(RunEditReportClientAction action) {
-        getFormController().runEditReport(false);
+        getFormController().runEditReport();
     }
 
     @Override
@@ -76,7 +89,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
                 ReportGenerator.exportAndOpen(action.generationData, action.printType, false);
             } else {
                 if (action.isDebug) {
-                    pageCount = Main.frame.runReport(action.reportPathList, action.autoReportPathList, action.isModal, action.generationData);
+                    pageCount = Main.frame.runReport(action.reportPath, action.isModal, action.generationData);
                 } else {
                     pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
                 }
@@ -97,6 +110,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         } catch (IOException e) {
             Throwables.propagate(e);
         }
+    }
+
+    @Override
+    public void execute(FocusClientAction action) {
+        getFormController().focusProperty(action.propertyId);
     }
 
     public void execute(EditNotPerformedClientAction action) {

@@ -7,9 +7,7 @@ import lsfusion.base.col.lru.LRUWVWSMap;
 import lsfusion.server.caches.hash.*;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapTranslate;
-import lsfusion.server.data.translator.MapTranslator;
 import lsfusion.server.data.translator.MapValuesTranslate;
-import lsfusion.server.data.translator.MapValuesTranslator;
 
 public abstract class AbstractInnerContext<I extends InnerContext<I>> extends AbstractKeysValuesContext<I> implements InnerContext<I> {
 
@@ -100,14 +98,6 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
             return mapTranslate.result;
         else
             return null;
-    }
-    
-    // с проверкой на twins для оптимизации
-    public MapTranslate mapInnerIdentity(I object, boolean values) {
-        if(this == object)
-            return new MapTranslator(getInnerKeys().toRevMap(), MapValuesTranslator.noTranslate(getInnerValues()));
-        
-        return mapInner(object, values);
     }
 
     public I mapInner(I object, boolean values, Result<MapTranslate> mapTranslate) {

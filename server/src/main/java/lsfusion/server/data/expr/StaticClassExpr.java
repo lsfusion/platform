@@ -31,7 +31,7 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
     }
 
     public static Where isClass(StaticClassExprInterface expr, AndClassSet set, boolean notConsistent) {
-        return expr.getStaticClass().inSet(set)?Where.TRUE:Where.FALSE; // тут конечно из-за отсутствия keyType могут быть чудеса вроде f(a) <- b (+) 5 WHERE g(a)
+        return expr.getStaticClass().inSet(set)?Where.TRUE:Where.FALSE;
     }
     public Where isClass(ValueClassSet set, boolean inconsistent) {
         return isClass(this, set, inconsistent);

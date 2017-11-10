@@ -1,7 +1,9 @@
 package lsfusion.client.logics;
 
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
+import lsfusion.interop.form.layout.FlexAlignment;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,6 +16,16 @@ public class ClientClassChooser extends ClientComponent {
     public boolean visible = true;
 
     public ClientClassChooser() {
+    }
+
+    public ClientClassChooser(int ID, ApplicationContext context) {
+        super(ID, context);
+    }
+
+    @Override
+    protected void initDefaultConstraints() {
+        flex = 0.2;
+        alignment = FlexAlignment.STRETCH;
     }
 
     @Override

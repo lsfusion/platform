@@ -2,6 +2,7 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
@@ -21,7 +22,7 @@ public class LinearExpr extends UnionExpr {
         assert (map.size()>0);
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         if(compile instanceof ToString)
             return map.toString();
         else

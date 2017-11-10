@@ -25,7 +25,7 @@ public class RandomExpr extends StaticExpr<DoubleClass> {
         return 3821;
     }
     
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         return compile.syntax.getRandom();
     }
 

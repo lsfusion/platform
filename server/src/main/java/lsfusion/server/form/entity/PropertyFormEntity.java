@@ -16,7 +16,7 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
-public class PropertyFormEntity extends FormEntity {
+public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
     public <P extends PropertyInterface, X extends PropertyInterface> PropertyFormEntity(BaseLogicsModule<? extends BusinessLogics<?>> LM, CalcProperty<P> property, CalcProperty<X> messageProperty, AbstractGroup recognizeGroup) {
         super(null, property.caption, LM.getVersion());
@@ -40,8 +40,6 @@ public class PropertyFormEntity extends FormEntity {
 
         // добавляем все свойства
         ImSet<ObjectEntity> objects = groupObject.getObjects();
-        for(ObjectEntity object : objects)
-            addPropertyDraw(LM.getObjValueProp(this, object), version, object);
         addPropertyDraw(recognizeGroup, prev, true, true, version, objects.toList().toArray(new ObjectEntity[objects.size()]));
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty

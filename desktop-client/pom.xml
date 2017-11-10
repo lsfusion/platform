@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.3.3-SNAPSHOT</version>
+        <version>1.3.2</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>desktop-client</artifactId>
@@ -23,6 +23,21 @@
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>report-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -74,6 +89,14 @@
         <dependency>
             <groupId>com.jhlabs</groupId>
             <artifactId>filters</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jgoodies</groupId>
+            <artifactId>looks</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jgoodies</groupId>
+            <artifactId>common</artifactId>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>

@@ -3,13 +3,15 @@ package lsfusion.server.logics;
 import lsfusion.base.ExtInt;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
-import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
-import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.server.classes.sets.ResolveUpClassSet;
+import lsfusion.server.classes.sets.*;
 
 import java.util.HashMap;
 import java.util.Map;
+
+/**
+ * Created by DAle on 02.05.14.
+ * 
+ */
 
 public final class ClassCanonicalNameUtils {
     public static final String ConcatenateClassNameLBracket = "(";

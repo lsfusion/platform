@@ -30,6 +30,8 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ObjectClassField;
 
+import java.util.HashSet;
+
 public class NullExpr extends Expr {
 
     private NullExpr() {
@@ -95,7 +97,7 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         return SQLSyntax.NULL;
     }
 

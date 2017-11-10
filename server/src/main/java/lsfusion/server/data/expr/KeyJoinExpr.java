@@ -107,9 +107,9 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     }
 
     @Override
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         assert compile instanceof ToString;
-        return expr.getSource(compile, needValue);
+        return expr.getSource(compile);
     }
 
     @Override

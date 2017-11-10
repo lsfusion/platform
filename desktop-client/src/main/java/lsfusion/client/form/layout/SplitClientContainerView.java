@@ -62,7 +62,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
-        assert child.getAlignment() == FlexAlignment.STRETCH && child.getFlex() > 0;// временные assert'ы чтобы проверить обратную совместимость
+        assert child.alignment == FlexAlignment.STRETCH && child.flex > 0;// временные assert'ы чтобы проверить обратную совместимость
         if (container.children.get(0) == child) {
             removeLeftComponent(child, view);
         } else if (container.children.get(1) == child) {
@@ -106,8 +106,8 @@ public class SplitClientContainerView extends AbstractClientContainerView {
         boolean rVisible = rightView != null && rightView.isVisible();
 
         if (lVisible && rVisible) {
-            double flex1 = children.get(0).getFlex();
-            double flex2 = children.get(1).getFlex();
+            double flex1 = children.get(0).flex;
+            double flex2 = children.get(1).flex;
             if (flex1 == 0 && flex2 == 0) {
                 flex1 = 1;
                 flex2 = 1;

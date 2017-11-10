@@ -2,9 +2,7 @@ package lsfusion.gwt.form.client.navigator;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
@@ -19,7 +17,7 @@ public class GPanelNavigatorView extends GNavigatorView {
 
     public GPanelNavigatorView(GPanelNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
-        panel = window.isVertical() ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
+        panel = window.orientation == 1 ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         setComponent(panel);
     }
 

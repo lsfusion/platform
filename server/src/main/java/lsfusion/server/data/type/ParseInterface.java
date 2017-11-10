@@ -10,8 +10,6 @@ import java.sql.SQLException;
 public interface ParseInterface {
 
     boolean isSafeString();
-    
-    boolean isAlwaysSafeString(); // should be consistent with ParseValue.isAlwaysSafeString, hack for recursions
 
     // есди isSafeString
     String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion);

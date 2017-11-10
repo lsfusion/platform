@@ -223,8 +223,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.hashOuter(hashContext) + type.hashCode();
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return compile.getSource(this, needValue);
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
     }
 
     public boolean calcTwins(TwinImmutableObject obj) {

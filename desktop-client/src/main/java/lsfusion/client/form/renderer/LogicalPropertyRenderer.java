@@ -4,26 +4,43 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class LogicalPropertyRenderer extends PropertyRenderer {
-    private JCheckBox checkBox;
+public class LogicalPropertyRenderer extends JCheckBox implements PropertyRenderer {
+    protected ClientPropertyDraw property;
     
     public LogicalPropertyRenderer(ClientPropertyDraw property) {
-        super(property);
-        getComponent().setHorizontalAlignment(JCheckBox.CENTER);
-        getComponent().setBorderPainted(true);
-        getComponent().setOpaque(true);
+        super();
+        this.property = property;
+        setHorizontalAlignment(JCheckBox.CENTER);
+        setBorderPainted(true);
+        setOpaque(true);
     }
 
-    public JCheckBox getComponent() {
-        if (checkBox == null) {
-            checkBox = new JCheckBox();
+    public JComponent getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        setSelected(value != null);
+
+        if (isSelected && property != null) {
+            if (hasFocus) {
+                setBorder(property.colorPreferences.getFocusedCellBorder());
+                setBackground(property.colorPreferences.getFocusedCellBackground());
+            }
+            else {
+                setBorder(property.colorPreferences.getSelectedRowBorder());
+                setBackground(property.colorPreferences.getSelectedRowBackground());
+            }
+        } else {
+            setBorder(BorderFactory.createEmptyBorder());
+            setBackground(Color.WHITE);
         }
-        return checkBox;
     }
 
-    public void setValue(Object value) {
-        super.setValue(value);
-        getComponent().setSelected(value != null);
+    @Override
+    public void paintAsSelected() {
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

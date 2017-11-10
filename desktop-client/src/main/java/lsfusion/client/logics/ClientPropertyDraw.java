@@ -2,6 +2,7 @@ package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
@@ -11,8 +12,8 @@ import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.Compare;
 import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 
 import javax.swing.*;
@@ -117,9 +118,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String creationPath;
     public String formPath;
     
+    public ColorPreferences colorPreferences;
+    
     public boolean notNull;
 
     public ClientPropertyDraw() {
+    }
+
+    public ClientPropertyDraw(int ID, ApplicationContext context) {
+        super(ID, context);
     }
 
     public KeyStroke getEditKey() {
@@ -242,22 +249,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return new Dimension(getMaximumValueWidth(comp), getMaximumValueHeight(comp));
     }
 
-    @Override
-    public double getFlex() {
-        if (flex == -2) {
-            return getBaseValueWidth(new JLabel());
-        }
-        return flex;
-    }
-
-    @Override
-    public FlexAlignment getAlignment() {
-        if (alignment == null) {
-            return FlexAlignment.STRETCH;
-        }
-        return alignment;
-    }
-
     public Format getFormat() {
         if (format == null) {
             return baseType.getDefaultFormat();
@@ -348,13 +339,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public String formatString(Object obj) throws ParseException {
-        if (obj != null) {
-            if (format != null) {
-                return format.format(obj);
-            }
-            return baseType.formatString(obj);
-        }
-        return "";
+      return baseType.formatString(obj);
     }
 
     public boolean shouldBeDrawn(ClientFormController form) {

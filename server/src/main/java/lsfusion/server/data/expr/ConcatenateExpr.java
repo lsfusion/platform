@@ -129,10 +129,10 @@ public class ConcatenateExpr extends VariableClassExpr {
         return result;
     }
 
-    public String getSource(final CompileSource compile, final boolean needValue) {
+    public String getSource(final CompileSource compile) {
         ImList<String> sources = exprs.mapListValues(new GetValue<String, BaseExpr>() {
             public String getMapValue(BaseExpr value) {
-                return value.getSource(compile, needValue);
+                return value.getSource(compile);
             }});
         return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax,compile.env);
     }

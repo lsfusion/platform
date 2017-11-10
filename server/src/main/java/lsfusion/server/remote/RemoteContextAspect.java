@@ -1,9 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.server.context.Context;
-import lsfusion.server.context.EventThreadInfo;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.context.ThreadInfo;
+import lsfusion.server.context.ThreadType;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -20,8 +19,7 @@ public class RemoteContextAspect {
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object ro) throws Throwable {
         ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) ro;
 
-        ThreadInfo threadInfo = EventThreadInfo.RMI(remoteObject);
-        Context prevContext = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // так как может быть explicit remote call
+        Context prevContext = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, ThreadType.RMI); // так как может быть explicit remote call
 
         try {
             remoteObject.addLinkedThread(Thread.currentThread());
@@ -31,7 +29,7 @@ public class RemoteContextAspect {
                 remoteObject.removeLinkedThread(Thread.currentThread());
             }
         } finally {
-            ThreadLocalContext.aspectAfterRmi(prevContext, false, threadInfo);
+            ThreadLocalContext.aspectAfterRmi(prevContext, false, ThreadType.RMI);
         }
     }
 }

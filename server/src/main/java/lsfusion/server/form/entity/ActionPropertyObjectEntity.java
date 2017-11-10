@@ -31,7 +31,7 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
         return property.getGroupChange().mapObjects(mapping);
     }
 
-    public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
+    public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity<?> form) {
         CustomClass simpleAdd = property.getSimpleAdd();
         if(simpleAdd!=null) {
             for(ObjectEntity object : form.getObjects())

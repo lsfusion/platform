@@ -1,6 +1,5 @@
 package lsfusion.server.remote;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
@@ -104,15 +103,14 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public void unreferenced() {
         if(!isEnabledUnreferenced())
             return;
-
-        ThreadInfo threadInfo = EventThreadInfo.UNREFERENCED(this);
-        ThreadLocalContext.aspectBeforeRmi(this, true, threadInfo);
+            
+        ThreadLocalContext.aspectBeforeRmi(this, true, ThreadType.UNREFERENCED);
         try {
             ServerLoggers.remoteLifeLog("REMOTE OBJECT UNREFERENCED " + this);
 
             deactivateAndCloseLater(isUnreferencedSyncedClient());
         } finally {
-            ThreadLocalContext.aspectAfterRmi(threadInfo);
+            ThreadLocalContext.aspectAfterRmi(ThreadType.UNREFERENCED);
         }
     }
 
@@ -164,8 +162,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         final int delay = Settings.get().getCloseFormDelay();
         BaseUtils.runLater(delay, new Runnable() { // тут надо бы на ContextAwareDaemonThreadFactory переделать
             public void run() {
-                ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);
-                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, threadInfo);
+                ThreadLocalContext.aspectBeforeRmi(ContextAwarePendingRemoteObject.this, true, ThreadType.TIMER);
                 try {
                     deactivate();
 
@@ -177,7 +174,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
                     explicitClose();
                 } finally {
-                    ThreadLocalContext.aspectAfterRmi(threadInfo);
+                    ThreadLocalContext.aspectAfterRmi(ThreadType.TIMER);
                 }
             }
         });
@@ -194,20 +191,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         onClose();
 
         closed = true;
-    }
-
-    public String toString() { // чтобы избегать ситуации когда включается log, toString падает по ошибке, а в месте log'а exception'ы не предполагаются (например dgc log, где поток checkLeases просто останавливается) 
-        try {
-            return notSafeToString();
-        } catch (Throwable t) {
-            return getDefaultToString(); 
-        }
-    }
-    private String getDefaultToString() {
-        return BaseUtils.defaultToString(this);
-    }
-    protected String notSafeToString() {
-        return getDefaultToString();
     }
 
     public boolean isClosed() {

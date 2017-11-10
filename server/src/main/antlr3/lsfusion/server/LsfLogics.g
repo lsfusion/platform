@@ -1471,7 +1471,7 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 			)
 			(opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast != null) isLast = $opt.isLast;})?
 		)?
-		('FULL' { isChecked = true; })?
+		('CHECKED' { isChecked = true; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
@@ -1497,7 +1497,7 @@ abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
 			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; if($opt.isLast!=null) isLast = $opt.isLast;})?)
 		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; isLast = true; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
-		('FULL' { isChecked = true; })?
+		('CHECKED' { isChecked = true; })?
 		'(' 
 			paramClassNames=classIdList
 		')'	
@@ -1580,7 +1580,7 @@ multiPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 }
 	:	'MULTI' 
 		exprList=nonEmptyPropertyExpressionList[context, dynamic] 
-		(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })? // нельзя наверх так как есть оператор OVERRIDE
+		(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
 	;
 
 recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -1658,7 +1658,7 @@ sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 		| 	'DROPPED' { type = IncrementType.DROP; }
 		| 	'SETCHANGED' { type = IncrementType.SETCHANGED; }
 		|	'DROPCHANGED' { type = IncrementType.DROPCHANGED; }
-		| 	'SETDROPPED' { type = IncrementType.DROPSET; }
+		| 	'DROPSET' { type = IncrementType.DROPSET; }
 		)
 		'('
 		expr=propertyExpression[context, dynamic] 
@@ -1777,8 +1777,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-		if($type.format == ImportSourceFormat.XLS)
-			$property = self.addScriptedImportExcelActionProperty($expr.property, $plist.ids, $plist.propUsages, sheet);
+		if($type.format == ImportSourceFormat.XLS || $type.format == ImportSourceFormat.XLSX)
+			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $context, sheet);
 		else if($type.format == ImportSourceFormat.CSV)
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
@@ -1898,6 +1898,7 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, LPWithParams root, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
+	|	'XLSX'	{ $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
@@ -1985,7 +1986,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	indexSetting [property]
 	|	aggPropSetting [property]
 	|	setNotNullSetting [ps]
-	|	aggrSetting [property]
+	|	aggrSetting [ps]
 	|	asonEditActionSetting [property]
 	|	eventIdSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
@@ -2021,12 +2022,7 @@ loggableSetting [PropertySettings ps]
 	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
 
-aggrSetting [LP property]
-@after {
-	if (inPropParseState()) {
-		self.setAggr(property);
-	}
-}
+aggrSetting [PropertySettings ps]
     :   
         'AGGR'
     ;
@@ -2454,7 +2450,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	Boolean syncType = null;
 	WindowFormType windowType = null;
 
-    ManageSessionType manageSession = ManageSessionType.AUTO;
+    ManageSessionType manageSession = ManageSessionType.AUTO; // temporary, should be AUTO
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
@@ -2486,7 +2482,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
-	ManageSessionType manageSession = ManageSessionType.AUTO;
+	ManageSessionType manageSession = ManageSessionType.AUTO; // temporary, should be AUTO
 	Boolean noCancel = FormEntity.DEFAULT_NOCANCEL; // temporary, should be NULL
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
@@ -2513,8 +2509,8 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 	;
 	
 manageSessionClause returns [ManageSessionType result]
-    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
-	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
+    :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSIONX; }
+	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSIONX; }
     ;
 
 formSessionScopeClause returns [FormSessionScope result]
@@ -2679,10 +2675,7 @@ customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature
 	}
 }
 	:	'CUSTOM'
-        (   
-            classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
-		|   code = codeLiteral
-        )
+		(classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? | code = codeLiteral)
 	    ('NULL' { allowNullValue = true; })?
 	;
 
@@ -2929,19 +2922,15 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams pr
 	DebugInfo.DebugPoint assignDebugPoint = null;
 
     PropertyUsage outProp = null;
-    LPWithParams changeProp = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
+		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.property, $dDB.elseProperty, context, newContext, assign, assignDebugPoint);
 	}
 }
 	:	'INPUT'
 	    in=mappedInput[newContext]
-        ( { assignDebugPoint = getCurrentDebugPoint(); } 
-            'CHANGE' { assign = true; }
-            ('=' consExpr=propertyExpression[context, false])? { changeProp = $consExpr.property; }
-        )?
+        ( { assignDebugPoint = getCurrentDebugPoint(); } 'CHANGE' { assign = true; } )?
 //		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
@@ -3316,22 +3305,11 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
 @init {
     $debug = getEventDebugPoint();
 }
-    :	
-        et=baseEvent { $event = $et.event; }
-        {
-            if (inPropParseState()) {
-                self.setPrevScope($et.event);
-            }
-        }
-        expr = propertyExpression[context, false]
-        {
-            if (inPropParseState()) {
-                self.dropPrevScope($et.event);
-            }
-        }
+    :	expr = propertyExpression[context, false] 
 		('RESOLVE' 
 			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
 			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
+			et=baseEvent { $event = $et.event; } 
 		)? { $prop = $expr.property; }
 ;
 
@@ -3667,7 +3645,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	('ADD' | 'MOVE') elem=navigatorElementSelectorCreator (caption=localizedStringLiteral)? opts=navigatorElementOptions
+	:	'ADD' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3680,24 +3658,13 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' (name=ID (caption=localizedStringLiteral)?)? b=navigatorElementDescription[$name.text, $caption.val] opts=navigatorElementOptions
+	:	'NEW' id=ID (caption=localizedStringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, true);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, getCurrentDebugPoint(), $parentElement, $opts.options, $au.propUsage);
 			}
 		}
-		navigatorElementStatementBody[$b.element]
-	;
-
-navigatorElementDescription[String name, LocalizedString caption] returns [NavigatorElement element]
-@after {
-	if (inPropParseState()) {
- 		$element = self.createScriptedNavigatorElement($name, $caption, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
- 	}	
-}
-	:	'FOLDER'? 
-	|	'FORM'? formName=compoundID 
-	|	'ACTION' pu=propertyUsage 
+		navigatorElementStatementBody[newElement]
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 
@@ -3738,16 +3705,6 @@ navigatorElementSelector returns [NavigatorElement element]
 			}
 		}
 	;
-
-navigatorElementSelectorCreator returns [NavigatorElement element]
-	:	cid=compoundID
-		{
-			if (inPropParseState()) {
-				$element = self.findOrCreateNavigatorElement($cid.sid, getCurrentDebugPoint());
-			}
-		}
-	;
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3845,7 +3802,6 @@ componentSelector returns [ComponentView component]
     :
         exc=formComponentSelector[$designStatement::design] { $component = $exc.component; }
     ;
-    
 formComponentSelector[ScriptingFormView formView] returns [ComponentView component]
 	:	'PARENT' '(' child=componentSelector ')'
 		{

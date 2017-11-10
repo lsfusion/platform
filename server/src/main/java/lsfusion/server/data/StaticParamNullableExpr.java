@@ -19,7 +19,7 @@ public class StaticParamNullableExpr extends StaticNullableExpr {
         return System.identityHashCode(this);
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         if(compile instanceof ToString)
             return "V(" + name + ")";
 

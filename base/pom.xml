@@ -11,11 +11,11 @@
     <groupId>lsfusion.platform</groupId>
     <artifactId>base</artifactId>
     <packaging>pom</packaging>
-    <version>1.3.3-SNAPSHOT</version>
+    <version>1.3.2</version>
     <name>Base</name>
 
     <properties>
-        <lsfusion.version>1.3.3-SNAPSHOT</lsfusion.version>
+        <lsfusion.version>1.3.2</lsfusion.version>
 
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
@@ -51,12 +51,16 @@
         <jhlabs.filters.version>2.0.235</jhlabs.filters.version>
         <jcalendar.version>1.4</jcalendar.version>
         <formsrt.version>7.0.3</formsrt.version>
+        <jgoodies.looks.version>2.4.1</jgoodies.looks.version>
+        <jgoodies.common.version>1.2.0</jgoodies.common.version>
         <jssc.version>0.8</jssc.version>
         <!--<jtds.version>1.2.4</jtds.version>-->
         <mssql.version>4.0</mssql.version>
         <javax.mail.version>1.5.6</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.5.2</antlr.version>
+        <supercsv.version>1.52</supercsv.version>
+        <edireader.version>4.7.3.1</edireader.version>
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
@@ -300,6 +304,16 @@
                 <version>${formsrt.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.jgoodies</groupId>
+                <artifactId>looks</artifactId>
+                <version>${jgoodies.looks.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jgoodies</groupId>
+                <artifactId>common</artifactId>
+                <version>${jgoodies.common.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jssc</groupId>
                 <artifactId>jssc</artifactId>
                 <version>${jssc.version}</version>
@@ -328,6 +342,16 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr</artifactId>
                 <version>${antlr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.supercsv</groupId>
+                <artifactId>supercsv</artifactId>
+                <version>${supercsv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.berryworks</groupId>
+                <artifactId>edireader</artifactId>
+                <version>${edireader.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
@@ -612,4 +636,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <developerConnection>scm:svn:svn://server/lsfusion/build/tags/platform-1.3.2/base</developerConnection>
+  </scm>
 </project>

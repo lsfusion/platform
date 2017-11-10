@@ -68,7 +68,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
                 if(entity.forceViewType == null)
                     entity.forceViewType = ClassViewType.PANEL;
             }
@@ -422,6 +422,14 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         
     } 
 
+    @Override
+    public String toString() {
+        String result = super.toString();
+        if (debugInfo != null)
+           result += ":" + debugInfo;
+        return result;
+    }
+
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
 //        context.actionName = toString();
         if(newDebugStack) { // самым первым, так как paramInfo
@@ -539,7 +547,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.NONAME, listInterfaces, changeImplement);
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty(LocalizedString.create("sys"), listInterfaces, changeImplement);
         return groupChangeActionProperty.getImplement(listInterfaces);
     }
 

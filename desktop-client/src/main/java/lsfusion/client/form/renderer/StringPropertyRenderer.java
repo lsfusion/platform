@@ -2,7 +2,7 @@ package lsfusion.client.form.renderer;
 
 import lsfusion.client.logics.ClientPropertyDraw;
 
-import java.awt.*;
+import javax.swing.*;
 
 public class StringPropertyRenderer extends LabelPropertyRenderer {
 
@@ -11,28 +11,24 @@ public class StringPropertyRenderer extends LabelPropertyRenderer {
     public StringPropertyRenderer(ClientPropertyDraw property) {
         super(property);
         echoSymbols = property != null && property.echoSymbols;
+
+//        setHorizontalAlignment(JLabel.LEFT);
     }
 
-    @Override
-    protected void drawForeground(Color conditionalForeground) {
-        if (value == null) {
-            if (property != null && property.isEditableNotNull()) {
-                getComponent().setForeground(REQUIRED_FOREGROUND);
+    public JComponent getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        super.setValue(value, isSelected, hasFocus);
+
+        if (value != null || !property.isEditableNotNull()) {
+            if (value != null) {
+                setText(echoSymbols ? "******" : value.toString());
             } else {
-                getComponent().setForeground(INACTIVE_FOREGROUND);
+                setForeground(INACTIVE_FOREGROUND);
+                setText(EMPTY_STRING);
             }
-        } else {
-            getComponent().setForeground(conditionalForeground != null ? conditionalForeground : defaultForeground);
-        }
-    }
-
-    public void setValue(Object value) {
-        super.setValue(value);
-
-        if (value != null) {
-            getComponent().setText(echoSymbols ? "******" : value.toString());
-        } else if (property == null || !property.isEditableNotNull()) {
-            getComponent().setText(EMPTY_STRING);
         }
     }
 }

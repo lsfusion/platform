@@ -71,7 +71,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     public static IntegralClass COUNTCLASS = IntegerClass.instance;
     public static StaticValueExpr COUNT = new StaticValueExpr(1, COUNTCLASS);
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         String result = compile.params.get(this);
 
         // регистрируем тип заранее в env, потому как при парсинге он только проверяется

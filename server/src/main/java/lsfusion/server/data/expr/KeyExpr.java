@@ -45,7 +45,7 @@ public class KeyExpr extends ParamExpr {
         this.name = id;
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         String source = compile.getSource(this);
         assert source!=null;
         return source;

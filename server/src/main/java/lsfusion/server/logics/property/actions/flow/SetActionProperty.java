@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -16,7 +15,9 @@ import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.session.*;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.NoPropertyTableUsage;
+import lsfusion.server.session.PropertyChange;
 
 import java.sql.SQLException;
 
@@ -88,25 +89,25 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
         if(!exprWhere.isFalse()) { // оптимизация, важна так как во многих event'ах может учавствовать
 
-            Result<SessionTableUsage> rUsedTable = new Result<>();
-            try {
-                if (writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) // оптимизация с materialize'ингом
-                    exprWhere = PropertyChange.materializeWhere("setmwh", changeWhere, session, innerKeys, innerValues, innerExprs, exprWhere, rUsedTable);
-
-                if (!exprWhere.isFalse()) {
-                    Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
-                    ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(writeTo.mapping.innerJoin(innerValues));
-                    if (writeInnerValues != null) {
-                        context.getEnv().change(writeTo.property, new PropertyChange<>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
-                                fromExpr, exprWhere));
-                        SQLSession.checkSessionTableAssertion(context.getModifier());
-                    } else
-                        proceedNullException();
-                }
-            } finally {
-                if(rUsedTable.result!=null)
-                    rUsedTable.result.drop(session.sql, session.getOwner());
+            NoPropertyTableUsage<I> mapTable = null;
+            if(writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) { // оптимизация с materialize'ингом
+                mapTable = PropertyChange.<I>materializeWhere("setmwh", session, innerKeys, exprWhere);
+                exprWhere = mapTable.join(innerKeys).getWhere();
             }
+
+            if(!exprWhere.isFalse()) {
+                Expr fromExpr = writeFrom.mapExpr(PropertyChange.simplifyExprs(innerExprs, exprWhere), context.getModifier());
+                ImMap<P, DataObject> writeInnerValues = DataObject.onlyDataObjects(writeTo.mapping.innerJoin(innerValues));
+                if(writeInnerValues!=null) {
+                    context.getEnv().change(writeTo.property, new PropertyChange<>(writeInnerValues, writeTo.mapping.rightJoin(innerKeys), // нет FormEnvironment так как заведомо не action
+                            fromExpr, exprWhere));
+                    SQLSession.checkSessionTableAssertion(context.getModifier());                    
+                } else
+                    proceedNullException();
+            }
+
+            if(mapTable!=null)
+                mapTable.drop(session.sql, session.getOwner());
         }
 
         return FlowResult.FINISH;

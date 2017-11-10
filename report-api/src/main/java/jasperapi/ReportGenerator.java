@@ -32,6 +32,12 @@ import java.util.regex.Pattern;
 
 import static lsfusion.interop.form.ReportConstants.*;
 
+/**
+ * User: DAle
+ * Date: 16.09.2010
+ * Time: 15:06:37
+ */
+
 public class ReportGenerator {
     private final ReportGenerationData generationData;
 

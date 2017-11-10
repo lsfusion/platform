@@ -368,7 +368,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
     }
 
     private void copyJDBCToFile(String query, File file) throws SQLException {
-        /*jdbc://connectionString@query*/
+        /*jdbc://connectionString;query*/
         Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
         if (queryMatcher.matches()) {

@@ -45,8 +45,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException;
 
     boolean checkFormExportPermission(String canonicalName) throws RemoteException;
-    
-    String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException; 
 
     boolean isSingleInstance() throws RemoteException;
 

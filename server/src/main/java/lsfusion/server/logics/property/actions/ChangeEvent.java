@@ -21,7 +21,7 @@ public class ChangeEvent<C extends PropertyInterface> {
     public static final PrevScope scope = PrevScope.DB;
 
     protected final CalcProperty<C> writeTo; // что меняем
-    public final CalcPropertyMapImplement<? extends PropertyInterface, C> where;
+    public final CalcPropertyMapImplement<?, C> where;
 
     public final CalcPropertyInterfaceImplement<C> writeFrom;
 

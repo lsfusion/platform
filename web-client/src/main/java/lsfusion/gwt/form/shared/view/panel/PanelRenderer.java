@@ -14,4 +14,6 @@ public interface PanelRenderer {
     void updateCellForegroundValue(Object value);
 
     void focus();
+
+    void setLabelWidth(int width);
 }

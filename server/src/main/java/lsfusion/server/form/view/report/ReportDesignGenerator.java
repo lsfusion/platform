@@ -35,6 +35,12 @@ import java.util.*;
 import static lsfusion.interop.form.ReportConstants.*;
 import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 
+/**
+ * User: DAle
+ * Date: 09.08.2010
+ * Time: 18:07:13
+ */
+
 public class ReportDesignGenerator {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;

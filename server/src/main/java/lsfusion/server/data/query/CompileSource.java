@@ -4,7 +4,10 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.Table;
-import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.InnerExpr;
+import lsfusion.server.data.expr.IsClassExpr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
@@ -12,19 +15,12 @@ import lsfusion.server.data.where.Where;
 // класс нисколько не immutable
 public abstract class CompileSource {
 
-    private final GetValue<String, Expr> getExprSource = new GetValue<String, Expr>() {
-        public String getMapValue(Expr value) {
+    private final GetValue<String, SourceJoin> getSource = new GetValue<String, SourceJoin>() {
+        public String getMapValue(SourceJoin value) {
             return value.getSource(CompileSource.this);
         }};
-    public GetValue<String, Expr> GETEXPRSOURCE() {
-        return getExprSource;
-    }
-    private final GetValue<String, Where> getWhereSource = new GetValue<String, Where>() {
-        public String getMapValue(Where value) {
-            return value.getSource(CompileSource.this);
-        }};
-    public GetValue<String, Where> GETWHERESOURCE() {
-        return getWhereSource;
+    public <V extends SourceJoin> GetValue<String, V> GETSOURCE() {
+        return (GetValue<String, V>)getSource;
     }
 
     public final ImRevMap<ParseValue,String> params;
@@ -45,13 +41,13 @@ public abstract class CompileSource {
     public abstract String getSource(KeyExpr key);
     public abstract String getSource(Table.Join.Expr expr);
     public abstract String getSource(Table.Join.IsIn where);
-    public abstract String getSource(QueryExpr queryExpr, boolean needValue);
+    public abstract String getSource(QueryExpr queryExpr);
 
     public String getNullSource(InnerExpr innerExpr, String defaultSource) {
         return defaultSource;
     }
 
-    public abstract String getSource(IsClassExpr classExpr, boolean needValue);
+    public abstract String getSource(IsClassExpr classExpr);
     
     // для binarywhere
     public boolean means(Where where) {

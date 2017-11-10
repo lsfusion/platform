@@ -91,9 +91,8 @@ public class ServerLoggers {
     }
     public static void assertLog(boolean assertion, String message, boolean interactive) {
         if(!assertion) {
-            Settings settings;
-            if(interactive && (settings = Settings.get()) != null && settings.isEnableInteractiveAssertLog())
-                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(ThreadLocalContext.localize("{logics.server.interactive.assert}"), true));
+            if(interactive && Settings.get().isEnableInteractiveAssertLog())
+                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction("{logics.server.interactive.assert}", true));
             assertLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
         }
         assert assertion : message;

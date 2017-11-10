@@ -32,16 +32,16 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
 
-        CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
-        ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = where.mapping;
+        CalcPropertyMapImplement<?, ClassPropertyInterface> where = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.where; //h
+        ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) where.mapping;
         MMap<PropertyInterface, ObjectEntity> mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
         for (PropertyInterface i : whereMapping.keys()) {
                 mapping.add(i, interfaceObjects.get(whereMapping.get(i)));
         }
         wherePropertyDraw = addPropertyDraw(where.property, mapping.immutable(), version);
 
-        CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
-        ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = writeFrom.mapping;
+        CalcPropertyMapImplement<?, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.writeFrom; //g
+        ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) writeFrom.mapping;
         mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
         for (PropertyInterface i : writeFromMapping.keys()) {
                 mapping.add(i, interfaceObjects.get(writeFromMapping.get(i)));

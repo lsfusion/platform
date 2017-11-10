@@ -7,6 +7,7 @@ import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.OrFilterEntity;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -18,6 +19,12 @@ import java.util.Arrays;
 import static lsfusion.server.logics.PropertyUtils.mapCalcImplement;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 
+/**
+ * User: DAle
+ * Date: 29.04.11
+ * Time: 15:43
+ */
+
 /// Common usage:
 /// LP<?> property - logging property
 /// LP<?> logProperty = addLProp(property);
@@ -25,7 +32,7 @@ import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 /// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logProperty, SomeBusinessLogics.this);
 /// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);
 
-public class LogFormEntity extends FormEntity {
+public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     public ObjectEntity[] params;
     SystemEventsLogicsModule systemEventsLM;
     ObjectEntity[] entities;

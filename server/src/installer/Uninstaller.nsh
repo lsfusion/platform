@@ -52,7 +52,7 @@ Section -un.Uninstall
         ReadRegStr $1 HKLM "${REGKEY}" "tomcatServiceName"
         ${ifNot} ${Errors}
         ${andIfNot} $1 == ""
-            nsExec::ExecToLog '"$0\bin\tomcat${TOMCAT_MAJOR_VERSION}.exe" //DS//$1'
+            nsExec::ExecToLog '"$0\bin\tomcat7.exe" //DS//$1'
         ${else}
             DetailPrint "Can't find Apache Tomcat service information in registry"
         ${endIf}

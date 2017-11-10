@@ -40,7 +40,7 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     }
 
     @Override
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         return compile.params.get(this);
     }
 

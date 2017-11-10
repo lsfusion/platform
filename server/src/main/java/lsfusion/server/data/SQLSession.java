@@ -4,10 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -29,7 +27,9 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionModifier;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -119,7 +119,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             ExConnection connection = sqlSession.getDebugConnection();
             if (connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(sqlSession.getActiveThread(),
-                        sqlSession.threadDebugInfo, sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
                         debugInfo, sqlSession.statusMessage));
@@ -293,17 +293,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
     private ReentrantReadWriteLock connectionLock = new ReentrantReadWriteLock(true);
 
-    public final ThreadDebugInfo threadDebugInfo;
-
     public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connectionPool = adapter;
         typePool = adapter;
         this.userProvider = userProvider;
         sqlSessionMap.put(this, 1);
-        Thread currentThread = Thread.currentThread();
-        threadDebugInfo = new ThreadDebugInfo(currentThread.getName(),
-                Settings.get().isStacktraceInSQLSession() ? ThreadUtils.getJavaStack(currentThread.getStackTrace()) : null);
     }
 
     private void needPrivate() throws SQLException { // получает unique connection
@@ -697,7 +692,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
-    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
+    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
@@ -778,30 +773,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         addIndex(table, getOrderFields(keyFields, order, fields), logger);
     }
 
-    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException, SQLHandledException {
+    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
         return checkIndex(table, getOrderFields(keyFields, order, fields), false);
      }
 
-    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
-        //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
-        //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "')";
-
-        MExclSet<String> propertyNames = SetFact.mExclSet();
-        propertyNames.exclAdd("to_regclass");
-        propertyNames.immutable();
-
-        MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
-        propertyReaders.exclAdd("to_regclass", PGObjectReader.instance);
-        propertyReaders.immutable();
-
-        ImOrderMap rs = executeSelect(command, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                0, (ImRevMap) MapFact.EMPTYREV(), (ImMap) MapFact.EMPTY(), ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
-
-        boolean exists = false;
-        for (Object rsValue : rs.values()) {
-            if (((HMap) rsValue).get("to_regclass") != null)
-                exists = true;
+    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException {
+        //in Postgres 9.5 will be 'create index if not exists'
+        boolean exists = true;
+        try {
+            executeDDL("SELECT 'public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "'::regclass");
+        } catch (SQLException e) {
+            exists = false;
         }
         return exists;
     }
@@ -1862,7 +1844,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result.terminate();
     }
     public <K,V> void executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders, boolean disableNestLoop, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(new SQLQuery(select, Cost.MIN, false, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
+        executeSelect(new SQLQuery(select, Cost.MIN, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), disableNestLoop ? DynamicExecuteEnvironment.DISABLENESTLOOP : DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, handler);
     }
 
     public <K,V> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
@@ -1890,7 +1872,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
     public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime, boolean setRepeatDate) throws SQLException, SQLHandledException {
-        if(command.getLength() > Settings.get().getQueryLengthLimit())
+        if(command.command.length() > Settings.get().getQueryLengthLimit())
             throw new SQLTooLongQueryException(command.command);
 
         S snapEnv = queryExecEnv.getSnapshot(command, transactTimeout, outerEnv);

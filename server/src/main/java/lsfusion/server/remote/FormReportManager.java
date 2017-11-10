@@ -3,7 +3,6 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
@@ -44,61 +43,53 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         this.richDesign = formInterface.getEntity().getRichDesign();
     }
 
-    public List<ReportPath> getReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
-        List<ReportPath> ret = new ArrayList<>();
+    public Map<String, String> getReportPath(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
+        Map<String, String> ret = new HashMap<>();
 
         List<String> reportsFileNames = getCustomReportsFileNames(toExcel, groupId);
         if (reportsFileNames != null) {
             for (String customReportDesignName : reportsFileNames) {
                 boolean foundInUserDir = new File(SystemProperties.userDir + "/src/main/resources/" + customReportDesignName).exists();
                 if(foundInUserDir) {
-                    ret.add(new ReportPath(
+                    ret.put(
                             SystemProperties.userDir + "/src/main/resources/" + customReportDesignName,
                             SystemProperties.userDir + "/target/classes/" + customReportDesignName
-                    ));
+                    );
                 }   else {
                     String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
                     for(String path : classPath) {
                         String sourcePath = path + "/../../src/main/resources/" + customReportDesignName;
                         if(new File(sourcePath).exists()) {
-                            ret.add(new ReportPath(
+                            ret.put(
                                     sourcePath,
                                     path + "/" + customReportDesignName
-                            ));
+                            );
                             break;
                         }
                     }
                 }
                  
             }
-        }
-        return ret;
-    }
-
-    public List<ReportPath> getAutoReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
-        List<ReportPath> ret = new ArrayList<>();
+        } else {
             try {
                 String sid = getDefaultReportSID(toExcel, groupId);
                 Map<String, JasperDesign> designs = getReportDesignsMap(toExcel, groupId, userPreferences, null);
                 for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                     String id = entry.getKey();
-                    String autoReportName = getReportName("reports/auto/", id, sid);
-                    String customReportName = getReportName("reports/custom/", id, sid);
-                    new File(autoReportName).getParentFile().mkdirs();
-
-                    JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), autoReportName, "UTF-8");
-
-                    ret.add(new ReportPath(
-                            SystemProperties.userDir + "/src/main/resources/" + customReportName,
-                            SystemProperties.userDir + "/" + autoReportName,
-                            SystemProperties.userDir + "/target/classes/" + customReportName
-
-                    ));
-                }
+                    String reportName = getAutoReportName(id, sid);
+                    new File(reportName).getParentFile().mkdirs();
+                    
+                    JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
+                    
+                    ret.put(
+                            SystemProperties.userDir + "/" + reportName,
+                            SystemProperties.userDir + "/target/classes/reports/custom/" + sid
+                    );                }
 
             } catch (JRException e) {
                 throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
             }
+        }
         return ret;
     }
 
@@ -118,6 +109,10 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
         return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, 0);
+    }
+
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences, int selectTop) {
+        return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, selectTop);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) {
@@ -217,14 +212,10 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     private String getAutoReportName(String name, String sid) {
-        return getReportName("reports/auto/", name, sid);
-    }
-
-    private String getReportName(String prefix, String name, String sid) {
         if (name.equals(GroupObjectHierarchy.rootNodeName)) {
-            return prefix + sid + ".jrxml";
+            return "reports/auto/" + sid + ".jrxml";
         } else {
-            return prefix + sid + "_" + name + ".jrxml";
+            return "reports/auto/" + sid + "_" + name + ".jrxml";
         }
     }
 

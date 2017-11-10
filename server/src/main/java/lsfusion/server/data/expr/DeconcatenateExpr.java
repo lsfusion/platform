@@ -113,8 +113,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.addAndClassSet(and, new ConcatenateClassSet(list.toArray(new AndClassSet[list.size()])));
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile, needValue), part, compile.syntax, compile.env);
+    public String getSource(CompileSource compile) {
+        return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax, compile.env);
     }
 
     public PropStat getStatValue(KeyStat keyStat, StatType type) {

@@ -1,7 +1,5 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 // obsolete - вместо SumFormulaImpl
@@ -12,10 +10,9 @@ public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaIm
     }
 
     public String getSource(ExprSource source) {
-        StringClass type = getType(source);
-        SQLSyntax syntax = source.getSyntax();
-        
-        String separator = " " + syntax.getStringConcatenate() + " '" + this.separator + "' " + syntax.getStringConcatenate() + " ";
+        Type type = getType(source);
+
+        String separator = " " + source.getSyntax().getStringConcatenate() + " '" + this.separator + "' " + source.getSyntax().getStringConcatenate() + " ";
         StringBuilder builder = new StringBuilder();
         builder.append("(");
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
@@ -28,7 +25,7 @@ public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaIm
             builder.append(exprSource);
         }
         builder.append(")");
-        return type.getCast(builder.toString(), syntax, source.getMEnv());
+        return builder.toString();
     }
 
     public boolean hasNotNull() {

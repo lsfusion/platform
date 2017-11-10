@@ -9,13 +9,13 @@ LangString strServicesSectionDescription ${LANG_RUSSIAN} "Зарегистрир
 LangString strShortcutsSectionDescription ${LANG_RUSSIAN} "Создать ярлыки"
 LangString strPgSectionDescription ${LANG_RUSSIAN} "База данных PostgresSQL ${PG_VERSION}"
 LangString strJavaSectionDescription ${LANG_RUSSIAN} "Java Development Kit ${JDK_VERSION}"
-LangString strTomcatSectionDescription ${LANG_RUSSIAN} "Apache Tomcat ${TOMCAT_FULL_VERSION}"
+LangString strTomcatSectionDescription ${LANG_RUSSIAN} "Apache Tomcat 7.0.47"
 LangString strIdeaSectionDescription ${LANG_RUSSIAN} "IntelliJ IDEA Community Edition ${IDEA_VERSION} с встроенным плагином lsFusion"
 
 LangString strPlatformUnSectionDescription ${LANG_RUSSIAN} "Удалить lsFusion Platform"
 LangString strPgUnSectionDescription ${LANG_RUSSIAN} "Удалить PostgresSQL database"
 LangString strJavaUnSectionDescription ${LANG_RUSSIAN} "Java Development Kit ${JDK_VERSION} не может быть удалена автоматически, поэтому удалите её вручную с помощью консоли 'Удаление программ'"
-LangString strTomcatUnSectionDescription ${LANG_RUSSIAN} "Удалить Apache Tomcat ${TOMCAT_FULL_VERSION}"
+LangString strTomcatUnSectionDescription ${LANG_RUSSIAN} "Удалить Apache Tomcat 7.0.47"
 LangString strIdeaUnSectionDescription ${LANG_RUSSIAN} "Удалить IntelliJ IDEA Community Edition ${IDEA_VERSION}"
 
 LangString strPlatformIsNotSelected ${LANG_RUSSIAN} "Пожалуйста выберите хотя бы один компонент lsFusion Platform для установки."
@@ -28,11 +28,11 @@ LangString strJavaDirHeader ${LANG_RUSSIAN} "Выберите папку для 
 LangString strJavaDirTextTop ${LANG_RUSSIAN} "Программа установит JDK ${JDK_VERSION} в указанную папку."
 LangString strJavaTitle ${LANG_RUSSIAN} "Виртуальная машина Java"
 LangString strJavaSubtitle ${LANG_RUSSIAN} "Выбор папки установленной JVM."
-LangString strSelectJavaMessage ${LANG_RUSSIAN} "Выберите пожалуйста папку с установленной Java SE 7.0 или новее."
+LangString strSelectJavaMessage ${LANG_RUSSIAN} "Выберите пожалуйста папку с установленной Java SE 6.0 или новее."
 LangString strNoJavaError ${LANG_RUSSIAN} "JVM не найдена в папке:$\r$\n"
 
-LangString strTomcatDirHeader ${LANG_RUSSIAN} "Выберите папку для установки Apache Tomcat ${TOMCAT_FULL_VERSION}."
-LangString strTomcatDirTextTop ${LANG_RUSSIAN} "Программа установит Apache Tomcat ${TOMCAT_FULL_VERSION} в указанную папку."
+LangString strTomcatDirHeader ${LANG_RUSSIAN} "Выберите папку для установки Apache Tomcat 7.0.47."
+LangString strTomcatDirTextTop ${LANG_RUSSIAN} "Программа установит Apache Tomcat 7.0.47 в указанную папку."
 LangString strTomcatOptions ${LANG_RUSSIAN} "Настройки для установки Apached Tomcat."
 
 LangString strIdeaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки IntelliJ IDEA Community Edition ${IDEA_VERSION}."

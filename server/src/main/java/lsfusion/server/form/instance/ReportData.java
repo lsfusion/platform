@@ -15,6 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * User: DAle
+ * Date: 21.10.2010
+ * Time: 15:46:31
+ */
+
 public class ReportData<Order, Obj extends Order, PropertyReader> {
     private final List<Obj> keys;
     private final List<Pair<String, PropertyReader>> properties;

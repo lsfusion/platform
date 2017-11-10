@@ -104,7 +104,6 @@ public class GGridController {
                     @Override
                     public void execute() {
                         table.setFocus(true);
-                        groupController.scrollToTop();
                     }
                 });
                 return true;

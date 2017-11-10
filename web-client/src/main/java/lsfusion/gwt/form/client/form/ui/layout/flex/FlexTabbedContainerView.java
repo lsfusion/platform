@@ -36,7 +36,7 @@ public class FlexTabbedContainerView extends TabbedContainerView {
         @Override
         public void insertTab(GComponent child, Widget childView, String tabTitle, int index) {
             FlexPanel proxyPanel = new FlexPanel(true);
-            proxyPanel.add(childView, child.getAlignment(), child.getFlex());
+            proxyPanel.addFill(childView);
 
             child.installPaddings(proxyPanel);
 

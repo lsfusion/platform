@@ -18,6 +18,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLQuery;
 import lsfusion.server.data.expr.*;
@@ -202,8 +203,8 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         return new NotNull();
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return compile.getSource(this, needValue);
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
     }
 
     @Override
@@ -271,7 +272,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group);
+                getInner().getInnerFollows(), groupWhere, groupWhereJoins, group, query.type.isLastOpt() && settings.getUseGroupLastOpt() != 0);
     }
 
 

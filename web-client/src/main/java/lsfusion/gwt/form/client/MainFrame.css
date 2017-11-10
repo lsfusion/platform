@@ -272,6 +272,7 @@ textarea {
 .verticalToolbar {
     overflow-x: hidden;
     overflow-y: auto;
+    padding-right: 4px;
 }
 
 .horizontalToolbar {

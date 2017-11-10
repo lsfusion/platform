@@ -33,7 +33,6 @@ import lsfusion.server.data.expr.where.ifs.MIfCases;
 import lsfusion.server.data.expr.where.ifs.NullExpr;
 import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.CompileOptions;
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -67,22 +66,6 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }   
 
     public abstract ClassReader getReader(KeyType keyType);
-    
-    public abstract String getSource(CompileSource source, boolean needValue);
-    public String getSource(CompileSource source) {
-        return getSource(source, true);
-    }
-    public String getNullSource(CompileSource source) {
-        return getSource(source, false) + " IS NULL";
-    }
-    public String getNotNullSource(CompileSource source) {
-        return getSource(source, false) + " IS NOT NULL";
-    }
-
-    @Override
-    public String toString() {
-        return getSource(new ToString(getOuterValues()));
-    }
 
     public abstract int getWhereDepth();
 
@@ -139,9 +122,6 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public abstract Where compare(Expr expr, Compare compare);
     public Where compare(Expr expr, boolean min) {
         return compare(expr, Compare.get(min));
-    }
-    public Where equalsNull(Expr expr) {
-        return compare(expr, Compare.EQUALS).or(getWhere().not().and(expr.getWhere().not()));
     }
     
 /*    public Where equalsFull(Expr expr) {

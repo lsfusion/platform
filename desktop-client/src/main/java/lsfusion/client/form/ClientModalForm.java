@@ -20,7 +20,7 @@ public class ClientModalForm extends JDialog {
     private final RemoteFormInterface remoteForm;
 
     private ClientFormController form;
-    
+
     public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm) {
         this(canonicalName, formSID, owner, remoteForm, null, false, null);
     }
@@ -135,7 +135,7 @@ public class ClientModalForm extends JDialog {
 
     public Dimension calculatePreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
-//        form.getLayout().preValidateMainContainer();
+        form.getLayout().preValidateMainContainer();
 
         Dimension preferredSize = form.getLayout().getMaxPreferredSize();
 

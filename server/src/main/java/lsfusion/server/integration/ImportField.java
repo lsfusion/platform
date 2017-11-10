@@ -10,6 +10,12 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SinglePropertyTableUsage;
 
+/**
+ * User: DAle
+ * Date: 06.12.2010
+ * Time: 14:27:14
+ */
+
 public class ImportField implements ImportFieldInterface, ImportKeyInterface {
     private DataClass fieldClass;
 

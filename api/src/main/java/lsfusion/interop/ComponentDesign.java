@@ -1,5 +1,6 @@
 package lsfusion.interop;
 
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ContextObject;
 
 import javax.swing.*;
@@ -35,6 +36,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public SerializableImageIconHolder getImageHolder() {
         return imageHolder;
+    }
+
+    public ComponentDesign(ApplicationContext context) {
+        this.context = context;
     }
 
     public void designCell(JComponent comp) {

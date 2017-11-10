@@ -78,7 +78,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
             ParseInterface parseInterface = paramObjects.getValue(i);
             if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject)) {
                 String string = parseInterface.getString(syntax, envString, usedRecursion);
-                if(recursionFunction && parseInterface.isAlwaysSafeString()) // ignoring noDynamicSQL, because of identity wrapSubQueryRecursion in that case 
+                if(recursionFunction)
                     string = syntax.wrapSubQueryRecursion(string); // outerparams should not be escaped, and all the others should 
                 mvSafeStrings.mapValue(i, new ParsedString(string));
             }
@@ -115,13 +115,6 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
 
     public boolean useVolatileStats() {
         return command.length() > Settings.get().getCommandLengthVolatileStats();
-    }
-
-    public int getLength() {
-        int result = command.length();
-        for(SQLQuery subQuery : subQueries.valueIt())
-            result += subQuery.getLength();
-        return result;
     }
 
     public abstract boolean isDML();

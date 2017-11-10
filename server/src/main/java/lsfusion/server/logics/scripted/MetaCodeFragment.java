@@ -5,6 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * User: DAle
+ * Date: 29.08.12
+ * Time: 18:42
+ */
+
 public class MetaCodeFragment {
     public List<String> parameters;
     public List<String> tokens;

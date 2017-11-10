@@ -1,21 +1,21 @@
 package lsfusion.server.form.navigator;
 
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ActionProperty;
 
-public class NavigatorAction extends NavigatorElement {
-    private final ActionProperty action;
+public class NavigatorAction<T extends BusinessLogics<T>> extends NavigatorElement<T> {
+    private ActionProperty property;
 
-    public NavigatorAction(ActionProperty action, String canonicalName, LocalizedString caption) {
-        super(canonicalName, caption);
-        
-        this.action = action;
-        setImage("/images/action.png", DefaultIcon.ACTION);
+    public NavigatorAction(NavigatorElement<T> parent, String canonicalName, LocalizedString caption, String creationPath, String icon, Version version) {
+        super(parent, canonicalName, caption, creationPath, icon, version);
+        setImage(icon != null ? icon : "/images/action.png", icon != null ? null : DefaultIcon.ACTION);
     }
 
     @Override
-    public boolean isLeafElement() {
-        return true;
+    protected String getAnonymousSIDPrefix() {
+        return ACTION_ANONYMOUS_SID_PREFIX;
     }
 
     @Override
@@ -23,7 +23,11 @@ public class NavigatorAction extends NavigatorElement {
         return 2;
     }
 
-    public ActionProperty getAction() {
-        return action;
+    public void setProperty(ActionProperty property) {
+        this.property = property;
+    }
+
+    public ActionProperty getProperty() {
+        return property;
     }
 }

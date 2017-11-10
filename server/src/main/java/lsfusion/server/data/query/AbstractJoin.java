@@ -13,8 +13,6 @@ import lsfusion.server.data.where.Where;
 public abstract class AbstractJoin<U> extends ImmutableObject implements Join<U> {
 
     public static <U> Join<U> and(Join<U> join, Where where) {
-        if(where.isTrue()) // оптимизация
-            return join;
         if(Expr.useCasesCount <= 1)
             return new CaseJoin<>(where, join);
         else

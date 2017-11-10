@@ -165,7 +165,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         boolean failedBefore = outerEnv.getSnapshot() != null; // не очень красиво конечно
         ImOrderSet<Step> backSteps = mBackSteps.immutableOrder();
         if(failedBefore || !backSteps.isEmpty())
-            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (snapshot.usedPessQuery()?" USED PESSIMISTIC QUERY":"") + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
+            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
     }
 
     public void innerFailed(SQLCommand command, Snapshot snapshot, String outerMessage) {
@@ -257,7 +257,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
             hasTooLongKeys = query != null && SQLQuery.hasTooLongKeys(query.keyReaders);
             hasNotMaterializables = query != null && query.getEnv().hasNotMaterializable();
-            hasPessQuery = query != null && query.pessQuery != null;
         }
 
         public boolean isRoot() {
@@ -279,7 +278,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         private final int size;
         private final boolean hasTooLongKeys;
         private final boolean hasNotMaterializables;
-        private final boolean hasPessQuery;
         private Set<Node> children = new HashSet<>();
 
         private Integer priority = null;
@@ -323,7 +321,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             final int max = new Stat(settings.getSubQueriesRowsMax()).getWeight();
             final int rowCountCoeff = settings.getSubQueriesRowCountCoeff();
             final int parentCoeff = settings.getSubQueriesParentCoeff();
-            final int pessQueryCoeff = settings.getSubQueriesPessQueryCoeff();
 
             final int target = (int) Math.round(((double)topNode.getChildrenDegree()) / split);
 
@@ -340,10 +337,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                             return Integer.MAX_VALUE;
                     }
 
-                    int result = BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
-                    if(o.hasPessQuery)
-                        result = result * pessQueryCoeff;
-                    return result;
+                    return BaseUtils.max(o.size, threshold) * rowCountCoeff + Math.abs(pdeg * cdeg - target) - pdeg * parentCoeff;
                 }
             };
             Comparator<Node> comparator = new Comparator<Node>() {
@@ -545,13 +539,6 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public boolean needConnectionLock;
         public boolean disableNestedLoop;
         public int setTimeout;
-        
-        public boolean usedPessQuery() {
-            for(SQLQuery query : queries)
-                if(query.pessQuery != null)
-                    return true;
-            return false;
-        }
 
         public Snapshot getSnapshot() {
             return this;

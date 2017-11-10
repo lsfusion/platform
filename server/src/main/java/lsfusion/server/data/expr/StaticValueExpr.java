@@ -66,7 +66,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
         return adjObject;
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         if (compile instanceof ToString) {
             return object + " - " + objectClass + " " + sID;
         }

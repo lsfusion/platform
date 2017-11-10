@@ -1,7 +1,6 @@
 package lsfusion.base.col;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.col.implementations.ArIndexedMap;
 import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.implementations.ArSet;
@@ -145,13 +144,6 @@ public class SetFact {
 
     public static <T> ImSet<T> filter(ImSet<? extends T> set, ImSet<? extends T> filter) {
         return ((ImSet<T>)set).filter(filter);
-    }
-
-    public static <B, T extends B> ImOrderSet<T> filterOrderIncl(ImOrderSet<B> set, ImSet<T> filter) {
-        return BaseUtils.immutableCast(set.filterOrderIncl(filter));
-    }
-    public static <B, T extends B> ImOrderSet<T> filterOrder(ImOrderSet<B> set, ImSet<T> filter) {
-        return BaseUtils.immutableCast(set.filterOrder((FunctionSet<B>)filter));
     }
 
     public static <T> ImSet<T> nullFilter(ImSet<? extends T> set, ImSet<? extends T> filter) {

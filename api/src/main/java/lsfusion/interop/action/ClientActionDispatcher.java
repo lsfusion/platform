@@ -7,6 +7,8 @@ public interface ClientActionDispatcher {
 
     void execute(FormClientAction action);
 
+    void execute(ActivateTabClientAction activateTabClientAction);
+
     Integer execute(ReportClientAction action);
 
     Object execute(RuntimeClientAction action);
@@ -33,6 +35,10 @@ public interface ClientActionDispatcher {
 
     void execute(AudioClientAction action);
 
+    void execute(RunPrintReportClientAction action);
+
+    void execute(RunOpenInExcelClientAction action);
+
     void execute(RunEditReportClientAction action);
 
     void execute(HideFormClientAction action);
@@ -48,6 +54,8 @@ public interface ClientActionDispatcher {
     void execute(AsyncGetRemoteChangesClientAction action);
 
     void execute(LogOutClientAction action);
+    
+    void execute(FocusClientAction action);
 
     void execute(ExceptionClientAction action);
 

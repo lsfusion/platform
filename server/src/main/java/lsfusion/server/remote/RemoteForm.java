@@ -19,7 +19,6 @@ import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
@@ -112,18 +111,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public List<ReportPath> getReportPath(long requestIndex, long lastReceivedRequestIndex, final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences, final boolean useAuto) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<List<ReportPath>>() {
+    public Map<String, String> getReportPath(long requestIndex, long lastReceivedRequestIndex, final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<Map<String, String>>() {
             @Override
-            public List<ReportPath> call(ExecutionStack stack) throws Exception {
+            public Map<String, String> call(ExecutionStack stack) throws Exception {
 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("getReportPath Action. GroupID: %d", groupId));
                 }
                 
-                return useAuto ?
-                        reportManager.getAutoReportPathList(toExcel, groupId, userPreferences) :
-                        reportManager.getReportPathList(toExcel, groupId, userPreferences);
+                return reportManager.getReportPath(toExcel, groupId, userPreferences);
             }
         });
     }
@@ -1043,10 +1040,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return (Long) form.session.user.getCurrentUser().getValue();
     }
 
-    public Long getCurrentUserRole() {
-        return form.session.user.getCurrentUserRole();
-    }
-
     public Long getCurrentComputer() {
         return (Long) form.session.computer.getCurrentComputer().getValue();
     }
@@ -1087,8 +1080,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    protected String notSafeToString() {
-        return "RF[" + form + "]";
+    public String toString() {
+        return "RF - " + form;
     }
 
 

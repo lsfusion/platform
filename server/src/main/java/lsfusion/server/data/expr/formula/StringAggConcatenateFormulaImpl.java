@@ -1,8 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.Settings;
-import lsfusion.server.classes.StringClass;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaUnionImpl {
@@ -19,10 +17,6 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         return true;
     }
 
-    public boolean supportNeedValue() {
-        return true;
-    }
-
     //считает, что последний expr - сепаратор
     @Override
     public String getSource(ExprSource source) {
@@ -32,8 +26,7 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
             return "";
         }
 
-        StringClass type = getType(source);
-        SQLSyntax syntax = source.getSyntax();
+        Type type = getType(source);
 
         String result = getExprSource(source, type, 0);
 
@@ -42,13 +35,13 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
 
             if(Settings.get().isUseSafeStringAgg()) {
                 result = "CASE WHEN " + result + " IS NOT NULL" +
-                        " THEN " + result + " " + syntax.getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + syntax.getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
+                        " THEN " + result + " " + source.getSyntax().getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + source.getSyntax().getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
                         " ELSE " + exprSource + " END";
             } else {
-                result = syntax.getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
+                result = source.getSyntax().getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
             }
         }
-        return type.getCast("(" + result + ")", syntax, source.getMEnv());
+        return "(" + result + ")";
 //        return result;
     }
 }

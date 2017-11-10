@@ -59,8 +59,8 @@ public class FormulaUnionExpr extends UnionExpr {
         return create(formula, translator.translate(exprs));
     }
 
-    public String getSource(final CompileSource compile, boolean needValue) {
-        return formula.getSource(new ListExprSource(exprs, needValue || !formula.supportNeedValue()) {
+    public String getSource(final CompileSource compile) {
+        return formula.getSource(new ListExprSource(exprs) {
             public CompileSource getCompileSource() {
                 return compile;
             }});

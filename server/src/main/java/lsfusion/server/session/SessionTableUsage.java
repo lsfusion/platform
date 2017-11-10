@@ -27,13 +27,11 @@ import lsfusion.server.logics.property.PropertyInterface;
 import java.sql.SQLException;
 import java.util.Map;
 
-import static lsfusion.server.data.SessionData.castTypes;
-
 public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     protected SessionData<?> table;
     protected ImRevMap<KeyField, K> mapKeys;
-    protected ImRevMap<PropertyField, V> mapProps; // должны учитывать correlatedExprs (либо aspectNoCorrelatedExprs)
+    protected ImRevMap<PropertyField, V> mapProps;
 
     public boolean used(InnerContext context) {
         return table.used(context);
@@ -66,12 +64,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public static <V> ImRevMap<PropertyField, V> genProps(ImOrderSet<V> properties, final Type.Getter<V> propertyType) {
-        return genProps(0, properties, propertyType);
-    }    
-    public static <V> ImRevMap<PropertyField, V> genProps(final int offset, ImOrderSet<V> properties, final Type.Getter<V> propertyType) {
         return properties.mapOrderRevKeys(new GetIndexValue<PropertyField, V>() { // нужен детерминированный порядок, хотя бы для StructChanges
             public PropertyField getMapValue(int i, V value) {
-                return new PropertyField("p" + i + offset, propertyType.getType(value));
+                return new PropertyField("p" + i, propertyType.getType(value));
             }
         });
     }
@@ -88,23 +83,10 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         mapKeys = genKeys(keys, keyType);
         mapProps = genProps(properties, propertyType);
 
+        table = new SessionRows(keys.mapOrder(mapKeys.reverse()), mapProps.keys());
+
         this.debugInfo = debugInfo;
-
-        if(!postponeInitTable())
-            initTable(keys);
 //        stack = ExceptionUtils.getStackTrace();
-    }
-
-    // изврат конечно, но по другому непонятно как
-    protected boolean postponeInitTable() {
-        return false;
-    }
-    protected void initTable(ImOrderSet<K> keys) {
-        table = new SessionRows(keys.mapOrder(mapKeys.reverse()), getFullProps());
-    }
-
-    protected ImSet<PropertyField> getFullProps() {
-        return mapProps.keys();
     }
 
 //    public String stack;
@@ -124,16 +106,11 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
-        ImMap<KeyField, ? extends Expr> mapExprs = mapKeys.join(joinImplement);
-        return fullJoin(table.join(mapExprs), joinImplement);
-    }
-    
-    protected Join<V> fullJoin(Join<PropertyField> join, ImMap<K, ? extends Expr> joinImplement) {
-        return new RemapJoin<>(join, mapProps.reverse());
+        return new RemapJoin<>(table.join(mapKeys.join(joinImplement)), mapProps.reverse());
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return join(mapExprs).getWhere();
+        return table.join(mapKeys.join(mapExprs)).getWhere();
     }
 
     private ModifyResult aspectModify(SessionData<?> newTable, Boolean dataChanged) {
@@ -148,34 +125,22 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     // в общем случае надо гарантировать целостность ссылки table и usedTempTables в session, но так как отслеживать момент вернулась таблица или нет до exception'а, не хочется, пока такой мини-хак
     // есть еще несколько записей в table без этого аспекта, но там проблемы с ссылками быть не может (так как exception'ов нет)
-    protected void aspectException(SQLSession session, OperationOwner owner) throws SQLException {
+    private void aspectExceptionModify(SQLSession session, OperationOwner owner) throws SQLException {
         table.rollDrop(session, this, owner, false);
-    }
-    
-    public boolean hasCorrelations() {
-        return false;
-    }
-
-    protected boolean aspectNoCorrelations() { // тут на самом деле в стеке нет добавления в запрос / ряды correlations, но предполагается что этот метод просто не вызывается из SessionTableUsage у которых есть correlatedExprs (см. использования hasCorrelatedExprs) 
-        return !hasCorrelations();
     }
 
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
-        assert aspectNoCorrelations();
-
         ImMap<KeyField, DataObject> keyFieldObjects = mapKeys.join(keyObjects);
         ImMap<PropertyField, ObjectValue> propFieldObjects = mapProps.join(propertyObjects);
-        
-        if(table instanceof SessionRows) {
-            keyFieldObjects = castTypes(keyFieldObjects); // так как иначе можно unique violation получить
-            propFieldObjects = castTypes(propFieldObjects); // иначе будет храниться значение другого типа
-        }
+
+        if(table instanceof SessionRows) // проверка - оптимизация, можно во всех случаях делать
+            keyFieldObjects = SessionData.castTypes(keyFieldObjects); // так как иначе можно unique violation получить
         
         Result<Boolean> changed = new Result<>();
         try {
             return aspectModify(table.modifyRecord(session, keyFieldObjects, propFieldObjects, type, this, owner, changed), changed.result);
         } catch (Throwable t) {
-            aspectException(session, owner);
+            aspectExceptionModify(session, owner);
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
     }
@@ -185,9 +150,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     }
 
     public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows, OperationOwner opOwner) throws SQLException, SQLHandledException {
-        assert aspectNoCorrelations();
-        
-        // тут castTypes может идти как по safe веткам (где тип field гарантировано тот же, что и в ObjectValue), но все же большинство не safe поэтому на всякий случай сделаем
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
             public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
                 return mapKeys.join(value);
@@ -195,19 +157,10 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
                 return mapProps.join(value);
             }});
-        if(writeRows.size() <= SessionRows.MAX_ROWS)
-            mapWriteRows = mapWriteRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<KeyField, DataObject>>() {
-                public ImMap<KeyField, DataObject> getMapValue(ImMap<KeyField, DataObject> value) {
-                    return castTypes(value);
-            }}, new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
-                public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
-                    return castTypes(value);
-            }});
-        
         try {
             table = table.rewrite(session, mapWriteRows, this, opOwner);
         } catch (Throwable t) {
-            aspectException(session, opOwner);
+            aspectExceptionModify(session, opOwner);
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
     }
@@ -215,16 +168,12 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
         writeRows(session, query, baseClass, env, updateClasses, 0);
     }
-    
-    protected IQuery<KeyField, PropertyField> fullMap(IQuery<K, V> query) {
-        return query.map(mapKeys, mapProps);
-    }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses, int selectTop) throws SQLException, SQLHandledException {
         try {
-            table = table.rewrite(session, fullMap(query), baseClass, env, this, updateClasses, selectTop);
+            table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses, selectTop);
         } catch (Throwable t) {
-            aspectException(session, env.getOpOwner());
+            aspectExceptionModify(session, env.getOpOwner());
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
     }
@@ -233,9 +182,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
         Result<Boolean> changed = new Result<>();
         try {
-            return aspectModify(table.modifyRows(session, type == Modify.DELETE ? query.map(mapKeys,  MapFact.<PropertyField, V>EMPTYREV()) : fullMap(query), baseClass, type, env, this, changed, updateClasses), changed.result);
+            return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed, updateClasses), changed.result);
         } catch (Throwable t) {
-            aspectException(session, env.getOpOwner());
+            aspectExceptionModify(session, env.getOpOwner());
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
     }
@@ -330,5 +279,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     @Override
     public String toString() {
         return "SU@" + System.identityHashCode(this) + " " + table.toString() + " " + getCount() + " " + debugInfo;
+    }
+
+    public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
+        table = table.updateCurrentClasses(session);
     }
 }

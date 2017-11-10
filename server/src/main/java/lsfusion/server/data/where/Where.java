@@ -12,7 +12,6 @@ import lsfusion.server.data.expr.query.GroupExprJoinsWhere;
 import lsfusion.server.data.expr.query.GroupExprWhereJoins;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
-import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.SourceJoin;
 import lsfusion.server.data.query.innerjoins.*;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -23,8 +22,6 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
 public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, KeyStat, CheckWhere<Where> {
-
-    String getSource(CompileSource compile);
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);

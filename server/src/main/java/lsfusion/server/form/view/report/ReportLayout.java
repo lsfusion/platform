@@ -8,6 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * User: DAle
+ * Date: 13.08.2010
+ * Time: 16:23:30
+ */
+
 public abstract class ReportLayout {
     protected int rowHeight;
     

@@ -625,4 +625,25 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly);
     }
 
+    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {
+
+        FormInstance remoteForm = createFormInstance(formEntity, MapFact.singleton(objectEntity, dataObject));
+        try {
+            ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(false);
+            ReportGenerator report = new ReportGenerator(generationData);
+            JasperPrint print = report.createReport(false, new HashMap());
+            File tempFile = File.createTempFile("lsfReport", ".pdf");
+
+            JRAbstractExporter exporter = new JRPdfExporter();
+            exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+            exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+            exporter.exportReport();
+
+            return tempFile;
+
+        } catch (ClassNotFoundException | IOException | JRException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

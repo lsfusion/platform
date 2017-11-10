@@ -7,9 +7,7 @@ import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientContainer;
 import lsfusion.interop.KeyStrokes;
-import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.CachableLayout;
-import lsfusion.interop.form.layout.FlexConstraints;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -124,7 +122,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                 if (index == -1) {
                     index = BaseUtils.relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
-                    tabbedPane.addTab(index, child, childView);
+                    tabbedPane.addTab(index, child.getCaption(), childView);
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
@@ -139,7 +137,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     }
 
     public void activateTab(int index) {
-        currentChild = container.children.get(index); // изменение сервер уже в курсе об изменениях, поэтому пометим так
         tabbedPane.activateTab(index);
     }
 
@@ -193,9 +190,9 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
             return pref;
         }
 
-        public void addTab(int index, ClientComponent child, Component childView) {
+        public void addTab(int index, String caption, Component childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, Alignment.LEADING) {
+            JPanel proxyPanel = new JPanel(new BorderLayout()) {
                 @Override
                 public void validate() {
                     super.validate();
@@ -203,13 +200,14 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
                 }
             };
 
-            proxyPanel.add(childView, new FlexConstraints(child.getAlignment(), child.getFlex()));
+            proxyPanel.add(childView);
 
-            insertTab(child.getCaption(), null, proxyPanel, null, index);
+            insertTab(caption, null, proxyPanel, null, index);
         }
 
         private void activateTab(int index) {
-            setSelectedIndex(index);
+            if(getTabCount() > index)
+                setSelectedIndex(index);
         }
 
         private void updatePageSizes(Container container) {

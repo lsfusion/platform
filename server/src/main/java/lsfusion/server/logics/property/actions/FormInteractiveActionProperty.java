@@ -111,7 +111,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     }
 
     @Override
-    protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+    protected void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
         ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();

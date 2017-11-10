@@ -31,7 +31,7 @@ public class NullableKeyExpr extends ParamExpr implements NullableExprInterface 
     }
 
     @Override
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         if(compile instanceof ToString)
             return "I_" + ID;
         throw new RuntimeException("not supported");

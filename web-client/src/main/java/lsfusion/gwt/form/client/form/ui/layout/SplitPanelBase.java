@@ -47,8 +47,8 @@ public abstract class SplitPanelBase<P extends Panel> {
 
         firstWidget = w;
 
-        assert child.getFlex() > 0;
-        flex1 = child.getFlex();
+        assert child.flex > 0;
+        flex1 = child.flex;
         flexSum = flex1 + flex2;
 
         addFirstWidgetImpl(child, w);
@@ -60,8 +60,8 @@ public abstract class SplitPanelBase<P extends Panel> {
         }
 
         secondWidget = w;
-        assert child.getFlex() > 0;
-        flex2 = child.getFlex();
+        assert child.flex > 0;
+        flex2 = child.flex;
         flexSum = flex1 + flex2;
 
         addSecondWidgetImpl(child, w);

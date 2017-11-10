@@ -96,11 +96,11 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
             }
         });
     }
-    public static String getSource(FormulaExprInterface expr, final CompileSource compile, boolean needValue) {
+    public static String getSource(FormulaExprInterface expr, final CompileSource compile) {
         if(compile instanceof ToString)
             return toString(expr);
 
-        return expr.getFormula().getSource(new ListExprSource(expr.getFParams(), needValue || expr.getFormula().hasNotNull()) {
+        return expr.getFormula().getSource(new ListExprSource(expr.getFParams()) {
             public CompileSource getCompileSource() {
                 return compile;
             }
@@ -183,8 +183,8 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return packFollowFalse(this, where);
     }
 
-    public String getSource(final CompileSource compile, boolean needValue) {
-        return getSource(this, compile, needValue);
+    public String getSource(final CompileSource compile) {
+        return getSource(this, compile);
     }
     public String toString() {
         return toString(this);

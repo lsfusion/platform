@@ -37,7 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.form.instance.FormSessionScope.OLDSESSION;
+import static lsfusion.server.form.instance.FormSessionScope.*;
+
+/**
+ * User: DAle
+ * Date: 26.07.11
+ * Time: 19:27
+ */
 
 public class ScriptingFormEntity {
     private ScriptingLogicsModule LM;

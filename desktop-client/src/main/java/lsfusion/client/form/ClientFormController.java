@@ -33,7 +33,6 @@ import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.*;
 
 import javax.swing.*;
@@ -101,7 +100,7 @@ public class ClientFormController implements AsyncListener {
     private final String formSID;
     private final String canonicalName;
 
-    public static ColorPreferences colorPreferences;
+    private ColorPreferences colorPreferences;
 
     private final int ID;
 
@@ -135,28 +134,13 @@ public class ClientFormController implements AsyncListener {
 
     private EditReportInvoker editReportInvoker = new EditReportInvoker() {
         @Override
-        public void invokeEditReport(final boolean useAuto) {
+        public void invokeEditReport() {
             RmiQueue.runAction(new Runnable() {
                 @Override
                 public void run() {
-                    runEditReport(useAuto);
+                    runEditReport();
                 }
             });
-        }
-
-        @Override
-        public void invokeDeleteReport() throws RemoteException {
-            RmiQueue.runAction(new Runnable() {
-                @Override
-                public void run() {
-                    runDeleteReport();
-                }
-            });
-        }
-
-        @Override
-        public boolean hasCustomReports() throws RemoteException {
-            return hasCustomReportsAction();
         }
     };
 
@@ -243,29 +227,31 @@ public class ClientFormController implements AsyncListener {
     public DispatcherListener getDispatcherListener() { 
         return rmiQueue;
     }
-    
-    public void activateTab(ClientComponent component) {
-        ClientContainer parentContainer = component.container;
+
+    public ColorPreferences getColorPreferences() {
+        return colorPreferences;
+    }
+
+    public void activateTab(String tabSID) {
+        ClientContainer parentContainer = form.findParentContainerBySID(tabSID);
         if(parentContainer != null && parentContainer.isTabbed()) {
             ClientContainerView containerView = getLayout().getContainerView(parentContainer);
             if(containerView instanceof TabbedClientContainerView) {
-                Map<Integer, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
-                Integer index = tabMap.get(component.getID());
-                if(index != null)
-                    ((TabbedClientContainerView) containerView).activateTab(index);
+                Map<String, Integer> tabMap = getTabMap((TabbedClientContainerView) containerView, parentContainer);
+                ((TabbedClientContainerView) containerView).activateTab(tabMap.get(tabSID));
             }
         }
     }
 
-    private Map<Integer, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
-        Map<Integer, Integer> tabMap = new HashMap<>();
+    private Map<String, Integer> getTabMap(TabbedClientContainerView containerView, ClientContainer component) {
+        Map<String, Integer> tabMap = new HashMap<>();
         List<ClientComponent> tabs = component.getChildren();
         if (tabs != null) {
             int c = 0;
             for (int i = 0; i < tabs.size(); i++) {
                 ClientComponent tab = tabs.get(i);
                 if (containerView.isTabVisible(tab)) {
-                    tabMap.put(tab.getID(), c++);
+                    tabMap.put(tab.getSID(), c++);
                 }
             }
         }
@@ -298,7 +284,10 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void initializeColorPreferences() throws RemoteException {
-        colorPreferences = remoteForm.getColorPreferences(); // есть ли необходимость читать эти настройки при открытии каждой формы?
+        colorPreferences = remoteForm.getColorPreferences();
+        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
+                properties.colorPreferences = colorPreferences;
+        }
     }
     
     private void initializeControllers() throws IOException {
@@ -502,8 +491,9 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void focusProperty(ClientPropertyDraw propertyDraw) {
-        if (controllers.containsKey(propertyDraw.groupObject)) {
+    public void focusProperty(int propertyDrawId) {
+        ClientPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
             controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
         }
     }
@@ -701,10 +691,6 @@ public class ClientFormController implements AsyncListener {
         for (TreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
-        
-        formLayout.preValidateMainContainer();
-        
-        activateElements(formChanges);
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -712,14 +698,6 @@ public class ClientFormController implements AsyncListener {
                 ClientExternalScreen.repaintAll(getID());
             }
         });
-    }
-    
-    private void activateElements(ClientFormChanges formChanges) {
-        for(ClientComponent tab : formChanges.activateTabs)
-            activateTab(tab);
-
-        for(ClientPropertyDraw prop : formChanges.activateProps)
-            focusProperty(prop);
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
@@ -1393,19 +1371,31 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
-    public void runEditReport(final boolean useAuto) {
+    public void runPrintReport(final boolean isDebug) {
         assert Main.module.isFull();
 
         try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runEditReport") {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runPrintReport") {
                 @Override
-                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), useAuto);
+                protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, null, false, getUserPreferences());
                 }
 
                 @Override
-                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
-                    Main.processReportPathList(reportPathList, useAuto);
+                public void onResponse(long requestIndex, final ReportGenerationData generationData) throws Exception {
+                    if (generationData != null) {
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                Main.frame.runReport(false, generationData, isDebug ? editReportInvoker : null);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(getString("form.error.printing.form"), e);
+                                }
+                            }
+                        });
+
+                    }
                 }
             });
         } catch (Exception e) {
@@ -1413,42 +1403,51 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runDeleteReport() {
+    public void runOpenInExcel() {
+        assert Main.module.isFull();
+
         try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runDeleteReport") {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runOpenInExcel") {
                 @Override
-                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false);
+                protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, null, true, getUserPreferences());
                 }
 
                 @Override
-                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
-                    Main.deleteReportPathList(reportPathList);
+                public void onResponse(long requstIndex, final ReportGenerationData generationData) throws Exception {
+                    if (generationData != null) {
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                Main.module.openInExcel(generationData);
+                            }
+                        });
+                    }
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException(getString("form.error.printing.form"), e);
+            throw new RuntimeException(getString("form.error.running.excel"), e);
         }
     }
 
-    public boolean hasCustomReportsAction() {
-        final HasCustomReports hasCustomReports = new HasCustomReports();
+    public void runEditReport() {
+        assert Main.module.isFull();
+
         try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<Void>("hasCustomReports") {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<Map<String, String>>("runEditReport") {
                 @Override
-                protected Void doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    hasCustomReports.result = remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false).isEmpty();
-                    return null;
+                protected Map<String, String> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences());
+                }
+
+                @Override
+                public void onResponse(long requstIndex, Map<String, String> pathMap) throws Exception {
+                    Main.processPathMap(pathMap);
                 }
             });
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
-        return hasCustomReports.result;
-    }
-
-    private class HasCustomReports {
-        public boolean result;
     }
 
     public void runSingleGroupReport(final GroupObjectController groupController) {
@@ -1461,7 +1460,7 @@ public class ClientFormController implements AsyncListener {
                 }
 
                 @Override
-                public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
+                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
                         Main.frame.runReport(false, generationData, null);
                     }
@@ -1481,7 +1480,7 @@ public class ClientFormController implements AsyncListener {
             }
 
             @Override
-            public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
+            public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
                 if (generationData != null) {
                     Main.module.openInExcel(generationData);
                 }

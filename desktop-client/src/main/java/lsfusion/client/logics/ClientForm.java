@@ -2,6 +2,7 @@ package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.Main;
@@ -48,6 +49,12 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<>();
 
     public ClientForm() {
+    }
+
+    // этот конструктор используется при создании нового объекта в настройке бизнес-логики
+    public ClientForm(ApplicationContext context) {
+        super(context);
+        mainContainer = new ClientContainer(getContext());
     }
 
     public ClientContainer getMainContainer() {
@@ -261,10 +268,6 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     public ClientContainer findContainerBySID(String sID) {
         return mainContainer.findContainerBySID(sID);
-    }
-
-    public ClientContainer findContainerByID(int id) {
-        return mainContainer.findContainerByID(id);
     }
 
     public ClientContainer findParentContainerBySID(String sID) {

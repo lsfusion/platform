@@ -4,13 +4,17 @@ import lsfusion.base.Callback;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.layout.HasLabel;
 import lsfusion.client.form.layout.JComponentPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.form.layout.FlexLayout;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -32,7 +36,7 @@ public class PropertyController {
 
     private Map<ClientGroupObjectValue, PanelView> views;
 
-    private JComponentPanel viewsPanel;
+    private ViewsPanel viewsPanel;
 
     private final ExternalScreenComponent extView;
 
@@ -53,7 +57,7 @@ public class PropertyController {
 
         extView = property.externalScreen == null ? null : new ExternalScreenComponent();
 
-        viewsPanel = new JComponentPanel(false, Alignment.LEADING);
+        viewsPanel = new ViewsPanel();
     }
 
     public boolean forceEdit() {
@@ -159,7 +163,7 @@ public class PropertyController {
         for (ClientGroupObjectValue columnKey : columnKeys) {
             PanelView view = views.get(columnKey);
             if (view != null && view.getComponent().getParent() != viewsPanel) {
-                viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getBaseValueWidth(viewsPanel)));
+                viewsPanel.add(view.getComponent(), new FlexConstraints(FlexAlignment.STRETCH, 1));
             }
         }
 
@@ -208,6 +212,20 @@ public class PropertyController {
             String caption = property.getDynamicCaption(captions.get(columnKey));
             view.setCaption(caption);
             view.setToolTip(caption);
+        }
+    }
+
+    private class ViewsPanel extends JComponentPanel implements HasLabel {
+        private ViewsPanel() {
+            super(false, Alignment.LEADING);
+        }
+
+        @Override
+        public void setLabelWidth(int width) {
+            if (views != null && views.size() == 1) {
+                PanelView view = views.values().iterator().next();
+                view.setLabelWidth(width);
+            }
         }
     }
 }

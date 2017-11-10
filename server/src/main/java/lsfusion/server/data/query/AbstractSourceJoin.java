@@ -10,11 +10,13 @@ import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.Value;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.QueryExpr;
 import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -46,13 +48,18 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             return where.toString();
         }
 
-        public String getSource(QueryExpr queryExpr, boolean needValue) {
+        public String getSource(QueryExpr queryExpr) {
             return queryExpr.toString();
         }
 
-        public String getSource(IsClassExpr classExpr, boolean needValue) {
+        public String getSource(IsClassExpr classExpr) {
             return "class(" + classExpr.expr.getSource(this) + ")";
         }
+    }
+
+    @Override
+    public String toString() {
+        return getSource(new ToString(getOuterValues()));
     }
 
     public final static ArrayInstancer<SourceJoin> instancer = new ArrayInstancer<SourceJoin>() {

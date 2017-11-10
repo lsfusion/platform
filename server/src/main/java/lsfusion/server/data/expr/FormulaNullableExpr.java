@@ -52,8 +52,8 @@ public class FormulaNullableExpr extends StaticClassNullableExpr implements Form
         return FormulaExpr.packFollowFalse(this, where);
     }
 
-    public String getSource(final CompileSource compile, boolean needValue) {
-        return FormulaExpr.getSource(this, compile, needValue);
+    public String getSource(final CompileSource compile) {
+        return FormulaExpr.getSource(this, compile);
     }
     public String toString() {
         return FormulaExpr.toString(this);

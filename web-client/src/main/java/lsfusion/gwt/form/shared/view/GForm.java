@@ -107,10 +107,6 @@ public class GForm implements Serializable {
         }
         return null;
     }
-    
-    public GContainer findContainerByID(int id) {
-        return mainContainer.findContainerByID(id);
-    }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {
         LinkedHashMap<GPropertyDraw, Boolean> result = new LinkedHashMap<>();

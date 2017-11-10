@@ -7,6 +7,11 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Created by DAle on 03.05.14.
+ * 
+ */
+
 public final class PropertyCanonicalNameUtils {
     static public final String signatureLBracket = "[";
     static public final String signatureRBracket = "]";
@@ -24,10 +29,6 @@ public final class PropertyCanonicalNameUtils {
     static public final String drillDownPrefix = "_DRILLDOWN_";
     static public final String objValuePrefix = "_OBJVALUE_";
 
-    static public String createName(String namespace, String name, ResolveClassSet... signature) {
-        return createName(namespace, name, Arrays.asList(signature));
-    }
-    
     /*  Позволяет создавать канонические имена, а также часть канонического имени, передавая
      *  null в качестве пространства имен либо сигнатуры         
      */
@@ -63,5 +64,9 @@ public final class PropertyCanonicalNameUtils {
 
     static public String makeSafeName(String s) {
         return s.replaceAll("[^A-Za-z0-9_]", "_");    
+    }
+    
+    static public String createName(String namespace, String name, ResolveClassSet... signature) {
+        return createName(namespace, name, Arrays.asList(signature));
     }
 }

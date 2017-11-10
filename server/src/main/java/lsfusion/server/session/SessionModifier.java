@@ -178,7 +178,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     private CalcProperty readProperty;
-    public Set<CalcProperty> prereadProps = new HashSet<>();
+    private Set<CalcProperty> prereadProps = new HashSet<>();
 
     // hint'ы хранит
     private TableProps increment = new TableProps();
@@ -263,7 +263,6 @@ public abstract class SessionModifier implements Modifier {
     }
 
     // assert что в values только
-    // предполагается что должно быть consistent с MapCacheAspect.prereadHintEnabled
     public <P extends PropertyInterface> boolean allowPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
         // assert что values только complex values
 
@@ -313,7 +312,7 @@ public abstract class SessionModifier implements Modifier {
 
         try {
             readProperty = property;
-            final PropertyChangeTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
+            final SinglePropertyTableUsage changeTable = property.readChangeTable("htincr", getSQL(), this, getBaseClass(), getQueryEnv());
             increment.add(property, changeTable);
         } catch(Exception e) {
             String message = e.getMessage();

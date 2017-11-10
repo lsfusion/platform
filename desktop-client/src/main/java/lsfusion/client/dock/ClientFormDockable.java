@@ -91,4 +91,7 @@ public class ClientFormDockable extends ClientDockable {
             Main.setCurrentForm(clientForm);
     }
 
+    public void activateTab(String tabSID) {
+        clientForm.activateTab(tabSID);
+    }
 }

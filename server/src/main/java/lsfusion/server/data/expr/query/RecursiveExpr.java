@@ -197,8 +197,8 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
             return this;
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return compile.getSource(this, needValue);
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
     }
 
     public NotNull calculateNotNullWhere() {

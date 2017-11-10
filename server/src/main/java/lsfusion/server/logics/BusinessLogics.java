@@ -1,7 +1,6 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -10,7 +9,6 @@ import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -76,7 +74,6 @@ import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
@@ -112,7 +109,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.LogicsModule.getResolveList;
+import static lsfusion.server.logics.LogicsModule.*;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -672,47 +669,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 table.setFullField(dataProperty);
         }
     }
-    
-    // если добавлять CONSTRAINT SETCHANGED не забыть задание в графе запусков перетащить
-    public void initClassAggrProps() {
-        MOrderExclSet<CalcProperty> queue = SetFact.mOrderExclSet();
-
-        for(Property property : getProperties())
-            if(property instanceof CalcProperty) {
-                CalcProperty calcProperty = (CalcProperty) property;
-                if(calcProperty.isAggr())
-                    queue.exclAdd(calcProperty);
-            }
-
-        MAddExclMap<CustomClass, MSet<CalcProperty>> classAggrProps = MapFact.mAddExclMap();
-            
-        for(int i=0,size=queue.size();i<size;i++) {
-            CalcProperty<?> property = queue.get(i);
-            ImMap<?, ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.materializeChangePolicy);
-            if(interfaceClasses.size() == 1) {
-                ValueClass valueClass = interfaceClasses.singleValue();
-                if(valueClass instanceof CustomClass) {
-                    CustomClass customClass = (CustomClass) valueClass;
-                    MSet<CalcProperty> mAggrProps = classAggrProps.get(customClass);
-                    if(mAggrProps == null) {
-                        mAggrProps = SetFact.<CalcProperty>mSet();
-                        classAggrProps.exclAdd(customClass, mAggrProps);
-                    }
-                    mAggrProps.add(property);
-                }
-            }
-           
-            // все implement'ы тоже помечаем как aggr
-            for(CalcProperty implement : property.getImplements())
-                if(!queue.contains(implement)) {
-                    queue.exclAdd(implement);
-                    size++;
-                }
-        }
-
-        for(int i=0,size=classAggrProps.size();i<size;i++)
-            classAggrProps.getKey(i).aggrProps = classAggrProps.getValue(i).immutable();
-    }
 
     public void initClassDataIndices() {
         for(ObjectClassField classField : LM.baseClass.getUpObjectClassFields().keyIt()) {
@@ -734,7 +690,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 try {
                     updateStats(sql, true);
                 } catch (Exception ignored) {
-                    startLogger.info("Error updating stats, while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
+                    startLogger.info("Error updating stats, while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
                     ServerLoggers.exInfoLogger.error("Error updating stats, while initializing reflection events", ignored);
                 }
 
@@ -750,7 +706,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 sql.suppressErrorLogging = prevSuppressErrorLogging;
             }
         } catch (Exception ignored) {
-            startLogger.info("Error while initializing reflection events occurred. Probably this is the first database synchronization. Look to the exinfo log for details.");
+            startLogger.info("Error while initializing reflection events occured. Probably this is the first database synchronization. Look to the exinfo log for details.");
             ServerLoggers.exInfoLogger.error("Error while initializing reflection events", ignored);
         }
     }
@@ -1057,21 +1013,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getOrderProperties().getSet();
     }
 
-    public Iterable<LCP<?>> getNamedProperties() {
-        List<Iterable<LCP<?>>> namedProperties = new ArrayList<>();
+    public List<LP<?, ?>> getNamedProperties() {
+        List<LP<?, ?>> namedProperties = new ArrayList<>();
         for (LogicsModule module : logicModules) {
-            namedProperties.add(module.getNamedProperties());
+            namedProperties.addAll(module.getNamedProperties());
         }
-        return Iterables.concat(namedProperties);
+        return namedProperties;
     }
-
+    
     @IdentityLazy
     public ImOrderSet<CalcProperty> getAutoSetProperties() {
         MOrderExclSet<CalcProperty> mResult = SetFact.mOrderExclSet();
-        for (LCP<?> lp : getNamedProperties()) {
-            if (lp.property.autoset)
-                mResult.exclAdd(lp.property);
-        }
+        for (LP lp : getNamedProperties())
+            if (lp instanceof LCP) {
+                CalcProperty property = ((LCP<?>) lp).property;
+                if (property.autoset)
+                    mResult.exclAdd(property);
+            }
         return mResult.immutableOrder();                    
     }
 
@@ -1120,20 +1078,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public Map<String, List<NamedDecl>> getNamedPropertiesWithDeclInfo() {
+    public Map<String, List<NamedDecl>> getNamedModuleProperties() {
         Map<String, List<NamedDecl>> result = new HashMap<>();
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
-            for (LogicsModule module : namespaceToModule.getValue()) {
-                for (LP<?, ?> property : module.getNamedPropertiesAndActions()) {
-                    String propertyName = property.property.getName();
-                    
-                    if (result.get(propertyName) == null) {
-                        result.put(propertyName, new ArrayList<NamedDecl>());
-                    }
+            for(LogicsModule module : namespaceToModule.getValue()) {
+                for(Map.Entry<String, List<LP<?, ?>>> namedModuleProperty : module.getNamedModuleProperties().entrySet()) {
+                    String propertyName = namedModuleProperty.getKey();
                     List<NamedDecl> resultProps = result.get(propertyName);
-                    
-                    resultProps.add(new NamedDecl(property, namespace, module.isDefaultNamespace(), module.getParamClasses(property), module.getVersion()));
+                    if(resultProps == null) {
+                        resultProps = new ArrayList<>();
+                        result.put(propertyName, resultProps);
+                    }
+                    for(LP prop : namedModuleProperty.getValue()) {
+                        resultProps.add(new NamedDecl(prop, namespace, module.isDefaultNamespace(), module.getParamClasses(prop), module.getVersion()));
+                    }
                 }
             }
         }
@@ -1191,7 +1150,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 //        }).groupValues();
 //        System.out.println(fm);
         if(!disableImplicitCases) {
-            Map<String, List<NamedDecl>> namedProps = getNamedPropertiesWithDeclInfo();
+            Map<String, List<NamedDecl>> namedProps = getNamedModuleProperties();
             for (List<NamedDecl> props : namedProps.values()) {
                 // бежим по всем парам смотрим подходят друг другу или нет
                 for (NamedDecl absDecl : props) {
@@ -2164,7 +2123,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
-        NamespaceLPFinder finder = new NamespaceLPFinder(new ModuleEqualLPFinder(false), namespaceToModules.get(namespace));
+        NamespacePropertyFinder finder = new NamespacePropertyFinder(new EqualLPModuleFinder(false), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
@@ -2186,31 +2145,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
     
     public CustomClass findClass(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleClassFinder());
+        return findElement(canonicalName, null, new ClassNameModuleFinder());
     }
 
     public AbstractGroup findGroup(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleGroupFinder());
+        return findElement(canonicalName, null, new GroupNameModuleFinder());
     }
 
     public ImplementTable findTable(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleTableFinder());
+        return findElement(canonicalName, null, new TableNameModuleFinder());
     }
 
     public AbstractWindow findWindow(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleWindowFinder());
+        return findElement(canonicalName, null, new WindowNameModuleFinder());
     }
 
     public NavigatorElement findNavigatorElement(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleNavigatorElementFinder());
-    }
-
-    public FormEntity findForm(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleFormFinder());
+        return findElement(canonicalName, null, new NavigatorElementNameModuleFinder());
     }
 
     public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
-        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFinder());
+        return findElement(canonicalName, paramCnt, new MetaCodeNameModuleFinder());
     }
 
     private void outputPersistent() {
@@ -2236,8 +2191,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(FormEntity entry : logicsModule.getModuleForms())
-                mResult.exclAdd(entry);
+            for(NavigatorElement entry : logicsModule.getModuleNavigators())
+                if(entry instanceof FormEntity)
+                    mResult.exclAdd((FormEntity) entry);
         }
         return mResult.immutable();
     }
@@ -2252,10 +2208,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // в том числе и приватные
-    public ImSet<FormEntity> getAllForms() {
-        MExclSet<FormEntity> mResult = SetFact.mExclSet();
+    public ImSet<NavigatorElement> getAllNavigatorElements() {
+        MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(FormEntity entry : logicsModule.getAllModuleForms())
+            for(NavigatorElement entry : logicsModule.getAllModuleNavigators())
                 mResult.exclAdd(entry);
         }
         return mResult.immutable();
@@ -2263,9 +2219,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
-            for (FormEntity element : logicsModule.getModuleForms()) {
-                if (formSID.equals(element.getSID())) {
-                    return element;
+            for (NavigatorElement element : logicsModule.getModuleNavigators()) {
+                if ((element instanceof FormEntity) && formSID.equals(element.getSID())) {
+                    return (FormEntity) element;
                 }
             }
         }
@@ -2287,35 +2243,31 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // Здесь ищется точное совпадение по сигнатуре
     public LogicsModule getModuleContainingLP(String namespaceName, String name, List<ResolveClassSet> classes) {
-        return getModuleContainingObject(namespaceName, name, classes, new ModuleEqualLPFinder(false));
+        return getModuleContainingObject(namespaceName, name, classes, new EqualLPModuleFinder(false));
     }
 
     public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleGroupFinder());
+        return getModuleContainingObject(namespaceName, name, null, new GroupNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingClass(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleClassFinder());
+        return getModuleContainingObject(namespaceName, name, null, new ClassNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingTable(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleTableFinder());
+        return getModuleContainingObject(namespaceName, name, null, new TableNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleWindowFinder());
+        return getModuleContainingObject(namespaceName, name, null, new WindowNameModuleFinder());
     }
 
     public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleNavigatorElementFinder());
+        return getModuleContainingObject(namespaceName, name, null, new NavigatorElementNameModuleFinder());
     }
 
-    public LogicsModule getModuleContainingForm(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleFormFinder());
-    }
-    
     public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
-        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFinder());
+        return getModuleContainingObject(namespaceName, name, paramCnt, new MetaCodeNameModuleFinder());
     }
 
     public DBManager getDbManager() {
@@ -2429,6 +2381,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 allocatedBytesLogger.info(info);
             }
             
+            // временно сюда лог
+            HashMap<FormInstance.DiffForm, Boolean> diffForms = new HashMap<>(FormInstance.diffForms);
+            String diffLog = "" + '\n';
+            for(FormInstance.DiffForm diffForm : diffForms.keySet())
+                diffLog += "EXPLICIT " + diffForm.type + " " + diffForm.explicit + " " + diffForm.entity + " " + diffForm.stackString + " " + diffForm.heur + '\n'; 
+            ServerLoggers.exInfoLogger.info(diffLog);
+
             if (logTotal) {
                 allocatedBytesLogger.info(String.format("Exceeded: sum: %s, \t\t\tmissed-hit: All: %s-%s, %s",
                         humanReadableByteCount(bytesSum), exceededMisses, exceededMissesHits, getStringMap(exceededHitMap, exceededMissedMap)));
@@ -2592,9 +2551,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
                 final Path path = Paths.get(element).resolve("reports/custom");
-//                logger.info("Reset reports cache: processing path : " + path);
+                logger.info("Reset reports cache: processing path : " + path);
                 if (Files.isDirectory(path)) {
-//                    logger.info("Reset reports cache: path is directory: " + path);
+                    logger.info("Reset reports cache: path is directory: " + path);
                     tasks.add(scheduler.createSystemTask(new EExecutionStackRunnable() {
                         @Override
                         public void run(ExecutionStack stack) throws Exception {

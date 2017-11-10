@@ -41,15 +41,7 @@ public class ImageButton extends Button {
         this(caption, null, directionBottom);
     }
 
-    public ImageButton(String caption, boolean vertical, boolean alignCenter) {
-        this(caption, null, vertical, alignCenter);
-    }
-
     public ImageButton(String caption, String imagePath, boolean vertical) {
-        this(caption, imagePath, vertical, true);
-    }
-
-    public ImageButton(String caption, String imagePath, boolean vertical, boolean alignCenter) {
         this.vertical = vertical;
 
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
@@ -73,9 +65,7 @@ public class ImageButton extends Button {
         } else {
             panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
         }
-        if (alignCenter) {
-            panel.getElement().getStyle().setProperty("margin", "auto");
-        }
+        panel.getElement().getStyle().setProperty("margin", "auto");
 
         setText(caption);
         setModuleImagePath(imagePath);

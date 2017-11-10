@@ -84,7 +84,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
     }
     
     @Override
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         compile.env.addNotMaterializable(level);
         return compile.params.get(this);
     }

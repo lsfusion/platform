@@ -1,7 +1,6 @@
 package lsfusion.gwt.form.client.window;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GPanelNavigatorWindow;
@@ -41,26 +40,20 @@ public class SimpleWindowElement extends WindowElement {
 
     @Override
     public void changeInitialSize(int width, int height) {
-        if (window != null) {
-            if (width > initialWidth) {
-                // затычка. не позволяем окну расширяться, насколько оно хочет, если это происходит вдоль главной оси
-                if (!(window instanceof GTreeNavigatorWindow) &&
-                        !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isHorizontal()) &&
-                        !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isHorizontal())) {
-                    initialWidth = width;
-                }
-
-                // если горизональному окну нужно больше места по горизонтали, чем ему предоставили, добавляем к высоте высоту скроллбара
-                if ((window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isHorizontal()) ||
-                        (window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isHorizontal())) {
-                    height += AbstractNativeScrollbar.getNativeScrollbarHeight();
-                }
-            }
-            if (height > initialHeight &&
-                    !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical()) &&
-                    !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isVertical())) {
-                initialHeight = height;
-            }
+        if (width > initialWidth && 
+                (window != null &&  // затычка. не позволяем окну расширяться, насколько оно хочет, если это происходит вдоль главной оси
+                    !(window instanceof GTreeNavigatorWindow) && 
+                    !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).type == 0)) &&
+                    !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).type == 0)
+                ) {
+            initialWidth = width;
+        }                          
+        if (height > initialHeight && 
+                (window != null && 
+                    !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).type == 1)) &&
+                    !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).type == 1)
+                ) {
+            initialHeight = height;
         }
         if (parent != null) {
             parent.changeInitialSize(this);

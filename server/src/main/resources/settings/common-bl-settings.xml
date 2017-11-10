@@ -354,16 +354,6 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initClassAggrPropsTask" class="lsfusion.server.logics.tasks.impl.InitClassAggrPropsTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="finalizeCalcAbstractTask"/>
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
-
     <bean id="finalizeTask" class="lsfusion.server.logics.tasks.GroupTask">
         <property name="dependencies">
             <set>
@@ -449,7 +439,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeNavigatorElementsTask" class="lsfusion.server.logics.tasks.impl.FinalizeNavigatorElementsTask">
+    <bean id="initClassFormsTask" class="lsfusion.server.logics.tasks.impl.simple.InitClassFormsTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -458,16 +448,17 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeFormsTask">
+    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeNavigatorElementsTask">
         <property name="dependencies">
             <set>
+                <ref bean="initClassFormsTask"/> <!-- class forms-->
                 <ref bean="setupDrillDownTask"/> <!-- drilldown forms-->
                 <ref bean="initReflectionEventsTask"/> <!-- log forms-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
     </bean>
-    
+
     <bean id="initIndicesTask" class="lsfusion.server.logics.tasks.impl.InitIndicesTask">
         <property name="dependencies">
             <set>
@@ -481,13 +472,11 @@
         <property name="dependencies">
             <set>
                 <ref bean="checkAbstractTask"/>
-                <ref bean="initClassAggrPropsTask"/>
                 <ref bean="getPropertyListTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassDataIndicesTask"/>
                 <ref bean="finalizeFormsTask"/>
-                <ref bean="finalizeNavigatorElementsTask"/>
             </set>
         </property>
     </bean>
@@ -543,7 +532,7 @@
     <bean id="syncPropertyDrawsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyDrawsTask">
         <property name="dependencies">
             <set>
-                <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
+                <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
                 <ref bean="syncGroupObjectsTask"/>
             </set>
         </property>
@@ -568,15 +557,6 @@
         <property name="reflectionManager" ref="reflectionManager"/>
     </bean>
 
-    <bean id="syncFormsTask" class="lsfusion.server.logics.tasks.impl.SyncFormsTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="executeOnStartedTask"/>
-            </set>
-        </property>
-        <property name="reflectionManager" ref="reflectionManager"/>
-    </bean>
-    
     <bean id="syncGroupPropertiesTask" class="lsfusion.server.logics.tasks.impl.SyncGroupPropertiesTask">
         <property name="dependencies">
             <set>
@@ -589,7 +569,7 @@
     <bean id="syncGroupObjectsTask" class="lsfusion.server.logics.tasks.impl.SyncGroupObjectsTask">
         <property name="dependencies">
             <set>
-                <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
+                <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>

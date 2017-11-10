@@ -104,11 +104,6 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     @Override
-    public String getParsedName() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean calculateStat() {
         return false;
     }

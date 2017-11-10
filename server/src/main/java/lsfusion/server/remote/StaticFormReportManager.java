@@ -6,7 +6,9 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -27,7 +29,7 @@ import java.sql.SQLException;
 
 public class StaticFormReportManager extends FormReportManager<PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity> {
 
-    public StaticFormReportManager(final FormEntity form, final ImMap<ObjectEntity, ObjectValue> mapObjects, final ExecutionContext<?> context) {
+    public StaticFormReportManager(final FormEntity<?> form, final ImMap<ObjectEntity, ObjectValue> mapObjects, final ExecutionContext<?> context) {
         super(new FormReportInterface<PropertyDrawEntity, GroupObjectEntity, PropertyObjectEntity, CalcPropertyObjectEntity, OrderEntity, ObjectEntity, PropertyReaderEntity>() {
             
             private ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> ordersMap = BaseUtils.immutableCast(form.getDefaultOrdersList().mapOrderKeyValues(new GetValue<OrderEntity<?>, PropertyDrawEntity<?>>() {

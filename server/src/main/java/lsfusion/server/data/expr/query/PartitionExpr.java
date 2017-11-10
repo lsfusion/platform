@@ -5,8 +5,11 @@ import lsfusion.base.Result;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderFilterMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
@@ -159,8 +162,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return hasNotNull() ? new NotNull() : super.calculateNotNullWhere();
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return compile.getSource(this, needValue);
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
     }
 
     @ParamLazy

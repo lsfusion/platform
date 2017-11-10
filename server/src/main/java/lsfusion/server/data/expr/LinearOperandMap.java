@@ -6,6 +6,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
 import lsfusion.server.data.expr.formula.ListExprType;
+import lsfusion.server.data.expr.formula.SelfListExprType;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
@@ -40,7 +41,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
 //        Collection<String> orderWhere = new ArrayList<String>();
         for(int i=0,size=size();i<size;i++) {
             assert getValue(i)!=0;
-            source = source + addToString(source.length() == 0, compile.syntax.isNULL(getKey(i).getSource(compile)+",0", true), getValue(i)); // getSource needValue=true так как a (+) b NULL не NULL зависит от значений
+            source = source + addToString(source.length() == 0, compile.syntax.isNULL(getKey(i).getSource(compile)+",0", true), getValue(i));
 /*            if(PartitionExpr.isWhereCalculated(operand.getKey())) // ?? зачем
                 orderWhere.add(operand.getKey().getSource(compile)+" IS NOT NULL");
             else

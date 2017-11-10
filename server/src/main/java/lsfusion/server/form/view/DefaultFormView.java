@@ -87,12 +87,12 @@ public class DefaultFormView extends FormView {
     public DefaultFormView() {
     }
 
-    public DefaultFormView(FormEntity formEntity, Version version) {
+    public DefaultFormView(FormEntity<?> formEntity, Version version) {
         super(formEntity, version);
 
-        caption = entity.getCaption();
+        caption = entity.caption;
         canonicalName = entity.getSID();
-        creationPath = entity.getCreationPath();
+        creationPath = entity.creationPath;
         autoRefresh = entity.autoRefresh;
 
         FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));

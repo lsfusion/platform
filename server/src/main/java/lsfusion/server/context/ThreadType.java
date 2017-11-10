@@ -1,7 +1,13 @@
 package lsfusion.server.context;
 
-// temporary
-public class ThreadType {
-    public static final ThreadInfo HTTP = new EventThreadInfo("noevent");
-    public static final ThreadInfo RMI = new EventThreadInfo("noevent");
+public enum ThreadType {
+    EXECUTORFACTORY, // через ExecutorFactory - callable thread
+    
+    // внешние потоки
+    RMI, // RMI
+    HTTP, // HTTP
+    START, // START
+    TIMER, // TIMER
+    UNREFERENCED, // UNREFERENCED
+    
 }

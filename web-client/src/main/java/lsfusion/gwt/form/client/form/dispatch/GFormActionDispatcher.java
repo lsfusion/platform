@@ -119,6 +119,16 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         form.getRemoteChanges();
     }
 
+    @Override
+    public void execute(GFocusAction action) {
+        form.focusProperty(action.propertyId);
+    }
+
+    @Override
+    public void execute(GActivateTabAction action) {
+        form.activateTab(action.formSID, action.tabSID);
+    }
+
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
     @Override
     public String execute(GLoadLinkAction action) {

@@ -64,11 +64,6 @@ public class RemoteNavigatorContext extends AbstractContext {
         return (Long) navigator.getUser().object;
     }
 
-    @Override
-    public Long getCurrentUserRole() {
-        return navigator.userRole;
-    }
-
     public DataObject getConnection() {
         return navigator.getConnection();
     }

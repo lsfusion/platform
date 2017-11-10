@@ -8,7 +8,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Compare;
@@ -35,7 +34,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
     private final Compare compare;
     private final InnerJoins valueJoins;
-    private boolean not; // true только при IS NULL, вообще пока непонятно зачем вообще нужен (по идее для того чтобы разбивать OR с NULL и limit использовал индекс ??? )
+    private boolean not;
     private boolean isOrderTop;
 
     @Override
@@ -43,15 +42,11 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return baseExpr + " " + compare + " " + valueJoins + " " + not;
     }
 
-    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, BaseExpr compareExpr, boolean isOrderTop) {
-        this(baseExpr, compare, getInnerJoins(compareExpr), false, isOrderTop);
+    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, BaseExpr compareExpr, boolean not, boolean isOrderTop) {
+        this(baseExpr, compare, getInnerJoins(compareExpr), not, isOrderTop);
         assert compareExpr.isValue();
     }
-    // IS NULL конструктор
-    public ExprIndexedJoin(BaseExpr baseExpr, boolean isOrderTop) {
-        this(baseExpr, Compare.LESS, InnerJoins.EMPTY, true, isOrderTop);
-    }
-    private ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, boolean not, boolean isOrderTop) {
+    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, boolean not, boolean isOrderTop) {
         super(baseExpr);
         assert !compare.equals(Compare.EQUALS);
         assert baseExpr.isIndexed();
@@ -66,24 +61,22 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     }
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
-        if (not)
-            return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
-        else {
-            if (oldMech) {
+        if(oldMech) {
+            if(not)
+                return new StatKeys<>(SetFact.<Integer>EMPTY(), Stat.ONE);
+            else {
                 if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
                     assert false; // так как !compare.equals(Compare.EQUALS)
                     return new StatKeys<>(SetFact.singleton(0), Stat.ONE);
                 } else
                     return new StatKeys<>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
             }
-            throw new UnsupportedOperationException(); // так как вырезается в buildGraph
         }
+        throw new UnsupportedOperationException(); // так как вырезается в buildGraph
     }
 
     @Override
     public Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<Integer, Stat> pushKeys, ImMap<Integer, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<Integer>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps) {
-        if (not)
-            return Cost.ONE;
         throw new UnsupportedOperationException(); // так как вырезается в buildGraph
     }
 
@@ -128,7 +121,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     public InnerJoins getInnerJoins() {
         if(not)
             return InnerJoins.EMPTY;
-        return super.getInnerJoins().and(valueJoins);
+        return super.getInnerJoins();
     }
 
     public boolean givesNoKeys() {
@@ -153,10 +146,6 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
             return FULL;
         }
 
-    }
-    
-    public boolean isNotNull() {
-        return !not;
     }
 
     private static IntervalType getIntervalType(Compare compare) {
@@ -187,7 +176,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return mInnerKeys.immutable();
     }
 
-    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, MList<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
+    public static void fillIntervals(ImSet<ExprIndexedJoin> exprs, List<WhereJoin> mResult, Result<UpWheres<WhereJoin>> upAdjWheres, WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
         ImMap<BaseExpr, ImSet<ExprIndexedJoin>> exprIndexedJoins = exprs.group(new BaseUtils.Group<BaseExpr, ExprIndexedJoin>() {
             public BaseExpr group(ExprIndexedJoin key) {
                 return key.baseExpr;

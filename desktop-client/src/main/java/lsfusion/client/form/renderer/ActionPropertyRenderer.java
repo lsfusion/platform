@@ -7,51 +7,47 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-public class ActionPropertyRenderer extends PropertyRenderer {
+public class ActionPropertyRenderer extends JButton implements PropertyRenderer {
     private static final String defaultCaption = "...";
-    private Icon defaultIcon;
-    private Border defaultBorder;
 
-    private JButton button;
+    private final Color defaultBackground = getBackground();
+    private Border defaultBorder = getBorder();
+    private Icon defaultIcon;
+    private ClientPropertyDraw property;
 
     public ActionPropertyRenderer(ClientPropertyDraw property) {
-        super(property);
-
-        getComponent().setFocusPainted(false);
-        
-        defaultBorder = getComponent().getBorder();
+        this.property = property;
+        property.design.designComponent(this);
+        setFocusPainted(false);
     }
 
-    public JButton getComponent() {
-        if (button == null) {
-            button = new JButton();
+    public JComponent getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (defaultIcon == null && getIcon() != null) defaultIcon = getIcon(); // временно так
+
+        setText(defaultIcon != null || value == null ? "" : defaultCaption);
+        setIcon(value == null ? null : defaultIcon);
+
+        if (isSelected && property != null) {
+            if (hasFocus) {
+                setBorder(property.colorPreferences.getFocusedCellBorder());
+                setBackground(property.colorPreferences.getFocusedCellBackground());
+            }
+            else {
+                setBorder(property.colorPreferences.getSelectedRowBorder());
+                setBackground(property.colorPreferences.getSelectedRowBackground());
+            }
+        } else {
+            setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
+            setBackground(value == null ? Color.white : defaultBackground);
         }
-        return button;
-    }
-    
-    @Override
-    protected void initDesign() {
-        if (property != null) {
-            property.design.designComponent(getComponent());
-        }
-        defaultBackground = getComponent().getBackground();
     }
 
     @Override
-    protected Color getDefaultBackground() {
-        return value == null ? Color.WHITE : super.getDefaultBackground();
-    }
-
-    @Override
-    protected Border getDefaultBorder() {
-        return value == null ? super.getDefaultBorder() : defaultBorder;
-    }
-
-    public void setValue(Object value) {
-        super.setValue(value);
-        if (defaultIcon == null && getComponent().getIcon() != null) defaultIcon = getComponent().getIcon(); // временно так
-
-        getComponent().setText(defaultIcon != null || value == null ? "" : defaultCaption);
-        getComponent().setIcon(value == null ? null : defaultIcon);
+    public void paintAsSelected() {
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

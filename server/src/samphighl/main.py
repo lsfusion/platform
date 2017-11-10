@@ -1,12 +1,14 @@
 from flask import Flask, make_response, request
-from os import path
+from sys import argv
+
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexer import RegexLexer, words
-from pygments.style import Style
 from pygments.token import *
-from pygments.token import Keyword, Whitespace, Name, Comment, String, Number, Literal, Punctuation
-from sys import argv
+from os import path
+
+from pygments.style import Style
+from pygments.token import Keyword, Whitespace, Name, Comment, String, Number, Literal, Generic, Punctuation
 
 
 #inherited from TangoStyle (https://kite.com/docs/python/pygments.styles.tango.TangoStyle)
@@ -69,7 +71,7 @@ class LSFLexer(RegexLexer):
                     'DROP', 'DROPCHANGED', 'DROPSET', 'ECHO', 'EDIT', 'EDITABLE', 'EDITFORM', 'EDITKEY',
                     'ELSE', 'EMAIL', 'END', 'EQUAL', 'EVAL', 'EVENTID', 'EVENTS', 'EXCELFILE', 'EXCELLINK',
                     'EXCEPTLAST', 'EXCLUSIVE', 'EXEC', 'EXPORT', 'EXTEND', 'FALSE', 'FILE', 'FILTER', 'FILTERGROUP',
-                    'FILTERS', 'FINALLY', 'FIRST', 'FIXED', 'FIXEDCHARWIDTH', 'FOCUS', 'FOLDER', 'FOOTER', 'FOR', 'FORCE', 'FOREGROUND',
+                    'FILTERS', 'FINALLY', 'FIRST', 'FIXED', 'FIXEDCHARWIDTH', 'FOCUS', 'FOOTER', 'FOR', 'FORCE', 'FOREGROUND',
                     'FORM', 'FORMS', 'FORMULA', 'FROM', 'FULL', 'FULLSCREEN', 'GOAFTER', 'GRID', 'GROUP', 'GROUPCHANGE', 'HALIGN', 'HEADER',
                     'HIDE', 'HIDESCROLLBARS', 'HIDETITLE', 'HINTNOUPDATE', 'HINTTABLE', 'HORIZONTAL',
                     'HTML', 'IF', 'IMAGE', 'IMAGEFILE', 'IMAGELINK', 'IMPORT', 'IMPOSSIBLE', 'IN', 'INCREMENT', 'INDEX',
@@ -120,9 +122,9 @@ def getCodeFragment(lines, blockId):
     for line in lines:
         if line.startswith(specialCommentPrefix):
             filteredLines += 1
-            if line.strip() == endFragmentComment(blockId):
+            if line.startswith(endFragmentComment(blockId)):
                 return filteredCode(lines[startLine:lineIndex]), resultStartLine
-            elif line.strip() == startFragmentComment(blockId) and startLine is None:
+            elif line.startswith(startFragmentComment(blockId)):
                 startLine = lineIndex + 1
                 resultStartLine = startLine - filteredLines + 1
         lineIndex += 1

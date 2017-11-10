@@ -8,8 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
@@ -50,19 +48,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         this.isExclusive = isExclusive;
 
         finalizeInit();
-    }
-
-    @IdentityLazy
-    public ImSet<CalcProperty> getImplements() {
-        ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
-        
-        MSet<CalcProperty> mResult = SetFact.mSetMax(simpleCases.size());
-        for(int i=0,size=simpleCases.size();i<size;i++) {
-            CalcCase<Interface> simpleCase = simpleCases.get(i);
-            if (simpleCase.implement instanceof CalcPropertyMapImplement)
-                mResult.add(((CalcPropertyMapImplement) simpleCase.implement).property);
-        }
-        return mResult.immutable();
     }
 
     private static class OperandCase implements GetValue<CalcCase<Interface>, CalcPropertyInterfaceImplement<Interface>> {
@@ -470,7 +455,12 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация, так как hasAlotKeys единственный кто в debug вызывает getExpr и на очень сложных свойствах это сжирает время (процентов 10 от времени старта)
-        ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
+        ImList<CalcCase<Interface>> cases = getCases();
+        ImList<CalcCase<Interface>> simpleCases = cases.filterList(new SFunctionSet<CalcCase<Interface>>() {
+            public boolean contains(CalcCase<Interface> element) {
+                return element.isSimple() || element.isClassSimple();
+            }
+        });
         for (CalcCase<Interface> aCase : simpleCases.getCol().sort(new Comparator<CalcCase<Interface>>() {
             public int compare(CalcCase<Interface> o1, CalcCase<Interface> o2) {
                 return Long.compare(o1.implement.mapEstComplexity(), o2.implement.mapEstComplexity());
@@ -479,17 +469,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             if (aCase.implement.mapHasAlotKeys())
                 return true;
         }
-        if (simpleCases.size() != getCases().size())
+        if (simpleCases.size() != cases.size())
             return super.aspectDebugHasAlotKeys(); // значит есть WHERE, то есть AND
         return false;
-    }
-
-    private ImList<CalcCase<Interface>> getSimpleCases() {
-        return getCases().filterList(new SFunctionSet<CalcCase<Interface>>() {
-                public boolean contains(CalcCase<Interface> element) {
-                    return element.isSimple() || element.isClassSimple();
-                }
-            });
     }
 }
 

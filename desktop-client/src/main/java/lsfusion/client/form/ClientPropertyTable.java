@@ -300,7 +300,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
                     String formattedValue;
                     try {
-                        formattedValue = cellProperty.formatString(value);
+                        formattedValue = cellProperty.baseType.formatString(value);
                     } catch (ParseException e1) {
                         formattedValue = String.valueOf(value);
                     }

@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.form.client.form.ui.layout.HasLabel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
@@ -127,7 +128,7 @@ public class GPanelController {
 
         public Map<GGroupObjectValue, PanelRenderer> renderers;
 
-        public FlexPanel renderersPanel;
+        public RenderersPanel renderersPanel;
 
         private List<GGroupObjectValue> columnKeys;
         private Map<GGroupObjectValue, Object> values;
@@ -152,7 +153,7 @@ public class GPanelController {
                     renderers = new HashMap<>();
                 }
                 if (renderersPanel == null) {
-                    renderersPanel = new FlexPanel();
+                    renderersPanel = new RenderersPanel();
                 }
 
                 List<GGroupObjectValue> columnKeys = this.columnKeys != null ? this.columnKeys : GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
@@ -282,6 +283,16 @@ public class GPanelController {
 
         public void setCellForegroundValues(Map<GGroupObjectValue, Object> cellForegroundValues) {
             this.cellForegroundValues = cellForegroundValues;
+        }
+
+        public class RenderersPanel extends FlexPanel implements HasLabel {
+            @Override
+            public void setLabelWidth(int width) {
+                if (renderers != null && renderers.size() == 1) {
+                    PanelRenderer renderer = renderers.values().iterator().next();
+                    renderer.setLabelWidth(width);
+                }
+            }
         }
     }
 }

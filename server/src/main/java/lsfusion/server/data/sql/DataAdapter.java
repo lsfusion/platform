@@ -15,7 +15,6 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.TypePool;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.expr.formula.SumFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
@@ -476,7 +475,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         if(ensured != null)
             return;
 
-        // assert type.hasSafeCast;
         Properties properties = new Properties();
         properties.put("function.name", genSafeCastName(type));
         properties.put("param.type", type.getDB(this, recTypes));
@@ -608,14 +606,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
-    public String getOrderGroupAgg(GroupType groupType, Type resultType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
+    public String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
         String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, this));
 
         String fnc;
         switch (groupType) {
             case STRING_AGG:
                 fnc = "STRING_AGG";
-                exprs = SumFormulaImpl.castToVarStrings(exprs, readers, resultType, getSyntax(), typeEnv);
                 break;
             case LAST:
                 fnc = getLastFunc();
@@ -659,9 +656,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public boolean doesNotTrimWhenCastToVarChar() {
-        throw new UnsupportedOperationException();
-    }
-    public boolean doesNotTrimWhenSumStrings() {
         throw new UnsupportedOperationException();
     }
 

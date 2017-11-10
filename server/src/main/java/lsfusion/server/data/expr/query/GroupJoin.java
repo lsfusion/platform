@@ -24,11 +24,14 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         private final ImMap<KeyExpr, Type> keyTypes;
         private final GroupExprWhereJoins<Expr> joins;// чтобы не сливало группировки со всем разными join'ами
         
-        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins) {
+        private final boolean isLastOpt;
+
+        public Query(InnerExprFollows<Expr> follows, Where where, ImMap<KeyExpr, Type> keyTypes, GroupExprWhereJoins<Expr> joins, boolean isLastOpt) {
             super(follows);
             this.where = where;
             this.keyTypes = keyTypes;
             this.joins = joins;
+            this.isLastOpt = isLastOpt; 
             assert !keyTypes.containsNull();
         }
 
@@ -37,17 +40,18 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
             where = query.where.translateOuter(translator);
             keyTypes = translator.translateExprKeys(query.keyTypes);
             joins = query.joins.translateOuter(translator);
+            isLastOpt = query.isLastOpt;
         }
-        
+
         public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes) && joins.equals(((Query) o).joins);
+            return super.calcTwins(o) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes) && joins.equals(((Query) o).joins) && isLastOpt == ((Query)o).isLastOpt;
         }
 
         protected boolean isComplex() {
             return true;
         }
         protected int hash(HashContext hashContext) {
-            return (31 * (31 * super.hash(hashContext) + hashKeysOuter(keyTypes, hashContext)) + where.hashOuter(hashContext))* 31 + joins.hashOuter(hashContext);
+            return (31 * (31 * super.hash(hashContext) + hashKeysOuter(keyTypes, hashContext)) + where.hashOuter(hashContext))* 31 + joins.hashOuter(hashContext) + (isLastOpt ? 1 : 0);
         }
 
         protected Query translate(MapTranslate translator) {
@@ -77,8 +81,8 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
         super(join, translator);
     }
 
-    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group) {
-        super(keys,values,new Query(innerFollows, where, keyTypes, groupJoins),group);
+    public GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, ImMap<KeyExpr, Type> keyTypes, InnerExprFollows<Expr> innerFollows, Where where, GroupExprWhereJoins<Expr> groupJoins, ImMap<Expr, BaseExpr> group, boolean isLastOpt) {
+        super(keys,values,new Query(innerFollows, where, keyTypes, groupJoins, isLastOpt),group);
     }
 
     private GroupJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<Expr, BaseExpr> group) {
@@ -87,6 +91,10 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
 
     protected GroupJoin createThis(ImSet<KeyExpr> keys, ImSet<Value> values, Query query, ImMap<Expr, BaseExpr> group) {
         return new GroupJoin(keys, values, query, group);
+    }
+    
+    public boolean isLastOpt() {
+        return query.isLastOpt;
     }
 
     @IdentityLazy

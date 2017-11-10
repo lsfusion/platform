@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
@@ -156,7 +155,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             fillDepends(mImplementProps,implement.mapping.values());
             return SetFact.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(mImplementProps.immutable()));
         }
-        if(implement.mapping.size() == 1 && implementProperty.aggProp && Settings.get().isEnableAggProp()) {
+        if(implement.mapping.size() == 1 && implementProperty.aggProp) {
             // пока тупо MGProp'им назад
             return SetFact.add((((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property).getUsedDataChanges(propChanges), implementProperty.getUsedChanges(propChanges));
         }
@@ -224,7 +223,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementChange)
             return implement.property.getChangeProps();
 
-        if(implement.mapping.size() == 1 && implement.property.aggProp && Settings.get().isEnableAggProp())
+        if(implement.mapping.size() == 1 && implement.property.aggProp)
             return implement.mapping.singleValue().mapChangeProps();
 
         return super.getChangeProps();
@@ -254,8 +253,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if(implementChange) // groupBy'им выбирая max
             return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, changedWhere); // пока implementChange = identity
-        
-        if(implement.mapping.size() == 1 && implement.property.aggProp && Settings.get().isEnableAggProp()) {
+
+        if(implement.mapping.size() == 1 && implement.property.aggProp) {
             // пока тупо MGProp'им назад
             CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue();
             KeyExpr keyExpr = new KeyExpr("key");
@@ -301,7 +300,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 DefaultChangeAggActionProperty<T> aggChangeActionProperty =
-                        new DefaultChangeAggActionProperty<>(LocalizedString.NONAME, listInterfaces, aggProp, aggClass, changeActionImplement);
+                        new DefaultChangeAggActionProperty<>(LocalizedString.create("sys"), listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)

@@ -34,14 +34,14 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
 
         final LCP propertyCaption = getShowIf();
         drawOptions.addProcessor(new DefaultProcessor() {
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity<?> form) {
                 if (propertyCaption != null) {
                     entity.propertyShowIf = form.addPropertyObject(propertyCaption);
                 }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {
                 if (!showCaption) {
-                    propertyView.caption = LocalizedString.NONAME;
+                    propertyView.caption = LocalizedString.create("");
                 }
             }
         });

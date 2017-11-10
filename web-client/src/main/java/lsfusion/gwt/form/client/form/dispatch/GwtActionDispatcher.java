@@ -192,6 +192,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GFocusAction action) {
+    }
+
+    @Override
     public void execute(GOpenFileAction action) {
         downloadFile(action.filePath);
     }
@@ -210,6 +214,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + filePath;
             Window.open(fileUrl, filePath, "");
         }
+    }
+
+    @Override
+    public void execute(GActivateTabAction action) {
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

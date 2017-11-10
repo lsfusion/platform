@@ -20,6 +20,7 @@ import java.util.*;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.form.shared.view.GClassViewType.DEFAULT;
+import static lsfusion.gwt.form.shared.view.GClassViewType.GRID;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     private final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -483,11 +484,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         return panel.focusFirstWidget();
-    }
-
-    @Override
-    public GComponent getGridComponent() {
-        return groupObject.grid;
     }
 
     @Override

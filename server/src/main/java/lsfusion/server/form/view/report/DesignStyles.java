@@ -7,6 +7,12 @@ import net.sf.jasperreports.engine.type.VerticalAlignEnum;
 
 import java.awt.*;
 
+/**
+ * User: DAle
+ * Date: 12.08.2010
+ * Time: 14:57:23
+  */
+
 public class DesignStyles {
 
     private static void setDefaultStyle(JRDesignStyle style) {

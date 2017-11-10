@@ -47,7 +47,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
+/**
+ * User: DAle
+ * Date: 16.05.11
+ * Time: 17:52
+ */
 
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
     // classes
@@ -149,13 +153,32 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         this.BL = BL;
         this.propertyDBNamePolicy = propertyDBNamePolicy;
         namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
-        namedModuleActions = NFFact.simpleMap(namedModuleActions);
+    }
+
+    @IdentityLazy
+    public LAP getFormPrint() {
+        try {
+            return findAction("formPrint[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormEditReport() {
         try {
             return findAction("formEditReport[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
+    }
+
+    @IdentityLazy
+    public LAP getFormXls() {
+        try {
+            return findAction("formXls[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             Throwables.propagate(e);
         }
@@ -407,6 +430,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         staticName = findProperty("staticName[Object]");
         staticCaption = findProperty("staticCaption[Object]");
+        ((CalcProperty)staticCaption.property).aggProp = true;
         
         sessionOwners = findProperty("sessionOwners[]");
         ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
@@ -439,8 +463,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public <P extends PropertyInterface> PropertyFormEntity getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
-        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, recognizeGroup);
+    public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
+        PropertyFormEntity<T> form = new PropertyFormEntity<>(this, property, messageProperty, recognizeGroup);
         addFormEntity(form);
         return form;
     }
@@ -462,13 +486,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public Windows windows;
 
     // Навигаторы
-    public NavigatorElement root;
+    public NavigatorElement<T> root;
 
-    public NavigatorElement administration;
+    public NavigatorElement<T> administration;
 
-    public NavigatorElement application;
-    public NavigatorElement systemEvents;
-    public NavigatorElement configuration;
+    public NavigatorElement<T> objects;
+
+    public NavigatorElement<T> application;
+    public NavigatorElement<T> systemEvents;
+    public NavigatorElement<T> configuration;
+
+    public FormEntity<T> objectForm;
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
@@ -498,6 +526,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         configuration = findNavigatorElement("configuration");
 
         systemEvents = findNavigatorElement("systemEvents");
+
+        objects = findNavigatorElement("objects");
+    }
+
+    public void initClassForms() {
+        objectForm = baseClass.getBaseClassForm(this);
+        objects.add(objectForm, getVersion());
     }
 
 
@@ -531,7 +566,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.create("sys"), valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
@@ -600,7 +635,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         LCP result = addProp(new ObjectValueProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
             // issue #1725 Потенциальное совпадение канонических имен различных свойств
-            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            String name = "_OBJVALUE_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;

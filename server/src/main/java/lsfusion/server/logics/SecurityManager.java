@@ -22,7 +22,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
@@ -275,10 +274,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
 
         // политика по умолчанию из формы "Политика безопасности"
-        applyDefaultNavigatorElementDefinedPolicy(userObject, session);
+        applyDefaultFormDefinedPolicy(userObject, session);
 
         // политика для роли из формы "Политика безопасности"
-        applyNavigatorElementDefinedUserPolicy(userObject, session);
+        applyFormDefinedUserPolicy(userObject, session);
 
         // дополнительные политики из формы "Политика безопасности"
         List<Long> userPoliciesIds = readUserPoliciesIds(userObject, session);
@@ -387,24 +386,32 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
     }
 
-    private void applyDefaultNavigatorElementDefinedPolicy(User user, DataSession session) {
+    private Map<String, Property> getCanonicalNamesMap() {
+        Map<String, Property> result = new HashMap<>();
+        for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
+            result.put(lp.property.getCanonicalName(), lp.property);
+        }
+        return result;
+    }
+
+    private void applyDefaultFormDefinedPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
-            QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.singleton("neId"));
-            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permitNEExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr forbidNEExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
+            QueryBuilder<String, String> qf = new QueryBuilder<>(SetFact.singleton("formId"));
+            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr permitFormExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr forbidFormExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
 
-            qne.and(nameExpr.getWhere());
-            qne.and(permitNEExpr.getWhere().or(forbidNEExpr.getWhere()));
+            qf.and(nameExpr.getWhere());
+            qf.and(permitFormExpr.getWhere().or(forbidFormExpr.getWhere()));
 
-            qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permit", permitNEExpr);
-            qne.addProperty("forbid", forbidNEExpr);
+            qf.addProperty("canonicalName", nameExpr);
+            qf.addProperty("permit", permitFormExpr);
+            qf.addProperty("forbid", forbidFormExpr);
 
-            ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
-            for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
+            ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
+            for (ImMap<String, Object> valueMap : formValues) {
+                NavigatorElement element = LM.root.getNavigatorElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
                 if (valueMap.get("forbid") != null) {
                     policy.navigator.deny(element);
                 } else if (valueMap.get("permit") != null) {
@@ -418,7 +425,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void applyNavigatorElementDefinedUserPolicy(User user, DataSession session) {
+    private void applyFormDefinedUserPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
             DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
@@ -452,22 +459,22 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
 
 
-            QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
-            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
-            Expr permitUserNeExpr = securityLM.overPermitUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
-            Expr forbidUserNeExpr = securityLM.overForbidUserNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("userId"), qne.getMapExprs().get("neId"));
+            QueryBuilder<String, String> qf = new QueryBuilder<>(SetFact.toExclSet("userId", "formId"));
+            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr permitUserFormExpr = securityLM.overPermitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
+            Expr forbidUserFormExpr = securityLM.overForbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
 
-            qne.and(nameExpr.getWhere());
-            qne.and(qne.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qne.and(permitUserNeExpr.getWhere().or(forbidUserNeExpr.getWhere()));
+            qf.and(nameExpr.getWhere());
+            qf.and(qf.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
+            qf.and(permitUserFormExpr.getWhere().or(forbidUserFormExpr.getWhere()));
 
-            qne.addProperty("canonicalName", nameExpr);
-            qne.addProperty("permit", permitUserNeExpr);
-            qne.addProperty("forbid", forbidUserNeExpr);
+            qf.addProperty("canonicalName", nameExpr);
+            qf.addProperty("permit", permitUserFormExpr);
+            qf.addProperty("forbid", forbidUserFormExpr);
 
-            ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
-            for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
+            ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
+            for (ImMap<String, Object> valueMap : formValues) {
+                NavigatorElement element = LM.root.getNavigatorElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
                 if (valueMap.get("forbid") != null)
                     policy.navigator.deny(element);
                 else if (valueMap.get("permit") != null)
@@ -486,8 +493,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
+            Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propValues) {
-                LP<?, ?> prop = businessLogics.findProperty(((String) valueMap.get("cn")).trim());
+                Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
                 if(valueMap.get("fullForbidView") != null)
                     policy.property.view.deny(prop);
                 if(valueMap.get("fullForbidChange") != null)
@@ -524,40 +532,31 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
             ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "navigatorElement", navigatorElementExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("formCanonicalName", securityLM.findProperty("formCanonicalName[NavigatorElement]").getExpr(navigatorElementExpr));
+            query.addProperty("canonicalNameNavigatorElement", securityLM.findProperty("canonicalName[NavigatorElement]").getExpr(navigatorElementExpr));
             query.addProperty("overDefaultNumberUserNavigatorElement", securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr));
             query.and(securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr).getWhere());
-            query.and(securityLM.findProperty("formCanonicalName[NavigatorElement]").getExpr(navigatorElementExpr).getWhere());
+            query.and(securityLM.findProperty("canonicalName[NavigatorElement]").getExpr(navigatorElementExpr).getWhere());
 
             Map<String, Integer> defaultFormsMap = new HashMap<>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
             for (ImMap<Object, Object> entry : result.values()) {
-                String canonicalName = (String) entry.get("formCanonicalName");
+                String canonicalName = (String) entry.get("canonicalNameNavigatorElement");
                 Integer number = (Integer) entry.get("overDefaultNumberUserNavigatorElement");
                 Integer oldNumber = defaultFormsMap.get(canonicalName);
                 Integer newNumber = oldNumber == null ? number : Math.min(oldNumber, number);
                 defaultFormsMap.put(canonicalName, newNumber);
             }
 
-            final List<Map.Entry<String, Integer>> defaultFormsList = new ArrayList<>(defaultFormsMap.entrySet());
+            LinkedList<Map.Entry<String, Integer>> defaultFormsList = new LinkedList<>(defaultFormsMap.entrySet());
             Collections.sort(defaultFormsList, new Comparator<Map.Entry<String, Integer>>() {
                 @Override
                 public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
-                    Integer i1 = o1.getValue();
-                    Integer i2 = o2.getValue();
-                    if (i1 == null && i2 == null) return 0;
-                    if (i2 == null) return -1;
-                    if (i1 == null) return 1;
-                    return i1.compareTo(i2);
+                    return (Integer) (o1.getValue() == null ? o2 : o2.getValue() == null ? 0 : o1.getValue().compareTo(o2.getValue()));
                 }
             });
-            
             List<String> defaultForms = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : defaultFormsList) {
-                NavigatorElement element = businessLogics.findNavigatorElement(entry.getKey());
-                if (element instanceof NavigatorForm) {
-                    defaultForms.add((((NavigatorForm) element).getForm().getCanonicalName()));
-                }
+                defaultForms.add(entry.getKey());
             }
             return defaultForms;
         } catch (Exception e) {
@@ -677,15 +676,14 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return false;
     }
 
-    public boolean checkNavigatorElementExportPermission(String canonicalName) {
+    public boolean checkFormExportPermission(String canonicalName) {
         try {
             DataSession session = createSession();
-            Object ne = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
-            if (!(ne instanceof DataObject)) {
+            ObjectValue formObject = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
+            if (!(formObject instanceof DataObject)) {
                 throw new RuntimeException(localize("{form.navigator.form.with.id.not.found}"));
             }
-            DataObject neObject = new DataObject(ne, reflectionLM.navigatorElement);
-            return securityLM.permitExportNavigatorElement.read(session, neObject) != null;
+            return securityLM.permitExportNavigatorElement.read(session, formObject) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

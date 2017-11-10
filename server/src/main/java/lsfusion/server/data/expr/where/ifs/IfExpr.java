@@ -203,11 +203,11 @@ public class IfExpr extends Expr {
         return new IfExpr(ifWhere.translateOuter(translator), trueExpr.translateOuter(translator), falseExpr.translateOuter(translator));
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
+    public String getSource(CompileSource compile) {
         if (compile instanceof ToString)
-            return "IF(" + ifWhere.getSource(compile) + "," + trueExpr.getSource(compile, needValue) + "," + falseExpr.getSource(compile, needValue) + ")";
+            return "IF(" + ifWhere.getSource(compile) + "," + trueExpr.getSource(compile) + "," + falseExpr.getSource(compile) + ")";
 
-        return compile.syntax.getIIF(ifWhere.getSource(compile), trueExpr.getSource(compile, needValue), falseExpr.getSource(compile, needValue));
+        return compile.syntax.getIIF(ifWhere.getSource(compile), trueExpr.getSource(compile), falseExpr.getSource(compile));
     }
 
     public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {

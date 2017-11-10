@@ -7,7 +7,6 @@ import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
@@ -24,9 +23,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.remote.StaticFormReportManager;
@@ -34,7 +31,7 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,13 +71,27 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
     protected abstract byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException; // single file    
 
-    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPath) throws SQLException, SQLHandledException;
+    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, Map<String, String> reportPath) throws SQLException, SQLHandledException;
 
 
     @Override
-    protected void executeCustom(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
+    protected void executeCustom(FormEntity<?> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects) throws SQLException, SQLHandledException {
 
-        FormReportManager newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
+        FormReportManager newFormManager;
+
+        if(Settings.get().isUseInteractiveReportManagerInsteadOfStatic() && !SystemProperties.isDebug) {
+            FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues);
+            
+            if (!newFormInstance.areObjectsFound()) {
+                context.requestUserInteraction(
+                        new MessageClientAction(ThreadLocalContext.localize(LocalizedString.create("{form.navigator.form.do.not.fit.for.specified.parameters}")),
+                                ThreadLocalContext.localize(form.caption)));
+                return;
+            }
+
+            newFormManager = new InteractiveFormReportManager(newFormInstance);
+        } else
+            newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();
         int top = selectTop == null ? staticType == FormPrintType.MESSAGE ? 30 : 0 : selectTop;
@@ -102,10 +113,8 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                 ServerLoggers.systemLogger.error(e);
             }
         } else { // assert printType != null;
-            List<ReportPath> reportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
-            List<ReportPath> autoReportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getAutoReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
-
-            exportClient(context, form.getCaption(), reportData, reportPathList, autoReportPathList);
+            Map<String, String> reportPath = SystemProperties.isDebug ? newFormManager.getReportPath(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new HashMap<>();
+            exportClient(context, form.caption, reportData, reportPath);
         }
     }
 }

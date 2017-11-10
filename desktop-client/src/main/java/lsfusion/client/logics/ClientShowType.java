@@ -1,5 +1,6 @@
 package lsfusion.client.logics;
 
+import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.serialization.ClientSerializationPool;
 
@@ -13,6 +14,10 @@ public class ClientShowType extends ClientComponent {
     }
 
     public ClientGroupObject groupObject;
+
+    public ClientShowType(ApplicationContext context) {
+        super(context);
+    }
 
     @Override
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

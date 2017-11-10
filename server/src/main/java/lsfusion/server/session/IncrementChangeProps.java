@@ -22,10 +22,6 @@ public class IncrementChangeProps extends IncrementProps {
             addNoChange(noUpdate);
     }
 
-    public boolean contains(CalcProperty property) {
-        return changes.containsKey(property);
-    }
-
     private Map<CalcProperty, PropertyChange<PropertyInterface>> changes = MapFact.mAddRemoveMap(); // mutable поведение
 
     public ImSet<CalcProperty> getProperties() {

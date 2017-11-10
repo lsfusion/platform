@@ -76,8 +76,8 @@ public class SubQueryExpr extends QueryExpr<KeyExpr, Expr, SubQueryJoin, SubQuer
         return create(query, translator.translate(group));
     }
 
-    public String getSource(CompileSource compile, boolean needValue) {
-        return compile.getSource(this, needValue);
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
     }
 
     @Override

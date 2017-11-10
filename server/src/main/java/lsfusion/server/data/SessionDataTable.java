@@ -203,10 +203,10 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     // см. usage
-    public SessionDataTable fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField) {
+    public SessionDataTable fixKeyClasses(ClassWhere<KeyField> fixClasses) {
+        assert getProperties().size()==1;
         SessionTable fixTable;
-        ObjectValue propertyValue = propertyValues.get(valueField);
-        if(propertyValue != null && propertyValue instanceof NullValue &&
+        if(propertyValues.size()>0 && propertyValues.singleValue() instanceof NullValue &&
                 !hashEquals(table, fixTable = table.fixKeyClasses(fixClasses.remove(keyValues.keys())))) {
             return new SessionDataTable(fixTable, keys, keyValues, propertyValues);
         } else

@@ -14,6 +14,7 @@ import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientIntegralClass;
+import lsfusion.interop.FontInfo;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.ServerResponse;
@@ -54,6 +55,18 @@ public class GridController {
 
         view = new GridView(this, form, iuserPreferences, clientGrid.tabVertical, clientGrid.groupObject.needVerticalScroll);
         table = view.getTable();
+
+        FontInfo userFont = table.getUserFont();
+        if (groupController.getGroupObject() != null && userFont != null) {
+            if (userFont.fontSize == 0)
+                table.setFont(table.getFont().deriveFont(userFont.getStyle()));
+            else
+                table.setFont(table.getFont().deriveFont(userFont.getStyle(), userFont.fontSize));
+        }
+
+        Integer headerHeight = table.getUserHeaderHeight();
+        if(headerHeight != null)
+            clientGrid.setHeaderHeight(headerHeight);
     }
 
     public boolean containsProperty(ClientPropertyDraw property) {
