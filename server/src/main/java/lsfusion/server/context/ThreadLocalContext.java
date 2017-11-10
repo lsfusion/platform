@@ -71,6 +71,9 @@ public class ThreadLocalContext {
 
     private static void set(Context c) {
         context.set(c);
+    }
+
+    private static void setLogInfo(Context c) {
         if (c != null) {
             LogInfo logInfo = c.getLogInfo();
             if (logInfo != null) {
@@ -273,6 +276,7 @@ public class ThreadLocalContext {
         if(prevContext == null || !prevContext.equals(context)) {
             ServerLoggers.assertLog(false, "DIFFERENT CONTEXT, PREV : " + prevContext + ", SET : " + context);
             ThreadLocalContext.set(context);
+            ThreadLocalContext.setLogInfo(context);
         }
 
         if(stack != null) {
@@ -297,6 +301,11 @@ public class ThreadLocalContext {
         Context prevContext = ThreadLocalContext.get();
 
         ThreadLocalContext.set(context);
+        if(prevContext == null) {
+            //необходимо выполнить раньше вызова setLogInfo
+            ThreadLocalContext.setSettings();
+        }
+        ThreadLocalContext.setLogInfo(context);
         ThreadLocalContext.stack.set(stack);
 
         if(prevContext == null) {
@@ -307,7 +316,6 @@ public class ThreadLocalContext {
             if(threadInfo instanceof EventThreadInfo) { // можно было попытаться старое имя сохранить, но оно по идее может меняться тогда очень странная логика получится
                 currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + " - " + currentThread.getId());
             }
-            ThreadLocalContext.setSettings();
         }
 
         checkThread(prevContext, assertTop, threadInfo);
@@ -331,6 +339,7 @@ public class ThreadLocalContext {
 
 
         ThreadLocalContext.set(prevContext);
+        ThreadLocalContext.setLogInfo(prevContext);
     }
 
     private static void assureEvent(Context context, NewThreadExecutionStack stack) {

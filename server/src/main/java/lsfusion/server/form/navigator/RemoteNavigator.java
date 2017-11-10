@@ -81,6 +81,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
+    Long userRole;
 
     private DataObject user;
 
@@ -134,6 +135,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try(DataSession session = dbManager.createSession()) {
             this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
         }
+        this.userRole = getRole();
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
         this.currentForm = NullValue.instance;
 
@@ -170,6 +172,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             setUser(user, stack);
             Result<Integer> timeout = new Result<>();
             this.securityPolicy = getUserSecurityPolicy(timeout);
+            this.userRole = getRole();
             this.transactionTimeout = timeout.result;
             updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
             return true;
@@ -343,7 +346,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         public Long getCurrentUserRole() {
             RemoteNavigator remoteNavigator = weakThis.get();
-            return remoteNavigator == null ? null : remoteNavigator.getRole();
+            return remoteNavigator == null ? null : remoteNavigator.userRole;
         }
     }
 
