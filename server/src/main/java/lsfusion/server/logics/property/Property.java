@@ -154,9 +154,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         }
     };
 
-    @IdentityLazy
     public Type getInterfaceType(T propertyInterface) {
-        return getInterfaceClasses(ClassType.materializeChangePolicy).get(propertyInterface).getType();
+        return getInterfaceType(propertyInterface, ClassType.materializeChangePolicy);
+    }
+
+    public Type getWhereInterfaceType(T propertyInterface) {
+        return getInterfaceType(propertyInterface, ClassType.wherePolicy);
+    }
+
+    public Type getInterfaceType(T propertyInterface, ClassType classType) {
+        return getInterfaceClasses(classType).get(propertyInterface).getType();
     }
 
     public abstract boolean isSetNotNull();

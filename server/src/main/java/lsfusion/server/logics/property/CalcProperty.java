@@ -569,6 +569,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return getInterfaceType(key);
         }
     };
+    public final Type.Getter<T> interfaceWhereTypeGetter = new Type.Getter<T>() {
+        public Type getType(T key) {
+            return getWhereInterfaceType(key);
+        }
+    };
 
     @IdentityInstanceLazy
     public ImRevMap<T, KeyExpr> getMapKeys() {
@@ -643,7 +648,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     
     public NoPropertyWhereTableUsage<T> createWhereTable(String debugInfo, ImSet<T> filterInterfaces) {
-        return new NoPropertyWhereTableUsage<>(getCorrelations(filterInterfaces, ClassType.wherePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(filterInterfaces), interfaceTypeGetter);
+        return new NoPropertyWhereTableUsage<>(getCorrelations(filterInterfaces, ClassType.wherePolicy), getTableDebugInfo(debugInfo), getOrderInterfaces(filterInterfaces), interfaceWhereTypeGetter); // тут по идее можно typeGetter сверху протянуть (как было раньше), но так по идее эффективнее (с точки зрения того что getKeyType не надо выполнять, хотя и не принципиально)  
     }
 
     @StackMessage("{message.increment.read.properties}")
