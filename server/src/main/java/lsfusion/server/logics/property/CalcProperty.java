@@ -1033,7 +1033,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             }
         });
     }
-
+    
+    // для assertion'а в основном
+    @StackMessage("{message.core.property.get.classes}")
+    @ThisMessage
     protected <V> V classToAlg(ClassType type, CallableWithParam<AlgType, V> call) {
         boolean assertFull = false;
         if(type == ClassType.ASSERTFULL_NOPREV) {
