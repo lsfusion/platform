@@ -1703,8 +1703,6 @@ public abstract class LogicsModule {
     // ---------------------- Add Form ---------------------- //
 
     protected LAP addAddFormAction(CustomClass cls, ObjectEntity contextObject, FormSessionScope scope) {
-        LCP<ClassPropertyInterface> addedProperty = new LCP<ClassPropertyInterface>(baseLM.getAddedObjectProperty());
-
         LocalizedString caption = LocalizedString.NONAME;
 
         // NEW AUTOSET x=X DO {

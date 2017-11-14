@@ -157,7 +157,10 @@ public class ConnectionLostManager {
                             }
                         }, flushExceptions);
 
+                    int count = 0;
                     for (Map.Entry<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> entry : group.entrySet()) {
+                        if(count++ > 20) // по аналогии с вебом, так как большое количество ошибок открывает слишком много socket'ов (потом может просто надо будет batch обработку сделать) 
+                            break;
                         Collection<NonFatalHandledRemoteException> all = entry.getValue();
                         NonFatalHandledRemoteException nonFatal = all.iterator().next();
                         nonFatal.count = all.size();
