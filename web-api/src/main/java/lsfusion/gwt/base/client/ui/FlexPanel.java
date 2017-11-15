@@ -136,6 +136,19 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
         }
 
+        // верхние контейнеры при расчёте flexBasis не учитывают flexBasis потомков, а используют для этого другие значения,
+        // в частности minWidth. в результате, если у одного из верхних контейнеров выставлен flexBasis = auto, а у одного из потомков 
+        // большое значение flexBasis, то этот потомок обрезается верхним контейнером, который рассчитал себе меньший размер.
+        // пока у нас не предполагается, что компонент будет ужиматься меньше значения flexBasis
+        // - такое решение будет мешать поддерживать flex-shrink
+        // - на момент фикса данный случай прекрасно работал в IE (flexBasis потомка участвует в расчёте flexBasis родителя) 
+        if (flexBasis != null)
+            if (vertical) {
+                childElement.getStyle().setProperty("minHeight", flexBasis + "px");
+            } else {
+                childElement.getStyle().setProperty("minWidth", flexBasis + "px");
+            }
+
         // Adopt.
         adopt(widget);
     }
