@@ -528,8 +528,18 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         });
     }
 
+    // оптимизируем, так как может часто вызываться
     public AndClassSet getCommonClass(K key) {
-        return getCommonClasses(SetFact.singleton(key)).get(key);
+        AndClassSet result = null;
+        for(And<K> where : wheres) {
+            AndClassSet whereClass = where.get(key);
+            if(result == null)
+                result = whereClass;
+            else
+                result = result.or(whereClass);
+        }
+        return result;        
+//        return getCommonClasses(SetFact.singleton(key)).get(key);
     }
 
     public OrObjectClassSet getOrSet(K key) {

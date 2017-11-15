@@ -362,6 +362,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     public int getCount() {
+        assert !unknown;
         return getCount(this);
     }
 

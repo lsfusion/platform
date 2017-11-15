@@ -215,7 +215,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             tobt += hash % 255;
             hash = hash/255;
         }
-        return "G"+tobt;
+        return "G"+tobt+"-"+getInnerJoin();
     }
 
     @ParamLazy
