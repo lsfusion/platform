@@ -1,38 +1,48 @@
 MODULE Profiling;
 
-REQUIRE Service;
+REQUIRE Service, Utils;
 
-readSettings () = CUSTOM 'lsfusion.erp.utils.ReadProfilingSettingsActionProperty';
+toString = FORMULA STRING[100] 'CAST($1 AS character(100))';
+toBoolean(s) = IF s == 'true' THEN TRUE;
 
-changeProfilingSettingsInteger = CUSTOM 'lsfusion.erp.utils.ChangeProfilingSettingsActionProperty' (VARSTRING[100], INTEGER);
-changeProfilingSettingsBoolean = CUSTOM 'lsfusion.erp.utils.ChangeProfilingSettingsActionProperty' (VARSTRING[100], BOOLEAN);
+changeProfilingSettingsInteger(ReflectionProperty r, INTEGER value) = {
+   baseValue(r) <- toString(value);
+}
+changeProfilingSettingsBoolean(ReflectionProperty r, BOOLEAN value) = {
+    baseValue(r) <- IF value THEN 'true' ELSE 'false';
+}
 
-explainNoAnalyze 'Explain No Analyze' = DATA LOCAL BOOLEAN ();
-explainJavaStack 'Explain Java Stack' = DATA LOCAL BOOLEAN ();
-explainCompile 'Explain Compile' = DATA LOCAL BOOLEAN ();
-explainThreshold 'Explain Threshold' = DATA LOCAL INTEGER ();
+explainNoAnalyze 'Explain No Analyze' = DATA BOOLEAN ();
+WHEN CHANGED(explainNoAnalyze()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainNoAnalyze'), explainNoAnalyze());
+}
+explainJavaStack 'Explain Java Stack' = DATA BOOLEAN ();
+WHEN CHANGED(explainJavaStack()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainJavaStack'), explainJavaStack());
+}
+explainCompile 'Explain Compile' = DATA BOOLEAN ();
+WHEN CHANGED(explainCompile()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainCompile'), explainCompile());
+}
+explainThreshold 'Explain Threshold' = DATA INTEGER ();
+WHEN CHANGED(explainThreshold()) DO {
+    changeProfilingSettingsInteger(reflectionProperty('explainThreshold'), explainThreshold());
+}
 
 FORM profiler 'Профилировщик'
-    EVENTS ON INIT { readSettings(); }
+    EVENTS ON INIT { 
+        NEWSESSION {
+        explainNoAnalyze() <- toBoolean(value(reflectionProperty('explainNoAnalyze'), NULL));
+        explainJavaStack() <- toBoolean(value(reflectionProperty('explainJavaStack'), NULL));
+        explainCompile() <- toBoolean(value(reflectionProperty('explainCompile'), NULL));
+        explainThreshold() <- toInteger(value(reflectionProperty('explainThreshold'), NULL));
+        apply();
+        }
+    }
     OBJECTS cu = CustomUser
     PROPERTIES(cu) PANEL explainAnalyzeMode
     FILTERS cu == currentUser()
-    PROPERTIES() explainNoAnalyze ON CHANGE { 
-                    INPUT b = BOOLEAN DO explainNoAnalyze() <- b;
-                    changeProfilingSettingsBoolean('explainNoAnalyze', explainNoAnalyze()); 
-                    },
-                 explainJavaStack ON CHANGE { 
-                    INPUT b = BOOLEAN DO explainJavaStack() <- b;
-                    changeProfilingSettingsBoolean('explainJavaStack', explainJavaStack()); 
-                 },
-                 explainCompile ON CHANGE { 
-                    INPUT b = BOOLEAN DO explainCompile() <- b;
-                    changeProfilingSettingsBoolean('explainCompile', explainCompile()); 
-                 },
-                 explainThreshold ON CHANGE { 
-                    INPUT i = INTEGER DO explainThreshold() <- i;
-                    changeProfilingSettingsInteger('explainThreshold', explainThreshold()); 
-                 }
+    PROPERTIES() explainNoAnalyze, explainJavaStack, explainCompile, explainThreshold
 ;
 
 DESIGN profiler {
