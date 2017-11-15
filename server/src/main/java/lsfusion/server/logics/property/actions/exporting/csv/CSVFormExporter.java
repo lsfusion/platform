@@ -2,7 +2,6 @@ package lsfusion.server.logics.property.actions.exporting.csv;
 
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
-import org.olap4j.impl.ArrayMap;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +12,6 @@ public class CSVFormExporter extends PlainFormExporter {
     private boolean noHeader;
     private String separator;
     private String charset;
-    private Map<String, String> lastRecordsMap = new ArrayMap<>();
     private Map<String, PrintWriter> writersMap = null;
     private Map<String, File> filesMap = null;
 
@@ -76,9 +74,7 @@ public class CSVFormExporter extends PlainFormExporter {
                     exportRow((Node) c, childEntry.getKey());
             }
         }
-        String currentRecord = String.valueOf(values);
-        if(!currentRecord.equals(lastRecordsMap.get(id)) && !emptyRow(values)) {
-            lastRecordsMap.put(id, currentRecord);
+        if(!emptyRow(values)) {
             for (int i = 0; i < values.size(); i++) {
                 writer.print((values.get(i) == null ? "" : String.valueOf(values.get(i)).trim()) + (values.size() == (i + 1) ? "" : separator));
             }

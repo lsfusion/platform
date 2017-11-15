@@ -7,7 +7,6 @@ import jasperapi.ReportPropertyData;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
-import org.olap4j.impl.ArrayMap;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.util.*;
 
 public class DBFFormExporter extends PlainFormExporter {
     private String charset;
-    private Map<String, String> lastRecordsMap = new ArrayMap<>();
     private Map<String, DBFWriter> writersMap = null;
     private Map<String, File> filesMap = null;
 
@@ -76,9 +74,7 @@ public class DBFFormExporter extends PlainFormExporter {
                     exportRow((Node) c, childEntry.getKey());
             }
         }
-        String currentRecord = String.valueOf(values);
-        if (!currentRecord.equals(lastRecordsMap.get(id)) && !emptyRow(values)) {
-            lastRecordsMap.put(id, currentRecord);
+        if (!emptyRow(values)) {
             writer.addRecord(values.toArray());
         }
     }
