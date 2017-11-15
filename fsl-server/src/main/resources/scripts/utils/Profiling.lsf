@@ -29,16 +29,19 @@ WHEN CHANGED(explainThreshold()) DO {
     changeProfilingSettingsInteger(reflectionProperty('explainThreshold'), explainThreshold());
 }
 
+WHEN CHANGED(value(ReflectionProperty r, NULL)) DO {
+    CASE
+        WHEN name(r) == 'explainNoAnalyze' THEN 
+            explainNoAnalyze() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainJavaStack' THEN 
+            explainJavaStack() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainCompile' THEN 
+            explainCompile() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainThreshold' THEN 
+            explainThreshold() <- toInteger(value(r, NULL));
+}
+
 FORM profiler 'Профилировщик'
-    EVENTS ON INIT { 
-        NEWSESSION {
-        explainNoAnalyze() <- toBoolean(value(reflectionProperty('explainNoAnalyze'), NULL));
-        explainJavaStack() <- toBoolean(value(reflectionProperty('explainJavaStack'), NULL));
-        explainCompile() <- toBoolean(value(reflectionProperty('explainCompile'), NULL));
-        explainThreshold() <- toInteger(value(reflectionProperty('explainThreshold'), NULL));
-        apply();
-        }
-    }
     OBJECTS cu = CustomUser
     PROPERTIES(cu) PANEL explainAnalyzeMode
     FILTERS cu == currentUser()
