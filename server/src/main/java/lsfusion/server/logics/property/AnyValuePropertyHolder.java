@@ -104,7 +104,7 @@ public class AnyValuePropertyHolder {
         if (valueType instanceof ObjectType) {
             return objectProperty;
         } else if (valueType instanceof StringClass) {
-            if (valueType == StringClass.text) {
+            if (((StringClass) valueType).length.isUnlimited()) {
                 return textProperty;
             }
             return stringProperty;
