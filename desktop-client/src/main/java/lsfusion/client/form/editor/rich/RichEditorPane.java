@@ -1,6 +1,8 @@
 package lsfusion.client.form.editor.rich;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.client.Log;
 import lsfusion.client.form.showtype.ShowTypeView;
 import net.atlanticbb.tantlinger.ui.DefaultAction;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
@@ -25,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.EmptyStackException;
 import java.util.Vector;
 
 import static java.lang.Math.max;
@@ -377,6 +380,10 @@ public class RichEditorPane extends JPanel {
             Document doc = editorPane.getDocument();
             StringReader reader = new StringReader(HTMLUtils.jEditorPaneizeHTML(text));
             kit.read(reader, doc, 0);
+        } catch (EmptyStackException e) {
+            // падает при редактировании некорректного html текста (в частности когда CSSParser не может распарсить стиль). 
+            // игнорируем, т.к. из-за многократных попыток отрисовки бесконечно рисуются диалоги с ошибкой.
+            Log.message("Невозможно отобразить строку для редактирования.\n" + ExceptionUtils.getStackTrace(e.getStackTrace()));
         } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
