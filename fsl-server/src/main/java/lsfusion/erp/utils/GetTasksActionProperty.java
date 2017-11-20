@@ -30,6 +30,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
 
+import static lsfusion.base.BaseUtils.trim;
+
 abstract class GetTasksActionProperty extends ScriptingActionProperty {
 
     GetTasksActionProperty(ScriptingLogicsModule LM) {
@@ -172,9 +174,5 @@ abstract class GetTasksActionProperty extends ScriptingActionProperty {
                 }
             }
         }
-    }
-
-    private String trim(String input) {
-        return input == null ? null : input.trim();
     }
 }

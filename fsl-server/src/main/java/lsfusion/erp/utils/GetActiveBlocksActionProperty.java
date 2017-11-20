@@ -29,6 +29,8 @@ import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
+import static lsfusion.base.BaseUtils.trim;
+
 public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
     public GetActiveBlocksActionProperty(ScriptingLogicsModule LM) {
@@ -203,9 +205,5 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
                 i++;
             }
         }
-    }
-
-    protected String trim(String input) {
-        return input == null ? null : input.trim();
     }
 }
