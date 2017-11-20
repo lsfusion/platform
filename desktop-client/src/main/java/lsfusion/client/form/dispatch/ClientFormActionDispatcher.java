@@ -2,11 +2,11 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
-import lsfusion.client.ClientReportUtils;
 import lsfusion.client.Main;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
+import lsfusion.client.report.ClientReportUtils;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;

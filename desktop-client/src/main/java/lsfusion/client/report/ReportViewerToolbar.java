@@ -1,11 +1,15 @@
-package lsfusion.client;
+package lsfusion.client.report;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
+import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
+import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JRViewer;
+import net.sf.jasperreports.swing.JRViewerController;
+import net.sf.jasperreports.swing.JRViewerToolbar;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -17,14 +21,14 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.rmi.RemoteException;
 
-public class ReportViewer extends JRViewer {
-    JButton editReportButton = null;
-    JButton addReportButton = null;
-    JButton deleteReportButton = null;
-    Boolean hasCustomReports;
-
-    public ReportViewer(JasperPrint print, final String printerName, final EditReportInvoker editInvoker) {
-        super(print);
+public class ReportViewerToolbar extends JRViewerToolbar {
+    private JButton editReportButton = null;
+    private JButton addReportButton = null;
+    private JButton deleteReportButton = null;
+    private Boolean hasCustomReports;
+    
+    public ReportViewerToolbar(JRViewerController viewerContext) {
+        super(viewerContext);
 
         lastFolder = SystemUtils.loadCurrentDirectory();
 
@@ -49,13 +53,14 @@ public class ReportViewer extends JRViewer {
                 }
             }
         });
-
+    }
+    
+    protected void modify(final String printerName, EditReportInvoker editInvoker) {
         if(printerName != null) {
             btnPrint.removeActionListener(btnPrint.getActionListeners()[0]);
             btnPrint.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
                     PrintService[] printers = PrintServiceLookup.lookupPrintServices(null, null);
                     PrintService printer = null;
                     for (PrintService p : printers) {
@@ -77,22 +82,21 @@ public class ReportViewer extends JRViewer {
         }
 
         if (editInvoker != null) {
-
             try {
                 hasCustomReports = editInvoker.hasCustomReports();
             } catch (RemoteException e) {
                 throw Throwables.propagate(e);
             }
 
-            tlbToolBar.add(Box.createHorizontalStrut(10));
+            add(Box.createHorizontalStrut(10));
 
             editReportButton = getEditReportButton(editInvoker, hasCustomReports);
             deleteReportButton = getDeleteReportButton(editInvoker, hasCustomReports);
             addReportButton = getAddReportButton(editInvoker);
 
-            tlbToolBar.add(editReportButton);
-            tlbToolBar.add(addReportButton);
-            tlbToolBar.add(deleteReportButton);
+            add(editReportButton);
+            add(addReportButton);
+            add(deleteReportButton);
         }
     }
 
@@ -175,7 +179,7 @@ public class ReportViewer extends JRViewer {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                      deleteButtonPressed(editInvoker);
+                        deleteButtonPressed(editInvoker);
                     }
                 });
             }
@@ -201,9 +205,5 @@ public class ReportViewer extends JRViewer {
 
     public void clickBtnPrint() {
         btnPrint.doClick();
-    }
-
-    public double getRealZoom() {
-        return realZoom;
     }
 }

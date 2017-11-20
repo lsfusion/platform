@@ -22,6 +22,7 @@ import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
+import lsfusion.client.report.ReportDialog;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;

@@ -1,6 +1,9 @@
-package lsfusion.client;
+package lsfusion.client.report;
 
 import jasperapi.ReportGenerator;
+import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
+import lsfusion.client.SwingUtils;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;

@@ -2,7 +2,10 @@ package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
 import lsfusion.server.context.ThreadLocalContext;
+import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -42,7 +45,11 @@ public class WordClass extends StaticFormatFileClass {
     }
 
     public String getOpenExtension(byte[] file) {
-        return file.length<=2 ? "doc" : ((file[0] == 80 && file[1] == 75) ? "docx" : "doc");
+        try {
+            return DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "docx" : "doc";
+        } catch (IOException e) {
+            return "doc";
+        }
     }
 
     @Override

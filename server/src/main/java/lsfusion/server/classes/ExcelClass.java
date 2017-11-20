@@ -3,7 +3,7 @@ package lsfusion.server.classes;
 import lsfusion.interop.Data;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.i18n.LocalizedString;
-import org.apache.poi.POIXMLDocument;
+import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class ExcelClass extends StaticFormatFileClass {
 
     public String getOpenExtension(byte[] file) {
         try {
-            return POIXMLDocument.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "xlsx" : "xls";
+            return DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "xlsx" : "xls";
         } catch (IOException e) {
             return "xls";
         }

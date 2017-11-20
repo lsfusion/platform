@@ -2,7 +2,7 @@ package lsfusion.client.form.renderer;
 
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.ClientPropertyDraw;
-import org.apache.poi.POIXMLDocument;
+import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class WordPropertyRenderer extends FilePropertyRenderer {
         if (value != null) {
             String extension = "doc";
             try {
-                if (POIXMLDocument.hasOOXMLHeader(new ByteArrayInputStream((byte[]) value))) {
+                if (DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream((byte[]) value))) {
                     extension = "docx";
                 }
             } catch (IOException ignored) {}
