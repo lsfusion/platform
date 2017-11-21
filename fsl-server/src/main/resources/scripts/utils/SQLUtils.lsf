@@ -38,7 +38,7 @@ DESIGN admin {
     }
 }
 
-changeAllDates 'Сместить время всех свойств и ключей' = CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' ();
+changeAllDates 'Сместить время всех свойств и ключей' = CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' () CONFIRM;
 secondsChangeAllDates 'Интервал в секундах' = DATA INTEGER ();
 
 EXTEND FORM admin PROPERTIES() changeAllDates, secondsChangeAllDates;
