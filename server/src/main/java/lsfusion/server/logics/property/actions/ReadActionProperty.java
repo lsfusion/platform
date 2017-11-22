@@ -17,13 +17,12 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
@@ -237,9 +236,13 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             } finally {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
+                try {
+                    if (ftpClient.isConnected()) {
+                        ftpClient.logout();
+                        ftpClient.disconnect();
+                    }
+                } catch (FTPConnectionClosedException e1) {
+                    ServerLoggers.importLogger.error("Ignored: ", e1);
                 }
             }
         } else {
