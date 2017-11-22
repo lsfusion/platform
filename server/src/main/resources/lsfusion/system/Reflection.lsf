@@ -94,6 +94,8 @@ quantityTop 'Количество разновидностей (Top)' = DATA INT
 notNullQuantity 'Количество не null значений' = DATA INTEGER (Property);
 overStats 'Кол-во записей' (Property property) = OVERRIDE notNullQuantity(property), stats(property);
 
+hasNotNullQuantity() = GROUP SUM 1 IF notNullQuantity(Property property);
+
 lastRecalculate 'Последний пересчёт аггрегаций' = DATA DATETIME (Property);
 
 CLASS PropertyDraw 'Свойство на форме';

@@ -63,6 +63,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP quantityTopProperty;
     public LCP notNullQuantityProperty;
     public LCP lastRecalculateProperty;
+    public LCP hasNotNullQuantity;
 
     public LCP numberNavigatorElement;
     
@@ -250,6 +251,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         quantityTopProperty = findProperty("quantityTop[Property]");
         notNullQuantityProperty = findProperty("notNullQuantity[Property]");
         lastRecalculateProperty = findProperty("lastRecalculate[Property]");
+        hasNotNullQuantity = findProperty("hasNotNullQuantity[]");
 
         // ------- Логика представлений --------- //
 
