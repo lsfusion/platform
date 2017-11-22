@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl;
 
+import lsfusion.server.SystemProperties;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.tasks.ReflectionTask;
 import org.apache.log4j.Logger;
@@ -22,6 +23,7 @@ public class FirstRecalculateStatsTask extends ReflectionTask {
 
     @Override
     public void run(Logger logger) {
-        BL.firstRecalculateStats();
+        if(!SystemProperties.isDebug)
+            BL.firstRecalculateStats();
     }
 }
