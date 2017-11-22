@@ -1890,6 +1890,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return logicModules;
     }
 
+    public void firstRecalculateStats() {
+        try(DataSession session = getDbManager().createSession()) {
+            if(reflectionLM.hasNotNullQuantity.read(session) == null) {
+                recalculateStats(session);
+                session.apply(this, ThreadLocalContext.getStack());
+            }
+        } catch (SQLException | SQLHandledException e) {
+            ServerLoggers.serviceLogger.error("FirstRecalculateStats Error: ", e);
+        }
+    }
+
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         int count = 0;
         ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet());
