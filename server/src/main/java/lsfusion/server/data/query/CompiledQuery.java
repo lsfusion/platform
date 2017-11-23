@@ -1898,7 +1898,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // key - какие есть, value - которые должны быть
-    private static String translateParam(String query,ImMap<String,String> paramValues) {
+    public static String translateParam(String query,ImMap<String,String> paramValues) {
         // генерируем промежуточные имена, перетранслируем на них
         ImRevMap<String, String> preTranslate = paramValues.mapRevValues(new GenNameIndex("transp", "nt"));
         for(int i=0,size=preTranslate.size();i<size;i++)

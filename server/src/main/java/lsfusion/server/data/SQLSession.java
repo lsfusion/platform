@@ -1507,7 +1507,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // б) большое количество NULL значений (скажем 0,999975) - например признак своей компании в множестве юрлиц, тогда становится очень большая дисперсия (то есть тогда либо не компания, и результат 0, или компания и результат большой 100к, при этом когда применяется selectivity он ессно round'ся и 0-100к превращается в 10, что неправильно в общем случае)  
     // Лечится только разнесением в разные таблицы / по разным классам (когда это возможно)
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
-    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
+    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml, Supplier<String> fullText) throws SQLException {
         long l = System.currentTimeMillis();
         long actualTime = System.currentTimeMillis() - l;
         int minSpaces = Integer.MAX_VALUE;
@@ -1588,7 +1588,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         explainLogger.info(outRow); // выводим время, чтобы видеть, что идет тот же запрос (когда очень большой запрос)
 
                     if(Settings.get().isExplainCompile())
-                        SQLDebugInfo.outCompileDebugInfo(statementInfo);
+                        SQLDebugInfo.outCompileDebugInfo("Full text : " + fullText.get() + '\n' + statementInfo);
                 } //else {
                 //  explainLogger.info(rtime);
                 //}

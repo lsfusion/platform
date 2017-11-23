@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.query.CompiledQuery;
 import lsfusion.server.data.query.MaterializedQuery;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.stat.Cost;
@@ -122,6 +123,14 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         for(SQLQuery subQuery : subQueries.valueIt())
             result += subQuery.getLength();
         return result;
+    }
+
+    protected String getFullText() {
+        return CompiledQuery.translateParam(command, subQueries.mapValues(new GetValue<String, SQLQuery>() {
+            public String getMapValue(SQLQuery value) {
+                return value.getFullText();
+            }
+        }));
     }
 
     public abstract boolean isDML();
