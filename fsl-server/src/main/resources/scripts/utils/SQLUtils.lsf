@@ -249,7 +249,8 @@ FORM processMonitor 'Монитор процессов'
                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
-    FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
+    FILTERS idThreadProcess(i)
+    FILTERS idThreadProcess(i)
     FILTERGROUP idleInTransaction FILTER 'Idle In Transaction' statusSQLProcess(i) == 'idle in transaction'
     EVENTS ON INIT setDefaultProcessType()
     
