@@ -84,6 +84,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     Long userRole;
 
     private DataObject user;
+    
+    private LogInfo logInfo; // очень опасно читать его в самом getLogInfo, так как например unreferenced может вызываться асинхронно и заблокироваться на чтении logInfo, после чего непонятно кто deactivate'ит объект   
 
     private LocalePreferences userLocalePreferences;
     
@@ -134,6 +136,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         try(DataSession session = dbManager.createSession()) {
             this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
+
+            String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
+            boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.currentUserAllowExcessAllocatedBytes.read(session) != null;
+            String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
+            String userRole = (String) businessLogics.securityLM.currentUserMainRoleName.read(session);
+            logInfo = new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
         }
         this.userRole = getRole();
         this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
@@ -217,19 +225,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.getLogMessage();
     }
 
-    @IdentityLazy
     public LogInfo getLogInfo() {
         try {
-            if(isClosed())
-                return LogInfo.system;
-
-            try (DataSession session = createSession()) {
-                String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
-                boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.currentUserAllowExcessAllocatedBytes.read(session) != null;
-                String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-                String userRole = (String) businessLogics.securityLM.currentUserMainRoleName.read(session);
-                return new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
-            }
+            return logInfo;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
