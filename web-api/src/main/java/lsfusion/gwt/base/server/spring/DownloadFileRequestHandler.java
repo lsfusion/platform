@@ -20,6 +20,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String fileName = request.getParameter("name");
+        String displayName = request.getParameter("displayName");
         File file = new File(context.getRealPath("WEB-INF/temp"), fileName);
         FileInputStream fis = new FileInputStream(file);
         MimetypesFileTypeMap mimeMap;
@@ -29,7 +30,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             mimeMap = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
         }
         response.setContentType(mimeMap.getContentType(file));
-        response.addHeader("Content-Disposition", "inline; filename=" + fileName);
+        response.addHeader("Content-Disposition", "inline; filename=" + (displayName != null ? displayName : fileName));
         ByteStreams.copy(fis, response.getOutputStream());
         fis.close();
         file.delete();

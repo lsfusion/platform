@@ -193,22 +193,22 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenFileAction action) {
-        downloadFile(action.filePath);
+        downloadFile(action.filePath, action.fileName);
     }
 
     @Override
     public void execute(GExportFileAction action) {
         if (action.filePaths != null) {
             for (String filePath : action.filePaths) {
-                downloadFile(filePath);
+                downloadFile(filePath, null);
             }
         }
     }
 
-    private void downloadFile(String filePath) {
+    private void downloadFile(String filePath, String fileName) {
         if (filePath != null) {
-            String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + filePath;
-            Window.open(fileUrl, filePath, "");
+            String fileUrl = GwtClientUtils.getWebAppBaseURL() + "downloadFile?name=" + filePath + (fileName != null ? "&displayName=" + fileName : "");
+            Window.open(fileUrl, fileName != null ? fileName : filePath, "");
         }
     }
 
