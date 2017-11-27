@@ -104,7 +104,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     public ExClassSet calcInferValueClass(final ImMap<Interface<I>, ExClassSet> inferred, final InferType inferType) {
-        ImMap<I, ExClassSet> innerInferred = explicitInnerClasses == null ? null : ExClassSet.toEx(explicitInnerClasses);
+        ImMap<I, ExClassSet> innerInferred;
         if(inferType != InferType.RESOLVE) {
             innerInferred = getInferExplicitCalcInterfaces(innerInterfaces, noOld(), inferType, explicitInnerClasses, new Callable<ImMap<I, ExClassSet>>() {
                 public ImMap<I, ExClassSet> call() throws Exception {

@@ -1705,7 +1705,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // assert что у change классы совпадают с property
         ServerLoggers.assertLog(property.isSingleApplyStored(), "NOT SINGLE APPLY STORED");
-        assert fitClasses(property, change); // проверяет гипотезу
+        assert fitClasses(property, change); // может падать, если явные классы уже чем реально использованные
         assert fitKeyClasses(property, change); // дополнительная проверка, она должна обеспечиваться тем что в change не должно быть замен null на null
 
         if(change.isEmpty())

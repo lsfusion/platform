@@ -64,7 +64,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private static final Logger sqlConflictLogger = ServerLoggers.sqlConflictLogger;
-    private WeakReference<Thread> activeThread;
 
     private static ConcurrentIdentityWeakHashMap<SQLSession, Integer> sqlSessionMap = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
@@ -407,7 +406,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //        ServerLoggers.pausableLogStack("LOCKREAD GET " + this);
 
         try {
-            prevActiveThread = setActiveThread();
+            setActiveThread(tryLock);
             if(owner != OperationOwner.unknown)
                 owner.checkThreadSafeAccess(writeOwner);
         } catch (Throwable t) {
@@ -434,13 +433,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private void unlockRead(boolean dropActiveThread) {
-        if(dropActiveThread)
-            dropActiveThread(prevActiveThread);
+        dropActiveThread(dropActiveThread);
         lock.readLock().unlock();
 //        ServerLoggers.pausableLogStack("UNLOCKREAD " + this);
     }
     
-    private WeakReference<Thread> prevActiveThread; // для перестарта соединения и других системных процессов
     private OperationOwner writeOwner;
 
     private void lockWrite(OperationOwner owner) {
@@ -462,7 +459,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 //        ServerLoggers.pausableLogStack("LOCKWRITE GET " + this);
 
-        prevActiveThread = setActiveThread();
+        setActiveThread(tryLock);
         writeOwner = owner;
 
         return true;
@@ -475,8 +472,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void unlockWrite(boolean dropActiveThread) {
         writeOwner = null;
 
-        if(dropActiveThread)
-            dropActiveThread(prevActiveThread);
+        dropActiveThread(dropActiveThread);
         lock.writeLock().unlock();
 //        ServerLoggers.pausableLogStack("UNLOCKWRITE " + this);
     }
@@ -2877,21 +2873,33 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return mapNames(exprs, exprs.keys().toRevMap(), order);
     }
 
+    private final Object activeThreadLock = new Object();
+    private WeakLinkedHashSet<Thread> activeThreads = new WeakLinkedHashSet<>(); // set для перестарта соединения и других async системных процессов
+    private WeakReference<Thread> lastActiveSyncThread; // чтобы не терялся поток, так как activeThread не синхронизирован
+
     public Thread getActiveThread() {
-        if(activeThread == null)
-            return null;
-
-        return activeThread.get();
+        synchronized (activeThreadLock) {
+            Thread activeThread = activeThreads.first();
+            if(activeThread != null)
+                return activeThread;
+            
+            return lastActiveSyncThread == null ? null : lastActiveSyncThread.get();
+        }
     }
 
-    private WeakReference<Thread> setActiveThread() {
-        WeakReference<Thread> prev = activeThread;
-        activeThread = new WeakReference<>(Thread.currentThread());
-        return prev;
+    private void setActiveThread(boolean async) {
+        synchronized (activeThreadLock) {
+            activeThreads.add(Thread.currentThread()); // не excl, потому как сначала lockWrite берет поток, а потом lockRead
+        }
     }
 
-    private void dropActiveThread(WeakReference<Thread> prev) {
-        activeThread = prev;
+    private void dropActiveThread(boolean async) {
+        synchronized (activeThreadLock) {
+            Thread currentThread = Thread.currentThread();
+            activeThreads.remove(currentThread);
+            if(!async)
+                lastActiveSyncThread = new WeakReference<>(currentThread);
+        }
     }
 
     private void runLockReadOperation(SQLRunnable run) throws SQLException, SQLHandledException {
