@@ -34,7 +34,7 @@ public abstract class ImportIterator {
         String result = null;
         try {
             if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
-                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm:ss");
+                Date date = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm", "dd.MM.yyyy HH:mm:ss");
                 if(date != null)
                     result = dateFormat.format(date);
             }
