@@ -1,6 +1,6 @@
 MODULE Profiler;
 
-REQUIRE Security, Utils, Profiling;
+REQUIRE Security, Service, Utils;
 
 CLASS ProfileObject {
     top 'Базовое действие'
@@ -207,8 +207,53 @@ initFilters() = {
     order() <- ProfilerIndex.totalTimeNoWait;
     active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
 }
+
+toString = FORMULA STRING[100] 'CAST($1 AS character(100))';
+toBoolean(s) = IF s == 'true' THEN TRUE;
+
+changeProfilingSettingsInteger(ReflectionProperty r, INTEGER value) = {
+   baseValue(r) <- toString(value);
+}
+changeProfilingSettingsBoolean(ReflectionProperty r, BOOLEAN value) = {
+    baseValue(r) <- IF value THEN 'true' ELSE 'false';
+}
+
+explainNoAnalyze 'Explain No Analyze' = DATA BOOLEAN ();
+WHEN CHANGED(explainNoAnalyze()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainNoAnalyze'), explainNoAnalyze());
+}
+explainJavaStack 'Explain Java Stack' = DATA BOOLEAN ();
+WHEN CHANGED(explainJavaStack()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainJavaStack'), explainJavaStack());
+}
+explainCompile 'Explain Compile' = DATA BOOLEAN ();
+WHEN CHANGED(explainCompile()) DO {
+    changeProfilingSettingsBoolean(reflectionProperty('explainCompile'), explainCompile());
+}
+explainThreshold 'Explain Threshold' = DATA INTEGER ();
+WHEN CHANGED(explainThreshold()) DO {
+    changeProfilingSettingsInteger(reflectionProperty('explainThreshold'), explainThreshold());
+}
+
+WHEN CHANGED(value(ReflectionProperty r, NULL)) DO {
+    CASE
+        WHEN name(r) == 'explainNoAnalyze' THEN 
+            explainNoAnalyze() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainJavaStack' THEN 
+            explainJavaStack() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainCompile' THEN 
+            explainCompile() <- toBoolean(value(r, NULL));
+        WHEN name(r) == 'explainThreshold' THEN 
+            explainThreshold() <- toInteger(value(r, NULL));
+}
         
-EXTEND FORM profiler
+FORM profiler 'Профилировщик'
+
+    OBJECTS cu = CustomUser
+    PROPERTIES(cu) PANEL explainAnalyzeMode
+    FILTERS cu == currentUser()
+    PROPERTIES() explainNoAnalyze, explainJavaStack, explainCompile, explainThreshold
+    
     PROPERTIES() startProfiler SHOWIF isStoppedProfiler(), stopProfiler SHOWIF isStartedProfiler(), nameOrder
   
 //настройки
@@ -305,7 +350,23 @@ DESIGN profiler {
         caption = 'Верхнее действие';
     }
     
-    tab {
+    NEW tab {
+        type = TABBED;
+        fill = 1;
+        NEW sql {
+            caption = 'SQL';
+            NEW cubox {
+                caption = 'Текущий пользователь';
+                MOVE PROPERTY(explainAnalyzeMode(cu));
+            }
+            NEW settingsBox {
+                caption = 'Настройки';
+                MOVE PROPERTY(explainNoAnalyze());
+                MOVE PROPERTY(explainJavaStack());
+                MOVE PROPERTY(explainCompile());
+                MOVE PROPERTY(explainThreshold());
+             }
+        }
         NEW first {
             caption = 'Настройки';
             MOVE PROPERTY (startProfiler());
