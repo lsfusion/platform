@@ -51,11 +51,11 @@ script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
 scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
 property = DATA Property (ScheduledTaskDetail);
-captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail));
-canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail));
+captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail)) PREFCHARWIDTH 50;
+canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail)) PREFCHARWIDTH 50;
 parameter 'Параметр свойства' = DATA TEXT (ScheduledTaskDetail);
-classProperty 'Класс свойства' (ScheduledTaskDetail scheduledTaskDetail) = class(property(scheduledTaskDetail));
-returnProperty 'Возвращаемый класс' (ScheduledTaskDetail scheduledTaskDetail) = return(property(scheduledTaskDetail));
+classProperty 'Класс свойства' (ScheduledTaskDetail scheduledTaskDetail) = class(property(scheduledTaskDetail)) PREFCHARWIDTH 25;
+returnProperty 'Возвращаемый класс' (ScheduledTaskDetail scheduledTaskDetail) = return(property(scheduledTaskDetail)) PREFCHARWIDTH 25;
 timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
 ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
@@ -167,15 +167,18 @@ DESIGN scheduledTask {
         NEW south {
             fill = 2;
             type = TABBED;
-            MOVE BOX(td) {
+            NEW property{
                 caption = 'Свойства';
+                type = SPLITH;
+                MOVE BOX(td) {
+                    PROPERTY(parameter(td)) {
+                        preferredValueSize = (-1, 18);
+                        minimumValueSize = (-1, 18);
+                    }
+                }
                 MOVE PROPERTY(script(td)) {
                     panelCaptionAbove = TRUE;
                     fill = 0.5;
-                }
-                PROPERTY(parameter(td)) {
-                    preferredValueSize = (-1, 18);
-                    minimumValueSize = (-1, 18);
                 }
             }
             NEW logContainer {
