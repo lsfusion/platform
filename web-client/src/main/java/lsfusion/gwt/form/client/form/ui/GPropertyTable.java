@@ -172,7 +172,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     @Override
     protected <C> void postFireEventToCell(Event event, String eventType, Element cellParent, T rowValue, Context context, HasCell<T, C> column) {
         GPropertyDraw property = getProperty(context);
-        String actionSID = getPropertyEditActionSID(editEvent, property, editBindingMap);
+        String actionSID = getPropertyEditActionSID(new NativeEditEvent(event), property, editBindingMap);
         // см. комментарий в onEditEvent(). дублируется, поскольку при F12 после первого хака cellIsEditing успевает сброситься 
         if (actionSID != null && GEditBindingMap.GROUP_CHANGE.equals(actionSID)) {
             cellIsEditing = true;
@@ -248,7 +248,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     @Override
     public void takeFocusAfterEdit() {
         setFocus(true);
-        cellIsEditing = false;
     }
 
     @Override
