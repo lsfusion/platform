@@ -94,6 +94,11 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return target.getReportPath(requestIndex, lastReceivedRequestIndex, toExcel, groupId, userPreferences, useAuto);
     }
 
+    @Override
+    public List<ReportPath> getAutoReportPathList(String formSID) throws RemoteException {
+        return target.getAutoReportPathList(formSID);
+    }
+
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
         ServerResponse result = target.getRemoteChanges(requestIndex, lastReceivedRequestIndex, refresh);

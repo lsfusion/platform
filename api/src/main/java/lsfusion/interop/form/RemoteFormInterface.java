@@ -89,6 +89,8 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     List<ReportPath> getReportPath(long requestIndex, long lastReceivedRequestIndex, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, boolean useAuto) throws RemoteException;
 
+    List<ReportPath> getAutoReportPathList(String formSID) throws RemoteException;
+
     // быстрая информация
 
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;

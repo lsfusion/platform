@@ -74,7 +74,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
     protected abstract byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException; // single file    
 
-    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPath) throws SQLException, SQLHandledException;
+    protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, String formSID) throws SQLException, SQLHandledException;
 
 
     @Override
@@ -103,9 +103,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
             }
         } else { // assert printType != null;
             List<ReportPath> reportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
-            List<ReportPath> autoReportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getAutoReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
-
-            exportClient(context, form.getCaption(), reportData, reportPathList, autoReportPathList);
+            exportClient(context, form.getCaption(), reportData, reportPathList, form.getSID());
         }
     }
 }

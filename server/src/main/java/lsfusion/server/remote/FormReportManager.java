@@ -422,4 +422,8 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             }
         }
     }
+
+    public FormEntity findForm(String formSID) {
+        return formInterface.getBL().findForm(formSID);
+    }
 }

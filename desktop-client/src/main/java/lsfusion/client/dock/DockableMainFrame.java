@@ -18,6 +18,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.base.ERunnable;
 import lsfusion.client.*;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
@@ -279,13 +280,13 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final List<ReportPath> reportPathList, final List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final ClientFormController formController, final List<ReportPath> reportPathList, final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
             public void invokeEditReport(boolean useAuto) throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.processReportPathList(useAuto ? autoReportPathList : reportPathList, useAuto);
+                    Main.processReportPathList(formController.getRemoteForm(), reportPathList, formSID, useAuto);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }

@@ -2,6 +2,7 @@ package lsfusion.client;
 
 import com.jhlabs.image.BlurFilter;
 import lsfusion.client.dock.ClientFormDockable;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
@@ -146,7 +147,7 @@ public abstract class MainFrame extends JFrame {
         forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
     }
 
-    public abstract Integer runReport(List<ReportPath> reportPathList, List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(ClientFormController formController, List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
 
     public Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, null, editInvoker);

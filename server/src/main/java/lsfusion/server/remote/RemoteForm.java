@@ -25,6 +25,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
@@ -126,6 +127,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         reportManager.getReportPathList(toExcel, groupId, userPreferences);
             }
         });
+    }
+
+
+    @Override
+    public List<ReportPath> getAutoReportPathList(String formSID) throws RemoteException {
+        FormReportManager newFormManager = new StaticFormReportManager(reportManager.findForm(formSID), MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
+        return newFormManager.getAutoReportPathList(false, null, null);
     }
 
     /**

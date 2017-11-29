@@ -73,12 +73,12 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     }
 
     @Override
-    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPathList) throws SQLException, SQLHandledException {
+    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, String formSID) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(reportPathList, autoReportPathList, syncType, reportData, (FormPrintType) staticType, pName, SystemProperties.isDebug));
+            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(reportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.isDebug));
             formPageCount.change(pageCount, context);
         }
     }

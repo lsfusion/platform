@@ -72,7 +72,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     }
 
     @Override
-    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, List<ReportPath> autoReportPath) throws SQLException, SQLHandledException {
+    protected void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, String formSID) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException();
     }
 }

@@ -63,7 +63,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public void execute(RunEditReportClientAction action) {
-        getFormController().runEditReport(false);
+        getFormController().runEditReport();
     }
 
     @Override
@@ -76,7 +76,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
                 ReportGenerator.exportAndOpen(action.generationData, action.printType, false);
             } else {
                 if (action.isDebug) {
-                    pageCount = Main.frame.runReport(action.reportPathList, action.autoReportPathList, action.isModal, action.generationData);
+                    pageCount = Main.frame.runReport(getFormController(), action.reportPathList, action.formSID, action.isModal, action.generationData);
                 } else {
                     pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
                 }
