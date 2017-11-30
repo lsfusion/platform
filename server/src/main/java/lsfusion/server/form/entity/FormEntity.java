@@ -942,11 +942,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addActionsOnEvent(object, drop, version, actions);
     }
 
-    public void addActionsOnEvent(ActionPropertyObjectEntity action, Version version, Object... events) {
-        for(Object event : events)
-            addActionsOnEvent(event, version, action);
-    }
-
     public void addActionsOnEvent(Object eventObject, Version version, ActionPropertyObjectEntity<?>... actions) {
         addActionsOnEvent(eventObject, false, version, actions);
     }

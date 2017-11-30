@@ -121,4 +121,9 @@ public class NullExpr extends Expr {
     public ConcreteClass getStaticClass() {
         return null;
     }
+
+    @Override
+    public boolean isAlwaysPositiveOrNull() {
+        return true;
+    }
 }

@@ -134,6 +134,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public boolean isNull() {
         return getWhere().isFalse();
     }
+    
+    // оптимизация, нужна чтобы когда не нужно конкретное значение, GROUP SUM преобразовывать в GROUP ANY без боязни в результате SUM получить 0, а значит NULL, во общем то пока оптимизация для GROUP SUM 1 и других COUNT'ов (потом при появлении POSITIVE constraint'ов может можно в более общем случае использовать)
+    public abstract boolean isAlwaysPositiveOrNull();
 
     public abstract Where compareBase(BaseExpr expr, Compare compareBack);
     public abstract Where compare(Expr expr, Compare compare);

@@ -113,6 +113,10 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 compileOrders = CompileOrder.setNotNull(compileOrders);
             return type.getSource(exprs.mapList(fromPropertySelect), exprs.mapList(propReaders), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
         }
+
+        public boolean isLastOpt(boolean needValue) {
+            return type.isLastOpt(needValue, exprs);
+        }
     }
 
     // трансляция

@@ -41,6 +41,10 @@ public class IntegerClass extends IntClass<Integer> {
     protected boolean isNegative(Integer value) {
         return value < 0;
     }
+    @Override
+    public boolean isPositive(Integer value) {
+        return value > 0;
+    }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getIntegerType();

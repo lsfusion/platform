@@ -49,6 +49,10 @@ public class LongClass extends IntClass<Long> {
     protected boolean isNegative(Long value) {
         return value < 0;
     }
+    @Override
+    public boolean isPositive(Long value) {
+        return value > 0;
+    }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getLongType();

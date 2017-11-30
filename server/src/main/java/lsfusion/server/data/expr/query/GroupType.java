@@ -128,8 +128,14 @@ public enum GroupType implements AggrType {
         return this == LAST;
     }
     
-    public boolean isLastOpt() {
-        return this == LAST || this == ANY || isMaxMin(); // ANY - LAST без порядка, MAX/MIN - LAST где f(a) = 
+    public boolean isLastOpt(boolean needValue, ImList<Expr> exprs) {
+        if(this == LAST || this == ANY || isMaxMin()) // ANY - LAST без порядка, MAX/MIN - LAST где f(a) =
+            return true;
+        if(needValue)
+            return false;
+        if(this == SUM)
+            return getMainExpr(exprs).isAlwaysPositiveOrNull();
+        return true;
     }
 
     public boolean splitExprCases() {

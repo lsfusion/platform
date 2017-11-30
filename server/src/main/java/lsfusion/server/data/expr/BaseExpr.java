@@ -284,4 +284,8 @@ public abstract class BaseExpr extends Expr {
                 return null;
         return BaseUtils.immutableCast(map);
     }
+
+    public boolean isAlwaysPositiveOrNull() {
+        return false;
+    }
 }

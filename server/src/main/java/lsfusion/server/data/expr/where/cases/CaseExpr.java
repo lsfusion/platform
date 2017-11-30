@@ -263,4 +263,12 @@ public class CaseExpr extends Expr {
             return NullValue.instance;
         return super.getObjectValue(env);
     }
+
+    @Override
+    public boolean isAlwaysPositiveOrNull() {
+        for(ExprCase exprCase : cases)
+            if(!exprCase.data.isAlwaysPositiveOrNull())
+                return false;
+        return true;
+    }
 }

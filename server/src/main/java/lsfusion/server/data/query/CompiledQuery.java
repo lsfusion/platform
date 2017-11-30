@@ -947,7 +947,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     mQueryExprs.addAll(query.getExprs());
                     exprWhere = exprWhere.or(query.getWhere());
 
-                    isLastOpt = isLastOpt && (query.type.isLastOpt() || !needValues.contains(query)); // или можно применять last opt или не нужно значение
+                    isLastOpt = isLastOpt && query.isLastOpt(needValues.contains(query)); // или можно применять last opt или не нужно значение
                 }
                 ImSet<Expr> queryExprs = group.values().toSet().merge(mQueryExprs.immutable());
 

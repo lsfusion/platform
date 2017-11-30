@@ -4,9 +4,7 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.StaticClass;
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.query.CompileSource;
@@ -150,5 +148,12 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     @Override
     public int getStaticEqualClass() {
         return 1;
+    }
+
+    @Override
+    public boolean isAlwaysPositiveOrNull() {
+        if(objectClass instanceof IntegralClass) 
+            return ((IntegralClass) objectClass).isPositive((Number) object);
+        return super.isAlwaysPositiveOrNull();
     }
 }

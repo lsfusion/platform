@@ -93,6 +93,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
             return value.toString();
     }
     protected abstract boolean isNegative(T value);
+    public abstract boolean isPositive(T obj);
 
     @Override
     public boolean isValueZero(T value) {

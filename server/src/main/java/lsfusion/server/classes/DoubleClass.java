@@ -40,6 +40,10 @@ public class DoubleClass extends IntegralClass<Double> {
     protected boolean isNegative(Double value) {
         return value < 0.0;
     }
+    @Override
+    public boolean isPositive(Double obj) {
+        return obj > 0.0;
+    }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDoubleType();

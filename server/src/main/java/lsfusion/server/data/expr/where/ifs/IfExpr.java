@@ -227,4 +227,9 @@ public class IfExpr extends Expr {
     protected boolean isComplex() {
         return true;
     }
+
+    @Override
+    public boolean isAlwaysPositiveOrNull() {
+        return trueExpr.isAlwaysPositiveOrNull() && falseExpr.isAlwaysPositiveOrNull();
+    }
 }
