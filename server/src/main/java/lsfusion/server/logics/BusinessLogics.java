@@ -55,7 +55,6 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -1103,8 +1102,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
     
-    // todo [dale]: Временно сделал public для переименования log-свойств (issue #1725)
-    public static class NamedDecl {
+    private static class NamedDecl {
         public final LP prop;
         public final String namespace;
         public final boolean defaultNamespace;

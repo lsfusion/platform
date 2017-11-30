@@ -1013,7 +1013,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if (canonicalName != null) {
             return canonicalName;
         } else {
-            // todo [dale]: временно также, как было в NavigatorElement
             return "_FORM_" + getID();
         }
     }
