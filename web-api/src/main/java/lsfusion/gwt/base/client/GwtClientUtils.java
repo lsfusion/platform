@@ -431,13 +431,15 @@ public class GwtClientUtils {
         // находим левую flex
         while(column >= 0 && baseFlexes[column] == 0)
             column--;
-        if(column < 0) {
-            while(column < baseFlexes.length && baseFlexes[column] == 0)
-                column++;
-            if(column >= baseFlexes.length) // вообще нет ни одной динамической колонки - ничего не меняем
-                return;
-        }
+        if(column < 0) // нет левой flex колонки - ничего не делаем
+            return;
 
+        int rightFlex = column + 1;
+        while(rightFlex < baseFlexes.length && baseFlexes[rightFlex] == 0)
+            rightFlex++;
+        if(rightFlex >= baseFlexes.length) // не нашли правй flex - ничего не делаем
+            return;
+        
         // считаем общий текущий preferred
         double totalPref = 0;
         for (double pref : prefs) {
