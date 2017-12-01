@@ -67,7 +67,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         assert cycle == Cycle.NO;
         assert !isLogical();
 
-        IntegralClass integralClass = (IntegralClass)getType();
+        IntegralClass<?> integralClass = (IntegralClass)getType();
         CalcProperty constraint = DerivedProperty.createCompare(interfaces, getImplement(), DerivedProperty.<Interface>createStatic(integralClass.div(integralClass.getSafeInfiniteValue(), 2), integralClass), Compare.GREATER).property;
         constraint.caption = LocalizedString.createFormatted("{logics.property.cycle.detected}", caption);
         return constraint;

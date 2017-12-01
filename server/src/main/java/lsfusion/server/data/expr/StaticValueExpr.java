@@ -21,6 +21,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     private boolean sID;
 
     public static void checkLocalizedString(Object value, StaticClass staticClass) {
+        assert staticClass instanceof ConcreteCustomClass || staticClass instanceof StringClass || staticClass.getType().read(value).equals(value); // чтобы читалось то что писалось
         assert !(staticClass instanceof StringClass) || value instanceof LocalizedString;
     }
 

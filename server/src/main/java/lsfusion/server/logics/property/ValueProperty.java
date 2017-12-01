@@ -2,9 +2,11 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.StaticClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.infer.ExClassSet;
@@ -17,7 +19,7 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
     public final StaticClass staticClass;
     
     public static void checkLocalizedString(Object value, StaticClass staticClass) {
-        assert !(staticClass instanceof StringClass) || value instanceof LocalizedString;
+        StaticValueExpr.checkLocalizedString(value, staticClass);
     } 
 
     public ValueProperty(LocalizedString caption, Object value, StaticClass staticClass) {
@@ -26,7 +28,7 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
         this.staticClass = staticClass;
 
         finalizeInit();
-        
+
         checkLocalizedString(value, staticClass);
     }
 

@@ -61,6 +61,8 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         super(objectClass);
 
         this.object = object;
+
+        assert objectClass.getType().read(object).equals(object); // чтобы читалось то что писалось
     }
 
     public static StaticValueExpr TRUE = new StaticValueExpr(true,LogicalClass.instance);

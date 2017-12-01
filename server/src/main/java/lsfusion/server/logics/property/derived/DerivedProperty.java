@@ -312,7 +312,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createOne() {
-        return createStatic(1, LongClass.instance);
+        return createStatic(1L, LongClass.instance);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createFalse() {

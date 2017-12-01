@@ -2276,24 +2276,24 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LCP addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
         switch (type) {
-            case INT: return addCProp(IntegerClass.instance, value);
-            case LONG: return addCProp(LongClass.instance, value);
+            case INT: return addUnsafeCProp(IntegerClass.instance, value);
+            case LONG: return addUnsafeCProp(LongClass.instance, value);
             case NUMERIC: return addNumericConst((String) value);
-            case REAL: return addCProp(DoubleClass.instance, value);
-            case STRING: return addCProp(getStringConstClass((LocalizedString)value), value);
-            case LOGICAL: return addCProp(LogicalClass.instance, value);
-            case DATE: return addCProp(DateClass.instance, value);
-            case DATETIME: return addCProp(DateTimeClass.instance, value);
-            case TIME: return addCProp(TimeClass.instance, value);
+            case REAL: return addUnsafeCProp(DoubleClass.instance, value);
+            case STRING: return addUnsafeCProp(getStringConstClass((LocalizedString)value), value);
+            case LOGICAL: return addUnsafeCProp(LogicalClass.instance, value);
+            case DATE: return addUnsafeCProp(DateClass.instance, value);
+            case DATETIME: return addUnsafeCProp(DateTimeClass.instance, value);
+            case TIME: return addUnsafeCProp(TimeClass.instance, value);
             case STATIC: return addStaticClassConst((String) value);
-            case COLOR: return addCProp(ColorClass.instance, value);
+            case COLOR: return addUnsafeCProp(ColorClass.instance, value);
             case NULL: return baseLM.vnull;
         }
         return null;
     }
 
     private LCP addNumericConst(String value) {
-        return addCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), new BigDecimal(value));
+        return addUnsafeCProp(NumericClass.get(value.length(), value.length() - value.indexOf('.') - 1), new BigDecimal(value));
     }
 
     public Color createScriptedColor(int r, int g, int b) throws ScriptingErrorLog.SemanticErrorException {

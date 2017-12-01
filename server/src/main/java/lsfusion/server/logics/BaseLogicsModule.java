@@ -372,7 +372,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
-        vzero = addCProp(DoubleClass.instance, 0);
+        vzero = addCProp(DoubleClass.instance, 0.0);
         vnull = addProperty((AbstractGroup) null, new LCP<>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {

@@ -858,6 +858,11 @@ public abstract class LogicsModule {
 
     // ------------------- Constant ----------------- //
 
+    protected <T extends PropertyInterface> LCP addUnsafeCProp(DataClass valueClass, Object value) {
+        ValueProperty.checkLocalizedString(value, valueClass);
+        return baseLM.addCProp(valueClass, valueClass instanceof StringClass ? value : valueClass.read(value));
+    }
+
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
         return baseLM.addCProp(valueClass, value);
     }
@@ -1064,7 +1069,7 @@ public abstract class LogicsModule {
         boolean convertToLogical = false;
         assert initial.property.getType() instanceof IntegralClass == (step.property.getType() instanceof IntegralClass);
         if(!(initial.property.getType() instanceof IntegralClass) && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
-            CalcPropertyMapImplement<?, PropertyInterface> one = createStatic(1, LongClass.instance);
+            CalcPropertyMapImplement<?, PropertyInterface> one = createStatic(1L, LongClass.instance);
             initial = createAnd(innerInterfaces.getSet(), one, initial);
             step = createAnd(innerInterfaces.getSet(), one, step);
             convertToLogical = true;
