@@ -3214,8 +3214,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (name == null) {
             name = createDefaultNavigatorElementName(action, form);
         }
-        assert name != null; // todo [dale]: нужно добавить семантическую ошибку, когда не задается имя фолдера
-
+        
+        checkNavigatorElementName(name);
         checkDuplicateNavigatorElement(name);
         
         if (caption == null) {
@@ -3321,6 +3321,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitIllegalAddNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
 
+//        if (element.getNFParent(version) != null) {
+//            System.out.println(String.format("MOVE element [%s] from [%s] to [%s] in module [%s]", element.getCanonicalName(), 
+//                                            element.getNFParent(version).getCanonicalName(), parentElement, 
+//                                            getParser().getGlobalDebugPoint(getName(), false)));
+//        }
+        
         switch (pos) {
             case IN:
                 parentElement.add(element, version);
@@ -3993,6 +3999,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkImplementIsNotMain(LP mainProp, LP implProp) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp == implProp) {
             errLog.emitRecursiveImplementError(parser);
+        }
+    }
+    
+    private void checkNavigatorElementName(String name) throws ScriptingErrorLog.SemanticErrorException {
+        if (name == null) {
+            errLog.emitNavigatorElementFolderNameError(parser);                
         }
     }
     

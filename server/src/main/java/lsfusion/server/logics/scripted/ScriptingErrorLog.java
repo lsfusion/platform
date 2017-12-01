@@ -547,6 +547,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
     } 
     
+    public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Navigator folder name should be defined");
+    }
+    
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
         emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }
