@@ -161,8 +161,8 @@ public abstract class GridPropertyTable {
             int pref = flex && userWidth != null ? BaseUtils.max(userWidth, basePref) : basePref;
             prefs[i] = pref;
 
-            if(!flex) // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
-                columnDraw.setMaxWidth(basePref); // поэтому выставляем max по сути запрещая расширение таких колонок ()
+            // тут хитро, дело в том что базовый механизм resizing'а подразумевает что колонка ВСЕГДА получит запрашиваемую ширину (так как дельта mouseOffsetX - mouseX записывается в ширину, и если колонка не получила ее на прошлом шаге то delta вызовется еще раз и еще раз)
+            columnDraw.setMaxWidth(flex ? Integer.MAX_VALUE: basePref); // поэтому выставляем max по сути запрещая расширение таких колонок (для старых колонок наоборот выставляем максимум, потому как refreshColumnModel может из не flex сделать flex колонку)
         }
 //        updateLayoutWidthColumns(); // тут не надо, так как в отличие от веб, есть doLayout который и выполняет расположение
     }

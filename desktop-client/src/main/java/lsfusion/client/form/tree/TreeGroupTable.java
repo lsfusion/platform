@@ -534,20 +534,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
-    private void setColumnSizes(TableColumnExt tableColumn, int min, int max, int pref) {
-        // делаем так потому, что новые значения размеров
-        // корректируется в зависимости от старых
-        // и мы можем увидеть не то, что хотели
-        if (min < tableColumn.getMinWidth()) {
-            tableColumn.setMinWidth(min);
-            tableColumn.setMaxWidth(max);
-        } else {
-            tableColumn.setMaxWidth(max);
-            tableColumn.setMinWidth(min);
-        }
-        tableColumn.setPreferredWidth(getAutoResizeMode() == JTable.AUTO_RESIZE_OFF ? min : pref);
-    }
-
     public void setCurrentPath(final ClientGroupObjectValue objects) {
         enumerateNodesDepthFirst(new NodeProccessor() {
             @Override
