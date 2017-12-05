@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
 import lsfusion.interop.form.layout.Alignment;
@@ -2849,6 +2850,35 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
+    }
+
+    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> context, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty, PropertyUsage fileProp) throws ScriptingErrorLog.SemanticErrorException {
+        
+        LCP<?> targetProp = null;
+        if(fileProp != null)
+            targetProp = findLCPByPropertyUsage(fileProp);
+
+        List<Integer> resultInterfaces = getResultInterfaces(context.size(), BaseUtils.add(exprs, whereProperty).toArray(new LPWithParams[exprs.size()+1]));
+
+        List<LPWithParams> paramsList = new ArrayList<>();
+        for (int resI : resultInterfaces) {
+            paramsList.add(new LPWithParams(null, Collections.singletonList(resI)));
+        }
+        paramsList.addAll(exprs);
+        if (whereProperty != null) {
+            paramsList.add(whereProperty);
+        }
+
+        ImOrderSet<String> idSet = SetFact.toOrderExclSet(ids.size(), new GetIndex<String>() {
+            public String getMapValue(int i) {
+                String id = ids.get(i);
+                return id == null ? "expr" + i : id;
+            }
+        });
+
+        List<Object> resultParams = getParamsPlainList(paramsList);
+        LP result = addExportPropertyAProp(null, LocalizedString.NONAME, resultInterfaces.size(), idSet, targetProp, whereProperty != null, resultParams.toArray());
+        return new LPWithParams(result, resultInterfaces);
     }
 
     public LPWithParams addScriptedNewThreadActionProperty(LPWithParams actionProp, LPWithParams connectionProp, LPWithParams periodProp, LPWithParams delayProp) throws ScriptingErrorLog.SemanticErrorException {

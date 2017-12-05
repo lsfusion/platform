@@ -60,7 +60,9 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
-    
+
+    boolean mapIsFull(ImSet<P> interfaces);
+
     AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 
     Graph<CalcCase<P>> mapAbstractGraph();

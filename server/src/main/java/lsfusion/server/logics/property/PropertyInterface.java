@@ -172,4 +172,8 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public int hashMap() {
         return hashCode();
     }
+
+    public boolean mapIsFull(ImSet<P> interfaces) {
+        return false;
+    }
 }

@@ -15,7 +15,7 @@ public class SQLTooLongQueryException extends SQLHandledException {
     }
 
     public String toString() {
-        return "TOO LONG QUERY ROWS " + select;
+        return "TOO LONG QUERY ROWS, LENGTH : " + select.length() + ", QUERY : " + select;
     }
 
     @Override

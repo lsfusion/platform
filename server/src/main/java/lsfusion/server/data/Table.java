@@ -34,6 +34,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -44,6 +45,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -987,6 +989,20 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public ClassWhere<Field> getClassWhere(PropertyField property) {
         return propertyClasses.get(property);
+    }
+
+    public static byte[] serializeResultSet(ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        DataOutputStream o = new DataOutputStream(b);
+        o.writeInt(fields.size());
+        for(String field : fields) {
+            BaseUtils.serializeString(o, field);
+            TypeSerializer.serializeType(o, fieldTypes.getType(field));
+        }
+        for(ImMap<String, Object> row : set)
+            for(String field : fields)
+                BaseUtils.serializeObject(o, row.get(field));
+        return b.toByteArray();
     }
 }
 

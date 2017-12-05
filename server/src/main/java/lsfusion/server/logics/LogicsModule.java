@@ -610,6 +610,22 @@ public abstract class LogicsModule {
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));
     }
 
+    // ------------------- Export property action ----------------- //
+
+    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addExportPropertyAProp(AbstractGroup group, LocalizedString caption, int resInterfaces, ImOrderSet<String> aliases, LCP targetProp, boolean conditional,
+                                                                                                 Object... params) {
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
+        final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
+        return addProperty(group, new LAP<>(new ExportDataActionProperty<>(caption,
+                innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(),  
+                aliases, aliases.mapOrderValues(new GetIndex<CalcPropertyInterfaceImplement<PropertyInterface>>() {
+            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
+                return exprs.get(i);
+            }
+        }), conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp)));
+    }
+
     // ------------------- Set property action ----------------- //
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(int resInterfaces,boolean conditional, Object... params) {

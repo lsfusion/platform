@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
@@ -8,6 +9,7 @@ import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
