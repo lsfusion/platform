@@ -108,19 +108,19 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return generator.generate();
     }
 
-    public ReportGenerationData getReportData(boolean toExcel) {
+    public ReportGenerationData getReportData(boolean toExcel) throws SQLException, SQLHandledException {
         return getReportData(null, toExcel, ReportGenerationDataType.PRINTJASPER, null, 0);
     }
 
-    public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType, int selectTop) {
+    public ReportGenerationData getReportData(boolean toExcel, ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         return getReportData(null, toExcel, reportType, null, selectTop);
     }
 
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws SQLException, SQLHandledException {
         return getReportData(groupId, toExcel, ReportGenerationDataType.PRINTJASPER, userPreferences, 0);
     }
 
-    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) {
+    public ReportGenerationData getReportData(Integer groupId, boolean toExcel, ReportGenerationDataType reportType, FormUserPreferences userPreferences, int selectTop) throws SQLException, SQLHandledException {
         GroupObjectHierarchy.ReportHierarchy groupReportHierarchy = getReportHierarchy(groupId, !reportType.isPrintJasper());
          
         GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null, !reportType.isPrintJasper());
@@ -347,7 +347,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return nodes;
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, ReportGenerationDataType reportType, int selectTop) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects, ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate(reportType, selectTop);
             ReportSourceGenerator.ColumnGroupCaptionsData<Obj> columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
@@ -393,7 +393,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             }
 
             return outStream.toByteArray();
-        } catch (Throwable e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }

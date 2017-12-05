@@ -295,7 +295,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return context.createFormInstance(form, MapFact.fromJavaMap(objectValues));
     }
 
-    private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException {
+    private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException, SQLException, SQLHandledException {
 
         boolean toExcel = attachmentFormat != null && attachmentFormat.equals(AttachmentFormat.XLSX);
         ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(toExcel);
