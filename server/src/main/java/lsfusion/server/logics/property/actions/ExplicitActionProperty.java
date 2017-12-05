@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -20,6 +21,10 @@ import java.sql.SQLException;
 public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
     protected ExplicitActionProperty(ValueClass... classes) {
         this(LocalizedString.NONAME, classes);
+    }
+
+    protected ExplicitActionProperty(ImOrderSet interfaces) {
+        super(LocalizedString.NONAME, interfaces);
     }
 
     protected ExplicitActionProperty(LocalizedString caption, ValueClass[] classes) {
@@ -46,7 +51,7 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         if(checkNulls(dataKeys.keys()))
             proceedNullException();
         else
-            if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем
+            if(ignoreFitClassesCheck() || IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем
                 if (this instanceof ScriptingActionProperty)
                     ((ScriptingActionProperty) this).commonExecuteCustomDelegate(context);
                 else
@@ -74,4 +79,6 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
     public boolean ignoreReadOnlyPolicy() {
         return false;
     }
+
+    protected boolean ignoreFitClassesCheck() { return false; }
 }

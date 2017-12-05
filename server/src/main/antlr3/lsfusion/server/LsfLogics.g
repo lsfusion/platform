@@ -34,6 +34,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.linear.LP;
 	import lsfusion.server.logics.linear.LAP;
 	import lsfusion.server.logics.linear.LCP;
+    import lsfusion.server.logics.property.ExternalFormat;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
@@ -2409,6 +2410,7 @@ contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature
 	}
 }
 	:	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
+	|   externalADB=externalActionDefinitionBody { $property = $externalADB.property; $signature = $externalADB.signature; }
     |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
@@ -2686,6 +2688,41 @@ customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature
 	    ('NULL' { allowNullValue = true; })?
 	;
 
+externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
+@init {
+	boolean allowNullValue = false;
+	List<String> classes = null;
+	ExternalFormat format = null;
+	String conStr = null;
+	String exec = null;
+}
+@after {
+	if (inPropParseState()) {
+      if($type.format == ExternalFormat.DB) {
+        $property = self.addScriptedExternalDBActionProp(conStr, exec, targetList);
+      } else if($type.format == ExternalFormat.JAVA) {
+        $property = self.addScriptedExternalJavaActionProp();
+      } else if($type.format == ExternalFormat.HTTP) {
+        $property = self.addScriptedExternalHTTPActionProp(conStr, targetList);
+      } else if($type.format == ExternalFormat.LSF) {
+        $property = self.addScriptedExternalLSFActionProp();
+      }
+      $signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes));
+	}
+}
+	:	'EXTERNAL'
+	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; })
+
+		('(' cls=classIdList ')' { classes = $cls.ids; })?
+	    'TO' targetList = nonEmptyPropertyUsageList
+	;
+
+externalFormat returns [ExternalFormat format, String conStr, String exec]
+	:	'DB'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+	;
 
 newWhereActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
 @init {

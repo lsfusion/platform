@@ -1325,6 +1325,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public LP addScriptedExternalJavaActionProp() {
+        throw new UnsupportedOperationException("CUSTOM JAVA not supported");
+    }
+
+    public LP addScriptedExternalDBActionProp(String connectionString, String exec, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString).size() + findFormulaParameters(exec).size(), connectionString, exec, findLCPsByPropertyUsage(toPropertyUsageList)));
+    }
+
+    public LP addScriptedExternalHTTPActionProp(String connectionString, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), connectionString, findLCPsByPropertyUsage(toPropertyUsageList)));
+    }
+
+    public LP addScriptedExternalLSFActionProp() {
+        throw new UnsupportedOperationException("CUSTOM LSF not supported");
+    }
+
+    private List<LCP> findLCPsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = new ArrayList<>();
+        for (PropertyUsage propUsage : propUsages) {
+            LCP<?> lcp = findLCPByPropertyUsage(propUsage);
+            props.add(lcp);
+        }
+        return props;
+    }
+
     public LPWithParams addScriptedEmailProp(LPWithParams fromProp,
                                              LPWithParams subjProp,
                                              List<Message.RecipientType> recipTypes,
@@ -2213,12 +2238,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private Set<Integer> findFormulaParameters(String text) {
         Set<Integer> params = new HashSet<>();
-        Pattern pattern = Pattern.compile("\\$\\d+");
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            String group = matcher.group();
-            int paramNumber = Integer.valueOf(group.substring(1));
-            params.add(paramNumber);
+        if(text != null) {
+            Pattern pattern = Pattern.compile("\\$\\d+");
+            Matcher matcher = pattern.matcher(text);
+            while (matcher.find()) {
+                String group = matcher.group();
+                int paramNumber = Integer.valueOf(group.substring(1));
+                params.add(paramNumber);
+            }
         }
         return params;
     }
