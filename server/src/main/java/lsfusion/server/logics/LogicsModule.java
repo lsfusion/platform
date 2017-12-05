@@ -210,13 +210,6 @@ public abstract class LogicsModule {
         }
     }
     
-    // todo [dale]: разобраться с использованием этого метода, здесь предполагается единственность свойства с определенным именем
-    protected LCP<?> getLCPByName(String name) {
-        List<LCP<?>> result = namedModuleProperties.get(name);
-        assert result.size() == 1;
-        return result.get(0);
-    }
-
     protected void addModuleLP(LP<?, ?> lp) {
         String name = lp.property.getName();
         if (name != null) {
@@ -1637,34 +1630,6 @@ public abstract class LogicsModule {
 
     public LCP getIsActiveFormProperty() {
         return baseLM.getIsActiveFormProperty();
-    }
-
-    public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
-        return new AnyValuePropertyHolder(
-                getLCPByName(sidPrefix + "Object"),
-                getLCPByName(sidPrefix + "String"),
-                getLCPByName(sidPrefix + "Text"),
-                getLCPByName(sidPrefix + "Integer"),
-                getLCPByName(sidPrefix + "Long"),
-                getLCPByName(sidPrefix + "Double"),
-                getLCPByName(sidPrefix + "Numeric"),
-                getLCPByName(sidPrefix + "Year"),
-                getLCPByName(sidPrefix + "DateTime"),
-                getLCPByName(sidPrefix + "Logical"),
-                getLCPByName(sidPrefix + "Date"),           
-                getLCPByName(sidPrefix + "Time"),
-                getLCPByName(sidPrefix + "Color"),
-                getLCPByName(sidPrefix + "WordFile"),
-                getLCPByName(sidPrefix + "ImageFile"),
-                getLCPByName(sidPrefix + "PdfFile"),
-                getLCPByName(sidPrefix + "CustomFile"),
-                getLCPByName(sidPrefix + "ExcelFile"),
-                getLCPByName(sidPrefix + "WordLink"),
-                getLCPByName(sidPrefix + "ImageLink"),
-                getLCPByName(sidPrefix + "PdfLink"),
-                getLCPByName(sidPrefix + "CustomLink"),
-                getLCPByName(sidPrefix + "ExcelLink")
-        );
     }
 
     // ---------------------- VALUE ---------------------- //

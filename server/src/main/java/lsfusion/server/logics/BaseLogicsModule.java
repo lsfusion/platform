@@ -47,6 +47,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
 
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
@@ -549,7 +550,41 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
-        return addAnyValuePropertyHolder("requested", "Requested");
+        return addAnyValuePropertyHolder("requested");
+    }
+
+    public AnyValuePropertyHolder addAnyValuePropertyHolder(String namePrefix) {
+        return new AnyValuePropertyHolder(
+                getLCPByUniqueName(namePrefix + "Object"),
+                getLCPByUniqueName(namePrefix + "String"),
+                getLCPByUniqueName(namePrefix + "Text"),
+                getLCPByUniqueName(namePrefix + "Integer"),
+                getLCPByUniqueName(namePrefix + "Long"),
+                getLCPByUniqueName(namePrefix + "Double"),
+                getLCPByUniqueName(namePrefix + "Numeric"),
+                getLCPByUniqueName(namePrefix + "Year"),
+                getLCPByUniqueName(namePrefix + "DateTime"),
+                getLCPByUniqueName(namePrefix + "Logical"),
+                getLCPByUniqueName(namePrefix + "Date"),
+                getLCPByUniqueName(namePrefix + "Time"),
+                getLCPByUniqueName(namePrefix + "Color"),
+                getLCPByUniqueName(namePrefix + "WordFile"),
+                getLCPByUniqueName(namePrefix + "ImageFile"),
+                getLCPByUniqueName(namePrefix + "PdfFile"),
+                getLCPByUniqueName(namePrefix + "CustomFile"),
+                getLCPByUniqueName(namePrefix + "ExcelFile"),
+                getLCPByUniqueName(namePrefix + "WordLink"),
+                getLCPByUniqueName(namePrefix + "ImageLink"),
+                getLCPByUniqueName(namePrefix + "PdfLink"),
+                getLCPByUniqueName(namePrefix + "CustomLink"),
+                getLCPByUniqueName(namePrefix + "ExcelLink")
+        );
+    }
+
+    protected LCP<?> getLCPByUniqueName(String name) {
+        Iterable<LCP<?>> result = getNamedProperties(name);
+        assert size(result) == 1;
+        return result.iterator().next();
     }
 
     public LCP getRequestCanceledProperty() {
