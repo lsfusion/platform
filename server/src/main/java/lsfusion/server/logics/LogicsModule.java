@@ -212,25 +212,23 @@ public abstract class LogicsModule {
     
     protected void addModuleLP(LP<?, ?> lp) {
         String name = lp.property.getName();
-        if (name != null) {
-            if (lp instanceof LAP) {
-                putLPToMap(namedModuleActions, (LAP) lp);
-            } else if (lp instanceof LCP) {
-                putLPToMap(namedModuleProperties, (LCP)lp);
-            } else {
-                assert false;
-            }
+        assert name != null;
+
+        if (lp instanceof LAP) {
+            putLPToMap(namedModuleActions, (LAP) lp);
+        } else if (lp instanceof LCP) {
+            putLPToMap(namedModuleProperties, (LCP)lp);
+        } else {
+            assert false;
         }
     }
 
     private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp) {
         String name = lp.property.getName();
-        if (name != null) { // todo [dale]: что это за странный случай?
-            if (!moduleMap.containsKey(name)) {
-                moduleMap.put(name, new ArrayList<T>());
-            }
-            moduleMap.get(name).add(lp);
+        if (!moduleMap.containsKey(name)) {
+            moduleMap.put(name, new ArrayList<T>());
         }
+        moduleMap.get(name).add(lp);
     }
     
     protected void removeModuleProperty(LCP<?> lp) {
