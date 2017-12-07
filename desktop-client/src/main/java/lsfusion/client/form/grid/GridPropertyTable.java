@@ -110,11 +110,11 @@ public abstract class GridPropertyTable {
             setColumnWidth(flexColumn, ((int)Math.round(flexValue + flexWidth * (double)flexPercent / (double)(100 * precision))));
         }
 //        preferredWidth = (int) Math.round(totalPref);
-        setMinimumTableWidth(totalPref);
+        setMinimumTableWidth(Math.round(totalPref));
     }
 
     public boolean getScrollableTracksViewportWidth() {
-        return minimumTableWidth <= 0 || minimumTableWidth < getViewportWidth();
+        return minimumTableWidth <= 0 || minimumTableWidth <= getViewportWidth();
     }
 
     private double minimumTableWidth = -1;
