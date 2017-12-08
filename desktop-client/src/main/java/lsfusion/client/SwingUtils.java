@@ -586,43 +586,53 @@ public class SwingUtils {
     }
 
     public static void showSaveFileDialog(Map<String, byte[]> files) {
+        showSaveFileDialog(files, false);
+    }
+
+    public static void showSaveFileDialog(Map<String, byte[]> files, boolean noDialog) {
         try {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
-            boolean singleFile;
-            fileChooser.setAcceptAllFileFilterUsed(false);
-            if (files.size() > 1) {
-                singleFile = false;
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            } else {
-                singleFile = true;
-                File file = new File(files.keySet().iterator().next());
-                fileChooser.setSelectedFile(file);
-                String extension = BaseUtils.getFileExtension(file);
-                if (!BaseUtils.isRedundantString(extension)) {
-                    ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                    fileChooser.addChoosableFileFilter(filter);
+            if (noDialog) {
+                for (Map.Entry<String, byte[]> fileEntry : files.entrySet()) {
+                    IOUtils.putFileBytes(new File(fileEntry.getKey()), fileEntry.getValue());
                 }
-            }
-            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                String path = fileChooser.getSelectedFile().getAbsolutePath();
-                for (String file : files.keySet()) {
-                    if (singleFile) {
-                        File file1 = new File(path);
-                        if (file1.exists()) {
-                            int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"), 
-                                    getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
-                            if (answer == JOptionPane.YES_OPTION) {
+            } else {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
+                boolean singleFile;
+                fileChooser.setAcceptAllFileFilterUsed(false);
+                if (files.size() > 1) {
+                    singleFile = false;
+                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                } else {
+                    singleFile = true;
+                    File file = new File(files.keySet().iterator().next());
+                    fileChooser.setSelectedFile(file);
+                    String extension = BaseUtils.getFileExtension(file);
+                    if (!BaseUtils.isRedundantString(extension)) {
+                        ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
+                        fileChooser.addChoosableFileFilter(filter);
+                    }
+                }
+                if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    String path = fileChooser.getSelectedFile().getAbsolutePath();
+                    for (String file : files.keySet()) {
+                        if (singleFile) {
+                            File file1 = new File(path);
+                            if (file1.exists()) {
+                                int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
+                                        getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
+                                if (answer == JOptionPane.YES_OPTION) {
+                                    IOUtils.putFileBytes(file1, files.get(file));
+                                }
+                            } else {
                                 IOUtils.putFileBytes(file1, files.get(file));
                             }
                         } else {
-                            IOUtils.putFileBytes(file1, files.get(file));
+                            IOUtils.putFileBytes(new File(path + "\\" + file), files.get(file));
                         }
-                    } else {
-                        IOUtils.putFileBytes(new File(path + "\\" + file), files.get(file));
                     }
+                    SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
                 }
-                SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

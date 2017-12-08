@@ -19,9 +19,13 @@ import java.sql.SQLException;
 import static lsfusion.base.BaseUtils.trim;
 
 public class SaveActionProperty extends FileActionProperty {
+    private final boolean isAbsolutPath;
+    private final boolean noDialog;
 
-    public SaveActionProperty(LocalizedString caption, ValueClass... valueClasses) {
+    public SaveActionProperty(LocalizedString caption, boolean isAbsolutPath, boolean noDialog, ValueClass... valueClasses) {
         super(caption, valueClasses);
+        this.isAbsolutPath = isAbsolutPath;
+        this.noDialog = noDialog;
 
         drawOptions.setImage("save.png");
     }
@@ -29,23 +33,23 @@ public class SaveActionProperty extends FileActionProperty {
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue filesObject = context.getKeys().getValue(0);
-        if(filesObject instanceof DataObject) {
+        if (filesObject instanceof DataObject) {
             Object files = filesObject.getValue();
             Type dataClass = ((DataObject) filesObject).getType();
 
-            String fileName = context.getKeyCount() >= 2 ? trim((String) context.getKeys().getValue(1).getValue()) : "new file";
-
             if (dataClass instanceof FileClass) {
+                boolean isDynamic = dataClass instanceof DynamicFormatFileClass;
                 for (byte[] file : ((FileClass) dataClass).getFiles(files)) {
-                    String extension;
-                    byte[] saveFile = file;
-                    if (dataClass instanceof DynamicFormatFileClass) {
-                        extension = BaseUtils.getExtension(file);
-                        saveFile = BaseUtils.getFile(file);
+                    byte[] saveFile = isDynamic ? BaseUtils.getFile(file) : file;
+                    if (isAbsolutPath) {
+                        String filePath = trim((String) context.getKeys().getValue(1).getValue());
+                        context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog));
                     } else {
-                        extension = BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",");
+                        String fileName = context.getKeyCount() >= 2 ? trim((String) context.getKeys().getValue(1).getValue()) : "new file";
+                        String extension = isDynamic ? BaseUtils.getExtension(file) : BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",");
+                        String filePath = noDialog ? (System.getProperty("user.home") + "/Downloads/" + fileName + "." + extension) : fileName + "." + extension;
+                        context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog));
                     }
-                    context.delayUserInterfaction(new SaveFileClientAction(saveFile, fileName + "." + extension));
                 }
             }
         }

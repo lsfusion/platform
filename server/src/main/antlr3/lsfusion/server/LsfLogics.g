@@ -2939,15 +2939,18 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	FileActionType actionType = null;
 	LPWithParams fileProp = null;
 	LPWithParams fileNameProp = null;
+	LPWithParams filePathProp = null;
+	boolean noDialog = false;
 	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFileAProp(actionType, fileProp, fileNameProp);
+	    boolean isAbsolutPath = filePathProp != null;
+		$property = self.addScriptedFileAProp(actionType, fileProp, isAbsolutPath ? filePathProp : fileNameProp, isAbsolutPath, noDialog);
 	}
 }
 	:	(	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
-		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
+		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; } | 'PATH' ppe=propertyExpression[context, dynamic] { filePathProp = $ppe.property; })? ('NODIALOG' { noDialog = true; })?
 		) 
 	;
 

@@ -1238,21 +1238,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams fileNameProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams pathProp, boolean isAbsolutPath, boolean noDialog) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> params = new ArrayList<>();
         params.add(property);
-        if(fileNameProp != null)
-            params.add(fileNameProp);
+        if(pathProp != null)
+            params.add(pathProp);
 
         LAP<?> res;
         switch (actionType) {
             case OPEN:
                 res = addOFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
-                        fileNameProp == null ? null : fileNameProp.property.property.getValueClass(ClassType.valuePolicy));
+                        pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy));
                 break;
             default: // SAVE
                 res = addSFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
-                        fileNameProp == null ? null : fileNameProp.property.property.getValueClass(ClassType.valuePolicy));
+                        pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy),
+                        isAbsolutPath, noDialog);
         }
         return addScriptedJoinAProp(res, params);
     }

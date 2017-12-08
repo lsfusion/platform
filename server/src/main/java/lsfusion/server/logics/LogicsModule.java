@@ -1546,12 +1546,13 @@ public abstract class LogicsModule {
 
     // ------------------- SAVE FILE ----------------- //
 
-    protected LAP addSFAProp(ValueClass prop, ValueClass nameProp) {
+    protected LAP addSFAProp(ValueClass prop, ValueClass pathProp, boolean isAbsolutPath, boolean noDialog) {
         List<ValueClass> valueClasses = new ArrayList<>();
         valueClasses.add(prop);
-        if(nameProp != null)
-            valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new SaveActionProperty(LocalizedString.create("sfa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
+        if (pathProp != null)
+            valueClasses.add(pathProp);
+        return addProperty(null, new LAP(new SaveActionProperty(LocalizedString.create("sfa"), isAbsolutPath, noDialog,
+                valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- EVAL ----------------- //

@@ -417,7 +417,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(final SaveFileClientAction action) {
-        SwingUtils.showSaveFileDialog(action.getFileMap());
+        SwingUtils.showSaveFileDialog(action.getFileMap(), action.noDialog);
     }
 
     public void execute(AudioClientAction action) {
