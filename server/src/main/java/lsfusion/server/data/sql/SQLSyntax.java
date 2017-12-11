@@ -6,6 +6,7 @@ import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
@@ -18,10 +19,11 @@ public interface SQLSyntax {
 
     boolean allowViews();
 
+    String getCancelActiveTaskQuery(Integer pid);
+
     String getUpdate(String tableString,String setString,String fromString,String whereString);
 
     String getClassName();
-    Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
     String isNULL(String exprs, boolean notSafe);
 
@@ -29,7 +31,7 @@ public interface SQLSyntax {
     String getCommandEnd();
     
     String getSessionTableName(String tableName);
-    String getQueryName(String tableName, SessionTable.TypeStruct type, StringBuilder envString, boolean usedRecursion);
+    String getQueryName(String tableName, SessionTable.TypeStruct type, StringBuilder envString, boolean usedRecursion, EnsureTypeEnvironment typeEnv);
     String getCreateSessionTable(String tableName, String declareString);
     String getDropSessionTable(String tableName);
 
@@ -37,7 +39,7 @@ public interface SQLSyntax {
     boolean isNullSafe();
     boolean isGreatest();
     
-    void setLogLevel(Connection connection, int level);
+    void setLogLevel(int level);
 
     boolean useFJ();
 
@@ -241,6 +243,9 @@ public interface SQLSyntax {
     boolean useFailedTimeInDeadlockPriority();
 
     String getAnalyze(String table);
+    
+    String getAnalyze();    
+    String getVacuumDB();
 
     // проблема, когда округление деления division в СУБД зависит от scale'а параметров + логически округление типов не всегда совпадает с СУБД (скажем в CASE \ UNION сервер приложений считает что будет максимальный тип, и может округлить до него материализацией, а сервер СУБД этого не делает и берет скажем последний тип), тогда если материализуется один из под
     // соответственно тут два варианта: a) либо гарантировать что округление в СУБД всегда совпадает с округлением в логике сервера приложений (то есть Case\IF, Union'ы придется cast'ить)

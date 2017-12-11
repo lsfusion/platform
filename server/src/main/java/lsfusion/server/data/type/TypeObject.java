@@ -27,7 +27,10 @@ public class TypeObject extends AbstractParseInterface {
     }
 
     public TypeObject(DataObject dataObject, Field fieldTo, SQLSyntax syntax) {
-        this(fieldTo.type.castValue(dataObject.object, dataObject.getType(), syntax),fieldTo.type);
+        this(dataObject, fieldTo.type, syntax);
+    }
+    public TypeObject(DataObject dataObject, Type typeTo, SQLSyntax syntax) {
+        this(typeTo.castValue(dataObject.object, dataObject.getType(), syntax),typeTo);
     }
 
     public boolean isSafeString() {

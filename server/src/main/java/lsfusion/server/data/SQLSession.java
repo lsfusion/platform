@@ -18,6 +18,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
@@ -156,7 +157,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 ServerLoggers.exinfoLog("SQL SESSION INTERRUPT " + cancelSession + " IN " + sqlSession + " PROCESS " + processId);
                 if (cancelSession != null)
                     cancelSession.setForcedCancel(interrupt);
-                sqlSession.executeDDL(((DataAdapter) sqlSession.syntax).getCancelActiveTaskQuery(sqlProcessId));
+                sqlSession.executeDDL(sqlSession.syntax.getCancelActiveTaskQuery(sqlProcessId));
             }
         }
     }
@@ -295,7 +296,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public final ThreadDebugInfo threadDebugInfo;
 
     public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        syntax = adapter;
+        syntax = adapter.syntax;
         connectionPool = adapter;
         typePool = adapter;
         this.userProvider = userProvider;
@@ -1180,7 +1181,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // напрямую не используется, только через Pool
 
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
-        executeDDL(syntax.getDropSessionTable(tableName), StaticExecuteEnvironmentImpl.NOREADONLY);
+        Pair<String, StaticExecuteEnvironment> result = getDropDDL(tableName, syntax);
+        executeDDL(result.first, result.second);
+    }
+    private static Pair<String, StaticExecuteEnvironment> getDropDDL(String name, SQLSyntax syntax) {
+        return new Pair<>(syntax.getDropSessionTable(name), StaticExecuteEnvironmentImpl.NOREADONLY);
     }
 
     public static ImSet<ImOrderSet<Field>> getTemporaryIndexes(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
@@ -2154,7 +2159,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         public ParseInterface getPropParse(Object prop, PropertyField field, SQLSyntax syntax) {
             if(prop == null)
-                return new AbstractParseInterface.Null(field.type);
+                return AbstractParseInterface.NULL(field.type);
             else
                 return getParse(prop, field, syntax);
         }
@@ -3217,7 +3222,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
         return true;
     }
-
+    
     // чисто для миграции таблиц, небольшой copy paste, но из-за error-handling'а и locking'а делать рефакторинг себе дороже
     private void createTemporaryTable(Connection connection, String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
         createTemporaryTable(connection, typePool, syntax, table, keys, properties, owner);
@@ -3225,6 +3230,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private static void createTemporaryTable(Connection connection, TypePool typePool, SQLSyntax syntax, String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
         Pair<String, StaticExecuteEnvironment> result = getCreateDDL(table, keys, properties, syntax);
         executeDDL(result, connection, typePool, owner);
+    }
+    public static void dropTemporaryTableFromDB(Connection connection, SQLSyntax syntax, String table, OperationOwner owner) throws SQLException {
+        Pair<String, StaticExecuteEnvironment> result = getDropDDL(table, syntax);
+        executeDDL(result, connection, NOTYPES, owner);
     }
     private void vacuumAnalyzeSessionTable(Connection connection, String table, OperationOwner owner) throws SQLException {
         vacuumAnalyzeSessionTable(table, connection, typePool, syntax, owner);
@@ -3241,8 +3250,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Statement statement = null;
 
         Result<Throwable> firstException = new Result<>();
+        Object prevEnvState = null;
         try {
-            env.before(connection, typePool, command, owner);
+            prevEnvState = env.before(connection, typePool, command, owner);
 
             statement = createSingleStatement(connection);
 
@@ -3253,15 +3263,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             firstException.set(e);
         }
 
-        afterStatementExecute(connection, typePool, owner, result, statement, firstException);
+        afterStatementExecute(connection, typePool, owner, result, statement, firstException, prevEnvState);
     }
     public void insertSessionBatchRecords(Connection connection, String table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, OperationOwner opOwner) throws SQLException {
-        insertBatchRecords(connection, typePool, syntax, syntax.getSessionTableName(table), rows, dataParser, opOwner);
+        insertBatchRecords(connection, typePool, syntax, table, rows, opOwner);
     }
-    private static void insertBatchRecords(final Connection connection, final TypePool typePool, SQLSyntax syntax, String table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, Parser<Object, Object> parser, final OperationOwner opOwner) throws SQLException {
+    private static void insertBatchRecords(final Connection connection, final TypePool typePool, SQLSyntax syntax, String table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, final OperationOwner opOwner) throws SQLException {
         if(rows.isEmpty())
             return;
 
+        table = syntax.getSessionTableName(table);
+        Parser<Object, Object> parser = dataParser;
+                
         ImOrderSet<KeyField> keys = rows.getKey(0).keys().toOrderSet();
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
 
@@ -3270,8 +3283,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         PreparedStatement statement = null;
 
         Result<Throwable> firstException = new Result<>();
+        Object prevEnvState = null;
         try {
-            dml.second.before(connection, typePool, dml.first, opOwner);
+            prevEnvState = dml.second.before(connection, typePool, dml.first, opOwner);
 
             statement = connection.prepareStatement(dml.first);
             insertBatch(statement, keys, rows, parser, properties, syntax);
@@ -3281,10 +3295,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             firstException.set(e);
         }
 
-        afterStatementExecute(connection, typePool, opOwner, dml, statement, firstException);
+        afterStatementExecute(connection, typePool, opOwner, dml, statement, firstException, prevEnvState);
     }
 
-    private static void afterStatementExecute(final Connection connection, final TypePool typePool, final OperationOwner opOwner, final Pair<String, StaticExecuteEnvironment> dml, final Statement statement, Result<Throwable> firstException) throws SQLException {
+    private static void afterStatementExecute(final Connection connection, final TypePool typePool, final OperationOwner opOwner, final Pair<String, StaticExecuteEnvironment> dml, final Statement statement, Result<Throwable> firstException, final Object prevEnvState) throws SQLException {
         if (statement != null) {
             runSuppressed(new SQLRunnable() {
                 public void run() throws SQLException {
@@ -3295,7 +3309,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                dml.second.after(connection, typePool, dml.first, opOwner);
+                dml.second.after(connection, typePool, dml.first, opOwner, prevEnvState);
             }
         }, firstException);
 
@@ -3323,6 +3337,48 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         readData(table, keys, properties, reader, owner);
 
         vacuumAnalyzeSessionTable(sqlTo, table, owner);
+    }
+
+    private static TypePool NOTYPES = new TypePool() {
+        public void ensureRecursion(Object types) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+        public void ensureConcType(ConcatenateType concType) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+        public void ensureSafeCast(Type type) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+        public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+        public void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+        public void ensureArrayClass(ArrayClass arrayClass) throws SQLException {
+            throw new UnsupportedOperationException();
+        }
+    };
+    public static void uploadTableToConnection(final String table, SQLSyntax syntax, final Table.JDBC tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
+        final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
+        final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues(new GetValue<PropertyField, String>() {
+            public PropertyField getMapValue(String value) {
+                return new PropertyField(value, tableData.fieldTypes.get(value));
+            }});
+        
+        TypePool typePool = NOTYPES; 
+        
+        createTemporaryTable(sqlTo, typePool, syntax,  table, SetFact.singletonOrder(keyCount), properties.valuesSet(), owner);
+
+        insertBatchRecords(sqlTo, typePool, syntax, table, tableData.set.toIndexedMap().mapKeyValues(new GetValue<ImMap<KeyField, Object>, Integer>() {
+            public ImMap<KeyField, Object> getMapValue(Integer value) {
+                return MapFact.singleton(keyCount, (Object) value);
+            }}, new GetValue<ImMap<PropertyField, Object>, ImMap<String, Object>>() {
+            public ImMap<PropertyField, Object> getMapValue(ImMap<String, Object> value) {                    
+                return properties.crossJoin(value);
+            }}), owner);
+
+        vacuumAnalyzeSessionTable(table, sqlTo, typePool, syntax, owner);
     }
 
     private void readData(String table, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ResultHandler<KeyField, PropertyField> reader, OperationOwner owner) throws SQLException, SQLHandledException {

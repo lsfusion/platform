@@ -8,6 +8,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
@@ -107,7 +108,7 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     }
 
 
-    public TypeObject getParseInterface(QueryEnvironment env) {
+    public TypeObject getParseInterface(QueryEnvironment env, EnsureTypeEnvironment typeEnv) {
         assert isParameterized();
 
         return new TypeObject(getLocalizedObject(object, env), objectClass.getType());

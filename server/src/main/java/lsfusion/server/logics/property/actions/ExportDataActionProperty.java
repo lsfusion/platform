@@ -2,44 +2,28 @@ package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.Result;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
-import lsfusion.server.logics.property.actions.flow.ForActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createSetAction;
 
@@ -86,11 +70,11 @@ public class ExportDataActionProperty<I extends PropertyInterface> extends Exten
         ImList<ImMap<String, Object>> rows = query.execute(context).valuesList();
 
         try {
-            targetProp.change(Table.serializeResultSet(fields, new Type.Getter<String>() { // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
+            targetProp.change(BaseUtils.mergeFileAndExtension(Table.serializeJDBC(fields, new Type.Getter<String>() { // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
                 public Type getType(String value) {
                     return query.getPropertyType(value);
                 }
-            }, rows), context);
+            }, rows), "jdbcout".getBytes()), context);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

@@ -3,14 +3,31 @@ package lsfusion.server.logics.property.actions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DynamicFormatFileClass;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.classes.LongClass;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.*;
+import lsfusion.server.data.sql.DefaultSQLSyntax;
+import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.AbstractParseInterface;
+import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.flow.FlowResult;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExternalDBActionProperty extends ExternalActionProperty {
@@ -22,41 +39,89 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        String replacedParams = replaceParams(context, connectionString);
+        List<Object> results = readJDBC(context.getKeys(), replacedParams);
 
-        Pair<String, String> replacedParams = replaceParams(context, connectionString, exec);
-        byte[] result = readJDBC(replacedParams.first, replacedParams.second);
-
-        for(LCP targetProp : targetPropList) {
-            if (targetProp.property.getType() instanceof DynamicFormatFileClass) {
-                targetProp.change(BaseUtils.mergeFileAndExtension(result, "jdbc".getBytes()), context);
-            } else {
-                targetProp.change(result, context);
-            }
-        }
+        for (int i = 0; i < targetPropList.size(); i++)
+            targetPropList.get(i).change(results.get(i), context);
+        
+        return FlowResult.FINISH;
     }
 
-    private byte[] readJDBC(String connectionString, String exec) throws SQLException {
-        Connection conn = null;
+    private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString) throws SQLException, SQLHandledException {
+        SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
+        OperationOwner owner = OperationOwner.unknown;
+
+        Connection conn = DriverManager.getConnection(connectionString);
+        List<String> tempTables = new ArrayList<>();
 
         try {
-            conn = DriverManager.getConnection(connectionString);
+            int tableParamNum = 0;
+            ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
+            MExclMap<String, ParseInterface> mParamObjects = MapFact.mExclMap(orderInterfaces.size());
+            for(int i=0,size=orderInterfaces.size();i<size;i++) {
+                PropertyInterface param = orderInterfaces.get(i);
+                ObjectValue paramValue = params.get(param);
+                
+                ParseInterface parse = null;
+                
+                if(paramValue instanceof DataObject) {
+                    DataClass paramClass = (DataClass) ((DataObject) paramValue).objectClass;
+                    if (paramClass instanceof DynamicFormatFileClass) {
+                        DynamicFormatFileClass fileParamClass = (DynamicFormatFileClass) paramClass;
+                        byte[] fileBytes = fileParamClass.read(paramValue.getValue());
+                        String extension = BaseUtils.getExtension(fileBytes);
+                        if (extension.equals("jdbcout")) { // значит таблица
+                            fileBytes = BaseUtils.getFile(fileBytes);
+                            Table.JDBC jdbcTable = Table.deserializeJDBC(fileBytes);
 
-            Statement statement = null;
-            try {
-                statement = conn.createStatement();
-                ResultSet rs = statement.executeQuery(exec);
-
-                return BaseUtils.serializeResultSet(rs);
-
-            } finally {
-                if (statement != null)
-                    statement.close();
+                            String table = "ti_" + tableParamNum; // создаем временную таблицу с сгенерированным именем
+                            SQLSession.uploadTableToConnection(table, syntax, jdbcTable, conn, owner);
+                            tempTables.add(table);
+                            parse = SessionTable.getParseInterface(table);
+                        }
+                    }
+                    if(parse == null)
+                        parse = paramValue.getParse(paramClass.getType(), syntax);
+                } else
+                    parse = AbstractParseInterface.SAFENULL; // тут получается, что типа нет, но он и не нужен (STRUCT'ы не имеют смысла, за cast типов отвечает сама внешняя SQL команда, все safe соответственно ни writeParam, ни getType вызваться не могут / не должны)
+                
+                mParamObjects.exclAdd(getParamName(String.valueOf(i+1)), parse);
             }
+            ImMap<String, ParseInterface> paramObjects = mParamObjects.immutable(); 
 
-        } catch (SQLException | IOException e) {
+            ParsedStatement parsed = SQLCommand.preparseStatement(exec, paramObjects, syntax).parseStatement(conn, syntax);
+
+            try {
+                SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
+                for (String param : parsed.preparedParams)
+                    paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
+
+                boolean isResultSet = parsed.statement.execute();
+                
+                List<Object> results = new ArrayList<>();
+                while(true) {
+                    if(isResultSet)
+                        results.add(BaseUtils.mergeFileAndExtension(BaseUtils.serializeResultSet(parsed.statement.getResultSet()), "jdbc".getBytes()));
+                    else {
+                        int updateCount = parsed.statement.getUpdateCount();
+                        if(updateCount == -1)
+                            break;
+                        else
+                            results.add(updateCount);
+                    }
+                    isResultSet = parsed.statement.getMoreResults();
+                }
+                return results;
+            } finally {
+                parsed.statement.close();
+            }
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
+            for(String table : tempTables)
+                SQLSession.dropTemporaryTableFromDB(conn, syntax, table, owner);
             if (conn != null)
                 conn.close();
         }

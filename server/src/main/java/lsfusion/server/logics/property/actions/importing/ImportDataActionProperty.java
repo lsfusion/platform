@@ -117,18 +117,6 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
-        // Сделано по подобию MessageAction
-        // TRUE AND a OR (NOT a), т.е. значение всегда TRUE, но при join'е будет учавствовать в classWhere - FULL
-        ImList props = ListFact.EMPTY();
-        for (PropertyInterface i : interfaces) {
-            props.addList(DerivedProperty.createAnd(DerivedProperty.createTrue(), i));
-            props.addList(DerivedProperty.createNot(i));
-        }
-        return DerivedProperty.createUnion(interfaces, props);
-    }
-
-    @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue value = context.getKeys().getValue(0);
         if(value instanceof DataObject) {

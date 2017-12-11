@@ -10,6 +10,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.query.NotMaterializable;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.FunctionType;
@@ -120,7 +121,7 @@ public class StaticValueNullableExpr extends StaticNullableExpr implements Value
     }
 
     @Override
-    public ParseInterface getParseInterface(QueryEnvironment env) {
+    public ParseInterface getParseInterface(QueryEnvironment env, EnsureTypeEnvironment typeEnv) {
         assert false; // по идее не должен выполняться в текущих использованиях
         return new TypeObject(object, paramClass.getType());
     }

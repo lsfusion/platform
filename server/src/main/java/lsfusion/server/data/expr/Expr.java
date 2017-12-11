@@ -35,7 +35,7 @@ import lsfusion.server.data.query.AbstractSourceJoin;
 import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.Query;
-import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.translator.PartialKeyExprTranslator;
 import lsfusion.server.data.type.ClassReader;
@@ -259,7 +259,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                     public Expr getMapValue(KeyExpr key) {
                         return ((DataClass) key.getType(getWhere())).getDefaultExpr();
                     }
-                }), true)).getWhere()).compile(new CompileOptions<>(PostgreDataAdapter.debugSyntax));
+                }), true)).getWhere()).compile(new CompileOptions<>(DataAdapter.debugSyntax));
     }
 
     public static Object readValue(SQLSession session, Expr expr, OperationOwner owner) throws SQLException, SQLHandledException { // assert что в mapExprs только values

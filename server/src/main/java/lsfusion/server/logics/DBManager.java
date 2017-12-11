@@ -187,6 +187,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.updateStats(sql, false);
     }
 
+    public SQLSyntax getSyntax() {
+        return adapter.syntax;
+    }
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(adapter, "adapter must be specified");
@@ -201,7 +204,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
         try {
-            if(adapter.getSyntaxType() == SQLSyntaxType.MSSQL)
+            if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
 
             startLogger.info("Synchronizing DB.");
@@ -662,7 +665,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             adapter.ensureScript("jumpWorkdays.sc", props);
         }
 
-        SQLSyntax syntax = adapter;
+        SQLSyntax syntax = getSyntax();
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
@@ -1293,7 +1296,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void ensureLogLevel() {
-        adapter.ensureLogLevel(Settings.get().getLogLevelJDBC());
+        getSyntax().setLogLevel(Settings.get().getLogLevelJDBC());
     }
 
     public interface RunServiceData {
@@ -1533,7 +1536,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         String oldName = oldProperty.getDBName();
         if (!oldName.equals(newName)) {
             startLogger.info("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
-            sql.renameColumn(oldProperty.getTableName(adapter), oldName, newName);
+            sql.renameColumn(oldProperty.getTableName(getSyntax()), oldName, newName);
             PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
             field.setName(newName);
         }
@@ -1857,11 +1860,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void analyzeDB(SQLSession session) throws SQLException {
-        session.executeDDL(adapter.getAnalyze());
+        session.executeDDL(getSyntax().getAnalyze());
     }
 
     public void vacuumDB(SQLSession session) throws SQLException {
-        session.executeDDL(adapter.getVacuumDB());
+        session.executeDDL(getSyntax().getVacuumDB());
     }
 
     public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public abstract Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+    public abstract SQLSyntax getSyntax();
 
     private ExConnection common;
 
@@ -183,7 +184,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
             Connection newConnection = startConnection();
             prepareConnection(newConnection);
-            SQLSession.setACID(newConnection, false, (SQLSyntax)this);
+            SQLSession.setACID(newConnection, false, getSyntax());
 
             logConnection("NEW", l, connectionsCount.incrementAndGet(), ((PGConnection)newConnection).getBackendPID());
 

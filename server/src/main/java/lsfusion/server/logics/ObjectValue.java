@@ -12,6 +12,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.ChangedData;
@@ -96,7 +97,10 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
 
     public abstract <K> ClassWhere<K> getClassWhere(K key);
     
-    public abstract ParseInterface getParse(Field field, SQLSyntax syntax);
+    public abstract ParseInterface getParse(Type typeTo, SQLSyntax syntax);
+    public ParseInterface getParse(Field field, SQLSyntax syntax) {
+        return getParse(field.type, syntax);
+    }
 
     public abstract String getShortName();
 }

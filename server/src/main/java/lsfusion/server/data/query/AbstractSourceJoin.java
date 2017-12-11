@@ -14,7 +14,7 @@ import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.expr.query.QueryExpr;
-import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.translator.ExprTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -31,7 +31,7 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
             }, Where.FALSE, BaseUtils.<ImSet<ParseValue>>immutableCast(values).mapRevValues(new GetValue<String, ParseValue>() {
                 public String getMapValue(ParseValue value) {
                     return value.toString();
-                }}), PostgreDataAdapter.debugSyntax, StaticExecuteEnvironmentImpl.MVOID);
+                }}), DataAdapter.debugSyntax, StaticExecuteEnvironmentImpl.MVOID);
         }
 
         public String getSource(KeyExpr expr) {

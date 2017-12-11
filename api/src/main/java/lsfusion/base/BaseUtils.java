@@ -587,7 +587,7 @@ public class BaseUtils {
         throw new IOException();
     }
 
-    public static Object deserializeString(DataInputStream inStream) throws IOException {
+    public static String deserializeString(DataInputStream inStream) throws IOException {
         int chunksCount = inStream.readInt();
 
         if (chunksCount < 0) {

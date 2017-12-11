@@ -2743,6 +2743,8 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	ExternalFormat format = null;
 	String conStr = null;
 	String exec = null;
+	
+	List<PropertyUsage> targetList = new ArrayList<PropertyUsage>();
 }
 @after {
 	if (inPropParseState()) {
@@ -2755,14 +2757,12 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp();
       }
-      $signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes));
+      $signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
 	:	'EXTERNAL'
 	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; })
-
-		('(' cls=classIdList ')' { classes = $cls.ids; })?
-	    'TO' targetList = nonEmptyPropertyUsageList
+	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; } )?
 	;
 
 externalFormat returns [ExternalFormat format, String conStr, String exec]

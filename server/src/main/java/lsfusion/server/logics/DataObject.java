@@ -293,8 +293,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass;
     }
 
-    public ParseInterface getParse(Field field, SQLSyntax syntax) {
-        return new TypeObject(this, field, syntax);
+    public ParseInterface getParse(Type type, SQLSyntax syntax) {
+        return new TypeObject(this, type, syntax);
     }
 
     @Override

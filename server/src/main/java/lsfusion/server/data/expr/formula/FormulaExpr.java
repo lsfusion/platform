@@ -22,7 +22,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.ExprTranslator;
@@ -76,7 +76,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
             }
 
             public SQLSyntax getSyntax() {
-                return PostgreDataAdapter.debugSyntax;
+                return DataAdapter.debugSyntax;
             }
 
             public MStaticExecuteEnvironment getMEnv() {

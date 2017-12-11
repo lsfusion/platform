@@ -28,10 +28,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
@@ -204,10 +201,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return SetFact.<Value>singleton(this);
     }
 
-    public ParseInterface getParseInterface(QueryEnvironment env) {
+    public ParseInterface getParseInterface(QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
         return new StringParseInterface() {
             public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-                return syntax.getQueryName(name, usedRecursion ? getFunctionType() : null, envString, usedRecursion);
+                return syntax.getQueryName(name, usedRecursion ? getFunctionType() : null, envString, usedRecursion, typeEnv);
             }
 
             @Override
@@ -216,7 +213,14 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             }
         };
     }
-
+    public static ParseInterface getParseInterface(final String table) {
+        return new StringParseInterface() {
+            public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                return syntax.getSessionTableName(table);
+            }
+        };
+    }
+    
     @Override
     public boolean isAlwaysSafeString() {
         return true;

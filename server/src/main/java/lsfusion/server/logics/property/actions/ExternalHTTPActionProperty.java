@@ -8,6 +8,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.flow.FlowResult;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.codehaus.plexus.util.FileUtils;
 
@@ -29,7 +31,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
             connectionString = replaceParams(context, connectionString);
@@ -46,6 +48,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+        
+        return FlowResult.FINISH;
     }
 
     private byte[] readHTTP(String path) throws IOException {

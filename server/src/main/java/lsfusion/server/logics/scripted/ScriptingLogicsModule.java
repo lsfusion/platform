@@ -1331,12 +1331,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         throw new UnsupportedOperationException("CUSTOM JAVA not supported");
     }
 
+    private String transformExternalText(String text) {
+        return transformFormulaText(text, ExternalActionProperty.getParamName("$1"));
+    }
     public LP addScriptedExternalDBActionProp(String connectionString, String exec, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString).size() + findFormulaParameters(exec).size(), connectionString, exec, findLCPsByPropertyUsage(toPropertyUsageList)));
+        return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString + " " + exec).size(), transformExternalText(connectionString), transformExternalText(exec), findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 
     public LP addScriptedExternalHTTPActionProp(String connectionString, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), connectionString, findLCPsByPropertyUsage(toPropertyUsageList)));
+        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), transformExternalText(connectionString), findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 
     public LP addScriptedExternalLSFActionProp() {
@@ -2221,7 +2224,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         MExclMap<SQLSyntaxType, String> mSyntaxes = MapFact.mExclMap();
         for (int i = 0; i < types.size(); i++) {
             SQLSyntaxType type = types.get(i);
-            String text = transformFormulaText(texts.get(i));
+            String text = transformFormulaText(texts.get(i), StringFormulaProperty.getParamName("$1"));
             if (type == null) {
                 defaultFormula = text;
             } else {
@@ -2252,8 +2255,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return params;
     }
 
-    private String transformFormulaText(String text) {
-        return text.replaceAll("\\$(\\d+)", "prm$1");
+    private String transformFormulaText(String text, String textTo) {
+        return text.replaceAll("\\$(\\d+)", textTo);
     }
 
     public LPWithParams addScriptedRProp(List<TypedParameter> context, LPWithParams zeroStep, LPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {

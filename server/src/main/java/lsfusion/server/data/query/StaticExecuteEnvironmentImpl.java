@@ -185,19 +185,21 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
         before(connection.sql, sqlSession.typePool, sqlSession, command, owner);
     }
     public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
-        after(connection.sql, sqlSession.typePool, sqlSession, command, owner);
+        after(connection.sql, sqlSession.typePool, sqlSession, command, owner, null);
     }
 
-    public void before(Connection connection, TypePool typePool, String command, OperationOwner owner) throws SQLException {
-        before(connection, typePool, null, command, owner);
+    public Object before(Connection connection, TypePool typePool, String command, OperationOwner owner) throws SQLException {
+        return before(connection, typePool, null, command, owner);
     }
 
-    public void after(Connection connection, TypePool typePool, String command, OperationOwner owner) throws SQLException {
-        after(connection, typePool, null, command, owner);
+    public void after(Connection connection, TypePool typePool, String command, OperationOwner owner, Object prevEnvState) throws SQLException {
+        after(connection, typePool, null, command, owner, prevEnvState);
     }
 
-    public void before(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner) throws SQLException {
+    public Object before(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner) throws SQLException {
         assert finalized;
+        
+        Object prevEnvState = null;
 
         for(ConcatenateType concType : concTypes)
             typePool.ensureConcType(concType);
@@ -213,21 +215,24 @@ public class StaticExecuteEnvironmentImpl extends TwinImmutableObject implements
             typePool.ensureTypeFunc(tf);
 
         if(noReadOnly) {
-            if(sqlSession == null)
+            if(sqlSession == null) {
+                prevEnvState = connection.isReadOnly();
                 connection.setReadOnly(false);
-            else
+            } else
                 sqlSession.pushNoReadOnly(connection);
         }
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
             sqlSession.pushVolatileStats(owner);
+        
+        return prevEnvState;
     }
 
-    public void after(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner) throws SQLException {
+    public void after(Connection connection, TypePool typePool, SQLSession sqlSession, String command, OperationOwner owner, Object prevEnvState) throws SQLException {
         assert finalized;
 
         if(noReadOnly) {
             if(sqlSession == null)
-                connection.setReadOnly(true);
+                connection.setReadOnly((boolean) prevEnvState);
             else
                 sqlSession.popNoReadOnly(connection);
         }

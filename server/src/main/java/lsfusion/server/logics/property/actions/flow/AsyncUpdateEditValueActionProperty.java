@@ -24,11 +24,6 @@ public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
-        return DerivedProperty.createNull();
-    }
-
-    @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         Object updatedValue = context.getSingleKeyObject();
         try {

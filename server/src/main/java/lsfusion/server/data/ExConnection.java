@@ -24,7 +24,7 @@ public class ExConnection {
     public synchronized void updateLogLevel(SQLSyntax syntax) {
         int logLevel = Settings.get().getLogLevelJDBC();
         if(lastLogLevel == null || !lastLogLevel.equals(logLevel)) {
-            syntax.setLogLevel(sql, logLevel);
+            syntax.setLogLevel(logLevel);
             lastLogLevel = logLevel;
         }
     }

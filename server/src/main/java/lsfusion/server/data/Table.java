@@ -1,6 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -45,10 +46,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
@@ -991,7 +989,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return propertyClasses.get(property);
     }
 
-    public static byte[] serializeResultSet(ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
+    public static byte[] serializeJDBC(ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         DataOutputStream o = new DataOutputStream(b);
         o.writeInt(fields.size());
@@ -999,10 +997,50 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             BaseUtils.serializeString(o, field);
             TypeSerializer.serializeType(o, fieldTypes.getType(field));
         }
-        for(ImMap<String, Object> row : set)
-            for(String field : fields)
+        o.writeInt(set.size());
+        for(ImMap<String, Object> row : set) {
+            for (String field : fields)
                 BaseUtils.serializeObject(o, row.get(field));
+        }
         return b.toByteArray();
+    }
+
+    public static class JDBC {
+        public final ImOrderSet<String> fields;;
+        public final ImMap<String, Type> fieldTypes;
+        public final ImList<ImMap<String, Object>> set;
+
+        public JDBC(ImOrderSet<String> fields, ImMap<String, Type> fieldTypes, ImList<ImMap<String, Object>> set) {
+            this.fields = fields;
+            this.fieldTypes = fieldTypes;
+            this.set = set;
+        }
+    }
+    
+    public static JDBC deserializeJDBC(byte[] array) throws IOException {
+        ByteArrayInputStream b = new ByteArrayInputStream(array);
+        DataInputStream in = new DataInputStream(b);
+        
+        int fieldCount = in.readInt();
+        MOrderExclSet<String> mFields = SetFact.mOrderExclSet(fieldCount);
+        MExclMap<String, Type> mFieldTypes = MapFact.mExclMap(fieldCount);
+        for (int i = 0; i < fieldCount; i++) {
+            String field = BaseUtils.deserializeString(in);
+            mFields.exclAdd(field);
+            mFieldTypes.exclAdd(field, TypeSerializer.deserializeType(in));
+        }
+        ImOrderSet<String> fields = mFields.immutableOrder();
+
+        int rowCount = in.readInt();
+        MList<ImMap<String, Object>> mList = ListFact.mList(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            MExclMap<String, Object> mRow = MapFact.mExclMap(fieldCount);
+            for(int j = 0; j < fieldCount; j++)
+                mRow.exclAdd(fields.get(j), BaseUtils.deserializeObject(in));
+            mList.add(mRow.immutable());
+        }
+
+        return new JDBC(fields, mFieldTypes.immutable(), mList.immutableList());
     }
 }
 

@@ -24,6 +24,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
@@ -625,4 +626,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, contextFilters, pullProps, readonly);
     }
 
+    public SQLSyntax getDbSyntax() {
+        return getDbManager().getSyntax();
+    }
 }

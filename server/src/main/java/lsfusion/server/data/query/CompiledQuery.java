@@ -1911,10 +1911,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return query;
     }
     
-    private static GetValue<ParseInterface, ParseValue> GETPARSE(final QueryEnvironment env) {
+    private static GetValue<ParseInterface, ParseValue> GETPARSE(final QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
         return new GetValue<ParseInterface, ParseValue>() {
             public ParseInterface getMapValue(ParseValue value) {
-                return value.getParseInterface(env);
+                return value.getParseInterface(env, typeEnv);
             }
         };
     };
@@ -1940,7 +1940,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return SystemProperties.isDebug;
             }
         });
-        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env)));
+        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
