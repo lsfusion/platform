@@ -45,7 +45,7 @@ public class CancelActiveTaskActionProperty extends ScriptingActionProperty {
         if (cancelSession != null)
             cancelSession.setForcedCancel(true);
 
-        context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(pid));
+        context.getSession().sql.executeDDL(context.getDbSyntax().getCancelActiveTaskQuery(pid));
 
         findAction("getActiveTasksAction[]").execute(context);
 

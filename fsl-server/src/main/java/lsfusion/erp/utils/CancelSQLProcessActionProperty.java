@@ -30,7 +30,7 @@ public class CancelSQLProcessActionProperty extends ScriptingActionProperty {
             SQLSession cancelSession = SQLSession.getSQLSessionMap().get(processId);
             if (cancelSession != null)
                 cancelSession.setForcedCancel(true);
-            context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(processId));
+            context.getSession().sql.executeDDL(context.getDbSyntax().getCancelActiveTaskQuery(processId));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

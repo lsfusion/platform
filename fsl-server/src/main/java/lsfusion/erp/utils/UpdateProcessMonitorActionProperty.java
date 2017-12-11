@@ -74,7 +74,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
 
     protected void updateProcessMonitor(ExecutionContext context, String processType, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
-        SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
+        SQLSyntaxType syntaxType = context.getDbSyntax().getSyntaxType();
 
         boolean active = processType.endsWith("activeAll");
         boolean activeSQL = processType.isEmpty() || processType.endsWith("activeSQL");

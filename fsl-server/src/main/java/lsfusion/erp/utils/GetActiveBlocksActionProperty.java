@@ -61,7 +61,7 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
         session.dropChanges((DataProperty) findProperty("modeActiveBlock[INTEGER]").property);
         session.dropChanges((DataProperty) findProperty("grantedActiveBlock[INTEGER]").property);
 
-        SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
+        SQLSyntaxType syntaxType = context.getDbSyntax().getSyntaxType();
 
         if (syntaxType == SQLSyntaxType.MSSQL) {
             String originalQuery = "select convert(varchar(30), suser_sname(p.sid)) as login, \n" +
