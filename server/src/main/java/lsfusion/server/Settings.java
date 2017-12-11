@@ -2250,8 +2250,8 @@ public class Settings implements Cloneable {
     private int useGroupLastOpt = 1; // 0 (no) - не используем, 1 (pushedIn) - используем только полный pushedInWhere, 2 (mixed) - используем полный pushedInWhere если есть иначе pushedOutWhere, 3 (pushedOut) - всегда pushedOut
 
     public int getUseGroupLastOpt() {
-//        if(SystemProperties.isDebug) // для тестирования
-//            return 3;
+        if(SystemProperties.isDebug) // для тестирования
+            return 3;
         return useGroupLastOpt;
     }
 
