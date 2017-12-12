@@ -1,20 +1,19 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.derived.DerivedProperty;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 
 import java.util.List;
 
@@ -46,10 +45,15 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
             String regex = "\\(" + getParamName(String.valueOf(i)) + "\\)";
             ObjectValue value = values.getValue(i - 1);
             if(!(value instanceof DataObject && ((DataObject) value).objectClass instanceof DynamicFormatFileClass)) {
-                String replacement = String.valueOf(value.getValue()); // переделать на format ???  
+                String replacement = String.valueOf(value.getValue()); // переделать на format ???
                 connectionString = connectionString.replaceAll(regex, replacement);
             }
         }
-        return connectionString;
+        try {
+            return URIUtil.encodeQuery(connectionString, "UTF-8");
+        } catch (URIException e) {
+            ServerLoggers.systemLogger.error("ReplaceParams error: ", e);
+            return connectionString;
+        }
     }
 }

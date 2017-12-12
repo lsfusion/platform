@@ -99,6 +99,11 @@ public class ByteArrayClass extends DataClass<byte[]> {
         throw new RuntimeException("not supported");
     }
 
+    @Override
+    public byte[] format(byte[] value) {
+        return value;
+    }
+
     public String getSID() {
         return "ByteArrayClass";
     }

@@ -82,6 +82,10 @@
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
 
+        <httpcomponents.httpmime.version>4.5.4</httpcomponents.httpmime.version>
+        <httpcomponents.httpclient.version>4.5.4</httpcomponents.httpclient.version>
+        <httpcomponents.httpclient-android.version>4.3.5.1</httpcomponents.httpclient-android.version>
+
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.7.0-patched-1</gwt.version>
 
@@ -496,6 +500,22 @@
                 <groupId>org.tuckey</groupId>
                 <artifactId>urlrewritefilter</artifactId>
                 <version>${url.rewriter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${httpcomponents.httpmime.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpcomponents.httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient-android</artifactId>
+                <version>${httpcomponents.httpclient-android.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->

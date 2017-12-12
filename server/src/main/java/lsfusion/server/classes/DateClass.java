@@ -125,8 +125,8 @@ public class DateClass extends DataClass<Date> {
         }
     }
 
-    public static String format(Date date) {
-        return getDateFormat().format(date);
+    public String format(Date value) {
+        return value == null ? null : getDateFormat().format(value);
     }
 
     public String getSID() {

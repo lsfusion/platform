@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -46,6 +47,15 @@ public class TimeClass extends DataClass<Time> {
         } catch (Exception e) {
             throw new ParseException("error parsing time", e);
         }
+    }
+
+    @Override
+    public String format(Time value) {
+        return value == null ? null : getTimeFormat().format(value);
+    }
+
+    public static DateFormat getTimeFormat() {
+        return new SimpleDateFormat("HH:mm:ss");
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

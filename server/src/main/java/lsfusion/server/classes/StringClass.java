@@ -85,6 +85,11 @@ public class StringClass extends DataClass {
     }
 
     @Override
+    public String format(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(blankPadded);

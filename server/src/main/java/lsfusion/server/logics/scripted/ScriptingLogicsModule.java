@@ -1338,8 +1338,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString + " " + exec).size(), transformExternalText(connectionString), transformExternalText(exec), findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 
-    public LP addScriptedExternalHTTPActionProp(String connectionString, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), transformExternalText(connectionString), findLCPsByPropertyUsage(toPropertyUsageList)));
+    public LP addScriptedExternalHTTPActionProp(String connectionString, int bodyParamsCount, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), bodyParamsCount, transformExternalText(connectionString), findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 
     public LP addScriptedExternalLSFActionProp() {

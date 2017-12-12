@@ -121,6 +121,11 @@ public class DateTimeClass extends DataClass<Timestamp> {
         }
     }
 
+    @Override
+    public String format(Timestamp value) {
+        return value == null ? null : getDateTimeFormat().format(value);
+    }
+
     public static DateFormat getDateTimeFormat() {
         return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
     }

@@ -95,7 +95,7 @@
 
     <b:bean id="readFormHandler" class="lsfusion.gwt.base.server.spring.ReadFormRequestHandler"/>
 
-    <b:bean id="runActionHandler" class="lsfusion.gwt.base.server.spring.RunActionRequestHandler"/>
+    <b:bean id="execHandler" class="lsfusion.gwt.base.server.spring.ExecRequestHandler"/>
 
     <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 

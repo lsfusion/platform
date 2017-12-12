@@ -23,4 +23,9 @@ public abstract class StaticFormatFileClass extends FileClass {
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }
+
+    @Override
+    public byte[] format(byte[] value) {
+        return value;
+    }
 }

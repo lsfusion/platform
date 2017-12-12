@@ -335,10 +335,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public void runAction(String canonicalName, String... params) throws RemoteException {
-        LAP property = (LAP) businessLogics.findProperty(canonicalName);
-        if (property != null) {
-            try {
+    public List<Object> exec(String[] returnCanonicalNames, String canonicalName, String... params) {
+        List<Object> returnList = new ArrayList<>();
+        try {
+            LAP property = (LAP) businessLogics.findProperty(canonicalName);
+            if (property != null) {
+
                 DataSession session = createSession();
                 ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
@@ -350,13 +352,26 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 }
                 ExecutionStack stack = getStack();
                 property.execute(session, stack, objects);
+
+                if (returnCanonicalNames != null) {
+                    for (String returnCanonicalName : returnCanonicalNames) {
+                        LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
+                        if (returnProperty != null) {
+                            returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                        } else
+                            throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
+                    }
+                }
+
                 session.apply(businessLogics, stack);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+            } else {
+                throw new RuntimeException(String.format("Action %s was not found", canonicalName));
             }
-        } else {
-            throw new RuntimeException("Action was not found");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+        return returnList;
     }
 
     @Override

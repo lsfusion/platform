@@ -50,4 +50,9 @@ public class DynamicFormatFileClass extends FileClass {
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }
+
+    @Override
+    public byte[] format(byte[] value) {
+        return value;
+    }
 }

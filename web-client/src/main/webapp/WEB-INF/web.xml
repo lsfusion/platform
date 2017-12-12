@@ -92,12 +92,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>runActionHandler</servlet-name>
+        <servlet-name>execHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>runActionHandler</servlet-name>
-        <url-pattern>/runAction</url-pattern>
+        <servlet-name>execHandler</servlet-name>
+        <url-pattern>/exec</url-pattern>
     </servlet-mapping>
 
     <servlet>

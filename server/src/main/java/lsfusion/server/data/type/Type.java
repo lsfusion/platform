@@ -63,6 +63,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     ExtInt getCharLength();
 
     T parseString(String s) throws ParseException;
+
+    Object format(T value);
     
     AndClassSet getBaseClassSet(BaseClass baseClass);
 

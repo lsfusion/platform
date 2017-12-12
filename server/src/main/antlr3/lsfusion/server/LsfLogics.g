@@ -2743,6 +2743,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	ExternalFormat format = null;
 	String conStr = null;
 	String exec = null;
+	int bodyParamsCount = 0;
 	
 	List<PropertyUsage> targetList = new ArrayList<PropertyUsage>();
 }
@@ -2753,7 +2754,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp();
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp(conStr, targetList);
+        $property = self.addScriptedExternalHTTPActionProp(conStr, bodyParamsCount, targetList);
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp();
       }
@@ -2762,7 +2763,8 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 }
 	:	'EXTERNAL'
 	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; })
-	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; } )?
+	    ('BODY' body = intLiteral { bodyParamsCount = $body.val; })?
+	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; })?
 	;
 
 externalFormat returns [ExternalFormat format, String conStr, String exec]

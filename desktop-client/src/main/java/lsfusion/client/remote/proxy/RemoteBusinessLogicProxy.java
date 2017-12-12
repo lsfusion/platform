@@ -115,10 +115,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public void runAction(String canonicalName, String... params) throws RemoteException {
-        logRemoteMethodStartCall("runAction");
-        target.runAction(canonicalName, params);
-        logRemoteMethodEndVoidCall("runAction");
+    public List<Object> exec(String[] returnCanonicalNames, String canonicalName, String... params) throws RemoteException {
+        logRemoteMethodStartCall("exec");
+        List<Object> result = target.exec(returnCanonicalNames, canonicalName, params);
+        logRemoteMethodEndVoidCall("exec");
+        return result;
     }
 
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {

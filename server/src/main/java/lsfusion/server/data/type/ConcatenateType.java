@@ -316,6 +316,11 @@ public class ConcatenateType extends AbstractType<Object[]> {
         throw new RuntimeException("Parsing values from string is not supported");
     }
 
+    @Override
+    public Object format(Object[] value) {
+        throw new RuntimeException("Format ConcatenateType is not supported");
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(types.length);
         for (Type type : types) {

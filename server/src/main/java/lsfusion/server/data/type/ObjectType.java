@@ -145,6 +145,11 @@ public class ObjectType extends AbstractType<Long> {
         return idClass.parseString(s);
     }
 
+    @Override
+    public String format(Long value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
     public AndClassSet getBaseClassSet(BaseClass baseClass) {
         return baseClass.getUpSet();
     }

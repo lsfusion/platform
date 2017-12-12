@@ -133,6 +133,11 @@ public class LogicalClass extends DataClass<Boolean> {
         }
     }
 
+    @Override
+    public Object format(Boolean value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
     public String getSID() {
         return "BOOLEAN";
     }
