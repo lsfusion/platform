@@ -3,11 +3,10 @@ package lsfusion.server.logics.property.actions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
-import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -115,29 +114,29 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             return IOUtils.readBytesFromStream(inputStream);
         } else {
 
-            ImCol<? extends ObjectValue> values = context.getKeys().values();
+            ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
 
             HttpPost httpPost = new HttpPost(connectionString);
             HttpEntity entity = null;
             if (bodyParamsCount > 1) {
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                for (int i = values.size() - bodyParamsCount; i < values.size(); i++) {
-                    Object value = values.get(i).getValue();
+                for (int i = orderInterfaces.size() - bodyParamsCount; i < orderInterfaces.size(); i++) {
+                    Object value = context.getKeyValue(orderInterfaces.get(i)).getValue();
                     String name = "param" + (i + 1);
                     if (value instanceof byte[]) {
                         builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
                     } else {
-                        builder.addPart(name, new StringBody(String.valueOf(value), ContentType.create("text/xml", Charset.forName("UTF-8"))));
+                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create("text/xml", Charset.forName("UTF-8"))));
                     }
                 }
                 entity = builder.build();
 
             } else if (bodyParamsCount == 1) {
-                Object value = values.get(values.size() - bodyParamsCount).getValue();
+                Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
                 if (value instanceof byte[]) {
                     entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
                 } else {
-                    entity = new StringEntity(String.valueOf(value));
+                    entity = new StringEntity(value == null ? "" : String.valueOf(value));
                 }
             }
             httpPost.addHeader("Content-type", "text/xml");

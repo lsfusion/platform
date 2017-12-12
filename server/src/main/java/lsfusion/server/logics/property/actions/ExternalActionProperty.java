@@ -39,11 +39,10 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString) {
-        ImMap<PropertyInterface, ? extends ObjectValue> values = context.getKeys();
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         for (int i = orderInterfaces.size(); i > 0; i--) {
             String regex = "\\(" + getParamName(String.valueOf(i)) + "\\)";
-            ObjectValue value = values.getValue(i - 1);
+            ObjectValue value = context.getKeyValue(orderInterfaces.get(i - 1));
             if(!(value instanceof DataObject && ((DataObject) value).objectClass instanceof DynamicFormatFileClass)) {
                 String replacement = String.valueOf(value.getValue()); // переделать на format ???
                 connectionString = connectionString.replaceAll(regex, replacement);
