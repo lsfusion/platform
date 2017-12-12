@@ -73,7 +73,6 @@ public class DefaultFormView extends FormView {
         }
     }
 
-    public ContainerView objectsContainer;
     public ContainerView formButtonContainer;
     public ContainerView noGroupPanelContainer;
     public ContainerView noGroupPanelPropsContainer;
@@ -97,21 +96,19 @@ public class DefaultFormView extends FormView {
         autoRefresh = entity.autoRefresh;
 
         FormContainerSet formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));
-        
-        objectsContainer = formSet.getObjectsContainer();
-        addComponentToMapping(objectsContainer, version);
-        
+        setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID(), version);
+        setComponentSID(formSet.getNoGroupPanelContainer(), formSet.getNoGroupPanelContainer().getSID(), version);
+        setComponentSID(formSet.getNoGroupPanelPropsContainer(), formSet.getNoGroupPanelPropsContainer().getSID(), version);
+        setComponentSID(formSet.getNoGroupToolbarPropsContainer(), formSet.getNoGroupToolbarPropsContainer().getSID(), version);
+
         formButtonContainer = formSet.getFormButtonContainer();
-        addComponentToMapping(formButtonContainer, version);
-        
         noGroupPanelContainer = formSet.getNoGroupPanelContainer();
-        registerComponent(panelContainers, noGroupPanelContainer, null, version);
-        
         noGroupPanelPropsContainer = formSet.getNoGroupPanelPropsContainer();
-        registerComponent(panelPropsContainers, noGroupPanelPropsContainer, null, version);
-        
         noGroupToolbarPropsContainer = formSet.getNoGroupToolbarPropsContainer();
-        registerComponent(toolbarPropsContainers, noGroupToolbarPropsContainer, null, version);
+
+        panelContainers.put(null, noGroupPanelContainer);
+        panelPropsContainers.put(null, noGroupPanelPropsContainer);
+        toolbarPropsContainers.put(null, noGroupToolbarPropsContainer);
 
         Iterator<TreeGroupView> treeIterator = getNFTreeGroupsListIt(version).iterator();
         TreeGroupView treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
@@ -141,6 +138,9 @@ public class DefaultFormView extends FormView {
         for (RegularFilterGroupView filterGroup : getNFRegularFiltersListIt(version)) {
             addRegularFilterGroupView(filterGroup, version);
         }
+
+        mainContainer.add(noGroupPanelContainer, version);
+        mainContainer.add(formButtonContainer, version);
 
         initFormButtons(version);
     }
@@ -216,7 +216,7 @@ public class DefaultFormView extends FormView {
         if(!groupObject.entity.isInTree()) {
             GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, new ContainerView.VersionContainerAdder(version));
 
-            objectsContainer.add(groupSet.getBoxContainer(), version);
+            mainContainer.add(groupSet.getBoxContainer(), version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
             registerComponent(gridContainers, groupSet.getGridBoxContainer(), groupObject, version);
@@ -259,7 +259,7 @@ public class DefaultFormView extends FormView {
     private void addTreeGroupView(TreeGroupView treeGroup, Version version) {
         TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
 
-        objectsContainer.add(treeSet.getBoxContainer(), version);
+        mainContainer.add(treeSet.getBoxContainer(), version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
         registerComponent(gridContainers, treeSet.getGridContainer(), treeGroup, version);
@@ -277,9 +277,9 @@ public class DefaultFormView extends FormView {
 //        }
     }
 
-    private void registerComponent(Map<PropertyGroupContainerView, ContainerView> containers, ContainerView container, PropertyGroupContainerView group, Version version) {
-        containers.put(group, container);
-        addComponentToMapping(container, version);
+    private void registerComponent(Map<PropertyGroupContainerView, ContainerView> containers, ContainerView boxContainer, PropertyGroupContainerView treeGroup, Version version) {
+        containers.put(treeGroup, boxContainer);
+        setComponentSID(boxContainer, boxContainer.getSID(), version);
     }
 
     // добавление в панель по сути, так как добавление в grid происходит уже на живой форме
