@@ -12,6 +12,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
@@ -387,7 +388,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                     statement = conn.createStatement();
                     ResultSet rs = statement.executeQuery(jdbcQuery);
 
-                    FileUtils.writeByteArrayToFile(file, BaseUtils.serializeResultSet(rs));
+                    FileUtils.writeByteArrayToFile(file, JDBCTable.serialize(rs));
 
                 } finally {
                     if (statement != null)

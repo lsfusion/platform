@@ -2768,7 +2768,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	;
 
 externalFormat returns [ExternalFormat format, String conStr, String exec]
-	:	'DB'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
+	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }

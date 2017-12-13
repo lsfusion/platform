@@ -3359,7 +3359,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             throw new UnsupportedOperationException();
         }
     };
-    public static void uploadTableToConnection(final String table, SQLSyntax syntax, final Table.JDBC tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
+    public static void uploadTableToConnection(final String table, SQLSyntax syntax, final JDBCTable tableData, final Connection sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         final KeyField keyCount = new KeyField("row", ValueExpr.COUNTCLASS);
         final ImRevMap<String, PropertyField> properties = tableData.fields.getSet().mapRevValues(new GetValue<PropertyField, String>() {
             public PropertyField getMapValue(String value) {

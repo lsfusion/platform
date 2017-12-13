@@ -7,8 +7,8 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
@@ -70,11 +70,11 @@ public class ExportDataActionProperty<I extends PropertyInterface> extends Exten
         ImList<ImMap<String, Object>> rows = query.execute(context).valuesList();
 
         try {
-            targetProp.change(BaseUtils.mergeFileAndExtension(Table.serializeJDBC(fields, new Type.Getter<String>() { // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
+            targetProp.change(BaseUtils.mergeFileAndExtension(JDBCTable.serialize(fields, new Type.Getter<String>() { // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
                 public Type getType(String value) {
                     return query.getPropertyType(value);
                 }
-            }, rows), "jdbcout".getBytes()), context);
+            }, rows), "jdbc".getBytes()), context);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

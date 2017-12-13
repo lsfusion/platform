@@ -2,25 +2,20 @@ package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.DynamicFormatFileClass;
-import lsfusion.server.classes.LongClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.sql.DefaultSQLSyntax;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.AbstractParseInterface;
 import lsfusion.server.data.type.ParseInterface;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -72,9 +67,9 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
                         DynamicFormatFileClass fileParamClass = (DynamicFormatFileClass) paramClass;
                         byte[] fileBytes = fileParamClass.read(paramValue.getValue());
                         String extension = BaseUtils.getExtension(fileBytes);
-                        if (extension.equals("jdbcout")) { // значит таблица
+                        if (extension.equals("jdbc")) { // значит таблица
                             fileBytes = BaseUtils.getFile(fileBytes);
-                            Table.JDBC jdbcTable = Table.deserializeJDBC(fileBytes);
+                            JDBCTable jdbcTable = JDBCTable.deserializeJDBC(fileBytes);
 
                             String table = "ti_" + tableParamNum; // создаем временную таблицу с сгенерированным именем
                             SQLSession.uploadTableToConnection(table, syntax, jdbcTable, conn, owner);
@@ -103,7 +98,7 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
                 List<Object> results = new ArrayList<>();
                 while(true) {
                     if(isResultSet)
-                        results.add(BaseUtils.mergeFileAndExtension(BaseUtils.serializeResultSet(parsed.statement.getResultSet()), "jdbc".getBytes()));
+                        results.add(BaseUtils.mergeFileAndExtension(JDBCTable.serialize(parsed.statement.getResultSet()), "jdbc".getBytes()));
                     else {
                         int updateCount = parsed.statement.getUpdateCount();
                         if(updateCount == -1)

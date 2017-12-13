@@ -3,6 +3,9 @@ package lsfusion.server.logics.property.actions.importing.jdbc;
 import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.server.data.JDBCTable;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -24,18 +27,16 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
     public ImportIterator getIterator(byte[] file) {
 
         try {
-            CachedRowSetImpl rs = BaseUtils.deserializeResultSet(file);
-            ResultSetMetaData rsmd = rs.getMetaData();
-
-            Map<String, Integer> fieldMapping = new HashMap<>();
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                fieldMapping.put(rsmd.getColumnName(i), i);
-            }
+            JDBCTable rs = JDBCTable.deserializeJDBC(file);
+            Map<String, Integer> fieldMapping = rs.fields.mapOrderValues(new GetIndex<Integer>() {
+                public Integer getMapValue(int i) {
+                    return i+1; // sourceColumns - one-base
+                }}).toJavaMap();
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
             
             return new ImportJDBCIterator(rs, sourceColumns, properties);
             
-        } catch (ClassNotFoundException | SQLException | IOException e) {
+        } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }

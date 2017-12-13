@@ -2255,7 +2255,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return params;
     }
 
-    private String transformFormulaText(String text, String textTo) {
+    private String transformFormulaText(String text, String textTo) { // так как $i не постфиксный (например $1 и $12)
         return text.replaceAll("\\$(\\d+)", textTo);
     }
 

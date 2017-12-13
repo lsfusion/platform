@@ -64,7 +64,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T parseString(String s) throws ParseException;
 
-    Object format(T value);
+    Object format(T value); // возвращает String или byte[]
     
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
