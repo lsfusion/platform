@@ -30,8 +30,8 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.profiler.ProfileItem;
 import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.ProfileValue;
@@ -61,7 +61,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
 
     private String basePOStaticCaption;
 
-    public StopProfilerActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public StopProfilerActionProperty(ScriptingLogicsModule LM) throws ScriptingModuleErrorLog.SemanticError {
         super(LM);
 
         totalTime = findProperty("totalTime[TEXT, TEXT, INTEGER, VARSTRING[100]]");
@@ -85,13 +85,13 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
             writeProfilerBatch = findAction("writeProfilerBatch[]");
 
             updateProfileData(context);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
         Profiler.clearData();
     }
 
-    private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         final ImOrderSet<KeyField> keys = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(new KeyField("po1", StringClass.text),
                 new KeyField("po2", StringClass.text), new KeyField("user", IntegerClass.instance), new KeyField("form", StringClass.getv(100)))));
 

@@ -15,8 +15,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.math.BigDecimal;
@@ -29,7 +29,7 @@ import java.util.Map;
 public class CalculatePathActionProperty extends DistanceGeoActionProperty {
 
 
-    public CalculatePathActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public CalculatePathActionProperty(ScriptingLogicsModule LM) throws ScriptingModuleErrorLog.SemanticError {
         super(LM);
     }
 
@@ -152,7 +152,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
 
     }
 
-    private Map<Pair<DataObject, DataObject>, Integer> getDistancesMap(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private Map<Pair<DataObject, DataObject>, Integer> getDistancesMap(ExecutionContext context) throws ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
         KeyExpr poi1Expr = new KeyExpr("poi");
         KeyExpr poi2Expr = new KeyExpr("poi");
         ImRevMap<String, KeyExpr> keys = MapFact.toRevMap("poi1", poi1Expr, "poi2", poi2Expr);

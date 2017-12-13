@@ -7,8 +7,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import javax.print.*;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -27,7 +27,7 @@ public class WriteToServerPrinterActionProperty extends ScriptingActionProperty 
     private final ClassPropertyInterface printerNameInterface;
 
 
-    public WriteToServerPrinterActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public WriteToServerPrinterActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
@@ -55,7 +55,7 @@ public class WriteToServerPrinterActionProperty extends ScriptingActionProperty 
             ServerLoggers.printerLogger.error("WriteToPrinter error", e);
             try {
                 findProperty("printed[]").change((Boolean) null, context);
-            } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+            } catch (ScriptingModuleErrorLog.SemanticError ignored) {
             }
             throw Throwables.propagate(e);
         }

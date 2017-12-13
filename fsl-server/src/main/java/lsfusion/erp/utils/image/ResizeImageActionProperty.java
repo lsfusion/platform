@@ -7,8 +7,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import net.coobird.thumbnailator.Thumbnails;
 
 import java.io.ByteArrayInputStream;
@@ -48,7 +48,7 @@ public class ResizeImageActionProperty extends ScriptingActionProperty {
                     outputFile.deleteOnExit();
             }
 
-        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (IOException | ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }

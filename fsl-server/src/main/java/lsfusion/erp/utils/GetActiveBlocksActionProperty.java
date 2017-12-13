@@ -23,8 +23,8 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -44,14 +44,14 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
             getActiveBlocksFromDatabase(context);
 
-        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
 
     }
 
 
-    private void getActiveBlocksFromDatabase(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void getActiveBlocksFromDatabase(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
 
         DataSession session = context.getSession();
 

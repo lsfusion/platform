@@ -11,8 +11,8 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.profiler.Profiler;
 
 import java.sql.SQLException;
@@ -51,7 +51,7 @@ public class StartProfilerActionProperty extends ScriptingActionProperty {
             }
 
             Profiler.PROFILER_ENABLED = true;
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
     }

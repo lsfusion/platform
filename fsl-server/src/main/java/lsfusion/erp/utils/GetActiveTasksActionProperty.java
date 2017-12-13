@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 
@@ -22,7 +22,7 @@ public class GetActiveTasksActionProperty extends GetTasksActionProperty {
             
             getTasksFromDatabase(context, true); 
 
-        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
 

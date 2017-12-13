@@ -34,8 +34,8 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.SessionDataProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.logics.service.process.JavaProcess;
 import lsfusion.server.logics.service.process.ProcessDumpActionProperty;
 import lsfusion.server.logics.service.process.SQLProcess;
@@ -66,13 +66,13 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
 
             updateProcessMonitor(context, processType, readAllocatedBytes);
 
-        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
 
     }
 
-    protected void updateProcessMonitor(ExecutionContext context, String processType, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    protected void updateProcessMonitor(ExecutionContext context, String processType, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
 
         SQLSyntaxType syntaxType = context.getDbSyntax().getSyntaxType();
 
