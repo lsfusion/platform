@@ -96,7 +96,9 @@ public class JDBCTable {
         }
     }
 
-    private static Type getType(int sqlType) {
+    private static Type getType(ResultSetMetaData metaData, int column) throws SQLException {
+        int sqlType = metaData.getColumnType(column);
+        
         switch (sqlType) {
             case Types.BIT:
             case Types.BOOLEAN:
@@ -113,15 +115,22 @@ public class JDBCTable {
                 return DoubleClass.instance;
             case Types.NUMERIC:
             case Types.DECIMAL:
-                return NumericClass.get(100, 20);
+                int precision = metaData.getPrecision(column);
+                return NumericClass.get(metaData.getScale(column) + precision, precision);
             case Types.CHAR:
             case Types.NCHAR:
-                return StringClass.get(ExtInt.UNLIMITED);
+                precision = metaData.getPrecision(column);
+                if(precision <= 0)
+                    return StringClass.get(ExtInt.UNLIMITED);
+                return StringClass.get(precision);
             case Types.VARCHAR:
             case Types.NVARCHAR:
             case Types.LONGVARCHAR:
             case Types.LONGNVARCHAR:
-                return StringClass.text;
+                precision = metaData.getPrecision(column);
+                if(precision <= 0)
+                    return StringClass.text;
+                return StringClass.getv(precision);
             case Types.DATE:
                 return DateClass.instance;
             case Types.TIME:
@@ -137,7 +146,7 @@ public class JDBCTable {
 //            case Types.ARRAY:
 //                return ArrayClass.get;
         }
-        return null;
+        return new JDBCDataClass(sqlType, metaData.getColumnTypeName(column));
     }
 
     public static byte[] serialize(ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
@@ -170,10 +179,7 @@ public class JDBCTable {
         for(int i=1;i<=cc;i++) {
             String field = metaData.getColumnName(i);
             BaseUtils.serializeString(o, field);
-            int columnType = metaData.getColumnType(i);
-            Type type = getType(columnType);
-            if(type == null)
-                type = new JDBCDataClass(columnType, metaData.getColumnTypeName(i));
+            Type type = getType(metaData, i);
             types.add(type);
             TypeSerializer.serializeType(o, type);
         }
