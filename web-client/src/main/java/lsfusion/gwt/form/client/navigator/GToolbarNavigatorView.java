@@ -108,7 +108,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
 
         button.setHeight("auto");
         button.addStyleName("toolbarNavigatorButton");
-        if (element.equals(selected)) {
+        if (element instanceof GNavigatorFolder && element.equals(selected)) {
             button.addStyleName("toolbarSelectedNavigatorButton");
         }
         if (vertical) {
