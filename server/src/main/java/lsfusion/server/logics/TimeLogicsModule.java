@@ -36,6 +36,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(TimeLogicsModule.class.getResourceAsStream("/lsfusion/system/Time.lsf"), "/lsfusion/system/Time.lsf", baseLM, BL);
+        setBaseLogicsModule(baseLM);
     }
 
     @Override

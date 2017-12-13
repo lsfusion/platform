@@ -22,7 +22,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -129,7 +129,7 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
         return keyObjects;
     }
 
-    private Map<String, byte[]> getFiles(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
+    private Map<String, byte[]> getFiles(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<String, byte[]> files = new HashMap<>();
 
         KeyExpr stringExpr = new KeyExpr("string");

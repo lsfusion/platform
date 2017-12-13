@@ -30,8 +30,8 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.EvalUtils;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -314,13 +314,13 @@ public class ActionPropertyDebugger implements DebuggerService {
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(ActionProperty action, ExecutionContext context, String namespace, String require, String priorities, String statements)
-            throws EvalUtils.EvaluationException, ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+            throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         return evalAction(context, namespace, require, priorities, "{" + StringEscapeUtils.unescapeJava(statements) + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object eval(ActionProperty action, ExecutionContext<?> context, String namespace, String require, String priorities, String expression)
-        throws EvalUtils.EvaluationException, ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+        throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
 //        context.showStack();
         if (!isEnabled()) {
@@ -336,7 +336,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         return evalAction(context, namespace, require, priorities, actionText, valueName);
     }
 
-    private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+    private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         //используем все доступные в контексте параметры
         ExecutionStack stack = context.stack;
 
@@ -382,7 +382,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingModuleErrorLog.SemanticError {
+    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {

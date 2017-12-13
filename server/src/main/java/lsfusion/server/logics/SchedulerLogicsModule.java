@@ -49,6 +49,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/Scheduler.lsf"), "/lsfusion/system/Scheduler.lsf", baseLM, BL);
+        setBaseLogicsModule(baseLM);
     }
 
     @Override

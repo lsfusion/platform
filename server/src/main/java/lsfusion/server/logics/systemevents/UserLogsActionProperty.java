@@ -11,7 +11,7 @@ import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.io.ByteArrayInputStream;
@@ -42,7 +42,7 @@ public class UserLogsActionProperty extends ScriptingActionProperty {
                     if (currentConnection instanceof DataObject)
                         findProperty("fileUserLogs[Connection]").change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(zipFile), "zip".getBytes()), session, (DataObject) currentConnection);
                     session.apply(context.getBL(), context.stack);
-                } catch (ScriptingModuleErrorLog.SemanticError e) {
+                } catch (ScriptingErrorLog.SemanticErrorException e) {
                     throw Throwables.propagate(e);
                 }
             } catch (IOException e) {

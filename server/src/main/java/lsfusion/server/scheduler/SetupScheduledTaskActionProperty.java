@@ -11,7 +11,7 @@ import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -39,7 +39,7 @@ public class SetupScheduledTaskActionProperty extends ScriptingActionProperty {
             } else {
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
             }
-        } catch (ScriptingModuleErrorLog.SemanticError e) {
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -9,7 +9,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -65,7 +65,7 @@ public class WriteDefaultReflectionPropertiesActionProperty extends ScriptingAct
                 session.popVolatileStats();
             }
 
-        } catch (InvocationTargetException | NoSuchMethodException | ScriptingModuleErrorLog.SemanticError | IllegalAccessException e) {
+        } catch (InvocationTargetException | NoSuchMethodException | ScriptingErrorLog.SemanticErrorException | IllegalAccessException e) {
             throw Throwables.propagate(e);
         }
     }

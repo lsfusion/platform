@@ -12,7 +12,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -26,12 +26,12 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
 
     private final ClassPropertyInterface customUserInterface;
 
-    public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         try {
             this.email = findProperty("email[Contact]");
-        } catch (ScriptingModuleErrorLog.SemanticError e) {
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         }
         this.loginCustomUser = findProperty("login[CustomUser]");

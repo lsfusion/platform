@@ -6,7 +6,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.remote.RemoteLoggerAspect;
 
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SetRemoteLoggerDebugEnabledUserActionProperty extends ScriptingActionProperty {
 
-    public SetRemoteLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public SetRemoteLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
     }
 

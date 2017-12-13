@@ -24,7 +24,7 @@ import lsfusion.server.integration.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import javax.mail.*;
@@ -69,7 +69,7 @@ public class EmailReceiver {
         this.lastDaysAccount = lastDaysAccount;
     }
 
-    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException, GeneralSecurityException {
+    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
         List<List<List<Object>>> data = downloadEmailList(getSkipEmails(context), unpack);
@@ -104,7 +104,7 @@ public class EmailReceiver {
         return skipEmails;
     }
 
-    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();
@@ -157,7 +157,7 @@ public class EmailReceiver {
         }
     }
 
-    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();

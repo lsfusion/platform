@@ -11,7 +11,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
@@ -56,7 +56,7 @@ public class UploadToDBActionProperty extends ScriptingActionProperty {
                 }});
     
             context.delayUserInterfaction(new MessageClientAction(localize("{logics.upload.was.completed}"), localize("{logics.upload.db}")));
-        } catch (ScriptingModuleErrorLog.SemanticError e) {
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         }
 

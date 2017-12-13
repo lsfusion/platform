@@ -11,8 +11,8 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 
@@ -20,7 +20,7 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
-    public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, LocalizedString.create("reloginUser"), classes);
     }
 
@@ -31,7 +31,7 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
             ScriptingLogicsModule authenticationLM = context.getBL().getModule("Authentication");
             try {
                 authenticationLM.findProperty("userChanged[]").change(true, context);
-            } catch (ScriptingModuleErrorLog.SemanticError e) {
+            } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw ExceptionUtils.propagate(e, SQLException.class);
             }
         } else {

@@ -57,7 +57,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
@@ -1276,7 +1276,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new ArrayList<>(groupings.values());
     }
 
-    public void saveGrouping(FormGrouping grouping, ExecutionStack stack) throws SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException {
+    public void saveGrouping(FormGrouping grouping, ExecutionStack stack) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
         if (!entity.isNamed()) {
             return;
         }

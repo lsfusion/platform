@@ -11,7 +11,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.service.ServiceDBActionProperty;
 
@@ -24,7 +24,7 @@ public class CheckTableClassesActionProperty extends ScriptingActionProperty {
 
     private final ClassPropertyInterface tableInterface;
 
-    public CheckTableClassesActionProperty(ReflectionLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public CheckTableClassesActionProperty(ReflectionLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableInterface = i.next();

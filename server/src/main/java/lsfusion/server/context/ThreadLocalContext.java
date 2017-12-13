@@ -28,7 +28,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
@@ -169,7 +169,7 @@ public class ThreadLocalContext {
         return settings.get();
     }
 
-    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
+    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         if (role == null) //системный процесс или пользователь без роли
             return getLogicsInstance().getSettings();
         else {
