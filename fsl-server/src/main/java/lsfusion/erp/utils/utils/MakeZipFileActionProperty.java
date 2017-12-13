@@ -15,8 +15,8 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -28,7 +28,7 @@ import java.util.zip.ZipOutputStream;
 
 public class MakeZipFileActionProperty extends ScriptingActionProperty {
 
-    public MakeZipFileActionProperty(ScriptingLogicsModule LM) throws ScriptingModuleErrorLog.SemanticError {
+    public MakeZipFileActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM);
     }
 
@@ -73,7 +73,7 @@ public class MakeZipFileActionProperty extends ScriptingActionProperty {
                 }
             }
 
-        } catch (IOException | ScriptingModuleErrorLog.SemanticError e) {
+        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }

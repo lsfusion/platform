@@ -13,8 +13,8 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -25,7 +25,7 @@ import java.util.Iterator;
 public class ShowOnMapPathActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface mapProviderInterface;
 
-    public ShowOnMapPathActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public ShowOnMapPathActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
@@ -72,7 +72,7 @@ public class ShowOnMapPathActionProperty extends GeoActionProperty {
                         ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :
                         ("https://www.google.com/maps/dir/" + uri + firstLatLong)))));
 
-        } catch (SQLException | URISyntaxException | ScriptingModuleErrorLog.SemanticError ignored) {
+        } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
 
     }

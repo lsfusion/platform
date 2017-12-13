@@ -11,8 +11,8 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.lang.management.ManagementFactory;
@@ -34,13 +34,13 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
 
             getActiveJavaThreads(context);
 
-        } catch (SQLHandledException | ScriptingModuleErrorLog.SemanticError e) {
+        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
 
     }
 
-    private void getActiveJavaThreads(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
+    private void getActiveJavaThreads(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         DataSession session = context.getSession();
         ThreadMXBean thMxB = ManagementFactory.getThreadMXBean();

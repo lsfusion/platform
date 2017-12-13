@@ -10,8 +10,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface POIInterface;
     private final ClassPropertyInterface mapProviderInterface;
 
-    public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -75,7 +75,7 @@ public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
                 findProperty("readLatitude[]").change(latitude, session);
                 findProperty("readLongitude[]").change(longitude, session);
             }
-        } catch (IOException | JSONException | SQLException | ScriptingModuleErrorLog.SemanticError ignored) {
+        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
     }
 }

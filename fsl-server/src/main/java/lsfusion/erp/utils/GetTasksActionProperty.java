@@ -22,8 +22,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -38,7 +38,7 @@ abstract class GetTasksActionProperty extends ScriptingActionProperty {
         super(LM);
     }
 
-    void getTasksFromDatabase(ExecutionContext context, boolean onlyActive) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
+    void getTasksFromDatabase(ExecutionContext context, boolean onlyActive) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         DataSession session = context.getSession();
 

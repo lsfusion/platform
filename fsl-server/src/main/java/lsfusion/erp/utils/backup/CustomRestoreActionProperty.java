@@ -31,8 +31,8 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.StoredDataProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
@@ -51,7 +51,7 @@ import static lsfusion.base.BaseUtils.trimToNull;
 public class CustomRestoreActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
-    public CustomRestoreActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public CustomRestoreActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -81,7 +81,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private Map<String, CustomRestoreTable> getTables(ExecutionContext context) throws ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+    private Map<String, CustomRestoreTable> getTables(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         KeyExpr tableExpr = new KeyExpr("Table");
         ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
         QueryBuilder<Object, Object> tableQuery = new QueryBuilder<>(tableKeys);
@@ -236,7 +236,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
 
     private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
                              List<Object> keys, Set<String> replaceOnlyNullSet)
-            throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
+            throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         ImOrderSet<KeyField> keySet = SetFact.EMPTYORDER();
         for(int i = 0; i < keys.size(); i++) {

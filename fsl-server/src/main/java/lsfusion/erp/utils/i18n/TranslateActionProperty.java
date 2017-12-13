@@ -6,8 +6,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageFromInterface;
     public final ClassPropertyInterface languageToInterface;
 
-    public TranslateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public TranslateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -76,7 +76,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
                 }
             }
 
-        } catch (ScriptingModuleErrorLog.SemanticError | IOException ignored) {
+        } catch (ScriptingErrorLog.SemanticErrorException | IOException ignored) {
         }
 
     }

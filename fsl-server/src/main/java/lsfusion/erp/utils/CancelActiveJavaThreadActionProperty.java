@@ -8,8 +8,8 @@ import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -29,14 +29,14 @@ public class CancelActiveJavaThreadActionProperty extends ScriptingActionPropert
 
         try {
             getActiveThreadsFromDatabase(context);
-        } catch (ScriptingModuleErrorLog.SemanticError | SQLHandledException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
 
     }
 
 
-    private void getActiveThreadsFromDatabase(ExecutionContext context) throws ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
+    private void getActiveThreadsFromDatabase(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
         Integer id = (Integer) findProperty("idActiveJavaThread[INTEGER]").read(context, currentObject);

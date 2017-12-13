@@ -7,8 +7,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,7 +21,7 @@ public class ShowOnMapActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface mapProviderInterface;
     private final ClassPropertyInterface addressInterface;
 
-    public ShowOnMapActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
+    public ShowOnMapActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
@@ -45,7 +45,7 @@ public class ShowOnMapActionProperty extends GeoActionProperty {
 
                 context.requestUserInteraction(new OpenUriClientAction(new URI(url)));
             }
-        } catch (URISyntaxException | SQLException | ScriptingModuleErrorLog.SemanticError e) {
+        } catch (URISyntaxException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
     }
