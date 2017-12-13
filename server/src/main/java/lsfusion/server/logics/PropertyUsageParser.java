@@ -4,8 +4,8 @@ import com.google.common.base.Throwables;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         public CustomClass findCustomClass(String name) {
             try {
                 return (CustomClass) module.findClass(name);
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
+            } catch (ScriptingModuleErrorLog.SemanticError e) {
                 Throwables.propagate(e);
             }
             return null;

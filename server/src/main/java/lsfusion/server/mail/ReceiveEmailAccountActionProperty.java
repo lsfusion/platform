@@ -9,7 +9,7 @@ import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import org.apache.log4j.Logger;
 
 import javax.mail.MessagingException;
@@ -27,7 +27,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
     EmailLogicsModule emailLM;
 
 
-    public ReceiveEmailAccountActionProperty(EmailLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public ReceiveEmailAccountActionProperty(EmailLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
         super(LM, classes);
         this.emailLM = LM;
 
@@ -73,7 +73,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
                               String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount)
-            throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
+            throws MessagingException, IOException, ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
             logError(context, localize("{mail.pop3.host.not.specified.letters.will.not.be.received}"));
             return;

@@ -38,7 +38,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.apache.poi.util.IOUtils;
@@ -400,7 +400,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 String maxHeapSize = (String) entry.get("maxHeapSize");
                 memoryLimitMap.put(name, "maxHeapSize=" + maxHeapSize);
             }
-        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError | SQLException | SQLHandledException e) {
             logger.error("Error reading MemoryLimit: ", e);
         }
         return memoryLimitMap;

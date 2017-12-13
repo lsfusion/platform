@@ -23,7 +23,6 @@ import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -58,10 +57,12 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.*;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +72,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
@@ -1276,7 +1276,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new ArrayList<>(groupings.values());
     }
 
-    public void saveGrouping(FormGrouping grouping, ExecutionStack stack) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void saveGrouping(FormGrouping grouping, ExecutionStack stack) throws SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException {
         if (!entity.isNamed()) {
             return;
         }

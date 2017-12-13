@@ -163,20 +163,20 @@ grammar LsfLogics;
 		return getCurrentDebugPoint();
 	}
 
-	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingModuleErrorLog.SemanticError {
 		if (inPropParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
 		}
 	}
 
-	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
+	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingModuleErrorLog.SemanticError {
 		if (inPropParseState()) {
 			return $formStatement::form.getGroupObjectsList(ids, version);
 		}
 		return null;
 	}
 
-	public TypedParameter TP(String className, String paramName) throws ScriptingErrorLog.SemanticErrorException {
+	public TypedParameter TP(String className, String paramName) throws ScriptingModuleErrorLog.SemanticError {
 		return self.new TypedParameter(className, paramName);
 	}
 
@@ -200,7 +200,7 @@ grammar LsfLogics;
 
 @rulecatch {
 	catch(RecognitionException re) {
-		if (re instanceof ScriptingErrorLog.SemanticErrorException) {
+		if (re instanceof ScriptingModuleErrorLog.SemanticError) {
 			throw re;
 		} else {
 			reportError(re);
@@ -961,7 +961,7 @@ formExprDeclaration returns [LP property, List<String> mapping, List<ResolveClas
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
 	}	
 }
-	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
+	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
 	;
 
 formActionDeclaration returns [LP property, List<String> mapping, List<ResolveClassSet> signature]
@@ -1049,7 +1049,7 @@ propertyStatement
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[false] { $property = $ciPD.property; $signature = $ciPD.signature; }
-	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = $expr.property.property; } }
+	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = $expr.property.property; } }
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
@@ -1678,7 +1678,7 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedActiveTabProp($fc.form, $fc.component);
+		$property = self.addScriptedActiveTabProp($fc.component);
 	}
 }
 	: 	'ACTIVE' 'TAB' fc = formComponentID
@@ -1988,7 +1988,7 @@ inlineProperty returns [LP property]
 		property.setExplicitClasses(signature);	
 	}
 }
-	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
+	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
 				|	ciPD=contextIndependentPD[true] { $property = $ciPD.property; signature = $ciPD.signature; }
 //                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.property; signature = self.getClassesFromTypedParams(newContext); }}
 //                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
@@ -2799,7 +2799,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams prop
 }
 @after {
 	if (inPropParseState()) {
-        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, newContext);
+        $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset);
 	}
 }
 	:
@@ -3286,7 +3286,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline, newContext);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
 	}	
 }
 	:	(	'FOR' 
@@ -3367,7 +3367,7 @@ constraintStatement
 				self.setPrevScope($et.event);
 			}
 		}
-		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
+		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inPropParseState()) self.getChecks().checkNecessaryProperty($expr.property); }
 		{
 			if (inPropParseState()) {
 				self.dropPrevScope($et.event);

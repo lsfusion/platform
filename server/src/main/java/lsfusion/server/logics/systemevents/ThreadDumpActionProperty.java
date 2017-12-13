@@ -10,7 +10,7 @@ import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -31,7 +31,7 @@ public class ThreadDumpActionProperty extends ScriptingActionProperty {
                 if(currentConnection instanceof DataObject)
                     findProperty("fileThreadDump[Connection]").change(BaseUtils.mergeFileAndExtension(threadDump, "txt".getBytes()), session, (DataObject) currentConnection);
                 session.apply(context.getBL(), context.stack);
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
+            } catch (ScriptingModuleErrorLog.SemanticError e) {
                 throw Throwables.propagate(e);
             }
         }

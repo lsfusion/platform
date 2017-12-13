@@ -7,7 +7,7 @@ import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 
@@ -23,7 +23,7 @@ public class StopSchedulerActionProperty extends ScriptingActionProperty {
         context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
         try {
             findProperty("isStartedScheduler[]").change((Boolean) null, context);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }

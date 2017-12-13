@@ -30,7 +30,7 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
@@ -130,7 +130,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         return logicsInstance;
     }
 
-    public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void setupScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException {
         if (daemonTasksExecutor != null) {
             Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.remove(scheduledTaskId);
@@ -164,7 +164,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void executeScheduledTask(DataSession session, DataObject scheduledTaskObject, String nameScheduledTask) throws SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException {
         if (daemonTasksExecutor != null) {
             Long scheduledTaskId = (Long) scheduledTaskObject.getValue();
             List<ScheduledFuture> futures = futuresMap.get(scheduledTaskId);
@@ -179,7 +179,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    public void setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void setupScheduledTasks(DataSession session, Integer threadCount) throws SQLException, ScriptingModuleErrorLog.SemanticError, SQLHandledException {
 
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdownNow();
@@ -199,7 +199,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
     }
 
-    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void fillSystemScheduledTasks(List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         tasks.add(new SystemSchedulerTask(new EExecutionStackRunnable() {
             @Override
             public void run(ExecutionStack stack) throws Exception {
@@ -209,7 +209,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         tasks.addAll(BL.getSystemTasks(this));
     }
 
-    private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         Modifier modifier = session.getModifier();
         KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);

@@ -6,7 +6,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ public class OverCalculateStatsActionProperty extends ScriptingActionProperty {
             Integer maxQuantityOverCalculate = (Integer) findProperty("maxQuantityOverCalculate[]").read(session);
             context.getBL().overCalculateStats(session, maxQuantityOverCalculate);
             session.apply(context);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }

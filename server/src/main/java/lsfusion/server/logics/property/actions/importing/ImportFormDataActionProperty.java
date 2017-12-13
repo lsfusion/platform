@@ -25,7 +25,7 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
@@ -45,7 +45,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
 
     protected abstract Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object files, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException;
 
-    protected void importData(ExecutionContext context, Object files) throws IOException, ParseException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    protected void importData(ExecutionContext context, Object files) throws IOException, ParseException, ScriptingModuleErrorLog.SemanticError, SQLException, SQLHandledException {
 
         Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap = new HashMap<>();
         Map<String, List<String>> headersMap = new LinkedHashMap<>();
@@ -173,7 +173,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         return result;
     }
 
-    private void writeData(ExecutionContext context, List<KeyField> keys, List<CalcProperty> properties, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private void writeData(ExecutionContext context, List<KeyField> keys, List<CalcProperty> properties, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         MMap<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> mPremap = newPremap();
         GetValue<ImMap<Property, ObjectValue>, Map<Property, ObjectValue>> mapProfileValue = new GetValue<ImMap<Property, ObjectValue>, Map<Property, ObjectValue>>() {
             @Override

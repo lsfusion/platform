@@ -41,8 +41,8 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
@@ -648,7 +648,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public static boolean explicitMigrate = false;
 
-    public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы

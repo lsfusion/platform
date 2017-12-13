@@ -2,7 +2,7 @@ package lsfusion.server.logics.scripted.proxy;
 
 import lsfusion.base.SoftHashMap;
 import lsfusion.interop.FontInfo;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.logics.scripted.converters.FontInfoConverter;
 import lsfusion.server.logics.scripted.converters.KeyStrokeConverter;
 import org.apache.commons.beanutils.BeanUtils;
@@ -22,7 +22,7 @@ public class ViewProxyUtil {
     /**
      * not thread-safe
      */
-    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+    public static void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingModuleErrorLog.SemanticError {
         if (propertyReceiver == null) {
             throw new RuntimeException("object is undefined");
         }

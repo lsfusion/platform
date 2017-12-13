@@ -36,8 +36,8 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.logics.table.TableFactory;
 import lsfusion.server.session.ExecutionEnvironment;
 import org.antlr.runtime.RecognitionException;
@@ -157,7 +157,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormEditReport() {
         try {
             return findAction("formEditReport[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -167,7 +167,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormDrop() {
         try {
             return findAction("formDrop[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -177,7 +177,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormRefresh() {
         try {
             return findAction("formRefresh[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -187,7 +187,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormApply() {
         try {
             return findAction("formApply[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -197,7 +197,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormCancel() {
         try {
             return findAction("formCancel[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -207,7 +207,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormOk() {
         try {
             return findAction("formOk[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -217,7 +217,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP getFormClose() {
         try {
             return findAction("formClose[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             Throwables.propagate(e);
         }
         return null;
@@ -227,7 +227,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getPolyEdit() {
         try {
             return findAction("edit[Object]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -236,7 +236,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getFormEdit() {
         try {
             return findAction("formEdit[Object]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -245,7 +245,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getPolyDelete() {
         try {
             return findAction("delete[Object]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -254,7 +254,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getFormDelete() {
         try {
             return findAction("formDelete[Object]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -263,7 +263,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP<?> getCanceled() {
         try {
             return findProperty("canceled[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -272,7 +272,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getEmpty() {
         try {
             return findAction("empty[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -281,7 +281,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> getEmptyObject() {
         try {
             return findAction("empty[Object]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }
@@ -471,7 +471,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public NavigatorElement systemEvents;
     public NavigatorElement configuration;
 
-    private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
+    private void initNavigators() throws ScriptingModuleErrorLog.SemanticError {
 
         // Окна
         windows = new Windows();
@@ -604,7 +604,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP<?> getConfirmedProperty() {
         try {
             return findProperty("confirmed[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
     }

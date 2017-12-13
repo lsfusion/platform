@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
@@ -23,7 +22,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -130,7 +129,7 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
         return keyObjects;
     }
 
-    private Map<String, byte[]> getFiles(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<String, byte[]> getFiles(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         Map<String, byte[]> files = new HashMap<>();
 
         KeyExpr stringExpr = new KeyExpr("string");

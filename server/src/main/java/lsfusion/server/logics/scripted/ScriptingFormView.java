@@ -12,7 +12,7 @@ import java.util.List;
 public class ScriptingFormView {
     private final FormView view;
     private final ScriptingLogicsModule LM;
-    private final ScriptingErrorLog errLog;
+    private final ScriptingModuleErrorLog errLog;
     private final ScriptParser parser;
 
     public ScriptingFormView(FormView view, ScriptingLogicsModule iLM) {
@@ -22,11 +22,11 @@ public class ScriptingFormView {
         this.view = view;
     }
 
-    public ComponentView getComponentBySID(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ComponentView getComponentBySID(String sid, Version version) throws ScriptingModuleErrorLog.SemanticError {
         return getComponentBySID(sid, true, version);
     }
 
-    private ComponentView getComponentBySID(String sid, boolean hasToExist, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private ComponentView getComponentBySID(String sid, boolean hasToExist, Version version) throws ScriptingModuleErrorLog.SemanticError {
         ComponentView component = view.getComponentBySID(sid, version);
         if (hasToExist && component == null) {
             errLog.emitComponentNotFoundError(parser, sid);
@@ -35,7 +35,7 @@ public class ScriptingFormView {
         return component;
     }
 
-    public ContainerView getParentContainer(ComponentView child, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ContainerView getParentContainer(ComponentView child, Version version) throws ScriptingModuleErrorLog.SemanticError {
         assert child != null;
         ContainerView parent = child.getNFContainer(version);
         if (parent == null) {
@@ -44,7 +44,7 @@ public class ScriptingFormView {
         return parent;
     }
 
-    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingModuleErrorLog.SemanticError {
         try {
             ViewProxyUtil.setObjectProperty(propertyReceiver, propertyName, propertyValue);
         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class ScriptingFormView {
         }
     }
 
-    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingModuleErrorLog.SemanticError {
         assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
         if (getComponentBySID(sid, false, version) != null) {
@@ -66,7 +66,7 @@ public class ScriptingFormView {
         return container;
     }
 
-    public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingModuleErrorLog.SemanticError {
         assert component != null && parentComponent != null;
 
         if (!(parentComponent instanceof ContainerView)) {
@@ -101,7 +101,7 @@ public class ScriptingFormView {
         }
     }
 
-    public void removeComponent(ComponentView component, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void removeComponent(ComponentView component, Version version) throws ScriptingModuleErrorLog.SemanticError {
         assert component != null;
         
         if (component == view.mainContainer) {
@@ -111,7 +111,7 @@ public class ScriptingFormView {
         component.getNFContainer(version).remove(component, version);
     }
 
-    public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingModuleErrorLog.SemanticError {
         GroupObjectEntity groupObjectEntity = view.entity.getNFGroupObject(sid, version);
         if (groupObjectEntity == null) {
             errLog.emitComponentNotFoundError(parser, sid);
@@ -120,7 +120,7 @@ public class ScriptingFormView {
         return view.getNFGroupObject(groupObjectEntity, version);
     }
 
-    public PropertyDrawView getPropertyView(String name, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawView getPropertyView(String name, Version version) throws ScriptingModuleErrorLog.SemanticError {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, name, version);
         return view.get(drawEntity);
     }
@@ -129,17 +129,17 @@ public class ScriptingFormView {
         return view.get(propertyDraw);
     }
 
-    public PropertyDrawView getPropertyView(String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawView getPropertyView(String name, List<String> mapping, Version version) throws ScriptingModuleErrorLog.SemanticError {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, PropertyDrawEntity.createSID(name, mapping), version);
         return view.get(drawEntity);
     }
 
-    public PropertyDrawView getPropertyView(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawView getPropertyView(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping, Version version) throws ScriptingModuleErrorLog.SemanticError {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, pUsage, mapping, version);
         return view.get(drawEntity);
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingModuleErrorLog.SemanticError {
         return ScriptingFormEntity.addCalcPropertyObject(LM, view.entity, property, mapping);
     }
 

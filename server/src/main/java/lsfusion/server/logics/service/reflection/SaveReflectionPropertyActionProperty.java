@@ -10,7 +10,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -44,7 +44,7 @@ public class SaveReflectionPropertyActionProperty extends ScriptingActionPropert
             Settings settings = ThreadLocalContext.getRoleSettings((Long) userRoleObject.getValue());
             ThreadLocalContext.setPropertyValue(settings, nameReflectionProperty, valueReflectionProperty);
 
-        } catch (ScriptingErrorLog.SemanticErrorException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | CloneNotSupportedException e) {
+        } catch (ScriptingModuleErrorLog.SemanticError | IllegalAccessException | InvocationTargetException | NoSuchMethodException | CloneNotSupportedException e) {
             throw Throwables.propagate(e);
         }
 

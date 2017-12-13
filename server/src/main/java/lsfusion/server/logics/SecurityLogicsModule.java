@@ -65,7 +65,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SecurityLogicsModule.class.getResourceAsStream("/lsfusion/system/Security.lsf"), "/lsfusion/system/Security.lsf", baseLM, BL);
-        setBaseLogicsModule(baseLM);
     }
 
     @Override

@@ -27,7 +27,7 @@ public class ScriptParser {
      * сейчас метакодов  */
     private int currentExpansionLine = 0;
     
-    private ScriptingErrorLog errLog;
+    private ScriptingModuleErrorLog errLog;
 
     /** Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, 
      * чтобы ничего не выполнялось при этом парсинге. */
@@ -37,7 +37,7 @@ public class ScriptParser {
      * то не нужно создавать делегаты для отладчика */
     private boolean insideNonEnabledMeta = false;
     
-    public ScriptParser(ScriptingErrorLog errLog) {
+    public ScriptParser(ScriptingModuleErrorLog errLog) {
         this.errLog = errLog;
     }
 
@@ -116,7 +116,7 @@ public class ScriptParser {
         return count;
     }
 
-    public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
+    public List<String> grabMetaCode(String metaCodeName) throws ScriptingModuleErrorLog.SemanticError {
         if (isInsideMetacode()) {
             errLog.emitMetacodeInsideMetacodeError(this);
         }
@@ -134,7 +134,7 @@ public class ScriptParser {
         return code;
     }
 
-    public List<String> grabJavaCode() throws ScriptingErrorLog.SemanticErrorException {
+    public List<String> grabJavaCode() throws ScriptingModuleErrorLog.SemanticError {
         List<String> code = new ArrayList<>();
         Parser curParser = getCurrentParser();
         while (!curParser.input.LT(1).getText().equals("}>")) {

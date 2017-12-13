@@ -25,8 +25,8 @@ import lsfusion.server.logics.PGObjectReader;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.stack.ExecutionStackAspect;
 
@@ -237,7 +237,7 @@ public abstract class ProcessDumpActionProperty extends ScriptingActionProperty 
     protected ImMap<String, SQLProcess> getPostgresProcesses(ExecutionContext context, Map<Integer, SQLThreadInfo> sessionThreadMap,
                                                            MSet<Thread> javaThreads, MExclSet<String> mFreeSQLProcesses, boolean onlyActive,
                                                            boolean logSqlProcesses)
-            throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+            throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
         String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'" + (onlyActive ? " AND state!='idle'" : ""), context.getBL().getDataBaseName());
@@ -327,7 +327,7 @@ public abstract class ProcessDumpActionProperty extends ScriptingActionProperty 
         return MapFact.fromJavaMap(resultMap);
     }
 
-    private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         SQLSession sql = context.getSession().sql;
 
         String originalQuery = "SELECT blocked_locks.pid     AS blocked_pid,\n" +

@@ -7,7 +7,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SetExplainAnalyzeModeUserActionProperty extends ScriptingActionProperty {
 
-    public SetExplainAnalyzeModeUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public SetExplainAnalyzeModeUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingModuleErrorLog.SemanticError {
         super(LM, classes);
     }
 

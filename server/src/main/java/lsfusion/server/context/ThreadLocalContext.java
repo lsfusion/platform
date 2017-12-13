@@ -2,10 +2,7 @@ package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
@@ -15,9 +12,6 @@ import lsfusion.server.WrapperContext;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -34,7 +28,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
@@ -45,15 +39,16 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.MDC;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<>();
@@ -174,7 +169,7 @@ public class ThreadLocalContext {
         return settings.get();
     }
 
-    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
         if (role == null) //системный процесс или пользователь без роли
             return getLogicsInstance().getSettings();
         else {

@@ -23,7 +23,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.remote.InteractiveFormReportManager;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -194,7 +194,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingModuleErrorLog.SemanticError {
         if (smtpHostAccount == null || fromAddressAccount == null) {
             logError(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
             return;

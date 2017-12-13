@@ -5,7 +5,10 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.implementations.HSet;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -975,6 +978,7 @@ public class BaseUtils {
         return result;
     }
 
+    @SafeVarargs
     public static <B> List<B> mergeLists(List<B>... lists) {
         List<B> result = new ArrayList<>();
         for (List<B> list : lists) {

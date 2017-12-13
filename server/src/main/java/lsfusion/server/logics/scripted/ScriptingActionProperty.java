@@ -42,11 +42,11 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
         this.LM = LM;
     }
 
-    protected LCP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected LCP<?> findProperty(String name) throws ScriptingModuleErrorLog.SemanticError {
         return LM.findProperty(name);
     }
 
-    protected LCP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
+    protected LCP<?>[] findProperties(String... names) throws ScriptingModuleErrorLog.SemanticError {
         LCP<?>[] result = new LCP[names.length];
         for (int i = 0; i < names.length; i++) {
             result[i] = findProperty(names[i]);
@@ -59,19 +59,19 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
         executeCustom(context);
     }
 
-    protected LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected LAP<?> findAction(String name) throws ScriptingModuleErrorLog.SemanticError {
         return LM.findAction(name);
     }
 
-    protected ValueClass findClass(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected ValueClass findClass(String name) throws ScriptingModuleErrorLog.SemanticError {
         return LM.findClass(name);
     }
 
-    protected AbstractGroup findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected AbstractGroup findGroup(String name) throws ScriptingModuleErrorLog.SemanticError {
         return LM.findGroup(name);
     }
 
-    protected FormEntity findForm(String name) throws ScriptingErrorLog.SemanticErrorException {
+    protected FormEntity findForm(String name) throws ScriptingModuleErrorLog.SemanticError {
         return LM.findForm(name);
     }
 

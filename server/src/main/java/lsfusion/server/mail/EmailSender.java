@@ -10,7 +10,7 @@ import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
@@ -189,7 +189,7 @@ public class EmailSender {
         return result;
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingModuleErrorLog.SemanticError {
         assert inlineFiles != null && attachments != null && files != null && inlineTexts != null;
 
         setMessageHeading();
@@ -255,7 +255,7 @@ public class EmailSender {
         }
     }
 
-    public void sendPlainMail(ExecutionContext context, String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendPlainMail(ExecutionContext context, String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingModuleErrorLog.SemanticError {
         assert inlineForms != null && attachments != null && files != null;
 
         setMessageHeading();
@@ -274,7 +274,7 @@ public class EmailSender {
         sendMail(context, message, subject);
     }
 
-    private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
+    private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingModuleErrorLog.SemanticError {
         final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent[]");
 
         ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);

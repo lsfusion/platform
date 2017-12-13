@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import static lsfusion.base.BaseUtils.nullTrim;
 
 public class AuthenticationLogicsModule extends ScriptingLogicsModule{
-    BusinessLogics BL;
-
     public ConcreteCustomClass computer;
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
@@ -80,8 +78,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/lsfusion/system/Authentication.lsf"), "/lsfusion/system/Authentication.lsf", baseLM, BL);
-        this.BL = BL;
-        setBaseLogicsModule(baseLM);
     }
 
     @Override

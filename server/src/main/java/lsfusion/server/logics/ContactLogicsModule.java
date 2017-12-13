@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
-import org.antlr.runtime.RecognitionException;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 
@@ -17,7 +17,6 @@ public class ContactLogicsModule extends ScriptingLogicsModule{
 
     public ContactLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ContactLogicsModule.class.getResourceAsStream("/lsfusion/system/Contact.lsf"), "/lsfusion/system/Contact.lsf", baseLM, BL);
-        setBaseLogicsModule(baseLM);
     }
 
     @Override

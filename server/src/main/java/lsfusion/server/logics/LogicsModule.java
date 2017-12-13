@@ -1647,7 +1647,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : null);
 
-        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
+        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
@@ -1908,10 +1908,10 @@ public abstract class LogicsModule {
     }
 
     protected void addConstraint(LCP<?> lp, LCP<?> messageLP, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
-        if(!((CalcProperty)lp.property).noDB())
+        if(!(lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
-        setConstraint((CalcProperty) lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugPoint);
+        setConstraint(lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugPoint);
     }
 
     public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty messageProperty, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
@@ -1954,7 +1954,7 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
-        if(!((CalcProperty)whereImplement.property).noDB())
+        if(!(whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
         ActionProperty<? extends PropertyInterface> action =

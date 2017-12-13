@@ -16,7 +16,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingModuleErrorLog;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -35,13 +35,13 @@ public class MakeProcessDumpActionProperty extends ProcessDumpActionProperty {
 
             makeProcessDump(context, readAllocatedBytes);
 
-        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLHandledException | ScriptingModuleErrorLog.SemanticError e) {
             throw Throwables.propagate(e);
         }
 
     }
 
-    protected void makeProcessDump(ExecutionContext context, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    protected void makeProcessDump(ExecutionContext context, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingModuleErrorLog.SemanticError {
 
         SQLSyntaxType syntaxType = context.getDbSyntax().getSyntaxType();
 
