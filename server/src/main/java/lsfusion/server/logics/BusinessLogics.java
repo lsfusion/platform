@@ -2179,6 +2179,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
 
+    public LP<?, ?> findLP(String name) {
+        PropertyUsageParser parser = new PropertyUsageParser(this, name);
+        LP<?, ?> property = null;
+        try {
+            property = findProperty(parser.getNamespace(), parser.getName(), parser.getSignature());
+        } catch (AbstractPropertyNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
+        return property;
+    }
+
     private <R, P> R findElement(String canonicalName, P param, ModuleFinder<R, P> moduleFinder) {
         assert canonicalName != null;
         if (canonicalName.contains(".")) {
