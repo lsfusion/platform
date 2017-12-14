@@ -1,7 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
-import com.google.common.io.CharStreams;
-import org.apache.commons.lang.ArrayUtils;
+import lsfusion.base.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -13,17 +12,14 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ExecRequestHandler implements HttpRequestHandler {
-    private static final String ACTION_CN_PARAM = "sid";
+    private static final String ACTION_CN_PARAM = "action";
     private static final String PARAMS_PARAM = "p";
     private static final String RETURNS_PARAM = "returns";
 
@@ -39,15 +35,17 @@ public class ExecRequestHandler implements HttpRequestHandler {
             String userLogin = context.getInitParameter("serviceUserLogin");
             if (blProvider.getLogics().checkPropertyChangePermission(userLogin, actionCN)) {
                 String[] returns = request.getParameterValues(RETURNS_PARAM);
-                List<Object> returnList = blProvider.getLogics().exec(request.getParameterValues(RETURNS_PARAM), actionCN, (String[]) ArrayUtils.addAll(request.getParameterValues(PARAMS_PARAM), getPostParams(request)));
+                String[] getParams = request.getParameterValues(PARAMS_PARAM);
+                byte[] postParams = IOUtils.readBytesFromStream(request.getInputStream());
+                List<Object> returnList = blProvider.getLogics().exec(returns, actionCN, postParams, getParams);
 
                 if (!returnList.isEmpty()) {
                     if(returnList.size() > 1) {
                         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
                         builder.setContentType(ContentType.MULTIPART_FORM_DATA);
-                        for (int i = 1; i <= returnList.size(); i++) {
-                            Object returnEntry = returnList.get(i - 1);
+                        for (int i = 0; i < returnList.size(); i++) {
+                            Object returnEntry = returnList.get(i);
                             if (returnEntry instanceof byte[])
                                 builder.addPart("param" + i, new ByteArrayBody((byte[]) returnEntry, returns[i]));
                             else
@@ -75,24 +73,6 @@ public class ExecRequestHandler implements HttpRequestHandler {
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
             throw new RuntimeException(e);
-        }
-    }
-
-    private Object[] getPostParams(HttpServletRequest request) throws IOException {
-        List<Object> paramsList = new ArrayList<>();
-        String postParams = CharStreams.toString(request.getReader());
-        try {
-            ByteArrayDataSource ds = new ByteArrayDataSource(postParams, "multipart/mixed");
-            MimeMultipart multipart = new MimeMultipart(ds);
-            for (int i = 0; i < multipart.getCount(); i++) {
-                Object result = multipart.getBodyPart(i).getContent();
-                if(result instanceof String)
-                    paramsList.add(result);
-            }
-            return paramsList.toArray();
-        } catch (Exception e) {
-            // single parameter
-            return new String[] {postParams};
         }
     }
 }

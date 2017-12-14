@@ -115,9 +115,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String[] returnCanonicalNames, String canonicalName, String... params) throws RemoteException {
+    public List<Object> exec(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        List<Object> result = target.exec(returnCanonicalNames, canonicalName, params);
+        List<Object> result = target.exec(returnCanonicalNames, canonicalName, postParams, getParams);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }

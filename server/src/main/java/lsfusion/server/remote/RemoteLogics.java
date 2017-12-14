@@ -28,6 +28,8 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -40,11 +42,15 @@ import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -335,20 +341,34 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String[] returnCanonicalNames, String canonicalName, String... params) {
+    public List<Object> exec(String[] returnCanonicalNames, String action, byte[] postParams, String... getParams) {
         List<Object> returnList = new ArrayList<>();
         try {
-            LAP property = (LAP) businessLogics.findProperty(canonicalName);
+            LAP property = (LAP) businessLogics.findLP(action);
             if (property != null) {
 
                 DataSession session = createSession();
                 ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
 
-                DataObject[] objects = new DataObject[interfaces.size()];
+                int getParamsLength = getParams == null ? 0 : getParams.length;
+                int postParamsCount = property.listInterfaces.size() - getParamsLength;
+
+                ObjectValue[] objects = new ObjectValue[interfaces.size()];
                 for (int i = 0; i < interfaces.size(); i++) {
                     ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
-                    objects[i] = session.getDataObject(valueClass, valueClass.getType().parseString(params[i]));
+
+                    Object param = null;
+                    if(i < getParamsLength && getParams != null) {
+                        param = valueClass.getType().parseString(getParams[i]);
+                    } else {
+                        if(postParamsCount == 1) {
+                            param = readSinglePostParam(valueClass.getType(), postParams);
+                        } else if(postParamsCount >= 2) {
+                            param = readMultiPostParam(valueClass.getType(), postParams, i);
+                        }
+                    }
+                    objects[i] = param == null ? NullValue.instance : session.getObjectValue(valueClass, param);
                 }
                 ExecutionStack stack = getStack();
                 property.execute(session, stack, objects);
@@ -366,12 +386,39 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 session.apply(businessLogics, stack);
 
             } else {
-                throw new RuntimeException(String.format("Action %s was not found", canonicalName));
+                throw new RuntimeException(String.format("Action %s was not found", action));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return returnList;
+    }
+
+    private Object readSinglePostParam(Type type, byte[] bytes) throws IOException, ParseException {
+        if (type instanceof DynamicFormatFileClass) {
+            return lsfusion.base.IOUtils.readBytesFromStream(new ByteArrayInputStream(bytes));
+        } else {
+            String result = new String(bytes);
+            if(!result.isEmpty())
+                return type.parseString(new String(bytes));
+            else return null;
+        }
+    }
+
+    private Object readMultiPostParam(Type type, byte[] bytes, int i) throws MessagingException, IOException, ParseException {
+        ByteArrayDataSource ds = new ByteArrayDataSource(bytes, "multipart/mixed");
+        MimeMultipart multipart = new MimeMultipart(ds);
+        Object result = multipart.getBodyPart(i).getContent();
+        if (type instanceof DynamicFormatFileClass) {
+            if (result instanceof ByteArrayInputStream)
+                result = lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) result);
+            else
+                result = null;
+        } else if(result != null && !((String)result).isEmpty())
+            result = type.parseString((String) result);
+        else
+            result = null;
+        return result;
     }
 
     @Override

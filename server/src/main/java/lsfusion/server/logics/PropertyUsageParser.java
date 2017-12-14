@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PropertyUsageParser extends AbstractPropertyNameParser {
-    public static class PropertyUsageClassFinder implements ClassFinder {
+    public static class ModulePropertyUsageClassFinder implements ClassFinder {
         private ScriptingLogicsModule module;
-        public PropertyUsageClassFinder(ScriptingLogicsModule module) {
+        public ModulePropertyUsageClassFinder(ScriptingLogicsModule module) {
             this.module = module;
         }
 
@@ -33,8 +33,30 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         }
     }
 
+    //TODO: Пока всё равно работает только с canonicalName
+    public static class BLPropertyUsageClassFinder implements ClassFinder {
+        private BusinessLogics BL;
+        public BLPropertyUsageClassFinder(BusinessLogics BL) {
+            this.BL = BL;
+        }
+
+        @Override
+        public CustomClass findCustomClass(String name) {
+            return BL.findClass(name);
+        }
+
+        @Override
+        public DataClass findDataClass(String name) {
+            return ClassCanonicalNameUtils.getScriptedDataClass(name);
+        }
+    }
+
     public PropertyUsageParser(ScriptingLogicsModule module, String name) {
-        this(name, new PropertyUsageClassFinder(module));
+        this(name, new ModulePropertyUsageClassFinder(module));
+    }
+
+    public PropertyUsageParser(BusinessLogics BL, String name) {
+        this(name, new BLPropertyUsageClassFinder(BL));
     }
 
     public PropertyUsageParser(String name, ClassFinder finder) {
@@ -103,5 +125,16 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
             }
         }
         return result;
+    }
+
+    public String getName() throws ParseException {
+        int pointIndex = name.indexOf('.');
+        int bracketIndex = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
+        return checkID(bracketIndex < 0 ? name.substring(pointIndex + 1) : name.substring(pointIndex + 1, bracketIndex));
+    }
+
+    public String getNamespace() throws ParseException {
+        int pointIndex = name.indexOf('.');
+        return pointIndex < 0 ? null : checkID(name.substring(0, pointIndex));
     }
 }

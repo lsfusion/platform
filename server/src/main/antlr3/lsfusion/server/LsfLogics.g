@@ -2743,7 +2743,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	ExternalFormat format = null;
 	String conStr = null;
 	String exec = null;
-	int bodyParamsCount = 0;
+	Integer body = null;
 	
 	List<PropertyUsage> targetList = new ArrayList<PropertyUsage>();
 }
@@ -2754,7 +2754,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp();
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp(conStr, bodyParamsCount, targetList);
+        $property = self.addScriptedExternalHTTPActionProp(conStr, body, targetList);
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp();
       }
@@ -2762,14 +2762,13 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	}
 }
 	:	'EXTERNAL'
-	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; })
-	    ('BODY' body = intLiteral { bodyParamsCount = $body.val; })?
+	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; body = $type.body; })
 	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; })?
 	;
 
-externalFormat returns [ExternalFormat format, String conStr, String exec]
+externalFormat returns [ExternalFormat format, String conStr, String exec, Integer body]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
-	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	;
