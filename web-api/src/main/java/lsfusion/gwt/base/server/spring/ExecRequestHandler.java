@@ -39,6 +39,7 @@ public class ExecRequestHandler implements HttpRequestHandler {
                 byte[] postParams = IOUtils.readBytesFromStream(request.getInputStream());
                 List<Object> returnList = blProvider.getLogics().exec(returns, actionCN, postParams, getParams);
 
+                //TODO: стоило бы выделить класс над exec и eval, но если returns уйдёт, то особо смысла нет
                 if (!returnList.isEmpty()) {
                     if(returnList.size() > 1) {
                         MultipartEntityBuilder builder = MultipartEntityBuilder.create();

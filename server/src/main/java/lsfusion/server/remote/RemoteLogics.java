@@ -40,7 +40,9 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -347,43 +349,45 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             LAP property = (LAP) businessLogics.findLP(action);
             if (property != null) {
 
-                DataSession session = createSession();
-                ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
-                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
+                try (DataSession session = createSession()) {
+                    ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
+                    ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
 
-                int getParamsLength = getParams == null ? 0 : getParams.length;
-                int postParamsCount = property.listInterfaces.size() - getParamsLength;
+                    int getParamsCount = getParams == null ? 0 : getParams.length;
+                    int postParamsCount = property.listInterfaces.size() - getParamsCount;
 
-                ObjectValue[] objects = new ObjectValue[interfaces.size()];
-                for (int i = 0; i < interfaces.size(); i++) {
-                    ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                    MimeMultipart multipart = postParamsCount >= 2 ? new MimeMultipart(new ByteArrayDataSource(postParams, "multipart/mixed")) : null;
 
-                    Object param = null;
-                    if(i < getParamsLength && getParams != null) {
-                        param = valueClass.getType().parseString(getParams[i]);
-                    } else {
-                        if(postParamsCount == 1) {
-                            param = readSinglePostParam(valueClass.getType(), postParams);
-                        } else if(postParamsCount >= 2) {
-                            param = readMultiPostParam(valueClass.getType(), postParams, i);
+                    ObjectValue[] objects = new ObjectValue[interfaces.size()];
+                    for (int i = 0; i < interfaces.size(); i++) {
+                        ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                        Type type = valueClass.getType();
+
+                        Object param = null;
+                        if (i < getParamsCount && getParams != null) {
+                            param = valueClass.getType().parseString(getParams[i]);
+                        } else if (postParamsCount == 1) {
+                            param = readSinglePostParam(type, postParams);
+                        } else if (postParamsCount >= 2) {
+                            param = readMultiPostParam(type, multipart, i - getParamsCount);
+                        }
+                        objects[i] = param == null ? NullValue.instance : session.getObjectValue(valueClass, param);
+                    }
+                    ExecutionStack stack = getStack();
+                    property.execute(session, stack, objects);
+
+                    if (returnCanonicalNames != null) {
+                        for (String returnCanonicalName : returnCanonicalNames) {
+                            LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
+                            if (returnProperty != null) {
+                                returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                            } else
+                                throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
                         }
                     }
-                    objects[i] = param == null ? NullValue.instance : session.getObjectValue(valueClass, param);
-                }
-                ExecutionStack stack = getStack();
-                property.execute(session, stack, objects);
 
-                if (returnCanonicalNames != null) {
-                    for (String returnCanonicalName : returnCanonicalNames) {
-                        LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
-                        if (returnProperty != null) {
-                            returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
-                        } else
-                            throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                    }
+                    session.apply(businessLogics, stack);
                 }
-
-                session.apply(businessLogics, stack);
 
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
@@ -394,31 +398,59 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private Object readSinglePostParam(Type type, byte[] bytes) throws IOException, ParseException {
+    @Override
+    public List<Object> eval(String[] returnCanonicalNames, String script, byte[] postParams, String... getParams) {
+        List<Object> returnList = new ArrayList<>();
+        try {
+            if (script == null)
+                script = new String(postParams);
+            if (!script.isEmpty()) {
+                ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, "run() = {" + script + ";\n};");
+
+                String runName = module.getName() + ".run[]";
+                LAP<?> runAction = module.findAction(runName);
+                if (runAction != null) {
+                    try (DataSession session = createSession()) {
+                        ExecutionStack stack = getStack();
+                        runAction.execute(session, stack);
+
+                        if (returnCanonicalNames != null) {
+                            for (String returnCanonicalName : returnCanonicalNames) {
+                                LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
+                                if (returnProperty != null) {
+                                    returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                                } else
+                                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
+                            }
+                        }
+
+                        session.apply(businessLogics, stack);
+                    }
+                }
+            } else {
+                throw new RuntimeException("Eval script was not found");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return returnList;
+    }
+
+    private Object readSinglePostParam(Type type, byte[] postParams) throws IOException, ParseException {
         if (type instanceof DynamicFormatFileClass) {
-            return lsfusion.base.IOUtils.readBytesFromStream(new ByteArrayInputStream(bytes));
+            return lsfusion.base.IOUtils.readBytesFromStream(new ByteArrayInputStream(postParams));
         } else {
-            String result = new String(bytes);
-            if(!result.isEmpty())
-                return type.parseString(new String(bytes));
-            else return null;
+            String result = new String(postParams);
+            return !result.isEmpty() ? (type == null ? result : type.parseString(result)) : null;
         }
     }
 
-    private Object readMultiPostParam(Type type, byte[] bytes, int i) throws MessagingException, IOException, ParseException {
-        ByteArrayDataSource ds = new ByteArrayDataSource(bytes, "multipart/mixed");
-        MimeMultipart multipart = new MimeMultipart(ds);
-        Object result = multipart.getBodyPart(i).getContent();
+    private Object readMultiPostParam(Type type, MimeMultipart multipart, int i) throws MessagingException, IOException, ParseException {
+        Object bodyPart = multipart.getBodyPart(i).getContent();
         if (type instanceof DynamicFormatFileClass) {
-            if (result instanceof ByteArrayInputStream)
-                result = lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) result);
-            else
-                result = null;
-        } else if(result != null && !((String)result).isEmpty())
-            result = type.parseString((String) result);
-        else
-            result = null;
-        return result;
+            return bodyPart instanceof ByteArrayInputStream ? lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) bodyPart) : null;
+        } else
+            return !((String) bodyPart).isEmpty() ? type.parseString((String) bodyPart) : null;
     }
 
     @Override

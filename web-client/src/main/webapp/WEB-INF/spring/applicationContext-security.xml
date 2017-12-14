@@ -97,6 +97,8 @@
 
     <b:bean id="execHandler" class="lsfusion.gwt.base.server.spring.ExecRequestHandler"/>
 
+    <b:bean id="evalHandler" class="lsfusion.gwt.base.server.spring.EvalRequestHandler"/>
+
     <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
 
     <b:bean id="fileUploadHandler" class="lsfusion.gwt.base.server.spring.UploadFileRequestHandler" />

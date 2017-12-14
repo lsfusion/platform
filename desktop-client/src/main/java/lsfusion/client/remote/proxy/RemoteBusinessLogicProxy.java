@@ -122,6 +122,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    @Override
+    public List<Object> eval(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException {
+        logRemoteMethodStartCall("eval");
+        List<Object> result = target.eval(returnCanonicalNames, canonicalName, postParams, getParams);
+        logRemoteMethodEndVoidCall("eval");
+        return result;
+    }
+
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
         logRemoteMethodStartCall("checkDefaultViewPermission");
         boolean result = target.checkDefaultViewPermission(propertySid);

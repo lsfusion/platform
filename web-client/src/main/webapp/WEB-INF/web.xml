@@ -101,6 +101,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>evalHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>evalHandler</servlet-name>
+        <url-pattern>/eval/action</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>propertyImageHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>

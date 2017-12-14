@@ -38,6 +38,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     List<Object> exec(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException;
 
+    List<Object> eval(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException;
+
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
     boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
