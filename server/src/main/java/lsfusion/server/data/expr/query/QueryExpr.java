@@ -248,7 +248,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 }
             } else
                 result = ClassExprWhere.mapBack(outerInner, fullWhere).and(new ClassExprWhere(QueryExpr.this, staticClass));
-            return result.and(getWhere(group).getClassWhere());
+            return result.and(BaseExpr.getNotNullClassWhere(group));
         }
 
         @Override

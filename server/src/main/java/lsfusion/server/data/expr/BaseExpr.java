@@ -31,8 +31,6 @@ import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-import java.util.Collections;
-
 
 public abstract class BaseExpr extends Expr {
 
@@ -103,6 +101,18 @@ public abstract class BaseExpr extends Expr {
     }
 
     public abstract ClassExprWhere getClassWhere(AndClassSet classes);
+
+    public static <K> ClassExprWhere getNotNullClassWhere(ImMap<K, ? extends BaseExpr> map) {
+        // оптимизация, так быстрее чем суммировать NotNullWhere
+        ClassExprWhere result = ClassExprWhere.TRUE;
+        for(BaseExpr baseExpr : map.values())
+            result = result.and(baseExpr.getNotNullClassWhere());
+        return result;
+//        return getNotNullWhere(map.values()).getClassWhere();
+    }
+    public ClassExprWhere getNotNullClassWhere() {
+        return getNotNullWhere().getClassWhere();
+    }
 
     public Where compareBase(final BaseExpr expr, Compare compareBack) {
         switch(compareBack) {

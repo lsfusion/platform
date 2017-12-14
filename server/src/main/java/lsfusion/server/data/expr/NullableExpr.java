@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.stat.UnionJoin;
@@ -15,10 +16,10 @@ import lsfusion.server.data.where.Where;
 
 public abstract class NullableExpr extends VariableSingleClassExpr implements NullableExprInterface {
 
-    @Override
-    public Where calculateOrWhere() {
-        return Where.TRUE;
-    }
+//    @Override // не удалось вживую словить случай, когда при Where.TRUE не работает, но по идее при GROUP(K, UNION(Z))=X потеряются условия UNION(Z) и не будет хватать ключа Z при компиляции и статистики к примеру
+//    public Where calculateOrWhere() {
+//        return Where.TRUE;
+//    }
 
 //    @Override // не правильно, так как у partition'а есть свои joins, и если их не учесть, при P(k, D(k)) - D(k) IS NOT NULL потеряется 
 //    public Where calculateNotNullWhere() { // assert result instanceof NotNull || result.isTrue()

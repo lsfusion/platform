@@ -85,7 +85,7 @@ public abstract class StaticClassNullableExpr extends NullableExpr implements St
         }
 
         public ClassExprWhere calculateClassWhere() {
-            return getCommonWhere().getClassWhere();
+            return getCommonWhere().getClassWhere(); // по сути и так BaseExpr.getNotNullClassWhere но для лучшего кэширования идем через ветку getCommonWhere  
         }
     }
 

@@ -133,8 +133,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return operator1.getBinaryNotNullWhere(false).and(operator2.getBinaryNotNullWhere(false));
     }
 
+    protected ClassExprWhere getOperandClassWhere() {
+        return getOperandWhere().getClassWhere(); // по сути и так BaseExpr.getNotNullClassWhere но для лучшего кэширования идем через ветку getOperandWhere
+    }
+    
     public ClassExprWhere calculateClassWhere() {
-        return getOperandWhere().getClassWhere();
+        return getOperandClassWhere();
     }
 
     public boolean calcTwins(TwinImmutableObject obj) {

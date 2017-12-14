@@ -17,6 +17,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLQuery;
@@ -219,7 +220,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             tobt += hash % 255;
             hash = hash/255;
         }
-        return "G"+tobt+"-"+getInnerJoin();
+        return "G"+tobt+(SystemProperties.isDebug ? "" : "-"+getInnerJoin());
     }
 
     @ParamLazy

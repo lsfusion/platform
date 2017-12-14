@@ -89,7 +89,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     @Override
     public MeanClassWhere getMeanClassWhere() {
         ImSet<ImSet<VariableClassExpr>> comps = SetFact.EMPTY();
-        ClassExprWhere classWhere = getOperandWhere().getClassWhere();
+        ClassExprWhere classWhere = getOperandClassWhere();
 
         boolean isEquals = isEquals();
         ConcreteClass staticClass;

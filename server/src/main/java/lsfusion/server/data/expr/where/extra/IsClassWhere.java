@@ -174,7 +174,7 @@ public class IsClassWhere extends DataWhere {
         return expr.getNotNullWhere().groupJoinsWheres(keepStat, statType, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, statType, keyStat, orderTop, type));
     }
     public ClassExprWhere calculateClassWhere() {
-        return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getWhere().getClassWhere());
+        return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getNotNullClassWhere());
     }
 
     public int hash(HashContext hashContext) {

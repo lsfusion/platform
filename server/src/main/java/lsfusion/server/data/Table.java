@@ -1,12 +1,10 @@
 package lsfusion.server.data;
 
 import lsfusion.base.*;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
@@ -36,7 +34,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -48,10 +45,7 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
 
 import java.io.*;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
     protected String name;
@@ -703,8 +697,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
 
         @TwinLazy
-        Where getJoinsWhere() {
-            return lsfusion.server.data.expr.Expr.getWhere(joins);
+        private ClassExprWhere getJoinsClassWhere() {
+            return lsfusion.server.data.expr.BaseExpr.getNotNullClassWhere(joins);
         }
 
         public ImSet<NullableExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
@@ -865,7 +859,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return groupDataJoinsWheres(Join.this, type);
             }
             public ClassExprWhere calculateClassWhere() {
-                return classes.mapClasses(joins).and(getJoinsWhere().getClassWhere());
+                return classes.mapClasses(joins).and(getJoinsClassWhere());
             }
 
             public boolean calcTwins(TwinImmutableObject o) {
@@ -948,7 +942,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 }
 
                 public ClassExprWhere calculateClassWhere() {
-                    return propertyClasses.get(property).mapClasses(MapFact.addExcl(joins, property, Expr.this)).and(Join.this.getJoinsWhere().getClassWhere());
+                    return propertyClasses.get(property).mapClasses(MapFact.addExcl(joins, property, Expr.this)).and(Join.this.getJoinsClassWhere());
                 }
             }
 
