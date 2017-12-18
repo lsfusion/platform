@@ -126,6 +126,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     private void replaceTableDataDocx(XWPFTable tbl, String key, String value, boolean isTable, Integer firstRow, String columnSeparator, String rowSeparator) {
         if(isTable) {
             XWPFTableRow row = tbl.getRow(firstRow);
+            if (row == null) return;
             XWPFTableCell cell = row.getCell(0);
             String text = cell.getText();
             if (text != null && text.contains(key)) {
