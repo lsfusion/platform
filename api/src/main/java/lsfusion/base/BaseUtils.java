@@ -978,6 +978,7 @@ public class BaseUtils {
         return result;
     }
 
+    @SafeVarargs
     public static <B> List<B> mergeLists(List<B>... lists) {
         List<B> result = new ArrayList<>();
         for (List<B> list : lists) {
