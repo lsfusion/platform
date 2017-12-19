@@ -40,7 +40,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
-    final int bodyParamsCount;
+    private final int bodyParamsCount;
+
+    private static String textPlainType = "text/plain";
+    private static String applicationOctetStreamType = "application/octet-stream";
+    private static String multipartMixedType = "multipart/mixed";
 
     public ExternalHTTPActionProperty(int getParamsCount, int bodyParamsCount, String query, List<LCP> targetPropList) {
         super(getParamsCount + bodyParamsCount, query, targetPropList);
@@ -66,7 +70,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 targetProp.change(result, context);
 
             } else if (targetPropList.size() >= 2) {
-                ByteArrayDataSource ds = new ByteArrayDataSource(response, "multipart/mixed");
+                ByteArrayDataSource ds = new ByteArrayDataSource(response, multipartMixedType);
                 MimeMultipart multipart = new MimeMultipart(ds);
 
                 if (multipart.getCount() != targetPropList.size())
@@ -126,21 +130,22 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     if (value instanceof byte[]) {
                         builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
                     } else {
-                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create("text/plain", Charset.forName("UTF-8"))));
+                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(textPlainType, Charset.forName("UTF-8"))));
                     }
                 }
                 entity = builder.build();
-                httpPost.addHeader("Content-type", "multipart/mixed");
+                httpPost.addHeader("Content-type", multipartMixedType);
 
             } else if (bodyParamsCount == 1) {
                 Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
                 if (value instanceof byte[]) {
                     entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
+                    httpPost.addHeader("Content-type", applicationOctetStreamType);
                 } else {
                     entity = new StringEntity(value == null ? "" : String.valueOf(value));
+                    httpPost.addHeader("Content-type", textPlainType);
                 }
             }
-            httpPost.addHeader("Content-type", "text/plain");
 
             HttpClient httpClient = HttpClientBuilder.create().build();
             if (entity != null)

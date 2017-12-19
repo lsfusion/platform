@@ -390,17 +390,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
         try {
-            if (script == null) {
-                script = (String) formatParam(null, params[0]);
-                params = ArrayUtils.subarray(params, 1, params.length);
-            }
-            if (!script.isEmpty()) {
-
-                Pattern p = Pattern.compile("run\\((.*)\\)\\s*?=\\s*?\\{.*\\}");
-                Matcher m = p.matcher(script);
-                if(!m.matches())
-                    script = "run() = {" + script + ";\n};";
-
+            if (script != null) {
                 ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
 
                 String runName = module.getName() + ".run";
@@ -445,10 +435,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private Object formatParam(Type type, Object param) throws IOException, ParseException {
+    private Object formatParam(Type type, Object param) throws ParseException {
         Object result = null;
         if (type instanceof DynamicFormatFileClass) {
-            result = param instanceof ByteArrayInputStream ? lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) param) : param instanceof byte[] ? param : null;
+            result = param instanceof byte[] ? param : null;
         } else {
             if (param instanceof byte[]) {
                 String resultStr = new String((byte[]) param);

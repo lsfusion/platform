@@ -15,6 +15,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -24,6 +25,10 @@ import java.util.List;
 public abstract class ExternalRequestHandler implements HttpRequestHandler {
     private static final String PARAMS_PARAM = "p";
     private static final String RETURNS_PARAM = "returns";
+
+    private static String textPlainType = "text/plain";
+    private static String applicationOctetStreamType = "application/octet-stream";
+    private static String multipartMixedType = "multipart/mixed";
 
     public abstract List<Object> processRequest(String property, String[] returns, List<Object> params) throws RemoteException;
 
@@ -46,7 +51,8 @@ public abstract class ExternalRequestHandler implements HttpRequestHandler {
                 if (multipartPost) {
                     MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(postParams, "multipart/mixed"));
                     for (int i = 0; i < multipart.getCount(); i++) {
-                        paramsList.add(multipart.getBodyPart(i).getContent());
+                        Object param = multipart.getBodyPart(i).getContent();
+                        paramsList.add(param instanceof ByteArrayInputStream ? IOUtils.readBytesFromStream((ByteArrayInputStream) param) : param);
                     }
                 } else {
                     paramsList.add(postParams);
@@ -67,16 +73,19 @@ public abstract class ExternalRequestHandler implements HttpRequestHandler {
                         else
                             builder.addPart("param" + i, new StringBody((String) returnEntry, ContentType.TEXT_HTML));
                     }
-                    response.setContentType("multipart/mixed");
+                    response.setContentType(multipartMixedType);
                     builder.build().writeTo(response.getOutputStream());
                 } else {
                     HttpEntity entity;
                     Object returnEntry = returnList.get(0);
-                    if (returnEntry instanceof byte[])
+                    if (returnEntry instanceof byte[]) {
                         entity = new ByteArrayEntity((byte[]) returnEntry);
-                    else
-                        entity = new StringEntity((String) returnEntry, ContentType.TEXT_HTML);
-                    response.setContentType("text/plain");
+                        response.setContentType(applicationOctetStreamType);
+                    } else {
+                        entity = new StringEntity((String) returnEntry, ContentType.TEXT_PLAIN);
+                        response.setContentType(textPlainType);
+                    }
+
                     entity.writeTo(response.getOutputStream());
                 }
             } else {
