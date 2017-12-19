@@ -64,7 +64,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(EmailLogicsModule.class.getResourceAsStream("/lsfusion/system/Email.lsf"), "/lsfusion/system/Email.lsf", baseLM, BL);
-        setBaseLogicsModule(baseLM);
     }
 
     @Override

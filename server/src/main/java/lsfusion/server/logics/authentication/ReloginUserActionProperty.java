@@ -20,7 +20,7 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
-    public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) {
         super(LM, LocalizedString.create("reloginUser"), classes);
     }
 

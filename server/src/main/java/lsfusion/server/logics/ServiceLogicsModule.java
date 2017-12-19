@@ -44,7 +44,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
-        setBaseLogicsModule(baseLM);
     }
 
     @Override

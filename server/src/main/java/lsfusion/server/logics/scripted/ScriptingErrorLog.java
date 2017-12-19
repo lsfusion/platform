@@ -67,7 +67,7 @@ public class ScriptingErrorLog {
         parser.emitErrorMessage(getRecognitionErrorText(scriptParser,  errorType, msg, e));
     }
 
-    public void emitSemanticError(String msg, SemanticErrorException e) throws SemanticErrorException {
+    public static void emitSemanticError(String msg, SemanticErrorException e) throws SemanticErrorException {
         e.setMessage(msg);
         throw e;
     }
@@ -219,11 +219,11 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
-    public void emitCustomClassExpextedError(ScriptParser parser) throws SemanticErrorException {
+    public void emitCustomClassExpectedError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "custom class expected");
     }
 
-    public void emitCustomClassExpextedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+    public void emitCustomClassExpectedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("custom class parameter expected for property '%s'", propertyName));
     }
 
@@ -436,11 +436,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitAmbiguousPropertyNameError(ScriptParser parser, List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
-        String msg = String.format("ambiguous name '%s', found properties:", name);
+        StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', found properties:", name));
         for (NamespaceElementFinder.FoundItem<LP<?, ?>> item : foundItems) {
-            msg += "\n\t" + item.value.property.toString();                
+            msg.append("\n\t").append(item.value.property.toString());                
         }
-        emitSimpleError(parser, msg);
+        emitSimpleError(parser, msg.toString());
     }
 
     public void emitNeighbourPropertyError(ScriptParser parser, String name1, String name2) throws SemanticErrorException {

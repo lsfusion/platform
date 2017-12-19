@@ -6,7 +6,6 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -14,7 +13,7 @@ import java.util.Calendar;
 
 public class ClearFusionTempFilesActionProperty extends ScriptingActionProperty {
 
-    public ClearFusionTempFilesActionProperty(ServiceLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public ClearFusionTempFilesActionProperty(ServiceLogicsModule LM) {
         super(LM);
     }
 
