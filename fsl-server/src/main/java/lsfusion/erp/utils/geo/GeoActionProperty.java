@@ -13,11 +13,11 @@ import java.sql.SQLException;
 
 public class GeoActionProperty extends ScriptingActionProperty {
 
-    public GeoActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public GeoActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
 
-    public GeoActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public GeoActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
     }
 

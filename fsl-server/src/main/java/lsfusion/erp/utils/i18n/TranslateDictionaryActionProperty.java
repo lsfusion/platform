@@ -19,7 +19,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface dictionaryInterface;
     public final ClassPropertyInterface termInterface;
 
-    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

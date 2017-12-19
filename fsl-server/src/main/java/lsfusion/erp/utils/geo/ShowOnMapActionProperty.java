@@ -21,7 +21,7 @@ public class ShowOnMapActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface mapProviderInterface;
     private final ClassPropertyInterface addressInterface;
 
-    public ShowOnMapActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public ShowOnMapActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();

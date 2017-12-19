@@ -30,7 +30,7 @@ import static lsfusion.base.IOUtils.readFileToString;
 
 public class BackupActionProperty extends ScriptingActionProperty {
 
-    public BackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public BackupActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
 

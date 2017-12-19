@@ -51,7 +51,7 @@ import static lsfusion.base.BaseUtils.trimToNull;
 public class CustomRestoreActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
-    public CustomRestoreActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public CustomRestoreActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

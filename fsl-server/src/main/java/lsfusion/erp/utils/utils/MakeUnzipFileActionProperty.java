@@ -27,7 +27,7 @@ import java.util.zip.ZipInputStream;
 
 public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
 
-    public MakeUnzipFileActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+    public MakeUnzipFileActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
 

@@ -25,7 +25,7 @@ public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface POIInterface;
     private final ClassPropertyInterface mapProviderInterface;
 
-    public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+    public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
