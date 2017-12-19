@@ -106,6 +106,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>evalHandler</servlet-name>
+        <url-pattern>/eval</url-pattern>
         <url-pattern>/eval/action</url-pattern>
     </servlet-mapping>
 

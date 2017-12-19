@@ -45,13 +45,11 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -60,6 +58,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -343,7 +343,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String[] returnCanonicalNames, String action, byte[] postParams, String... getParams) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
         try {
             LAP property = (LAP) businessLogics.findLP(action);
@@ -353,24 +353,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
                     ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
 
-                    int getParamsCount = getParams == null ? 0 : getParams.length;
-                    int postParamsCount = property.listInterfaces.size() - getParamsCount;
-
-                    MimeMultipart multipart = postParamsCount >= 2 ? new MimeMultipart(new ByteArrayDataSource(postParams, "multipart/mixed")) : null;
-
                     ObjectValue[] objects = new ObjectValue[interfaces.size()];
                     for (int i = 0; i < interfaces.size(); i++) {
                         ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
                         Type type = valueClass.getType();
 
-                        Object param = null;
-                        if (i < getParamsCount && getParams != null) {
-                            param = valueClass.getType().parseString(getParams[i]);
-                        } else if (postParamsCount == 1) {
-                            param = readSinglePostParam(type, postParams);
-                        } else if (postParamsCount >= 2) {
-                            param = readMultiPostParam(type, multipart, i - getParamsCount);
-                        }
+                        Object param = formatParam(type, params[i]);
                         objects[i] = param == null ? NullValue.instance : session.getObjectValue(valueClass, param);
                     }
                     ExecutionStack stack = getStack();
@@ -399,20 +387,41 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(String[] returnCanonicalNames, String script, byte[] postParams, String... getParams) {
+    public List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
         try {
-            if (script == null)
-                script = new String(postParams);
+            if (script == null) {
+                script = (String) formatParam(null, params[0]);
+                params = ArrayUtils.subarray(params, 1, params.length);
+            }
             if (!script.isEmpty()) {
-                ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, "run() = {" + script + ";\n};");
 
-                String runName = module.getName() + ".run[]";
+                Pattern p = Pattern.compile("run\\((.*)\\)\\s*?=\\s*?\\{.*\\}");
+                Matcher m = p.matcher(script);
+                if(!m.matches())
+                    script = "run() = {" + script + ";\n};";
+
+                ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
+
+                String runName = module.getName() + ".run";
                 LAP<?> runAction = module.findAction(runName);
                 if (runAction != null) {
                     try (DataSession session = createSession()) {
                         ExecutionStack stack = getStack();
-                        runAction.execute(session, stack);
+
+                        ObjectValue[] objectValues = new ObjectValue[params.length];
+                        ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) runAction.listInterfaces;
+                        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) runAction.property.getInterfaceClasses(ClassType.editPolicy);
+                        for (int i = 0; i < params.length; i++) {
+                            if (i < interfaces.size()) {
+                                ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                                Type type = valueClass.getType();
+                                Object param = formatParam(type, params[i]);
+                                objectValues[i] = param == null ? NullValue.instance : session.getObjectValue(valueClass, param);
+                            }
+                        }
+
+                        runAction.execute(session, stack, objectValues);
 
                         if (returnCanonicalNames != null) {
                             for (String returnCanonicalName : returnCanonicalNames) {
@@ -436,21 +445,19 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private Object readSinglePostParam(Type type, byte[] postParams) throws IOException, ParseException {
+    private Object formatParam(Type type, Object param) throws IOException, ParseException {
+        Object result = null;
         if (type instanceof DynamicFormatFileClass) {
-            return lsfusion.base.IOUtils.readBytesFromStream(new ByteArrayInputStream(postParams));
+            result = param instanceof ByteArrayInputStream ? lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) param) : param instanceof byte[] ? param : null;
         } else {
-            String result = new String(postParams);
-            return !result.isEmpty() ? (type == null ? result : type.parseString(result)) : null;
+            if (param instanceof byte[]) {
+                String resultStr = new String((byte[]) param);
+                result = !resultStr.isEmpty() ? (type == null ? resultStr : type.parseString(resultStr)) : null;
+            } else if (param instanceof String) {
+                result = !((String) param).isEmpty() ? type == null ? param : type.parseString((String) param) : null;
+            }
         }
-    }
-
-    private Object readMultiPostParam(Type type, MimeMultipart multipart, int i) throws MessagingException, IOException, ParseException {
-        Object bodyPart = multipart.getBodyPart(i).getContent();
-        if (type instanceof DynamicFormatFileClass) {
-            return bodyPart instanceof ByteArrayInputStream ? lsfusion.base.IOUtils.readBytesFromStream((ByteArrayInputStream) bodyPart) : null;
-        } else
-            return !((String) bodyPart).isEmpty() ? type.parseString((String) bodyPart) : null;
+        return result;
     }
 
     @Override

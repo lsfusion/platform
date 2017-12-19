@@ -126,10 +126,11 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     if (value instanceof byte[]) {
                         builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
                     } else {
-                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create("text/xml", Charset.forName("UTF-8"))));
+                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create("text/plain", Charset.forName("UTF-8"))));
                     }
                 }
                 entity = builder.build();
+                httpPost.addHeader("Content-type", "multipart/mixed");
 
             } else if (bodyParamsCount == 1) {
                 Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
@@ -139,7 +140,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     entity = new StringEntity(value == null ? "" : String.valueOf(value));
                 }
             }
-            httpPost.addHeader("Content-type", "text/xml");
+            httpPost.addHeader("Content-type", "text/plain");
 
             HttpClient httpClient = HttpClientBuilder.create().build();
             if (entity != null)

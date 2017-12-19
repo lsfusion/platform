@@ -36,9 +36,9 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     byte[] readFile(String canonicalName, String... params) throws RemoteException;
 
-    List<Object> exec(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException;
+    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) throws RemoteException;
 
-    List<Object> eval(String[] returnCanonicalNames, String canonicalName, byte[] postParams, String... getParams) throws RemoteException;
+    List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) throws RemoteException;
 
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
