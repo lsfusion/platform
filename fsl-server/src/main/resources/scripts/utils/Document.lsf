@@ -317,9 +317,7 @@ META defineDocumentHeaderPosted(objectClass)
     postedHostnameComputer 'Проведен на компьютере' (objectClass o) = hostname(postedComputer(o)) IN posted;
 
     prePost 'Провести' (objectClass o) = { isPosted(o) <- TRUE; }
-    post 'Провести' (objectClass o) = 
-        {
-	NEWSESSION { isPosted(o) <- TRUE; apply(); }
+    post 'Провести' (objectClass o) = { NEWSESSION { isPosted(o) <- TRUE; apply(); }
 } TOOLBAR CONFIRM;
 
     unpost 'Распровести' (objectClass o) = 
