@@ -4,14 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -24,20 +21,14 @@ import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import javax.mail.BodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private final int bodyParamsCount;
@@ -56,38 +47,40 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         try {
 
             String replacedParams = replaceParams(context, connectionString);
-            byte[] response = readHTTP(context, replacedParams, bodyParamsCount);
+            HttpResponse response = readHTTP(context, replacedParams, bodyParamsCount);
+            HttpEntity responseEntity = response.getEntity();
 
-            if (targetPropList.size() == 1) {
-                LCP targetProp = targetPropList.get(0);
-                Type type = targetProp.property.getType();
+            if (response.getStatusLine().getStatusCode() != 200)
+                throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+            else {
+                if (targetPropList.size() == 1) {
+                    LCP targetProp = targetPropList.get(0);
+                    String contentType = responseEntity.getContentType().getValue();
 
-                Object result;
-                if (type instanceof DynamicFormatFileClass) {
-                    result = IOUtils.readBytesFromStream(new ByteArrayInputStream(response));
-                } else
-                    result = type.parseString(new String(response));
-                targetProp.change(result, context);
+                    Object result = IOUtils.readBytesFromStream(responseEntity.getContent());
+                    if (!contentType.contains(applicationOctetStreamType))
+                        result = new String((byte[]) result);
+                    targetProp.change(result, context);
 
-            } else if (targetPropList.size() >= 2) {
-                ByteArrayDataSource ds = new ByteArrayDataSource(response, multipartMixedType);
-                MimeMultipart multipart = new MimeMultipart(ds);
+                } else if (targetPropList.size() >= 2) {
+                    ByteArrayDataSource ds = new ByteArrayDataSource(responseEntity.getContent(), multipartMixedType);
+                    MimeMultipart multipart = new MimeMultipart(ds);
 
-                if (multipart.getCount() != targetPropList.size())
-                    throw new RuntimeException(String.format("Expected return params: %s, got: %s", targetPropList.size(), multipart.getCount()));
-                else {
-                    for (int i = 0; i < targetPropList.size(); i++) {
-                        LCP targetProp = targetPropList.get(i);
-                        Type type = targetProp.property.getType();
-                        Object result = multipart.getBodyPart(i).getContent();
-                        if (type instanceof DynamicFormatFileClass) {
-                            if (result instanceof ByteArrayInputStream)
-                                result = IOUtils.readBytesFromStream((ByteArrayInputStream) result);
-                            else
-                                result = null;
-                        } else
-                            result = type.parseString((String) result);
-                        targetProp.change(result, context);
+                    if (multipart.getCount() != targetPropList.size())
+                        throw new RuntimeException(String.format("Expected return params: %s, got: %s", targetPropList.size(), multipart.getCount()));
+                    else {
+                        for (int i = 0; i < targetPropList.size(); i++) {
+                            LCP targetProp = targetPropList.get(i);
+                            BodyPart bodyPart = multipart.getBodyPart(i);
+                            String contentType = bodyPart.getContentType();
+
+                            Object result = bodyPart.getContent();
+                            if (contentType.contains(applicationOctetStreamType)) {
+                                result = result instanceof InputStream ? IOUtils.readBytesFromStream((InputStream) result) : null;
+                            } else
+                                result = targetProp.property.getType().parseString((String) result);
+                            targetProp.change(result, context);
+                        }
                     }
                 }
             }
@@ -98,76 +91,39 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return FlowResult.FINISH;
     }
 
-    private byte[] readHTTP(ExecutionContext context, String connectionString, int bodyParamsCount) throws IOException {
-        final List<String> properties = parseHTTPPath(connectionString);
-        if (properties != null) {
-            //пока вариант с аутентификацией не работает
-            String type = properties.get(0);
-            final String username = properties.get(1);
-            final String password = properties.get(2);
-            String pathToFile = properties.get(3);
-            Authenticator.setDefault(new Authenticator() {
-                public PasswordAuthentication getPasswordAuthentication() {
-                    return (new PasswordAuthentication(username, password.toCharArray()));
-                }
-            });
-            URL httpUrl = new URL(URIUtil.encodeQuery(type + "://" + pathToFile));
+    private HttpResponse readHTTP(ExecutionContext context, String connectionString, int bodyParamsCount) throws IOException {
+        ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
 
-            InputStream inputStream = httpUrl.openConnection().getInputStream();
-
-            return IOUtils.readBytesFromStream(inputStream);
-        } else {
-
-            ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
-
-            HttpPost httpPost = new HttpPost(connectionString);
-            HttpEntity entity = null;
-            if (bodyParamsCount > 1) {
-                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                for (int i = orderInterfaces.size() - bodyParamsCount; i < orderInterfaces.size(); i++) {
-                    Object value = context.getKeyValue(orderInterfaces.get(i)).getValue();
-                    String name = "param" + (i + 1);
-                    if (value instanceof byte[]) {
-                        builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
-                    } else {
-                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(textPlainType, Charset.forName("UTF-8"))));
-                    }
-                }
-                entity = builder.build();
-                httpPost.addHeader("Content-type", multipartMixedType);
-
-            } else if (bodyParamsCount == 1) {
-                Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
+        HttpPost httpPost = new HttpPost(connectionString);
+        HttpEntity entity = null;
+        if (bodyParamsCount > 1) {
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            for (int i = orderInterfaces.size() - bodyParamsCount; i < orderInterfaces.size(); i++) {
+                Object value = context.getKeyValue(orderInterfaces.get(i)).getValue();
+                String name = "param" + (i + 1);
                 if (value instanceof byte[]) {
-                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
-                    httpPost.addHeader("Content-type", applicationOctetStreamType);
+                    builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
                 } else {
-                    entity = new StringEntity(value == null ? "" : String.valueOf(value));
-                    httpPost.addHeader("Content-type", textPlainType);
+                    builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(textPlainType, Charset.forName("UTF-8"))));
                 }
             }
+            entity = builder.build();
+            httpPost.addHeader("Content-type", multipartMixedType);
 
-            HttpClient httpClient = HttpClientBuilder.create().build();
-            if (entity != null)
-                httpPost.setEntity(entity);
-            HttpResponse response = httpClient.execute(httpPost);
-            if (response.getStatusLine().getStatusCode() == 200)
-                return IOUtils.readBytesFromStream(response.getEntity().getContent());
-            else
-                throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+        } else if (bodyParamsCount == 1) {
+            Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
+            if (value instanceof byte[]) {
+                entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
+                httpPost.addHeader("Content-type", applicationOctetStreamType);
+            } else {
+                entity = new StringEntity(value == null ? "" : String.valueOf(value));
+                httpPost.addHeader("Content-type", textPlainType);
+            }
         }
-    }
 
-    private List<String> parseHTTPPath(String path) {
-        /*http|https://username:password@path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("(http|https):\\/\\/(.*):(.*)@(.*)");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String type = connectionStringMatcher.group(1);
-            String username = connectionStringMatcher.group(2);
-            String password = connectionStringMatcher.group(3);
-            String pathToFile = connectionStringMatcher.group(4);
-            return Arrays.asList(type, username, password, pathToFile);
-        } else return null;
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        if (entity != null)
+            httpPost.setEntity(entity);
+        return httpClient.execute(httpPost);
     }
 }

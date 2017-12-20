@@ -44,7 +44,6 @@ public abstract class ExternalRequestHandler implements HttpRequestHandler {
             String contentType = request.getContentType();
             boolean multipartPost = contentType != null && contentType.contains("multipart");
 
-            //что будет, если 0 параметров? 1 параметр? 2 параметра?
             byte[] postParams = IOUtils.readBytesFromStream(request.getInputStream());
 
             if (postParams.length > 0) {

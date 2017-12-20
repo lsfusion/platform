@@ -344,7 +344,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
-        List<Object> returnList = new ArrayList<>();
+        List<Object> returnList;
         try {
             LAP property = (LAP) businessLogics.findLP(action);
             if (property != null) {
@@ -364,15 +364,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     ExecutionStack stack = getStack();
                     property.execute(session, stack, objects);
 
-                    if (returnCanonicalNames != null) {
-                        for (String returnCanonicalName : returnCanonicalNames) {
-                            LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
-                            if (returnProperty != null) {
-                                returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
-                            } else
-                                throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                        }
-                    }
+                    returnList = readReturnProperties(session, returnCanonicalNames);
 
                     session.apply(businessLogics, stack);
                 }
@@ -413,15 +405,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
                         runAction.execute(session, stack, objectValues);
 
-                        if (returnCanonicalNames != null) {
-                            for (String returnCanonicalName : returnCanonicalNames) {
-                                LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
-                                if (returnProperty != null) {
-                                    returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
-                                } else
-                                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                            }
-                        }
+                        returnList = readReturnProperties(session, returnCanonicalNames);
 
                         session.apply(businessLogics, stack);
                     }
@@ -431,6 +415,20 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+        return returnList;
+    }
+
+    private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException {
+        List<Object> returnList = new ArrayList<>();
+        if (returnCanonicalNames != null) {
+            for (String returnCanonicalName : returnCanonicalNames) {
+                LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
+                if (returnProperty != null) {
+                    returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                } else
+                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
+            }
         }
         return returnList;
     }
