@@ -9,6 +9,7 @@
 !define IDEA_EXE "idea.exe"
 !define TOMCAT_ARCHIVE "apache-tomcat-${TOMCAT_FULL_VERSION}-windows-x86.zip"
 !define ANT_ARCHIVE "apache-ant-1.9.2.zip"
+!define JASPER_INSTALLER "TIB_js-studiocomm_${JASPER_VERSION}.final_windows_x86.exe"
 
 !ifndef OUT_FILE
 ;    !define OUT_FILE "lsfusion-setup-x32.exe"

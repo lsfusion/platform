@@ -1,3 +1,5 @@
+RequestExecutionLevel user
+
 # Macro for selecting uninstaller sections
 !macro HideUnsection SECTION_NAME UNSECTION_ID
     ReadRegStr $0 HKLM "${REGKEY}\Components" "${SECTION_NAME}"
@@ -21,6 +23,9 @@ Section /o "un.${PG_SECTION_NAME}" UnSecPG
 SectionEnd
 
 Section /o "un.${IDEA_SECTION_NAME}" UnSecIdea
+SectionEnd
+
+Section /o "un.${JASPER_SECTION_NAME}" UnSecJasper
 SectionEnd
 
 Section "un.${TOMCAT_SECTION_NAME}" UnSecTomcat
@@ -81,6 +86,18 @@ Section -un.Uninstall
             
             Delete "$DESKTOP\IntelliJ IDEA Community Edition ${IDEA_VERSION}.lnk"
             Delete "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition ${IDEA_VERSION}.lnk"
+            RMDir "$SMPROGRAMS\JetBrains"
+        ${endIf}
+    ${endIf}
+    
+    ${if} ${SectionIsSelected} ${UnSecJasper}
+        ReadRegStr $0 HKLM "${REGKEY}" "jaspersoftStudioInstallDir"
+        DetailPrint "Jaspersoft Studio jasperDir: $0"
+        ${ifNot} ${Errors}
+        ${andIfNot} $0 == ""
+        ${andIf} ${FileExists} "$0\uninst.exe"
+            DetailPrint "Removing Jaspersoft Studio"
+            nsExec::ExecToLog "$0\uninst.exe /S"
         ${endIf}
     ${endIf}
         
@@ -108,6 +125,7 @@ Function un.onInit
 
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
     !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecIdea}
+    !insertmacro HideUnsection "${JASPER_SECTION_NAME}" ${UnSecJasper}
     !insertmacro HideUnsection "${JAVA_SECTION_NAME}" ${UnSecJava}
     !insertmacro HideUnsection "${TOMCAT_SECTION_NAME}" ${UnSecTomcat}
 FunctionEnd
@@ -117,6 +135,7 @@ FunctionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecPlatform} $(strPlatformUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecPG} $(strPgUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecIdea} $(strIdeaUnSectionDescription)
+!insertmacro MUI_DESCRIPTION_TEXT ${UnSecJasper} $(strJasperUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecJava} $(strJavaUnSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${UnSecTomcat} $(strTomcatUnSectionDescription)
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_END
