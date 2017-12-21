@@ -489,7 +489,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             convertResolveError(e);
         } 
         
-        checks.checkProperty(property, sourceName == null ? name : sourceName);
+        checks.checkProperty(property, sourceName == null ? name : sourceName, params);
         return property;
     }
 

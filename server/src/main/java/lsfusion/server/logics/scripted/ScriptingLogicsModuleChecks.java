@@ -12,6 +12,7 @@ import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.PropertyCanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -58,9 +59,9 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkProperty(LP lp, String name) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkProperty(LP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
-            errLog.emitPropertyNotFoundError(parser, name);
+            errLog.emitPropertyNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
         }
     }
 
