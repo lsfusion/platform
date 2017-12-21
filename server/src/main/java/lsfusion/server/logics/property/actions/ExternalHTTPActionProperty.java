@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
@@ -33,10 +34,6 @@ import java.util.List;
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private final int bodyParamsCount;
 
-    private static String textPlainType = "text/plain";
-    private static String applicationOctetStreamType = "application/octet-stream";
-    private static String multipartMixedType = "multipart/mixed";
-
     public ExternalHTTPActionProperty(int getParamsCount, int bodyParamsCount, String query, List<LCP> targetPropList) {
         super(getParamsCount + bodyParamsCount, query, targetPropList);
         this.bodyParamsCount = bodyParamsCount;
@@ -58,12 +55,12 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     String contentType = responseEntity.getContentType().getValue();
 
                     Object result = IOUtils.readBytesFromStream(responseEntity.getContent());
-                    if (!contentType.contains(applicationOctetStreamType))
+                    if (!contentType.contains(ExternalUtils.applicationOctetStreamType))
                         result = new String((byte[]) result);
                     targetProp.change(result, context);
 
                 } else if (targetPropList.size() >= 2) {
-                    ByteArrayDataSource ds = new ByteArrayDataSource(responseEntity.getContent(), multipartMixedType);
+                    ByteArrayDataSource ds = new ByteArrayDataSource(responseEntity.getContent(), ExternalUtils.multipartMixedType);
                     MimeMultipart multipart = new MimeMultipart(ds);
 
                     if (multipart.getCount() != targetPropList.size())
@@ -75,7 +72,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                             String contentType = bodyPart.getContentType();
 
                             Object result = bodyPart.getContent();
-                            if (contentType.contains(applicationOctetStreamType)) {
+                            if (contentType.contains(ExternalUtils.applicationOctetStreamType)) {
                                 result = result instanceof InputStream ? IOUtils.readBytesFromStream((InputStream) result) : null;
                             } else
                                 result = targetProp.property.getType().parseString((String) result);
@@ -104,20 +101,20 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 if (value instanceof byte[]) {
                     builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
                 } else {
-                    builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(textPlainType, Charset.forName("UTF-8"))));
+                    builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(ExternalUtils.textPlainType, Charset.forName("UTF-8"))));
                 }
             }
             entity = builder.build();
-            httpPost.addHeader("Content-type", multipartMixedType);
+            httpPost.addHeader("Content-type", ExternalUtils.multipartMixedType);
 
         } else if (bodyParamsCount == 1) {
             Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
             if (value instanceof byte[]) {
                 entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
-                httpPost.addHeader("Content-type", applicationOctetStreamType);
+                httpPost.addHeader("Content-type", ExternalUtils.applicationOctetStreamType);
             } else {
                 entity = new StringEntity(value == null ? "" : String.valueOf(value));
-                httpPost.addHeader("Content-type", textPlainType);
+                httpPost.addHeader("Content-type", ExternalUtils.textPlainType);
             }
         }
 

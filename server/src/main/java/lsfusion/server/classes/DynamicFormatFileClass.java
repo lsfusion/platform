@@ -53,12 +53,7 @@ public class DynamicFormatFileClass extends FileClass {
     }
 
     @Override
-    public Object format(byte[] value) {
-        //несколько кривой способ обнаружения human-readable файлов
-        String ext = BaseUtils.getExtension(value);
-        byte[] file = BaseUtils.getFile(value);
-        if (ext.equals("xml") || ext.equals("txt") || ext.equals("csv"))
-            return new String(file);
-        return file;
+    public byte[] format(byte[] value) {
+        return BaseUtils.getFile(value);
     }
 }
