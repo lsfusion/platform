@@ -6,6 +6,7 @@ import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -57,7 +58,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     Object result = IOUtils.readBytesFromStream(responseEntity.getContent());
                     if (!contentType.contains(ExternalUtils.applicationOctetStreamType))
                         result = new String((byte[]) result);
-                    targetProp.change(result, context);
+                    targetProp.change(parseResult(targetProp, result), context);
 
                 } else if (targetPropList.size() >= 2) {
                     ByteArrayDataSource ds = new ByteArrayDataSource(responseEntity.getContent(), ExternalUtils.multipartMixedType);
@@ -75,7 +76,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                             if (contentType.contains(ExternalUtils.applicationOctetStreamType)) {
                                 result = result instanceof InputStream ? IOUtils.readBytesFromStream((InputStream) result) : null;
                             } else
-                                result = targetProp.property.getType().parseString((String) result);
+                                result = parseResult(targetProp, result);
                             targetProp.change(result, context);
                         }
                     }
@@ -86,6 +87,16 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         }
 
         return FlowResult.FINISH;
+    }
+
+    private Object parseResult(LCP targetProp, Object result) throws ParseException {
+        if (result instanceof String) {
+            if (result.equals(ExternalUtils.nullString))
+                return null;
+            else
+                return targetProp.property.getType().parseString((String) result);
+
+        } else return result;
     }
 
     private HttpResponse readHTTP(ExecutionContext context, String connectionString, int bodyParamsCount) throws IOException {

@@ -26,6 +26,7 @@ public class ExternalUtils {
     public static String textPlainType = "text/plain";
     public static String applicationOctetStreamType = "application/octet-stream";
     public static String multipartMixedType = "multipart/mixed";
+    public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
 
     public static HttpEntity processRequest(RemoteLogicsInterface remoteLogics, String uri, String action, String script, List<String> returns, List<String> getParams, InputStream is, String requestContentType) throws IOException, MessagingException {
         List<Object> returnList = new ArrayList<>();
@@ -62,7 +63,7 @@ public class ExternalUtils {
                     if (returnEntry instanceof byte[])
                         builder.addPart("param" + i, new ByteArrayBody((byte[]) returnEntry, ContentType.APPLICATION_OCTET_STREAM, "filename"));
                     else
-                        builder.addPart("param" + i, new StringBody((String) returnEntry, ContentType.TEXT_PLAIN));
+                        builder.addPart("param" + i, new StringBody(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN));
                 }
                 entity = builder.build();
             } else {
@@ -70,7 +71,7 @@ public class ExternalUtils {
                 if (returnEntry instanceof byte[]) {
                     entity = new ByteArrayEntity((byte[]) returnEntry, ContentType.APPLICATION_OCTET_STREAM);
                 } else {
-                    entity = new StringEntity((String) returnEntry, ContentType.TEXT_PLAIN);
+                    entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
                 }
             }
         }
