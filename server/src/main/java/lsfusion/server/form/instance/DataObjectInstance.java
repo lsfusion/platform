@@ -40,8 +40,7 @@ public class DataObjectInstance extends ObjectInstance {
 
     public void changeValue(SessionChanges session, ObjectValue objectValue) throws SQLException {
         if(BaseUtils.nullEquals(value, objectValue)) return;
-
-        assert objectValue instanceof NullValue || dataClass.equals(((DataObject) objectValue).getType());
+        assert objectValue instanceof NullValue || dataClass.getCompatible(((DataObject) objectValue).getType()) != null;
         value = objectValue;
 
         updated = updated | UPDATED_OBJECT;
