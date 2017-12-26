@@ -1,6 +1,7 @@
 package lsfusion.erp.utils.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -51,7 +52,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                     if (type.equals("file")) {
                         filesList = getFilesList(url);
                     } else if (type.equals("ftp")) {
-                        filesList = getFTPFilesList(path, charset);
+                        filesList = getFTPFilesList(context, path, charset);
                     }
                     if (filesList != null) {
 
@@ -92,7 +93,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
         return result;
     }
 
-    private Map<String, Boolean> getFTPFilesList(String path, String charset) throws IOException {
+    private Map<String, Boolean> getFTPFilesList(ExecutionContext context, String path, String charset) throws IOException {
         //*ftp://username:password@host:port/path*//*
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
@@ -112,10 +113,13 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                 ftpClient.enterLocalPassiveMode();
 
                 Map<String, Boolean> result = new HashMap<>();
-                ftpClient.changeWorkingDirectory(remotePath);
-                FTPFile[] ftpFileList = ftpClient.listFiles();
-                for (FTPFile file : ftpFileList) {
-                    result.put(file.getName(), file.isDirectory());
+                if (ftpClient.changeWorkingDirectory(remotePath)) {
+                    FTPFile[] ftpFileList = ftpClient.listFiles();
+                    for (FTPFile file : ftpFileList) {
+                        result.put(file.getName(), file.isDirectory());
+                    }
+                } else {
+                    context.delayUserInteraction(new MessageClientAction(String.format("Path '%s' not found for %s", remotePath, path), "Path not found"));
                 }
                 return result;
 
