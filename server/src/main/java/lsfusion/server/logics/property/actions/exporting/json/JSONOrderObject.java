@@ -10,9 +10,9 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 
-class JSONOrderObject extends JSONObject {
+public class JSONOrderObject extends JSONObject {
 
-    JSONOrderObject() {
+    public JSONOrderObject() {
         super();
         //hashmap -> linkedhashmap
         try {

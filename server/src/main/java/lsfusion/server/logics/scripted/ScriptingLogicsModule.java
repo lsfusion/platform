@@ -2879,7 +2879,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> context, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty, PropertyUsage fileProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> context, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
+                                                        PropertyUsage fileProp, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = null;
         if(fileProp != null)
@@ -2904,7 +2905,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         });
 
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addExportPropertyAProp(null, LocalizedString.NONAME, resultInterfaces.size(), idSet, targetProp, whereProperty != null, resultParams.toArray());
+        LP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, targetProp, whereProperty != null, separator, noHeader, charset, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 

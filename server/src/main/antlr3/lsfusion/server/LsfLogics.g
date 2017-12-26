@@ -1815,7 +1815,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage);
+			$property = self.addScriptedExportActionProperty(context, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, separator, noHeader, charset);
 	}
 } 
 	:	'EXPORT'

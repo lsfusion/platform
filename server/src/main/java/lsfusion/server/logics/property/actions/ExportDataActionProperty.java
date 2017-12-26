@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -25,18 +24,19 @@ import lsfusion.server.session.Modifier;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import static lsfusion.server.logics.property.derived.DerivedProperty.createSetAction;
+public abstract class ExportDataActionProperty<I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
-public class ExportDataActionProperty<I extends PropertyInterface> extends ExtendContextActionProperty<I> {
-
-    private final ImOrderSet<String> fields;
+    protected final ImOrderSet<String> fields;
     private ImMap<String, CalcPropertyInterfaceImplement<I>> exprs;
-    protected final CalcPropertyInterfaceImplement<I> where;
-    
+    private final CalcPropertyInterfaceImplement<I> where;
+
     private final LCP targetProp;
 
+    protected abstract byte[] getFile(final Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException;
+    protected abstract byte[] getExtension();
+
     public ExportDataActionProperty(LocalizedString caption,
-                                    ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, 
+                                    ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                     ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
         super(caption, innerInterfaces, mapInterfaces);
 
@@ -70,18 +70,19 @@ public class ExportDataActionProperty<I extends PropertyInterface> extends Exten
         ImList<ImMap<String, Object>> rows = query.execute(context).valuesList();
 
         try {
-            targetProp.change(BaseUtils.mergeFileAndExtension(JDBCTable.serialize(fields, new Type.Getter<String>() { // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
+            // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
+            targetProp.change(BaseUtils.mergeFileAndExtension(getFile(query, rows, new Type.Getter<String>() {
                 public Type getType(String value) {
                     return query.getPropertyType(value);
                 }
-            }, rows), "jdbc".getBytes()), context);
+            }), getExtension()), context);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
         return FlowResult.FINISH;
     }
 
-    private Query<I, String> getQuery(ImRevMap<I, KeyExpr> innerKeys, final ImMap<I, ? extends Expr> innerExprs, final Modifier modifier) throws SQLException, SQLHandledException {
+    protected Query<I, String> getQuery(ImRevMap<I, KeyExpr> innerKeys, final ImMap<I, ? extends Expr> innerExprs, final Modifier modifier) throws SQLException, SQLHandledException {
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
         CalcPropertyInterfaceImplement<I> changeWhere = (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces)) ?
@@ -90,15 +91,17 @@ public class ExportDataActionProperty<I extends PropertyInterface> extends Exten
         return new Query<>(innerKeys, exprs.mapValuesEx(new GetExValue<Expr, CalcPropertyInterfaceImplement<I>, SQLException, SQLHandledException>() {
             public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) throws SQLException, SQLHandledException {
                 return value.mapExpr(innerExprs, modifier);
-            }}), changeWhere.mapExpr(innerExprs, modifier).getWhere());
+            }
+        }), changeWhere.mapExpr(innerExprs, modifier).getWhere());
     }
 
     public static <I extends PropertyInterface> CalcPropertyMapImplement<?, I> getFullProperty(ImSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> where, ImCol<CalcPropertyInterfaceImplement<I>> exprs) {
         CalcPropertyMapImplement<?, I> result = DerivedProperty.createUnion(innerInterfaces, exprs.mapColValues(new GetValue<CalcPropertyInterfaceImplement<I>, CalcPropertyInterfaceImplement<I>>() {
             public CalcPropertyInterfaceImplement<I> getMapValue(CalcPropertyInterfaceImplement<I> value) {
                 return DerivedProperty.createNotNull(value);
-            }}).toList());
-        if(where!=null) 
+            }
+        }).toList());
+        if (where != null)
             result = DerivedProperty.createAnd(innerInterfaces, where, result);
         return result;
     }
