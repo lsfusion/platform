@@ -201,10 +201,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
         return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
     }
-    
-    public int generateNewID() throws RemoteException {
-        return BaseLogicsModule.generateStaticNewID();
-    }
 
     public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) {
         Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);

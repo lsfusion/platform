@@ -433,14 +433,6 @@ public class Main {
         });
     }
 
-    public static int generateNewID() {
-        try {
-            return remoteLogics.generateNewID();
-        } catch (RemoteException e) {
-            throw new RuntimeException(getString("client.error.on.id.generation"));
-        }
-    }
-
     public static ImageIcon getMainIcon() {
         return loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }

@@ -66,10 +66,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public int generateNewID()  throws RemoteException {
-        return target.generateNewID();
-    }
-
     public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
         target.sendPingInfo(computerId, pingInfoMap);
     }
