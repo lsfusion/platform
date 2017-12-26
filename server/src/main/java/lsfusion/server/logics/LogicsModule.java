@@ -612,7 +612,7 @@ public abstract class LogicsModule {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
                 return exprs.get(i);
             }
-1        });
+        });
 
         ExtendContextActionProperty exportAction;
         if (type == FormExportType.CSV)
