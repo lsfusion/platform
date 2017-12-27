@@ -2724,6 +2724,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();
 
+        if(exportType == null)
+            exportType = FormExportType.XML;
+
         List<O> allObjects = mapped.objects;
         for (int i = 0; i < allObjects.size(); i++) {
             O object = allObjects.get(i);
@@ -2882,11 +2885,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedExportActionProperty(List<TypedParameter> context, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
                                                         PropertyUsage fileProp, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
-        LCP<?> targetProp = null;
-        if(fileProp != null)
-            targetProp = findLCPByPropertyUsage(fileProp);
+        LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.formExportFile;
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), BaseUtils.add(exprs, whereProperty).toArray(new LPWithParams[exprs.size()+1]));
+
+        if(type == null)
+            type = resultInterfaces.isEmpty() ? FormExportType.LIST : FormExportType.XML;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {

@@ -631,14 +631,15 @@ public abstract class LogicsModule {
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp);
-        else if (type == FormExportType.LIST)
-            exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, true);
-        else
+        else if (type == FormExportType.JDBC)
             exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, false);
+        else
+            exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
+                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, true);
+
 
         return addProperty(null, new LAP(exportAction));
     }

@@ -1825,10 +1825,10 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
 	    |  	'JDBC' { exportType = FormExportType.JDBC; }
-		)
+		)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
-		'TO' pUsage=propertyUsage
+		('TO' pUsage=propertyUsage)?
 	;
 
 nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<String>(), List<LPWithParams> properties = new ArrayList<LPWithParams>()]
@@ -2649,7 +2649,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-		)
+		)?
 		('TO' pUsage=propertyUsage)?
 	;
 
