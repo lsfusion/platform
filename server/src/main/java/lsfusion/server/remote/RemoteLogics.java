@@ -399,7 +399,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
             property.execute(session, stack, objectValues);
 
-            if (returnCanonicalNames != null) {
+            if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {
                     LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
                     if (returnProperty != null) {
@@ -407,6 +407,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     } else
                         throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
                 }
+            } else {
+                LCP returnProperty = businessLogics.LM.formExportFile;
+                returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
             }
 
             session.apply(businessLogics, stack);
