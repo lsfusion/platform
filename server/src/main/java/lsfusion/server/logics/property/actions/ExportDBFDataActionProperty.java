@@ -28,18 +28,13 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
 
     private String charset;
 
-    public ExportDBFDataActionProperty(LocalizedString caption,
+    public ExportDBFDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
                                        String charset) {
-        super(caption, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
 
         this.charset = charset == null ? "UTF-8" : charset;
-    }
-
-    @Override
-    protected byte[] getExtension() {
-        return "dbf".getBytes();
     }
 
     @Override

@@ -22,11 +22,13 @@ import java.io.*;
 import java.sql.*;
 
 public class JDBCTable {
+    public final boolean singleRow;
     public final ImOrderSet<String> fields;;
     public final ImMap<String, Type> fieldTypes;
     public final ImList<ImMap<String, Object>> set;
 
-    public JDBCTable(ImOrderSet<String> fields, ImMap<String, Type> fieldTypes, ImList<ImMap<String, Object>> set) {
+    public JDBCTable(boolean singleRow, ImOrderSet<String> fields, ImMap<String, Type> fieldTypes, ImList<ImMap<String, Object>> set) {
+        this.singleRow = singleRow;
         this.fields = fields;
         this.fieldTypes = fieldTypes;
         this.set = set;
@@ -149,9 +151,12 @@ public class JDBCTable {
         return new JDBCDataClass(sqlType, metaData.getColumnTypeName(column));
     }
 
-    public static byte[] serialize(ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
+    public static byte[] serialize(boolean singleRow, ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         DataOutputStream o = new DataOutputStream(b);
+        o.writeBoolean(singleRow); //singleRow
+        if(singleRow)
+            set = set.subList(0, Math.min(set.size(), 1));
         o.writeInt(fields.size());
         for(String field : fields) {
             BaseUtils.serializeString(o, field);
@@ -172,6 +177,7 @@ public class JDBCTable {
 
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         DataOutputStream o = new DataOutputStream(b);
+        o.writeBoolean(false); //singleRow
 
         int cc = metaData.getColumnCount();
         MAddCol<Type> types = ListFact.mAddCol(cc);
@@ -201,7 +207,8 @@ public class JDBCTable {
     public static JDBCTable deserializeJDBC(byte[] array) throws IOException {
         ByteArrayInputStream b = new ByteArrayInputStream(array);
         DataInputStream in = new DataInputStream(b);
-        
+
+        boolean singleRow = in.readBoolean();
         int fieldCount = in.readInt();
         MOrderExclSet<String> mFields = SetFact.mOrderExclSet(fieldCount);
         MExclMap<String, Type> mFieldTypes = MapFact.mExclMap(fieldCount);
@@ -224,7 +231,7 @@ public class JDBCTable {
                 mList.add(deserializeRow(in, fieldCount, fields));
         }        
 
-        return new JDBCTable(fields, mFieldTypes.immutable(), mList.immutableList());
+        return new JDBCTable(singleRow, fields, mFieldTypes.immutable(), mList.immutableList());
     }
 
     public static ImMap<String, Object> deserializeRow(DataInputStream in, int fieldCount, ImOrderSet<String> fields) throws IOException {

@@ -23,15 +23,10 @@ import java.io.PrintWriter;
 
 public class ExportXMLDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
 
-    public ExportXMLDataActionProperty(LocalizedString caption,
+    public ExportXMLDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
-        super(caption, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
-    }
-
-    @Override
-    protected byte[] getExtension() {
-        return "xml".getBytes();
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
     }
 
     @Override

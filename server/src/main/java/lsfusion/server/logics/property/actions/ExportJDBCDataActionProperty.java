@@ -15,20 +15,16 @@ import lsfusion.server.logics.property.PropertyInterface;
 import java.io.IOException;
 
 public class ExportJDBCDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
-
-    public ExportJDBCDataActionProperty(LocalizedString caption,
-                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
-        super(caption, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
-    }
-
-    @Override
-    protected byte[] getExtension() {
-        return "jdbc".getBytes();
+    private boolean singleRow;
+    public ExportJDBCDataActionProperty(LocalizedString caption, String extension, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
+                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
+                                        CalcPropertyInterfaceImplement<I> where, LCP targetProp, boolean singleRow) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+        this.singleRow = singleRow;
     }
 
     @Override
     protected byte[] getFile(Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
-        return JDBCTable.serialize(fields, fieldTypes, rows);
+        return JDBCTable.serialize(singleRow, fields, fieldTypes, rows);
     }
 }

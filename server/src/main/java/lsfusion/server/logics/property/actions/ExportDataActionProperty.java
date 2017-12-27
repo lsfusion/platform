@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 public abstract class ExportDataActionProperty<I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
+    private final String extension;
     protected final ImOrderSet<String> fields;
     private ImMap<String, CalcPropertyInterfaceImplement<I>> exprs;
     private final CalcPropertyInterfaceImplement<I> where;
@@ -33,13 +34,12 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
     private final LCP targetProp;
 
     protected abstract byte[] getFile(final Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException;
-    protected abstract byte[] getExtension();
 
-    public ExportDataActionProperty(LocalizedString caption,
+    public ExportDataActionProperty(LocalizedString caption, String extension,
                                     ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                     ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
         super(caption, innerInterfaces, mapInterfaces);
-
+        this.extension = extension;
         this.fields = fields;
         this.exprs = exprs;
         this.where = where;
@@ -75,7 +75,7 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
                 public Type getType(String value) {
                     return query.getPropertyType(value);
                 }
-            }), getExtension()), context);
+            }), extension.getBytes()), context);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

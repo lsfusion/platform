@@ -25,20 +25,15 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
     private boolean noHeader;
     private String charset;
 
-    public ExportCSVDataActionProperty(LocalizedString caption,
+    public ExportCSVDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
                                        String separator, boolean noHeader, String charset) {
-        super(caption, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
 
         this.separator = separator == null ? "|" : separator;
         this.noHeader = noHeader;
         this.charset = charset == null ? "UTF-8" : charset;
-    }
-
-    @Override
-    protected byte[] getExtension() {
-        return "csv".getBytes();
     }
 
     @Override

@@ -23,15 +23,10 @@ import java.io.PrintWriter;
 
 public class ExportJSONDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
 
-    public ExportJSONDataActionProperty(LocalizedString caption,
+    public ExportJSONDataActionProperty(LocalizedString caption, String extension,
                                         ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                         ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
-        super(caption, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
-    }
-
-    @Override
-    protected byte[] getExtension() {
-        return "json".getBytes();
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
     }
 
     @Override
