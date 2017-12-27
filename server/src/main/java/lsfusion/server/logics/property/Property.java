@@ -21,7 +21,6 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.LogicalClass;
@@ -60,8 +59,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     private int ID = 0;
     private String dbName;
-    private String name;
-    private String namespace;
     private String canonicalName;
     public String annotation;
 
@@ -173,7 +170,57 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     public String getName() {
-        return name;
+        if (isNamed()) {
+            try {
+                return PropertyCanonicalNameParser.getName(canonicalName);
+            } catch (AbstractPropertyNameParser.ParseException e) {
+                assert false; // при установке canonicalName мы должны были проверили его на корректность
+            }
+        }
+        return null;
+    }
+
+    public String getNamespace() {
+        if (isNamed()) {
+            try {
+                return PropertyCanonicalNameParser.getNamespace(canonicalName);
+            } catch (AbstractPropertyNameParser.ParseException e) {
+                assert false;
+            }
+        }
+        return null;
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
+    }
+
+    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, PropertyDBNamePolicy policy) {
+        assert name != null && namespace != null;
+        this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
+        this.dbName = policy.transformToDBName(canonicalName);
+
+        setExplicitClasses(signatureOrder, signature);
+    }
+
+    public void setCanonicalName(String canonicalName, PropertyDBNamePolicy policy) {
+        checkCanonicalName(canonicalName);
+        this.canonicalName = canonicalName;
+        this.dbName = policy.transformToDBName(canonicalName);
+    }
+
+    private void checkCanonicalName(String canonicalName) {
+        assert canonicalName != null;
+        try {
+            PropertyCanonicalNameParser.getName(canonicalName);
+            PropertyCanonicalNameParser.getNamespace(canonicalName);
+        } catch (AbstractPropertyNameParser.ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    final public boolean isNamed() {
+        return canonicalName != null;
     }
 
     // для всех    
@@ -481,37 +528,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     public Property showDep; // assert что не null когда events не isEmpty
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public void setCanonicalName(String canonicalName, PropertyDBNamePolicy policy) {
-        this.canonicalName = canonicalName;
-        try {
-            this.name = PropertyCanonicalNameParser.getName(canonicalName);
-        } catch (AbstractPropertyNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        this.dbName = policy.transformToDBName(canonicalName);
-    }
-    
-    final public boolean isNamed() {
-        return canonicalName != null;
-    }
-    
-    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, PropertyDBNamePolicy policy) {
-        this.namespace = namespace;
-        this.name = name;
-        this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
-        this.dbName = policy.transformToDBName(canonicalName);
-
-        setExplicitClasses(signatureOrder, signature);
-    }
 
     protected static <T extends PropertyInterface> ImMap<T, ResolveClassSet> getPackedSignature(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
         return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
