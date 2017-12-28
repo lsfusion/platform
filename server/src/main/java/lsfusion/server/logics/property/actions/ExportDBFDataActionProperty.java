@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -70,9 +71,11 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
             if (type == DoubleClass.instance)
                 dbfFields.add(new OverJDBField(field, 'F', 10, 3));
             else if (type instanceof IntegerClass)
-                dbfFields.add(new OverJDBField(field, 'N', 253, ((IntegerClass) type).getPrecision()));
+                dbfFields.add(new OverJDBField(field, 'N', 10, 0));
             else if (type instanceof NumericClass)
-                dbfFields.add(new OverJDBField(field, 'N', 253, ((NumericClass) type).getPrecision()));
+                dbfFields.add(new OverJDBField(field, 'N', 10, ((NumericClass) type).getPrecision()));
+            else if (type instanceof ObjectType)
+                dbfFields.add(new OverJDBField(field, 'N', 10, 0));
             else if (type instanceof DateClass || type instanceof DateTimeClass) {
                 dbfFields.add(new OverJDBField(field, 'D', 8, 0));
             } else if (type instanceof LogicalClass)

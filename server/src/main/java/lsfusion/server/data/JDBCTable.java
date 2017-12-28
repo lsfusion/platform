@@ -23,7 +23,7 @@ import java.sql.*;
 
 public class JDBCTable {
     public final boolean singleRow;
-    public final ImOrderSet<String> fields;;
+    public final ImOrderSet<String> fields;
     public final ImMap<String, Type> fieldTypes;
     public final ImList<ImMap<String, Object>> set;
 

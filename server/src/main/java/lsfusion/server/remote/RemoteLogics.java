@@ -25,6 +25,7 @@ import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -371,7 +372,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException {
+    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException, IOException {
         List<Object> returnList = new ArrayList<>();
         try (DataSession session = createSession()) {
             ExecutionStack stack = getStack();
@@ -403,17 +404,39 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 for (String returnCanonicalName : returnCanonicalNames) {
                     LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
                     if (returnProperty != null) {
-                        returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                        returnList.addAll(formatReturnProperty(session, returnProperty));
                     } else
                         throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
                 }
             } else {
-                LCP returnProperty = businessLogics.LM.formExportFile;
-                returnList.add(returnProperty.property.getType().format(returnProperty.read(session)));
+                returnList.addAll(formatReturnProperty(session, businessLogics.LM.formExportFile));
             }
 
             session.apply(businessLogics, stack);
         }
+        return returnList;
+    }
+
+    private List<Object> formatReturnProperty(DataSession session, LCP returnProperty) throws SQLException, SQLHandledException, IOException {
+        List<Object> returnList = new ArrayList<>();
+        Object returnValue = returnProperty.read(session);
+        Type returnType = returnProperty.property.getType();
+        boolean jdbcSingleRow = false;
+        if (returnType instanceof DynamicFormatFileClass) {
+            if (BaseUtils.getExtension((byte[]) returnValue).equals("jdbc")) {
+                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(BaseUtils.getFile((byte[]) returnValue));
+                if (jdbcTable.singleRow) {
+                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
+                    for (String field : jdbcTable.fields) {
+                        Type fieldType = jdbcTable.fieldTypes.get(field);
+                        returnList.add(row == null ? null : fieldType.format(row.get(field)));
+                    }
+                    jdbcSingleRow = true;
+                }
+            }
+        }
+        if (!jdbcSingleRow)
+            returnList.add(returnType.format(returnValue));
         return returnList;
     }
 
