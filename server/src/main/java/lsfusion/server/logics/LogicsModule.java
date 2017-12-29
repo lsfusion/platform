@@ -257,17 +257,13 @@ public abstract class LogicsModule {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
 
-    protected AbstractGroup getGroupBySID(String sid) {
-        return moduleGroups.get(sid);
-    }
-
     public AbstractGroup getGroup(String name) {
-        return getGroupBySID(transformNameToSID(name));
+        return moduleGroups.get(name);
     }
 
     protected void addModuleGroup(AbstractGroup group) {
-        assert !moduleGroups.containsKey(group.getSID());
-        moduleGroups.put(group.getSID(), group);
+        assert !moduleGroups.containsKey(group.getName());
+        moduleGroups.put(group.getName(), group);
     }
 
     protected CustomClass getClassBySID(String sid) {
@@ -371,7 +367,7 @@ public abstract class LogicsModule {
     }
 
     protected AbstractGroup addAbstractGroup(String name, LocalizedString caption, AbstractGroup parent, boolean toCreateContainer) {
-        AbstractGroup group = new AbstractGroup(transformNameToSID(name), caption);
+        AbstractGroup group = new AbstractGroup(elementCanonicalName(name), caption);
         Version version = getVersion();
         if (parent != null) {
             parent.add(group, version);

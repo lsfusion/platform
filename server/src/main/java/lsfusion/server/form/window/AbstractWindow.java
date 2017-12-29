@@ -91,10 +91,6 @@ public class AbstractWindow {
         return canonicalName;
     }
     
-    public void setCanonicalName(String canonicalName) {
-        this.canonicalName = canonicalName;
-    }
-
     public String getName() {
         return ElementCanonicalNameUtils.getName(canonicalName);
     }

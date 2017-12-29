@@ -453,22 +453,15 @@ public class DefaultFormView extends FormView {
     }
 
     private String getPropertyGroupContainerSID(PropertyDrawEntity propertyDraw, AbstractGroup propertyGroup, Version version) {
-        String propertyGroupSID = propertyGroup.getSID();
-        if (propertyGroupSID.contains("_")) {
-            String[] sids = propertyGroupSID.split("_", 2);
-            propertyGroupSID = sids[1];
-        }
-        // todo : здесь конечно совсем хак - нужно более четкую схему сделать
-//        if (lm.getGroupBySID(propertyGroupSID) != null) {
-//            используем простое имя для групп данного модуля
-//            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
-//        }
+        String propertyGroupName = propertyGroup.getName();
         PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
+        
         String containerSID;
         if(propertyContainer == null)
             containerSID = "NOGROUP";
         else
             containerSID = propertyContainer.getPropertyGroupContainerSID();
-        return containerSID + "." + propertyGroupSID; // todo [dale]: разобраться с NOGROUP
+        
+        return containerSID + "." + propertyGroupName; // todo [dale]: разобраться с NOGROUP
     }
 }

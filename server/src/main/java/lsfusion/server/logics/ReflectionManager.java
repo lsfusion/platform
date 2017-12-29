@@ -604,7 +604,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     }
             } else {
                 if (node instanceof AbstractGroup)
-                    if (((AbstractGroup) node).getSID().equals(((AbstractGroup) abstractNode).getSID())) {
+                    if (((AbstractGroup) node).getCanonicalName().equals(((AbstractGroup) abstractNode).getCanonicalName())) {
                         return counter;
                     }
             }
