@@ -8,12 +8,12 @@ import java.io.IOException;
 
 public class TreeNavigatorWindow extends NavigatorWindow {
 
-    public TreeNavigatorWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
-        super(sID, caption, x, y, width, height);
+    public TreeNavigatorWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
+        super(canonicalName, caption, x, y, width, height);
     }
 
-    public TreeNavigatorWindow(String sID, LocalizedString caption) {
-        super(sID, caption);
+    public TreeNavigatorWindow(String canonicalName, LocalizedString caption) {
+        super(canonicalName, caption);
     }
 
     @Override

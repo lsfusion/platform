@@ -481,11 +481,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         windows.tree = (NavigatorWindow) findWindow("tree");
 
-        windows.forms = addWindow("forms", new AbstractWindow(null, LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
+        windows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
 
-        windows.log = addWindow("log", new AbstractWindow(null, LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
+        windows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 
-        windows.status = addWindow("status", new AbstractWindow(null, LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
+        windows.status = addWindow(new AbstractWindow(elementCanonicalName("status"), LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
         windows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows

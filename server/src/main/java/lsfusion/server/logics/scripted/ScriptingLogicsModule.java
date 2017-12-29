@@ -90,7 +90,6 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.ElementCanonicalNameUtils.createCanonicalName;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 
@@ -592,7 +591,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateForm(formName, BL);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
-        String canonicalName = createCanonicalName(getNamespace(), formName);
+        String canonicalName = elementCanonicalName(formName);
 
         ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, point.toString(), caption, icon, getVersion()));
         form.setModalityType(modalityType);
@@ -3198,6 +3197,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
         NavigatorWindow window = null;
+        
         switch (type) {
             case MENU:
                 window = createMenuWindow(name, caption, options);
@@ -3209,7 +3209,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 window = createToolbarWindow(name, caption, options);
                 break;
             case TREE:
-                window = createTreeWindow(caption, options);
+                window = createTreeWindow(name, caption, options);
                 break;
         }
 
@@ -3217,7 +3217,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
 
-        addWindow(name, window);
+        addWindow(window);
     }
 
     private MenuNavigatorWindow createMenuWindow(String name, LocalizedString caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
@@ -3227,7 +3227,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitWindowPositionNotSpecified(parser, name);
         } 
         assert dp != null;
-        MenuNavigatorWindow window = new MenuNavigatorWindow(null, caption, dp.x, dp.y, dp.width, dp.height);
+        MenuNavigatorWindow window = new MenuNavigatorWindow(elementCanonicalName(name), caption, dp.x, dp.y, dp.width, dp.height);
         window.orientation = orientation.asMenuOrientation();
 
         return window;
@@ -3241,7 +3241,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             orientation = Orientation.VERTICAL;
         }
 
-        PanelNavigatorWindow window = new PanelNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
+        PanelNavigatorWindow window = new PanelNavigatorWindow(elementCanonicalName(name), caption, orientation.asToolbarOrientation());
         if (dockPosition != null) {
             window.setDockPosition(dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
         }
@@ -3263,11 +3263,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ToolBarNavigatorWindow window;
         if (borderPosition != null) {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption, borderPosition.asLayoutConstraint());
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, borderPosition.asLayoutConstraint());
         } else if (dockPosition != null) {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption, dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption, dockPosition.x, dockPosition.y, dockPosition.width, dockPosition.height);
         } else {
-            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
+            window = new ToolBarNavigatorWindow(orientation.asToolbarOrientation(), elementCanonicalName(name), caption);
         }
 
         Alignment hAlign = options.getHAlign();
@@ -3289,8 +3289,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
-    private TreeNavigatorWindow createTreeWindow(LocalizedString caption, NavigatorWindowOptions options) {
-        TreeNavigatorWindow window = new TreeNavigatorWindow(null, caption);
+    private TreeNavigatorWindow createTreeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) {
+        TreeNavigatorWindow window = new TreeNavigatorWindow(elementCanonicalName(name), caption);
         DockPosition dp = options.getDockPosition();
         if (dp != null) {
             window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
@@ -3334,7 +3334,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        String canonicalName = createCanonicalName(getNamespace(), name);
+        String canonicalName = elementCanonicalName(name);
         return createNavigatorElement(canonicalName, caption, point, action, form);
     }
     
@@ -3343,7 +3343,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return action.property.getName();
         } else if (form != null) {
             String cn = form.getCanonicalName();
-            return ElementCanonicalNameUtils.extractName(cn); 
+            return ElementCanonicalNameUtils.getName(cn); 
         }
         return null;
     }

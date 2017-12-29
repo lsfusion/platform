@@ -1,20 +1,24 @@
 package lsfusion.server.logics;
 
-import org.apache.commons.lang.StringUtils;
-
 public class ElementCanonicalNameUtils {
     
     public static String createCanonicalName(String namespace, String name) {
         return namespace + "." + name;
     }
     
-    public static String extractNamespace(String canonicalName) {
-        assert StringUtils.countMatches(canonicalName, ".") == 1;
-        return canonicalName.substring(0, canonicalName.indexOf('.'));
+    public static String getNamespace(String canonicalName) {
+        int pointIndex = canonicalName.indexOf('.');
+        assert pointIndex > 0; 
+        return canonicalName.substring(0, pointIndex);
     }
     
-    public static String extractName(String canonicalName) {
-        assert StringUtils.countMatches(canonicalName, ".") == 1;
-        return canonicalName.substring(canonicalName.indexOf('.') + 1);
+    public static String getName(String canonicalName) {
+        int pointIndex = canonicalName.indexOf('.');
+        assert pointIndex > 0;
+        return canonicalName.substring(pointIndex + 1);
+    }
+    
+    public static String toSID(String canonicalName) {
+        return canonicalName.replace('.', '_');
     }
 }

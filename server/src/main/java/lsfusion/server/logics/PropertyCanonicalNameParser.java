@@ -47,7 +47,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     }
 
     public static String getNamespace(String canonicalName) throws ParseException {
-        canonicalName = canonicalName.replaceAll(" ", "");
+        assert !canonicalName.contains(" ");
         int pointIndex = canonicalName.indexOf('.');
         if (pointIndex < 0) {
             throw new ParseException("Namespace is missing");
@@ -61,7 +61,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     }
 
     public static String getName(String canonicalName) throws ParseException {
-        canonicalName = canonicalName.replaceAll(" ", "");
+        assert !canonicalName.contains(" ");
         getNamespace(canonicalName); // проверим валидность пространства имен
         int pointIndex = canonicalName.indexOf('.');
         int bracketIndex = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);

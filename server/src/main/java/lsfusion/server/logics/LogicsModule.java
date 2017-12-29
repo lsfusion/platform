@@ -74,7 +74,6 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
-import static lsfusion.server.logics.ElementCanonicalNameUtils.createCanonicalName;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
@@ -171,6 +170,10 @@ public abstract class LogicsModule {
         this.name = name;
     }
 
+    protected String elementCanonicalName(String name) {
+        return ElementCanonicalNameUtils.createCanonicalName(getNamespace(), name);
+    }
+    
     public String getLogName(int moduleCount, int orderNum) {
         String result = name;
         if(order != null)
@@ -294,22 +297,13 @@ public abstract class LogicsModule {
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
-        assert !windows.containsKey(window.getSID());
-        windows.put(window.getSID(), window);
+        assert !windows.containsKey(window.getName());
+        windows.put(window.getName(), window);
         return window;
     }
 
-    protected <T extends AbstractWindow> T addWindow(String name, T window) {
-        window.setSID(transformNameToSID(name));
-        return addWindow(window);
-    }
-
     public AbstractWindow getWindow(String name) {
-        return getWindowBySID(transformNameToSID(name));
-    }
-
-    protected AbstractWindow getWindowBySID(String sid) {
-        return windows.get(sid);
+        return windows.get(name);
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
@@ -2145,12 +2139,12 @@ public abstract class LogicsModule {
     }
     
     public NavigatorElement getNavigatorElement(String name) {
-        String canonicalName = createCanonicalName(getNamespace(), name);
+        String canonicalName = elementCanonicalName(name);
         return getNavigatorElementByCanonicalName(canonicalName);
     }
 
     public FormEntity getForm(String name) {
-        String canonicalName = createCanonicalName(getNamespace(), name);
+        String canonicalName = elementCanonicalName(name);
         return namedModuleForms.get(canonicalName);
     }
     

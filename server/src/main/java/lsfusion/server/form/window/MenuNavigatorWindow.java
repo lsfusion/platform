@@ -12,8 +12,8 @@ public class MenuNavigatorWindow extends NavigatorWindow {
     public int showLevel = 0;
     public int orientation = SwingConstants.HORIZONTAL;
 
-    public MenuNavigatorWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
-        super(sID, caption, x, y, width, height);
+    public MenuNavigatorWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
+        super(canonicalName, caption, x, y, width, height);
     }
 
     @Override
