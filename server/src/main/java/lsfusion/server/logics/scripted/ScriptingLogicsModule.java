@@ -1797,13 +1797,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedEvalActionProp(LPWithParams property, List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
         Type exprType = property.property.property.getType();
         if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
         }
-        LAP<?> res = addEvalAProp((LCP) property.property);
-        return new LPWithParams(res, property.usedParams);
+
+        List<LCP<?>> paramsLCP = new ArrayList<>();
+        Set<Integer> allParams = new TreeSet<>(property.usedParams);
+        if (params != null) {
+            for (LPWithParams param : params) {
+                paramsLCP.add((LCP) param.property);
+                allParams.addAll(param.usedParams);
+            }
+        }
+
+        LAP<?> res = addEvalAProp((LCP) property.property, paramsLCP);
+        return new LPWithParams(res, new ArrayList<>(allParams));
     }
 
     public LPWithParams addScriptedDrillDownActionProp(LPWithParams property) {

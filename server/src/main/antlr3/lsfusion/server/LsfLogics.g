@@ -2988,10 +2988,10 @@ deleteActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams p
 evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedEvalActionProp($expr.property);
+		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props);
 	}
 }
-	:	'EVAL' expr=propertyExpression[context, dynamic]
+	:	'EVAL' expr=propertyExpression[context, dynamic] ('OBJECTS' exprList=propertyExpressionList[context, dynamic])?
 	;
 	
 drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

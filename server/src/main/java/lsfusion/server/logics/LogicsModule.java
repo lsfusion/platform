@@ -1574,8 +1574,8 @@ public abstract class LogicsModule {
 
     // ------------------- EVAL ----------------- //
 
-    public LAP addEvalAProp(LCP<?> scriptSource) {
-        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource));
+    public LAP addEvalAProp(LCP<?> scriptSource, List<LCP<?>> params) {
+        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource, params));
     }
 
     // ------------------- DRILLDOWN ----------------- //
