@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.server.logics.ElementCanonicalNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -8,18 +9,20 @@ import java.util.List;
 public class MetaCodeFragment {
     public List<String> parameters;
     public List<String> tokens;
+    private String canonicalName;
     private String code;
     private String moduleName;
     private int lineNumber;
 
     private final char QUOTE = '\'';
 
-    public MetaCodeFragment(List<String> params, List<String> tokens, String code, String moduleName, int lineNumber) {
+    public MetaCodeFragment(String canonicalName, List<String> params, List<String> tokens, String code, String moduleName, int lineNumber) {
         this.parameters = params;
         this.tokens = tokens;
         this.code = code;
         this.moduleName = moduleName;
         this.lineNumber = lineNumber;
+        this.canonicalName = canonicalName;
     }
 
     public String getCode(List<String> params) {
@@ -138,5 +141,13 @@ public class MetaCodeFragment {
         }
         builder.append(")");
         return builder.toString();
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
+    }
+    
+    public String getName() {
+        return ElementCanonicalNameUtils.getName(canonicalName);
     }
 }

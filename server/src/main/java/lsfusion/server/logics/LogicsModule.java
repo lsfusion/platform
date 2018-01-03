@@ -130,7 +130,7 @@ public abstract class LogicsModule {
     
     protected final Map<String, AbstractGroup> moduleGroups = new HashMap<>();
     protected final Map<String, CustomClass> moduleClasses = new HashMap<>();
-    protected final Map<String, AbstractWindow> windows = new HashMap<>();
+    protected final Map<String, AbstractWindow> moduleWindows = new HashMap<>();
     protected final Map<String, NavigatorElement> moduleNavigators = new HashMap<>();
     protected final Map<String, FormEntity> namedModuleForms = new HashMap<>();
     protected final Map<String, ImplementTable> moduleTables = new HashMap<>();
@@ -261,7 +261,7 @@ public abstract class LogicsModule {
         return moduleGroups.get(name);
     }
 
-    protected void addModuleGroup(AbstractGroup group) {
+    protected void addGroup(AbstractGroup group) {
         assert !moduleGroups.containsKey(group.getName());
         moduleGroups.put(group.getName(), group);
     }
@@ -293,26 +293,22 @@ public abstract class LogicsModule {
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
-        assert !windows.containsKey(window.getName());
-        windows.put(window.getName(), window);
+        assert !moduleWindows.containsKey(window.getName());
+        moduleWindows.put(window.getName(), window);
         return window;
     }
 
     public AbstractWindow getWindow(String name) {
-        return windows.get(name);
+        return moduleWindows.get(name);
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
-        return getMetaCodeFragmentBySID(transformNameToSID(name), paramCnt);
+        return metaCodeFragments.get(new Pair<>(name, paramCnt));
     }
 
-    protected MetaCodeFragment getMetaCodeFragmentBySID(String sid, int paramCnt) {
-        return metaCodeFragments.get(new Pair<>(sid, paramCnt));
-    }
-
-    protected void addMetaCodeFragment(String name, MetaCodeFragment fragment) {
-        assert !metaCodeFragments.containsKey(new Pair<>(transformNameToSID(name), fragment.parameters.size()));
-        metaCodeFragments.put(new Pair<>(transformNameToSID(name), fragment.parameters.size()), fragment);
+    protected void addMetaCodeFragment(MetaCodeFragment fragment) {
+        assert !metaCodeFragments.containsKey(new Pair<>(fragment.getName(), fragment.parameters.size()));
+        metaCodeFragments.put(new Pair<>(fragment.getName(), fragment.parameters.size()), fragment);
     }
 
     // aliases для использования внутри иерархии логических модулей
@@ -376,7 +372,7 @@ public abstract class LogicsModule {
                 baseLM.privateGroup.add(group, version);
         }
         group.createContainer = toCreateContainer;
-        addModuleGroup(group);
+        addGroup(group);
         return group;
     }
 

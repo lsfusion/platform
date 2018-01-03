@@ -2777,8 +2777,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateMetaCodeFragment(name, params.size(), BL);
         checks.checkDistinctParameters(params);
 
-        MetaCodeFragment fragment = new MetaCodeFragment(params, tokens, code, getName(), lineNumber);
-        addMetaCodeFragment(name, fragment);
+        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, code, getName(), lineNumber);
+        addMetaCodeFragment(fragment);
     }
 
     public void runMetaCode(String name, List<String> params, int lineNumber, boolean enabledMeta) throws RecognitionException {
