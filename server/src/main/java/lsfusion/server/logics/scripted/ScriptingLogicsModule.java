@@ -3356,8 +3356,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        String canonicalName = elementCanonicalName(name);
-        return createNavigatorElement(canonicalName, caption, point, action, form);
+        return createNavigatorElement(elementCanonicalName(name), caption, point, action, form);
     }
     
     private String createDefaultNavigatorElementName(LAP<?> action, FormEntity form) {

@@ -334,10 +334,6 @@ public abstract class LogicsModule {
         this.baseClass = baseLM.baseClass;
     }
 
-    protected AbstractGroup addAbstractGroup(String name, LocalizedString caption) {
-        return addAbstractGroup(name, caption, null);
-    }
-
     public FunctionSet<Version> visible;
     public Integer order;
     private final Version version = new Version() {
@@ -2098,19 +2094,19 @@ public abstract class LogicsModule {
 
     protected NavigatorElement addNavigatorFolder(String canonicalName, LocalizedString caption) {
         NavigatorElement elem = new NavigatorFolder(canonicalName, caption);
-        addModuleNavigator(elem);
+        addNavigatorElement(elem);
         return elem;
     }
 
     protected NavigatorAction addNavigatorAction(LAP<?> property, String canonicalName, LocalizedString caption) {
         NavigatorAction navigatorAction = new NavigatorAction(property.property, canonicalName, caption);
-        addModuleNavigator(navigatorAction);
+        addNavigatorElement(navigatorAction);
         return navigatorAction;
     }
 
     protected NavigatorForm addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
         NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
-        addModuleNavigator(navigatorForm);
+        addNavigatorElement(navigatorForm);
         return navigatorForm;
     }
     
@@ -2131,26 +2127,16 @@ public abstract class LogicsModule {
     }
     
     public NavigatorElement getNavigatorElement(String name) {
-        String canonicalName = elementCanonicalName(name);
-        return getNavigatorElementByCanonicalName(canonicalName);
+        return moduleNavigators.get(name);
     }
 
     public FormEntity getForm(String name) {
-        String canonicalName = elementCanonicalName(name);
-        return namedModuleForms.get(canonicalName);
-    }
-    
-    private NavigatorElement getNavigatorElementByCanonicalName(String canonicalName) {
-        return moduleNavigators.get(canonicalName);
-    }
-
-    private FormEntity getFormByCanonicalName(String canonicalName) {
-        return namedModuleForms.get(canonicalName);
+        return namedModuleForms.get(name);
     }
     
     public <T extends FormEntity> T addFormEntity(T form) {
         if (form.isNamed()) {
-            addModuleForm(form);
+            addNamedForm(form);
         } else {
             addPrivateForm(form);
         }
@@ -2158,15 +2144,15 @@ public abstract class LogicsModule {
     }
     
     @NFLazy
-    private void addModuleNavigator(NavigatorElement element) {
-        assert !moduleNavigators.containsKey(element.getCanonicalName());
-        moduleNavigators.put(element.getCanonicalName(), element);
+    private void addNavigatorElement(NavigatorElement element) {
+        assert !moduleNavigators.containsKey(element.getName());
+        moduleNavigators.put(element.getName(), element);
     }
 
     @NFLazy
-    private void addModuleForm(FormEntity form) {
-        assert !namedModuleForms.containsKey(form.getCanonicalName());
-        namedModuleForms.put(form.getCanonicalName(), form);
+    private void addNamedForm(FormEntity form) {
+        assert !namedModuleForms.containsKey(form.getName());
+        namedModuleForms.put(form.getName(), form);
     }
     
     @NFLazy

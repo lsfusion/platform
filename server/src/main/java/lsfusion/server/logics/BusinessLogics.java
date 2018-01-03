@@ -2281,6 +2281,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return mResult.immutable();
     }
     
+    // todo [dale]: Может быть можно заменить на поиск по каноническому имени
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
             for (FormEntity element : logicsModule.getModuleForms()) {

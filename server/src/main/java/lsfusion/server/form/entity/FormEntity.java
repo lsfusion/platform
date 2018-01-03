@@ -27,6 +27,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.ElementCanonicalNameUtils;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
@@ -988,6 +989,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return canonicalName;
     }
 
+    public String getName() {
+        return ElementCanonicalNameUtils.getName(canonicalName);
+    } 
+    
     public LocalizedString getCaption() {
         return caption;
     }
