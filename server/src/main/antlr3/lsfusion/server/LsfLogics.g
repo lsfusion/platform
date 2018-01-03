@@ -2758,7 +2758,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
       } else if($type.format == ExternalFormat.HTTP) {
         $property = self.addScriptedExternalHTTPActionProp(conStr, body, targetList);
       } else if($type.format == ExternalFormat.LSF) {
-        $property = self.addScriptedExternalLSFActionProp();
+        $property = self.addScriptedExternalLSFActionProp(conStr, body, targetList);
       }
       $signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
@@ -2771,7 +2771,7 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 externalFormat returns [ExternalFormat format, String conStr, String exec, Integer body]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
-	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	;
 

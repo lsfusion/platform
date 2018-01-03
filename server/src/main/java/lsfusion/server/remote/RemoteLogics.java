@@ -422,7 +422,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         Object returnValue = returnProperty.read(session);
         Type returnType = returnProperty.property.getType();
         boolean jdbcSingleRow = false;
-        if (returnType instanceof DynamicFormatFileClass) {
+        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
             if (BaseUtils.getExtension((byte[]) returnValue).equals("jdbc")) {
                 JDBCTable jdbcTable = JDBCTable.deserializeJDBC(BaseUtils.getFile((byte[]) returnValue));
                 if (jdbcTable.singleRow) {
@@ -436,7 +436,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         }
         if (!jdbcSingleRow)
-            returnList.add(returnType.format(returnValue));
+            returnList.add(returnValue != null ? returnType.format(returnValue) : null);
         return returnList;
     }
 
