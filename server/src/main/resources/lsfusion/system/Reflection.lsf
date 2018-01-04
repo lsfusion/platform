@@ -67,7 +67,7 @@ isSetNotNull 'Не может быть null' = DATA BOOLEAN (Property);
 return 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
 class 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexity 'Сложность свойства' = DATA LONG (Property);
-caption 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
+caption 'Заголовок' = DATA VARISTRING[250] (Property) IN base;
 tableSID 'Таблица' = DATA VARSTRING[100] (Property);
 annotation 'Аннотация' = DATA VARSTRING[100] (Property);
 
