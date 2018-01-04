@@ -18,7 +18,8 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     private static SQLSyntax[] syntaxes = null;
     private static SQLSyntax[] getSyntaxes() {
         if(syntaxes == null) 
-            syntaxes = new SQLSyntax[] {OracleSQLSyntax.instance, MSSQLSQLSyntax.instance, MySQLSQLSyntax.instance, PostgreSQLSyntax.instance};
+            syntaxes = new SQLSyntax[] {OracleSQLSyntax.instance, MSSQLSQLSyntax.instance, MySQLSQLSyntax.instance,
+                    PostgreSQLSyntax.instance, InformixSQLSyntax.instance};
         return syntaxes;
     }
 
