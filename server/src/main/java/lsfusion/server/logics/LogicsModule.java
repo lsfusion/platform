@@ -266,17 +266,13 @@ public abstract class LogicsModule {
         moduleGroups.put(group.getName(), group);
     }
 
-    protected CustomClass getClassBySID(String sid) {
-        return moduleClasses.get(sid);
-    }
-
     public CustomClass getClass(String name) {
-        return getClassBySID(transformNameToSID(name));
+        return moduleClasses.get(name);
     }
 
     protected void addModuleClass(CustomClass valueClass) {
-        assert !moduleClasses.containsKey(valueClass.getSID());
-        moduleClasses.put(valueClass.getSID(), valueClass);
+        assert !moduleClasses.containsKey(valueClass.getName());
+        moduleClasses.put(valueClass.getName(), valueClass);
     }
 
     protected ImplementTable getTableBySID(String sid) {
@@ -376,8 +372,8 @@ public abstract class LogicsModule {
         addModuleClass(customClass);
     }
 
-    protected BaseClass addBaseClass(String sID, LocalizedString caption) {
-        BaseClass baseClass = new BaseClass(sID, caption, getVersion());
+    protected BaseClass addBaseClass(String canonicalName, LocalizedString caption) {
+        BaseClass baseClass = new BaseClass(canonicalName, caption, getVersion());
         storeCustomClass(baseClass);
         return baseClass;
     }
@@ -404,14 +400,14 @@ public abstract class LogicsModule {
 
     protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, List<String> objNames, List<LocalizedString> objCaptions, CustomClass... parents) {
         assert parents.length > 0;
-        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, getVersion(), parents);
+        ConcreteCustomClass customClass = new ConcreteCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
         customClass.addStaticObjects(objNames, objCaptions, getVersion());
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, getVersion(), parents);
+        AbstractCustomClass customClass = new AbstractCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
         storeCustomClass(customClass);
         return customClass;
     }

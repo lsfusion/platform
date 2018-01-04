@@ -33,6 +33,7 @@ import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ElementCanonicalNameUtils;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -92,23 +93,27 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public Long ID;
-    protected String sID;
+    private String canonicalName;
 
     public String getSID() {
-        return sID;
+        return ElementCanonicalNameUtils.toSID(canonicalName);
     }
     
     public String getCanonicalName() {
-        return getSID().replaceFirst("_", ".");
+        return canonicalName;
     }
 
+    public String getName() {
+        return ElementCanonicalNameUtils.getName(canonicalName);
+    }
+    
     public String getParsedName() {
         return getCanonicalName();
     }
 
     public LocalizedString caption;
-    public CustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
-        this.sID = sID;
+    public CustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+        this.canonicalName = canonicalName;
         this.caption = caption;
 
         for (CustomClass parent : parents) {

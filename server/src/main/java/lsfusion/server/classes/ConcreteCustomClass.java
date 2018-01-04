@@ -30,8 +30,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass, ObjectValueClassSet, StaticClass {
-    public ConcreteCustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
-        super(sID, caption, version, parents);
+    public ConcreteCustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+        super(canonicalName, caption, version, parents);
     }
 
     public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<LocalizedString> captions, Version version) {

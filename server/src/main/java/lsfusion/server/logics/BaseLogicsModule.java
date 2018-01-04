@@ -297,7 +297,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass(transformNameToSID("Object"), LocalizedString.create("{logics.object}"));
+        baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"));
         
         super.initClasses();
     }

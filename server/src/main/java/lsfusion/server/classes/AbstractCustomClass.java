@@ -7,8 +7,8 @@ import lsfusion.server.logics.mutables.Version;
 
 public class AbstractCustomClass extends CustomClass {
 
-    public AbstractCustomClass(String sID, LocalizedString caption, Version version, CustomClass... parents) {
-        super(sID, caption, version, parents);
+    public AbstractCustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+        super(canonicalName, caption, version, parents);
     }
 
     public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {

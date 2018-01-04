@@ -575,7 +575,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initObjectClass() {
-        LM.baseClass.initObjectClass(LM.getVersion(), LM.transformNameToSID("CustomObjectClass"));
+        LM.baseClass.initObjectClass(LM.getVersion(), ElementCanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);
     }
 
