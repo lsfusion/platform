@@ -17,16 +17,10 @@ import org.apache.http.HttpEntity;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
 public class ExternalHttpServer extends MonitorServer {
-
-    private static final String PARAMS_PARAM = "p";
-    private static final String RETURNS_PARAM = "returns";
-    private static final String SCRIPT_PARAM = "script";
-    private static final String ACTION_CN_PARAM = "action";
 
     private LogicsInstance logicsInstance;
     private RemoteLogics remoteLogics;
@@ -95,8 +89,7 @@ public class ExternalHttpServer extends MonitorServer {
             ThreadLocalContext.aspectBeforeMonitor(ExternalHttpServer.this, ThreadType.HTTP);
             try {
                 HttpEntity response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        getParameterValue(request, ACTION_CN_PARAM), getParameterValue(request, SCRIPT_PARAM), getParameterValues(request, RETURNS_PARAM),
-                        getParameterValues(request, PARAMS_PARAM), request.getRequestBody(), getContentType(request));
+                        request.getRequestURI().getQuery(), request.getRequestBody(), getContentType(request));
 
                 if (response != null)
                     sendResponse(request, IOUtils.readBytesFromStream(response.getContent()), response.getContentType().getValue(), false);
@@ -124,23 +117,6 @@ public class ExternalHttpServer extends MonitorServer {
                 }
             }
             return result.toString();
-        }
-
-        private String getParameterValue(HttpExchange request, String key) {
-            List<String> params = getParameterValues(request, key);
-            return params.isEmpty() ? null : params.get(0);
-        }
-
-        private List<String> getParameterValues(HttpExchange request, String key) {
-            List<String> values = new ArrayList<>();
-            String query = request.getRequestURI().getQuery();
-            if (query != null) {
-                for (String entry : query.split("&")) {
-                    if (entry.contains("=") && entry.substring(0, entry.indexOf("=")).equals(key))
-                        values.add(entry.substring(Math.min(entry.indexOf("=") + 1, entry.length() - 1)));
-                }
-            }
-            return values;
         }
 
         private void sendOKResponse(HttpExchange request) throws IOException {

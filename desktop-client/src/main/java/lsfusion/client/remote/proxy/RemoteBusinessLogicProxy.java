@@ -126,6 +126,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    @Override
+    public List<Object> read(String property, Object[] params) throws RemoteException {
+        logRemoteMethodStartCall("read");
+        List<Object> result = target.read(property, params);
+        logRemoteMethodEndVoidCall("read");
+        return result;
+    }
+
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
         logRemoteMethodStartCall("checkDefaultViewPermission");
         boolean result = target.checkDefaultViewPermission(propertySid);

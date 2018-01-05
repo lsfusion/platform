@@ -8,15 +8,9 @@ import org.springframework.web.HttpRequestHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.net.URLDecoder;
 
 public class ExternalRequestHandler implements HttpRequestHandler {
-    private static final String ACTION_CN_PARAM = "action";
-    private static final String SCRIPT_PARAM = "script";
-    private static final String PARAMS_PARAM = "p";
-    private static final String RETURNS_PARAM = "returns";
 
     @Autowired
     private BusinessLogicsProvider blProvider;
@@ -24,9 +18,9 @@ public class ExternalRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
+            String query = request.getQueryString();
             HttpEntity responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
-                    request.getParameter(ACTION_CN_PARAM), request.getParameter(SCRIPT_PARAM), getParams(request, RETURNS_PARAM),
-                    getParams(request, PARAMS_PARAM), request.getInputStream(), request.getContentType());
+                    query == null ? null : URLDecoder.decode(query, "utf-8"), request.getInputStream(), request.getContentType());
 
             if (responseHttpEntity != null) {
                 response.setContentType(responseHttpEntity.getContentType().getValue());
@@ -38,10 +32,5 @@ public class ExternalRequestHandler implements HttpRequestHandler {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
             throw new RuntimeException(e);
         }
-    }
-
-    private List<String> getParams(HttpServletRequest request, String key) {
-        String[] params = request.getParameterValues(key);
-        return params == null ? new ArrayList<String>() : Arrays.asList(params);
     }
 }

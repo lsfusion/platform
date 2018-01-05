@@ -39,6 +39,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.EvalUtils;
@@ -345,7 +346,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
-        } catch (Exception e) {
+        } catch (ParseException | SQLHandledException | SQLException | IOException e) {
             throw new RuntimeException(e);
         }
         return returnList;
@@ -354,8 +355,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
-        try {
-            if (script != null) {
+        if (script != null) {
+            try {
                 ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
 
                 String runName = module.getName() + ".run";
@@ -363,13 +364,29 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 if (runAction != null) {
                     returnList = executeExternal(runAction, returnCanonicalNames, params);
                 }
-            } else {
-                throw new RuntimeException("Eval script was not found");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } else {
+            throw new RuntimeException("Eval script was not found");
         }
         return returnList;
+    }
+
+    @Override
+    public List<Object> read(String property, Object[] params) {
+        try {
+            LCP lcp = (LCP) businessLogics.findLP(property);
+            if (lcp != null) {
+                try (DataSession session = createSession()) {
+                    return readReturnProperty(session, lcp, getParams(session, lcp, params));
+                }
+            } else
+                throw new RuntimeException(String.format("Property %s was not found", property));
+
+        } catch (SQLException | SQLHandledException | ParseException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException, IOException {
@@ -377,39 +394,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         try (DataSession session = createSession()) {
             ExecutionStack stack = getStack();
 
-            ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-            ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
-            ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
-            for (int i = 0; i < interfaces.size(); i++) {
-                ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
-                Object value = null;
-                if (params.length > i) {
-                    Object param = params[i];
-                    Type type = valueClass.getType();
-                    if (type instanceof DynamicFormatFileClass) {
-                        value = param instanceof byte[] ? param : null;
-                    } else {
-                        if (param instanceof byte[])
-                            param = new String((byte[]) param);
-                        if (param instanceof String)
-                            value = !((String) param).isEmpty() ? type.parseString((String) param) : null;
-                    }
-                }
-                objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
-            }
-
-            property.execute(session, stack, objectValues);
+            property.execute(session, stack, getParams(session, property, params));
 
             if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {
                     LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
                     if (returnProperty != null) {
-                        returnList.addAll(formatReturnProperty(session, returnProperty));
+                        returnList.addAll(readReturnProperty(session, returnProperty));
                     } else
                         throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
                 }
             } else {
-                returnList.addAll(formatReturnProperty(session, businessLogics.LM.formExportFile));
+                returnList.addAll(readReturnProperty(session, businessLogics.LM.formExportFile));
             }
 
             session.apply(businessLogics, stack);
@@ -417,9 +413,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> formatReturnProperty(DataSession session, LCP returnProperty) throws SQLException, SQLHandledException, IOException {
+    private List<Object> readReturnProperty(DataSession session, LCP returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
         List<Object> returnList = new ArrayList<>();
-        Object returnValue = returnProperty.read(session);
+        Object returnValue = returnProperty.read(session, params);
         Type returnType = returnProperty.property.getType();
         boolean jdbcSingleRow = false;
         if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
@@ -438,6 +434,30 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         if (!jdbcSingleRow)
             returnList.add(returnValue != null ? returnType.format(returnValue) : null);
         return returnList;
+    }
+
+    private ObjectValue[] getParams(DataSession session, LP property, Object[] params) throws ParseException, SQLException, SQLHandledException {
+        ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
+        ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
+        for (int i = 0; i < interfaces.size(); i++) {
+            ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+            Object value = null;
+            if (params.length > i) {
+                Object param = params[i];
+                Type type = valueClass.getType();
+                if (type instanceof DynamicFormatFileClass) {
+                    value = param instanceof byte[] ? param : null;
+                } else {
+                    if (param instanceof byte[])
+                        param = new String((byte[]) param);
+                    if (param instanceof String)
+                        value = !((String) param).isEmpty() ? type.parseString((String) param) : null;
+                }
+            }
+            objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
+        }
+        return objectValues;
     }
 
     @Override

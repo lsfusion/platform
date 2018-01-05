@@ -28,14 +28,22 @@ public class ExternalUtils {
     public static String multipartMixedType = "multipart/mixed";
     public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
 
-    public static HttpEntity processRequest(RemoteLogicsInterface remoteLogics, String uri, String action, String script, List<String> returns, List<String> getParams, InputStream is, String requestContentType) throws IOException, MessagingException {
+    private static final String ACTION_CN_PARAM = "action";
+    private static final String SCRIPT_PARAM = "script";
+    private static final String PARAMS_PARAM = "p";
+    private static final String RETURNS_PARAM = "returns";
+    private static final String PROPERTY_PARAM = "property";
+
+    public static HttpEntity processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, String requestContentType) throws IOException, MessagingException {
+        List<Object> paramsList = getRequestParams(getParameterValues(query, PARAMS_PARAM), is, requestContentType);
+        List<String> returns = getParameterValues(query, RETURNS_PARAM);
         List<Object> returnList = new ArrayList<>();
 
-        List<Object> paramsList = getRequestParams(getParams, is, requestContentType);
-
         if (uri.startsWith("/exec")) {
+            String action = getParameterValue(query, ACTION_CN_PARAM);
             returnList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/eval")) {
+            String script = getParameterValue(query, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
                 //Первый параметр считаем скриптом
                 script = formatParam(paramsList.get(0));
@@ -49,6 +57,11 @@ public class ExternalUtils {
                     script = "run() = {" + script + ";\n};";
             }
             returnList = remoteLogics.eval(script, returns.toArray(new String[returns.size()]), paramsList.toArray());
+        } else if (uri.startsWith("/read")) {
+            String property = getParameterValue(query, PROPERTY_PARAM);
+            if (property != null) {
+                returnList.addAll(remoteLogics.read(property, paramsList.toArray()));
+            }
         }
 
         HttpEntity entity = null;
@@ -76,6 +89,22 @@ public class ExternalUtils {
             }
         }
         return entity;
+    }
+
+    private static String getParameterValue(String query, String key) {
+        List<String> params = getParameterValues(query, key);
+        return params.isEmpty() ? null : params.get(0);
+    }
+
+    private static List<String> getParameterValues(String query, String key) {
+        List<String> values = new ArrayList<>();
+        if (query != null) {
+            for (String entry : query.split("&")) {
+                if (entry.contains("=") && entry.substring(0, entry.indexOf("=")).equals(key))
+                    values.add(entry.substring(Math.min(entry.indexOf("=") + 1, entry.length() - 1)));
+            }
+        }
+        return values;
     }
 
     private static List<Object> getRequestParams(List<String> getParams, InputStream is, String contentType) throws IOException, MessagingException {
