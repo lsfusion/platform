@@ -46,7 +46,9 @@ import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.stack.StackProgress;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
@@ -70,6 +72,8 @@ public class ImplementTable extends GlobalTable { // последний инте
 
     public boolean markedFull;
 
+    private String canonicalName;
+    
     private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     @Override
     public boolean isFull() {
@@ -292,6 +296,18 @@ public class ImplementTable extends GlobalTable { // последний инте
         return true;
     }
 
+    public String getCanonicalName() {
+        return canonicalName;
+    }
+
+    public void setCanonicalName(String canonicalName) {
+        this.canonicalName = canonicalName;
+    }
+
+    public boolean isNamed() {
+        return canonicalName != null;
+    }
+    
     private interface MapTableType {
         boolean skipParents(ImplementTable table);
         boolean skipResult(ImplementTable table);

@@ -110,19 +110,6 @@ public abstract class LogicsModule {
 
     public String getErrorsDescription() { return "";}
 
-    // Используется для всех элементов системы кроме свойств и действий
-    public String transformNameToSID(String name) {
-        return transformNameToSID(getNamespace(), name);
-    }
-
-    public static String transformNameToSID(String modulePrefix, String name) {
-        if (modulePrefix == null) {
-            return name;
-        } else {
-            return modulePrefix + "_" + name;
-        }
-    }
-
     public BaseLogicsModule<?> baseLM;
 
     protected Map<String, List<LCP<?>>> namedModuleProperties = new HashMap<>();
@@ -275,17 +262,17 @@ public abstract class LogicsModule {
         moduleClasses.put(valueClass.getName(), valueClass);
     }
 
-    protected ImplementTable getTableBySID(String sid) {
-        return moduleTables.get(sid);
-    }
-
     public ImplementTable getTable(String name) {
-        return getTableBySID(transformNameToSID(name));
+        return moduleTables.get(name);
     }
 
     protected void addModuleTable(ImplementTable table) {
-        assert !moduleTables.containsKey(table.getName());
-        moduleTables.put(table.getName(), table);
+        // В классе Table есть метод getName(), который используется для других целей, в частности
+        // в качестве имени таблицы в базе данных, поэтому пока приходится использовать отличный от
+        // остальных элементов системы способ получения простого имени 
+        String name = ElementCanonicalNameUtils.getName(table.getCanonicalName());
+        assert !moduleTables.containsKey(name);
+        moduleTables.put(name, table);
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
@@ -413,8 +400,11 @@ public abstract class LogicsModule {
     }
 
     protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
-        ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), getVersion(), classes);
+        String canonicalName = elementCanonicalName(name);
+        ImplementTable table = baseLM.tableFactory.include(ElementCanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
+        table.setCanonicalName(canonicalName);
         addModuleTable(table);
+        
         if(isFull) {
             if(classes.length == 1)
                 table.markedFull = true;
