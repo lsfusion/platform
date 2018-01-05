@@ -9,6 +9,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.message.BasicNameValuePair;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -89,6 +90,12 @@ public class ExternalUtils {
             }
         }
         return entity;
+    }
+
+    //todo: мы отправляем application/octet-stream, а вот извне может прийти всё что угодно.
+    // Пока обрабатываем только image/jpeg, но надо что-то придумать
+    public static boolean isFile(String contentType) {
+        return contentType.contains(applicationOctetStreamType) || contentType.contains("image/jpeg");
     }
 
     private static String getParameterValue(String query, String key) {

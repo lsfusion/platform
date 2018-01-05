@@ -14,6 +14,7 @@ import lsfusion.server.logics.property.actions.flow.FlowResult;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -49,14 +50,14 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             HttpEntity responseEntity = response.getEntity();
 
             if (response.getStatusLine().getStatusCode() != 200)
-                throw new RuntimeException(response.getStatusLine().getReasonPhrase());
+                throw new RuntimeException(response.getStatusLine().toString());
             else {
                 if (targetPropList.size() == 1) {
                     LCP targetProp = targetPropList.get(0);
                     String contentType = responseEntity.getContentType().getValue();
 
                     Object result = IOUtils.readBytesFromStream(responseEntity.getContent());
-                    if (!contentType.contains(ExternalUtils.applicationOctetStreamType))
+                    if (!ExternalUtils.isFile(contentType))
                         result = new String((byte[]) result);
                     targetProp.change(parseResult(targetProp, result), context);
 
@@ -73,7 +74,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                             String contentType = bodyPart.getContentType();
 
                             Object result = bodyPart.getContent();
-                            if (contentType.contains(ExternalUtils.applicationOctetStreamType)) {
+                            if (ExternalUtils.isFile(contentType)) {
                                 result = result instanceof InputStream ? IOUtils.readBytesFromStream((InputStream) result) : null;
                             } else
                                 result = parseResult(targetProp, result);
@@ -101,37 +102,40 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
     private HttpResponse readHTTP(ExecutionContext context, String connectionString, int bodyParamsCount) throws IOException {
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
+        HttpClient httpClient = HttpClientBuilder.create().build();
 
-        HttpPost httpPost = new HttpPost(connectionString);
-        HttpEntity entity = null;
-        if (bodyParamsCount > 1) {
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            for (int i = orderInterfaces.size() - bodyParamsCount; i < orderInterfaces.size(); i++) {
-                Object value = context.getKeyValue(orderInterfaces.get(i)).getValue();
-                String name = "param" + (i + 1);
+        if (bodyParamsCount > 0) {
+            HttpPost httpPost = new HttpPost(connectionString);
+            HttpEntity entity;
+            if (bodyParamsCount > 1) {
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                for (int i = orderInterfaces.size() - bodyParamsCount; i < orderInterfaces.size(); i++) {
+                    Object value = context.getKeyValue(orderInterfaces.get(i)).getValue();
+                    String name = "param" + (i + 1);
+                    if (value instanceof byte[]) {
+                        builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
+                    } else {
+                        builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(ExternalUtils.textPlainType, Charset.forName("UTF-8"))));
+                    }
+                }
+                entity = builder.build();
+                httpPost.addHeader("Content-type", ExternalUtils.multipartMixedType);
+
+            } else {
+                Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
                 if (value instanceof byte[]) {
-                    builder.addPart(name, new ByteArrayBody(BaseUtils.getFile((byte[]) value), name));
+                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
+                    httpPost.addHeader("Content-type", ExternalUtils.applicationOctetStreamType);
                 } else {
-                    builder.addPart(name, new StringBody(value == null ? "" : String.valueOf(value), ContentType.create(ExternalUtils.textPlainType, Charset.forName("UTF-8"))));
+                    entity = new StringEntity(value == null ? "" : String.valueOf(value));
+                    httpPost.addHeader("Content-type", ExternalUtils.textPlainType);
                 }
             }
-            entity = builder.build();
-            httpPost.addHeader("Content-type", ExternalUtils.multipartMixedType);
 
-        } else if (bodyParamsCount == 1) {
-            Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
-            if (value instanceof byte[]) {
-                entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
-                httpPost.addHeader("Content-type", ExternalUtils.applicationOctetStreamType);
-            } else {
-                entity = new StringEntity(value == null ? "" : String.valueOf(value));
-                httpPost.addHeader("Content-type", ExternalUtils.textPlainType);
-            }
-        }
-
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        if (entity != null)
             httpPost.setEntity(entity);
-        return httpClient.execute(httpPost);
+            return httpClient.execute(httpPost);
+        } else {
+            return httpClient.execute(new HttpGet(connectionString));
+        }
     }
 }
