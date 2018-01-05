@@ -168,7 +168,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateMetaCodeFragment(String name, int paramCnt, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingMetaCode(LM.getNamespace(), name, paramCnt);
+        LogicsModule module = BL.getModuleContainingMetaCodeFragment(LM.getNamespace(), name, paramCnt);
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "meta code", name, module.getName());
         }

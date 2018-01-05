@@ -346,7 +346,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass valueClass = ClassCanonicalNameUtils.getScriptedDataClass(name);
         if (valueClass == null) {
             try {
-                valueClass = resolveCustomClass(name);
+                valueClass = resolveClass(name);
             } catch (ResolvingError e) {
                 convertResolveError(e);
             }

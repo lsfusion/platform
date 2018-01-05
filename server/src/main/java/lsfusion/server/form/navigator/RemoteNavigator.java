@@ -19,7 +19,6 @@ import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DateTimeClass;
@@ -829,9 +828,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            businessLogics.LM.windows.log.serialize(dataStream);
-            businessLogics.LM.windows.status.serialize(dataStream);
-            businessLogics.LM.windows.forms.serialize(dataStream);
+            businessLogics.LM.baseWindows.log.serialize(dataStream);
+            businessLogics.LM.baseWindows.status.serialize(dataStream);
+            businessLogics.LM.baseWindows.forms.serialize(dataStream);
         } catch (IOException e) {
             Throwables.propagate(e);
         }

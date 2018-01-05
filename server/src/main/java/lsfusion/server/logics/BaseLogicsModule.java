@@ -149,8 +149,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         setBaseLogicsModule(this);
         this.BL = BL;
         this.propertyDBNamePolicy = propertyDBNamePolicy;
-        namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
-        namedModuleActions = NFFact.simpleMap(namedModuleActions);
+        namedProperties = NFFact.simpleMap(namedProperties);
+        namedActions = NFFact.simpleMap(namedActions);
     }
 
     @IdentityLazy
@@ -460,7 +460,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         public AbstractWindow status;
     }
 
-    public Windows windows;
+    public Windows baseWindows;
 
     // Навигаторы
     public NavigatorElement root;
@@ -474,19 +474,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
         // Окна
-        windows = new Windows();
-        windows.root = (ToolBarNavigatorWindow) findWindow("root");
+        baseWindows = new Windows();
+        baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
 
-        windows.toolbar = (NavigatorWindow) findWindow("toolbar");
+        baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
 
-        windows.tree = (NavigatorWindow) findWindow("tree");
+        baseWindows.tree = (NavigatorWindow) findWindow("tree");
 
-        windows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
+        baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
 
-        windows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
+        baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 
-        windows.status = addWindow(new AbstractWindow(elementCanonicalName("status"), LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
-        windows.status.titleShown = false;
+        baseWindows.status = addWindow(new AbstractWindow(elementCanonicalName("status"), LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
+        baseWindows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор

@@ -27,7 +27,7 @@ public class ResolveManager {
     private ElementResolver<AbstractWindow, ?> windowResolver;
     private ElementResolver<ImplementTable, ?> tableResolver;
     private ElementResolver<CustomClass, ?> classResolver;
-    private ElementResolver<MetaCodeFragment, Integer> metaCodeResolver;
+    private ElementResolver<MetaCodeFragment, Integer> metaCodeFragmentResolver;
 
 
     public ResolveManager(LogicsModule LM) {
@@ -46,7 +46,7 @@ public class ResolveManager {
         windowResolver = new ElementResolver<>(LM, new ModuleWindowFinder());
         tableResolver = new ElementResolver<>(LM, new ModuleTableFinder());
         classResolver = new ElementResolver<>(LM, new ModuleClassFinder());
-        metaCodeResolver = new ElementResolver<>(LM, new ModuleMetaCodeFinder());
+        metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());
     }
     
     public LP<?, ?> findProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
@@ -61,12 +61,12 @@ public class ResolveManager {
         return getAbstractLPResolver(prioritizeNotEquals).resolve(name, params);    
     } 
     
-    public ValueClass findCustomClass(String name) throws ResolvingErrors.ResolvingError {
+    public ValueClass findClass(String name) throws ResolvingErrors.ResolvingError {
         return classResolver.resolve(name);
     }
 
     public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
-        return metaCodeResolver.resolve(name, paramCnt);
+        return metaCodeFragmentResolver.resolve(name, paramCnt);
     }
 
     public AbstractGroup findGroup(String name) throws ResolvingErrors.ResolvingError {

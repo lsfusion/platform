@@ -2229,8 +2229,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return findElement(canonicalName, null, new ModuleFormFinder());
     }
 
-    public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
-        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFinder());
+    public MetaCodeFragment findMetaCodeFragment(String canonicalName, int paramCnt) {
+        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
     }
 
     private void outputPersistent() {
@@ -2265,7 +2265,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<NavigatorElement> getNavigatorElements() {
         MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.getModuleNavigators())
+            for(NavigatorElement entry : logicsModule.getNavigatorElements())
                 mResult.exclAdd(entry);            
         }
         return mResult.immutable();
@@ -2335,8 +2335,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getModuleContainingObject(namespaceName, name, null, new ModuleFormFinder());
     }
     
-    public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
-        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFinder());
+    public LogicsModule getModuleContainingMetaCodeFragment(String namespaceName, String name, int paramCnt) {
+        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFragmentFinder());
     }
 
     public DBManager getDbManager() {

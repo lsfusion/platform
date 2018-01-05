@@ -112,18 +112,18 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    protected Map<String, List<LCP<?>>> namedModuleProperties = new HashMap<>();
-    protected Map<String, List<LAP<?>>> namedModuleActions = new HashMap<>();
+    protected Map<String, List<LCP<?>>> namedProperties = new HashMap<>();
+    protected Map<String, List<LAP<?>>> namedActions = new HashMap<>();
     
-    protected final Map<String, AbstractGroup> moduleGroups = new HashMap<>();
-    protected final Map<String, CustomClass> moduleClasses = new HashMap<>();
-    protected final Map<String, AbstractWindow> moduleWindows = new HashMap<>();
-    protected final Map<String, NavigatorElement> moduleNavigators = new HashMap<>();
-    protected final Map<String, FormEntity> namedModuleForms = new HashMap<>();
-    protected final Map<String, ImplementTable> moduleTables = new HashMap<>();
+    protected final Map<String, AbstractGroup> groups = new HashMap<>();
+    protected final Map<String, CustomClass> classes = new HashMap<>();
+    protected final Map<String, AbstractWindow> windows = new HashMap<>();
+    protected final Map<String, NavigatorElement> navigatorElements = new HashMap<>();
+    protected final Map<String, FormEntity> namedForms = new HashMap<>();
+    protected final Map<String, ImplementTable> tables = new HashMap<>();
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
-    private final Set<FormEntity> privateForms = new HashSet<>();
+    private final Set<FormEntity> unnamedForms = new HashSet<>();
     
     public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
@@ -173,11 +173,11 @@ public abstract class LogicsModule {
     }
 
     public Iterable<LCP<?>> getNamedProperties() {
-        return Iterables.concat(namedModuleProperties.values());
+        return Iterables.concat(namedProperties.values());
     }
 
     public Iterable<LAP<?>> getNamedActions() {
-        return Iterables.concat(namedModuleActions.values());
+        return Iterables.concat(namedActions.values());
     }
 
     public Iterable<LP<?, ?>> getNamedPropertiesAndActions(String name) {
@@ -185,11 +185,11 @@ public abstract class LogicsModule {
     }
     
     public Iterable<LCP<?>> getNamedProperties(String name) {
-        return createEmptyIfNull(namedModuleProperties.get(name));
+        return createEmptyIfNull(namedProperties.get(name));
     }
 
     public Iterable<LAP<?>> getNamedActions(String name) {
-        return createEmptyIfNull(namedModuleActions.get(name));
+        return createEmptyIfNull(namedActions.get(name));
     }
     
     private <T extends LP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
@@ -205,9 +205,9 @@ public abstract class LogicsModule {
         assert name != null;
 
         if (lp instanceof LAP) {
-            putLPToMap(namedModuleActions, (LAP) lp);
+            putLPToMap(namedActions, (LAP) lp);
         } else if (lp instanceof LCP) {
-            putLPToMap(namedModuleProperties, (LCP)lp);
+            putLPToMap(namedProperties, (LCP)lp);
         } else {
             assert false;
         }
@@ -224,10 +224,10 @@ public abstract class LogicsModule {
     protected void removeModuleProperty(LCP<?> lp) {
         String name = lp.property.getName();
         if (name != null) {
-            if (namedModuleProperties.containsKey(name)) {
-                namedModuleProperties.get(name).remove(lp);
-                if (namedModuleProperties.get(name).isEmpty()) {
-                    namedModuleProperties.remove(name);
+            if (namedProperties.containsKey(name)) {
+                namedProperties.get(name).remove(lp);
+                if (namedProperties.get(name).isEmpty()) {
+                    namedProperties.remove(name);
                 }
             }
         }
@@ -245,25 +245,25 @@ public abstract class LogicsModule {
     }
 
     public AbstractGroup getGroup(String name) {
-        return moduleGroups.get(name);
+        return groups.get(name);
     }
 
     protected void addGroup(AbstractGroup group) {
-        assert !moduleGroups.containsKey(group.getName());
-        moduleGroups.put(group.getName(), group);
+        assert !groups.containsKey(group.getName());
+        groups.put(group.getName(), group);
     }
 
     public CustomClass getClass(String name) {
-        return moduleClasses.get(name);
+        return classes.get(name);
     }
 
     protected void addModuleClass(CustomClass valueClass) {
-        assert !moduleClasses.containsKey(valueClass.getName());
-        moduleClasses.put(valueClass.getName(), valueClass);
+        assert !classes.containsKey(valueClass.getName());
+        classes.put(valueClass.getName(), valueClass);
     }
 
     public ImplementTable getTable(String name) {
-        return moduleTables.get(name);
+        return tables.get(name);
     }
 
     protected void addModuleTable(ImplementTable table) {
@@ -271,18 +271,18 @@ public abstract class LogicsModule {
         // в качестве имени таблицы в базе данных, поэтому пока приходится использовать отличный от
         // остальных элементов системы способ получения простого имени 
         String name = ElementCanonicalNameUtils.getName(table.getCanonicalName());
-        assert !moduleTables.containsKey(name);
-        moduleTables.put(name, table);
+        assert !tables.containsKey(name);
+        tables.put(name, table);
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
-        assert !moduleWindows.containsKey(window.getName());
-        moduleWindows.put(window.getName(), window);
+        assert !windows.containsKey(window.getName());
+        windows.put(window.getName(), window);
         return window;
     }
 
     public AbstractWindow getWindow(String name) {
-        return moduleWindows.get(name);
+        return windows.get(name);
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
@@ -2096,28 +2096,28 @@ public abstract class LogicsModule {
         return navigatorForm;
     }
     
-    public Collection<NavigatorElement> getModuleNavigators() {
-        return moduleNavigators.values();
+    public Collection<NavigatorElement> getNavigatorElements() {
+        return navigatorElements.values();
     }
 
     public Collection<FormEntity> getModuleForms() {
-        return namedModuleForms.values();
+        return namedForms.values();
     } 
     
     // в том числе и приватные 
     public Collection<FormEntity> getAllModuleForms() {
         List<FormEntity> elements = new ArrayList<>();
-        elements.addAll(privateForms);
-        elements.addAll(namedModuleForms.values());
+        elements.addAll(unnamedForms);
+        elements.addAll(namedForms.values());
         return elements;
     }
     
     public NavigatorElement getNavigatorElement(String name) {
-        return moduleNavigators.get(name);
+        return navigatorElements.get(name);
     }
 
     public FormEntity getForm(String name) {
-        return namedModuleForms.get(name);
+        return namedForms.get(name);
     }
     
     public <T extends FormEntity> T addFormEntity(T form) {
@@ -2131,19 +2131,19 @@ public abstract class LogicsModule {
     
     @NFLazy
     private void addNavigatorElement(NavigatorElement element) {
-        assert !moduleNavigators.containsKey(element.getName());
-        moduleNavigators.put(element.getName(), element);
+        assert !navigatorElements.containsKey(element.getName());
+        navigatorElements.put(element.getName(), element);
     }
 
     @NFLazy
     private void addNamedForm(FormEntity form) {
-        assert !namedModuleForms.containsKey(form.getName());
-        namedModuleForms.put(form.getName(), form);
+        assert !namedForms.containsKey(form.getName());
+        namedForms.put(form.getName(), form);
     }
     
     @NFLazy
     private void addPrivateForm(FormEntity form) {
-        privateForms.add(form);
+        unnamedForms.add(form);
     }
     
     public void addObjectActions(FormEntity form, ObjectEntity object) {
@@ -2307,8 +2307,8 @@ public abstract class LogicsModule {
         return resolveManager.findAbstractProperty(name, params, prioritizeNotEquals);
     }
 
-    public ValueClass resolveCustomClass(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findCustomClass(name);
+    public ValueClass resolveClass(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findClass(name);
     }
 
     public MetaCodeFragment resolveMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
