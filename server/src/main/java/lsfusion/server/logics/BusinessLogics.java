@@ -2025,9 +2025,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
-        session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
+                session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
                 Table table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
@@ -2036,8 +2036,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
                 session.addConstraint(table);
                 session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
+                session.commitTransaction();
             }
-            session.commitTransaction();
         } catch (Exception e) {
             session.rollbackTransaction();
             throw e;
