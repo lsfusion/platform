@@ -425,15 +425,25 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
                     for (String field : jdbcTable.fields) {
                         Type fieldType = jdbcTable.fieldTypes.get(field);
-                        returnList.add(row == null ? null : fieldType.format(row.get(field)));
+                        returnList.add(row == null ? null : formatReturnValue(fieldType, row.get(field)));
                     }
                     jdbcSingleRow = true;
                 }
             }
         }
         if (!jdbcSingleRow)
-            returnList.add(returnValue != null ? returnType.format(returnValue) : null);
+            returnList.add(formatReturnValue(returnType, returnValue));
         return returnList;
+    }
+
+    private Object formatReturnValue(Type returnType, Object returnValue) {
+        Object result = null;
+        if(returnValue != null) {
+            result = returnType.format(returnValue);
+            if(returnType instanceof StaticFormatFileClass)
+                result = BaseUtils.mergeFileAndExtension((byte[]) result, ((StaticFormatFileClass) returnType).getOpenExtension((byte[]) result).getBytes());
+        }
+        return result;
     }
 
     private ObjectValue[] getParams(DataSession session, LP property, Object[] params) throws ParseException, SQLException, SQLHandledException {

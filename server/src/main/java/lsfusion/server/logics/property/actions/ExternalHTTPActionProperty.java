@@ -57,7 +57,10 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                     String contentType = responseEntity.getContentType().getValue();
 
                     Object result = IOUtils.readBytesFromStream(responseEntity.getContent());
-                    if (!ExternalUtils.isFile(contentType))
+                    byte[] extension = ExternalUtils.getExtensionFromContentType(contentType);
+                    if (extension != null)
+                        result = BaseUtils.mergeFileAndExtension((byte[]) result, extension);
+                    else
                         result = new String((byte[]) result);
                     targetProp.change(parseResult(targetProp, result), context);
 
@@ -74,8 +77,9 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                             String contentType = bodyPart.getContentType();
 
                             Object result = bodyPart.getContent();
-                            if (ExternalUtils.isFile(contentType)) {
-                                result = result instanceof InputStream ? IOUtils.readBytesFromStream((InputStream) result) : null;
+                            byte[] extension = ExternalUtils.getExtensionFromContentType(contentType);
+                            if (extension != null) {
+                                result = result instanceof InputStream ? BaseUtils.mergeFileAndExtension(IOUtils.readBytesFromStream((InputStream) result), extension) : null;
                             } else
                                 result = parseResult(targetProp, result);
                             targetProp.change(result, context);
@@ -125,7 +129,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 Object value = context.getKeyValue(orderInterfaces.get(orderInterfaces.size() - 1)).getValue();
                 if (value instanceof byte[]) {
                     entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value));
-                    httpPost.addHeader("Content-type", ExternalUtils.applicationOctetStreamType);
+                    httpPost.addHeader("Content-type", ExternalUtils.getContentType(BaseUtils.getExtension((byte[]) value)).toString());
                 } else {
                     entity = new StringEntity(value == null ? "" : String.valueOf(value));
                     httpPost.addHeader("Content-type", ExternalUtils.textPlainType);

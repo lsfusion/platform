@@ -54,6 +54,6 @@ public class DynamicFormatFileClass extends FileClass {
 
     @Override
     public byte[] format(byte[] value) {
-        return BaseUtils.getFile(value);
+        return value;
     }
 }

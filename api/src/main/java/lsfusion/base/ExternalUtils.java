@@ -9,7 +9,6 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.message.BasicNameValuePair;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -25,7 +24,6 @@ import java.util.regex.Pattern;
 public class ExternalUtils {
 
     public static String textPlainType = "text/plain";
-    public static String applicationOctetStreamType = "application/octet-stream";
     public static String multipartMixedType = "multipart/mixed";
     public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
 
@@ -75,7 +73,7 @@ public class ExternalUtils {
                 for (int i = 0; i < returnList.size(); i++) {
                     Object returnEntry = returnList.get(i);
                     if (returnEntry instanceof byte[])
-                        builder.addPart("param" + i, new ByteArrayBody((byte[]) returnEntry, ContentType.APPLICATION_OCTET_STREAM, "filename"));
+                        builder.addPart("param" + i, new ByteArrayBody(BaseUtils.getFile((byte[]) returnEntry), getContentType(BaseUtils.getExtension((byte[]) returnEntry)), "filename"));
                     else
                         builder.addPart("param" + i, new StringBody(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN));
                 }
@@ -83,7 +81,7 @@ public class ExternalUtils {
             } else {
                 Object returnEntry = returnList.get(0);
                 if (returnEntry instanceof byte[]) {
-                    entity = new ByteArrayEntity((byte[]) returnEntry, ContentType.APPLICATION_OCTET_STREAM);
+                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) returnEntry), getContentType(BaseUtils.getExtension((byte[]) returnEntry)));
                 } else {
                     entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
                 }
@@ -92,10 +90,24 @@ public class ExternalUtils {
         return entity;
     }
 
-    //todo: мы отправляем application/octet-stream, а вот извне может прийти всё что угодно.
-    // Пока обрабатываем только image/jpeg, но надо что-то придумать
-    public static boolean isFile(String contentType) {
-        return contentType.contains(applicationOctetStreamType) || contentType.contains("image/jpeg");
+    public static ContentType getContentType(String extension) {
+        switch (extension) {
+            case "jpg":
+            case "jpeg":
+            case "png":
+            case "bmp":
+                return ContentType.create("image/" + extension);
+            case "":
+                return ContentType.APPLICATION_OCTET_STREAM;
+                default:
+                    return ContentType.create("application/" + extension);
+        }
+    }
+
+    public static byte[] getExtensionFromContentType(String contentType) {
+        Pattern p = Pattern.compile("(application|image)/(.*)");
+        Matcher m = p.matcher(contentType);
+        return m.matches() ? m.group(2).getBytes() : null;
     }
 
     private static String getParameterValue(String query, String key) {
