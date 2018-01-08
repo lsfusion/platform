@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +27,8 @@ public class ExternalUtils {
     public static String textPlainType = "text/plain";
     public static String multipartMixedType = "multipart/mixed";
     public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
+
+    private static List<String> humanReadableExtensions = Arrays.asList("xml", "json");
 
     private static final String ACTION_CN_PARAM = "action";
     private static final String SCRIPT_PARAM = "script";
@@ -86,8 +89,13 @@ public class ExternalUtils {
                 Object returnEntry = returnList.get(0);
                 if (returnEntry instanceof byte[]) {
                     String extension = BaseUtils.getExtension((byte[]) returnEntry);
-                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) returnEntry), getContentType(extension));
-                    contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + extension;
+                    byte[] fileBytes = BaseUtils.getFile((byte[]) returnEntry);
+                    if(humanReadableExtensions.contains(extension)) {
+                        entity = new StringEntity(new String(fileBytes), getContentType(extension));
+                    } else {
+                        entity = new ByteArrayEntity(fileBytes, getContentType(extension));
+                        contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + extension;
+                    }
                 } else {
                     entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
                 }

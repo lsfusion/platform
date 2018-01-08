@@ -456,7 +456,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             if (params.length > i) {
                 Object param = params[i];
                 Type type = valueClass.getType();
-                if (type instanceof DynamicFormatFileClass) {
+                if (type instanceof FileClass) {
                     value = param instanceof byte[] ? param : null;
                 } else {
                     if (param instanceof byte[])
