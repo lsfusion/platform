@@ -100,6 +100,7 @@
         <url-pattern>/exec</url-pattern>
         <url-pattern>/eval</url-pattern>
         <url-pattern>/eval/action</url-pattern>
+        <url-pattern>/read</url-pattern>
     </servlet-mapping>
 
     <servlet>

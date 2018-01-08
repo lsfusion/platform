@@ -38,6 +38,8 @@ public class ExternalUtils {
         List<String> returns = getParameterValues(query, RETURNS_PARAM);
         List<Object> returnList = new ArrayList<>();
 
+        String filename = "export";
+
         if (uri.startsWith("/exec")) {
             String action = getParameterValue(query, ACTION_CN_PARAM);
             returnList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
@@ -59,6 +61,7 @@ public class ExternalUtils {
         } else if (uri.startsWith("/read")) {
             String property = getParameterValue(query, PROPERTY_PARAM);
             if (property != null) {
+                filename = property;
                 returnList.addAll(remoteLogics.read(property, paramsList.toArray()));
             }
         }
@@ -84,7 +87,7 @@ public class ExternalUtils {
                 if (returnEntry instanceof byte[]) {
                     String extension = BaseUtils.getExtension((byte[]) returnEntry);
                     entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) returnEntry), getContentType(extension));
-                    contentDisposition = "filename=" + (returns.isEmpty() ? "file" : returns.get(0).replace(',', '_')) + "." + extension;
+                    contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + extension;
                 } else {
                     entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
                 }
