@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.IOUtils;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
@@ -88,11 +87,11 @@ public class ExternalHttpServer extends MonitorServer {
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
             ThreadLocalContext.aspectBeforeMonitor(ExternalHttpServer.this, ThreadType.HTTP);
             try {
-                HttpEntity response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
+                ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
                         request.getRequestURI().getQuery(), request.getRequestBody(), getContentType(request));
 
-                if (response != null)
-                    sendResponse(request, IOUtils.readBytesFromStream(response.getContent()), response.getContentType().getValue(), false);
+                if (response.response != null)
+                    sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
                 else
                     sendOKResponse(request);
 
@@ -120,19 +119,28 @@ public class ExternalHttpServer extends MonitorServer {
         }
 
         private void sendOKResponse(HttpExchange request) throws IOException {
-            sendResponse(request, "Executed successfully".getBytes(), null, false);
+            sendResponse(request, "Executed successfully".getBytes(), false);
         }
 
         private void sendErrorResponse(HttpExchange request, String response) throws IOException {
-            sendResponse(request, response.getBytes(), null, true);
+            sendResponse(request, response.getBytes(), true);
         }
 
-        private void sendResponse(HttpExchange request, byte[] response, String contentType, boolean error) throws IOException {
-            if (contentType != null)
-                request.getResponseHeaders().add("Content-Type", contentType);
+        private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
             request.sendResponseHeaders(error ? 500 : 200, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
+            os.close();
+        }
+
+        private void sendResponse(HttpExchange request, HttpEntity response, String contentType, String contentDisposition) throws IOException {
+            if (contentType != null)
+                request.getResponseHeaders().add("Content-Type", contentType);
+            if(contentDisposition != null)
+                request.getResponseHeaders().add("Content-Disposition", contentDisposition);
+            request.sendResponseHeaders(200, response.getContentLength());
+            OutputStream os = request.getResponseBody();
+            response.writeTo(os);
             os.close();
         }
     }

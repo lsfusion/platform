@@ -19,12 +19,14 @@ public class ExternalRequestHandler implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             String query = request.getQueryString();
-            HttpEntity responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
                     query == null ? null : URLDecoder.decode(query, "utf-8"), request.getInputStream(), request.getContentType());
 
-            if (responseHttpEntity != null) {
-                response.setContentType(responseHttpEntity.getContentType().getValue());
-                responseHttpEntity.writeTo(response.getOutputStream());
+            if (responseHttpEntity.response != null) {
+                response.setContentType(responseHttpEntity.response.getContentType().getValue());
+                if(responseHttpEntity.contentDisposition != null)
+                    response.addHeader("Content-Disposition", responseHttpEntity.contentDisposition);
+                responseHttpEntity.response.writeTo(response.getOutputStream());
             } else
                 response.getWriter().print("Executed successfully");
 

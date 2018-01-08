@@ -33,7 +33,7 @@ public class ExternalUtils {
     private static final String RETURNS_PARAM = "returns";
     private static final String PROPERTY_PARAM = "property";
 
-    public static HttpEntity processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, String requestContentType) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, String requestContentType) throws IOException, MessagingException {
         List<Object> paramsList = getRequestParams(getParameterValues(query, PARAMS_PARAM), is, requestContentType);
         List<String> returns = getParameterValues(query, RETURNS_PARAM);
         List<Object> returnList = new ArrayList<>();
@@ -64,6 +64,7 @@ public class ExternalUtils {
         }
 
         HttpEntity entity = null;
+        String contentDisposition = null;
 
         if (!returnList.isEmpty()) {
             if (returnList.size() > 1) {
@@ -81,13 +82,15 @@ public class ExternalUtils {
             } else {
                 Object returnEntry = returnList.get(0);
                 if (returnEntry instanceof byte[]) {
-                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) returnEntry), getContentType(BaseUtils.getExtension((byte[]) returnEntry)));
+                    String extension = BaseUtils.getExtension((byte[]) returnEntry);
+                    entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) returnEntry), getContentType(extension));
+                    contentDisposition = "filename=" + (returns.isEmpty() ? "file" : returns.get(0).replace(',', '_')) + "." + extension;
                 } else {
                     entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
                 }
             }
         }
-        return entity;
+        return new ExternalResponse(entity, contentDisposition);
     }
 
     public static ContentType getContentType(String extension) {
@@ -150,5 +153,15 @@ public class ExternalUtils {
         if (param instanceof String)
             return ((String) param).isEmpty() ? null : (String) param;
         else return null;
+    }
+
+    public static class ExternalResponse {
+        public HttpEntity response;
+        public String contentDisposition;
+
+        public ExternalResponse(HttpEntity response, String contentDisposition) {
+            this.response = response;
+            this.contentDisposition = contentDisposition;
+        }
     }
 }
