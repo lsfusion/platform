@@ -2299,39 +2299,39 @@ public abstract class LogicsModule {
         return namespaceToModules;
     }
 
-    public LP<?, ?> resolveProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findProperty(name, params);
+    public LP<?, ?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findProperty(compoundName, params);
     }
 
-    public LP<?, ?> resolveAbstractProperty(String name, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findAbstractProperty(name, params, prioritizeNotEquals);
+    public LP<?, ?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findAbstractProperty(compoundName, params, prioritizeNotEquals);
     }
 
-    public ValueClass resolveClass(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findClass(name);
+    public ValueClass resolveClass(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findClass(compoundName);
     }
 
-    public MetaCodeFragment resolveMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findMetaCodeFragment(name, paramCnt);
+    public MetaCodeFragment resolveMetaCodeFragment(String compoundName, int paramCnt) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findMetaCodeFragment(compoundName, paramCnt);
     }
     
-    public AbstractGroup resolveGroup(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findGroup(name);
+    public AbstractGroup resolveGroup(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findGroup(compoundName);
     }
     
-    public AbstractWindow resolveWindow(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findWindow(name);    
+    public AbstractWindow resolveWindow(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findWindow(compoundName);    
     }
     
-    public FormEntity resolveForm(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findForm(name);
+    public FormEntity resolveForm(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findForm(compoundName);
     }
     
-    public NavigatorElement resolveNavigatorElement(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findNavigatorElement(name);
+    public NavigatorElement resolveNavigatorElement(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findNavigatorElement(compoundName);
     } 
     
-    public ImplementTable resolveTable(String name) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findTable(name);
+    public ImplementTable resolveTable(String compoundName) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findTable(compoundName);
     }
 }

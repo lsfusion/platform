@@ -17,23 +17,24 @@ public class ElementResolver<T, P> {
         this.finder = finder;
     }
 
-    public final T resolve(String name) throws ResolvingError {
-        return resolve(name, null);
+    public final T resolve(String compoundName) throws ResolvingError {
+        return resolve(compoundName, null);
     }
 
-    public final T resolve(String name, P param) throws ResolvingError {
+    public final T resolve(String compoundName, P param) throws ResolvingError {
         T result;
-        int dotPosition = name.indexOf('.');
+        int dotPosition = compoundName.indexOf('.');
         if (dotPosition > 0) {
-            String namespaceName = name.substring(0, dotPosition);
+            String namespaceName = compoundName.substring(0, dotPosition);
             checkNamespace(namespaceName);
-            List<FoundItem<T>> foundItems = findInNamespace(namespaceName, name.substring(dotPosition + 1), param);
-            return finalizeResult(foundItems, name, param).value;
+            String name = compoundName.substring(dotPosition + 1);
+            List<FoundItem<T>> foundItems = findInNamespace(namespaceName, name, param);
+            return finalizeResult(foundItems, compoundName, param).value;
         } else {
             List<String> namespaces = new ArrayList<>();
             namespaces.add(LM.getNamespace());
             namespaces.addAll(LM.getNamespacePriority());
-            result = findInRequiredModules(name, param, namespaces);
+            result = findInRequiredModules(compoundName, param, namespaces);
         }
         return result;
     }

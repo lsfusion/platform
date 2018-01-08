@@ -49,44 +49,44 @@ public class ResolveManager {
         metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());
     }
     
-    public LP<?, ?> findProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LP<?, ?> property = directLPResolver.resolve(name, params);
+    public LP<?, ?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?, ?> property = directLPResolver.resolve(compoundName, params);
         if (property == null) {
-            property = indirectLPResolver.resolve(name, params);
+            property = indirectLPResolver.resolve(compoundName, params);
         }
         return property;
     }
     
-    public LP<?, ?> findAbstractProperty(String name, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return getAbstractLPResolver(prioritizeNotEquals).resolve(name, params);    
+    public LP<?, ?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return getAbstractLPResolver(prioritizeNotEquals).resolve(compoundName, params);    
     } 
     
-    public ValueClass findClass(String name) throws ResolvingErrors.ResolvingError {
-        return classResolver.resolve(name);
+    public ValueClass findClass(String compoundName) throws ResolvingErrors.ResolvingError {
+        return classResolver.resolve(compoundName);
     }
 
-    public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
-        return metaCodeFragmentResolver.resolve(name, paramCnt);
+    public MetaCodeFragment findMetaCodeFragment(String compoundName, int paramCnt) throws ResolvingErrors.ResolvingError {
+        return metaCodeFragmentResolver.resolve(compoundName, paramCnt);
     }
 
-    public AbstractGroup findGroup(String name) throws ResolvingErrors.ResolvingError {
-        return groupResolver.resolve(name);
+    public AbstractGroup findGroup(String compoundName) throws ResolvingErrors.ResolvingError {
+        return groupResolver.resolve(compoundName);
     }    
     
-    public AbstractWindow findWindow(String name) throws ResolvingErrors.ResolvingError {
-        return windowResolver.resolve(name);
+    public AbstractWindow findWindow(String compoundName) throws ResolvingErrors.ResolvingError {
+        return windowResolver.resolve(compoundName);
     }
 
-    public NavigatorElement findNavigatorElement(String name) throws ResolvingErrors.ResolvingError {
-        return navigatorResolver.resolve(name);
+    public NavigatorElement findNavigatorElement(String compoundName) throws ResolvingErrors.ResolvingError {
+        return navigatorResolver.resolve(compoundName);
     }
     
-    public FormEntity findForm(String name) throws ResolvingErrors.ResolvingError {
-        return formResolver.resolve(name);
+    public FormEntity findForm(String compoundName) throws ResolvingErrors.ResolvingError {
+        return formResolver.resolve(compoundName);
     }
     
-    public ImplementTable findTable(String name) throws ResolvingErrors.ResolvingError {
-        return tableResolver.resolve(name);
+    public ImplementTable findTable(String compoundName) throws ResolvingErrors.ResolvingError {
+        return tableResolver.resolve(compoundName);
     }
 
     private ElementResolver<LP<?, ?>, List<ResolveClassSet>> getAbstractLPResolver(boolean prioritizeNotEquals) {
