@@ -53,12 +53,9 @@ public class ExternalUtils {
                 script = formatParam(paramsList.get(0));
                 paramsList = paramsList.subList(1, paramsList.size());
             }
-            if (script != null) {
+            if (uri.startsWith("/eval/action") && script != null) {
                 //оборачиваем в run без параметров
-                Pattern p = Pattern.compile("run\\((.*)\\)\\s*?=\\s*?\\{.*\\}");
-                Matcher m = p.matcher(script);
-                if (!m.matches())
-                    script = "run() = {" + script + ";\n};";
+                script = "run() = {" + script + ";\n};";
             }
             returnList = remoteLogics.eval(script, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/read")) {
