@@ -2293,8 +2293,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    // Набор методов для поиска модуля, в котором находится элемент системы
-    private <C, P> LogicsModule getModuleContainingObject(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
+    public <C, P> LogicsModule getModuleContainingElement(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
         if (modules != null) {
             for (LogicsModule module : modules) {
@@ -2304,39 +2303,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }
         return null;
-    }
-
-    // Здесь ищется точное совпадение по сигнатуре
-    public LogicsModule getModuleContainingLP(String namespaceName, String name, List<ResolveClassSet> classes) {
-        return getModuleContainingObject(namespaceName, name, classes, new ModuleEqualLPFinder(false));
-    }
-
-    public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleGroupFinder());
-    }
-
-    public LogicsModule getModuleContainingClass(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleClassFinder());
-    }
-
-    public LogicsModule getModuleContainingTable(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleTableFinder());
-    }
-
-    public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleWindowFinder());
-    }
-
-    public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleNavigatorElementFinder());
-    }
-
-    public LogicsModule getModuleContainingForm(String namespaceName, String name) {
-        return getModuleContainingObject(namespaceName, name, null, new ModuleFormFinder());
-    }
-    
-    public LogicsModule getModuleContainingMetaCodeFragment(String namespaceName, String name, int paramCnt) {
-        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFragmentFinder());
     }
 
     public DBManager getDbManager() {

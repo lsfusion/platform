@@ -20,7 +20,7 @@ import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.resolving.ModuleEqualLPFinder;
+import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 import lsfusion.server.logics.table.ImplementTable;
@@ -122,21 +122,21 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateClass(String className, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingClass(LM.getNamespace(), className);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), className, null, new ModuleClassFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "class", className, module.getName());
         }
     }
 
     public void checkDuplicateGroup(String groupName, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingGroup(LM.getNamespace(), groupName);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), groupName, null, new ModuleGroupFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "group", groupName, module.getName());
         }
     }
 
     public void checkDuplicateProperty(String propName, List<ResolveClassSet> signature, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingLP(LM.getNamespace(), propName, signature);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), propName, signature, new ModuleEqualLPFinder(false));
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, module.getName());
         }
@@ -147,35 +147,35 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateWindow(String windowName, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingWindow(LM.getNamespace(), windowName);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), windowName, null, new ModuleWindowFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "window", windowName, module.getName());
         }
     }
 
     public void checkDuplicateNavigatorElement(String name, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingNavigatorElement(LM.getNamespace(), name);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), name, null, new ModuleNavigatorElementFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "navigator", name, module.getName());
         }
     }
 
     public void checkDuplicateForm(String name, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingForm(LM.getNamespace(), name);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), name, null, new ModuleFormFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "form", name, module.getName());
         }
     }
 
     public void checkDuplicateMetaCodeFragment(String name, int paramCnt, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingMetaCodeFragment(LM.getNamespace(), name, paramCnt);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), name, paramCnt, new ModuleMetaCodeFragmentFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "meta code", name, module.getName());
         }
     }
 
     public void checkDuplicateTable(String name, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingTable(LM.getNamespace(), name);
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), name, null, new ModuleTableFinder());
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "table", name, module.getName());
         }
