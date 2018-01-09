@@ -10,20 +10,28 @@ import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
-import java.util.Locale;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
 
 public final class LoginAction {
+    private static final String CONFIG_FILE_NAME = "login.dialog.cfg";
+    
     private static class LoginActionHolder {
         private static LoginAction instance = new LoginAction();
     }
@@ -46,6 +54,7 @@ public final class LoginAction {
     private boolean autoLogin;
     public LoginInfo loginInfo;
     private LoginDialog loginDialog;
+    private List<String> userNames = new ArrayList<>();
 
     private RemoteLogicsInterface remoteLogics;
     private long computerId;
@@ -58,13 +67,81 @@ public final class LoginAction {
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
         String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-        loginInfo = LoginDialog.restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, false));
+        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, false));
 
         //loginDialog = new LoginDialog(loginInfo);
     }
 
     public void initLoginDialog() {
-        loginDialog = new LoginDialog(loginInfo);
+        loginDialog = new LoginDialog(loginInfo, userNames);
+    }
+
+    private void storeServerData() {
+        try {
+            FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(CONFIG_FILE_NAME));
+            fileWr.write(loginInfo.getServerHost() + '\n');
+            fileWr.write(loginInfo.getServerPort() + '\n');
+            userNames.remove(loginInfo.getUserName());
+            userNames.add(loginInfo.getUserName());
+            fileWr.write(BaseUtils.toString(userNames, "\t") + '\n');
+            fileWr.write(loginInfo.getServerDB() + '\n');
+            fileWr.write(String.valueOf(loginInfo.getSavePwd()) + '\n');
+            if (loginInfo.getSavePwd()) {
+                fileWr.write(Base64.encodeBase64String(loginInfo.getPassword().getBytes()) + '\n');
+            }
+            fileWr.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private LoginInfo restoreLoginData(LoginInfo loginInfo) {
+        try {
+            File file = SystemUtils.getUserFile(CONFIG_FILE_NAME, false);
+            if (file.exists()) {
+                FileReader fileRd = new FileReader(file);
+                Scanner scanner = new Scanner(fileRd);
+                String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
+                if (loginInfo.getServerHost() != null) {
+                    serverHost = loginInfo.getServerHost();
+                }
+                String serverPort = scanner.hasNextLine() ? scanner.nextLine() : "";
+                if (loginInfo.getServerPort() != null) {
+                    serverPort = loginInfo.getServerPort();
+                }
+                if (scanner.hasNextLine()) {
+                    String users = scanner.nextLine();
+                    if (!users.isEmpty()) {
+                        userNames = new ArrayList<>(Arrays.asList(users.split("\t")));
+                    }
+                }
+                String userName = loginInfo.getUserName();
+                if (userName == null && !userNames.isEmpty()){
+                    userName = userNames.get(userNames.size() - 1);
+                }
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
+                if (loginInfo.getServerDB() != null) {
+                    serverDB = loginInfo.getServerDB();
+                }
+                if (serverDB.isEmpty()) {
+                    serverDB = "default";
+                }
+                Boolean savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
+                String password = "";
+                if (loginInfo.getPassword() != null) {
+                    password = loginInfo.getPassword();
+                } else if (scanner.hasNextLine()) {
+                    password = new String(Base64.decodeBase64(scanner.nextLine()));
+                }
+
+                return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return loginInfo;
+        }
+
+        return loginInfo;
     }
 
     public String getSystemPropertyWithJNLPFallback(String propertyName) {
@@ -119,6 +196,8 @@ public final class LoginAction {
             }
             status = connect();
         }
+        
+        storeServerData();
 
         return true;
     }

@@ -3,25 +3,17 @@ package lsfusion.client;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import lsfusion.base.SystemUtils;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.RemoteServerAgentInterface;
 import lsfusion.interop.ServerInfo;
 import lsfusion.interop.remote.RMIUtils;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Scanner;
+import java.util.List;
 
 import static lsfusion.client.StartupProperties.LSFUSION_CLIENT_HOSTPORT;
 
@@ -30,7 +22,7 @@ public class LoginDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JTextField loginField;
+    private JComboBox loginBox;
     private JPasswordField passwordField;
     private JComboBox serverHost;
     private JCheckBox savePassword;
@@ -42,7 +34,7 @@ public class LoginDialog extends JDialog {
     private boolean autoLogin = false;
     private JLabel imageLabel;
 
-    public LoginDialog(LoginInfo defaultLoginInfo) {
+    public LoginDialog(LoginInfo defaultLoginInfo, List<String> userNames) {
         super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
         imageLabel.setIcon(Main.getLogo());
 
@@ -76,8 +68,11 @@ public class LoginDialog extends JDialog {
             serverDB.setSelectedItem(db);
         }
 
+        for (String userName : userNames) {
+            ((MutableComboBoxModel)loginBox.getModel()).addElement(userName);
+        }
         if (loginInfo.getUserName() != null) {
-            loginField.setText(loginInfo.getUserName());
+            loginBox.setSelectedItem(loginInfo.getUserName());
         }
 
         if (loginInfo.getPassword() != null) {
@@ -141,24 +136,30 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        loginField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                update();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                update();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
+        loginBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
                 update();
             }
         });
 
-        loginField.addFocusListener(new FocusAdapter() {
+        loginBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+                update();
+            }
+
+            public void keyPressed(KeyEvent e) {
+                update();
+            }
+
+            public void keyReleased(KeyEvent e) {
+                update();
+            }
+        });
+
+        loginBox.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                JTextField textField = (JTextField) e.getComponent();
-                textField.selectAll();
+                JComboBox textBox = (JComboBox) e.getComponent();
+                textBox.getEditor().selectAll();
             }
         });
 
@@ -211,17 +212,9 @@ public class LoginDialog extends JDialog {
 
     private boolean isOkEnabled() {
         Object item = serverHost.getEditor().getItem();
-        if (waitMessage.equals(item)) {
-            return false;
-        } else {
-            if (loginField.getDocument().getLength() <= 0) {
-                return false;
-            } else if (!(item instanceof ServerInfo) && !isValid(item.toString())) {
-                return false;
-            }
-        }
-
-        return true;
+        return !waitMessage.equals(item) 
+                && !((String) loginBox.getEditor().getItem()).isEmpty() 
+                && (item instanceof ServerInfo || isValid(item.toString()));
     }
 
     private void update() {
@@ -233,8 +226,6 @@ public class LoginDialog extends JDialog {
 //        propagateServerAgents();
     }
 
-    private LoginInfo result = null;
-
     private void onOK() {
         Object item = serverHost.getSelectedItem();
         ServerInfo serverInfo;
@@ -243,75 +234,9 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        result = loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), loginField.getText(), new String(passwordField.getPassword()), savePassword.isSelected());
+        loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), ((String) loginBox.getModel().getSelectedItem()), new String(passwordField.getPassword()), savePassword.isSelected());
 
-        storeServerData();
         setVisible(false);
-    }
-
-    private static final String configName = "login.dialog.cfg";
-
-    private void storeServerData() {
-        try {
-            FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(configName));
-            fileWr.write(result.getServerHost() + '\n');
-            fileWr.write(result.getServerPort() + '\n');
-            fileWr.write(result.getUserName() + '\n');
-            fileWr.write(result.getServerDB() + '\n');
-            fileWr.write(String.valueOf(savePassword.isSelected()) + '\n');
-            if (savePassword.isSelected()) {
-                fileWr.write(Base64.encodeBase64String(result.getPassword().getBytes()) + '\n');
-            }
-            fileWr.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static LoginInfo restoreLoginData(LoginInfo loginInfo) {
-        try {
-            File file = SystemUtils.getUserFile(configName, false);
-            if (file.exists()) {
-                FileReader fileRd = new FileReader(file);
-                Scanner scanner = new Scanner(fileRd);
-                String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerHost() != null) {
-                    serverHost = loginInfo.getServerHost();
-                }
-                String serverPort = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerPort() != null) {
-                    serverPort = loginInfo.getServerPort();
-                }
-                String userName = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getUserName() != null) {
-                    userName = loginInfo.getUserName();
-                }
-                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerDB() != null) {
-                    serverDB = loginInfo.getServerDB();
-                }
-                if (serverDB.isEmpty()) {
-                    serverDB = "default";
-                }
-                Boolean savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
-                String password = "";
-                if (scanner.hasNextLine()) {
-                    password = scanner.nextLine();
-                    byte[] pass = Base64.decodeBase64(password);
-                    password = new String(pass);
-                }
-                if (loginInfo.getPassword() != null) {
-                    password = loginInfo.getPassword();
-                }
-
-                return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return loginInfo;
-        }
-
-        return loginInfo;
     }
 
     private ServerInfo getServerInfo(String server) {
@@ -324,7 +249,7 @@ public class LoginDialog extends JDialog {
     }
 
     private void onCancel() {
-        result = null;
+        loginInfo = null;
         dispose();
         Main.shutdown();
     }
@@ -345,13 +270,13 @@ public class LoginDialog extends JDialog {
             pack();
             setLocationRelativeTo(null);
 
-            loginField.requestFocusInWindow();
+            loginBox.requestFocusInWindow();
 
             getRootPane().setDefaultButton(buttonOK);
 
             setVisible(true);
 
-            return result;
+            return loginInfo;
         }
 
         return loginInfo;
@@ -393,8 +318,9 @@ public class LoginDialog extends JDialog {
         final JLabel label3 = new JLabel();
         label3.setText(ClientResourceBundle.getString("dialog.password"));
         panel2.add(label3, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        loginField = new JTextField();
-        panel2.add(loginField, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        loginBox = new JComboBox();
+        loginBox.setEditable(true);
+        panel2.add(loginBox, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         passwordField = new JPasswordField();
         panel2.add(passwordField, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label4 = new JLabel();
@@ -439,7 +365,7 @@ public class LoginDialog extends JDialog {
         warning.setBackground(new Color(-986896));
         warning.setText("");
         warningPanel.add(warning, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
-        label2.setLabelFor(loginField);
+        label2.setLabelFor(loginBox);
         label3.setLabelFor(passwordField);
         label5.setLabelFor(serverDB);
     }
