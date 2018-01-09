@@ -52,7 +52,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
 
         FlowResult result = executeExtend(context, innerKeys, innerValues, innerExprs);
         if(result == FlowResult.THROWS)
-            throw new RuntimeException("Thread has been interrupted by user");
+            throw new RuntimeException("Thread has been interrupted");
         return result;
     }
 
