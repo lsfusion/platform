@@ -680,12 +680,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public boolean checkNavigatorElementExportPermission(String canonicalName) {
         try {
             DataSession session = createSession();
-            Object ne = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
+            ObjectValue ne = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
             if (!(ne instanceof DataObject)) {
                 throw new RuntimeException(localize("{form.navigator.form.with.id.not.found}"));
             }
-            DataObject neObject = new DataObject(ne, reflectionLM.navigatorElement);
-            return securityLM.permitExportNavigatorElement.read(session, neObject) != null;
+            return securityLM.permitExportNavigatorElement.read(session, ne) != null;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
