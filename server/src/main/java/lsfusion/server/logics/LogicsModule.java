@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -1917,9 +1918,11 @@ public abstract class LogicsModule {
         property.checkProperties = checkProperties;
 
         ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
-//        logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
-        //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
+        if(Settings.get().isUseOldConstraints())
+            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
+        else
+            //  PRINT OUT property MESSAGE NOWAIT;
+            logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
