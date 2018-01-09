@@ -2277,7 +2277,7 @@ public class Settings implements Cloneable {
         return disableCorrelations;
     }
     
-    private boolean useOldConstraints = false;
+    private boolean useOldConstraints = true;
 
     public boolean isUseOldConstraints() {
         return useOldConstraints;
