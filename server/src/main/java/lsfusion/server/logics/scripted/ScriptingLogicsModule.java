@@ -1394,8 +1394,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP addScriptedExternalLSFActionProp(String action, Integer bodyParamsCount, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        //TODO: надо параметризовать, но на каком уровне?
-        String execQuery = "http://localhost:7651/exec?action=" + transformExternalText(action);
+        String execQuery = String.format("http://localhost:%s/exec?action=%s", ThreadLocalContext.getRmiManager().getHttpPort(), transformExternalText(action));
         return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(action).size(), getSignatureSize(action, bodyParamsCount), execQuery, findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 

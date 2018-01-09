@@ -23,8 +23,6 @@ public class ExternalHttpServer extends MonitorServer {
 
     private LogicsInstance logicsInstance;
     private RemoteLogics remoteLogics;
-    private String host;
-    private int port;
 
     @Override
     public String getEventName() {
@@ -45,10 +43,7 @@ public class ExternalHttpServer extends MonitorServer {
         ServerLoggers.systemLogger.info("Binding ExternalHttpServer");
         HttpServer httpServer = null;
         try {
-            if (host != null)
-                httpServer = HttpServer.create(new InetSocketAddress(host, port), 0);
-            else
-                httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+            httpServer = HttpServer.create(new InetSocketAddress(getLogicsInstance().getRmiManager().getHttpPort()), 0);
             httpServer.createContext("/", new HttpRequestHandler());
             httpServer.setExecutor(Executors.newFixedThreadPool(10, new DaemonThreadFactory("externalHttpServer-daemon")));
             httpServer.start();
@@ -70,15 +65,6 @@ public class ExternalHttpServer extends MonitorServer {
     public void setRemoteLogics(RemoteLogics remoteLogics) {
         this.remoteLogics = remoteLogics;
     }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
 
     public class HttpRequestHandler implements HttpHandler {
 
