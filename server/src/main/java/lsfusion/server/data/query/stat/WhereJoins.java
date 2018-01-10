@@ -1913,21 +1913,25 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // !!! ВАЖНА для GROUP LAST / ANY оптимизации (isLastOpt)
         if(limit.hasLimit() && !Settings.get().isDisableAdjustLimitHeur() && Stat.ONE.less(baseCost.rows)) {
             WhereJoins whereJoins = this;
+
+            Cost limitCost = baseCost;
+            Stat limitStat = stat;
+            // следующая часть эвристично определяет наличие индексов по порядкам
             int i=0,size=orders.size();
             for(;i<size;i++) {
                 Expr order = orders.get(i);
                 if(order instanceof BaseExpr) {
                     whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, compileInfo, debugInfoWriter);
+                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType); // пока обойдемся без этой debugInfo
 
                     Cost newBaseCost = statKeys.getCost();
                     Stat newStat = statKeys.getRows();
-                    Stat costReduce = baseCost.rows.div(newBaseCost.rows);
-                    Stat statReduce = stat.div(newStat);
+                    Stat costReduce = limitCost.rows.div(newBaseCost.rows);
+                    Stat statReduce = limitStat.div(newStat);
                     // если cost упал на столько же сколько и stat значит явно есть индекс
                     if(statReduce.lessEquals(costReduce)) { // по идее equals, но на всякий случай
-                        baseCost = newBaseCost;
-                        stat = newStat;
+                        limitCost = newBaseCost;
+                        limitStat = newStat;
                         continue;
                     }
                 }
@@ -1935,7 +1939,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             }
             if(i>=size) { // если не осталось порядков, значит все просматривать не надо
                 // с другой стороны просто деление слишком оптимистичная операция, так как искомые записи могут быть в конце порядка (а он никак в статистике не учитывается)
-                Cost newBaseCost = baseCost.div(stat).or(compileInfo.result.maxSubQueryCost);
+                Cost newBaseCost = baseCost.div(stat).or(compileInfo.result.maxSubQueryCost); // limitCost.div(limitStat) всегда заведомо меньше baseCost.div(stat)
 
                 boolean optAdjLimit = false;
                 if(newBaseCost.less(baseCost.div(new Stat(Settings.get().getUsePessQueryHeurWhenReducedMore())))) // поэтому если уменьшаем на "слишком" много включаем пессимистичный режим
@@ -1945,7 +1949,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 mOptAdjustLimit.set(optAdjLimit);
 
                 baseCost = newBaseCost;
-            }
+            } // else // тут теоретически можно было бы рассмотреть вариант с индексами по части порядков, если предположить, что СУБД может пробежать по индексу первых порядков, а sort сделать "внутри" по последних порядков, но такие планы СУБД вроде строить не умеют   
+              // baseCost = limitCost.or(newBaseCost);
             stat = Stat.ONE; // предполагаем что limit отбирает мало записей
         }
             
