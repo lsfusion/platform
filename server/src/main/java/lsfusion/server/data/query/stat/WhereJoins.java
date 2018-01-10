@@ -996,8 +996,29 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         if(pushJoinWhere != null && queryJoins.size() == pushedKeys.size()) { // последняя проверка - оптимизация
             assert queryJoin instanceof GroupJoin;
             assert BaseUtils.hashEquals(translatedPush, translatedPushGroup);
-            ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
-            pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
+            
+            // хак для "висячих" ключей, проблема вот в чем : для LIMIT 1 subquery expr (GROUP LAST) оптимизации используется условие проталкивания (для итерации по нему), а этим условием может быть X<=a<=Z (оно не вырезается если внутри не KeyExpr см. removeJoin), соответственно при компиляции этого условия проталкивания будет exception (emptystack)     
+            // соответственно ищем ExprIndexedJoin с KeyExpr и без giveNoKeys (по аналогии с removeJoin, именно с ним могут быть проблемы) и если эти KeyExpr в других keepJoins не учавствуют (по аналогии с ExprIndexedJoin.getInnerKeys)
+            // теоретически можно и на ExprIndexedJoin с BaseExpr (а не KeyExpr) которые translate'ся проверять, но этот случай при самом проталкивании не учитывается (то есть [=GROUP BY key](f(x)) WHERE Z<=f(x)<=Y )
+            boolean hasExprIndexedNoKeys = false;
+            ImSet<KeyExpr> innerKeys = null;
+            for(BaseJoin keep : keepJoins)
+                if(keep instanceof ExprIntervalJoin && ((ExprIntervalJoin)keep).givesNoKeys()) {
+                    KeyExpr keyExpr = ((ExprIntervalJoin) keep).getKeyExpr();
+                    if(!givesNoKeys(queryJoin, keyExpr)) {
+                        if(innerKeys == null)
+                            innerKeys = ExprIndexedJoin.getInnerKeys(keepJoins.toArray(new BaseJoin[keepJoins.size()]), (WhereJoin)keep);
+                        if(!innerKeys.contains(keyExpr)) {
+                            hasExprIndexedNoKeys = true;
+                            break;
+                        }                            
+                    }                        
+                }                
+            
+            if(!hasExprIndexedNoKeys) {
+                ImRevMap<Z, KeyExpr> mapKeys = KeyExpr.getMapKeys(translatedPush.keys());
+                pushJoinWhere.set(new Pair<>(mapKeys, GroupExpr.create(translatedPush, upPushWhere, mapKeys).getWhere()));
+            }
         }
 
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
@@ -1728,15 +1749,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             // жесткий хак, вообще нужно проталкивать все предикаты, но в случае (GROUP BY d) WHERE f(d) AND a=<d<=b, может протолкнутся a<=d<=b без f(d) и получится висячий ключ
             // собственно нужно сделать чтобы предикат a<=d<=b - при отсутствии ключа добавлял сам join на iterate(a,d,b), но пока этого не сделано, такой хак: 
             if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) {
-                ImMap<K, BaseExpr> joins = removeJoin.getJoins();
-                // если для joins есть единственный KeyExpr и K не keyExpr - проталкиваем
-                boolean foundGiveKeys = false;
                 KeyExpr keyExpr = ((ExprIndexedJoin) whereJoin).getKeyExpr();
-                if(keyExpr != null) // может быть not
-                    for(int i=0,size=joins.size();i<size;i++)
-                        if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
-                            foundGiveKeys = true;
-                if(!foundGiveKeys)
+                if(givesNoKeys(removeJoin, keyExpr))
                     remove = true;
             }
             // нижние проверки должны соответствовать calculateOrWhere 
@@ -1781,6 +1795,16 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return result;
         }
         return null;
+    }
+
+    // если для joins есть единственный KeyExpr и K не keyExpr - проталкиваем
+    public static <K extends Expr> boolean givesNoKeys(QueryJoin<K, ?, ?, ?> removeJoin, KeyExpr keyExpr) {
+        ImMap<K, BaseExpr> joins = removeJoin.getJoins();
+        if(keyExpr != null) // может быть not
+            for(int i=0,size=joins.size();i<size;i++)
+                if(BaseUtils.hashEquals(keyExpr, joins.getValue(i)) && !(joins.getKey(i) instanceof KeyExpr))
+                    return false;
+        return true;
     }
 
     // устраняет сам join чтобы при проталкивании не было рекурсии

@@ -1,9 +1,6 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
-import lsfusion.base.SFunctionSet;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -23,10 +20,7 @@ import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.innerjoins.AbstractUpWhere;
 import lsfusion.server.data.query.innerjoins.UpWhere;
 import lsfusion.server.data.query.innerjoins.UpWheres;
-import lsfusion.server.data.query.stat.Cost;
-import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.translator.MapTranslate;
 
 import java.util.List;
@@ -135,15 +129,6 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return not || super.givesNoKeys();
     }
 
-    public KeyExpr getKeyExpr() {
-        if(baseExpr instanceof KeyExpr) {
-            assert !not;
-            return (KeyExpr) baseExpr;
-        }
-        return null;
-    }
-
-
     private enum IntervalType {
         LEFT, RIGHT, FULL;
 
@@ -172,10 +157,10 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     }
 
     // excludeQueryJoin нужен чтобы она не считала его источником ключей => бесконечное проталкивание
-    private static ImSet<KeyExpr> getInnerKeys(WhereJoin[] wheres, QueryJoin excludeQueryJoin) {
+    public static ImSet<KeyExpr> getInnerKeys(BaseJoin[] wheres, WhereJoin excludeJoin) {
         MSet<KeyExpr> mInnerKeys = SetFact.mSet();
-        for(WhereJoin<?, ?> where : wheres) {
-            if (where instanceof InnerJoin && (excludeQueryJoin == null || !BaseUtils.hashEquals(where, excludeQueryJoin))) {
+        for(BaseJoin<?> where : wheres) {
+            if (where instanceof InnerJoin && (excludeJoin == null || !BaseUtils.hashEquals(where, excludeJoin))) {
                 ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
                     public boolean contains(BaseExpr element) {
                         return element instanceof KeyExpr;
