@@ -294,7 +294,7 @@ baseValue 'Сохранённое значение' = DATA VARSTRING[100] (Refle
 baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (ReflectionProperty, UserRole);
 overBaseValue 'Сохранённое значение для текущего пользователя' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
-value 'Значение' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+value 'Значение для роли' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 
 pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
 popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
@@ -315,11 +315,11 @@ WHEN CHANGED (baseValue(ReflectionProperty r)) DO {
 WHEN CHANGED (baseValue(ReflectionProperty r, UserRole ur)) DO saveReflectionProperty(r, ur);
 
 FORM reflectionProperties 'Настройки свойств'
-    OBJECTS ur = UserRole
-    PROPERTIES(ur) READONLY name, sid 
     OBJECTS r = ReflectionProperty
     PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
-    PROPERTIES(r,ur) value READONLY BEFORE defaultValue(r), baseValue
+    OBJECTS ur = UserRole
+    PROPERTIES(ur) READONLY name, sid 
+    PROPERTIES(r,ur) value READONLY, baseValue
     FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
 ;
 
