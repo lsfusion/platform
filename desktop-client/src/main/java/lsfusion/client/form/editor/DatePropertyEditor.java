@@ -232,7 +232,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
                         String spaces = BaseUtils.spaces(symbolCount);
                         ifMatchThenReplace(dateText, dateBuilder, spaces, currentYear, i);
                         i++;
-                    } else if (timeSymbols.indexOf(patternCh) != -1) {
+                    } else if (timeSymbols.indexOf(patternCh) != -1 && dateText.matches(".*\\d+.*")) { // если изначально не содержит цифру - сбрасываем в null
                         ifMatchThenReplace(dateText, dateBuilder, "  ", "00", i);
                         i ++;
                     }
