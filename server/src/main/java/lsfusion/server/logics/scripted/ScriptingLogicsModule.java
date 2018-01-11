@@ -2729,7 +2729,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = findLCPByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                printerProperty != null, printType, syncType, selectTop, targetProp, getParamsPlainList(propParams).toArray());
+                printerProperty != null, printType, syncType, selectTop, targetProp, false, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);

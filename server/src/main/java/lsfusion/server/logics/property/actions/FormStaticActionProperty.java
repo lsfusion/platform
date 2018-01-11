@@ -83,7 +83,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         FormReportManager newFormManager = new StaticFormReportManager(form, BaseUtils.<ImMap<ObjectEntity, ObjectValue>>immutableCast(mapObjectValues), context);
 
         boolean isExcel = staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel();
-        int top = selectTop == null ? staticType == FormPrintType.MESSAGE ? 30 : 0 : selectTop;
+        int top = selectTop == null ? 0 : selectTop;
         ReportGenerationData reportData = newFormManager.getReportData(isExcel, ReportGenerationDataType.get(staticType), top);
 
         if (formExportFile != null) {

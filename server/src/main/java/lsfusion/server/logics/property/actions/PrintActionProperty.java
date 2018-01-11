@@ -26,10 +26,7 @@ import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PrintActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormPrintType> {
 
@@ -38,7 +35,9 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     private final LCP formPageCount;
 
     private final boolean syncType; // static interactive
-
+    
+    private final boolean removeNulls; // print message
+    
     public PrintActionProperty(LocalizedString caption,
                                FormSelector<O> form,
                                final List<O> objectsToSet,
@@ -49,12 +48,14 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                LCP formExportFile,
                                CalcPropertyMapImplement printer,
                                ImOrderSet<PropertyInterface> innerInterfaces,
-                               LCP formPageCount) {
+                               LCP formPageCount, boolean removeNulls) {
         super(caption, form, objectsToSet, nulls, staticType, formExportFile, top, printer == null ? null : printer.property);
 
         this.formPageCount = formPageCount;
 
         this.syncType = syncType;
+        
+        this.removeNulls = removeNulls;
 
         if (printer != null) {
             ImRevMap<PropertyInterface, ClassPropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
@@ -94,31 +95,16 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                 String key = dataEntry.getKey();
                 ClientReportData clientData = dataEntry.getValue();
                 Map<String, ReportPropertyData> properties = clientData.getProperties();
-                List<Pair<String, Boolean>> titles = getTitles(properties, key);
+                
+                List<Pair<String, Boolean>> titles = getTitles(properties, key); // true - если в grid, false - в панели
+
+                Set<String> removeProperties = getRemoveProperties(clientData, properties);
 
                 List<String> messages = new ArrayList<>();
-                List<List<String>> dataRows = new ArrayList();
-                for (HashMap<Integer, Object> keyRow : clientData.getKeyRows()) {
-                    Map<ReportPropertyData, Object> row = clientData.getRows().get(keyRow);
-                    if (row != null) {
-                        List<String> dataRow = new ArrayList<>();
-                        List<String> dataPanel = new ArrayList<>();
-                        for (int i = 0; i < titles.size(); i++) {
-                            Pair<String, Boolean> title = titles.get(i);
-                            Object value = row.get(properties.get(title.first));
-                            if (title.second)
-                                dataRow.add(String.valueOf(value));
-                            else if (value != null)
-                                dataPanel.add(String.valueOf(value));
-                        }
-                        dataRows.add(dataRow);
-                        if(messages.isEmpty())
-                            messages.addAll(dataPanel);
-                    }
-                }
+                List<List<String>> dataRows = getDataAndMessages(clientData, properties, titles, removeProperties, messages);
 
                 LogMessageClientAction action = new LogMessageClientAction(getMessage(caption, messages),
-                        getTitleRow(titles, propertyCaptionsMap.get(key)), dataRows, !context.getSession().isNoCancelInTransaction());
+                        getTitleRow(titles, propertyCaptionsMap.get(key), removeProperties), dataRows, !context.getSession().isNoCancelInTransaction());
                 if(syncType)
                     context.requestUserInteraction(action);
                 else
@@ -128,6 +114,46 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private Set<String> getRemoveProperties(ClientReportData clientData, Map<String, ReportPropertyData> properties) {
+        if(removeNulls) {
+            Set<String> nullProperties = new HashSet<>(properties.keySet());
+            for (Map<ReportPropertyData, Object> row : clientData.getRows().values()) {
+                Iterator<String> it = nullProperties.iterator();
+                while (it.hasNext()) // удаляем если есть хоть одно не null значение
+                    if (row.get(properties.get(it.next())) != null)
+                        it.remove();
+                if(nullProperties.isEmpty()) // оптимизация
+                    break;
+            }
+            return nullProperties;
+        } 
+        return new HashSet<>();
+    }
+
+    private List<List<String>> getDataAndMessages(ClientReportData clientData, Map<String, ReportPropertyData> properties, List<Pair<String, Boolean>> titles, Set<String> removeProperties, List<String> messages) {
+        List<List<String>> dataRows = new ArrayList<>();
+        for (HashMap<Integer, Object> keyRow : clientData.getKeyRows()) {
+            Map<ReportPropertyData, Object> row = clientData.getRows().get(keyRow);
+            if (row != null) {
+                List<String> dataRow = new ArrayList<>();
+                List<String> dataPanel = new ArrayList<>();
+                for (Pair<String, Boolean> title : titles) {
+                    Object value = row.get(properties.get(title.first));
+                    if (!removeProperties.contains(title.first)) {
+                        if (title.second)
+                            dataRow.add(String.valueOf(value));
+                        else
+                            dataPanel.add(String.valueOf(value));
+                    }
+                }
+                dataRows.add(dataRow);
+                if(messages.isEmpty()) // по сути проверка что первый ряд
+                    messages.addAll(dataPanel);
+            }
+        }
+        return dataRows;
     }
 
     private String getMessage(LocalizedString caption, List<String> messages) {
@@ -147,10 +173,10 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         return titleRow;
     }
 
-    private List<String> getTitleRow(List<Pair<String, Boolean>> titles, Map<String, String> propertyCaptions) {
+    private List<String> getTitleRow(List<Pair<String, Boolean>> titles, Map<String, String> propertyCaptions, Set<String> removeProperties) {
         List<String> titleRow = new ArrayList<>();
         for(Pair<String, Boolean> title : titles) {
-            if(title.second)
+            if(title.second && !removeProperties.contains(title.first))
                 titleRow.add(propertyCaptions.get(title.first));
         }
         return titleRow;

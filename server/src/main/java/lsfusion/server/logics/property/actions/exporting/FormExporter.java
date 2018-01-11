@@ -104,7 +104,7 @@ public abstract class FormExporter {
                     }
                 } else {
                     if (filter(propertyType))
-                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values == null ? null : values.get(reportData.getProperties().get(property)));
+                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values.get(reportData.getProperties().get(property)));
                 }
             }
         }
