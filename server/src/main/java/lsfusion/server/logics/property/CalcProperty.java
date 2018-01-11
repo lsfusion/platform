@@ -363,9 +363,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         PropertyChange<T> change = PropertyChangeTableUsage.getChange(changeTable);
 
+        // тут есть вот какая проблема в OrWhere implicitCast=false, и поэтому более узкий тип DataClass в and not не уйдет и упадет exception на getSource, вообще частично проблема решается fitClasses, но если есть и более узкий класс и верхние оптимизации не срабатывают бывает баг
+        // соответственно проверяем только объектные классы
         ImMap<KeyField, Expr> mapKeys = mapTable.mapKeys.crossJoin(change.getMapExprs());
-        Where classWhere = fieldClassWhere.getWhere(MapFact.addExcl(mapKeys, field, change.expr))
-                .or(mapTable.table.getClasses().getWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
+        Where classWhere = fieldClassWhere.getObjectWhere(MapFact.addExcl(mapKeys, field, change.expr))
+                .or(mapTable.table.getClasses().getObjectWhere(mapKeys).and(change.expr.getWhere().not())); // или если меняет на null, assert что fitKeyClasses
         
         if(classWhere.isFalse()) // оптимизация
             return new Pair<>(createChangeTable(debugInfo+"-ssas:false"), changeTable);

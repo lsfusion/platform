@@ -123,17 +123,29 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), false);
+        return getWhere(mapExprs, false, false);
     }
 
-    public Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean inconsistent) {
-        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), inconsistent);
+    public Where getObjectWhere(ImMap<K, ? extends Expr> mapExprs) {
+        return getWhere(mapExprs, true, false);
     }
 
-    public Where getWhere(GetValue<Expr, K> mapExprs, boolean inconsistent) {
+    public Where getInconsistentWhere(ImMap<K, ? extends Expr> mapExprs) {
+        return getWhere(mapExprs, true, true);
+    }
+    
+    public Where getInconsistentWhere(GetValue<Expr, K> mapExprs) {
+        return getWhere(mapExprs, true, true);
+    }
+
+    private Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean onlyObject, boolean inconsistent) {
+        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), onlyObject, inconsistent);
+    }
+
+    private Where getWhere(GetValue<Expr, K> mapExprs, boolean onlyObject, boolean inconsistent) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
-            result = result.or(andWhere.getWhere(mapExprs, inconsistent));
+            result = result.or(andWhere.getWhere(mapExprs, onlyObject, inconsistent));
         return result;
     }
 
