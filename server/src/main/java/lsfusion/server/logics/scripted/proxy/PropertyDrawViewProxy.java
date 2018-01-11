@@ -1,7 +1,9 @@
 package lsfusion.server.logics.scripted.proxy;
 
 import lsfusion.server.classes.DateClass;
+import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegralClass;
+import lsfusion.server.classes.TimeClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.PropertyUtils;
@@ -11,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -43,8 +46,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         Type type = target.getType();
         if(type instanceof IntegralClass) {
             target.format = new DecimalFormat(pattern);
-        } else if(type instanceof DateClass) {
-            target.format = new SimpleDateFormat(pattern);
+        } else if(type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+            SimpleDateFormat format = new SimpleDateFormat(pattern);
+            format.setTimeZone(TimeZone.getTimeZone("GMT"));
+            target.format = format;
         }
         target.pattern = pattern;
     }
