@@ -14,6 +14,7 @@ import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.exporting.json.JSONOrderObject;
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,18 +34,20 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
     protected byte[] getFile(Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
         File file = File.createTempFile("export", ".json");
         try {
-            JSONObject rootElement = new JSONOrderObject();
+            JSONArray rootElement = new JSONArray();
 
             for (ImMap<String, Object> row : rows) {
+                JSONObject rowElement = new JSONOrderObject();
                 for (String key : row.keyIt()) {
                     Object cellValue = fieldTypes.getType(key).format(row.get(key));
                     if (cellValue != null) {
                         if (cellValue instanceof String)
-                            rootElement.put(key, cellValue);
+                            rowElement.put(key, cellValue);
                         else if (cellValue instanceof byte[])
-                            rootElement.put(key, Base64.encodeBase64String((byte[]) cellValue));
+                            rowElement.put(key, Base64.encodeBase64String((byte[]) cellValue));
                     }
                 }
+                rootElement.put(rowElement);
             }
 
             try (PrintWriter out = new PrintWriter(file)) {

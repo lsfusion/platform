@@ -36,6 +36,7 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
             Element rootElement = new Element("export");
 
             for (ImMap<String, Object> row : rows) {
+                Element rowElement = new Element("row");
                 for (String key : row.keyIt()) {
                     Object cellValue = fieldTypes.getType(key).format(row.get(key));
                     if (cellValue != null) {
@@ -44,9 +45,10 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
                             element.addContent((String) cellValue);
                         else if (cellValue instanceof byte[])
                             element.addContent(Base64.encodeBase64String((byte[]) cellValue));
-                        rootElement.addContent(element);
+                        rowElement.addContent(element);
                     }
                 }
+                rootElement.addContent(rowElement);
             }
 
             XMLOutputter xmlOutput = new XMLOutputter();
