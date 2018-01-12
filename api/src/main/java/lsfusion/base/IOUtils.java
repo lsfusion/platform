@@ -50,8 +50,9 @@ public class IOUtils {
     }
 
     public static void putFileBytes(File file, byte[] array, int off, int len) throws IOException {
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
+        File dir = file.getParentFile();
+        if (dir != null && !dir.exists()) {
+            dir.mkdirs();
         }
 
         try (OutputStream out = new FileOutputStream(file)) {
