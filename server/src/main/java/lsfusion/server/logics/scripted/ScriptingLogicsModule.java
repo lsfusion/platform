@@ -44,6 +44,10 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.ExternalActionProperty;
+import lsfusion.server.logics.property.actions.ExternalDBActionProperty;
+import lsfusion.server.logics.property.actions.ExternalDBFActionProperty;
+import lsfusion.server.logics.property.actions.ExternalHTTPActionProperty;
 import lsfusion.server.logics.property.actions.file.FileActionType;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
@@ -1387,6 +1391,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     public LP addScriptedExternalDBActionProp(String connectionString, String exec, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString + " " + exec).size(), transformExternalText(connectionString), transformExternalText(exec), findLCPsByPropertyUsage(toPropertyUsageList)));
+    }
+
+    public LP addScriptedExternalDBFActionProp(String connectionString, PropertyUsage queryFile, String charset, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addAProp(new ExternalDBFActionProperty(findFormulaParameters(connectionString).size(), transformExternalText(connectionString), findLCPByPropertyUsage(queryFile), charset, findLCPsByPropertyUsage(toPropertyUsageList)));
     }
 
     public LP addScriptedExternalHTTPActionProp(String connectionString, Integer bodyParamsCount, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {

@@ -2746,6 +2746,8 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	String conStr = null;
 	String exec = null;
 	Integer body = null;
+	PropertyUsage queryFile = null;
+	String charset = null;
 	
 	List<PropertyUsage> targetList = new ArrayList<PropertyUsage>();
 }
@@ -2753,6 +2755,8 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	if (inPropParseState()) {
       if($type.format == ExternalFormat.DB) {
         $property = self.addScriptedExternalDBActionProp(conStr, exec, targetList);
+      } else if($type.format == ExternalFormat.DBF) {
+        $property = self.addScriptedExternalDBFActionProp(conStr, queryFile, charset, targetList);
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp();
       } else if($type.format == ExternalFormat.HTTP) {
@@ -2764,13 +2768,14 @@ externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signatu
 	}
 }
 	:	'EXTERNAL'
-	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; body = $type.body; })
+	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; body = $type.body; queryFile = $type.queryFile; charset = $type.charset; })
 	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; })?
 	;
 
-externalFormat returns [ExternalFormat format, String conStr, String exec, Integer body]
+externalFormat returns [ExternalFormat format, String conStr, String exec, Integer body, PropertyUsage queryFile, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
+	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } 'APPEND' queryFileVal = propertyUsage { $queryFile = $queryFileVal.propUsage; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
 	;
