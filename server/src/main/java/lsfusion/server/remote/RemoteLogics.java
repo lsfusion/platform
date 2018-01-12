@@ -414,9 +414,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private List<Object> readReturnProperty(DataSession session, LCP returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
-        List<Object> returnList = new ArrayList<>();
         Object returnValue = returnProperty.read(session, params);
         Type returnType = returnProperty.property.getType();
+        return readReturnProperty(returnValue, returnType);
+    }
+
+    private List<Object> readReturnProperty(Object returnValue, Type returnType) throws IOException {
+        List<Object> returnList = new ArrayList<>();
         boolean jdbcSingleRow = false;
         if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
             if (BaseUtils.getExtension((byte[]) returnValue).equals("jdbc")) {
@@ -425,7 +429,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
                     for (String field : jdbcTable.fields) {
                         Type fieldType = jdbcTable.fieldTypes.get(field);
-                        returnList.add(row == null ? null : formatReturnValue(fieldType, row.get(field)));
+                        if(row == null)
+                            returnList.add(null);
+                        else
+                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
                     }
                     jdbcSingleRow = true;
                 }

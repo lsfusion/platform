@@ -1582,8 +1582,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addCastProp((DataClass) cls), Collections.singletonList(prop));
     }
 
-    private boolean doesExtendContext(List<LPWithParams> list, List<LPWithParams> orders) {
+    private boolean doesExtendContext(int contextSize, List<LPWithParams> list, List<LPWithParams> orders) {
         Set<Integer> listContext = new HashSet<>();
+        for(int i=0;i<contextSize;i++)
+            listContext.add(i);
         for(LPWithParams lp : list)
             if(lp.property != null)
                 listContext.addAll(lp.usedParams);
@@ -1949,7 +1951,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         List<Integer> allParams = mergeAllParams(lpList);
-
+        
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
         List<Integer> resultInterfaces = new ArrayList<>();
         for (int paramIndex : allParams) {
@@ -2047,7 +2049,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, Boolean autoSet, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
-        boolean ordersNotNull = (condition != null ? doesExtendContext(singletonList(condition), orders) : !orders.isEmpty());
+        boolean ordersNotNull = (condition != null ? doesExtendContext(oldContext.size(), singletonList(condition), orders) : !orders.isEmpty());
 
         List<LPWithParams> creationParams = new ArrayList<>();
         if (condition != null) {
@@ -2172,7 +2174,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
-        boolean ordersNotNull = doesExtendContext(mergeLists(mainProps, groupProps), orderProps);
+        boolean ordersNotNull = doesExtendContext(0, mergeLists(mainProps, groupProps), orderProps);
 
         int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
         List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(innerInterfaces);
@@ -2219,12 +2221,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, PropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
-                                                 boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+                                                 boolean useLast, int groupPropsCnt, int groupPropsContextSize, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkPartitionWindowConsistence(partitionType, useLast);
         LP ungroupProp = ungroupPropUsage != null ? findJoinMainProp(ungroupPropUsage, paramProps.subList(1, groupPropsCnt + 1), context) : null;
         checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
-        boolean ordersNotNull = doesExtendContext(paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));
+        boolean ordersNotNull = doesExtendContext(groupPropsContextSize, paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));
 
         List<Object> resultParams = getParamsPlainList(paramProps);
         List<Integer> usedParams = mergeAllParams(paramProps);
@@ -2910,15 +2912,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> context, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
+    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
                                                         PropertyUsage fileProp, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.formExportFile;
 
-        List<Integer> resultInterfaces = getResultInterfaces(context.size(), BaseUtils.add(exprs, whereProperty).toArray(new LPWithParams[exprs.size()+1]));
+        List<LPWithParams> props = exprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(exprs, whereProperty);
+
+        List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LPWithParams[exprs.size()+1]));
 
         if(type == null)
-            type = resultInterfaces.isEmpty() ? FormExportType.LIST : FormExportType.XML;
+            type = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props) ? FormExportType.XML : FormExportType.LIST;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {

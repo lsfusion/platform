@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -73,7 +74,14 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
             // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее
             targetProp.change(BaseUtils.mergeFileAndExtension(getFile(query, rows, new Type.Getter<String>() {
                 public Type getType(String value) {
-                    return query.getPropertyType(value);
+                    Type propertyType = query.getPropertyType(value);
+                    if(propertyType == null) {
+                        CalcPropertyInterfaceImplement<I> implement = exprs.get(value);
+                        if(implement instanceof CalcPropertyMapImplement) {
+                            propertyType = ((CalcPropertyMapImplement) implement).property.getType();
+                        }
+                    }
+                    return propertyType;
                 }
             }), extension.getBytes()), context);
         } catch (IOException e) {
