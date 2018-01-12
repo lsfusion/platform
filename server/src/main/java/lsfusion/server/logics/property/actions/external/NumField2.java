@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions; /**
+package lsfusion.server.logics.property.actions.external; /**
  * Copyright (C) 2011 DEHOF ingenieur+technik
  * Dipl.-Ing. (BA) Thomas Nenninger
  * http://www.dehof.de

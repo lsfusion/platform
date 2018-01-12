@@ -1,12 +1,14 @@
-package lsfusion.server.logics.property.actions;
+package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -96,10 +98,11 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
     private Object parseResult(LCP targetProp, Object result) throws ParseException {
         if (result instanceof String) {
-            if (result.equals(ExternalUtils.nullString))
+            Type type = targetProp.property.getType();
+            if (ExternalUtils.isNullValue((String) result, type instanceof StringClass))
                 return null;
             else
-                return targetProp.property.getType().parseString((String) result);
+                return type.parseString((String) result);
 
         } else return result;
     }

@@ -27,6 +27,7 @@ public class ExternalUtils {
     public static String textPlainType = "text/plain";
     public static String multipartMixedType = "multipart/mixed";
     public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
+    public static String nullObject = "NULL";
 
     private static List<String> humanReadableExtensions = Arrays.asList("xml", "json");
 
@@ -79,7 +80,7 @@ public class ExternalUtils {
                     if (returnEntry instanceof byte[])
                         builder.addPart("param" + i, new ByteArrayBody(BaseUtils.getFile((byte[]) returnEntry), getContentType(BaseUtils.getExtension((byte[]) returnEntry)), "filename"));
                     else
-                        builder.addPart("param" + i, new StringBody(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN));
+                        builder.addPart("param" + i, new StringBody((String) returnEntry, ContentType.TEXT_PLAIN));
                 }
                 entity = builder.build();
             } else {
@@ -94,7 +95,7 @@ public class ExternalUtils {
                         contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + extension;
                     }
                 } else {
-                    entity = new StringEntity(returnEntry == null ? nullString : (String) returnEntry, ContentType.TEXT_PLAIN);
+                    entity = new StringEntity((String) returnEntry, ContentType.TEXT_PLAIN);
                 }
             }
         }
@@ -119,6 +120,14 @@ public class ExternalUtils {
         Pattern p = Pattern.compile("(application|image)/(.*)");
         Matcher m = p.matcher(contentType);
         return m.matches() ? m.group(2).getBytes() : null;
+    }
+
+    public static String getNullValue(boolean isString) {
+        return isString ? nullString : nullObject;
+    }
+
+    public static boolean isNullValue(String value, boolean isString) {
+        return value.equals(isString ? nullString : nullObject);
     }
 
     private static String getParameterValue(String query, String key) {

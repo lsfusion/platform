@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -20,10 +21,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
-import lsfusion.server.classes.DynamicFormatFileClass;
-import lsfusion.server.classes.FileClass;
-import lsfusion.server.classes.StaticFormatFileClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
@@ -444,11 +442,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private Object formatReturnValue(Type returnType, Object returnValue) {
-        Object result = null;
+        Object result;
         if(returnValue != null) {
             result = returnType.format(returnValue);
             if(returnType instanceof StaticFormatFileClass)
                 result = BaseUtils.mergeFileAndExtension((byte[]) result, ((StaticFormatFileClass) returnType).getOpenExtension((byte[]) result).getBytes());
+        } else {
+                result = ExternalUtils.getNullValue(returnType instanceof StringClass);
         }
         return result;
     }
