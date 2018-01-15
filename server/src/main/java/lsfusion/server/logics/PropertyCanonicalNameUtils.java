@@ -45,7 +45,7 @@ public final class PropertyCanonicalNameUtils {
 
     static private void appendNamespace(StringBuilder builder, String namespace) {
         builder.append(namespace);
-        builder.append(".");
+        builder.append(CanonicalNameUtils.DELIMITER);
     }
     
     static private void appendSignature(StringBuilder builder, List<ResolveClassSet> signature) {

@@ -11,7 +11,7 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.ElementCanonicalNameUtils;
+import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -57,7 +57,7 @@ public abstract class NavigatorElement {
     }
     
     public String getName() { 
-        return ElementCanonicalNameUtils.getName(canonicalName); 
+        return CanonicalNameUtils.getName(canonicalName); 
     }
     
     public boolean isNamed() {

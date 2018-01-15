@@ -453,14 +453,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LP<?, ?> findLP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyUsageParser parser = new PropertyUsageParser(this, name);
-        LP<?, ?> property = null;
-        try {
-            property = findLPByNameAndClasses(parser.getCompoundName(), name, parser.getSignature());
-        } catch (AbstractPropertyNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        return property;
+        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
+        return findLPByNameAndClasses(parser.propertyCompoundNameWithoutSignature(), name, parser.getSignature());
     }
 
     public LP<?, ?> findLPByNameAndClasses(String name, String sourceName, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
@@ -3376,8 +3370,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (action != null) {
             return action.property.getName();
         } else if (form != null) {
-            String cn = form.getCanonicalName();
-            return ElementCanonicalNameUtils.getName(cn); 
+            return form.getName();
         }
         return null;
     }

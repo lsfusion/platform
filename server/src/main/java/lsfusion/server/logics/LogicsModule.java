@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
@@ -15,7 +14,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
-import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -159,7 +157,7 @@ public abstract class LogicsModule {
     }
 
     protected String elementCanonicalName(String name) {
-        return ElementCanonicalNameUtils.createCanonicalName(getNamespace(), name);
+        return CanonicalNameUtils.createCanonicalName(getNamespace(), name);
     }
     
     public String getLogName(int moduleCount, int orderNum) {
@@ -271,7 +269,7 @@ public abstract class LogicsModule {
         // В классе Table есть метод getName(), который используется для других целей, в частности
         // в качестве имени таблицы в базе данных, поэтому пока приходится использовать отличный от
         // остальных элементов системы способ получения простого имени 
-        String name = ElementCanonicalNameUtils.getName(table.getCanonicalName());
+        String name = CanonicalNameUtils.getName(table.getCanonicalName());
         assert !tables.containsKey(name);
         tables.put(name, table);
     }
@@ -402,7 +400,7 @@ public abstract class LogicsModule {
 
     protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
         String canonicalName = elementCanonicalName(name);
-        ImplementTable table = baseLM.tableFactory.include(ElementCanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
+        ImplementTable table = baseLM.tableFactory.include(CanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
         table.setCanonicalName(canonicalName);
         addModuleTable(table);
         
@@ -1382,27 +1380,16 @@ public abstract class LogicsModule {
     } 
 
     public static String getLogPropertyCN(LCP lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
-        String name = "";
-        try {
-            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-            name = getLogPropertyName(namespace, lp.property.getName());
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
+        String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+        String name = getLogPropertyName(namespace, lp.property.getName());
 
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         return PropertyCanonicalNameUtils.createName(logNamespace, name, signature);
     }
 
     private static String getLogPropertyName(LCP lp, boolean drop) {
-        String name = "";
-        try {
-            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-            name = getLogPropertyName(namespace, lp.property.getName(), drop);
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        return name;
+        String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+        return getLogPropertyName(namespace, lp.property.getName(), drop);
     }
 
     private static String getLogPropertyName(String namespace, String name) {
@@ -1583,14 +1570,9 @@ public abstract class LogicsModule {
 
     private String nameForDrillDownAction(CalcProperty property, List<ResolveClassSet> signature) {
         assert property.isNamed();
-        String name = null;
-        try {
-            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-            name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
-            signature.addAll(parser.getSignature());
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+        String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+        signature.addAll(parser.getSignature());
         return name;
     }
 

@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.ElementCanonicalNameUtils;
+import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -170,12 +170,12 @@ public class AbstractGroup extends AbstractNode {
     }
 
     public String getName() {
-        return ElementCanonicalNameUtils.getName(canonicalName);
+        return CanonicalNameUtils.getName(canonicalName);
     }
 
     // todo [dale]: Используется для идентификации групп свойств в reflection, желательно перевести на canonical names
     public String getSID() {
-        return ElementCanonicalNameUtils.toSID(canonicalName);
+        return CanonicalNameUtils.toSID(canonicalName);
     }
 
     public boolean isNamed() {

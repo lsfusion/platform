@@ -3,7 +3,7 @@ package lsfusion.server.form.window;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.ElementCanonicalNameUtils;
+import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -92,11 +92,11 @@ public class AbstractWindow {
     }
     
     public String getName() {
-        return ElementCanonicalNameUtils.getName(canonicalName);
+        return CanonicalNameUtils.getName(canonicalName);
     }
     
     public String getSID() {
-        return ElementCanonicalNameUtils.toSID(canonicalName);
+        return CanonicalNameUtils.toSID(canonicalName);
     }
     
     public boolean isNamed() {

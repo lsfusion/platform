@@ -32,8 +32,8 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ElementCanonicalNameUtils;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ClassDebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -96,7 +96,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     private String canonicalName;
 
     public String getSID() {
-        return ElementCanonicalNameUtils.toSID(canonicalName);
+        return CanonicalNameUtils.toSID(canonicalName);
     }
     
     public String getCanonicalName() {
@@ -104,7 +104,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String getName() {
-        return ElementCanonicalNameUtils.getName(canonicalName);
+        return CanonicalNameUtils.getName(canonicalName);
     }
     
     public String getParsedName() {

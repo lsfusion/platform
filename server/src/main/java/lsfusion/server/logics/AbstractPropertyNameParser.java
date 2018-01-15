@@ -14,12 +14,6 @@ public abstract class AbstractPropertyNameParser {
         }
     }
 
-    public static class ParseException extends Exception {
-        public ParseException(String msg) {
-            super(msg);
-        }
-    }
-
     public interface ClassFinder {
         CustomClass findCustomClass(String name);
         DataClass findDataClass(String name);
@@ -51,15 +45,8 @@ public abstract class AbstractPropertyNameParser {
         }
     }
 
-    protected static String checkID(final String str) throws ParseException {
-        if (!str.matches("[a-zA-Z0-9_]+")) {
-            throw new ParseException(String.format("Identifier '%s' contains forbidden symbols", str));
-        }
-        return str;
-    }
-
     private String parseClassName() {
-        Matcher matcher = Pattern.compile("[^\\w\\.]").matcher(parseText);
+        Matcher matcher = Pattern.compile("[^\\w.]").matcher(parseText);
         int nextPos = (matcher.find(pos) ? matcher.start() : len);
         if (nextPos + 1 < len && parseText.charAt(nextPos) == '[') {
             nextPos = parseText.indexOf(']', nextPos + 1) + 1;

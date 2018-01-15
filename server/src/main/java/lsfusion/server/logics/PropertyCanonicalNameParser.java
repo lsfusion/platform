@@ -10,9 +10,12 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
+import lsfusion.server.logics.CanonicalNameUtils.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static lsfusion.server.logics.PropertyCanonicalNameUtils.*;
 
 public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     static public class CanonicalNameClassFinder implements ClassFinder {
@@ -32,7 +35,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         }
     }
 
-    private final String CPREFIX = ClassCanonicalNameUtils.ConcatenateClassNamePrefix + ClassCanonicalNameUtils.ConcatenateClassNameLBracket;
+    private final String concatPrefix = ClassCanonicalNameUtils.ConcatenateClassNamePrefix + ClassCanonicalNameUtils.ConcatenateClassNameLBracket;
 
     public PropertyCanonicalNameParser(BusinessLogics BL, String canonicalName) {
         this(canonicalName, new CanonicalNameClassFinder(BL));
@@ -42,68 +45,64 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         super(canonicalName, finder);
     }
 
-    public String getNamespace() throws ParseException {
+    public String getNamespace() {
         return getNamespace(name);
     }
 
-    public static String getNamespace(String canonicalName) throws ParseException {
+    public static String getNamespace(String canonicalName) {
         assert !canonicalName.contains(" ");
-        int pointIndex = canonicalName.indexOf('.');
-        if (pointIndex < 0) {
-            throw new ParseException("Namespace is missing");
-        }
-        String namespaceName = canonicalName.substring(0, pointIndex);
-        return checkID(namespaceName);
+        return CanonicalNameUtils.getNamespace(canonicalNameWithoutSignature(canonicalName));
     }
     
-    public String getName() throws ParseException {
+    public String getName() {
         return getName(name);
     }
 
-    public static String getName(String canonicalName) throws ParseException {
+    public static String getName(String canonicalName) {
         assert !canonicalName.contains(" ");
-        getNamespace(canonicalName); // проверим валидность пространства имен
-        int pointIndex = canonicalName.indexOf('.');
-        int bracketIndex = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-
-        String name;
-        if (bracketIndex < 0) {
-            name = canonicalName.substring(pointIndex + 1);
-        } else {
-            name = canonicalName.substring(pointIndex + 1, bracketIndex);
-        }
-        return checkID(name);
+        return CanonicalNameUtils.getName(canonicalNameWithoutSignature(canonicalName));
     }
     
-    public List<ResolveClassSet> getSignature() throws ParseException {
-        int bracketPos = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-        if (bracketPos >= 0) {
-            if (name.lastIndexOf(PropertyCanonicalNameUtils.signatureRBracket) != name.length() - 1) {
-                throw new ParseException(String.format("'%s' should be at the end", PropertyCanonicalNameUtils.signatureRBracket));
-            }
-
-            parseText = name.substring(bracketPos + 1, name.length() - 1);
-            pos = 0;
-            len = parseText.length();
-
-            try {
-                List<ResolveClassSet> result = parseAndClassSetList(true);
-                if (pos < len) {
-                    throw new ParseException("Parse error");
-                }
-                return result;
-            } catch (ParseInnerException e) {
-                throw new ParseException(e.getMessage());
-            }
+    private static String canonicalNameWithoutSignature(String canonicalName) {
+        int bracketPos = leftBracketPositionWithCheck(canonicalName);
+        return canonicalName.substring(0, bracketPos);
+    }
+    
+    public List<ResolveClassSet> getSignature() {
+        int bracketPos = leftBracketPositionWithCheck(name);
+        
+        if (name.lastIndexOf(signatureRBracket) != name.length() - 1) {
+            throw new ParseException(String.format("'%s' should be at the end", signatureRBracket));
         }
-        return null;
+
+        parseText = name.substring(bracketPos + 1, name.length() - 1);
+        pos = 0;
+        len = parseText.length();
+
+        try {
+            List<ResolveClassSet> result = parseAndClassSetList(true);
+            if (pos < len) {
+                throw new ParseException("parse error");
+            }
+            return result;
+        } catch (ParseInnerException e) {
+            throw new ParseException(e.getMessage());
+        }
     }
 
+    private static int leftBracketPositionWithCheck(String canonicalName) {
+        int position = canonicalName.indexOf(signatureLBracket);
+        if (position < 0) {
+            throw new ParseException("signature is missing");
+        }
+        return position;
+    }
+    
     private List<ResolveClassSet> parseAndClassSetList(boolean isSignature) {
         List<ResolveClassSet> result = new ArrayList<>();
         while (pos < len) {
-            if (isSignature && isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
-                checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);
+            if (isSignature && isNext(UNKNOWNCLASS)) {
+                checkNext(UNKNOWNCLASS);
                 result.add(null);
             } else {
                 result.add(parseAndClassSet());
@@ -120,7 +119,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
 
     private ResolveClassSet parseAndClassSet() {
         ResolveClassSet result;
-        if (isNext(CPREFIX)) {
+        if (isNext(concatPrefix)) {
             result = parseConcatenateClassSet();
         } else if (isNext(ClassCanonicalNameUtils.OrObjectClassSetNameLBracket)) {
             result = parseOrObjectClassSet();
@@ -133,7 +132,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
     }
 
     private ResolveConcatenateClassSet parseConcatenateClassSet() {
-        checkNext(CPREFIX);
+        checkNext(concatPrefix);
         List<ResolveClassSet> classes = parseAndClassSetList(false);
         checkNext(ClassCanonicalNameUtils.ConcatenateClassNameRBracket);
         return new ResolveConcatenateClassSet(classes.toArray(new ResolveClassSet[classes.size()]));
@@ -182,5 +181,4 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
             return new ResolveUpClassSet(cls);
         }
     }
-
 }

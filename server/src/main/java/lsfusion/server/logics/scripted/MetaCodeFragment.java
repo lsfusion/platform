@@ -1,6 +1,6 @@
 package lsfusion.server.logics.scripted;
 
-import lsfusion.server.logics.ElementCanonicalNameUtils;
+import lsfusion.server.logics.CanonicalNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -148,6 +148,6 @@ public class MetaCodeFragment {
     }
     
     public String getName() {
-        return ElementCanonicalNameUtils.getName(canonicalName);
+        return CanonicalNameUtils.getName(canonicalName);
     }
 }

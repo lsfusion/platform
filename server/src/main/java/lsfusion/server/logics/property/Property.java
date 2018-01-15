@@ -171,22 +171,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     public String getName() {
         if (isNamed()) {
-            try {
-                return PropertyCanonicalNameParser.getName(canonicalName);
-            } catch (AbstractPropertyNameParser.ParseException e) {
-                assert false; // при установке canonicalName мы должны были проверили его на корректность
-            }
+            return PropertyCanonicalNameParser.getName(canonicalName);
         }
         return null;
     }
 
     public String getNamespace() {
         if (isNamed()) {
-            try {
-                return PropertyCanonicalNameParser.getNamespace(canonicalName);
-            } catch (AbstractPropertyNameParser.ParseException e) {
-                assert false;
-            }
+            return PropertyCanonicalNameParser.getNamespace(canonicalName);
         }
         return null;
     }
@@ -211,12 +203,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     private void checkCanonicalName(String canonicalName) {
         assert canonicalName != null;
-        try {
-            PropertyCanonicalNameParser.getName(canonicalName);
-            PropertyCanonicalNameParser.getNamespace(canonicalName);
-        } catch (AbstractPropertyNameParser.ParseException e) {
-            throw new RuntimeException(e);
-        }
+        PropertyCanonicalNameParser.getName(canonicalName);
+        PropertyCanonicalNameParser.getNamespace(canonicalName);
     }
 
     final public boolean isNamed() {

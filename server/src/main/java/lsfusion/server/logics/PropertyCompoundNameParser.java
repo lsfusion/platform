@@ -4,13 +4,20 @@ import com.google.common.base.Throwables;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.logics.CompoundNameUtils.ParseException;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PropertyUsageParser extends AbstractPropertyNameParser {
+import static lsfusion.server.logics.CompoundNameUtils.DELIMITER;
+import static lsfusion.server.logics.CompoundNameUtils.checkForCorrectness;
+import static lsfusion.server.logics.PropertyCanonicalNameUtils.*;
+
+// Под compoundName мы в данном случае понимам любую форму обращения к свойству из скрипта
+// В compoundName может быть не указана сигнатура и/или пространство имен
+public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
     public static class ModulePropertyUsageClassFinder implements ClassFinder {
         private ScriptingLogicsModule module;
         public ModulePropertyUsageClassFinder(ScriptingLogicsModule module) {
@@ -51,44 +58,56 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         }
     }
 
-    public PropertyUsageParser(ScriptingLogicsModule module, String name) {
+    public PropertyCompoundNameParser(ScriptingLogicsModule module, String name) {
         this(name, new ModulePropertyUsageClassFinder(module));
     }
 
-    public PropertyUsageParser(BusinessLogics BL, String name) {
+    public PropertyCompoundNameParser(BusinessLogics BL, String name) {
         this(name, new BLPropertyUsageClassFinder(BL));
     }
 
-    public PropertyUsageParser(String name, ClassFinder finder) {
+    public PropertyCompoundNameParser(String name, ClassFinder finder) {
         super(name, finder);
     }
 
-    public String getCompoundName() throws ParseException {
-        return getCompoundName(name);
+    public String getName() {
+        return getName(name);
     }
 
-    public static String getCompoundName(String name) throws ParseException {
+    public static String getName(String propertyCompoundName) {
+        return CompoundNameUtils.getName(propertyCompoundNameWithoutSignature(propertyCompoundName));
+    }
+    
+    public String getNamespace() {
+        return getNamespace(name);
+    }
+
+    public static String getNamespace(String propertyCompoundName) {
+        return CompoundNameUtils.getNamespace(propertyCompoundNameWithoutSignature(propertyCompoundName));
+    }
+    
+    public String propertyCompoundNameWithoutSignature() {
+        return propertyCompoundNameWithoutSignature(name);
+    }
+
+    private static String propertyCompoundNameWithoutSignature(String name) {
         name = name.replaceAll(" ", "");
-        int signatureIndex = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
+        int signatureIndex = leftBracketPosition(name);
         if (signatureIndex > 0) {
             name = name.substring(0, signatureIndex);
         }
-        if (name.indexOf(".") != name.lastIndexOf(".")) {
-            throw new ParseException(String.format("Identifier '%s' must be in '[namespace.]name' format", name));            
+        if (name.indexOf(DELIMITER) != name.lastIndexOf(DELIMITER)) {
+            throw new ParseException(String.format("Compound name '%s' must be in '[namespace.]name' format", name));            
         }
-        int pointIndex;
-        if ((pointIndex = name.indexOf(".")) >= 0) {
-            checkID(name.substring(0, pointIndex));
-            checkID(name.substring(pointIndex+1));
-        }
+        checkForCorrectness(name);
         return name;
     }
 
-    public List<ResolveClassSet> getSignature() throws ParseException {
-        int bracketPos = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
+    public List<ResolveClassSet> getSignature() {
+        int bracketPos = leftBracketPosition(name);
         if (bracketPos >= 0) {
-            if (name.lastIndexOf(PropertyCanonicalNameUtils.signatureRBracket) != name.length() - 1) {
-                throw new ParseException(String.format("'%s' should be at the end", PropertyCanonicalNameUtils.signatureRBracket));
+            if (name.lastIndexOf(signatureRBracket) != name.length() - 1) {
+                throw new ParseException(String.format("'%s' should be at the end", signatureRBracket));
             }
 
             parseText = name.substring(bracketPos + 1, name.length() - 1);
@@ -108,11 +127,15 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         return null;
     }
 
+    private static int leftBracketPosition(String name) {
+        return name.indexOf(signatureLBracket);
+    }
+    
     private List<ResolveClassSet> parseClassList() {
         List<ResolveClassSet> result = new ArrayList<>();
         while (pos < len) {
-            if (isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
-                checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);
+            if (isNext(UNKNOWNCLASS)) {
+                checkNext(UNKNOWNCLASS);
                 result.add(null);
             } else {
                 result.add(parseSingleClass());
@@ -125,16 +148,5 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
             }
         }
         return result;
-    }
-
-    public String getName() throws ParseException {
-        int pointIndex = name.indexOf('.');
-        int bracketIndex = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-        return checkID(bracketIndex < 0 ? name.substring(pointIndex + 1) : name.substring(pointIndex + 1, bracketIndex));
-    }
-
-    public String getNamespace() throws ParseException {
-        int pointIndex = name.indexOf('.');
-        return pointIndex < 0 ? null : checkID(name.substring(0, pointIndex));
     }
 }

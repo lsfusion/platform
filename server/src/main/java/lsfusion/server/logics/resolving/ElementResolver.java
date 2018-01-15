@@ -1,5 +1,6 @@
 package lsfusion.server.logics.resolving;
 
+import lsfusion.server.logics.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.resolving.NamespaceElementFinder.FoundItem;
 import lsfusion.server.logics.resolving.ResolvingErrors.ResolvingError;
@@ -10,10 +11,10 @@ import java.util.List;
 
 public class ElementResolver<T, P> {
     protected ModuleFinder<T, P> finder;
-    protected LogicsModule LM;
+    protected LogicsModule startModule;
     
-    public ElementResolver(LogicsModule LM, ModuleFinder<T, P> finder) {
-        this.LM = LM;
+    public ElementResolver(LogicsModule startModule, ModuleFinder<T, P> finder) {
+        this.startModule = startModule;
         this.finder = finder;
     }
 
@@ -23,24 +24,23 @@ public class ElementResolver<T, P> {
 
     public final T resolve(String compoundName, P param) throws ResolvingError {
         T result;
-        int dotPosition = compoundName.indexOf('.');
-        if (dotPosition > 0) {
-            String namespaceName = compoundName.substring(0, dotPosition);
+        if (CompoundNameUtils.hasNamespace(compoundName)) {
+            String namespaceName = CompoundNameUtils.getNamespace(compoundName);
             checkNamespace(namespaceName);
-            String name = compoundName.substring(dotPosition + 1);
+            String name = CompoundNameUtils.getName(compoundName);
             List<FoundItem<T>> foundItems = findInNamespace(namespaceName, name, param);
             return finalizeResult(foundItems, compoundName, param).value;
         } else {
-            List<String> namespaces = new ArrayList<>();
-            namespaces.add(LM.getNamespace());
-            namespaces.addAll(LM.getNamespacePriority());
-            result = findInRequiredModules(compoundName, param, namespaces);
+            List<String> priorityNamespaces = new ArrayList<>();
+            priorityNamespaces.add(startModule.getNamespace());
+            priorityNamespaces.addAll(startModule.getNamespacePriority());
+            result = findInRequiredModules(compoundName, param, priorityNamespaces);
         }
         return result;
     }
     
     protected List<FoundItem<T>> findInNamespace(String namespaceName, String name, P param) throws ResolvingError {
-        NamespaceElementFinder<T, P> nsFinder = new NamespaceElementFinder<>(finder, LM.getRequiredModules(namespaceName));
+        NamespaceElementFinder<T, P> nsFinder = new NamespaceElementFinder<>(finder, startModule.getRequiredModules(namespaceName));
         return finalizeNamespaceResult(nsFinder.findInNamespace(namespaceName, name, param), name, param);
     }
 
@@ -62,8 +62,8 @@ public class ElementResolver<T, P> {
         return result.get(0);
     }
 
-    private T findInRequiredModules(String name, P param, List<String> namespaces) throws ResolvingError {
-        for (String namespaceName : namespaces) {
+    private T findInRequiredModules(String name, P param, List<String> priorityNamespaces) throws ResolvingError {
+        for (String namespaceName : priorityNamespaces) {
             List<FoundItem<T>> result = findInNamespace(namespaceName, name, param);
             if (!result.isEmpty()) {
                 return finalizeResult(result, name, param).value;
@@ -71,7 +71,7 @@ public class ElementResolver<T, P> {
         }
 
         List<FoundItem<T>> resultList = new ArrayList<>();
-        for (List<LogicsModule> modules : LM.getNamespaceToModules().values()) {
+        for (List<LogicsModule> modules : startModule.getNamespaceToModules().values()) {
             for (LogicsModule module : modules) {
                 List<T> moduleResult = finder.resolveInModule(module, name, param);
                 for (T obj : moduleResult) {
@@ -83,7 +83,7 @@ public class ElementResolver<T, P> {
     }
 
     private void checkNamespace(String namespaceName) throws ResolvingError {
-        if (!LM.getRequiredNamespaces().contains(namespaceName)) {
+        if (!startModule.getRequiredNamespaces().contains(namespaceName)) {
             throw new ResolvingErrors.ResolvingNamespaceError(namespaceName);
         }
     }

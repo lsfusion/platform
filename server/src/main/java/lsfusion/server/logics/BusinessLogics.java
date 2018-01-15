@@ -575,7 +575,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initObjectClass() {
-        LM.baseClass.initObjectClass(LM.getVersion(), ElementCanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
+        LM.baseClass.initObjectClass(LM.getVersion(), CanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);
     }
 
@@ -2152,15 +2152,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public LP findProperty(String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
-        try {
-            String namespaceName = parser.getNamespace();
-            String name = parser.getName();
-            List<ResolveClassSet> signature = parser.getSignature();
-            return findProperty(namespaceName, name, signature);
-        } catch (PropertyCanonicalNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        return null;
+        
+        String namespaceName = parser.getNamespace();
+        String name = parser.getName();
+        List<ResolveClassSet> signature = parser.getSignature();
+        
+        return findProperty(namespaceName, name, signature);
     }
 
     public LP findProperty(String namespace, String name, ValueClass... classes) {
@@ -2180,25 +2177,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public LP<?, ?> findLP(String name) {
-        PropertyUsageParser parser = new PropertyUsageParser(this, name);
-        LP<?, ?> property = null;
-        try {
-            property = findProperty(parser.getNamespace(), parser.getName(), parser.getSignature());
-        } catch (AbstractPropertyNameParser.ParseException e) {
-            Throwables.propagate(e);
-        }
-        return property;
+        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
+        return findProperty(parser.getNamespace(), parser.getName(), parser.getSignature());
     }
 
     private <R, P> R findElement(String canonicalName, P param, ModuleFinder<R, P> moduleFinder) {
         assert canonicalName != null;
-        if (canonicalName.contains(".")) {
-            String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
-            String className = canonicalName.substring(canonicalName.indexOf('.') + 1);
+        if (CanonicalNameUtils.isCorrect(canonicalName)) {
+            String namespaceName = CanonicalNameUtils.getNamespace(canonicalName);
+            String elementName = CanonicalNameUtils.getName(canonicalName);
 
             assert namespaceToModules.get(namespaceName) != null;
             NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<>(moduleFinder, namespaceToModules.get(namespaceName));
-            List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, className, param);
+            List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, elementName, param);
             assert resList.size() <= 1; 
             return resList.size() == 0 ? null : resList.get(0).value;
         }
