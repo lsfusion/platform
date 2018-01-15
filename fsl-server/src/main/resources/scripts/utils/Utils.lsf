@@ -30,6 +30,10 @@ makeZipFile 'Заархивировать файлы' = CUSTOM 'lsfusion.erp.uti
 unzipping 'Файл архива' = DATA LOCAL CUSTOMFILE ();
 unzipped 'Разархивированные файлы' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 makeUnzipFile 'Разархивировать архив' = CUSTOM 'lsfusion.erp.utils.utils.MakeUnzipFileActionProperty' ();
+
+// ---------------------------------- Выполнение cmd  ---------------------------------- //
+cmd 'Выполнить cmd' = CUSTOM 'lsfusion.erp.utils.utils.RunCommandActionProperty' (TEXT);
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';
