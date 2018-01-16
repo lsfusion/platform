@@ -1,5 +1,6 @@
 package lsfusion.server.classes.sets;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -111,5 +112,10 @@ public class ResolveOrObjectClassSet extends TwinImmutableObject implements Reso
     @Override
     public String getCanonicalName() {
         return ClassCanonicalNameUtils.createName(this);
+    }
+
+    @Override
+    public boolean equalsCompatible(ResolveClassSet set) {
+        return BaseUtils.hashEquals(this, set);
     }
 }

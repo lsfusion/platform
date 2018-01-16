@@ -22,4 +22,6 @@ public interface ResolveClassSet {
     AndClassSet toAnd();
 
     String getCanonicalName();
+
+    boolean equalsCompatible(ResolveClassSet set); // для поиска по каноническому имени
 }

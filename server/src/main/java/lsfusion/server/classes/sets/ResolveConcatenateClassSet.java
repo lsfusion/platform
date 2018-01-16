@@ -69,6 +69,19 @@ public class ResolveConcatenateClassSet implements ResolveClassSet {
         return true;
     }
 
+    @Override
+    public boolean equalsCompatible(ResolveClassSet set) {
+        if(!(set instanceof ResolveConcatenateClassSet)) return false;
+
+        ResolveConcatenateClassSet concatenate = (ResolveConcatenateClassSet) set;
+        assert concatenate.classes.length == classes.length;
+
+        for(int i=0;i<classes.length;i++)
+            if(!classes[i].equalsCompatible(concatenate.classes[i]))
+                return false;
+        return true;
+    }
+
     public Type getType() {
         Type[] types = new Type[classes.length];
         for(int i=0;i<classes.length;i++)

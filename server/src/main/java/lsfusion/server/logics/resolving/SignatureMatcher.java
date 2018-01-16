@@ -53,5 +53,28 @@ public class SignatureMatcher {
     private static boolean isClassesSoftCompatible(ResolveClassSet interfaceClass, ResolveClassSet paramClass) {
         return interfaceClass == null || paramClass == null || !(interfaceClass.and(paramClass)).isEmpty(); 
     }
-    
+
+    public static boolean isEqualsCompatible(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses) {
+        assert interfaceClasses != null;
+        if (paramClasses == null) {
+            return true;
+        }
+        if (interfaceClasses.size() != paramClasses.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < interfaceClasses.size(); i++) {
+            if (!isClassesEqualsCompatible(interfaceClasses.get(i), paramClasses.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isClassesEqualsCompatible(ResolveClassSet interfaceClass, ResolveClassSet paramClass) {
+        if (interfaceClass == null || paramClass == null) return true;
+        
+        return interfaceClass.equalsCompatible(paramClass);
+    }
+
 }

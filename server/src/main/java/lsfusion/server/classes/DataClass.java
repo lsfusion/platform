@@ -95,6 +95,14 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return getCompatible((DataClass) type, true);
     }
 
+    @Override
+    public boolean equalsCompatible(ResolveClassSet set) {
+        if(!(set instanceof DataClass))
+            return false;
+        
+        return getCompatible((DataClass)set, true) != null;
+    }
+
     public DataClass getUpSet() {
         return this;
     }
