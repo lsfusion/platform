@@ -488,7 +488,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             for (ImMap<String, Object> valueMap : propValues) {
                 String cn = ((String) valueMap.get("cn")).trim();
-                if (valueMap.get("fullForbidView") != null || valueMap.get("fullForbidChange") != null) {
+                if (cn.length() < 512) {
                     LP<?, ?> prop = businessLogics.findProperty(cn);
                     if (valueMap.get("fullForbidView") != null)
                         policy.property.view.deny(prop);
