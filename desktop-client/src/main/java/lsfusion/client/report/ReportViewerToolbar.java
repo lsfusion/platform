@@ -2,10 +2,8 @@ package lsfusion.client.report;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
-import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
 import net.sf.jasperreports.swing.JRViewerController;
@@ -21,14 +19,19 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.rmi.RemoteException;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.SwingUtils.showConfirmDialog;
+
 public class ReportViewerToolbar extends JRViewerToolbar {
+    private final ReportViewer reportViewer;
     private JButton editReportButton = null;
     private JButton addReportButton = null;
     private JButton deleteReportButton = null;
     private Boolean hasCustomReports;
     
-    public ReportViewerToolbar(JRViewerController viewerContext) {
+    public ReportViewerToolbar(JRViewerController viewerContext, ReportViewer reportViewer) {
         super(viewerContext);
+        this.reportViewer = reportViewer;
 
         lastFolder = SystemUtils.loadCurrentDirectory();
 
@@ -102,7 +105,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private JButton getEditReportButton(final EditReportInvoker editInvoker, boolean visible) {
         JButton editReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/editReport.png")));
-        editReportButton.setToolTipText(ClientResourceBundle.getString("layout.menu.file.edit.report"));
+        editReportButton.setToolTipText(getString("layout.menu.file.edit.report"));
         editReportButton.setMargin(new Insets(2, 2, 2, 2));
         editReportButton.setMaximumSize(new Dimension(23, 23));
         editReportButton.setMinimumSize(new Dimension(23, 23));
@@ -132,7 +135,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private JButton getAddReportButton(final EditReportInvoker editInvoker) {
         final JButton addReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/editAutoReport.png")));
-        addReportButton.setToolTipText(ClientResourceBundle.getString("layout.menu.file.edit.auto.report"));
+        addReportButton.setToolTipText(getString("layout.menu.file.edit.auto.report"));
         addReportButton.setMargin(new Insets(2, 2, 2, 2));
         addReportButton.setMaximumSize(new Dimension(23, 23));
         addReportButton.setMinimumSize(new Dimension(23, 23));
@@ -152,8 +155,8 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private void addButtonPressed(EditReportInvoker editInvoker) {
-        if(!hasCustomReports || SwingUtils.showConfirmDialog(this, ClientResourceBundle.getString("layout.menu.file.edit.auto.report.confirm"),
-                ClientResourceBundle.getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
+        if (!hasCustomReports || showConfirmDialog(reportViewer, getString("layout.menu.file.edit.auto.report.confirm"),
+                getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
             try {
                 editInvoker.invokeEditReport(true);
             } catch (RemoteException e) {
@@ -168,7 +171,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private JButton getDeleteReportButton(final EditReportInvoker editInvoker, final boolean visible) {
         final JButton deleteReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/deleteReport.png")));
-        deleteReportButton.setToolTipText(ClientResourceBundle.getString("layout.menu.file.delete.report"));
+        deleteReportButton.setToolTipText(getString("layout.menu.file.delete.report"));
         deleteReportButton.setMargin(new Insets(2, 2, 2, 2));
         deleteReportButton.setMaximumSize(new Dimension(23, 23));
         deleteReportButton.setMinimumSize(new Dimension(23, 23));
@@ -189,8 +192,8 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private void deleteButtonPressed(EditReportInvoker editInvoker) {
-        if(SwingUtils.showConfirmDialog(this, ClientResourceBundle.getString("layout.menu.file.delete.report.confirm"),
-                ClientResourceBundle.getString("layout.menu.file.delete.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
+        if (showConfirmDialog(reportViewer, getString("layout.menu.file.delete.report.confirm"),
+                getString("layout.menu.file.delete.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
             try {
                 editInvoker.invokeDeleteReport();
             } catch (RemoteException e) {

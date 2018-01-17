@@ -567,7 +567,9 @@ public class Main {
     public static void processReportPathList(RemoteFormInterface remoteFormInterface, List<ReportPath> reportPathList, String formSID, boolean useAuto) throws IOException {
         if (useAuto) {
             deleteReportPathList(reportPathList);
-            reportPathList = remoteFormInterface.getAutoReportPathList(formSID);
+            if (reportPathList != null) {
+                reportPathList.addAll(remoteFormInterface.getAutoReportPathList(formSID));
+            }
         }
         if (reportPathList != null) {
             for (ReportPath reportPath : reportPathList) {
@@ -582,7 +584,7 @@ public class Main {
         }
     }
 
-    public static void deleteReportPathList(List<ReportPath> reportPathList) throws IOException {
+    public static void deleteReportPathList(List<ReportPath> reportPathList) {
         if (reportPathList != null) {
             for (ReportPath reportPath : reportPathList) {
                 File customFile = new File(reportPath.customPath);
@@ -592,6 +594,7 @@ public class Main {
                 if(!targetFile.delete())
                     targetFile.deleteOnExit();
             }
+            reportPathList.clear();
         }
     }
 

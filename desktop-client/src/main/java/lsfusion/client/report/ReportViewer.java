@@ -16,7 +16,7 @@ public class ReportViewer extends JRViewer {
 
     @Override
     protected JRViewerToolbar createToolbar() {
-        return new ReportViewerToolbar(viewerContext);
+        return new ReportViewerToolbar(viewerContext, this);
     }
 
     public ReportViewerToolbar getToolbar() {
