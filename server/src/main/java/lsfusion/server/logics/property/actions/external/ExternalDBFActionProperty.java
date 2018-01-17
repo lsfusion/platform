@@ -34,7 +34,7 @@ public class ExternalDBFActionProperty extends ExternalActionProperty {
     public ExternalDBFActionProperty(int paramsCount, String connectionString, LCP queryFile, String charset, List<LCP> targetPropList) {
         super(paramsCount, connectionString, targetPropList);
         this.queryFile = queryFile;
-        this.charset = charset;
+        this.charset = charset == null ? "UTF-8" : charset;
     }
 
     @Override
