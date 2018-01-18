@@ -83,15 +83,6 @@ public abstract class LogicsModule {
 
     protected static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
-    public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
-        List<ResolveClassSet> classSets;
-        classSets = new ArrayList<>();
-        for (ValueClass cls : classes) {
-            classSets.add(cls.getResolveSet());
-        }
-        return classSets;
-    }
-
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
 
@@ -421,7 +412,7 @@ public abstract class LogicsModule {
 //        addProperty(null, lcp);
 
         // делаем public, persistent
-        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), getResolveList(classes));
+        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), ClassCanonicalNameUtils.getResolveList(classes));
         addPersistent(lcp, table);
 
         // помечаем fullField из помеченного свойства

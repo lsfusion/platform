@@ -338,7 +338,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList;
         try {
-            LAP property = (LAP) businessLogics.findLP(action);
+            LAP property = (LAP) businessLogics.findPropertyByCompoundName(action);
             if (property != null) {
                 returnList = executeExternal(property, returnCanonicalNames, params);
             } else {
@@ -374,7 +374,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public List<Object> read(String property, Object[] params) {
         try {
-            LCP lcp = (LCP) businessLogics.findLP(property);
+            LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
             if (lcp != null) {
                 try (DataSession session = createSession()) {
                     return readReturnProperty(session, lcp, getParams(session, lcp, params));

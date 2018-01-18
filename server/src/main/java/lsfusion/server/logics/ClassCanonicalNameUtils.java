@@ -8,7 +8,9 @@ import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ClassCanonicalNameUtils {
@@ -143,4 +145,12 @@ public final class ClassCanonicalNameUtils {
         put("RICHTEXT", StringClass.richText);
     }};
 
+    public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
+        List<ResolveClassSet> classSets;
+        classSets = new ArrayList<>();
+        for (ValueClass cls : classes) {
+            classSets.add(cls.getResolveSet());
+        }
+        return classSets;
+    }
 }

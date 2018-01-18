@@ -40,16 +40,15 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
         }
     }
 
-    //TODO: Пока всё равно работает только с canonicalName
-    public static class BLPropertyUsageClassFinder implements ClassFinder {
+    public static class BLCompoundNameClassFinder implements ClassFinder {
         private BusinessLogics BL;
-        public BLPropertyUsageClassFinder(BusinessLogics BL) {
+        public BLCompoundNameClassFinder(BusinessLogics BL) {
             this.BL = BL;
         }
 
         @Override
         public CustomClass findCustomClass(String name) {
-            return BL.findClass(name);
+            return BL.findClassByCompoundName(name);
         }
 
         @Override
@@ -63,7 +62,7 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
     }
 
     public PropertyCompoundNameParser(BusinessLogics BL, String name) {
-        this(name, new BLPropertyUsageClassFinder(BL));
+        this(name, new BLCompoundNameClassFinder(BL));
     }
 
     public PropertyCompoundNameParser(String name, ClassFinder finder) {

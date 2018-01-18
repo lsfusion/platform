@@ -111,7 +111,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.LogicsModule.getResolveList;
+import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCanonicalName;
+import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -2142,88 +2143,74 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return lp;
     }
 
-    public LP[] findProperties(String... names) {
-        LP[] result = new LP[names.length];
-        for (int i = 0; i < names.length; i++) {
-            result[i] = findProperty(names[i]);
+    public LP[] findProperties(String... canonicalNames) {
+        LP[] result = new LP[canonicalNames.length];
+        for (int i = 0; i < canonicalNames.length; i++) {
+            result[i] = findProperty(canonicalNames[i]);
         }
         return result;
     }
 
     public LP findProperty(String canonicalName) {
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
-        
-        String namespaceName = parser.getNamespace();
-        String name = parser.getName();
-        List<ResolveClassSet> signature = parser.getSignature();
-        
-        return findProperty(namespaceName, name, signature);
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
 
-    public LP findProperty(String namespace, String name, ValueClass... classes) {
-        List<ResolveClassSet> classSets = null;
-        if (classes.length > 0) {
-            classSets = getResolveList(classes);
-        }
-        return findProperty(namespace, name, classSets);
+//    public LP findProperty(String namespace, String name, ValueClass... classes) {
+//        List<ResolveClassSet> classSets = null;
+//        if (classes.length > 0) {
+//            classSets = getResolveList(classes);
+//        }
+//        return findProperty(namespace, name, classSets);
+//    }
+
+    public LP<?, ?> findPropertyByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCompoundName(this, compoundName);
     }
 
-    private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
-        assert namespaceToModules.get(namespace) != null;
-        NamespaceLPFinder finder = new NamespaceLPFinder(new ModuleEqualLPFinder(false), namespaceToModules.get(namespace));
-        List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
-        assert foundElements.size() <= 1;
-        return foundElements.size() == 0 ? null : foundElements.get(0).value;
+    public CustomClass findClassByCompoundName(String compoundName) {
+        return findElementByCompoundName(this, compoundName, null, new ModuleClassFinder());
     }
 
-    public LP<?, ?> findLP(String name) {
-        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
-        return findProperty(parser.getNamespace(), parser.getName(), parser.getSignature());
-    }
-
-    private <R, P> R findElement(String canonicalName, P param, ModuleFinder<R, P> moduleFinder) {
-        assert canonicalName != null;
-        if (CanonicalNameUtils.isCorrect(canonicalName)) {
-            String namespaceName = CanonicalNameUtils.getNamespace(canonicalName);
-            String elementName = CanonicalNameUtils.getName(canonicalName);
-
-            assert namespaceToModules.get(namespaceName) != null;
-            NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<>(moduleFinder, namespaceToModules.get(namespaceName));
-            List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, elementName, param);
-            assert resList.size() <= 1; 
-            return resList.size() == 0 ? null : resList.get(0).value;
-        }
-        return null;
-    }
-    
     public CustomClass findClass(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleClassFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleClassFinder());
     }
 
     public AbstractGroup findGroup(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleGroupFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleGroupFinder());
     }
 
     public ImplementTable findTable(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleTableFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleTableFinder());
     }
 
     public AbstractWindow findWindow(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleWindowFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleWindowFinder());
     }
 
     public NavigatorElement findNavigatorElement(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleNavigatorElementFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleNavigatorElementFinder());
     }
 
     public FormEntity findForm(String canonicalName) {
-        return findElement(canonicalName, null, new ModuleFormFinder());
+        return findElementByCanonicalName(this, canonicalName, null, new ModuleFormFinder());
     }
 
     public MetaCodeFragment findMetaCodeFragment(String canonicalName, int paramCnt) {
-        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
+        return findElementByCanonicalName(this, canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
     }
 
+    public Collection<String> getNamespacesList() {
+        return namespaceToModules.keySet();
+    }
+    
+    public List<LogicsModule> getNamespaceModules(String namespace) {
+        if (namespaceToModules.containsKey(namespace)) {
+            return namespaceToModules.get(namespace);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+    
     private void outputPersistent() {
         String result = "";
 
