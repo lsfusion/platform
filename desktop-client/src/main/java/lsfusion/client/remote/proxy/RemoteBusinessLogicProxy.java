@@ -119,9 +119,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) throws RemoteException {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        List<Object> result = target.eval(script, returnCanonicalNames, params);
+        List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }

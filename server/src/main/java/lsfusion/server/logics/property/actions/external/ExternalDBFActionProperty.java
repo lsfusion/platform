@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.JDBCTable;
@@ -12,6 +13,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.xBaseJ.DBF;
 import org.xBaseJ.fields.CharField;
 import org.xBaseJ.fields.DateField;
@@ -28,24 +30,26 @@ import java.util.List;
 import static lsfusion.base.BaseUtils.substring;
 
 public class ExternalDBFActionProperty extends ExternalActionProperty {
-    private LCP queryFile;
+    private PropertyInterface connectionString;
+
     private String charset;
 
-    public ExternalDBFActionProperty(int paramsCount, String connectionString, LCP queryFile, String charset, List<LCP> targetPropList) {
-        super(paramsCount, connectionString, targetPropList);
-        this.queryFile = queryFile;
+    public ExternalDBFActionProperty(ImList<Type> params, String charset, ImList<LCP> targetPropList) {
+        super(1, params, targetPropList);
+
+        this.connectionString = getOrderInterfaces().get(0);
         this.charset = charset == null ? "UTF-8" : charset;
     }
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        writeDBF(context, replaceParams(context, connectionString));
+        writeDBF(context, replaceParams(context, getTransformedText(context, connectionString)));
         return FlowResult.FINISH;
     }
 
-    private void writeDBF(ExecutionContext context, String connectionString) throws SQLException, SQLHandledException {
+    private void writeDBF(ExecutionContext<PropertyInterface> context, String connectionString) throws SQLException, SQLHandledException {
         try {
-            Object queryFileBytes = queryFile.read(context);
+            Object queryFileBytes = context.getKeyObject(paramInterfaces.single());
             if (queryFileBytes instanceof byte[]) {
                 String extension = BaseUtils.getExtension((byte[]) queryFileBytes);
                 if (extension.equals("jdbc")) { // значит таблица

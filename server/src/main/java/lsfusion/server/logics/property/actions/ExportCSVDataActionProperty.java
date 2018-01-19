@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -27,13 +28,13 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
 
     public ExportCSVDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
+                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
                                        String separator, boolean noHeader, String charset) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
 
         this.separator = separator == null ? "|" : separator;
         this.noHeader = noHeader;
-        this.charset = charset == null ? "UTF-8" : charset;
+        this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
 
     @Override
@@ -49,8 +50,8 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
             for (ImMap<String, Object> row : rows) {
                 List<String> line = new ArrayList<>();
                 for (String key : row.keyIt()) {
-                    Object cellValue = fieldTypes.getType(key).format(row.get(key));
-                    line.add(cellValue != null && cellValue instanceof String ? (String) cellValue : "");
+                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
+                    line.add(cellValue != null ? cellValue : "");
                 }
                 lines.add(line);
             }

@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.external;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
@@ -13,38 +14,46 @@ import lsfusion.server.data.sql.DefaultSQLSyntax;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.AbstractParseInterface;
 import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class ExternalDBActionProperty extends ExternalActionProperty {
-    protected String exec;
 
-    public ExternalDBActionProperty(int paramsCount, String connectionString, String exec, List<LCP> targetPropList) {
-        super(paramsCount, connectionString, targetPropList);
-        this.exec = exec;
+    private PropertyInterface connectionString;
+    private PropertyInterface exec;
+
+    public ExternalDBActionProperty(ImList<Type> params, ImList<LCP> targetPropList) {
+        super(2, params, targetPropList); // строка подключения, команда + параметры
+
+        ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
+        connectionString = orderInterfaces.get(0);
+        exec = orderInterfaces.get(1);
     }
 
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        String replacedParams = replaceParams(context, connectionString);
-        List<Object> results = readJDBC(context.getKeys(), replacedParams);
+        String replacedParams = replaceParams(context, getTransformedText(context, connectionString));
+        List<Object> results = readJDBC(context.getKeys(), replacedParams, getTransformedText(context, exec));
 
         for (int i = 0; i < targetPropList.size(); i++)
             targetPropList.get(i).change(results.get(i), context);
-        
+
         return FlowResult.FINISH;
     }
 
-    private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString) throws SQLException, SQLHandledException {
+    private List<Object> readJDBC(ImMap<PropertyInterface, ? extends ObjectValue> params, String connectionString, String exec) throws SQLException, SQLHandledException {
         SQLSyntax syntax = DefaultSQLSyntax.getSyntax(connectionString);
         OperationOwner owner = OperationOwner.unknown;
 
@@ -53,14 +62,14 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
 
         try {
             int tableParamNum = 0;
-            ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
+            ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
             MExclMap<String, ParseInterface> mParamObjects = MapFact.mExclMap(orderInterfaces.size());
             for(int i=0,size=orderInterfaces.size();i<size;i++) {
                 PropertyInterface param = orderInterfaces.get(i);
                 ObjectValue paramValue = params.get(param);
-                
+
                 ParseInterface parse = null;
-                
+
                 if(paramValue instanceof DataObject) {
                     DataClass paramClass = (DataClass) ((DataObject) paramValue).objectClass;
                     if (paramClass instanceof DynamicFormatFileClass) {
@@ -81,10 +90,10 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
                         parse = paramValue.getParse(paramClass.getType(), syntax);
                 } else
                     parse = AbstractParseInterface.SAFENULL; // тут получается, что типа нет, но он и не нужен (STRUCT'ы не имеют смысла, за cast типов отвечает сама внешняя SQL команда, все safe соответственно ни writeParam, ни getType вызваться не могут / не должны)
-                
+
                 mParamObjects.exclAdd(getParamName(String.valueOf(i+1)), parse);
             }
-            ImMap<String, ParseInterface> paramObjects = mParamObjects.immutable(); 
+            ImMap<String, ParseInterface> paramObjects = mParamObjects.immutable();
 
             ParsedStatement parsed = SQLCommand.preparseStatement(exec, paramObjects, syntax).parseStatement(conn, syntax);
 
@@ -94,7 +103,7 @@ public class ExternalDBActionProperty extends ExternalActionProperty {
                     paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
 
                 boolean isResultSet = parsed.statement.execute();
-                
+
                 List<Object> results = new ArrayList<>();
                 while(true) {
                     if(isResultSet)

@@ -24,6 +24,7 @@ import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -561,7 +562,7 @@ public abstract class LogicsModule {
 
     // ------------------- Export property action ----------------- //
 
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases,
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, final ImList<Type> types,
                                          LCP targetProp, boolean conditional, String separator, boolean noHeader, String charset, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
@@ -571,31 +572,36 @@ public abstract class LogicsModule {
                 return exprs.get(i);
             }
         });
+        ImMap<String, Type> aliasesTypes = aliases.mapOrderValues(new GetIndex<Type>() {
+            public Type getMapValue(int i) {
+                return types.get(i);
+            }
+        });
 
         ExtendContextActionProperty exportAction;
         if (type == FormExportType.CSV)
             exportAction = new ExportCSVDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, separator, noHeader, charset);
         else if (type == FormExportType.DBF)
             exportAction = new ExportDBFDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, charset);
         else if (type == FormExportType.JSON)
             exportAction = new ExportJSONDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp);
         else if (type == FormExportType.XML)
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp);
         else if (type == FormExportType.JDBC)
             exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, false);
         else
             exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs,
+                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                 conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, true);
 
 

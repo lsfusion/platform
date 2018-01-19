@@ -85,7 +85,7 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
-    public Object format(Color value) {
+    public String formatString(Color value) {
         return String.valueOf(value.getRGB());
     }
 

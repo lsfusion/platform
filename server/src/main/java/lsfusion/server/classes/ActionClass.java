@@ -93,7 +93,7 @@ public class ActionClass extends DataClass<Object> {
     }
 
     @Override
-    public Object format(Object value) {
+    public String formatString(Object value) {
         throw new RuntimeException("not supported");
     }
 

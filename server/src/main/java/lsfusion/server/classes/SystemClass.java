@@ -93,7 +93,7 @@ public class SystemClass extends DataClass<Long> {
     }
 
     @Override
-    public String format(Long value) {
+    public String formatString(Long value) {
         return value == null ? null : String.valueOf(value);
     }
 

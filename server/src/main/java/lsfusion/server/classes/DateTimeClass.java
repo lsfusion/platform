@@ -122,7 +122,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public String format(Timestamp value) {
+    public String formatString(Timestamp value) {
         return value == null ? null : getDateTimeFormat().format(value);
     }
 

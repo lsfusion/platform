@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -70,5 +71,40 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     @Override
     public boolean isFlex() {
         return true;
+    }
+
+    private static boolean isParseNullValue(String value) {
+        return value.equals("");
+    }
+
+    private static String getParseNullValue() {
+        return "";
+    }
+
+    public static Type getUnknownTypeNull() { // хак для общения нетипизированными параметрами
+        return IntegerClass.instance;
+    }
+    protected boolean checkParseUnknownTypeNull(Object o) {
+        if(o instanceof String) {
+            if(!isParseNullValue((String)o))
+                throw new RuntimeException("passed not null string parameter instead of byte array");
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public T parse(Object o) throws ParseException {
+        String s = (String) o;
+        if(isParseNullValue(s))
+            return null;
+        return parseString(s);
+    }
+
+    @Override
+    public Object format(T value) {
+        if(value == null)
+            return getParseNullValue();
+        return formatString(value);
     }
 }

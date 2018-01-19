@@ -53,7 +53,12 @@ public class DynamicFormatFileClass extends FileClass {
     }
 
     @Override
-    public byte[] format(byte[] value) {
-        return value;
+    protected byte[] parseNotNull(byte[] b) {
+        return b;
+    }
+
+    @Override
+    protected byte[] formatNotNull(byte[] b) {
+        return b;
     }
 }

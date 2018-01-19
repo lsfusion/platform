@@ -31,9 +31,9 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
 
     public ExportDBFDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
+                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
                                        String charset) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
 
         this.charset = charset == null ? "UTF-8" : charset;
     }

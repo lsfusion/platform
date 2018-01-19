@@ -55,10 +55,7 @@ public class SignatureMatcher {
     }
 
     public static boolean isEqualsCompatible(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses) {
-        assert interfaceClasses != null;
-        if (paramClasses == null) {
-            return true;
-        }
+        assert interfaceClasses != null && paramClasses != null;
         if (interfaceClasses.size() != paramClasses.size()) {
             return false;
         }

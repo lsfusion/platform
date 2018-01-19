@@ -12,6 +12,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
+import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -30,6 +31,7 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
     private final String extension;
     protected final ImOrderSet<String> fields;
     private ImMap<String, CalcPropertyInterfaceImplement<I>> exprs;
+    private ImMap<String, Type> types;
     private final CalcPropertyInterfaceImplement<I> where;
 
     private final LCP targetProp;
@@ -38,11 +40,12 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
 
     public ExportDataActionProperty(LocalizedString caption, String extension,
                                     ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                    ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+                                    ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
         super(caption, innerInterfaces, mapInterfaces);
         this.extension = extension;
         this.fields = fields;
         this.exprs = exprs;
+        this.types = types;
         this.where = where;
         this.targetProp = targetProp;
 
@@ -76,10 +79,9 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
                 public Type getType(String value) {
                     Type propertyType = query.getPropertyType(value);
                     if(propertyType == null) {
-                        CalcPropertyInterfaceImplement<I> implement = exprs.get(value);
-                        if(implement instanceof CalcPropertyMapImplement) {
-                            propertyType = ((CalcPropertyMapImplement) implement).property.getType();
-                        }
+                        propertyType = types.get(value);
+                        if(propertyType == null)
+                            propertyType = AbstractType.getUnknownTypeNull();
                     }
                     return propertyType;
                 }

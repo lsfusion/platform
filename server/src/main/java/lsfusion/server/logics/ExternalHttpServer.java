@@ -12,6 +12,7 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.remote.RemoteLogics;
 import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -93,15 +94,14 @@ public class ExternalHttpServer extends MonitorServer {
             }
         }
 
-        private String getContentType(HttpExchange request) {
-            StringBuilder result = new StringBuilder();
+        private ContentType getContentType(HttpExchange request) {
             List<String> contentTypeList = request.getRequestHeaders().get("Content-Type");
             if (contentTypeList != null) {
                 for (String contentType : contentTypeList) {
-                    result.append(contentType).append(";");
+                    return ContentType.parse(contentType);
                 }
             }
-            return result.toString();
+            return null;
         }
 
         private void sendOKResponse(HttpExchange request) throws IOException {

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -25,8 +26,8 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
 
     public ExportXMLDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
     }
 
     @Override
@@ -38,22 +39,19 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
             for (ImMap<String, Object> row : rows) {
                 Element rowElement = new Element("row");
                 for (String key : row.keyIt()) {
-                    Object cellValue = fieldTypes.getType(key).format(row.get(key));
+                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
                     if (cellValue != null) {
                         Element element = new Element(key);
-                        if (cellValue instanceof String)
-                            element.addContent((String) cellValue);
-                        else if (cellValue instanceof byte[])
-                            element.addContent(Base64.encodeBase64String((byte[]) cellValue));
+                        element.addContent(cellValue);
                         rowElement.addContent(element);
                     }
                 }
                 rootElement.addContent(rowElement);
             }
 
-            XMLOutputter xmlOutput = new XMLOutputter();
+            XMLOutputter xmlOutput = new XMLOutputter(); // UTF-8 encoding
             xmlOutput.setFormat(Format.getPrettyFormat());
-            try (PrintWriter fw = new PrintWriter(file)) {
+            try (PrintWriter fw = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                 xmlOutput.output(new Document(rootElement), fw);
             }
             return IOUtils.getFileBytes(file);

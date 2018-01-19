@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property.actions.exporting.json;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +35,7 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                 exportNode(exportArray, "group", rootNode);
 
             file = File.createTempFile("exportForm", ".json");
-            try (PrintWriter out = new PrintWriter(file)) {
+            try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                 out.println(rootElement.toString());
             }
             return IOUtils.getFileBytes(file);

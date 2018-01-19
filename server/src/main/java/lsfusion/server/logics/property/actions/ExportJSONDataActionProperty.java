@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -26,8 +27,8 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
 
     public ExportJSONDataActionProperty(LocalizedString caption, String extension,
                                         ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, where, targetProp);
+                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
     }
 
     @Override
@@ -39,18 +40,15 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
             for (ImMap<String, Object> row : rows) {
                 JSONObject rowElement = new JSONOrderObject();
                 for (String key : row.keyIt()) {
-                    Object cellValue = fieldTypes.getType(key).format(row.get(key));
+                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
                     if (cellValue != null) {
-                        if (cellValue instanceof String)
-                            rowElement.put(key, cellValue);
-                        else if (cellValue instanceof byte[])
-                            rowElement.put(key, Base64.encodeBase64String((byte[]) cellValue));
+                        rowElement.put(key, cellValue);
                     }
                 }
                 rootElement.put(rowElement);
             }
 
-            try (PrintWriter out = new PrintWriter(file)) {
+            try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                 out.println(rootElement.toString());
             }
             return IOUtils.getFileBytes(file);

@@ -146,7 +146,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
-    public String format(Long value) {
+    public String formatString(Long value) {
         return value == null ? null : String.valueOf(value);
     }
 

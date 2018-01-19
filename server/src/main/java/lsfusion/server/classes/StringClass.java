@@ -23,7 +23,7 @@ import java.util.Collection;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.cmp;
 
-public class StringClass extends DataClass {
+public class StringClass extends DataClass<String> {
 
     private final static Collection<StringClass> strings = new ArrayList<>();
 
@@ -39,7 +39,7 @@ public class StringClass extends DataClass {
         return String.class;
     }
 
-    public Object getDefaultValue() {
+    public String getDefaultValue() {
         return "";
     }
 
@@ -85,7 +85,7 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public String format(Object value) {
+    public String formatString(String value) {
         return value == null ? null : String.valueOf(value);
     }
 
@@ -205,7 +205,7 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public Object read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+    public String read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return read(set.getString(name));
     }
 
@@ -215,9 +215,9 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public int getSize(Object value) {
+    public int getSize(String value) {
         assert length.isUnlimited();
-        return ((String)value).length();
+        return value.length();
     }
 
     @Override

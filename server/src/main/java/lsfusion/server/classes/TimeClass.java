@@ -50,7 +50,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
-    public String format(Time value) {
+    public String formatString(Time value) {
         return value == null ? null : getTimeFormat().format(value);
     }
 

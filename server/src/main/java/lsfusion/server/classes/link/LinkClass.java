@@ -152,7 +152,7 @@ public abstract class LinkClass extends DataClass<String> {
     }
 
     @Override
-    public String format(String value) {
+    public String formatString(String value) {
         return value;
     }
 }

@@ -1,35 +1,37 @@
 package lsfusion.base;
 
 import lsfusion.interop.RemoteLogicsInterface;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
 
+import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExternalUtils {
 
-    public static String textPlainType = "text/plain";
-    public static String multipartMixedType = "multipart/mixed";
-    public static String nullString = "XJ4P3DGG6Z71MI72G2HF3H0UEM14D17A";
-    public static String nullObject = "NULL";
+    public static final String defaultCSVCharset = "UTF-8";
+    public static final String defaultXMLJSONCharset = "UTF-8";
 
-    private static List<String> humanReadableExtensions = Arrays.asList("xml", "json");
+    public static final Charset stringCharset = Consts.UTF_8;
+    public static final ContentType TEXT_PLAIN = ContentType.create(
+            "text/plain", stringCharset);
+    public static final ContentType MULTIPART_MIXED = ContentType.create(
+            "multipart/mixed", stringCharset);
 
     private static final String ACTION_CN_PARAM = "action";
     private static final String SCRIPT_PARAM = "script";
@@ -37,67 +39,41 @@ public class ExternalUtils {
     private static final String RETURNS_PARAM = "returns";
     private static final String PROPERTY_PARAM = "property";
 
-    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, String requestContentType) throws IOException, MessagingException {
-        List<Object> paramsList = getRequestParams(getParameterValues(query, PARAMS_PARAM), is, requestContentType);
+    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
+        List<Object> paramsList = BaseUtils.mergeList(getParameterValues(query, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
         List<String> returns = getParameterValues(query, RETURNS_PARAM);
-        List<Object> returnList = new ArrayList<>();
+        List<Object> paramList = new ArrayList<>();
 
         String filename = "export";
 
         if (uri.startsWith("/exec")) {
             String action = getParameterValue(query, ACTION_CN_PARAM);
-            returnList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
+            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/eval")) {
-            String script = getParameterValue(query, SCRIPT_PARAM);
+            Object script = getParameterValue(query, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
                 //Первый параметр считаем скриптом
-                script = formatParam(paramsList.get(0));
+                script = paramsList.get(0);
                 paramsList = paramsList.subList(1, paramsList.size());
             }
-            if (uri.startsWith("/eval/action") && script != null) {
-                //оборачиваем в run без параметров
-                script = "run() = {" + script + ";\n};";
-            }
-            returnList = remoteLogics.eval(script, returns.toArray(new String[returns.size()]), paramsList.toArray());
+            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/read")) {
             String property = getParameterValue(query, PROPERTY_PARAM);
             if (property != null) {
                 filename = property;
-                returnList.addAll(remoteLogics.read(property, paramsList.toArray()));
+                paramList.addAll(remoteLogics.read(property, paramsList.toArray()));
             }
         }
 
         HttpEntity entity = null;
         String contentDisposition = null;
 
-        if (!returnList.isEmpty()) {
-            if (returnList.size() > 1) {
-                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-                builder.setContentType(ContentType.MULTIPART_FORM_DATA);
-                for (int i = 0; i < returnList.size(); i++) {
-                    Object returnEntry = returnList.get(i);
-                    if (returnEntry instanceof byte[])
-                        builder.addPart("param" + i, new ByteArrayBody(BaseUtils.getFile((byte[]) returnEntry), getContentType(BaseUtils.getExtension((byte[]) returnEntry)), "filename"));
-                    else
-                        builder.addPart("param" + i, new StringBody((String) returnEntry, ContentType.TEXT_PLAIN));
-                }
-                entity = builder.build();
-            } else {
-                Object returnEntry = returnList.get(0);
-                if (returnEntry instanceof byte[]) {
-                    String extension = BaseUtils.getExtension((byte[]) returnEntry);
-                    byte[] fileBytes = BaseUtils.getFile((byte[]) returnEntry);
-                    if(humanReadableExtensions.contains(extension)) {
-                        entity = new StringEntity(new String(fileBytes), getContentType(extension));
-                    } else {
-                        entity = new ByteArrayEntity(fileBytes, getContentType(extension));
-                        contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + extension;
-                    }
-                } else {
-                    entity = new StringEntity((String) returnEntry, ContentType.TEXT_PLAIN);
-                }
-            }
+        if (!paramList.isEmpty()) {
+            Result<String> singleFileExtension = new Result<>();
+            entity = getInputStreamFromList(paramList, singleFileExtension);
+
+            if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
+                contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
         }
         return new ExternalResponse(entity, contentDisposition);
     }
@@ -111,23 +87,33 @@ public class ExternalUtils {
                 return ContentType.create("image/" + extension);
             case "":
                 return ContentType.APPLICATION_OCTET_STREAM;
-                default:
-                    return ContentType.create("application/" + extension);
+            case "csv":
+                return ContentType.create("text/" + extension, defaultCSVCharset);
+            case "json":
+            case "xml":
+                return ContentType.create("text/" + extension, defaultXMLJSONCharset);
+            default:
+                return ContentType.create("application/" + extension);
         }
     }
 
-    public static byte[] getExtensionFromContentType(String contentType) {
-        Pattern p = Pattern.compile("(application|image)/(.*)");
-        Matcher m = p.matcher(contentType);
-        return m.matches() ? m.group(2).getBytes() : null;
-    }
+    public static String getExtensionFromContentType(ContentType contentType, Result<Boolean> humanReadable) {
+        Pattern p = Pattern.compile("\\b(application|image)/(\\w*)\\b");
+        String mimeType = contentType.getMimeType();
+        Matcher m = p.matcher(mimeType);
+        if(m.find()) {
+            humanReadable.set(false);
+            return m.group(2);
+        }
 
-    public static String getNullValue(boolean isString) {
-        return isString ? nullString : nullObject;
-    }
+        p = Pattern.compile("\\btext/(xml|json|csv)\\b");
+        m = p.matcher(mimeType);
+        if(m.find()) {
+            humanReadable.set(true);
+            return m.group(1);
+        }
 
-    public static boolean isNullValue(String value, boolean isString) {
-        return value.equals(isString ? nullString : nullObject);
+        return null;
     }
 
     private static String getParameterValue(String query, String key) {
@@ -146,30 +132,72 @@ public class ExternalUtils {
         return values;
     }
 
-    private static List<Object> getRequestParams(List<String> getParams, InputStream is, String contentType) throws IOException, MessagingException {
-        List<Object> paramsList = getParams != null ? new ArrayList<Object>(getParams) : new ArrayList<>();
-        boolean multipartPost = contentType != null && contentType.contains("multipart");
-        byte[] postParams = IOUtils.readBytesFromStream(is);
-        if (postParams.length > 0) {
-            if (multipartPost) {
-                MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(postParams, multipartMixedType));
+    private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
+        assert object instanceof InputStream || (object instanceof String && convertedToString);
+        if(object instanceof InputStream)
+            object = IOUtils.readBytesFromStream((InputStream) object);
+        Result<Boolean> humanReadable = new Result<>();
+        String extension = getExtensionFromContentType(contentType, humanReadable);
+        if(extension != null) { // CUSTOMFILE
+            byte[] file;
+            if(humanReadable.result && convertedToString)
+                file = ((String)object).getBytes(contentType.getCharset());
+            else
+                file = (byte[])object;
+            return BaseUtils.mergeFileAndExtension(file, extension.getBytes());
+        } else {
+            if(!convertedToString)
+                object = new String((byte[])object, contentType.getCharset());
+            return object;
+        }
+    }
+    // возвращает или byte[] для CustomFile или String для остальных, contentType может быть null если нет параметров
+    public static List<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
+        List<Object> paramsList = new ArrayList<>();
+        if (contentType != null) { // если есть параметры, теоретически можно было бы пытаться по другому угадать
+            String mimeType;
+            if ((mimeType = contentType.getMimeType()).startsWith("multipart/")) {
+                byte[] postParams = IOUtils.readBytesFromStream(is);
+                MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(postParams, mimeType));
                 for (int i = 0; i < multipart.getCount(); i++) {
-                    Object param = multipart.getBodyPart(i).getContent();
-                    paramsList.add(param instanceof ByteArrayInputStream ? IOUtils.readBytesFromStream((ByteArrayInputStream) param) : param);
+                    BodyPart bodyPart = multipart.getBodyPart(i);
+                    Object param = bodyPart.getContent();
+                    paramsList.add(getRequestParam(param, ContentType.parse(bodyPart.getContentType()), true)); // multipart автоматически text/* возвращает как String
                 }
             } else {
-                paramsList.add(postParams);
+                paramsList.add(getRequestParam(is, contentType, false));
             }
         }
         return paramsList;
     }
 
-    private static String formatParam(Object param) {
-        if (param instanceof byte[])
-            param = new String((byte[]) param);
-        if (param instanceof String)
-            return ((String) param).isEmpty() ? null : (String) param;
-        else return null;
+    // paramList byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
+    public static HttpEntity getInputStreamFromList(List<Object> paramList, Result<String> singleFileExtension) {
+        HttpEntity entity;
+        int paramCount = paramList.size();
+        if (paramCount > 1) {
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.setContentType(ExternalUtils.MULTIPART_MIXED);
+            for (int i = 0; i < paramCount; i++) {
+                Object value = paramList.get(i);
+                if (value instanceof byte[])
+                    builder.addPart("param" + i, new ByteArrayBody(BaseUtils.getFile((byte[]) value), getContentType(BaseUtils.getExtension((byte[]) value)), "filename"));
+                else
+                    builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
+            }
+            entity = builder.build();
+        } else {
+            Object value = BaseUtils.single(paramList);
+            if (value instanceof byte[]) {
+                String extension = BaseUtils.getExtension((byte[]) value);
+                entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value), getContentType(extension));
+                if(singleFileExtension != null)
+                    singleFileExtension.set(extension);
+            } else {
+                entity = new StringEntity((String) value, ExternalUtils.TEXT_PLAIN);
+            }
+        }
+        return entity;
     }
 
     public static class ExternalResponse {

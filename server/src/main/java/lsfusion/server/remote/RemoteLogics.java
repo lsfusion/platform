@@ -2,7 +2,6 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExternalUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -37,9 +36,9 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -351,10 +350,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(String script, String[] returnCanonicalNames, Object[] params) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
-        if (script != null) {
+        if (paramScript != null) {
             try {
+                String script = StringClass.text.parse(paramScript);
+                if (action) {
+                    //оборачиваем в run без параметров
+                    script = "run() = {" + script + ";\n};";
+                }
                 ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
 
                 String runName = module.getName() + ".run";
@@ -377,7 +381,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
             if (lcp != null) {
                 try (DataSession session = createSession()) {
-                    return readReturnProperty(session, lcp, getParams(session, lcp, params));
+                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params));
                 }
             } else
                 throw new RuntimeException(String.format("Property %s was not found", property));
@@ -392,7 +396,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         try (DataSession session = createSession()) {
             ExecutionStack stack = getStack();
 
-            property.execute(session, stack, getParams(session, property, params));
+            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params));
 
             if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {
@@ -437,44 +441,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         }
         if (!jdbcSingleRow)
-            returnList.add(formatReturnValue(returnType, returnValue));
+            returnList.add(returnType.format(returnValue));
         return returnList;
-    }
-
-    private Object formatReturnValue(Type returnType, Object returnValue) {
-        Object result;
-        if(returnValue != null) {
-            result = returnType.format(returnValue);
-            if(returnType instanceof StaticFormatFileClass)
-                result = BaseUtils.mergeFileAndExtension((byte[]) result, ((StaticFormatFileClass) returnType).getOpenExtension((byte[]) result).getBytes());
-        } else {
-                result = ExternalUtils.getNullValue(returnType instanceof StringClass);
-        }
-        return result;
-    }
-
-    private ObjectValue[] getParams(DataSession session, LP property, Object[] params) throws ParseException, SQLException, SQLHandledException {
-        ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
-        ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
-        for (int i = 0; i < interfaces.size(); i++) {
-            ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
-            Object value = null;
-            if (params.length > i) {
-                Object param = params[i];
-                Type type = valueClass.getType();
-                if (type instanceof FileClass) {
-                    value = param instanceof byte[] ? param : null;
-                } else {
-                    if (param instanceof byte[])
-                        param = new String((byte[]) param);
-                    if (param instanceof String)
-                        value = !((String) param).isEmpty() ? type.parseString((String) param) : null;
-                }
-            }
-            objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
-        }
-        return objectValues;
     }
 
     @Override

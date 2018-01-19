@@ -74,7 +74,7 @@ public class JDBCTable {
         public Object parseString(String s) throws ParseException {
             throw new UnsupportedOperationException();
         }
-        public Object format(Object value) {
+        public String formatString(Object value) {
             throw new UnsupportedOperationException();
         }
         public String getSID() {

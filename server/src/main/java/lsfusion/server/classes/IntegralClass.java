@@ -107,7 +107,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
-    public String format(T value) {
+    public String formatString(T value) {
         return value == null ? null : String.valueOf(value);
     }
 }

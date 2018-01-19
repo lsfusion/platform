@@ -965,14 +965,14 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B> List<B> addList(K1 item, List<K2> list) {
+    public static <B> List<B> addList(B item, List<? extends B> list) {
         List<B> result = new ArrayList<>();
         result.add(item);
         result.addAll(list);
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, List<K2> list2) {
+    public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
         List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);
         return result;

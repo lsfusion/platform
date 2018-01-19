@@ -134,7 +134,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public Object format(Boolean value) {
+    public String formatString(Boolean value) {
         return value == null ? null : String.valueOf(value);
     }
 

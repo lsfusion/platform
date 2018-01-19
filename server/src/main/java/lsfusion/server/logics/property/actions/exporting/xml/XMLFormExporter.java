@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions.exporting.xml;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -33,7 +33,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
             file = File.createTempFile("exportForm", ".xml");
             XMLOutputter xmlOutput = new XMLOutputter();
             xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset));
-            try(PrintWriter fw = new PrintWriter(file)) {
+            try(PrintWriter fw = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                 xmlOutput.output(new Document(rootElement), fw);
             }
             return IOUtils.getFileBytes(file);

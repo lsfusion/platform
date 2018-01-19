@@ -125,7 +125,7 @@ public class DateClass extends DataClass<Date> {
         }
     }
 
-    public String format(Date value) {
+    public String formatString(Date value) {
         return value == null ? null : getDateFormat().format(value);
     }
 

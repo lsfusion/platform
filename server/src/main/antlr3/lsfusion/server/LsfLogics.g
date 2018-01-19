@@ -1817,7 +1817,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, separator, noHeader, charset);
+			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, separator, noHeader, charset);
 	}
 } 
 	:	'EXPORT'
@@ -2444,6 +2444,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $property = $importFormADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
+    |   externalADB=externalActionDefinitionBody[context, dynamic] { $property = $externalADB.property;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $property = $emptyADB.property; }
 	;
 
@@ -2462,7 +2463,6 @@ contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature
 	}
 }
 	:	customADB=customActionDefinitionBody { $property = $customADB.property; $signature = $customADB.signature; }
-	|   externalADB=externalActionDefinitionBody { $property = $externalADB.property; $signature = $externalADB.signature; }
     |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
@@ -2740,46 +2740,37 @@ customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature
 	    ('NULL' { allowNullValue = true; })?
 	;
 
-externalActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
+externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	boolean allowNullValue = false;
-	List<String> classes = null;
-	ExternalFormat format = null;
-	String conStr = null;
-	String exec = null;
-	Integer body = null;
-	PropertyUsage queryFile = null;
-	String charset = null;
-	
-	List<PropertyUsage> targetList = new ArrayList<PropertyUsage>();
+    List<LPWithParams> params = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
       if($type.format == ExternalFormat.DB) {
-        $property = self.addScriptedExternalDBActionProp(conStr, exec, targetList);
+        $property = self.addScriptedExternalDBActionProp($type.conStr, $type.exec, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.DBF) {
-        $property = self.addScriptedExternalDBFActionProp(conStr, queryFile, charset, targetList);
+        $property = self.addScriptedExternalDBFActionProp($type.conStr, $type.charset, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.JAVA) {
-        $property = self.addScriptedExternalJavaActionProp();
+        $property = self.addScriptedExternalJavaActionProp(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp(conStr, body, targetList);
+        $property = self.addScriptedExternalHTTPActionProp($type.conStr, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
-        $property = self.addScriptedExternalLSFActionProp(conStr, body, targetList);
+        $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, params, context, $tl.propUsages);
       }
-      $signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
 	:	'EXTERNAL'
-	    (type = externalFormat{ format = $type.format; conStr = $type.conStr; exec = $type.exec; body = $type.body; queryFile = $type.queryFile; charset = $type.charset; })
-	    ('TO' tl = nonEmptyPropertyUsageList { targetList = $tl.propUsages; })?
+	    type = externalFormat[context, dynamic]
+	    ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
+	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat returns [ExternalFormat format, String conStr, String exec, Integer body, PropertyUsage queryFile, String charset]
-	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('EXEC' execVal = stringLiteral { $exec = $execVal.val; })?
-	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
-	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } 'APPEND' queryFileVal = propertyUsage { $queryFile = $queryFileVal.propUsage; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = stringLiteral { $conStr = $conStrVal.val; } ('BODY' bodyVal = intLiteral { $body = $bodyVal.val; })?
-	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = stringLiteral { $conStr = $conStrVal.val; }
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LPWithParams conStr, LPWithParams exec, boolean eval = false, String charset]
+	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
+	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | 'EVAL' { $eval = true; } ) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
+	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	;
 
 newWhereActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]

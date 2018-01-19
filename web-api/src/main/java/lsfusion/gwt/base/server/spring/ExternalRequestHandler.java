@@ -2,6 +2,7 @@ package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.ExternalUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -19,8 +20,9 @@ public class ExternalRequestHandler implements HttpRequestHandler {
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             String query = request.getQueryString();
+            String contentType = request.getContentType();
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
-                    query == null ? null : URLDecoder.decode(query, "utf-8"), request.getInputStream(), request.getContentType());
+                    query == null ? null : URLDecoder.decode(query, "utf-8"), request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
 
             if (responseHttpEntity.response != null) {
                 response.setContentType(responseHttpEntity.response.getContentType().getValue());

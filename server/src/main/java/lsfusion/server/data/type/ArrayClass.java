@@ -88,7 +88,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
     }
 
     @Override
-    public Object format(T[] value) {
+    public String formatString(T[] value) {
         throw new RuntimeException("not supported");
     }
 

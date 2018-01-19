@@ -1376,28 +1376,55 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LP addScriptedExternalJavaActionProp() {
+
+    public ImList<Type> getTypesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
+        List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, params);
+        MList<Type> mTypes = ListFact.mList(classes.size());
+        for(int i=0,size=paramProps.size();i<size;i++) {
+            Type type = null;
+
+            ResolveClassSet paramClass = classes.get(i);
+            if(paramClass != null)
+                type = paramClass.getType();
+            else {
+                LP property = paramProps.get(i).property;
+                if(property != null) {
+                    ValueClass valueClass = property.property.getValueClass(ClassType.valuePolicy);
+                    if (valueClass != null)
+                        type = valueClass.getType();
+                }
+            }
+            mTypes.add(type);
+        }
+        return mTypes.immutableList();
+    }
+
+    public ImList<Type> getTypesForExternalProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
+        return getTypesByParamProperties(paramProps, params);
+    }
+
+    public LPWithParams addScriptedExternalJavaActionProp(List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) {
         throw new UnsupportedOperationException("CUSTOM JAVA not supported");
     }
 
-    private String transformExternalText(String text) {
-        return transformFormulaText(text, ExternalActionProperty.getParamName("$1"));
-    }
-    public LP addScriptedExternalDBActionProp(String connectionString, String exec, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalDBActionProperty(findFormulaParameters(connectionString + " " + exec).size(), transformExternalText(connectionString), transformExternalText(exec), findLCPsByPropertyUsage(toPropertyUsageList)));
+    public LPWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLCPsByPropertyUsage(toPropertyUsageList))),
+                BaseUtils.mergeList(BaseUtils.toList(connectionString, exec), params));
     }
 
-    public LP addScriptedExternalDBFActionProp(String connectionString, PropertyUsage queryFile, String charset, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalDBFActionProperty(findFormulaParameters(connectionString).size(), transformExternalText(connectionString), findLCPByPropertyUsage(queryFile), charset, findLCPsByPropertyUsage(toPropertyUsageList)));
+    public LPWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalDBFActionProperty(getTypesForExternalProp(params, context), charset, findLCPsByPropertyUsage(toPropertyUsageList))),
+                BaseUtils.addList(connectionString, params));
     }
 
-    public LP addScriptedExternalHTTPActionProp(String connectionString, Integer bodyParamsCount, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(connectionString).size(), bodyParamsCount == null ? 0 : bodyParamsCount, transformExternalText(connectionString), findLCPsByPropertyUsage(toPropertyUsageList)));
+    public LPWithParams addScriptedExternalHTTPActionProp(LPWithParams connectionString, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsByPropertyUsage(toPropertyUsageList))),
+                BaseUtils.addList(connectionString, params));
     }
 
-    public LP addScriptedExternalLSFActionProp(String action, Integer bodyParamsCount, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        String execQuery = String.format("http://localhost:%s/exec?action=%s", ThreadLocalContext.getRmiManager().getHttpPort(), transformExternalText(action));
-        return addAProp(new ExternalHTTPActionProperty(findFormulaParameters(action).size(), getSignatureSize(action, bodyParamsCount), execQuery, findLCPsByPropertyUsage(toPropertyUsageList)));
+    public LPWithParams addScriptedExternalLSFActionProp(LPWithParams connectionString, LPWithParams action, boolean eval, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), BaseUtils.toList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false)), new ArrayList<Integer>()))),
+                BaseUtils.add(params, action), context, toPropertyUsageList);
     }
 
     private int getSignatureSize(String action, Integer bodyParamsCount) {
@@ -1409,13 +1436,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return bodyParamsCount == null ? 0 : bodyParamsCount;
     }
 
-    private List<LCP> findLCPsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = new ArrayList<>();
+    private ImList<LCP> findLCPsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        if(propUsages == null)
+            return ListFact.EMPTY();
+
+        MList<LCP> mProps = ListFact.mList(propUsages.size());
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = findLCPByPropertyUsage(propUsage);
-            props.add(lcp);
+            mProps.add(lcp);
         }
-        return props;
+        return mProps.immutableList();
     }
 
     public LPWithParams addScriptedEmailProp(LPWithParams fromProp,
@@ -2302,7 +2332,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return params;
     }
 
-    private String transformFormulaText(String text, String textTo) { // так как $i не постфиксный (например $1 и $12)
+    public static String transformFormulaText(String text, String textTo) { // так как $i не постфиксный (например $1 и $12)
         return text.replaceAll("\\$(\\d+)", textTo);
     }
 
@@ -2906,7 +2936,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
+    public ImList<Type> getTypesForExportProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
+        return getTypesByParamProperties(paramProps, params);
+    }
+
+    public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
                                                         PropertyUsage fileProp, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.formExportFile;
@@ -2936,8 +2970,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         });
 
+        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
+
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, targetProp, whereProperty != null, separator, noHeader, charset, resultParams.toArray());
+        LP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, targetProp, whereProperty != null, separator, noHeader, charset, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 
