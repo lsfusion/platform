@@ -436,9 +436,9 @@ public class ScriptingErrorLog {
     }
 
     public void emitAmbiguousPropertyNameError(ScriptParser parser, List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
-        StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', found properties:", name));
+        StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', was found in modules:", name));
         for (NamespaceElementFinder.FoundItem<LP<?, ?>> item : foundItems) {
-            msg.append("\n\t").append(item.value.property.toString());                
+            msg.append("\n\t").append(item.toString());                
         }
         emitSimpleError(parser, msg.toString());
     }

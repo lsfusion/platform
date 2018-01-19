@@ -96,7 +96,7 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
             name = name.substring(0, signatureIndex);
         }
         if (name.indexOf(DELIMITER) != name.lastIndexOf(DELIMITER)) {
-            throw new ParseException(String.format("Compound name '%s' must be in '[namespace.]name' format", name));            
+            throw new ParseException(String.format("compound name '%s' must be in '[namespace.]name' format", name));            
         }
         checkForCorrectness(name);
         return name;
@@ -116,7 +116,7 @@ public class PropertyCompoundNameParser extends AbstractPropertyNameParser {
             try {
                 List<ResolveClassSet> result = parseClassList();
                 if (pos < len) {
-                    throw new ParseException("Parse error");
+                    throw new ParseException("parse error");
                 }
                 return result;
             } catch (RuntimeException re) {

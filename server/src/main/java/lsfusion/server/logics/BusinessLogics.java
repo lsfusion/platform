@@ -2151,11 +2151,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    public LP findProperty(String canonicalName) {
+    public LP<?, ?> findProperty(String canonicalName) {
         return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
 
-    public LP findProperty(String namespace, String name, ValueClass... classes) {
+    public LP<?, ?> findProperty(String namespace, String name, ValueClass... classes) {
         return BusinessLogicsResolvingUtils.findProperty(this, namespace, name, ClassCanonicalNameUtils.getResolveList(classes));
     }
 

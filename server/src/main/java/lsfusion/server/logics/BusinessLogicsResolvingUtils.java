@@ -82,7 +82,7 @@ public class BusinessLogicsResolvingUtils {
         }
     }
 
-    public static LP findPropertyByCanonicalName(BusinessLogics<?> BL, String canonicalName) {
+    public static LP<?, ?> findPropertyByCanonicalName(BusinessLogics<?> BL, String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
         List<FoundItem<LP<?, ?>>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(), 
                                                                  parser.getSignature(), new ModuleEqualLPFinder(false));
@@ -90,16 +90,16 @@ public class BusinessLogicsResolvingUtils {
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
 
-    public static LP findPropertyByCompoundName(BusinessLogics<?> BL, String compoundName) {
+    public static LP<?, ?> findPropertyByCompoundName(BusinessLogics<?> BL, String compoundName) {
         PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
         return findProperty(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName);
     }
 
-    public static LP findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature) {
+    public static LP<?, ?> findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature) {
         return findProperty(BL, namespace, name, signature, CompoundNameUtils.createCompoundName(namespace, name));
     }
 
-    private static LP findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName) {
+    private static LP<?, ?> findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName) {
         Collection<String> namespaces = getPropertyConsideredNamespaces(BL, namespace);
 
         List<FoundItem<LP<?, ?>>> foundItems = new ArrayList<>();
