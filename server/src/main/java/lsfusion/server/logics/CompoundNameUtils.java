@@ -9,6 +9,14 @@ public class CompoundNameUtils {
         }
     }
 
+    public static String createCompoundName(String namespace, String name) {
+        String compoundName = "";
+        if (namespace != null) {
+            compoundName = namespace + DELIMITER;
+        }
+        return compoundName + name;
+    } 
+    
     public static String getName(String compoundName) {
         checkForCorrectness(compoundName);
         return getNameWithoutCheck(compoundName);

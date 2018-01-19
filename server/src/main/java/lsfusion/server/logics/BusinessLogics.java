@@ -2155,13 +2155,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
 
-//    public LP findProperty(String namespace, String name, ValueClass... classes) {
-//        List<ResolveClassSet> classSets = null;
-//        if (classes.length > 0) {
-//            classSets = getResolveList(classes);
-//        }
-//        return findProperty(namespace, name, classSets);
-//    }
+    public LP findProperty(String namespace, String name, ValueClass... classes) {
+        return BusinessLogicsResolvingUtils.findProperty(this, namespace, name, ClassCanonicalNameUtils.getResolveList(classes));
+    }
 
     public LP<?, ?> findPropertyByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findPropertyByCompoundName(this, compoundName);

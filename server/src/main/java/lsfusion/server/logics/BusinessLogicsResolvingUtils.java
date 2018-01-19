@@ -92,20 +92,26 @@ public class BusinessLogicsResolvingUtils {
 
     public static LP findPropertyByCompoundName(BusinessLogics<?> BL, String compoundName) {
         PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
-        String name = parser.getName();
-        Collection<String> namespaces = getPropertyConsideredNamespaces(BL, compoundName);
-        
-        List<FoundItem<LP<?, ?>>> foundItems = new ArrayList<>();
-        for (String namespaceName : namespaces) {
-            foundItems.addAll(findProperties(BL, namespaceName, name, parser.getSignature(), new ModuleLPFinder()));
-        }
-        
-        List<FoundItem<LP<?, ?>>> filteredResult = NamespaceLPFinder.filterFoundProperties(foundItems);
-        return findElementResult(compoundName, filteredResult);
+        return findProperty(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName);
     }
 
-    private static Collection<String> getPropertyConsideredNamespaces(BusinessLogics<?> BL, String compoundName) {
-        String namespace = PropertyCompoundNameParser.getNamespace(compoundName);
+    public static LP findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature) {
+        return findProperty(BL, namespace, name, signature, CompoundNameUtils.createCompoundName(namespace, name));
+    }
+
+    private static LP findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName) {
+        Collection<String> namespaces = getPropertyConsideredNamespaces(BL, namespace);
+
+        List<FoundItem<LP<?, ?>>> foundItems = new ArrayList<>();
+        for (String namespaceName : namespaces) {
+            foundItems.addAll(findProperties(BL, namespaceName, name, signature, new ModuleLPFinder()));
+        }
+
+        List<FoundItem<LP<?, ?>>> filteredResult = NamespaceLPFinder.filterFoundProperties(foundItems);
+        return findElementResult(sourceName, filteredResult);
+    }
+    
+    private static Collection<String> getPropertyConsideredNamespaces(BusinessLogics<?> BL, String namespace) {
         if (namespace != null) {
             return Collections.singletonList(namespace);
         } else {
@@ -119,7 +125,5 @@ public class BusinessLogicsResolvingUtils {
         NamespaceLPFinder nsFinder = new NamespaceLPFinder(finder, BL.getNamespaceModules(namespace));
         return nsFinder.findInNamespace(namespace, name, classes);
     }
-
-
 }
 
