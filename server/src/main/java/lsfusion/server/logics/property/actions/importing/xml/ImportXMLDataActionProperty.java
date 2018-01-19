@@ -20,8 +20,8 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     String root;
     boolean attr;
 
-    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean attr, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, baseLM);
+    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean list, boolean attr, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, list, baseLM);
         this.attr = attr;
     }
 
@@ -32,8 +32,8 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
-        return new ImportXMLIterator(file, properties, ids, root, attr) {
+    public ImportIterator getIterator(byte[] file) throws IOException, JDOMException {
+        return new ImportXMLIterator(file, properties, ids, root, list, attr) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {
                 return getSourceColumns(mapping);
