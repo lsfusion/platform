@@ -2,8 +2,10 @@ package lsfusion.server.logics.property.actions.importing;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -31,8 +33,8 @@ import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
 
@@ -48,8 +50,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     protected final List<String> ids;
     protected final List<LCP> properties;
-
-    protected final boolean list;
+    
     private final LCP<?> importedProperty;
 
     public final static Map<String, Integer> XLSColumnsMapping = new HashMap<>();
@@ -104,10 +105,6 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     }
 
     public ImportDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        this(paramsCount, ids, properties, false, baseLM);
-    }
-
-    public ImportDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean list, BaseLogicsModule baseLM) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -116,7 +113,6 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         }));
         this.ids = ids;
         this.properties = properties;
-        this.list = list;
         this.importedProperty = baseLM.imported;
     }
 
@@ -134,34 +130,31 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                     }
                     ImportIterator iterator = getIterator((byte[]) file);
 
-                    MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
-                    ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties);
-                    if(!list)
-                        props = props.addOrderExcl(importedProperty);
+                    Object row;
+                    int i = 0;
+                    ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(importedProperty);
+
                     for (LCP prop : props) {
                         if (prop.property instanceof DataProperty)
                             context.getSession().dropChanges((DataProperty) prop.property);
                     }
 
-                    SessionTableUsage importTable;
-                    if(list) {
-                        importTable = new SessionTableUsage("idaatabke", SetFact.<String>EMPTYORDER(), props, new Type.Getter<String>() {
-                            public Type getType(String key) {
-                                throw new RuntimeException("not supported");
-                            }
-                        }, new Type.Getter<LCP>() {
-                            @Override
-                            public Type getType(LCP key) {
-                                return key.property.getType();
-                            }
-                        });
-
-                        Object row = iterator.nextRow();
-                        if (row != null && row instanceof List) {
+                    SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("idaatabke", ImportDataActionProperty.type, props, new Type.Getter<LCP>() {
+                        @Override
+                        public Type getType(LCP key) {
+                            return key.property.getType();
+                        }
+                    });
+                    MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
+                    while ((row = iterator.nextRow()) != null) {
+                        if (row instanceof List) {
+                            DataObject rowKey = new DataObject(i++, ImportDataActionProperty.type);
                             final List<String> finalRow = (List<String>) row;
-                            mRows.exclAdd(MapFact.<String, DataObject>EMPTY(), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                            mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                                 public ObjectValue getMapValue(LCP prop) {
-                                    if (properties.indexOf(prop) < finalRow.size()) {
+                                    if (prop == importedProperty) {
+                                        return ObjectValue.getValue(true, LogicalClass.instance);
+                                    } else if (properties.indexOf(prop) < finalRow.size()) {
                                         Type type = prop.property.getType();
                                         Object parsedObject = null;
                                         try {
@@ -176,39 +169,6 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                                 }
                             }));
                         }
-                    } else {
-                        importTable = new SingleKeyTableUsage<>("idaatabke", ImportDataActionProperty.type, props, new Type.Getter<LCP>() {
-                            @Override
-                            public Type getType(LCP key) {
-                                return key.property.getType();
-                            }
-                        });
-                        Object row;
-                        int i = 0;
-                        while ((row = iterator.nextRow()) != null) {
-                            if (row instanceof List) {
-                                DataObject rowKey = new DataObject(i++, ImportDataActionProperty.type);
-                                final List<String> finalRow = (List<String>) row;
-                                mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                                    public ObjectValue getMapValue(LCP prop) {
-                                        if (prop == importedProperty) {
-                                            return ObjectValue.getValue(true, LogicalClass.instance);
-                                        } else if (properties.indexOf(prop) < finalRow.size()) {
-                                            Type type = prop.property.getType();
-                                            Object parsedObject = null;
-                                            try {
-                                                String value = finalRow.get(properties.indexOf(prop));
-                                                parsedObject = value == null ? null : type.parseString(value);
-                                            } catch (lsfusion.server.data.type.ParseException ignored) {
-                                            }
-                                            return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
-                                        }
-
-                                        return NullValue.instance;
-                                    }
-                                }));
-                            }
-                        }
                     }
                     OperationOwner owner = context.getSession().getOwner();
                     SQLSession sql = context.getSession().sql;
@@ -219,7 +179,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                     Where where = importJoin.getWhere();
                     try {
                         for (LCP lcp : props) {
-                            PropertyChange propChange = new PropertyChange(list ? MapFact.EMPTYREV() : MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
+                            PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
                             context.getEnv().change((CalcProperty) lcp.property, propChange);
                         }
                     } finally {
