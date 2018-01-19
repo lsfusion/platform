@@ -2989,7 +2989,7 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props);
 	}
 }
-	:	'EVAL' expr=propertyExpression[context, dynamic] ('OBJECTS' exprList=propertyExpressionList[context, dynamic])?
+	:	'EVAL' expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
 	;
 	
 drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
