@@ -233,8 +233,8 @@ moduleHeader
 	}
 }
 	:	'MODULE' name=ID ';'
-		('REQUIRE' list=nonEmptyIdList ';' { requiredModules = $list.ids; })? 
-		('PRIORITY' list=nonEmptyIdList ';' { namespacePriority = $list.ids; })? 
+		('REQUIRE' list=nonEmptyIdList ';' { requiredModules = $list.ids; })?
+		('PRIORITY' list=nonEmptyIdList ';' { namespacePriority = $list.ids; })?
 		('NAMESPACE' nname=ID ';' { namespaceName = $nname.text; })?
 	;
 
@@ -319,13 +319,13 @@ classInstancesAndParents returns [List<String> names, List<LocalizedString> capt
 				(firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
 				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); })*)?
 			'}'
-			(clist=classParentsList ';' { $parents = $clist.list; })? 	
+			(clist=classParentsList ';' { $parents = $clist.list; })?
 		|
 			(clist=classParentsList { $parents = $clist.list; })? ';'
 		)
 	; 
 
-classParentsList returns [List<String> list] 
+classParentsList returns [List<String> list]
 	:	':' parentList=nonEmptyClassIdList { $list = $parentList.ids; }
 	; 
 
@@ -871,7 +871,7 @@ formHintsList
 	}
 }
 	:	(('HINTNOUPDATE') | ('HINTTABLE' { hintNoUpdate = false; })) 'LIST'
-		list=nonEmptyPropertyUsageList	
+		list=nonEmptyPropertyUsageList
 	;
 
 formEventsList
@@ -1618,7 +1618,7 @@ recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 structCreationPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCCProp($list.props);		
+		$property = self.addScriptedCCProp($list.props);
 	}
 }
 	:	'STRUCT'
@@ -1774,6 +1774,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean noHeader = false;
 	String charset = null;
 	LPWithParams root = null;
+	boolean hasListOption = false;
 	boolean attr = false;
 
 }
@@ -1784,7 +1785,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		else if($type.format == ImportSourceFormat.CSV)
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
-        	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, root, attr);
+        	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, root, hasListOption, attr);
         else if($type.format == ImportSourceFormat.DBF)
             $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages, charset);
 		else
@@ -1793,7 +1794,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 } 
 	:	'IMPORT' 
 		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
-		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; }
+		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; }
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic]
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
@@ -1947,11 +1948,11 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 		)? 
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, LPWithParams root, boolean attr]
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, boolean hasListOption, LPWithParams root, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('LIST' { $hasListOption = true; }|'TABLE')? ('ATTR' { $attr = true; })?
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; }
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
@@ -3381,7 +3382,7 @@ constraintStatement
 			}
 		}
 		('CHECKED' { checked = true; }
-			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })? 
+			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })?
 		)?
 		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		';'
@@ -4091,7 +4092,7 @@ metaCodeDeclarationStatement
 	}
 }
 	
-	:	'META' id=ID '(' list=idList ')'  
+	:	'META' id=ID '(' list=idList ')'
 		{
 			tokens = self.grabMetaCode($id.text);
 		}
@@ -4108,7 +4109,7 @@ metaCodeStatement
 @after {
 	self.runMetaCode($id.sid, $list.ids, lineNumber, enabledMeta);
 }
-	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
+	:	'@' id=compoundID '(' list=metaCodeIdList ')'
 		('{' 	
 		{ 	enabledMeta = true; 
 			if (self.getParser().enterGeneratedMetaState()) {  

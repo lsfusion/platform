@@ -12,7 +12,6 @@ import org.jdom.JDOMException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +19,8 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     String root;
     boolean attr;
 
-    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean attr, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, baseLM);
+    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean hasListOption, boolean attr, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, hasListOption, baseLM);
         this.attr = attr;
     }
 
@@ -32,8 +31,8 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
-        return new ImportXMLIterator(file, properties, ids, root, attr) {
+    public ImportIterator getIterator(byte[] file) throws IOException, JDOMException {
+        return new ImportXMLIterator(file, properties, ids, root, hasListOption, attr) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {
                 return getSourceColumns(mapping);

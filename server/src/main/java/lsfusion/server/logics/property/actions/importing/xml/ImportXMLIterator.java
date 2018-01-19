@@ -20,7 +20,7 @@ public abstract class ImportXMLIterator extends ImportIterator {
     private final List<LCP> properties;
     private final List<String> ids;
 
-    public ImportXMLIterator(byte[] file, List<LCP> properties, List<String> ids, String root, boolean attr) throws JDOMException, IOException {
+    public ImportXMLIterator(byte[] file, List<LCP> properties, List<String> ids, String root, boolean hasListOption, boolean attr) throws JDOMException, IOException {
         this.properties = properties;
         this.attr = attr;
         this.ids = ids;
@@ -29,14 +29,14 @@ public abstract class ImportXMLIterator extends ImportIterator {
         if (root != null) {
             Element rootNode = findRootNode(document.getRootElement(), root);
             if (rootNode != null) {
-                iterator = rootNode.getChildren().iterator();
+                //если hasListOption, то берём сам объект, иначе - его children.
+                iterator = hasListOption ? new SingletonIterator(rootNode) : rootNode.getChildren().iterator();
             } else {
                 throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
             }
         } else {
-            //если root отсутствует, то берём только объект верхнего уровня
             Element rootNode = document.getRootElement();
-            iterator = new SingletonIterator(rootNode);
+            iterator = hasListOption ? new SingletonIterator(rootNode) : rootNode.getChildren().iterator();
         }
 
     }
