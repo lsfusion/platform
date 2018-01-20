@@ -174,6 +174,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     }
     public ValueExpr(DataObject dataObject) {
         this(dataObject.object, dataObject.objectClass);
+        this.dataObject = dataObject;
     }
 
     @Override

@@ -238,7 +238,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return FlowResult.FINISH;
     }
     
-    public final static DataClass type = IntegerClass.instance; 
+    public final static IntegerClass type = IntegerClass.instance; 
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
         List<Integer> columns = new ArrayList<>();

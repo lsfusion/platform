@@ -1372,11 +1372,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public DataObject getDefaultDataObject() {
         Type type = getType();
         if(type instanceof DataClass) {
-            DataClass dataClass = (DataClass) getType();
-            Object defaultValue = ((DataClass) type).getDefaultValue();
-            if(dataClass instanceof StringClass)
-                defaultValue = LocalizedString.create((String)defaultValue, false);
-            return new DataObject(defaultValue, dataClass);
+            return ((DataClass) type).getDefaultObjectValue();
         } else
             return null;
     }
@@ -1384,8 +1380,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {
         if(notNull) {
             ObjectValue defaultValue = getDefaultDataObject();
-            if(defaultValue != null)
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(defaultValue.getValue(), (StaticClass) ((DataObject) defaultValue).objectClass));
+            if(defaultValue != null) {
+                Object value = defaultValue.getValue();
+                StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
+                if(objectClass instanceof StringClass)
+                    value = LocalizedString.create((String)value, false);
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(value, objectClass));
+            }
             return null;
         } else
             return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createNull());
