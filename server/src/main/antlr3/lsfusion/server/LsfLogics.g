@@ -1746,14 +1746,15 @@ reflectionPropertyType returns [ReflectionPropertyType type]
 
 readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
+    boolean clientAction = false;
 	boolean delete = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, $moveExpr.property, delete);
+		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, $moveExpr.property, clientAction, delete);
 	}
 }
-	:	'READ' expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
+	:	'READ' ('CLIENT' {clientAction = true; })? expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
 	;
 
 writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
