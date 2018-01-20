@@ -330,7 +330,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         }            
         
         // тут можно было бы еще дополнитенльо отфильтровать values, у которых нет correlations, но пока не будем, так как используется только при isComplex'ах (то есть редко)
-        NoPropertyWhereTableUsage<T> table = whereProp.property.createWhereTable(debugInfo, filterInterfaces);
+        NoPropertyWhereTableUsage<T> table = whereProp.property.createWhereTable(debugInfo, filterInterfaces, usedMapping.rightJoin(mapDataValues)); // right join так как по идее where есть и full (то есть все ключи есть, а значит и mapDataValues) 
         usedTable.set(table);
 
         mapKeys = mapKeys.addRevExcl(KeyExpr.getMapKeys(mapDataValues.keys()));

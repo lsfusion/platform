@@ -160,7 +160,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     public Type getInterfaceType(T propertyInterface, ClassType classType) {
-        return getInterfaceClasses(classType).get(propertyInterface).getType();
+        ValueClass valueClass = getInterfaceClasses(classType).get(propertyInterface);
+        return valueClass != null ? valueClass.getType() : null;
     }
 
     public abstract boolean isSetNotNull();
