@@ -22,9 +22,10 @@ public class ModuleEqualLPFinder extends ModulePropertyOrActionFinder<LP<?, ?>> 
     @Override
     protected boolean accepted(LogicsModule module, LP<?, ?> property, List<ResolveClassSet> signature) {
         if (findLocals || !property.property.isLocal()) {
-            boolean equals = SignatureMatcher.isEqualsCompatible(module.getParamClasses(property), signature); // чтобы не вызывать ветку в ResolveOrObjectClassSet.containsAll
-            assert equals == (SignatureMatcher.isCompatible(module.getParamClasses(property), signature, false, false) &&
-                              SignatureMatcher.isCompatible(signature, module.getParamClasses(property), false, false));
+            List<ResolveClassSet> paramClasses = module.getParamClasses(property);
+            boolean equals = SignatureMatcher.isEqualsCompatible(paramClasses, signature); // чтобы не вызывать ветку в ResolveOrObjectClassSet.containsAll
+            assert equals == (SignatureMatcher.isCompatible(paramClasses, signature, false, false) &&
+                              SignatureMatcher.isCompatible(signature, paramClasses, false, false));
             return equals;
         }
         return false;
