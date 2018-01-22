@@ -44,12 +44,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setPattern(LocalizedString lPattern) {
         String pattern = lPattern.getSourceString();
         Type type = target.getType();
-        if(type instanceof IntegralClass) {
+        if (type instanceof IntegralClass) {
             target.format = new DecimalFormat(pattern);
-        } else if(type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
-            SimpleDateFormat format = new SimpleDateFormat(pattern);
-            format.setTimeZone(TimeZone.getTimeZone("GMT"));
-            target.format = format;
+        } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+            target.format = new SimpleDateFormat(pattern);
         }
         target.pattern = pattern;
     }
