@@ -99,17 +99,23 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     private static int getKeyFieldStat(KeyField field, int defStat, Table table) {
-        if(field.type instanceof DataClass)
-            return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
-        else
-            return getObjectFieldStat(defStat, table.getClasses().getCommonClass(field));
+        if (field.type instanceof ObjectType) {
+            AndClassSet commonClass = table.getClasses().getCommonClass(field);
+            if (commonClass != null)
+                return getObjectFieldStat(defStat, commonClass);
+            assert table.getClasses().isFalse();
+        }            
+        return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
     }
 
     private static Stat getPropFieldStat(PropertyField field, Stat defStat, Table table) {
-        if(field.type instanceof DataClass)
-            return defStat.min(field.type.getTypeStat(false));
-        else
-            return getObjectFieldStat(defStat, table.propertyClasses.get(field).getCommonClass(field));
+        if (field.type instanceof ObjectType) {
+            AndClassSet commonClass = table.propertyClasses.get(field).getCommonClass(field);
+            if(commonClass != null)
+                return getObjectFieldStat(defStat, commonClass);
+            assert table.propertyClasses.get(field).isFalse();
+        }
+        return defStat.min(field.type.getTypeStat(false));
     }
 
     protected static TableStatKeys getStatKeys(final Table table, final int count) { // для мн-го наследования
@@ -150,6 +156,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.classes = classes;
         this.propertyClasses = propertyClasses;
 
+        assert !classes.isFalse(); // временно, проверить как такой может полу
         // assert classes.fitTypes();
         // последний or для debug
         assert (this instanceof SerializedTable || this instanceof ImplementTable.InconsistentTable || classes == null) || classes.isEqual(keys.getSet()) && propClassesFull() && assertClasses(); // см. ClassExprWhere.getKeyType
