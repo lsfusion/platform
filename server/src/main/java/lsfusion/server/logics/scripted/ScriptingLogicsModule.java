@@ -2941,7 +2941,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
-                                                        PropertyUsage fileProp, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
+                                                        PropertyUsage fileProp, boolean hasListOption, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.formExportFile;
 
@@ -2973,7 +2973,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
 
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, targetProp, whereProperty != null, separator, noHeader, charset, resultParams.toArray());
+        LP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, targetProp, whereProperty != null, hasListOption, separator, noHeader, charset, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 

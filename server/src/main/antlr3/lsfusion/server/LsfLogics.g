@@ -1813,16 +1813,17 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean noHeader = false;
 	String charset = null;
 	LPWithParams root = null;
+	boolean hasListOption = false;
 	boolean attr = false;
 
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, separator, noHeader, charset);
+			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, hasListOption, separator, noHeader, charset);
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormExportType.XML; }
+		(	'XML' { exportType = FormExportType.XML; } ('LIST' { hasListOption = true; }|'TABLE')?
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?

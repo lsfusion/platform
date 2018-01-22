@@ -563,7 +563,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
 
     protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, final ImList<Type> types,
-                                         LCP targetProp, boolean conditional, String separator, boolean noHeader, String charset, Object... params) {
+                                         LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, String charset, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
@@ -594,7 +594,7 @@ public abstract class LogicsModule {
         else if (type == FormExportType.XML)
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp);
+                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, hasListOption);
         else if (type == FormExportType.JDBC)
             exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,

@@ -16,18 +16,21 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.apache.commons.codec.binary.Base64;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ExportXMLDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
+    private boolean hasListOption;
 
     public ExportXMLDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
+                                       ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
+                                       boolean hasListOption) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
+        this.hasListOption = hasListOption;
     }
 
     @Override
@@ -36,17 +39,17 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
         try {
             Element rootElement = new Element("export");
 
-            for (ImMap<String, Object> row : rows) {
-                Element rowElement = new Element("row");
-                for (String key : row.keyIt()) {
-                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
-                    if (cellValue != null) {
-                        Element element = new Element(key);
-                        element.addContent(cellValue);
-                        rowElement.addContent(element);
-                    }
+            if (hasListOption) {
+                if (!rows.isEmpty()) {
+                    ImMap<String, Object> row = rows.get(0);
+                    exportRow(rootElement, row, fieldTypes);
                 }
-                rootElement.addContent(rowElement);
+            } else {
+                for (ImMap<String, Object> row : rows) {
+                    Element rowElement = new Element("row");
+                    exportRow(rowElement, row, fieldTypes);
+                    rootElement.addContent(rowElement);
+                }
             }
 
             XMLOutputter xmlOutput = new XMLOutputter(); // UTF-8 encoding
@@ -58,6 +61,17 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
         } finally {
             if (!file.delete())
                 file.deleteOnExit();
+        }
+    }
+
+    private void exportRow(Element parentElement, ImMap<String, Object> row, Type.Getter<String> fieldTypes) {
+        for (String key : row.keyIt()) {
+            String cellValue = fieldTypes.getType(key).formatString(row.get(key));
+            if (cellValue != null) {
+                Element element = new Element(key);
+                element.addContent(cellValue);
+                parentElement.addContent(element);
+            }
         }
     }
 }
