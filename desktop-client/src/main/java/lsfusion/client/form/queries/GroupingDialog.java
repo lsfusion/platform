@@ -9,7 +9,6 @@ import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.biff.DisplayFormat;
 import jxl.format.BorderLineStyle;
-import jxl.format.VerticalAlignment;
 import jxl.write.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
@@ -27,6 +26,7 @@ import lsfusion.client.logics.classes.ClientType;
 import lsfusion.client.logics.classes.link.ClientImageLinkClass;
 import lsfusion.interop.FormGrouping;
 import lsfusion.interop.KeyStrokes;
+import org.apache.poi.xssf.usermodel.*;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 
@@ -40,8 +40,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
@@ -244,6 +243,18 @@ public abstract class GroupingDialog extends JDialog {
             }
         });
 
+        JButton pivotXLSXButton = new JButton(getString("form.queries.grouping.pivot.xlsx"));
+        pivotXLSXButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        pivotXLSXPressed();
+                    }
+                });
+            }
+        });
+
         final JComboBox savedGroupsList = new JComboBox(groupsModel);
         
         // используется с целью обновления состояния при повторном выборе текущей группировки
@@ -324,8 +335,10 @@ public abstract class GroupingDialog extends JDialog {
         JPanel checkNButtonPanel = new JPanel();
         checkNButtonPanel.setLayout(new BoxLayout(checkNButtonPanel, BoxLayout.X_AXIS));
         checkNButtonPanel.add(notNullCheck);
-        if(SystemUtils.IS_OS_WINDOWS)
+        if(SystemUtils.IS_OS_WINDOWS) {
             checkNButtonPanel.add(pivotButton);
+            checkNButtonPanel.add(pivotXLSXButton);
+        }
         checkNButtonPanel.add(executeButton);
 
         JPanel bottomPanel = new JPanel();
@@ -342,6 +355,10 @@ public abstract class GroupingDialog extends JDialog {
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(expandButtonsPanel, BorderLayout.WEST);
+
+        JPanel topExcelPanel = new JPanel();
+        topExcelPanel.setLayout(new BoxLayout(topExcelPanel, BoxLayout.X_AXIS));
+
         JButton excelExport = new JButton(getString("form.queries.grouping.export.to.excel"));
         excelExport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -352,7 +369,21 @@ public abstract class GroupingDialog extends JDialog {
                 }
             }
         });
-        topPanel.add(excelExport, BorderLayout.EAST);
+        topExcelPanel.add(excelExport);
+
+        JButton excelExportXLSX = new JButton(getString("form.queries.grouping.export.to.xlsx"));
+        excelExport.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    exportToXLSX(false);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        topExcelPanel.add(excelExportXLSX);
+
+        topPanel.add(topExcelPanel, BorderLayout.EAST);
 
         JPanel eastPanel = new JPanel();
         eastPanel.setLayout(new BorderLayout());
@@ -376,6 +407,7 @@ public abstract class GroupingDialog extends JDialog {
     protected abstract void savePressed(FormGrouping grouping);
     public abstract void updatePressed();
     public abstract void pivotPressed();
+    public abstract void pivotXLSXPressed();
 
     private void verifySpinners() {
         int maxValue = getMaxSpinnerValue();
@@ -716,7 +748,7 @@ public abstract class GroupingDialog extends JDialog {
             }
             WritableCellFormat cellFormat = createCellFormat(null, true);
             cellFormat.setWrap(true);
-            cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
+            cellFormat.setVerticalAlignment(jxl.format.VerticalAlignment.CENTRE);
             sheet.addCell(new jxl.write.Label(i, 0, columnName, cellFormat));
         }
                
@@ -729,9 +761,62 @@ public abstract class GroupingDialog extends JDialog {
         return file;
     }
 
+    private File exportToXLSX(boolean isPivot) throws IOException, WriteException {
+        File file = File.createTempFile("tableContents", ".xlsx");
+        WorkbookSettings ws = new WorkbookSettings();
+        ws.setGCDisabled(true);
+        try(XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet(getString("form.queries.grouping.sheet1"));
+
+            addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot(), new int[treeTable.getColumnCount()]);
+
+            for (int i = 0; i < treeTable.getColumnCount(); i++) {
+                String columnName = treeTable.getColumnName(i);
+                if (i != 0) {
+                    columnName = columnName.substring(columnName.indexOf('>') + 1, columnName.lastIndexOf('<'));
+                    if (columnName.contains("↑") || columnName.contains("↓")) {
+                        columnName = columnName.substring(0, columnName.lastIndexOf(' '));
+                    }
+                }
+                XSSFCell cell = getOrCreateCell(sheet, 0, i);
+                XSSFCellStyle cellStyle2 = cell.getCellStyle();
+                cellStyle2.setWrapText(true);
+                cellStyle2.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+                //TODO: как сделать bold?
+                //cellStyle2.setBold();
+                cell.setCellValue(columnName);
+                cell.setCellStyle(cellStyle2);
+            }
+            workbook.write(new FileOutputStream(file));
+        }
+
+        if(!isPivot)
+            Runtime.getRuntime().exec("cmd.exe /c start " + file);
+
+        return file;
+    }
+
+    private XSSFRow getOrCreateRow(XSSFSheet sheet, int index) {
+        XSSFRow row = sheet.getRow(index);
+        if(row == null)
+            row = sheet.createRow(index);
+        return row;
+    }
+
+    private XSSFCell getOrCreateCell(XSSFSheet sheet, int row, int cell) {
+        return getOrCreateCell(getOrCreateRow(sheet, row), cell);
+    }
+
+    private XSSFCell getOrCreateCell(XSSFRow row, int index) {
+        XSSFCell cell = row.getCell(index);
+        if(cell == null)
+            cell = row.createCell(index);
+        return cell;
+    }
+
     public void exportToExcelPivot() {
         try {
-            File file = exportToExcel(true);
+            File file = exportToXLSX(true);
 
             Integer xlRowField = 1;
             Integer xlColumnField = 2;
@@ -895,6 +980,77 @@ public abstract class GroupingDialog extends JDialog {
             sheet.setRowGroup(parentRow , currentRow - 1, false);
         }
         
+        return currentRow;
+    }
+
+    private int addExcelSubrows(XSSFSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent, int[] maxWidth) throws WriteException {
+        if (parent.getParent() != null) {
+            List<Object> row = treeTable.getRow(parent);
+            for (int column = 0; column <= row.size(); column++) {
+                Object value = treeTable.getValueAt(parent, column);
+                int length = 0;
+                if (value instanceof BigDecimal || value instanceof Double) {
+                    length = new DecimalFormat("#,##0.00").format(value).length();
+                    //createCellFormat(NumberFormats.THOUSANDS_FLOAT, false)
+                    getOrCreateCell(sheet, currentRow, column).setCellValue(Double.valueOf(value.toString()));
+                } else if (value instanceof Number) {
+                    length = new DecimalFormat("#,##0").format(value).length();
+                    //createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)
+                    getOrCreateCell(sheet, currentRow, column).setCellValue(Double.valueOf(value.toString()));
+                } else if (value instanceof Time) {
+                    length = new SimpleDateFormat("H:mm:ss").format(value).length();
+                    //createCellFormat(DateFormats.FORMAT8, false))
+                    getOrCreateCell(sheet, currentRow, column).setCellValue((Date) value);
+                } else if (value instanceof Date) {
+                    length = new SimpleDateFormat("M/d/yy").format(value).length();
+                    //createCellFormat(DateFormats.DEFAULT, false)
+                    getOrCreateCell(sheet, currentRow, column).setCellValue((Date) value);
+                } else if (value instanceof Boolean) {
+                    length = value.toString().length();
+                    //createCellFormat(null, false)
+                    getOrCreateCell(sheet, currentRow, column).setCellValue((Boolean) value);
+                } else if (value instanceof byte[]) { // здесь ожидается изображение
+                    //TODO: разобраться, как добавлять image
+                    getOrCreateCell(sheet, currentRow, column).setCellValue("image");
+//                    WritableCellFormat format = new WritableCellFormat();
+//                    format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
+//                    sheet.getWritableCell(column, currentRow).setCellFormat(format);
+//                    sheet.addCell(new Blank(column, currentRow, format));
+//                    sheet.setRowView(currentRow, 500);
+//
+//                    WritableImage image = new WritableImage(column, currentRow, 1, 1, (byte[]) value);
+//                    image.setImageAnchor(WritableImage.MOVE_AND_SIZE_WITH_CELLS);
+//                    sheet.addImage(image);
+                } else {
+                    length = value == null ? 0 : value.toString().length();
+                    //createCellFormat(null, false)
+                    getOrCreateCell(sheet, currentRow, column).setCellValue(value == null ? "" : value.toString());
+                }
+
+
+                //TODO: разобраться, что это
+                /*if(maxWidth[column]<length){
+                    maxWidth[column] = length;
+                    CellView cv = new CellView();
+                    cv.setSize(256 * Math.max(10, length));
+                    sheet.setColumnView(column, cv);
+                }*/
+            }
+            currentRow++;
+        }
+
+        int parentRow = currentRow;
+        Enumeration<? extends MutableTreeTableNode> children = parent.children();
+        while (children.hasMoreElements()) {
+            GroupingTreeTable.SortableTreeTableNode child = (GroupingTreeTable.SortableTreeTableNode) children.nextElement();
+
+            currentRow = addExcelSubrows(sheet, currentRow, child, maxWidth);
+        }
+        //TODO: разобраться, что это
+        /*if (parent.children().hasMoreElements() && parent.getParent() != null) {
+            sheet.setRowGroup(parentRow , currentRow - 1, false);
+        }*/
+
         return currentRow;
     }
 

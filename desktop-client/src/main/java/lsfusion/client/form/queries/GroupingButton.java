@@ -53,6 +53,16 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                     }
                                 }
 
+                                @Override
+                                public void pivotXLSXPressed() {
+                                    updateData(true);
+                                    try {
+                                        dialog.exportToExcelPivot();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+
                                 private void updateData(boolean isPivot) {
                                     Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
                                     Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
