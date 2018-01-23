@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
@@ -966,7 +967,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         // UPWHERE, берем все вершины keep у которых нет исходящих в keep (не "промежуточные"), если есть в upWheres берем оттуда, иначе берем первый попавшийся edge у вершины из которой нет выходов (проблема правда в том что InnerFollows не попадут и можно было бы взять класс вместо значения, но это не критично)
         ImSet<BaseExpr> translate = mTranslate.immutable();
         ImSet<BaseExpr> fullExprs = mFullExprs.immutable();
-        JoinExprTranslator translator = new JoinExprTranslator(KeyExpr.getMapKeys(translate), fullExprs);
+        ImRevMap<BaseExpr, KeyExpr> translateKeys = KeyExpr.getMapKeys(translate);
+        JoinExprTranslator translator = new JoinExprTranslator(translateKeys, fullExprs);
         ImMap<BaseJoin, MiddleTopKeep> middleTopKeeps = BaseUtils.immutableCast(mMiddleTreeKeeps.immutable().filterFnValues(new SFunctionSet<MiddleTreeKeep>() {
             public boolean contains(MiddleTreeKeep element) {
                 return element instanceof MiddleTopKeep;
@@ -983,6 +985,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             Where upJoinWhere = keep.getWhere(join, upWheres, allKeep ? null : translator);
 
             assert !allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
+            if(debugInfoWriter != null)
+                ServerLoggers.assertLog(!allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator)), "ASSERTION CHECK");
 
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
@@ -1024,7 +1028,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
         if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translate +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
         
         return where;
     }
