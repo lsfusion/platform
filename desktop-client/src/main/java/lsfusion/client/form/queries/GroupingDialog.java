@@ -372,7 +372,7 @@ public abstract class GroupingDialog extends JDialog {
         topExcelPanel.add(excelExport);
 
         JButton excelExportXLSX = new JButton(getString("form.queries.grouping.export.to.xlsx"));
-        excelExport.addActionListener(new ActionListener() {
+        excelExportXLSX.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
                     exportToXLSX(false);
