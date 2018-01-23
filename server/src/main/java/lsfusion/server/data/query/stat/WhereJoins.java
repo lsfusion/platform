@@ -976,6 +976,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }));
         ImMap<BaseJoin, TopKeep> keeps = MapFact.addExcl(mTopKeys.immutable().toMap(TopTreeKeep.instance), middleTopKeeps);
         
+        boolean assertCheck = false;
         Where upPushWhere = Where.TRUE;
         for(int i=0,size=keeps.size();i<size;i++) {
             BaseJoin join = keeps.getKey(i);
@@ -986,7 +987,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
             assert !allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator));
             if(debugInfoWriter != null)
-                ServerLoggers.assertLog(!allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator)), "ASSERTION CHECK");
+                assertCheck = assertCheck || !(!allKeep || BaseUtils.hashEquals(upJoinWhere, upJoinWhere.translateExpr(translator)));
 
             upPushWhere = upPushWhere.and(upJoinWhere);
         }
@@ -1028,7 +1029,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
         if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translateKeys +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
         
         return where;
     }
