@@ -3758,7 +3758,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 moveNavigatorElementStatement[NavigatorElement parentElement]
-	:	'MOVE' elem=navigatorElementSelectorCreator (caption=localizedStringLiteral)? opts=navigatorElementOptions
+	:	'MOVE' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3826,15 +3826,6 @@ navigatorElementSelector returns [NavigatorElement element]
 		{
 			if (inPropParseState()) {
 				$element = self.findNavigatorElement($cid.sid);
-			}
-		}
-	;
-
-navigatorElementSelectorCreator returns [NavigatorElement element]
-	:	cid=compoundID
-		{
-			if (inPropParseState()) {
-				$element = self.findOrCreateNavigatorElement($cid.sid, getCurrentDebugPoint());
 			}
 		}
 	;

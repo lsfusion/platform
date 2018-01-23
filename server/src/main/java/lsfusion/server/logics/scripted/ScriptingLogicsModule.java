@@ -30,7 +30,6 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
@@ -44,7 +43,6 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.*;
-import lsfusion.server.logics.property.actions.external.ExternalActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalDBActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalDBFActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
@@ -3028,7 +3026,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
             if (propUsage.classNames == null) {
-                propUsage.classNames = hasListOption ? Collections.<String>emptyList() : Collections.singletonList("INTEGER"); // делаем так для лучшего сообщения об ошибке
+                propUsage.classNames = hasListOption ? Collections.<String>emptyList() : Collections.singletonList("INTEGER"); 
             }
             LCP<?> lcp = findLCPByPropertyUsage(propUsage);
             ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
@@ -3440,28 +3438,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LAP<?> findNavigatorAction(PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert actionUsage != null;
         if (actionUsage.classNames == null) {
-            actionUsage.classNames = Collections.emptyList(); // делаем так для лучшего сообщения об ошибке
+            actionUsage.classNames = Collections.emptyList(); 
         }
         LAP<?> action = findLAPByPropertyUsage(actionUsage);
         checks.checkNavigatorAction(action);
         return action;
-    }
-    
-    public NavigatorElement findOrCreateNavigatorElement(String name, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
-        try {
-            NavigatorElement ne = findNavigatorElement(name);
-            if (ne instanceof NavigatorForm) {
-                try {
-                    FormEntity form = findForm(name);
-                    if (!form.getCanonicalName().equals(((NavigatorForm)ne).getForm().getCanonicalName())) {
-                        return createScriptedNavigatorElement(null, null, point, null, name);
-                    }
-                } catch (ScriptingErrorLog.SemanticErrorException e) {}
-            }
-            return ne;
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            return createScriptedNavigatorElement(null, null, point, null, name);
-        }
     }
     
     public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
