@@ -40,6 +40,10 @@ public abstract class InnerExpr extends NullableExpr implements JoinData {
     }
 
     public abstract class NotNull extends NullableExpr.NotNull {
+        
+        public InnerJoin getInnerDebugJoin() {
+            return InnerExpr.this.getInnerJoin();
+        }
 
         @Override
         protected String getNotSource(CompileSource compile) {

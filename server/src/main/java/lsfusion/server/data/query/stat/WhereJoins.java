@@ -1029,9 +1029,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         Where where = GroupExpr.create(translatedPushGroup, upPushWhere, translatedPushGroup.keys().toMap()).getWhere();
 
         if(debugInfoWriter != null)
-            debugInfoWriter.addLines("TRANSLATE : " + translateKeys +'\n' + "FULL EXPRS : " + fullExprs +'\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + upPushWhere + " " + upPushWhere.getOuterKeys() + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
+            debugInfoWriter.addLines("TRANSLATE : " + translateKeys + '\n' + "FULL EXPRS : " + fullExprs + '\n' + "KEEPS : " + keeps + '\n' + "PROCEEDED : " + proceeded + '\n' + "PUSHED INNER WHERE : " + getDetailedWhere(upPushWhere) + " " + assertCheck + '\n' + " PUSHED KEYS : " + pushedKeys + '\n' + "PUSHED GROUP : " + translatedPushGroup + '\n' + "PUSHED WHERE : " + where);
         
         return where;
+    }
+
+    private String getDetailedWhere(Where upPushWhere) {
+        return upPushWhere + (upPushWhere instanceof InnerExpr.NotNull ? ((InnerExpr.NotNull) upPushWhere).getInnerDebugJoin().getJoins() + "" : "") + " " + upPushWhere.getOuterKeys();
     }
 
     private <K extends BaseExpr, Z> CostStat getCost(final QueryJoin pushJoin, final boolean pushLargeDepth, final boolean compileInfo, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseJoin, Cost> indexedStats, final MAddMap<BaseExpr, PropStat> exprStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, ImSet<Edge> edges, final KeyStat keyStat, final StatType type, DebugInfoWriter debugInfoWriter) {
