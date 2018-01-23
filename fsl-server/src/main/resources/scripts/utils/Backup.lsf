@@ -133,8 +133,8 @@ FORM customRestore 'Восстановление данных'
 
 NAVIGATOR {
     configuration {
-        ADD backup;
-        ADD customRestore;
+        NEW backup;
+        NEW customRestore;
     }
 }
 

@@ -336,8 +336,8 @@ DESIGN processMonitor {
 
 NAVIGATOR {
     systemEvents {
-        ADD activeTasks;
-        ADD activeBlocks;
-        ADD processMonitor;
+        NEW activeTasks;
+        NEW activeBlocks;
+        NEW processMonitor;
     }
 }

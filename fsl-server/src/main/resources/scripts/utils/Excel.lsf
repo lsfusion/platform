@@ -100,7 +100,7 @@ DESIGN dialogTemplates {
 NAVIGATOR {
     masterData {
         templatesNavigator {
-            ADD templates;
+            NEW templates;
         }
     }
 }

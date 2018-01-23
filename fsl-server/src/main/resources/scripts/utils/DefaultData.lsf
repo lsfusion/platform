@@ -24,7 +24,7 @@ DESIGN defaultData {
 
 NAVIGATOR {
     application {
-        ADD defaultData;
+        NEW defaultData;
     }
 }
 

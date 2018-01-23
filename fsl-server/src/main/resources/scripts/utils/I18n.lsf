@@ -49,7 +49,7 @@ FORM languages 'Языки'
 
 NAVIGATOR {
     regionalData {
-        ADD languages;
+        NEW languages;
     }
 }
 
@@ -118,7 +118,7 @@ DESIGN translation {
 
 NAVIGATOR {
     regionalData {
-        ADD translation;
+        NEW translation;
     }
 }
 
@@ -179,6 +179,6 @@ FORM dictionaries 'Словари'
 
 NAVIGATOR {
     regionalData {
-        ADD dictionaries;
+        NEW dictionaries;
     }
 }

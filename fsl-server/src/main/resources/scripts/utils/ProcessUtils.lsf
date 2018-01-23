@@ -26,6 +26,6 @@ FORM activeJavaThreads 'Активные java-потоки'
 
 NAVIGATOR {
     systemEvents {
-        ADD activeJavaThreads;
+        NEW activeJavaThreads;
     }
 }

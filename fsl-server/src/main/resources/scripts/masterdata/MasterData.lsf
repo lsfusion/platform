@@ -3,8 +3,8 @@ MODULE MasterData;
 REQUIRE System;
 
 NAVIGATOR {
-    NEW masterData 'Справочники' BEFORE administration WINDOW toolbar IMAGE '/images/catalog.png' {
-        NEW regionalData 'Региональные параметры';
-        NEW templatesNavigator 'Шаблоны';
+    NEW masterData 'Справочники' FOLDER BEFORE administration WINDOW toolbar IMAGE '/images/catalog.png' {
+        NEW regionalData 'Региональные параметры' FOLDER;
+        NEW templatesNavigator 'Шаблоны' FOLDER;
     }
 }

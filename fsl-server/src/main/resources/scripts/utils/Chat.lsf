@@ -573,5 +573,5 @@ seekChat(CustomUser user) += {
 }
 
 NAVIGATOR {
-    ADD fullChat IMAGE '/images/chat.png' BEFORE Authentication.account;
+    NEW fullChat IMAGE '/images/chat.png' BEFORE Authentication.account;
 }

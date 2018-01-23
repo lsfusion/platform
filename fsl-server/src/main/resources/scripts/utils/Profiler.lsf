@@ -428,6 +428,6 @@ setSelected 'Посмотреть дерево вызовов'(ProfileObject po)
 
 NAVIGATOR {
     systemEvents {
-        ADD profiler;
+        NEW profiler;
     }
 }

@@ -105,7 +105,7 @@ DESIGN defaultNumerators {
 
 NAVIGATOR {
     masterData {
-        ADD defaultNumerators;
+        NEW defaultNumerators;
     }
 }
 
