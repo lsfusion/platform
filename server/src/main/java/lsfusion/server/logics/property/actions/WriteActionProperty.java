@@ -135,6 +135,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 if (ftpClient.login(username, password)) {
                     ftpClient.enterLocalPassiveMode();
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                    ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
                     InputStream inputStream = new FileInputStream(file);
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);

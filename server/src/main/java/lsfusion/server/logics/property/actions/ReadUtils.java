@@ -160,24 +160,21 @@ public class ReadUtils {
 
     private static void copyFTPToFile(String path, File file) throws IOException {
         ServerLoggers.importLogger.info(String.format("Reading file from %s", path));
-        List<Object> properties = parseFTPPath(path, 21);
+        FTPPath properties = parseFTPPath(path, 21);
         if (properties != null) {
-            String username = (String) properties.get(0);
-            String password = (String) properties.get(1);
-            String server = (String) properties.get(2);
-            Integer port = (Integer) properties.get(3);
-            String remoteFile = (String) properties.get(4);
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+            if (properties.charset != null)
+                ftpClient.setControlEncoding(properties.charset);
             try {
 
-                ftpClient.connect(server, port);
-                ftpClient.login(username, password);
+                ftpClient.connect(properties.server, properties.port);
+                ftpClient.login(properties.username, properties.password);
                 ftpClient.enterLocalPassiveMode();
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 OutputStream outputStream = new FileOutputStream(file);
-                boolean done = ftpClient.retrieveFile(remoteFile, outputStream);
+                boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
                 outputStream.close();
                 if (!done) {
                     throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
@@ -200,13 +197,9 @@ public class ReadUtils {
     }
 
     private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
-        List<Object> properties = parseFTPPath(path, 22);
+        FTPPath properties = parseFTPPath(path, 22);
         if (properties != null) {
-            String username = (String) properties.get(0);
-            String password = (String) properties.get(1);
-            String server = (String) properties.get(2);
-            Integer port = (Integer) properties.get(3);
-            String remoteFile = (String) properties.get(4);
+            String remoteFile = properties.remoteFile;
             remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
             Session session = null;
@@ -214,8 +207,8 @@ public class ReadUtils {
             ChannelSftp channelSftp = null;
             try {
                 JSch jsch = new JSch();
-                session = jsch.getSession(username, server, port);
-                session.setPassword(password);
+                session = jsch.getSession(properties.username, properties.server, properties.port);
+                session.setPassword(properties.password);
                 java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 session.setConfig(config);
@@ -238,22 +231,17 @@ public class ReadUtils {
     }
 
     private static void deleteFTPFile(String path) throws IOException {
-        List<Object> properties = parseFTPPath(path, 21);
+        FTPPath properties = parseFTPPath(path, 21);
         if (properties != null) {
-            String username = (String) properties.get(0);
-            String password = (String) properties.get(1);
-            String server = (String) properties.get(2);
-            Integer port = (Integer) properties.get(3);
-            String remoteFile = (String) properties.get(4);
             FTPClient ftpClient = new FTPClient();
             try {
 
-                ftpClient.connect(server, port);
-                ftpClient.login(username, password);
+                ftpClient.connect(properties.server, properties.port);
+                ftpClient.login(properties.username, properties.password);
                 ftpClient.enterLocalPassiveMode();
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
-                boolean done = ftpClient.deleteFile(remoteFile);
+                boolean done = ftpClient.deleteFile(properties.remoteFile);
                 if (!done) {
                     throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
                 }
@@ -269,13 +257,9 @@ public class ReadUtils {
     }
 
     private static void deleteSFTPFile(String path) throws JSchException, SftpException {
-        List<Object> properties = parseFTPPath(path, 22);
+        FTPPath properties = parseFTPPath(path, 22);
         if (properties != null) {
-            String username = (String) properties.get(0);
-            String password = (String) properties.get(1);
-            String server = (String) properties.get(2);
-            Integer port = (Integer) properties.get(3);
-            String remoteFile = (String) properties.get(4);
+            String remoteFile = properties.remoteFile;
             remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
             Session session = null;
@@ -283,8 +267,8 @@ public class ReadUtils {
             ChannelSftp channelSftp = null;
             try {
                 JSch jsch = new JSch();
-                session = jsch.getSession(username, server, port);
-                session.setPassword(password);
+                session = jsch.getSession(properties.username, properties.server, properties.port);
+                session.setPassword(properties.password);
                 java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 session.setConfig(config);
@@ -304,18 +288,19 @@ public class ReadUtils {
         }
     }
 
-    private static List<Object> parseFTPPath(String path, Integer defaultPort) {
-        /*sftp|ftp://username:password@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
+    private static FTPPath parseFTPPath(String path, Integer defaultPort) {
+        /*sftp|ftp://username:password;charset@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1); //lstradeby
             String password = connectionStringMatcher.group(2); //12345
-            String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.groupCount() == 4;
-            Integer port = noPort || connectionStringMatcher.group(4) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(4)); //21
-            String remoteFile = connectionStringMatcher.group(noPort ? 4 : 5);
-            return Arrays.asList((Object) username, password, server, port, remoteFile);
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4); //ftp.harmony.neolocation.net
+            boolean noPort = connectionStringMatcher.groupCount() == 5;
+            Integer port = noPort || connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5)); //21
+            String remoteFile = connectionStringMatcher.group(noPort ? 5 : 6);
+            return new FTPPath(username, password, charset, server, port, remoteFile);
         } else return null;
     }
 
@@ -631,6 +616,24 @@ public class ReadUtils {
             this.type = type;
             this.filePath = filePath;
             this.errorCode = errorCode;
+        }
+    }
+
+    private static class FTPPath {
+        String username;
+        String password;
+        String charset;
+        String server;
+        Integer port;
+        String remoteFile;
+
+        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile) {
+            this.username = username;
+            this.password = password;
+            this.charset = charset;
+            this.server = server;
+            this.port = port;
+            this.remoteFile = remoteFile;
         }
     }
 }
