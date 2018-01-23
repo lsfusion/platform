@@ -486,8 +486,8 @@ DESIGN admin {
 
 NAVIGATOR { 
     configuration {
-        ADD Service.admin;
-        ADD Service.reflectionProperties;
+        NEW Service.admin;
+        NEW Service.reflectionProperties;
     }
 }
 

@@ -410,10 +410,10 @@ DESIGN pings {
 
 NAVIGATOR {
     systemEvents {
-        ADD SystemEvents.exceptions;
-        ADD SystemEvents.connections;
-        ADD SystemEvents.launches;
-        ADD SystemEvents.changes;
-        ADD SystemEvents.pings;
+        NEW SystemEvents.exceptions;
+        NEW SystemEvents.connections;
+        NEW SystemEvents.launches;
+        NEW SystemEvents.changes;
+        NEW SystemEvents.pings;
     }
 }

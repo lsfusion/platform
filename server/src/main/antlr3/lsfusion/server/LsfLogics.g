@@ -3748,7 +3748,7 @@ navigatorStatement
 
 navigatorElementStatementBody[NavigatorElement parentElement]
 	:	'{'
-			(	addNavigatorElementStatement[parentElement]
+			(	moveNavigatorElementStatement[parentElement]
 			|	newNavigatorElementStatement[parentElement]
 			|	setupNavigatorElementStatement[parentElement]
 			|	emptyStatement
@@ -3757,8 +3757,8 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	|	emptyStatement
 	;
 
-addNavigatorElementStatement[NavigatorElement parentElement]
-	:	('ADD' | 'MOVE') elem=navigatorElementSelectorCreator (caption=localizedStringLiteral)? opts=navigatorElementOptions
+moveNavigatorElementStatement[NavigatorElement parentElement]
+	:	'MOVE' elem=navigatorElementSelectorCreator (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
@@ -3786,7 +3786,7 @@ navigatorElementDescription[String name, LocalizedString caption] returns [Navig
  		$element = self.createScriptedNavigatorElement($name, $caption, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
  	}	
 }
-	:	'FOLDER'? 
+	:	'FOLDER' 
 	|	'FORM'? formName=compoundID 
 	|	'ACTION' pu=propertyUsage 
 	;

@@ -505,9 +505,9 @@ DESIGN propertyPolicy {
 
 NAVIGATOR {
     security {
-        ADD Security.userRoles;
-        ADD Security.securityPolicy;
-        ADD memoryLimits;
+        NEW Security.userRoles;
+        NEW Security.securityPolicy;
+        NEW memoryLimits;
     }
 }
 

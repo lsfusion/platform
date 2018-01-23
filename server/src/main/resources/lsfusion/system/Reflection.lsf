@@ -458,8 +458,8 @@ DESIGN properties {
 
 NAVIGATOR {
     configuration {
-        ADD Reflection.physicalModel;
-        ADD Reflection.forms;
-        ADD Reflection.properties;
+        NEW Reflection.physicalModel;
+        NEW Reflection.forms;
+        NEW Reflection.properties;
     }
 }

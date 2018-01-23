@@ -234,8 +234,8 @@ DESIGN mail {
 }
 
 NAVIGATOR {
-    //ADD remindUserPass;
+    //NEW remindUserPass;
     configuration {
-        ADD Email.mail;
+        NEW Email.mail;
     }
 }

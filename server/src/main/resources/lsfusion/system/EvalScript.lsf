@@ -191,7 +191,7 @@ DESIGN script {
 
 NAVIGATOR {
     configuration {
-        ADD script;
+        NEW script;
     }
 }
 

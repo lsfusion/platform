@@ -218,6 +218,6 @@ FORM scheduledTaskProperties 'Свойства'
 
 NAVIGATOR {
     configuration {
-        ADD Scheduler.scheduledTask;
+        NEW Scheduler.scheduledTask;
     }
 }
