@@ -1519,7 +1519,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
+    private static Property checkJoinProperty(Property<?> property) {
+        if(property instanceof JoinProperty) {
+            JoinProperty joinProperty = (JoinProperty) property;
+            if(joinProperty.isIdentity()) {
+                return checkJoinProperty(joinProperty.implement.property);
+            }
+        }
+        return property;
+    }
     private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
+        property1 = checkJoinProperty(property1);
+        property2 = checkJoinProperty(property2);
+        
         String result = "";
 
         Stack<Link> forward = new Stack<>();
