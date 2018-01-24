@@ -1512,10 +1512,34 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return false;
     }
 
+    private static boolean findCalcDependency(CalcProperty<?> property, CalcProperty<?> with, HSet<CalcProperty> proceeded, Stack<CalcProperty> path) {
+        if (property.equals(with))
+            return true;
+
+        if (proceeded.add(property))
+            return false;
+
+        for (CalcProperty link : property.getDepends()) {
+            path.push(link);
+            if (findCalcDependency(link, with, proceeded, path))
+                return true;
+            path.pop();
+        }
+
+        return false;
+    }
+
     private static String outDependency(String direction, Property property, Stack<Link> path) {
         String result = direction + " : " + property;
         for (Link link : path)
             result += " " + link.type + " " + link.to;
+        return result;
+    }
+
+    private static String outCalcDependency(String direction, CalcProperty property, Stack<CalcProperty> path) {
+        String result = direction + " : " + property;
+        for (CalcProperty link : path)
+            result += " " + link;
         return result;
     }
 
@@ -1531,7 +1555,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
         property1 = checkJoinProperty(property1);
         property2 = checkJoinProperty(property2);
-        
+
+        String result = findEventDependency(property1, property2, desiredType);
+        if(property1 instanceof CalcProperty && property2 instanceof CalcProperty)
+            result += findCalcDependency((CalcProperty)property1, (CalcProperty)property2);
+
+        return result;
+    }
+
+    private static String findEventDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
         String result = "";
 
         Stack<Link> forward = new Stack<>();
@@ -1544,7 +1576,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         if (result.isEmpty())
             result += "NO DEPENDENCY " + property1 + " " + property2 + '\n';
+        
+        return result;
+    }
 
+    private static String findCalcDependency(CalcProperty<?> property1, CalcProperty<?> property2) {
+        String result = "";
+
+        Stack<CalcProperty> forward = new Stack<>();
+        if (findCalcDependency(property1, property2, new HSet<CalcProperty>(), forward))
+            result += outCalcDependency("FORWARD CALC (" + forward.size() + ")", property1, forward) + '\n';
+
+        Stack<CalcProperty> backward = new Stack<>();
+        if (findCalcDependency(property2, property1, new HSet<CalcProperty>(), backward))
+            result += outCalcDependency("BACKWARD CALC (" + backward.size() + ")", property2, backward) + '\n';
+
+        if (result.isEmpty())
+            result += "NO CALC DEPENDENCY " + property1 + " " + property2 + '\n';
         return result;
     }
 
