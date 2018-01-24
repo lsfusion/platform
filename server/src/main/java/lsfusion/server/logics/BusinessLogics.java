@@ -1077,14 +1077,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private Collection<String> customReports;
     @ManualLazy
-    public Collection<String> findAllCustomReports() {
-        if (customReports == null) {
-            customReports = findAllCustomReportsCalculated();
+    public Collection<String> getAllCustomReports() {
+        if (SystemProperties.isDebug || customReports == null) {
+            customReports = calculateAllCustomReports();
         }
         return customReports;
     }
 
-    public Collection<String> findAllCustomReportsCalculated() {
+    public Collection<String> calculateAllCustomReports() {
         Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
         return ResourceUtils.getResources(pattern);
     }

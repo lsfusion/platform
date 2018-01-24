@@ -113,27 +113,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public List<ReportPath> getReportPath(long requestIndex, long lastReceivedRequestIndex, final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences, final boolean useAuto) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<List<ReportPath>>() {
-            @Override
-            public List<ReportPath> call(ExecutionStack stack) throws Exception {
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("getReportPath Action. GroupID: %d", groupId));
-                }
-                
-                return useAuto ?
-                        reportManager.getAutoReportPathList(toExcel, groupId, userPreferences) :
-                        reportManager.getReportPathList(toExcel, groupId, userPreferences);
-            }
-        });
-    }
-
-
     @Override
-    public List<ReportPath> getAutoReportPathList(String formSID) throws RemoteException {
-        FormReportManager newFormManager = new StaticFormReportManager(reportManager.findForm(formSID), MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
-        return newFormManager.getAutoReportPathList(false, null, null);
+    public void saveCustomReportPathList(String formSID) throws RemoteException {
+        FormInstance.saveCustomReportPathList(form.BL.findForm(formSID));
     }
 
     /**

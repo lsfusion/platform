@@ -63,7 +63,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public void execute(RunEditReportClientAction action) {
-        getFormController().runEditReport();
+        getFormController().runEditReport(action.customReportPathList);
     }
 
     @Override
@@ -72,7 +72,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         try {
             if (action.printType == FormPrintType.AUTO) {
                 ClientReportUtils.autoprintReport(action.generationData, action.printerName);
-            } else if (action.printType != null && action.printType != FormPrintType.PRINT) {
+            } else if (action.printType != FormPrintType.PRINT) {
                 ReportGenerator.exportAndOpen(action.generationData, action.printType, false);
             } else {
                 if (action.isDebug) {

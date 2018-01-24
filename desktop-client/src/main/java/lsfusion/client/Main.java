@@ -20,7 +20,6 @@ import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
-import org.springframework.util.FileCopyUtils;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -564,38 +563,28 @@ public class Main {
             currentForm = null;
     }
 
-    public static void processReportPathList(RemoteFormInterface remoteFormInterface, List<ReportPath> reportPathList, String formSID, boolean useAuto) throws IOException {
-        if (useAuto) {
-            deleteReportPathList(reportPathList);
-            if (reportPathList != null) {
-                reportPathList.addAll(remoteFormInterface.getAutoReportPathList(formSID));
-            }
+    public static void addReportPathList(RemoteFormInterface remoteFormInterface, List<ReportPath> reportPathList, String formSID) throws IOException {
+        remoteFormInterface.saveCustomReportPathList(formSID);
+        editReportPathList(reportPathList);
+    }
+    public static void editReportPathList(List<ReportPath> reportPathList) throws IOException {
+        for (ReportPath reportPath : reportPathList) {
+            Desktop.getDesktop().open(new File(reportPath.customPath));
         }
-        if (reportPathList != null) {
-            for (ReportPath reportPath : reportPathList) {
-                if (useAuto) {
-                    new File(reportPath.customPath).getParentFile().mkdirs();
-                    FileCopyUtils.copy(new File(reportPath.autoPath), new File(reportPath.customPath));
-                }
-                Desktop.getDesktop().open(new File(reportPath.customPath));
-            }
-            // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-            new SavingThread(reportPathList).start();
-        }
+        // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
+        new SavingThread(reportPathList).start();
     }
 
     public static void deleteReportPathList(List<ReportPath> reportPathList) {
-        if (reportPathList != null) {
-            for (ReportPath reportPath : reportPathList) {
-                File customFile = new File(reportPath.customPath);
-                if(!customFile.delete())
-                    customFile.deleteOnExit();
-                File targetFile = new File(reportPath.targetPath);
-                if(!targetFile.delete())
-                    targetFile.deleteOnExit();
-            }
-            reportPathList.clear();
+        for (ReportPath reportPath : reportPathList) {
+            File customFile = new File(reportPath.customPath);
+            if(!customFile.delete())
+                customFile.deleteOnExit();
+            File targetFile = new File(reportPath.targetPath);
+            if(!targetFile.delete())
+                targetFile.deleteOnExit();
         }
+        reportPathList.clear();
     }
 
     private static void clean() {

@@ -1369,21 +1369,11 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
-    public void runEditReport() {
+    public void runEditReport(List<ReportPath> customReportPathList) {
         assert Main.module.isFull();
 
         try {
-            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runEditReport") {
-                @Override
-                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false);
-                }
-
-                @Override
-                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
-                    Main.processReportPathList(getRemoteForm(), reportPathList, null, false);
-                }
-            });
+            Main.editReportPathList(customReportPathList);
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }

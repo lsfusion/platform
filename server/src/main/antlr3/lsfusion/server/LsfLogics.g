@@ -2627,6 +2627,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
                 ('TOP' top = intLiteral { selectTop = $top.val; } )?
             )
         |   ( // static - interactive
+            { printType = FormPrintType.PRINT; }
             (   'PREVIEW'
             |   'NOPREVIEW' { printType = FormPrintType.AUTO; }
             )?

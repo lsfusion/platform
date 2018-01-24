@@ -6,20 +6,16 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.ObjectSelector;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -28,7 +24,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.remote.FormReportManager;
-import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.remote.StaticFormReportManager;
 import net.sf.jasperreports.engine.JRException;
 
@@ -102,8 +97,8 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                 ServerLoggers.systemLogger.error(e);
             }
         } else { // assert printType != null;
-            List<ReportPath> reportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
-            exportClient(context, form.getCaption(), reportData, reportPathList, form.getSID());
+            List<ReportPath> customReportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getCustomReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
+            exportClient(context, form.getCaption(), reportData, customReportPathList, form.getSID());
         }
     }
 }

@@ -2731,6 +2731,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LPWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                            LPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
                                                Boolean syncType, Integer selectTop) throws ScriptingErrorLog.SemanticErrorException {
+        assert printType != null;
         List<O> objects = new ArrayList<>();
         List<LPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();

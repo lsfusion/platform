@@ -39,7 +39,6 @@ public abstract class BaseExpr extends Expr {
             return NULL;
         if(expr.getWhere().getClassWhere().isFalse()) {
             assert expr.getWhere().isFalse(); //возможно даже getOrWhere достаточно
-            assert expr.getOrWhere().isFalse();
             return NULL;
         }
         

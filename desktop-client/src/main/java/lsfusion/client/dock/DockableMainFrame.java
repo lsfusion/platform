@@ -280,13 +280,28 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final ClientFormController formController, final List<ReportPath> reportPathList, final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final ClientFormController formController, final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
-            public void invokeEditReport(boolean useAuto) throws RemoteException {
+            public boolean hasCustomReports() throws RemoteException {
+                return !customReportPathList.isEmpty();
+            }
+            
+            @Override
+            public void invokeAddReport() throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.processReportPathList(formController.getRemoteForm(), reportPathList, formSID, useAuto);
+                    Main.addReportPathList(formController.getRemoteForm(), customReportPathList, formSID);
+                } catch (Exception e) {
+                    throw new RuntimeException(getString("form.error.printing.form"), e);
+                }
+            }
+
+            @Override
+            public void invokeEditReport() throws RemoteException {
+                assert Main.module.isFull();
+                try {
+                    Main.editReportPathList(customReportPathList);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -295,15 +310,10 @@ public class DockableMainFrame extends MainFrame {
             @Override
             public void invokeDeleteReport() throws RemoteException {
                 try {
-                    Main.deleteReportPathList(reportPathList);
+                    Main.deleteReportPathList(customReportPathList);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
-            }
-
-            @Override
-            public boolean hasCustomReports() throws RemoteException {
-                return !reportPathList.isEmpty();
             }
         });
     }

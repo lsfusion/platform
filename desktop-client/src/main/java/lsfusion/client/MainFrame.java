@@ -147,7 +147,7 @@ public abstract class MainFrame extends JFrame {
         forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
     }
 
-    public abstract Integer runReport(ClientFormController formController, List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(ClientFormController formController, List<ReportPath> customReportPathList, String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
 
     public Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, null, editInvoker);

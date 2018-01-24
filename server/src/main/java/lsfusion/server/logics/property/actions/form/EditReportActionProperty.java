@@ -19,7 +19,7 @@ public class EditReportActionProperty extends ReportClientActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.delayUserInterfaction(new RunEditReportClientAction());
+        context.delayUserInterfaction(new RunEditReportClientAction(context.getFormInstance(true, true).getCustomReportPathList()));
     }
 
     @Override

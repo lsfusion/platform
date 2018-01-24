@@ -126,11 +126,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private void editButtonPressed(EditReportInvoker editInvoker) {
-        try {
-            editInvoker.invokeEditReport(false);
-        } catch (RemoteException e) {
-            throw Throwables.propagate(e);
-        }
+        editReport(editInvoker);
     }
 
     private JButton getAddReportButton(final EditReportInvoker editInvoker) {
@@ -155,16 +151,16 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private void addButtonPressed(EditReportInvoker editInvoker) {
-        if (!hasCustomReports || showConfirmDialog(reportViewer, getString("layout.menu.file.edit.auto.report.confirm"),
-                getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
-            try {
-                editInvoker.invokeEditReport(true);
-            } catch (RemoteException e) {
-                throw Throwables.propagate(e);
-            }
+        if(hasCustomReports) { // при добавлении, если есть уже сохраненные отчеты предлагаем их удалить
+            if(showConfirmDialog(reportViewer, getString("layout.menu.file.edit.auto.report.confirm"),
+                    getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0)
+                deleteReport(editInvoker);
+        }
+        
+        if (!hasCustomReports) {
+            addReport(editInvoker);
             editReportButton.setVisible(true);
             deleteReportButton.setVisible(true);
-            hasCustomReports = true;
             invalidate();
         }
     }
@@ -194,16 +190,37 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     private void deleteButtonPressed(EditReportInvoker editInvoker) {
         if (showConfirmDialog(reportViewer, getString("layout.menu.file.delete.report.confirm"),
                 getString("layout.menu.file.delete.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
-            try {
-                editInvoker.invokeDeleteReport();
-            } catch (RemoteException e) {
-                throw Throwables.propagate(e);
-            }
+            deleteReport(editInvoker);
             editReportButton.setVisible(false);
             deleteReportButton.setVisible(false);
-            hasCustomReports = false;
             invalidate();
         }
+    }
+
+    private void addReport(EditReportInvoker editInvoker) {
+        try {
+            editInvoker.invokeAddReport();
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+        hasCustomReports = true;
+    }
+
+    private void editReport(EditReportInvoker editInvoker) {
+        try {
+            editInvoker.invokeEditReport();
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private void deleteReport(EditReportInvoker editInvoker) {
+        try {
+            editInvoker.invokeDeleteReport();
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+        hasCustomReports = false;
     }
 
     public void clickBtnPrint() {
