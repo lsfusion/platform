@@ -846,9 +846,9 @@ public abstract class GroupingDialog extends JDialog {
         return cell;
     }
 
-    public void exportToExcelPivot() {
+    public void exportToExcelPivot(boolean xlsx) {
         try {
-            File file = exportToXLSX(true);
+            File file = xlsx ? exportToXLSX(true) : exportToExcel(true);
 
             Integer xlRowField = 1;
             Integer xlColumnField = 2;

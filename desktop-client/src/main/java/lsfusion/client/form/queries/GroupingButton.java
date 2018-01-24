@@ -47,7 +47,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                 public void pivotPressed() {
                                     updateData(true);
                                     try {
-                                        dialog.exportToExcelPivot();
+                                        dialog.exportToExcelPivot(false);
                                     } catch (Exception e) {
                                         throw new RuntimeException(e);
                                     }
@@ -57,7 +57,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                                 public void pivotXLSXPressed() {
                                     updateData(true);
                                     try {
-                                        dialog.exportToExcelPivot();
+                                        dialog.exportToExcelPivot(true);
                                     } catch (Exception e) {
                                         throw new RuntimeException(e);
                                     }
