@@ -36,6 +36,10 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     public KeyJoinExpr(BaseExpr expr) {
         this.expr = expr;
     }
+    
+    public BaseExpr getBaseExpr() {
+        return expr;
+    }
 
     @Override
     protected boolean calcTwins(TwinImmutableObject o) {

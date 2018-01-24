@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
@@ -907,7 +906,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
-            return JoinExprTranslator.translateExpr((Expr)expr, translator).getWhere();
+            return JoinExprTranslator.translateExpr((Expr) replaceKeyJoinExpr(expr, true), translator).getWhere(); // true по той же причине что и fullExprs, по идее CUT должен вырезать KeyJoinExpr так как он ничего сам по себе не отсеиваивает (но на всякий случай сделаем) 
         }
     }
 
@@ -923,6 +922,36 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
             return getUpWhere((WhereJoin) join, upWheres.get((WhereJoin) join), translator);
         }
+    }
+    
+    // при трансляции важно чтобы не появлялись "виртуальные" middle выражения
+    // единственным таким выражением является KeyJoinExpr (собственно для этого и создавался), NotNullJoin - top
+    private static BaseExpr replaceKeyJoinExpr(BaseExpr expr, boolean assertCanNotBe) {
+        if(expr instanceof KeyJoinExpr) {
+            assert !assertCanNotBe;
+            return ((KeyJoinExpr) expr).getBaseExpr();
+        }
+        return expr;        
+    }
+    
+    private static ImSet<BaseExpr> replaceKeyJoinExprs(ImSet<BaseExpr> set, final boolean assertCanNotBe) {
+        // оптимизация
+        boolean foundKeyJoin = false;
+        for(BaseExpr expr : set)
+            if(expr instanceof KeyJoinExpr) {
+                foundKeyJoin = true; 
+                break;
+            }
+        if(!foundKeyJoin)
+            return set;
+        
+        assert !assertCanNotBe;
+        return set.mapSetValues(new GetValue<BaseExpr, BaseExpr>() { // повториться по идее не может (так как у KeyJoin один единственный child и либо он сам будет в translate'е либо его child)
+            @Override
+            public BaseExpr getMapValue(BaseExpr value) {
+                return replaceKeyJoinExpr(value, assertCanNotBe);
+            }
+        });
     }
 
     private <Z extends Expr> Where getCostPushWhere(CostStat cost, QueryJoin<Z, ?, ?, ?> queryJoin, PushInfo pushInfo, Result<Pair<ImRevMap<Z, KeyExpr>, Where>> pushJoinWhere, final MAddMap<BaseJoin, Stat> joinStats, DebugInfoWriter debugInfoWriter) {
@@ -965,8 +994,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
         // !!! СНАЧАЛА TRANSLATE'М , а потом AND'м, так как Expr'ы могут измениться, тоже самое касается UpWhere - translate'им потом делаем getWhere ??? хотя можно это позже сделать ???
         // UPWHERE, берем все вершины keep у которых нет исходящих в keep (не "промежуточные"), если есть в upWheres берем оттуда, иначе берем первый попавшийся edge у вершины из которой нет выходов (проблема правда в том что InnerFollows не попадут и можно было бы взять класс вместо значения, но это не критично)
-        ImSet<BaseExpr> translate = mTranslate.immutable();
-        ImSet<BaseExpr> fullExprs = mFullExprs.immutable();
+        ImSet<BaseExpr> translate = replaceKeyJoinExprs(mTranslate.immutable(), false); // собственно для false и делается
+        ImSet<BaseExpr> fullExprs = replaceKeyJoinExprs(mFullExprs.immutable(), true); // true по той же причине что и в middleTreeKeeps, по идее CUT должен вырезать KeyJoinExpr так как он ничего сам по себе не отсеиваивает (но на всякий случай сделаем)
         ImRevMap<BaseExpr, KeyExpr> translateKeys = KeyExpr.getMapKeys(translate);
         JoinExprTranslator translator = new JoinExprTranslator(translateKeys, fullExprs);
         ImMap<BaseJoin, MiddleTopKeep> middleTopKeeps = BaseUtils.immutableCast(mMiddleTreeKeeps.immutable().filterFnValues(new SFunctionSet<MiddleTreeKeep>() {
