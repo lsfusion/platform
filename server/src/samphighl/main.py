@@ -59,7 +59,7 @@ class LSFLexer(RegexLexer):
             (r"\b\d+(?:l|L)?\b", Number.Integer),       # INTEGER, LONG
             (r"#[0-9A-Fa-f]{6}", Number.Integer),       # COLOR        
             (words(('INTEGER', 'DOUBLE', 'LONG', 'BOOLEAN', 'DATE', 'DATETIME', 'TEXT', 'STRING', 'ISTRING', 'VARISTRING', 'VARSTRING', 'TIME', 'RICHTEXT',
-                    'ABSTRACT', 'ACTION', 'ACTIVE', 'ACTIVATE', 'ADD', 'ADDFORM', 'NEW', 'AFTER',
+                    'ABSTRACT', 'ACTION', 'ACTIVE', 'ACTIVATE', 'ADDFORM', 'NEW', 'AFTER',
                     'AGGR', 'AGGPROP', 'AND', 'APPEND', 'APPLY', 'AS', 'ASON', 'ASSIGN', 'ASYNCUPDATE', 'ATTACH',
                     'ATTR', 'AUTO', 'AUTOREFRESH', 'AUTOSET', 'BACKGROUND', 'BCC', 'BEFORE', 'BODY', 'BOTTOM', 'BREAK', 'BY', 'CANCEL', 'CANONICALNAME',
                     'CASE', 'CATCH', 'CC', 'CENTER', 'CHANGE', 'CHANGECLASS', 'CHANGED', 'CHANGEWYS', 'CHARSET', 'CHECK',
