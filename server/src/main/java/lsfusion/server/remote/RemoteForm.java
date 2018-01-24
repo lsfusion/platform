@@ -113,11 +113,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    @Override
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
-        FormInstance.saveCustomReportPathList(form.BL.findForm(formSID));
-    }
-
     /**
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается,
      * что он отработаывает как ImmutableMethod через createAndExecute

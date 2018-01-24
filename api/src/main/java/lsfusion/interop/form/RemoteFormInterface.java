@@ -87,8 +87,6 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
 
-    void saveCustomReportPathList(String formSID) throws RemoteException;
-
     // быстрая информация
 
     int countRecords(long requestIndex, long lastReceivedRequestIndex, int groupObjectID) throws RemoteException;

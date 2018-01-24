@@ -16,7 +16,6 @@ import lsfusion.interop.*;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
@@ -563,8 +562,8 @@ public class Main {
             currentForm = null;
     }
 
-    public static void addReportPathList(RemoteFormInterface remoteFormInterface, List<ReportPath> reportPathList, String formSID) throws IOException {
-        remoteFormInterface.saveCustomReportPathList(formSID);
+    public static void addReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
+        Main.remoteLogics.saveCustomReportPathList(formSID);
         editReportPathList(reportPathList);
     }
     public static void editReportPathList(List<ReportPath> reportPathList) throws IOException {

@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -498,6 +499,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
         return true;
+    }
+
+    @Override
+    public void saveCustomReportPathList(String formSID) throws RemoteException {
+        FormInstance.saveCustomReportPathList(businessLogics.findForm(formSID));
     }
 }
 

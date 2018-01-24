@@ -198,4 +198,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodEndVoidCall("readMemoryLimits");
         return result;
     }
+
+    @Override
+    public void saveCustomReportPathList(String formSID) throws RemoteException {
+        logRemoteMethodStartVoidCall("saveCustomReportPathList");
+        target.saveCustomReportPathList(formSID);
+        logRemoteMethodEndVoidCall("saveCustomReportPathList");
+    }
 }

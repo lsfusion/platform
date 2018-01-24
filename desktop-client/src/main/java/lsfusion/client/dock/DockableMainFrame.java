@@ -291,7 +291,7 @@ public class DockableMainFrame extends MainFrame {
             public void invokeAddReport() throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.addReportPathList(formController.getRemoteForm(), customReportPathList, formSID);
+                    Main.addReportPathList(customReportPathList, formSID);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }

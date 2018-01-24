@@ -89,12 +89,6 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return target.getReportData(requestIndex, lastReceivedRequestIndex, groupId, toExcel, userPreferences);
     }
 
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
-        logRemoteMethodStartVoidCall("saveCustomReportPathList");
-        target.saveCustomReportPathList(formSID);
-        logRemoteMethodEndVoidCall("saveCustomReportPathList");
-    }
-
     public ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh) throws RemoteException {
         logRemoteMethodStartCall("getRemoteChanges");
         ServerResponse result = target.getRemoteChanges(requestIndex, lastReceivedRequestIndex, refresh);
