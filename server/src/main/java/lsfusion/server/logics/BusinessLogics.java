@@ -1580,7 +1580,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private static String findCalcDependency(CalcProperty<?> property1, CalcProperty<?> property2) {
+    public static String findCalcDependency(CalcProperty<?> property1, CalcProperty<?> property2) {
         String result = "";
 
         Stack<CalcProperty> forward = new Stack<>();
