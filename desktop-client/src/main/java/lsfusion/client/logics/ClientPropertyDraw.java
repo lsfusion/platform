@@ -284,7 +284,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (pattern != null && !pattern.isEmpty()) {
             if (baseType instanceof ClientIntegralClass) {
                 format = mergeFormats(new DecimalFormat(pattern), baseType.getDefaultFormat());
-            } else if (baseType instanceof ClientDateClass) {
+            } else if (baseType instanceof ClientDateClass || baseType instanceof ClientDateTimeClass || baseType instanceof ClientTimeClass) {
                 format = new SimpleDateFormat(pattern);
             }
         } else {
