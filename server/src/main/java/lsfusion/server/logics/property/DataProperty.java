@@ -89,7 +89,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return SetFact.singleton(this);
     }
 
-    @StackMessage("{message.check.data.properties}")
+    @StackMessage("{message.check.data.classes}")
     @ThisMessage
     public ModifyResult checkClasses(PropertyChangeTableUsage<ClassPropertyInterface> change, SQLSession sql, BaseClass baseClass, QueryEnvironment env, Modifier modifier, OperationOwner owner, Runnable checkTransaction, RegisterClassRemove classRemove, long timestamp) throws SQLException, SQLHandledException {
         return checkClasses(change, sql, baseClass, env, modifier.getPropertyChanges(), owner, checkTransaction, classRemove, timestamp);        
