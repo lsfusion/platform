@@ -261,8 +261,13 @@ public class Main {
 
                     daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
                     for (IDaemonTask task : daemonTasks) {
-                        task.setEventBus(eventBus);
-                        task.start();
+                        try {
+                            task.setEventBus(eventBus);
+                            task.start();
+                        } catch (Exception e) {
+                            logger.error(getString("client.error.application.initialization"), e);
+                            Log.error(getString("client.error.application.initialization"), e, true);
+                        }
                     }
 
                     busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
