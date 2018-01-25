@@ -98,10 +98,7 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
             Component child = target.getComponent(i);
             if (child.isVisible()) {
                 Dimension prefSize = child.getPreferredSize();
-                Dimension minSize = child.getMinimumSize();
 
-                int minWidth = minSize.width;
-                int minHeight = minSize.height;
                 int prefWidth = prefSize.width;
                 int prefHeight = prefSize.height;
 
@@ -113,12 +110,12 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
                 int height;
 
                 if (vertical) {
-                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, minWidth, parentWidth);
+                    width = limitedSize(align == FlexAlignment.STRETCH, prefWidth, parentWidth);
                     height = flex == 0 ? prefHeight : prefHeight + (int) (flex * fillSpace / totalFlex);
                     xOffset = getAlignmentOffset(align, in.left, parentWidth, width);
                 } else {
                     width = flex == 0 ? prefWidth : prefWidth + (int) (flex * fillSpace / totalFlex);
-                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, minHeight, parentHeight);
+                    height = limitedSize(align == FlexAlignment.STRETCH, prefHeight, parentHeight);
                     yOffset = getAlignmentOffset(align, in.top, parentHeight, height);
                 }
 
@@ -136,20 +133,12 @@ public class FlexLayout extends CachableLayout<FlexConstraints> {
         }
     }
 
-    private int limitedSize(boolean stretch, int pref, int min, int parent) {
+    private int limitedSize(boolean stretch, int pref, int parent) {
         if (stretch) {
             return parent;
         }
 
-        if (pref <= parent) {
-            return pref;
-        }
-
-        if (min >= parent) {
-            return min;
-        }
-
-        return parent;
+        return pref;
     }
 
     private int getAlignmentOffset(FlexAlignment alignment, int zeroOffset, int totalSize, int componentSize) {
