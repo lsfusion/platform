@@ -3772,7 +3772,7 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' (name=ID (caption=localizedStringLiteral)?)? b=navigatorElementDescription[$name.text, $caption.val] opts=navigatorElementOptions
+	:	'NEW' b=navigatorElementDescription opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
 				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, true);
@@ -3781,15 +3781,15 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 		navigatorElementStatementBody[$b.element]
 	;
 
-navigatorElementDescription[String name, LocalizedString caption] returns [NavigatorElement element]
+navigatorElementDescription returns [NavigatorElement element]
 @after {
 	if (inPropParseState()) {
- 		$element = self.createScriptedNavigatorElement($name, $caption, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
  	}	
 }
-	:	'FOLDER' 
-	|	'FORM'? formName=compoundID 
-	|	'ACTION' pu=propertyUsage 
+	:	'FOLDER' (name=ID (caption=localizedStringLiteral)?)? 
+	|	'FORM'? (name=ID (caption=localizedStringLiteral)? '=')? formName=compoundID 
+	|	'ACTION' (name=ID (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 

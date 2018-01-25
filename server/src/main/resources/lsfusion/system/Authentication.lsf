@@ -394,15 +394,15 @@ changePassword() = {
 
 NAVIGATOR {
     administration {
-        NEW security 'Управление доступом' FOLDER AFTER application {
+        NEW FOLDER security 'Управление доступом' AFTER application {
             NEW customUsers;
             NEW computers;
         }
     }
-    NEW account 'Учётная запись' FOLDER WINDOW toolbar IMAGE '/images/lock.png' {
-        NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser[] IMAGE '/images/relogin.png';
+    NEW FOLDER account 'Учётная запись' WINDOW toolbar IMAGE '/images/lock.png' {
+        NEW ACTION reloginLoginUserAction 'Сменить пользователя' = reloginLoginUser[] IMAGE '/images/relogin.png';
         NEW editProfile;
-        NEW changePasswordAction 'Сменить пароль' ACTION changePassword[] IMAGE '/images/change_password.png';
-        NEW logOutAction 'Выйти' ACTION restart[] IMAGE '/images/logout.png';
+        NEW ACTION changePasswordAction 'Сменить пароль' = changePassword[] IMAGE '/images/change_password.png';
+        NEW ACTION logOutAction 'Выйти' = restart[] IMAGE '/images/logout.png';
     }
 }

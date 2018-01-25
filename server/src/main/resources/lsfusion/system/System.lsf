@@ -220,16 +220,16 @@ WINDOW toolbar '{window.toolbar}' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETI
 WINDOW tree '{window.tree}' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
-    NEW root '{navigator.forms}' FOLDER WINDOW root {
-        NEW administration '{navigator.administration}' FOLDER WINDOW toolbar IMAGE '/images/tools.png' {
-            NEW application '{navigator.application}' FOLDER {
+    NEW FOLDER root '{navigator.forms}' WINDOW root {
+        NEW FOLDER administration '{navigator.administration}' WINDOW toolbar IMAGE '/images/tools.png' {
+            NEW FOLDER application '{navigator.application}' {
                 NEW options;
                 NEW integrationData;
                 NEW migrationData;
             }
-            NEW configuration '{navigator.system}' FOLDER;
-            NEW systemEvents '{navigator.systemEvents}' FOLDER;
-            NEW objects '{navigator.objects}' FOLDER WINDOW tree; 
+            NEW FOLDER configuration '{navigator.system}';
+            NEW FOLDER systemEvents '{navigator.systemEvents}';
+            NEW FOLDER objects '{navigator.objects}' WINDOW tree; 
         }
     }
 }
