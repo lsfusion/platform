@@ -906,7 +906,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public Where getWhere(BaseJoin join, UpWheres<WhereJoin> upWheres, JoinExprTranslator translator) {
-            return JoinExprTranslator.translateExpr((Expr) replaceKeyJoinExpr(expr, true), translator).getWhere(); // true по той же причине что и fullExprs, по идее CUT должен вырезать KeyJoinExpr так как он ничего сам по себе не отсеиваивает (но на всякий случай сделаем) 
+            return JoinExprTranslator.translateExpr((Expr) replaceKeyJoinExpr(expr, translator != null), translator).getWhere(); // true по той же причине что и fullExprs, по идее CUT должен вырезать KeyJoinExpr так как он ничего сам по себе не отсеиваивает (но на всякий случай сделаем) 
         }
     }
 
