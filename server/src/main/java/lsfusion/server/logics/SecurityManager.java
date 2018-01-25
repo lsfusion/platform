@@ -21,8 +21,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
@@ -536,10 +536,12 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
             for (ImMap<Object, Object> entry : result.values()) {
                 String canonicalName = (String) entry.get("formCanonicalName");
-                Integer number = (Integer) entry.get("overDefaultNumberUserNavigatorElement");
-                Integer oldNumber = defaultFormsMap.get(canonicalName);
-                Integer newNumber = oldNumber == null ? number : Math.min(oldNumber, number);
-                defaultFormsMap.put(canonicalName, newNumber);
+                if (canonicalName != null) {
+                    Integer number = (Integer) entry.get("overDefaultNumberUserNavigatorElement");
+                    Integer oldNumber = defaultFormsMap.get(canonicalName);
+                    Integer newNumber = oldNumber == null ? number : Math.min(oldNumber, number);
+                    defaultFormsMap.put(canonicalName, newNumber);
+                }
             }
 
             final List<Map.Entry<String, Integer>> defaultFormsList = new ArrayList<>(defaultFormsMap.entrySet());
@@ -557,9 +559,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             
             List<String> defaultForms = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : defaultFormsList) {
-                NavigatorElement element = businessLogics.findNavigatorElement(entry.getKey());
-                if (element instanceof NavigatorForm) {
-                    defaultForms.add((((NavigatorForm) element).getForm().getCanonicalName()));
+                FormEntity form = businessLogics.findForm(entry.getKey());
+                if (form != null) {
+                    defaultForms.add(form.getCanonicalName());
                 }
             }
             return defaultForms;
