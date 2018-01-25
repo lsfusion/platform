@@ -8,3 +8,6 @@ writeToServerPrinter 'Отправить на принтер (на сервер�
 printed 'Отправлено на принтер' = DATA LOCAL BOOLEAN ();
 
 getAvailablePrinters 'Список доступных принтеров' = CUSTOM 'lsfusion.erp.utils.printer.GetAvailablePrintersActionProperty' ();
+
+//text, charset, ip, port
+writeToSocketAction = CUSTOM 'lsfusion.erp.utils.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);
