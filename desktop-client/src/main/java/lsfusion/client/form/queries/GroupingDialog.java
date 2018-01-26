@@ -69,6 +69,8 @@ public abstract class GroupingDialog extends JDialog {
     private JCheckBox quantityCheck;
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> sumChecks = new LinkedHashMap<>();
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> maxChecks = new LinkedHashMap<>();
+
+    private Map<String, XSSFCellStyle> cellStyleMap = new HashMap<>();
     
     private JButton removeCurrentGroupingButton = new JButton(getString("form.queries.grouping.remove.grouping"));
 
@@ -809,7 +811,7 @@ public abstract class GroupingDialog extends JDialog {
 
             addExcelSubrows(workbook, sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot(), new int[treeTable.getColumnCount()]);
 
-            XSSFCellStyle headerCellStyle = createCellStyle(workbook, null, true);
+            XSSFCellStyle headerCellStyle = getOrCreateCellStyle(workbook, null, true);
             for (int i = 0; i < treeTable.getColumnCount(); i++) {
                 String columnName = treeTable.getColumnName(i);
                 if (i != 0) {
@@ -831,12 +833,15 @@ public abstract class GroupingDialog extends JDialog {
         return file;
     }
 
-    private XSSFCellStyle createCellStyle(XSSFWorkbook workbook, String format) {
-        return createCellStyle(workbook, format, false);
+    private XSSFCellStyle getOrCreateCellStyle(XSSFWorkbook workbook, String format) {
+        return getOrCreateCellStyle(workbook, format, false);
     }
 
-    private XSSFCellStyle createCellStyle(XSSFWorkbook workbook, String format, boolean bold) {
-        XSSFCellStyle cellStyle = workbook.createCellStyle();
+    private XSSFCellStyle getOrCreateCellStyle(XSSFWorkbook workbook, String format, boolean bold) {
+        XSSFCellStyle cellStyle = cellStyleMap.get(format == null ? "" : format);
+        if(cellStyle != null)
+            return cellStyle;
+        cellStyle = workbook.createCellStyle();
         XSSFFont font = workbook.createFont();
         if(bold)
             font.setBold(true);
@@ -851,6 +856,7 @@ public abstract class GroupingDialog extends JDialog {
         cellStyle.setBorderLeft(BorderStyle.THIN);
         if(format != null)
             cellStyle.setDataFormat(workbook.createDataFormat().getFormat(format));
+        cellStyleMap.put(format == null ? "" : format, cellStyle);
         return cellStyle;
     }
 
@@ -1064,24 +1070,24 @@ public abstract class GroupingDialog extends JDialog {
             for (int column = 0; column <= row.size(); column++) {
                 Object value = treeTable.getValueAt(parent, column);
                 if (value instanceof BigDecimal || value instanceof Double) {
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, "#,##0.00")).setCellValue(Double.valueOf(value.toString()));
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0.00")).setCellValue(Double.valueOf(value.toString()));
                 } else if (value instanceof Number) {
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, "#,##0")).setCellValue(Double.valueOf(value.toString()));
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "#,##0")).setCellValue(Double.valueOf(value.toString()));
                 } else if (value instanceof Time) {
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, "H:mm:ss")).setCellValue((Date) value);
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "H:mm:ss")).setCellValue((Date) value);
                 } else if (value instanceof Date) {
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, "M/d/yy")).setCellValue((Date) value);
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "M/d/yy")).setCellValue((Date) value);
                 } else if (value instanceof Boolean) {
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, null)).setCellValue((Boolean) value);
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null)).setCellValue((Boolean) value);
                 } else if (value instanceof byte[]) { // здесь ожидается изображение
-                    getOrCreateCell(sheet, currentRow, column, createCellStyle(workbook, null));
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null));
                     XSSFClientAnchor anchor = new XSSFClientAnchor();
                     anchor.setCol1(column);
                     anchor.setRow1(currentRow);
                     XSSFPicture  my_picture = sheet.createDrawingPatriarch().createPicture(anchor, workbook.addPicture((byte[]) value, Workbook.PICTURE_TYPE_JPEG));
                     my_picture.resize();
                 } else {
-                    XSSFCellStyle cellStyle = createCellStyle(workbook, null);
+                    XSSFCellStyle cellStyle = getOrCreateCellStyle(workbook, null);
                     getOrCreateCell(sheet, currentRow, column, cellStyle).setCellValue(value == null ? "" : value.toString());
                 }
             }
