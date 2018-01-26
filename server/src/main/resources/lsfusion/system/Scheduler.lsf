@@ -172,7 +172,6 @@ DESIGN scheduledTask {
                 type = SPLITH;
                 MOVE BOX(td) {
                     PROPERTY(parameter(td)) {
-                        preferredValueSize = (-1, 18);
                         minimumValueSize = (-1, 18);
                     }
                 }
