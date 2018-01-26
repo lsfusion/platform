@@ -74,7 +74,7 @@ public abstract class GroupingDialog extends JDialog {
     
     private JButton removeCurrentGroupingButton = new JButton(getString("form.queries.grouping.remove.grouping"));
 
-    private JCheckBox exportXlsxCheck = new JCheckBox(getString("form.queries.grouping.export.xlsx"));
+    private JCheckBox exportXlsCheck = new JCheckBox(getString("form.queries.grouping.export.xls"));
     private JCheckBox notNullCheck = new JCheckBox(getString("form.queries.grouping.only.filled"));
     private JLabel recordCountLabel = new JLabel();
 
@@ -251,10 +251,10 @@ public abstract class GroupingDialog extends JDialog {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        if(exportXlsxCheck.isSelected())
-                            pivotXLSXPressed();
-                        else
+                        if(exportXlsCheck.isSelected())
                             pivotPressed();
+                        else
+                            pivotXLSXPressed();
                     }
                 });
             }
@@ -339,7 +339,7 @@ public abstract class GroupingDialog extends JDialog {
 
         JPanel checkNButtonPanel = new JPanel();
         checkNButtonPanel.setLayout(new BoxLayout(checkNButtonPanel, BoxLayout.X_AXIS));
-        checkNButtonPanel.add(exportXlsxCheck);
+        checkNButtonPanel.add(exportXlsCheck);
         checkNButtonPanel.add(notNullCheck);
         if(SystemUtils.IS_OS_WINDOWS)
             checkNButtonPanel.add(pivotButton);
@@ -367,10 +367,10 @@ public abstract class GroupingDialog extends JDialog {
         excelExport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    if(exportXlsxCheck.isSelected())
-                        exportToXLSX(false);
-                    else
+                    if(exportXlsCheck.isSelected())
                         exportToExcel(false);
+                    else
+                        exportToXLSX(false);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -803,6 +803,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     private File exportToXLSX(boolean isPivot) throws IOException, WriteException {
+        cellStyleMap = new HashMap<>();
         File file = File.createTempFile("tableContents", ".xlsx");
         WorkbookSettings ws = new WorkbookSettings();
         ws.setGCDisabled(true);
