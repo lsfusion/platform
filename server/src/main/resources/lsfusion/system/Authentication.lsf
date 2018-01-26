@@ -40,7 +40,7 @@ FORM computersDialog 'Рабочие места'
     
     LIST Computer OBJECT c     
 ;
-DESIGN computersDialog { BOX { preferredSize = (1024, 768); }}
+DESIGN computersDialog { BOX { minimumSize = (1024, 768); }}
 
 // -------------------------- Пользователи ---------------------------- //
 CLASS ABSTRACT User 'Пользователь';
@@ -216,7 +216,7 @@ FORM customUsersDialog 'Пользователи'
     LIST CustomUser OBJECT u
 ;
 
-DESIGN customUsersDialog { BOX { preferredSize = (1024, 768); }}
+DESIGN customUsersDialog { BOX { minimumSize = (1024, 768); }}
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser PANEL

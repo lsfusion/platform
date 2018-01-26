@@ -198,7 +198,7 @@ DESIGN mail {
                             type = CONTAINERV;        
                             MOVE PROPERTY(message(e)) {
                                 fill = 1;
-                                preferredValueSize = ( -1, 200);
+                                minimumValueSize = ( -1, 200);
                                 panelCaptionAbove = TRUE;
                             }
                         }
