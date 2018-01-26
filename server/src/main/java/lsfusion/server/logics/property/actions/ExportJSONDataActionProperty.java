@@ -14,7 +14,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.exporting.json.JSONOrderObject;
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,21 +34,20 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
     protected byte[] getFile(Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
         File file = File.createTempFile("export", ".json");
         try {
-            JSONArray rootElement = new JSONArray();
-
-            for (ImMap<String, Object> row : rows) {
-                JSONObject rowElement = new JSONOrderObject();
-                for (String key : row.keyIt()) {
-                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
-                    if (cellValue != null) {
-                        rowElement.put(key, cellValue);
-                    }
+            if (rows.size() == 1) {
+                JSONObject rowElement = getRow(fieldTypes, rows.single());
+                try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
+                    out.println(rowElement.toString());
                 }
-                rootElement.put(rowElement);
-            }
-
-            try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
-                out.println(rootElement.toString());
+            } else {
+                JSONArray rootElement = new JSONArray();
+                for (ImMap<String, Object> row : rows) {
+                    JSONObject rowElement = getRow(fieldTypes, row);
+                    rootElement.put(rowElement);
+                }
+                try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
+                    out.println(rootElement.toString());
+                }
             }
             return IOUtils.getFileBytes(file);
         } catch (JSONException e) {
@@ -58,5 +56,16 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
             if (!file.delete())
                 file.deleteOnExit();
         }
+    }
+
+    private JSONObject getRow(Type.Getter<String> fieldTypes, ImMap<String, Object> row) throws JSONException {
+        JSONObject rowElement = new JSONOrderObject();
+        for (String key : row.keyIt()) {
+            String cellValue = fieldTypes.getType(key).formatString(row.get(key));
+            if (cellValue != null) {
+                rowElement.put(key, cellValue);
+            }
+        }
+        return rowElement;
     }
 }

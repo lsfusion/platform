@@ -55,6 +55,7 @@ import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataAction
 import lsfusion.server.logics.property.actions.importing.csv.ImportFormCSVDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportFormDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.json.ImportFormJSONDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.json.ImportJSONDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportFormXMLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
@@ -3056,6 +3057,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(rootProp != null)
             params.add(rootProp);
         return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(params.size(), ids, props, hasListOption, attr, baseLM)), params);
+    }
+
+    public LPWithParams addScriptedImportJSONActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = findLPsForImport(propUsages, hasListOption);
+        List<LPWithParams> params = new ArrayList<>();
+        params.add(fileProp);
+        if(rootProp != null)
+            params.add(rootProp);
+        return addScriptedJoinAProp(addAProp(new ImportJSONDataActionProperty(params.size(), ids, props, hasListOption, baseLM)), params);
     }
 
     public LPWithParams addScriptedImportFormCSVActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {

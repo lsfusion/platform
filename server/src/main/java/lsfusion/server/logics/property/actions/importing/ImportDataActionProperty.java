@@ -35,6 +35,7 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -270,7 +271,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException, JSONException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

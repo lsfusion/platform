@@ -1787,6 +1787,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
         	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, root, hasListOption, attr);
+        else if($type.format == ImportSourceFormat.JSON)
+            $property = self.addScriptedImportJSONActionProperty($expr.property, $plist.ids, $plist.propUsages, root, hasListOption);
         else if($type.format == ImportSourceFormat.DBF)
             $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages, charset);
 		else
@@ -1955,7 +1957,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('LIST' { $hasListOption = true; }|'TABLE')? ('ATTR' { $attr = true; })?
-	|	'JSON'	{ $format = ImportSourceFormat.JSON; }
+	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('LIST' { $hasListOption = true; }|'TABLE')?
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
