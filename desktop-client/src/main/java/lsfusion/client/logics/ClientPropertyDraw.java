@@ -194,7 +194,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isFlex(JComponent comp) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return flex > 0 && getMaximumValueWidth(comp) > getBaseValueWidth(comp);
+        return flex > 0 || getMaximumValueWidth(comp) > getBaseValueWidth(comp);
     }
 
     public int getPreferredValueWidth(JComponent comp) {
