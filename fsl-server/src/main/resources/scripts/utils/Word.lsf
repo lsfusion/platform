@@ -63,7 +63,7 @@ FORM template 'Шаблон Word'
 
 DESIGN template {
     BOX {
-        preferredSize = (1024, 768);
+        minimumSize = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
             type = CONTAINERH;
@@ -104,7 +104,7 @@ FORM dialogTemplates 'Шаблоны Word'
 ;
 DESIGN dialogTemplates {
     BOX {
-        preferredSize = (1024, 768);
+        minimumSize = (1024, 768);
     }
 }
 

@@ -52,7 +52,7 @@ FORM template 'Шаблон Excel'
 
 DESIGN template {
     BOX {
-        preferredSize = (1024, 768);
+        minimumSize = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
             type = CONTAINERH;
@@ -93,7 +93,7 @@ FORM dialogTemplates 'Шаблоны Excel'
 ;
 DESIGN dialogTemplates {
     BOX {
-        preferredSize = (1024, 768);
+        minimumSize = (1024, 768);
     }
 }
 
