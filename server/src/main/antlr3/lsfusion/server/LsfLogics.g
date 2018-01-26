@@ -3787,9 +3787,9 @@ navigatorElementDescription returns [NavigatorElement element]
  		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
  	}	
 }
-	:	'FOLDER' (name=ID (caption=localizedStringLiteral)?)? 
-	|	'FORM'? (name=ID (caption=localizedStringLiteral)? '=')? formName=compoundID 
-	|	'ACTION' (name=ID (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
+	:	'FOLDER' name=ID (caption=localizedStringLiteral)? 
+	|	'FORM'? ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID 
+	|	'ACTION' ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 
