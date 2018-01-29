@@ -79,12 +79,17 @@ FORM numerator 'Нумератор'
     EDIT Numerator OBJECT n
 ;
 
+FORM dialogNumerators 'Нумераторы'
+    OBJECTS n = Numerator
+    PROPERTIES(n) READONLY name, series, curValue
+
+    LIST Numerator OBJECT n
+;
+
 FORM numerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, minValue, maxValue, stringLength, curValue, curStringValue
     PROPERTIES(n)          NEWSESSION NEW, EDIT, DELETE 
-
-    LIST Numerator OBJECT n
 ;
 
 FORM defaultNumerators 'Нумераторы'
