@@ -34,12 +34,12 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
     protected byte[] getFile(Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
         File file = File.createTempFile("export", ".json");
         try {
-            if (rows.size() == 1) {
+            /*if (rows.size() == 1) {
                 JSONObject rowElement = getRow(fieldTypes, rows.single());
                 try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                     out.println(rowElement.toString());
                 }
-            } else {
+            } else {*/
                 JSONArray rootElement = new JSONArray();
                 for (ImMap<String, Object> row : rows) {
                     JSONObject rowElement = getRow(fieldTypes, row);
@@ -48,7 +48,7 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
                 try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                     out.println(rootElement.toString());
                 }
-            }
+            //}
             return IOUtils.getFileBytes(file);
         } catch (JSONException e) {
             throw Throwables.propagate(e);

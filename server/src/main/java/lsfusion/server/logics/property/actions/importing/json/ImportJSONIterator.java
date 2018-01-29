@@ -18,36 +18,44 @@ public abstract class ImportJSONIterator extends ImportIterator {
 
     public ImportJSONIterator(byte[] file, List<LCP> properties, String root, boolean hasListOption) throws IOException, JSONException {
         this.properties = properties;
-        JSONObject jsonObject = JSONReader.read(file);
+        Object json = JSONReader.readObject(file);
         if (root != null) {
-            JSONObject rootNode = findRootNode(jsonObject, null, root);
+            Object rootNode = findRootNode(json, null, root);
             if (rootNode != null) {
                 //если hasListOption, то берём сам объект, иначе - его children.
-                childrenIterator = hasListOption ? new SingletonIterator(rootNode) : getChildrenIterator(rootNode);
+                // Для JSONArray hasListOption не проверяем, так как hasListOption=true не имеет смысла
+                childrenIterator = hasListOption && rootNode instanceof JSONObject ? new SingletonIterator(rootNode) : getChildren(rootNode).iterator();
             } else {
                 throw new RuntimeException(String.format("Import JSON error: root node %s not found", root));
             }
         } else {
-            childrenIterator = hasListOption ? new SingletonIterator(jsonObject) : getChildrenIterator(jsonObject);
+            childrenIterator = hasListOption && json instanceof JSONObject ? new SingletonIterator(json) : getChildren(json).iterator();
         }
     }
 
-    private JSONObject findRootNode(JSONObject rootNode, String rootName, String root) throws JSONException {
+    private Object findRootNode(Object rootNode, String rootName, String root) throws JSONException {
         if (rootName != null && rootName.equals(root))
             return rootNode;
-        Iterator<String> it = rootNode.keys();
-        while (it.hasNext()) {
-            String key = it.next();
-            Object child = rootNode.get(key);
-            if (child instanceof JSONObject)
-                return findRootNode((JSONObject) child, key, root);
-            else if (child instanceof JSONArray) {
-                for (int i = 0; i < ((JSONArray) child).length(); i++) {
-                    Object c = ((JSONArray) child).get(i);
-                    if (c instanceof JSONObject)
-                        return findRootNode((JSONObject) c, key, root);
-                }
+
+        if (rootNode instanceof JSONArray) {
+
+            for (JSONObject child : getChildren(rootNode)) {
+                Object result = findRootNode(child, null, root);
+                if (result != null)
+                    return result;
             }
+
+        } else if (rootNode instanceof JSONObject) {
+
+            Iterator<String> it = ((JSONObject) rootNode).keys();
+            while (it.hasNext()) {
+                String key = it.next();
+                Object child = ((JSONObject) rootNode).get(key);
+                Object result = findRootNode(child, key, root);
+                if(result != null)
+                    return result;
+            }
+
         }
         return null;
     }
@@ -64,9 +72,8 @@ public abstract class ImportJSONIterator extends ImportIterator {
             int i = 0;
             while (childIterator.hasNext()) {
                 String key = childIterator.next();
-                String c = getStringChild(child, key);
                 mapping.put(key, i);
-                childMapping.put(i, c);
+                childMapping.put(i, getStringChild(child, key));
                 i++;
             }
             List<Integer> columns = getColumns(mapping);
@@ -103,27 +110,24 @@ public abstract class ImportJSONIterator extends ImportIterator {
         }
     }
 
-    private Iterator<JSONObject> getChildrenIterator(JSONObject rootNode) throws JSONException {
-        Iterator<String> objectIterator = rootNode.keys();
-        List<JSONObject> children = new ArrayList<>();
-        while (objectIterator.hasNext()) {
-            String key = objectIterator.next();
-            children.addAll(getChildren(rootNode, key));
-        }
-        return children.iterator();
-    }
-
-    private List<JSONObject> getChildren(JSONObject objectRoot, String key) throws JSONException {
-        Object object = objectRoot.get(key);
+    private List<JSONObject> getChildren(Object rootNode) throws JSONException {
         List<JSONObject> result = new ArrayList<>();
-        if (object instanceof JSONArray) {
-            for (int i = 0; i < ((JSONArray) object).length(); i++) {
-                Object child = ((JSONArray) object).get(i);
+        if (rootNode instanceof JSONArray) {
+            for (int i = 0; i < ((JSONArray) rootNode).length(); i++) {
+                Object child = ((JSONArray) rootNode).get(i);
                 if (child instanceof JSONObject)
                     result.add((JSONObject) child);
             }
-        } else if (object instanceof JSONObject)
-            result.add((JSONObject) object);
+            return result;
+        } else {
+            Iterator<String> objectIterator = ((JSONObject) rootNode).keys();
+            while (objectIterator.hasNext()) {
+                String key = objectIterator.next();
+                Object object = ((JSONObject) rootNode).get(key);
+                if (object instanceof JSONObject)
+                    result.add((JSONObject) object);
+            }
+        }
         return result;
     }
 }
