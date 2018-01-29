@@ -175,7 +175,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return getMinimumValueWidth(comp);
     }
     public int getBaseValueHeight(JComponent comp) {
-        return BaseUtils.max(getMinimumValueWidth(comp), getPreferredValueHeight(comp));
+        return BaseUtils.max(getMinimumValueHeight(comp), getPreferredValueHeight(comp));
     }
 
     public int getMinimumValueWidth(JComponent comp) {
