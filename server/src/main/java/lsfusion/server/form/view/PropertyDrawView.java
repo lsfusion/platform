@@ -116,7 +116,7 @@ public class PropertyDrawView extends ComponentView {
         ContainerView container = getContainer();
         if (container != null && container.isVertical() && isFlex())
             return FlexAlignment.STRETCH;
-        return super.getDefaultAlignment(formEntity);
+        return super.getBaseDefaultAlignment(formEntity);
     }
 
     public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
