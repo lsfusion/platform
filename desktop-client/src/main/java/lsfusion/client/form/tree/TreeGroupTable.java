@@ -455,7 +455,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         
         int rowHeight = 0;
         for (ClientPropertyDraw columnProperty : model.columnProperties) {
-            rowHeight = max(rowHeight, columnProperty.getPreferredValueHeight(this));
+            rowHeight = max(rowHeight, columnProperty.getBaseValueHeight(this));
         }
         if (rowHeight != getRowHeight() && rowHeight > 0) {
             setRowHeight(rowHeight);
@@ -511,7 +511,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 //
 //        setColumnSizes(tableColumn, min, max, pref);
 
-        rowHeight = max(rowHeight, property.getPreferredValueHeight(this));
+        rowHeight = max(rowHeight, property.getBaseValueHeight(this));
 
         addColumn(tableColumn);
         moveColumn(getColumnCount() - 1, pos);

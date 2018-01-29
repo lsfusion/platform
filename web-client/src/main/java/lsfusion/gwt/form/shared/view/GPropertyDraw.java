@@ -275,12 +275,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public boolean isFlex(GFont parentFont) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return flex > 0 || getMaximumPixelValueWidth() > getBasePixelValueWidth(parentFont);
+        return flex > 0 || getMaximumValueWidth() > getBaseValueWidth(parentFont);
     }
 
     public double getFlex() {
         if (flex == -2) {
-            return getBasePixelValueWidth(null);
+            return getBaseValueWidth(null);
         }
         return flex;
     }
@@ -292,11 +292,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return alignment;
     }
 
-    public int getBasePixelValueWidth(GFont parentFont) {
-        return Math.min(getMinimumPixelValueWidth(parentFont), getPreferredValuePixelWidth(parentFont));
+    public int getBaseValueWidth(GFont parentFont) {
+        return getMinimumValueWidth(parentFont);
+    }
+    public int getBaseValueHeight(GFont parentFont) {
+        return Math.max(getPreferredValueHeight(parentFont), getMinimumValueHeight(parentFont));
     }
 
-    private int getMinimumPixelValueWidth(GFont parentFont) {
+    private int getMinimumValueWidth(GFont parentFont) {
         if (minimumValueWidth != -1) {
             return minimumValueWidth;
         } else {
@@ -304,11 +307,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    public String getMinimumValueHeight() {
-        return getMinimumValuePixelHeight(null) + "px";
-    }
-
-    public int getMinimumValuePixelHeight(GFont parentFont) {
+    public int getMinimumValueHeight(GFont parentFont) {
         if (minimumValueHeight != -1) {
             return minimumValueHeight;
         } else {
@@ -316,11 +315,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    public String getMaximumValueWidth() {
-        return getMaximumPixelValueWidth() + "px";
-    }
-
-    public int getMaximumPixelValueWidth() {
+    public int getMaximumValueWidth() {
         if (maximumValueWidth != -1) {
             return maximumValueWidth;
         } else {
@@ -328,18 +323,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    public String getMaximumHeight() {
-        return maximumValueHeight + "px";
+    public int getPreferredValueWidth() {
+        return getPreferredValueWidth(null);
     }
-
-    public String getPreferredValueWidth() {
-        return getPreferredValuePixelWidth() + "px";
-    }
-
-    public int getPreferredValuePixelWidth() {
-        return getPreferredValuePixelWidth(null);
-    }
-    public int getPreferredValuePixelWidth(GFont parentFont) {
+    public int getPreferredValueWidth(GFont parentFont) {
         if (preferredValueWidth != -1) {
             return preferredValueWidth;
         } else {
@@ -347,23 +334,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    public String getPreferredValueHeight() {
-        return getPreferredValuePixelHeight() + "px";
-    }
-
-    public int getPreferredValuePixelHeight() {
+    public int getPreferredValueHeight(GFont parentFont) {
         if (preferredValueHeight != -1) {
             return preferredValueHeight;
         } else {
-            return baseType.getPreferredPixelHeight(font);
+            return baseType.getPreferredPixelHeight(font != null ? font : parentFont);
         }
     }
 
-    public String getPreferredLabelHeight() {
-        return getPreferredLabelPixelHeight() + "px";
-    }
-
-    public int getPreferredLabelPixelHeight() {
+    public int getPreferredLabelHeight() {
         return new GStringType().getPreferredPixelHeight(captionFont);
     }
 

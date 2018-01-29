@@ -4,13 +4,11 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -395,7 +393,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
-                int columnMinimumHeight = property.getMinimumValuePixelHeight(font);
+                int columnMinimumHeight = property.getBaseValueHeight(font);
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
             }
 

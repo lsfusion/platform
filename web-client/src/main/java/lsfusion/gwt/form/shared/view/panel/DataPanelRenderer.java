@@ -100,17 +100,17 @@ public class DataPanelRenderer implements PanelRenderer {
         panel.add(label, GFlexAlignment.CENTER);
         panel.add(gridPanel, vertical ? GFlexAlignment.STRETCH : GFlexAlignment.CENTER, 1);
 
-        String preferredHeight = property.getPreferredValueHeight();
-        String preferredWidth = property.getPreferredValueWidth();
+        String preferredHeight = property.getBaseValueHeight(null) + "px";
+        String preferredWidth = property.getBaseValueWidth(null) + "px";
 
         gridPanel.setHeight(preferredHeight);
         if (!vertical) {
             gridPanel.setWidth(preferredWidth);
         }
 
-        label.getElement().getStyle().setProperty("minHeight", property.getPreferredLabelHeight());
+        label.getElement().getStyle().setProperty("minHeight", property.getPreferredLabelHeight() + "px");
         gridPanel.getElement().getStyle().setProperty("minHeight", preferredHeight);
-        gridPanel.getElement().getStyle().setProperty("minWidth", property.getBasePixelValueWidth(null) + "px");
+        gridPanel.getElement().getStyle().setProperty("minWidth", preferredWidth);
         gridPanel.getElement().getStyle().setProperty("maxHeight", preferredHeight);
 
         finishLayoutSetup();
@@ -217,8 +217,8 @@ public class DataPanelRenderer implements PanelRenderer {
             }
 
             //+extra for borders and margins
-            int width = property.getPreferredValuePixelWidth() + 4;
-            int height = property.getPreferredValuePixelHeight() + 4;
+            int width = property.getBaseValueWidth(null) + 4;
+            int height = property.getBaseValueHeight(null) + 4;
 
             if (isVertical()) {
                 pref.width = Math.max(pref.width, width);

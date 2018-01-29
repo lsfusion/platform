@@ -362,7 +362,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getMinimumValuePixelHeight(font));
+            rowHeight = Math.max(rowHeight, property.getBaseValueHeight(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {
