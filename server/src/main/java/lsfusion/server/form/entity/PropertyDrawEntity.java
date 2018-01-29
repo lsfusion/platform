@@ -402,11 +402,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public boolean isGrid(FormEntity formEntity) {
-        if (forceViewType != null)
-            return forceViewType.isGrid();
-
         GroupObjectEntity toDraw = getToDraw(formEntity);
-        return toDraw != null && toDraw.initClassView.isGrid();
+        return toDraw != null && toDraw.initClassView.isGrid() && (forceViewType == null || forceViewType.isGrid());        
     }
 
     public boolean isForcedPanel() {
