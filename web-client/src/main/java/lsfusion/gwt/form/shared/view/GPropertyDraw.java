@@ -274,10 +274,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return notNull && !isReadOnly();
     }
 
-    public boolean isFlex(GFont parentFont) { // table layout fixed - не поддерживает различные preferred и flex, поэтому просто возвращаем все
-        return flex > 0 || getMaximumValueWidth() > getBaseValueWidth(parentFont);
-    }
-
     public double getFlex() {
         if (flex == -2) {
             return getBaseValueWidth(null);

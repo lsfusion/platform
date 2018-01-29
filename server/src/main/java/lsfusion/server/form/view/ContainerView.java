@@ -88,7 +88,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical();
+        return isLinearVertical() || isSplitVertical() || isColumns();
     }
     
     public boolean isHorizontal() {

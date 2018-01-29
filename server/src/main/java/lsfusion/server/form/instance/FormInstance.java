@@ -1800,6 +1800,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (curClassView.isHidden()) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
+            assert forceViewType != null; // сейчас ACTION по умолчанию получает PANEL, а PROPERTY - GRID
             if (forceViewType != null && forceViewType.isHidden()) continue;
 
             ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();

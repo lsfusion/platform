@@ -168,7 +168,7 @@ public abstract class GridPropertyTable {
     }
 
     protected boolean isColumnFlex(int i) {
-        return getColumnPropertyDraw(i).isFlex(getTable());
+        return getColumnPropertyDraw(i).getFlex() > 0;
     }
 
     protected void setUserWidth(int i, int width) {

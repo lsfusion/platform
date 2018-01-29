@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ReportConstants;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.Settings;
@@ -100,6 +101,22 @@ public class PropertyDrawView extends ComponentView {
     
     public Type getChangeWYSType(FormEntity form) {
         return entity.getWYSRequestInputType(form);
+    }
+
+    @Override
+    public double getBaseDefaultFlex(FormEntity formEntity) {
+        ContainerView container = getContainer();
+        if(((container != null && container.isHorizontal()) || entity.isGrid(formEntity)) && isFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2 
+            return -2; // flex - равный ширине
+        return super.getBaseDefaultFlex(formEntity);
+    }
+
+    @Override
+    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+        ContainerView container = getContainer();
+        if (container != null && container.isVertical() && isFlex())
+            return FlexAlignment.STRETCH;
+        return super.getDefaultAlignment(formEntity);
     }
 
     public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {

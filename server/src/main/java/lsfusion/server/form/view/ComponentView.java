@@ -9,6 +9,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
@@ -58,36 +59,41 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return preferredSize;
     }
     
-    public double getFlex() {
-        assert flex == null || (flex > 0 || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if (flex != null) {
+    public double getFlex(FormEntity formEntity) {
+        if (flex != null)
             return flex;
-        }
-        
+
+        return getDefaultFlex(formEntity);
+    }
+
+    public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getContainer();
         if (container != null) {
-            if ((container.isScroll() || container.isSplit() || container.isTabbedPane())) {
+            if ((container.isScroll() || container.isSplit() || container.isTabbedPane()))
                 return 1;
-            } else if (this instanceof PropertyDrawView && container.isHorizontal() && ((PropertyDrawView) this).isFlex()) {
-                return -2;
-            }
         }
+        return getBaseDefaultFlex(formEntity);
+    }
+    public double getBaseDefaultFlex(FormEntity formEntity) {
         return 0;
     }
-    
-    public FlexAlignment getAlignment() {
-        assert alignment == null || (alignment == FlexAlignment.STRETCH || getContainer() == null || (!getContainer().isScroll() && !getContainer().isSplit())); // временные assert'ы чтобы проверить обратную совместимость
-        if (alignment != null) {
+
+    public FlexAlignment getAlignment(FormEntity formEntity) {
+        if (alignment != null)
             return alignment;
-        }
         
+        return getDefaultAlignment(formEntity);
+    }
+
+    public FlexAlignment getDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getContainer();
-        if (container != null)
-            if ((container.isScroll() || container.isSplit() || container.isTabbedPane())) {
+        if (container != null) {
+            if ((container.isScroll() || container.isSplit() || container.isTabbedPane()))
                 return FlexAlignment.STRETCH;
-            } else if (this instanceof PropertyDrawView && (container.isVertical() || container.isColumns()) && ((PropertyDrawView) this).isFlex()) {
-                return null; 
-            }
+        }
+        return getBaseDefaultAlignment(formEntity);
+    }
+    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
         return FlexAlignment.LEADING;
     }
 
@@ -246,8 +252,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         
         outStream.writeBoolean(autoSize);
 
-        outStream.writeDouble(getFlex());
-        pool.writeObject(outStream, getAlignment());
+        outStream.writeDouble(getFlex(pool.context.entity));
+        pool.writeObject(outStream, getAlignment(pool.context.entity));
 
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
