@@ -292,7 +292,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return getMinimumValueWidth(parentFont);
     }
     public int getBaseValueHeight(GFont parentFont) {
-        return Math.max(getPreferredValueHeight(parentFont), getMinimumValueHeight(parentFont));
+        return getMinimumValueHeight(parentFont);
     }
 
     private int getMinimumValueWidth(GFont parentFont) {
