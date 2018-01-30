@@ -9,11 +9,11 @@ META defineCreated(objectClass)
     createdTime (objectClass o) <- currentDateTime() WHEN SET(o IS objectClass);
     
     createdUser = DATA CustomUser (objectClass);
-    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) CHARWIDTH 10 IN created;
     createdUser (objectClass o) <- currentUser() WHEN SET(o IS objectClass);
     
     createdComputer = DATA Computer (objectClass);
-    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) CHARWIDTH 10 IN created;
     createdComputer (objectClass o) <- currentComputer() WHEN SET(o IS objectClass);
 END
 
@@ -21,10 +21,10 @@ META defineCreatedAbstract(objectClass)
     createdTime 'Время создания'= ABSTRACT DATETIME (objectClass) IN created;
     
     createdUser = ABSTRACT CustomUser (objectClass);
-    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) CHARWIDTH 10 IN created;
     
     createdComputer = ABSTRACT Computer (objectClass);
-    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) CHARWIDTH 10 IN created;
 END
 
 META defineHistorizable(property, propPostfix, caption, type, object, objectIdentity, group)

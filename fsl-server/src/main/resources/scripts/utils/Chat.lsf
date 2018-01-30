@@ -20,7 +20,7 @@ readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
 dataName 'Имя' = DATA VARISTRING[100] (Chat);
 nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE name(user), login(user);
-name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat)) MINCHARWIDTH 15 PREFCHARWIDTH 30;
+name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()) BY chat](chat)) CHARWIDTH 15;
 
 CLASS MessageStatus {
     sent 'Отправлено',
@@ -38,21 +38,21 @@ markSeenOnChange = ABSTRACT LIST (Chat);
 editMessage 'Редактировать сообщение' (Chat c, Message m) = ABSTRACT LIST (Chat, Message);
 
 author 'Автор' = DATA CustomUser (Message);
-nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) FIXEDCHARWIDTH 30;
 own(Message m) = author(m) == currentUser();
-text 'Текст' = DATA TEXT (Message) MINCHARWIDTH 50;
-dateTime 'Время' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
-lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) MAXCHARWIDTH 30 PREFCHARWIDTH 30;
+text 'Текст' = DATA TEXT (Message) CHARWIDTH 50;
+dateTime 'Время' = DATA DATETIME (Message) FIXEDCHARWIDTH 30;
+lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) FIXEDCHARWIDTH 30;
 system 'Системное' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
 captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
 captionStatus 'Статус' (Message message) = captionStatus(message, currentUser());
 chat = DATA Chat (Message);
-nameChat 'Чат' (Message message) = name(chat(message)) MINCHARWIDTH 30 PREFCHARWIDTH 30;
-nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') MINCHARWIDTH 15 PREFCHARWIDTH 30;
+nameChat 'Чат' (Message message) = name(chat(message)) CHARWIDTH 30;
+nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
 attachment 'Вложение' = DATA CUSTOMFILE (Message);
-hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE MAXCHARWIDTH 1 PREFCHARWIDTH 1;
+hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE FIXEDCHARWIDTH 1;
 loadAttachment 'Прикрепить вложение' (Message m) = { INPUT =attachment(m) CHANGE; }
 openAttachment 'Открыть вложение' (Message m) = {
     IF attachment(m) THEN {
@@ -70,7 +70,7 @@ editable (Message m) = NOT readonly(m);
 
 seenCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen BY m;
 deliveredCount(Message m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered BY m;
-status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' FIXEDCHARWIDTH 10;
  
 countMessages 'Кол-во сообщений' (chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == Chat chat BY chat;
 isEmpty(Chat c) = NOT countMessages(c); 
@@ -78,8 +78,8 @@ lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP LAS
 lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
 
 unreadMessages 'Непрочитанных' (chat, user) = GROUP SUM 1 IF (status(Message message, CustomUser user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message), user;
-unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
-unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) FIXEDCHARWIDTH 10;
+unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) FIXEDCHARWIDTH 10;
 sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, CustomUser user) IF overIn(chat, user) BY user;
 
 chatNotFound = DATA LOCAL BOOLEAN ();
@@ -345,7 +345,7 @@ DESIGN fullChat {
                 MOVE BOX(m) { 
                     fill = 0.8; 
                     PROPERTY(showText(m)) {
-                        minimumValueWidth = 300;
+                        valueWidth = 300;
                     }                       
                 }
                             

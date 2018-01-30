@@ -48,7 +48,7 @@ META defineHierarchyCustom (object, class)
 
     canonicalName 'Полное имя' (class object) = VARISTRING[255](
                            [= GROUP CONCAT name(class parent), ' / ' BY class child ORDER DESC level(child, parent)](object))
-                           MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 MATERIALIZED;
+                           CHARWIDTH 50 MATERIALIZED;
 END
 
 META defineHierarchyFilter(object, class, property)

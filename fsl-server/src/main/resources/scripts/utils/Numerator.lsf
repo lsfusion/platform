@@ -14,16 +14,16 @@ DESIGN options {
 CLASS Numerator 'Нумератор';
 TABLE numerator (Numerator);
 
-name 'Наименование' = DATA VARISTRING[100](Numerator) MINCHARWIDTH 20 PREFCHARWIDTH 20;
+name 'Наименование' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
 
 series 'Серия' = DATA STRING[2] (Numerator) IN recognize FIXEDCHARWIDTH 3;
 
-minValue 'Мин. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
-maxValue 'Макс. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
+minValue 'Мин. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
+maxValue 'Макс. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
 
 stringLength 'Длина' = DATA INTEGER (Numerator) IN base;
 
-curValue 'Тек. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
+curValue 'Тек. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
 lpadStringWithZero = FORMULA VARSTRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
@@ -119,12 +119,12 @@ NAVIGATOR {
 GROUP numbered 'Нумератор' : recognize;
 
 META defineNumberedAbstract(class)
-    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED MINCHARWIDTH 7;
+    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 7;
     series 'Серия' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED FIXEDCHARWIDTH 3; 
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED MATERIALIZED;
+        CHARWIDTH 7 INDEXED MATERIALIZED;
         
 END
 
@@ -144,7 +144,7 @@ DESIGN options{
 }
 
 META defineNumbered(class)
-    number 'Номер' = DATA VARSTRING[28] (class) IN numbered INDEXED MINCHARWIDTH 7;
+    number 'Номер' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
@@ -158,13 +158,13 @@ META defineNumbered(class)
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 INDEXED MATERIALIZED;
+        CHARWIDTH 7 INDEXED MATERIALIZED;
         
 END
 
 META defineNumerated(class)
     numerator 'Нумератор (ИД)' = DATA Numerator (class);
-    nameNumerator 'Нумератор' (class o) = name(numerator(o)) IN numbered MINCHARWIDTH 7 PREFCHARWIDTH 15;
+    nameNumerator 'Нумератор' (class o) = name(numerator(o)) IN numbered CHARWIDTH 7;
 
     generateSeriesNumber 'Сгенерировать номер'(class o) = {
         number(o) <- curStringValue(numerator(o));
@@ -218,12 +218,12 @@ END
 
 META defineNumerated(object1, object2)
 
-    number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) MINCHARWIDTH 7;
+    number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 7;
     series 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
-    seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 MATERIALIZED;
+    seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 7 MATERIALIZED;
 
     numerator = DATA Numerator (###object1, ###object2);
-    nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
+    nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) CHARWIDTH 7;
 
     setValueSessionNumerated 'Сгенерировать номер'(###object1 object1, ###object2 object2) = {
         number(object1, object2) <- curStringValue(numerator(object1, object2));

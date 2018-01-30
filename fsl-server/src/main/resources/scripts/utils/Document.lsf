@@ -136,7 +136,7 @@ META defineDocumentInterfaceHeaderTime(objectClass)
 END
 
 META defineDocumentDetailTimePrefix (object, detailClass, prefix, caption)
-    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) MATERIALIZED MINCHARWIDTH 10 PREFCHARWIDTH 15;
+    prefix###dateTime 'Дата/время'##caption (detailClass d) = prefix###dateTime(object(d)) MATERIALIZED CHARWIDTH 10;
     prefix###date 'Дата'##caption (detailClass d) = prefix###date(object(d));
     prefix###time 'Время'##caption (detailClass d) = prefix###time(object(d));
 END
@@ -265,10 +265,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note 'Примечание' = DATA VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm MATERIALIZED;
+    note 'Примечание' = DATA VARISTRING[100] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note 'Примечание' = ABSTRACT VARISTRING[100] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN documentPrm MATERIALIZED;
+    note 'Примечание' = ABSTRACT VARISTRING[100] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -277,10 +277,10 @@ META defineDocumentInterfaceHeaderNote(objectClass)
 END
 
 META defineDocumentDetailNote (detailClass)
-    note 'Примечание' = DATA VARSTRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    note 'Примечание' = DATA VARSTRING[100] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentAbstractDetailNote (detailClass)
-    note 'Примечание' = ABSTRACT VARSTRING[100] (detailClass) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+    note 'Примечание' = ABSTRACT VARSTRING[100] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentInterfaceDetailNote(detailClass)
     @defineDocumentAbstractDetailNote(detailClass);
@@ -452,7 +452,7 @@ META defineDocumentDetailIndex (object, detailClass)
     dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass) INDEXED; 
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
-        ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
+        ORDER d CHARWIDTH 4;
     index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize;  
 END
 
@@ -460,7 +460,7 @@ META defineDocumentDetailIndexPersistent (object, detailClass)
     dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass); 
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1 BY object(d)
-        ORDER d MINCHARWIDTH 4 PREFCHARWIDTH 4;
+        ORDER d CHARWIDTH 4;
     index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize MATERIALIZED;  
 END
 
@@ -544,7 +544,7 @@ META defineDocumentInterfaceHeaderNumber(objectClass)
 END
 
 META defineDocumentDetailNumber (object, detailClass)
-    number 'Номер' (detailClass d) = number(object(d)) IN recognize MINCHARWIDTH 7;
+    number 'Номер' (detailClass d) = number(object(d)) IN recognize CHARWIDTH 7;
     series 'Серия' (detailClass d) = series(object(d)) IN recognize FIXEDCHARWIDTH 3;
     seriesNumber 'Серия/номер' (detailClass d) = seriesNumber(object(d));
 END
@@ -601,10 +601,10 @@ END
 // ----- Description ----- //
 META defineDocumentHeaderDescription(objectClass, caption)
     description 'Название документа' (objectClass o) =
-        CONCAT ' ', caption, '№ ' + seriesNumber(o), 'от ' + date(o) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+        CONCAT ' ', caption, '№ ' + seriesNumber(o), 'от ' + date(o) CHARWIDTH 30;
 END
 META defineDocumentAbstractHeaderDescription(objectClass)
-    description 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) MINCHARWIDTH 30 PREFCHARWIDTH 50 MATERIALIZED;
+    description 'Название документа' = ABSTRACT VARSTRING[200] (objectClass) CHARWIDTH 30 MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderDescription(objectClass, caption)
     @defineDocumentAbstractHeaderDescription(objectClass);
@@ -613,8 +613,8 @@ META defineDocumentInterfaceHeaderDescription(objectClass, caption)
 END
 
 META defineDocumentDetailDescription(object, detailClass)
-    description 'Название документа' (detailClass d) = description(object(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
-    descriptionIndex 'Название документа' (detailClass d) = description(d) + ', позиция ' + index(d) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN base;
+    description 'Название документа' (detailClass d) = description(object(d)) CHARWIDTH 30;
+    descriptionIndex 'Название документа' (detailClass d) = description(d) + ', позиция ' + index(d) CHARWIDTH 30 IN base;
 END
 
 META defineDocumentDescription(object, detailClass, caption)

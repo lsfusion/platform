@@ -9,7 +9,7 @@ name 'Имя' = DATA VARSTRING[100] (Template);
 file 'Файл шаблона' (Template) = DATA WORDFILE (Template);
 loadFile 'Загрузить шаблон'(Template t) = { INPUT =file(t) CHANGE; }
 openFile 'Открыть шаблон'(Template t) = { OPEN file(t); }
-id 'Идентификатор' = DATA VARISTRING[100] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
 process = CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty' (Template);
 
@@ -63,7 +63,7 @@ FORM template 'Шаблон Word'
 
 DESIGN template {
     BOX {
-        preferredSize = (1024, 768);
+        size = (1024, 768);
         type = CONTAINERV;
         MOVE BOX(t) {
             type = CONTAINERH;
@@ -104,7 +104,7 @@ FORM dialogTemplates 'Шаблоны Word'
 ;
 DESIGN dialogTemplates {
     BOX {
-        preferredSize = (1024, 768);
+        size = (1024, 768);
     }
 }
 

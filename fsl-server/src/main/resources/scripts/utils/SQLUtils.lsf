@@ -113,7 +113,7 @@ cancelJavaProcess 'Снять java-процесс' = CUSTOM 'lsfusion.erp.utils.
 cancelSQLProcess 'Снять SQL-процесс' = CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
-nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
+nameProcessType 'Фильтр процессов' () = staticName(processType()) CHARWIDTH 15;
 captionProcessType 'Фильтр процессов' () = staticCaption(processType());
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
