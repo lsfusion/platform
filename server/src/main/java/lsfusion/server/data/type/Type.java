@@ -45,9 +45,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException;
     void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException;
 
-    int getMinimumWidth();
-    int getPreferredWidth();
-    int getMaximumWidth();
+    int getReportMinimumWidth();
+    int getReportPreferredWidth();
+
     boolean fillReportDrawField(ReportDrawField reportField);
     
     boolean isFlex();

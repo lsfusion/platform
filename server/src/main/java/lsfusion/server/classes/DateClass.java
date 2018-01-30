@@ -29,7 +29,7 @@ public class DateClass extends DataClass<Date> {
 
     private DateClass() { super(LocalizedString.create("{classes.date}")); }
 
-    public int getPreferredWidth() { return 70; }
+    public int getReportPreferredWidth() { return 70; }
 
     public Class getReportJavaClass() {
         return java.util.Date.class;

@@ -14,12 +14,8 @@ public class GComponent implements Serializable {
     public GContainer container;
     public boolean defaultComponent;
 
-    public int minimumWidth = -1;
-    public int minimumHeight = -1;
-    public int maximumWidth = -1;
-    public int maximumHeight = -1;
-    public int preferredWidth = -1;
-    public int preferredHeight = -1;
+    public int width = -1;
+    public int height = -1;
     
     public boolean autoSize;
 

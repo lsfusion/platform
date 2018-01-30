@@ -43,19 +43,12 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
-        int minCharWidth = getMinimumCharWidth(minimumCharWidth, pattern);
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+        int minCharWidth = getCharWidth(minimumCharWidth, pattern);
         return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
-    @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
-        int prefCharWidth = getPreferredCharWidth(preferredCharWidth, pattern);
-        return prefCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
-    }
-
-    private String minimumMask;
-    private String preferredMask;
+    private String mask;
 
     public GStringType() {}
 
@@ -71,21 +64,19 @@ public class GStringType extends GDataType {
         this.length = length;
 
         if (length.isUnlimited()) {
-            minimumMask = "999 999";
-            preferredMask = "9 999 999";
+            mask = "999 999";
         } else {
             int lengthValue = length.getValue();
-            minimumMask = GwtSharedUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
-            preferredMask = GwtSharedUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) round(pow(lengthValue, 0.8)));
+            mask = GwtSharedUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
         }
     }
 
     @Override
-    public int getMinimumPixelHeight(GFont font) {
+    public int getPixelHeight(GFont font) {
         if (length.isUnlimited()) {
-            return super.getMinimumPixelHeight(font) * 4;
+            return super.getPixelHeight(font) * 4;
         }
-        return super.getMinimumPixelHeight(font);
+        return super.getPixelHeight(font);
     }
 
     @Override
@@ -105,22 +96,13 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public String getMinimumMask(String pattern) {
-        return minimumMask;
-    }
-
-    public String getPreferredMask(String pattern) {
-        return preferredMask;
+    public String getMask(String pattern) {
+        return mask;
     }
 
     @Override
-    public int getMinimumCharWidth(int definedMinimumCharWidth, String pattern) {
-        return definedMinimumCharWidth > 0 ? definedMinimumCharWidth : minimumMask.length();
-    }
-
-    @Override
-    public int getPreferredCharWidth(int definedPreferredCharWidth, String pattern) {
-        return definedPreferredCharWidth > 0 ? definedPreferredCharWidth : preferredMask.length();
+    public int getCharWidth(int definedMinimumCharWidth, String pattern) {
+        return definedMinimumCharWidth > 0 ? definedMinimumCharWidth : mask.length();
     }
 
     @Override

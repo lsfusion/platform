@@ -93,9 +93,8 @@ public class ObjectType extends AbstractType<Long> {
         return value.toString();
     }
 
-    public int getPreferredWidth() { return 45; }
-    public int getMaximumWidth() { return getPreferredWidth(); }
-    public int getMinimumWidth() { return getPreferredWidth(); }
+    public int getReportPreferredWidth() { return 45; }
+    public int getReportMinimumWidth() { return getReportPreferredWidth(); }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Long.class;

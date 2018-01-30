@@ -24,16 +24,12 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getMask(String pattern) {
         return "";
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
-        return 40;
-    }
-
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 40;
     }
 

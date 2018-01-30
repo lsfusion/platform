@@ -62,8 +62,7 @@ public class ClientStringClass extends ClientDataClass {
     public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
 
 
-    private String minimumMask;
-    private String preferredMask;
+    private String mask;
 
     protected String sID;
 
@@ -77,12 +76,10 @@ public class ClientStringClass extends ClientDataClass {
         sID = "StringClass_" + (caseInsensitive ? "insensitive_" : "") + (blankPadded ? "bp_" : "") + length;
 
         if(length.isUnlimited()) {
-            minimumMask = "999 999";
-            preferredMask = "9 999 999";
+            mask = "999 999";
         } else {
             int lengthValue = length.getValue();
-            minimumMask = BaseUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
-            preferredMask = BaseUtils.replicate('0', lengthValue <= 20 ? lengthValue : (int) round(pow(lengthValue, 0.8)));
+            mask = BaseUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
         }
     }
 
@@ -115,12 +112,8 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public String getMinimumMask() {
-        return minimumMask;
-    }
-
-    public String getPreferredMask() {
-        return preferredMask;
+    public String getMask() {
+        return mask;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
@@ -160,24 +153,10 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public int getPreferredHeight(FontMetrics fontMetrics) {
+    public int getHeight(FontMetrics fontMetrics) {
         if(length.isUnlimited())
             return 4 * (fontMetrics.getHeight() + 1);
-        return super.getPreferredHeight(fontMetrics);
-    }
-
-    @Override
-    public int getMaximumHeight(FontMetrics fontMetrics) {
-        if(length.isUnlimited())
-            return Integer.MAX_VALUE;
-        return super.getPreferredHeight(fontMetrics);
-    }
-
-    @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        if(length.isUnlimited())
-            return fontMetrics.charWidth('0') * 25;//stringWidth(getPreferredMask()) + 8;
-        return super.getPreferredWidth(prefCharWidth, fontMetrics);
+        return super.getHeight(fontMetrics);
     }
 
     @Override

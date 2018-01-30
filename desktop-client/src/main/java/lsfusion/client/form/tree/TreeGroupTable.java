@@ -455,21 +455,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         
         int rowHeight = 0;
         for (ClientPropertyDraw columnProperty : model.columnProperties) {
-            rowHeight = max(rowHeight, columnProperty.getBaseValueHeight(this));
+            rowHeight = max(rowHeight, columnProperty.getValueHeight(this));
         }
         if (rowHeight != getRowHeight() && rowHeight > 0) {
             setRowHeight(rowHeight);
         }
     }
 
-    private int hierarchicalPreferredWidth;
+    private int hierarchicalWidth;
     private TableColumnExt hierarchicalColumn;
     private void setupHierarhicalColumn() {
         TableColumnExt tableColumn = getColumnExt(0);
 
-        int pref = treeGroup.calculatePreferredSize();
         hierarchicalColumn = tableColumn;
-        hierarchicalPreferredWidth = pref;
+        hierarchicalWidth = treeGroup.calculateSize();
 //        setColumnSizes(tableColumn, pref, pref, pref);
 
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
@@ -511,7 +510,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 //
 //        setColumnSizes(tableColumn, min, max, pref);
 
-        rowHeight = max(rowHeight, property.getBaseValueHeight(this));
+        rowHeight = max(rowHeight, property.getValueHeight(this));
 
         addColumn(tableColumn);
         moveColumn(getColumnCount() - 1, pos);
@@ -1151,10 +1150,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         @Override
-        protected int getColumnBasePref(int i) {
+        protected int getColumnBaseWidth(int i) {
             if(i==0)
-                return hierarchicalPreferredWidth;
-            return super.getColumnBasePref(i - 1);
+                return hierarchicalWidth;
+            return super.getColumnBaseWidth(i - 1);
         }
     };
 }

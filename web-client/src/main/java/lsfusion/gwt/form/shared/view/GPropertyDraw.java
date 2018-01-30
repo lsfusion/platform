@@ -81,16 +81,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public GPropertyDraw quickFilterProperty;
 
-    public int minimumCharWidth;
-    public int maximumCharWidth;
-    public int preferredCharWidth;
+    public int charWidth;
 
-    public int minimumValueWidth = -1;
-    public int minimumValueHeight = -1;
-    public int maximumValueWidth = -1;
-    public int maximumValueHeight = -1;
-    public int preferredValueWidth = -1;
-    public int preferredValueHeight = -1;
+    public int valueWidth = -1;
+    public int valueHeight = -1;
 
     public boolean panelCaptionAbove;
     
@@ -276,70 +270,33 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public double getFlex() {
         if (flex == -2) {
-            return getBaseValueWidth(null);
+            return getValueWidth(null);
         }
         return flex;
     }
 
     public GFlexAlignment getAlignment() {
-        if (alignment == null) {
-            return GFlexAlignment.STRETCH;
-        }
         return alignment;
     }
 
-    public int getBaseValueWidth(GFont parentFont) {
-        return getMinimumValueWidth(parentFont);
-    }
-    public int getBaseValueHeight(GFont parentFont) {
-        return getMinimumValueHeight(parentFont);
-    }
-
-    private int getMinimumValueWidth(GFont parentFont) {
-        if (minimumValueWidth != -1) {
-            return minimumValueWidth;
+    public int getValueWidth(GFont parentFont) {
+        if (valueWidth != -1) {
+            return valueWidth;
         } else {
-            return baseType.getMinimumPixelWidth(minimumCharWidth, font != null ? font : parentFont, pattern);
+            return baseType.getPixelWidth(charWidth, font != null ? font : parentFont, pattern);
         }
     }
 
-    public int getMinimumValueHeight(GFont parentFont) {
-        if (minimumValueHeight != -1) {
-            return minimumValueHeight;
+    public int getValueHeight(GFont parentFont) {
+        if (valueHeight != -1) {
+            return valueHeight;
         } else {
-            return baseType.getMinimumPixelHeight(font != null ? font : parentFont);
+            return baseType.getPixelHeight(font != null ? font : parentFont);
         }
     }
 
-    public int getMaximumValueWidth() {
-        if (maximumValueWidth != -1) {
-            return maximumValueWidth;
-        } else {
-            return baseType.getMaximumPixelWidth(maximumCharWidth, font, pattern);
-        }
-    }
-
-    public int getPreferredValueWidth() {
-        return getPreferredValueWidth(null);
-    }
-    public int getPreferredValueWidth(GFont parentFont) {
-        if (preferredValueWidth != -1) {
-            return preferredValueWidth;
-        } else {
-            return baseType.getPreferredPixelWidth(preferredCharWidth, font != null ? font : parentFont, pattern);
-        }
-    }
-
-    public int getPreferredValueHeight(GFont parentFont) {
-        if (preferredValueHeight != -1) {
-            return preferredValueHeight;
-        } else {
-            return baseType.getPreferredPixelHeight(font != null ? font : parentFont);
-        }
-    }
-
-    public int getPreferredLabelHeight() {
-        return new GStringType().getPreferredPixelHeight(captionFont);
+    public int getLabelHeight() {
+        return new GStringType().getPixelHeight(captionFont);
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

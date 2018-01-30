@@ -159,7 +159,7 @@ public class PropertyController {
         for (ClientGroupObjectValue columnKey : columnKeys) {
             PanelView view = views.get(columnKey);
             if (view != null && view.getComponent().getParent() != viewsPanel) {
-                viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getBaseValueWidth(viewsPanel)));
+                viewsPanel.add(view.getComponent(), new FlexConstraints(property.getAlignment(), property.getValueWidth(viewsPanel)));
             }
         }
 

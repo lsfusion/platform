@@ -379,7 +379,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             boolean flex = isColumnFlex(i);
             flexes[i] = flex;
 
-            int basePref = getColumnBasePref(i);
+            int basePref = getColumnBaseWidth(i);
             basePrefs[i] = basePref;
 
             Integer userWidth = getUserWidth(i);
@@ -401,8 +401,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getUserWidth(getColumnPropertyDraw(i));
     }
 
-    protected int getColumnBasePref(int i) {
-        return getColumnPropertyDraw(i).getBaseValueWidth(font); //property.getPreferredValueWidth(font);
+    protected int getColumnBaseWidth(int i) {
+        return getColumnPropertyDraw(i).getValueWidth(font);
     }
 
 }

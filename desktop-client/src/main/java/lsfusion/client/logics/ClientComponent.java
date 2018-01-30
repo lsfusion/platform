@@ -23,9 +23,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
     public ClientContainer container;
     
-    public Dimension minimumSize;
-    public Dimension maximumSize;
-    public Dimension preferredSize;
+    public Dimension size;
     
     public boolean autoSize;
 
@@ -46,9 +44,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container);
 
-        pool.writeObject(outStream, minimumSize);
-        pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, preferredSize);
+        pool.writeObject(outStream, size);
         
         outStream.writeBoolean(autoSize);
 
@@ -69,9 +65,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
 
         container = pool.deserializeObject(inStream);
 
-        minimumSize = pool.readObject(inStream);
-        maximumSize = pool.readObject(inStream);
-        preferredSize = pool.readObject(inStream);
+        size = pool.readObject(inStream);
         
         autoSize = inStream.readBoolean();
 

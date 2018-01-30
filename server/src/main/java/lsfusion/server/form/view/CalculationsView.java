@@ -10,7 +10,7 @@ public class CalculationsView extends ComponentView {
     }
 
     @Override
-    public Dimension getPreferredSize() {
+    public Dimension getSize() {
         return new Dimension(0, -1);
     }
 }

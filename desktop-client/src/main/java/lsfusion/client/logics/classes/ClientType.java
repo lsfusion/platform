@@ -16,15 +16,9 @@ import java.text.ParseException;
 
 public interface ClientType {
 
-    int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics);
+    int getWidth(int minCharWidth, FontMetrics fontMetrics);
 
-    int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics);
-
-    int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics);
-
-    int getPreferredHeight(FontMetrics fontMetrics);
-
-    int getMaximumHeight(FontMetrics fontMetrics);
+    int getHeight(FontMetrics fontMetrics);
 
     Format getDefaultFormat();
 

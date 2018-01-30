@@ -202,15 +202,11 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return super.read(set, syntax, name);
     }
 
-    public int getMinimumWidth() {
+    public int getReportMinimumWidth() {
         throw new RuntimeException("not supported");
     }
 
-    public int getPreferredWidth() {
-        throw new RuntimeException("not supported");
-    }
-
-    public int getMaximumWidth() {
+    public int getReportPreferredWidth() {
         throw new RuntimeException("not supported");
     }
 

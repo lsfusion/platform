@@ -536,7 +536,7 @@ public class GridTable extends ClientPropertyTable {
                 ((LabelPropertyRenderer) renderer).setFormat(format);
             }
 
-            rowHeight = max(rowHeight, property.getBaseValueHeight(this));
+            rowHeight = max(rowHeight, property.getValueHeight(this));
 
             hasFocusableCells |= property.focusable == null || property.focusable;
 

@@ -601,13 +601,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public static class DrawOptions {
         
         // свойства, но пока реализовано как для всех
-        private int minimumCharWidth;
-        private int maximumCharWidth;
-        private int preferredCharWidth;
-
-        private Dimension minimumValueSize;
-        private Dimension maximumValueSize;
-        private Dimension preferredValueSize;
+        private int charWidth;
+        private Dimension valueSize;
+        private Boolean valueFlex;
 
         // свойства, но пока реализовано как для всех
         private String regexp;
@@ -663,18 +659,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             if(propertyView.getType() instanceof ActionClass)
                 propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
 
-            if(propertyView.getMinimumCharWidth() == 0)
-                propertyView.setMinimumCharWidth(minimumCharWidth);
-            if(propertyView.getMaximumCharWidth() == 0)
-                propertyView.setMaximumCharWidth(maximumCharWidth);
-            if(propertyView.getPreferredCharWidth() == 0)
-                propertyView.setPreferredCharWidth(preferredCharWidth);
-            if(propertyView.getMinimumValueSize() == null)
-                propertyView.setMinimumValueSize(minimumValueSize);
-            if(propertyView.getMaximumValueSize() == null)
-                propertyView.setMaximumValueSize(maximumValueSize);
-            if(propertyView.getPreferredValueSize() == null)
-                propertyView.setPreferredValueSize(preferredValueSize);
+            if(propertyView.getCharWidth() == 0)
+                propertyView.setCharWidth(charWidth);
+            if(propertyView.getValueFlex() == null)
+                propertyView.setValueFlex(valueFlex);
+            if(propertyView.getValueSize() == null)
+                propertyView.setValueSize(valueSize);
             if (propertyView.design.imagePath == null && iconPath != null) {
                 propertyView.design.imagePath = iconPath;
                 propertyView.design.setImage(image);
@@ -695,12 +685,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         }
         
         public void inheritDrawOptions(DrawOptions options) {
-            if(minimumCharWidth == 0)
-                setMinimumCharWidth(options.minimumCharWidth);
-            if(maximumCharWidth == 0)
-                setMaximumCharWidth(options.maximumCharWidth);
-            if(preferredCharWidth == 0)
-                setPreferredCharWidth(options.preferredCharWidth);
+            if(charWidth == 0)
+                setCharWidth(options.charWidth);
 
             if(iconPath == null) {
                 setImage(options.image);
@@ -746,9 +732,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         }
 
         public void setFixedCharWidth(int charWidth) {
-            setMinimumCharWidth(charWidth);
-            setMaximumCharWidth(charWidth);
-            setPreferredCharWidth(charWidth);
+            setCharWidth(charWidth);
+            setValueFlex(false);
         }
 
         public void setImage(String iconPath) {
@@ -769,16 +754,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         }
 
 
-        public void setMinimumCharWidth(int minimumCharWidth) {
-            this.minimumCharWidth = minimumCharWidth;
+        public void setCharWidth(int charWidth) {
+            this.charWidth = charWidth;
         }
-
-        public void setMaximumCharWidth(int maximumCharWidth) {
-            this.maximumCharWidth = maximumCharWidth;
-        }
-
-        public void setPreferredCharWidth(int preferredCharWidth) {
-            this.preferredCharWidth = preferredCharWidth;
+        public void setValueFlex(Boolean flex) {
+            this.valueFlex = flex;
         }
 
         public void setRegexp(String regexp) {

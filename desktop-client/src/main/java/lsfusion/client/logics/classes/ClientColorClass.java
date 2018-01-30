@@ -17,7 +17,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     public final static ClientColorClass instance = new ClientColorClass();
 
     @Override
-    public String getPreferredMask() {
+    public String getMask() {
         return "";
     }
 
@@ -64,12 +64,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        return 40;
-    }
-
-    @Override
-    public int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics) {
+    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
         return 40;
     }
 }

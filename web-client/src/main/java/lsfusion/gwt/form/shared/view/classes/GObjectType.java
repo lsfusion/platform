@@ -24,17 +24,7 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
-        return 50;
-    }
-
-    @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
-        return getPreferredPixelWidth(0, font, pattern);
-    }
-
-    @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 50;
     }
 

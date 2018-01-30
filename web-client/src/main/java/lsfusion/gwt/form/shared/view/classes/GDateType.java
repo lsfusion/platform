@@ -35,7 +35,7 @@ public class GDateType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getMask(String pattern) {
         return pattern != null ? pattern : "01.01.01";
     }
 

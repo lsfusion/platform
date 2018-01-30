@@ -181,18 +181,8 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     @Override
-    public Dimension getMinimumSize() {
-        return overrideSize(super.getMinimumSize(), property.minimumValueSize); // тут видимо потому что caption'а нет
-    }
-
-    @Override
-    public Dimension getMaximumSize() {
-        return overrideSize(super.getMaximumSize(), property.maximumValueSize);  // тут видимо потому что caption'а нет
-    }
-
-    @Override
     public Dimension getPreferredSize() {
-        return overrideSize(super.getPreferredSize(), property.preferredValueSize);  // тут видимо потому что caption'а нет
+        return overrideSize(super.getPreferredSize(), property.valueSize);  // тут видимо потому что caption'а нет
     }
 
     @Override

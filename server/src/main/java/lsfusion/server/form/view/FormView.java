@@ -793,16 +793,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.panelCaptionAbove = panelCaptionAbove;
     }
 
-    public void setPreferredSize(AbstractGroup group, Dimension size) {
-        for (PropertyDrawView property : getProperties(group)) {
-            setPreferredSize(property, size);
-        }
-    }
-
-    private void setPreferredSize(PropertyDrawView property, Dimension size) {
-        property.setPreferredSize(new Dimension(size));
-    }
-
     public void setPropertyDrawViewHide(boolean hide, PropertyDrawEntity... properties) {
         for (PropertyDrawEntity property : properties) {
             setPropertyDrawViewHide(property, hide);

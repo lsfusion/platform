@@ -89,7 +89,7 @@ public class ClientModalForm extends JDialog {
 
         setSize(clipToScreen(showFullScreen
                              ? new Dimension(10000, 10000)
-                             : calculatePreferredSize(isUndecorated())));
+                             : calculateMaxPreferredSize(isUndecorated())));
 
         if (onScreen != null) {
             requestLocation(this, onScreen);
@@ -133,13 +133,13 @@ public class ClientModalForm extends JDialog {
         }
     }
 
-    public Dimension calculatePreferredSize(boolean undecorated) {
+    public Dimension calculateMaxPreferredSize(boolean undecorated) {
         //сначала нужно провалидейтать все компоненты, чтобы отработала логика autohide
 //        form.getLayout().preValidateMainContainer();
 
         Dimension preferredSize = form.getLayout().getMaxPreferredSize();
 
-        // так как у нас есть только preferredSize самого contentPane, а нам нужен у JDialog
+        // так как у нас есть только size самого contentPane, а нам нужен у JDialog
         // сколько будет занимать все "рюшечки" вокруг contentPane мы посчитать не можем, поскольку
         if (!undecorated) {
             preferredSize.width += 20;

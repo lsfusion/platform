@@ -68,24 +68,24 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     }
 
     public void setValueSize(Dimension size) {
-        target.setMinimumValueSize(size);
+        target.setValueSize(size);
     }
     public void setValueHeight(int prefHeight) {
-        if (target.minimumValueSize == null) {
-            target.minimumValueSize = new Dimension(-1, prefHeight);
+        if (target.valueSize == null) {
+            target.valueSize = new Dimension(-1, prefHeight);
         } else {
-            target.minimumValueSize.height = prefHeight;
+            target.valueSize.height = prefHeight;
         }
     }
     public void setValueWidth(int prefWidth) {
-        if (target.minimumValueSize == null) {
-            target.minimumValueSize = new Dimension(prefWidth, -1);
+        if (target.valueSize == null) {
+            target.valueSize = new Dimension(prefWidth, -1);
         } else {
-            target.minimumValueSize.width = prefWidth;
+            target.valueSize.width = prefWidth;
         }
     }
     public void setCharWidth(int charWidth) {
-        target.setMinimumCharWidth(charWidth);
+        target.setCharWidth(charWidth);
     }
 
     public void setChangeKey(KeyStroke editKey) {

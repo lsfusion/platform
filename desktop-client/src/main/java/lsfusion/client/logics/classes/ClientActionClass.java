@@ -26,13 +26,8 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return Data.ACTION;
     }
 
-    public String getPreferredMask() {
+    public String getMask() {
         return "1234567";
-    }
-
-    @Override
-    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
-        return getPreferredWidth(0, fontMetrics);
     }
 
     public Format getDefaultFormat() {

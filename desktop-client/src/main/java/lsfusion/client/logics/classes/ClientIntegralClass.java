@@ -29,11 +29,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
     }
 
     @Override
-    public String getMinimumMask() {
-        return "99 999 999";
-    }
-
-    public String getPreferredMask() {
+    public String getMask() {
         return "99 999 999";
     }
 

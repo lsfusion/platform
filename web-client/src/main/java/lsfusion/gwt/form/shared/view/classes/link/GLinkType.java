@@ -27,7 +27,7 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getMask(String pattern) {
         return "1234567";
     }
 
@@ -52,12 +52,8 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public int getMinimumPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 18;
     }
 
-    @Override
-    public int getPreferredPixelWidth(int preferredCharWidth, GFont font, String pattern) {
-        return 18;
-    }
 }

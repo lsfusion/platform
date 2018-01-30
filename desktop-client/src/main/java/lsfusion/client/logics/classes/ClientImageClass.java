@@ -27,16 +27,6 @@ public class ClientImageClass extends ClientStaticFormatFileClass {
         return Data.IMAGE;
     }
 
-    @Override
-    public int getMaximumHeight(FontMetrics fontMetrics) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
-        return Integer.MAX_VALUE;
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ImagePropertyRenderer(property);
     }

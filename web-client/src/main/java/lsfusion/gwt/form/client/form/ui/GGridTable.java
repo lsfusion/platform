@@ -393,7 +393,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
-                int columnMinimumHeight = property.getBaseValueHeight(font);
+                int columnMinimumHeight = property.getValueHeight(font);
                 rowHeight = Math.max(rowHeight, columnMinimumHeight);
             }
 

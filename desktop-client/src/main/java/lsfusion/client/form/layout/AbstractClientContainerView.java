@@ -39,9 +39,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     public static void setSizes(JComponentPanel view, ClientComponent child) {
-        view.setComponentMaximumSize(child.maximumSize);
-        view.setComponentMinimumSize(child.minimumSize);
-        view.setComponentPreferredSize(child.preferredSize);
+        view.setComponentSize(child.size);
     }
     public static void add(JPanel panel, JComponentPanel view, int index, Object constraints, ClientComponent child) {
         setSizes(view, child);
@@ -150,7 +148,7 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     // MAX PREFERRED SIZE
-    // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный preferredSize непонятно
+    // можно было бы попробовать общую схему LayoutManager'ов использовать, но проблема в том что каждый ContainerView может создавать внутренние компоненты с не определенными LayoutManager'ами, а как через них протянуть признак что нужен max, а не обычный size непонятно
     // поэтому пока используем логику из Web-Client'а (где LayoutManager'ом вообще CSS является)
 
     public static Dimension calculateMaxPreferredSize(JComponentPanel component) {
@@ -177,24 +175,24 @@ public abstract class AbstractClientContainerView implements ClientContainerView
     }
 
     private static Dimension overrideSize(ClientComponent child, Dimension dimension, boolean max) {
-        if(child.preferredSize == null)
+        if(child.size == null)
             return dimension;
         
-        int preferredWidth = child.preferredSize.width;
-        if(preferredWidth == -1)
-            preferredWidth = dimension.width;
+        int width = child.size.width;
+        if(width == -1)
+            width = dimension.width;
         else if(max)        
-            preferredWidth = BaseUtils.max(preferredWidth, dimension.width);
+            width = BaseUtils.max(width, dimension.width);
         
-        int preferredHeight = child.preferredSize.height;
+        int preferredHeight = child.size.height;
         if(preferredHeight == -1)
             preferredHeight = dimension.height;
         else if(max)
             preferredHeight = BaseUtils.max(preferredHeight, dimension.height);
-        return new Dimension(preferredWidth, preferredHeight);
+        return new Dimension(width, preferredHeight);
     }
 
-    // не предполагает явное использование (так как не содержит проверки на явный preferredSize)
+    // не предполагает явное использование (так как не содержит проверки на явный size)
     public Dimension getMaxPreferredSize(Map<ClientContainer, ClientContainerView> containerViews) {
         boolean vertical = container.isVertical();
         int width = 0;

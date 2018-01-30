@@ -19,7 +19,7 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     }
 
     @Override
-    public String getPreferredMask() {
+    public String getMask() {
         return "9 999 999 999 999 999 999";
     }
 

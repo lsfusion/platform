@@ -26,7 +26,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
 
     private DateTimeClass() { super(LocalizedString.create("{classes.date.with.time}")); }
 
-    public int getPreferredWidth() {
+    public int getReportPreferredWidth() {
         return 75;
     }
 

@@ -51,13 +51,9 @@ public class PropertyDrawView extends ComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
-    private int minimumCharWidth;
-    private int maximumCharWidth;
-    private int preferredCharWidth;
-
-    public Dimension minimumValueSize;
-    public Dimension maximumValueSize;
-    public Dimension preferredValueSize;
+    public Dimension valueSize;
+    private int charWidth;
+    private Boolean valueFlex;
 
     public KeyStroke changeKey;
     public Boolean showChangeKey;
@@ -106,15 +102,15 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public double getBaseDefaultFlex(FormEntity formEntity) {
         ContainerView container = getContainer();
-        if(((container != null && container.isHorizontal()) || entity.isGrid(formEntity)) && isFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2 
-            return -2; // flex - равный ширине
+        if(((container != null && container.isHorizontal()) || entity.isGrid(formEntity)) && isHorizontalValueFlex()) // если верхний контейнер горизонтальный или grid и свойство - flex, возвращаем -2 
+            return -2; // выставляем flex - равный ширине
         return super.getBaseDefaultFlex(formEntity);
     }
 
     @Override
     public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
         ContainerView container = getContainer();
-        if (container != null && container.isVertical() && isFlex())
+        if (container != null && container.isVertical() && isHorizontalValueFlex())
             return FlexAlignment.STRETCH;
         return super.getBaseDefaultAlignment(formEntity);
     }
@@ -150,11 +146,11 @@ public class PropertyDrawView extends ComponentView {
         Type type = getType();
 
         reportField.scale = scale;
-        reportField.minimumWidth = type.getMinimumWidth() * scale;
-        reportField.setPreferredWidth(type.getPreferredWidth() * scale);
-
-        if (getPreferredCharWidth() != 0) {
-            reportField.fixedCharWidth = getPreferredCharWidth() * scale;
+        reportField.minimumWidth = type.getReportMinimumWidth() * scale;
+        reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+        int reportCharWidth = getCharWidth();
+        if (reportCharWidth != 0) {
+            reportField.fixedCharWidth = reportCharWidth * scale;
         }
 
         reportField.hasColumnGroupObjects = !entity.getColumnGroupObjects().isEmpty();
@@ -202,13 +198,8 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
         serializeCompare(outStream);
-        outStream.writeInt(getMinimumCharWidth());
-        outStream.writeInt(getMaximumCharWidth());
-        outStream.writeInt(getPreferredCharWidth());
-
-        pool.writeObject(outStream, getMinimumValueSize());
-        pool.writeObject(outStream, getMaximumValueSize());
-        pool.writeObject(outStream, getPreferredValueSize());
+        outStream.writeInt(getCharWidth());
+        pool.writeObject(outStream, getValueSize());
 
         pool.writeObject(outStream, changeKey);
 
@@ -367,13 +358,8 @@ public class PropertyDrawView extends ComponentView {
         noSort = inStream.readBoolean();
         defaultCompare = Compare.deserialize(inStream);
 
-        setMinimumCharWidth(inStream.readInt());
-        setMaximumCharWidth(inStream.readInt());
-        setPreferredCharWidth(inStream.readInt());
-
-        setMinimumValueSize(pool.<Dimension>readObject(inStream));
-        setMaximumValueSize(pool.<Dimension>readObject(inStream));
-        setPreferredValueSize(pool.<Dimension>readObject(inStream));
+        setCharWidth(inStream.readInt());
+        setValueSize(pool.<Dimension>readObject(inStream));
 
         changeKey = pool.readObject(inStream);
         showChangeKey = inStream.readBoolean();
@@ -402,88 +388,34 @@ public class PropertyDrawView extends ComponentView {
         return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
     }
 
-    public int getMinimumCharWidth() {
-        return minimumCharWidth;
+    public int getCharWidth() {
+        return charWidth;
     }
 
-    public void setMinimumCharWidth(int minimumCharWidth) {
-        this.minimumCharWidth = minimumCharWidth;
+    public void setCharWidth(int minimumCharWidth) {
+        this.charWidth = minimumCharWidth;
     }
 
-    public int getMaximumCharWidth() {
-        return maximumCharWidth;
+    public Dimension getValueSize() {
+        return valueSize;
     }
 
-    public void setMaximumCharWidth(int maximumCharWidth) {
-        this.maximumCharWidth = maximumCharWidth;
+    public void setValueSize(Dimension minimumValueSize) {
+        this.valueSize = minimumValueSize;
     }
 
-    public int getPreferredCharWidth() {
-        return preferredCharWidth;
+    public Boolean getValueFlex() {
+        return valueFlex;
     }
 
-    public void setPreferredCharWidth(int preferredCharWidth) {
-        this.preferredCharWidth = preferredCharWidth;
+    public void setValueFlex(Boolean valueFlex) {
+        this.valueFlex = valueFlex;
     }
 
-    public Dimension getMinimumValueSize() {
-        return minimumValueSize;
-    }
-
-    public void setMinimumValueSize(Dimension minimumValueSize) {
-        this.minimumValueSize = minimumValueSize;
-    }
-
-    public Dimension getMaximumValueSize() {
-        return maximumValueSize;
-    }
-
-    public void setMaximumValueSize(Dimension maximumValueSize) {
-        this.maximumValueSize = maximumValueSize;
-    }
-
-    public Dimension getPreferredValueSize() {
-        return preferredValueSize;
-    }
-
-    public void setPreferredValueSize(Dimension preferredValueSize) {
-        this.preferredValueSize = preferredValueSize;
-    }
-    
-    public boolean isFlex() {
-        Boolean compareValueWidths = compareValueWidths();
-        if (compareValueWidths != null) {
-            return compareValueWidths;
-        }
-        
-        Boolean compareCharWidths = compareCharWidths();
-        if (compareCharWidths != null) {
-            return compareCharWidths;
-        }
-        
+    public boolean isHorizontalValueFlex() {
+        if(valueFlex != null)
+            return valueFlex;
         return getType().isFlex();
-    }
-    
-    private Boolean compareValueWidths() {
-        int baseValueWidth = -1;
-        if (minimumValueSize != null && minimumValueSize.width >= 0 && preferredValueSize != null && preferredValueSize.width >= 0) {
-            baseValueWidth = Math.min(minimumValueSize.width, preferredValueSize.width);
-        }
-        if (baseValueWidth >= 0 && maximumValueSize != null && maximumValueSize.width >= 0) {
-            return maximumValueSize.width > baseValueWidth;
-        }
-        return null;
-    }
-    
-    private Boolean compareCharWidths() {
-        int baseCharWidth = -1;
-        if (minimumCharWidth > 0 && preferredCharWidth > 0) {
-            baseCharWidth = Math.min(minimumCharWidth, preferredCharWidth);
-        }
-        if (baseCharWidth > 0 && maximumCharWidth > 0) {
-            return maximumCharWidth > baseCharWidth;
-        }
-        return null;
     }
 
     public String getAskConfirmMessage() {

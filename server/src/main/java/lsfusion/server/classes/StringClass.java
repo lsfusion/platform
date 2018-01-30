@@ -112,11 +112,11 @@ public class StringClass extends DataClass<String> {
 //        assert !blankPadded || !this.length.isUnlimited();
     }
 
-    public int getMinimumWidth() {
+    public int getReportMinimumWidth() {
         return 30;
     }
 
-    public int getPreferredWidth() {
+    public int getReportPreferredWidth() {
         if(length.isUnlimited())
             return 200;
         return Math.min(200, max(30, length.getValue() * 2));

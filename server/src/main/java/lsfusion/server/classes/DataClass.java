@@ -2,11 +2,9 @@ package lsfusion.server.classes;
 
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
@@ -186,16 +184,12 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     protected abstract Class getReportJavaClass();
 
-    public int getMinimumWidth() {
-        return getPreferredWidth();
+    public int getReportMinimumWidth() {
+        return getReportPreferredWidth();
     }
 
-    public int getPreferredWidth() {
+    public int getReportPreferredWidth() {
         return 50;
-    }
-
-    public int getMaximumWidth() {
-        return Integer.MAX_VALUE;
     }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {

@@ -2149,7 +2149,7 @@ fixedCharWidthSetting [LP property]
 charWidthSetting [LP property]
 @after {
 	if (inPropParseState()) {
-		self.setMinCharWidth(property, $width.val);
+		self.setCharWidth(property, $width.val);
 	}
 }
 	:	'CHARWIDTH' width = intLiteral

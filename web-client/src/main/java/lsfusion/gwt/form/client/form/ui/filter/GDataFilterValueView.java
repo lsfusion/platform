@@ -37,14 +37,14 @@ public class GDataFilterValueView extends GFilterValueView {
         tablePanel = new ResizableLayoutPanel();
         tablePanel.addStyleName("dataFilterValueTablePanel");
         tablePanel.setWidget(valueTable);
-        tablePanel.setPixelSize(property.getPreferredValueWidth(), property.getMinimumValueHeight(null));
+        tablePanel.setPixelSize(property.getValueWidth(null), property.getValueHeight(null));
 
         add(tablePanel);
     }
 
     @Override
     public void propertyChanged(GPropertyDraw property) {
-        tablePanel.setPixelSize(property.getPreferredValueWidth(), property.getMinimumValueHeight(null));
+        tablePanel.setPixelSize(property.getValueWidth(null), property.getValueHeight(null));
         valueTable.setProperty(property);
         setValue(logicsSupplier.getSelectedValue(property));
     }

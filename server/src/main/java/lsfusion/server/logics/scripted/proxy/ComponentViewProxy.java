@@ -29,13 +29,13 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setSize(Dimension size) {
-        target.setPreferredSize(size);
+        target.setSize(size);
     }
     public void setHeight(int prefHeight) {
-        target.setPreferredHeight(prefHeight);
+        target.setHeight(prefHeight);
     }
     public void setWidth(int prefWidth) {
-        target.setPreferredWidth(prefWidth);
+        target.setWidth(prefWidth);
     }
 
     public void setFlex(double flex) {

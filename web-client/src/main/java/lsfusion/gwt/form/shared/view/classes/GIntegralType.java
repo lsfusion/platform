@@ -36,13 +36,8 @@ public abstract class GIntegralType extends GDataType {
     }
 
     @Override
-    public String getMinimumMask(String pattern) {
+    public String getMask(String pattern) {
         return "9 999 999";
-    }
-
-    @Override
-    public String getPreferredMask(String pattern) {
-        return "99 999 999";
     }
 
     @Override

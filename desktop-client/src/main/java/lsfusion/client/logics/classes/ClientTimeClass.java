@@ -22,7 +22,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
 
     public final static ClientTimeClass instance = new ClientTimeClass();
 
-    public String getPreferredMask() {
+    public String getMask() {
         return timeEditFormat.format(wideFormattableDateTime) + "BT";
     }
 

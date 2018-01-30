@@ -40,23 +40,21 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public ComponentDesign design = new ComponentDesign();
 
-    public Dimension minimumSize;
-    public Dimension maximumSize;
-    public Dimension preferredSize;
+    public Dimension size;
     
     public boolean autoSize = false;
 
-    private Double flex = null;
+    protected Double flex = null;
     private FlexAlignment alignment = null;
 
-    public Dimension getPreferredSize() {
-        if(preferredSize == null) {
+    public Dimension getSize() {
+        if(size == null) {
             ContainerView container = getContainer();
             if(container != null && container.isScroll()) {
                 return new Dimension(-1, 1);
             }
         }
-        return preferredSize;
+        return size;
     }
     
     public double getFlex(FormEntity formEntity) {
@@ -133,23 +131,23 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.alignment = alignment;
     }
 
-    public void setPreferredSize(Dimension preferredSize) {
-        this.preferredSize = preferredSize;
+    public void setSize(Dimension size) {
+        this.size = size;
     }
 
-    public void setPreferredHeight(int prefHeight) {
-        if (this.preferredSize == null) {
-            this.preferredSize = new Dimension(-1, prefHeight);
+    public void setHeight(int prefHeight) {
+        if (this.size == null) {
+            this.size = new Dimension(-1, prefHeight);
         } else {
-            this.preferredSize.height = prefHeight;
+            this.size.height = prefHeight;
         }
     }
 
-    public void setPreferredWidth(int prefWidth) {
-        if (this.preferredSize == null) {
-            this.preferredSize = new Dimension(prefWidth, -1);
+    public void setWidth(int prefWidth) {
+        if (this.size == null) {
+            this.size = new Dimension(prefWidth, -1);
         } else {
-            this.preferredSize.width = prefWidth;
+            this.size.width = prefWidth;
         }
     }
 
@@ -246,9 +244,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, getContainer(), serializationType);
 
-        pool.writeObject(outStream, minimumSize);
-        pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, getPreferredSize());
+        pool.writeObject(outStream, getSize());
         
         outStream.writeBoolean(autoSize);
 
@@ -270,9 +266,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         container = NFFact.finalProperty(pool.<ContainerView>deserializeObject(inStream));
 
-        minimumSize = pool.readObject(inStream);
-        maximumSize = pool.readObject(inStream);
-        preferredSize = pool.readObject(inStream);
+        size = pool.readObject(inStream);
         
         autoSize = inStream.readBoolean();
 

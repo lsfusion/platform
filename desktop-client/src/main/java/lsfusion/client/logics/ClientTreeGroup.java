@@ -80,7 +80,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         return result + "[sid:" + getSID() + "]";
     }
 
-    public int calculatePreferredSize() {
+    public int calculateSize() {
         int size = 0;
         for (ClientGroupObject groupObject : groups) {
             size += groupObject.isRecursive ? 20 * 4 : 20;

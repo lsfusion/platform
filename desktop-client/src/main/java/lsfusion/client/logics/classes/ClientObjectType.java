@@ -32,25 +32,12 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return Data.OBJECT;
     }
 
-    public int getMinimumWidth(int minCharWidth, FontMetrics fontMetrics) {
+    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
         return fontMetrics.stringWidth("999 999") + 8;
     }
 
-    public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
-        return fontMetrics.stringWidth("9 999 999") + 8;
-    }
-
-    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
-        return getPreferredWidth(0, fontMetrics);
-    }
-
-    public int getPreferredHeight(FontMetrics fontMetrics) {
+    public int getHeight(FontMetrics fontMetrics) {
         return fontMetrics.getHeight() + 1;
-    }
-
-    @Override
-    public int getMaximumHeight(FontMetrics fontMetrics) {
-        return getPreferredHeight(fontMetrics);
     }
 
     public Format getDefaultFormat() {

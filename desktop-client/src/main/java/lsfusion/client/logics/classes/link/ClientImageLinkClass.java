@@ -22,16 +22,6 @@ public class ClientImageLinkClass extends ClientStaticFormatLinkClass {
         return Data.IMAGELINK;
     }
 
-    @Override
-    public int getMaximumHeight(FontMetrics fontMetrics) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public int getMaximumWidth(int maxCharWidth, FontMetrics fontMetrics) {
-        return Integer.MAX_VALUE;
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ImageLinkPropertyRenderer(property);
     }

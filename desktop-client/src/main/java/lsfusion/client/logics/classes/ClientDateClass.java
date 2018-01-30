@@ -26,7 +26,7 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     }
 
     @Override
-    public String getPreferredMask() {
+    public String getMask() {
         return dateEditFormat.format(wideFormattableDate) + "BTN";
     }
 

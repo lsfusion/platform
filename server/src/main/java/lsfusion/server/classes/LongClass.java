@@ -22,7 +22,7 @@ public class LongClass extends IntClass<Long> {
 
     private LongClass() { super(LocalizedString.create("{classes.long.integer}")); }
 
-    public int getPreferredWidth() { return 65; }
+    public int getReportPreferredWidth() { return 65; }
 
     public Class getReportJavaClass() {
         return Long.class;

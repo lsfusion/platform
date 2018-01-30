@@ -79,14 +79,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints;
 
-    public int minimumCharWidth;
-    public int maximumCharWidth;
-    public int preferredCharWidth;
-
-    public Dimension minimumValueSize;
-    public Dimension maximumValueSize;
-    public Dimension preferredValueSize;
-    public int preferredValueHeight;
+    public int charWidth;
+    public Dimension valueSize;
 
     public transient EditBindingMap editBindingMap;
     private transient PropertyRenderer renderer;
@@ -171,89 +165,33 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return baseType.getPanelView(this, columnKey, form);
     }
 
-    public int getBaseValueWidth(JComponent comp) {
-        return getMinimumValueWidth(comp);
-    }
-    public int getBaseValueHeight(JComponent comp) {
-        return getMinimumValueHeight(comp);
-    }
-
-    public int getMinimumValueWidth(JComponent comp) {
-        if (minimumValueSize != null && minimumValueSize.width > -1) {
-            return minimumValueSize.width;
+    public int getValueWidth(JComponent comp) {
+        if (valueSize != null && valueSize.width > -1) {
+            return valueSize.width;
         }
-        return baseType.getMinimumWidth(minimumCharWidth, comp.getFontMetrics(design.getFont(comp)));
+        return baseType.getWidth(charWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
-    public int getMinimumValueHeight(JComponent comp) {
-        if (minimumValueSize != null && minimumValueSize.height > -1) {
-            return minimumValueSize.height;
+    public int getValueHeight(JComponent comp) {
+        if (valueSize != null && valueSize.height > -1) {
+            return valueSize.height;
         }
-        return getPreferredValueHeight(comp);
-    }
-
-    public Dimension getMinimumValueSize(JComponent comp) {
-        return new Dimension(getMinimumValueWidth(comp), getMinimumValueHeight(comp));
-    }
-
-    public int getPreferredValueWidth(JComponent comp) {
-        if (preferredValueSize != null && preferredValueSize.width > -1) {
-            return preferredValueSize.width;
-        }
-        return baseType.getPreferredWidth(preferredCharWidth, comp.getFontMetrics(design.getFont(comp)));
-    }
-
-    public int getPreferredValueHeight(JComponent comp) {
-        if (preferredValueSize != null && preferredValueSize.height > -1) {
-            return preferredValueSize.height;
-        }
-        int height = baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
+        int height = baseType.getHeight(comp.getFontMetrics(design.getFont(comp)));
         if (design.getImage() != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(design.getImage().getIconHeight() + 6, height);
         return height;
     }
 
-    public Dimension getPreferredValueSize(JComponent comp) {
-        return new Dimension(getPreferredValueWidth(comp), getPreferredValueHeight(comp));
-    }
-
-    public int getMaximumValueWidth(JComponent comp) {
-        int result;
-        if (maximumValueSize != null && maximumValueSize.width > -1) {
-            result = maximumValueSize.width;
-        } else {
-            result = baseType.getMaximumWidth(maximumCharWidth, comp.getFontMetrics(design.getFont(comp)));
-        }
-        return max(result, getPreferredValueWidth(comp));
-    }
-
-    public int getMaximumValueHeight(JComponent comp) {
-        int result;
-        if (maximumValueSize != null && maximumValueSize.width > -1) {
-            result = maximumValueSize.height;
-        } else {
-            result = baseType.getMaximumHeight(comp.getFontMetrics(design.getFont(comp)));
-        }
-        return max(result, getPreferredValueHeight(comp));
-    }
-
-    public Dimension getMaximumValueSize(JComponent comp) {
-        return new Dimension(getMaximumValueWidth(comp), getMaximumValueHeight(comp));
-    }
-
     @Override
     public double getFlex() {
         if (flex == -2) {
-            return getBaseValueWidth(new JLabel());
+            return getValueWidth(new JLabel());
         }
         return flex;
     }
 
     @Override
     public FlexAlignment getAlignment() {
-        if (alignment == null) {
-            return FlexAlignment.STRETCH;
-        }
         return alignment;
     }
 
@@ -375,13 +313,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeBoolean(noSort);
         defaultCompare.serialize(outStream);
 
-        outStream.writeInt(minimumCharWidth);
-        outStream.writeInt(maximumCharWidth);
-        outStream.writeInt(preferredCharWidth);
+        outStream.writeInt(charWidth);
         
-        pool.writeObject(outStream, minimumValueSize);
-        pool.writeObject(outStream, maximumValueSize);
-        pool.writeObject(outStream, preferredValueSize);
+        pool.writeObject(outStream, valueSize);
 
         pool.writeObject(outStream, editKey);
 
@@ -415,13 +349,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();
         defaultCompare = Compare.deserialize(inStream);
-        minimumCharWidth = inStream.readInt();
-        maximumCharWidth = inStream.readInt();
-        preferredCharWidth = inStream.readInt();
+        charWidth = inStream.readInt();
 
-        minimumValueSize = pool.readObject(inStream);
-        maximumValueSize = pool.readObject(inStream);
-        preferredValueSize = pool.readObject(inStream);
+        valueSize = pool.readObject(inStream);
 
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();

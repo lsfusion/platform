@@ -47,19 +47,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
-        if (clientComponent.minimumSize != null) {
-            component.minimumWidth = clientComponent.minimumSize.width;
-            component.minimumHeight = clientComponent.minimumSize.height;
-        }
-
-        if (clientComponent.maximumSize != null) {
-            component.maximumWidth = clientComponent.maximumSize.width;
-            component.maximumHeight = clientComponent.maximumSize.height;
-        }
-
-        if (clientComponent.preferredSize != null) {
-            component.preferredWidth = clientComponent.preferredSize.width;
-            component.preferredHeight = clientComponent.preferredSize.height;
+        if (clientComponent.size != null) {
+            component.width = clientComponent.size.width;
+            component.height = clientComponent.size.height;
         }
         
         component.autoSize = clientComponent.autoSize;
@@ -311,21 +301,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.quickFilterProperty = convertOrCast(clientPropertyDraw.quickFilterProperty);
 
-        propertyDraw.minimumCharWidth = clientPropertyDraw.minimumCharWidth;
-        propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
-        propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
+        propertyDraw.charWidth = clientPropertyDraw.charWidth;
 
-        if (clientPropertyDraw.minimumValueSize != null) {
-            propertyDraw.minimumValueWidth = clientPropertyDraw.minimumValueSize.width;
-            propertyDraw.minimumValueHeight = clientPropertyDraw.minimumValueSize.height;
-        }
-        if (clientPropertyDraw.maximumValueSize != null) {
-            propertyDraw.maximumValueWidth = clientPropertyDraw.maximumValueSize.width;
-            propertyDraw.maximumValueHeight = clientPropertyDraw.maximumValueSize.height;
-        }
-        if (clientPropertyDraw.preferredValueSize != null) {
-            propertyDraw.preferredValueWidth = clientPropertyDraw.preferredValueSize.width;
-            propertyDraw.preferredValueHeight = clientPropertyDraw.preferredValueSize.height;
+        if (clientPropertyDraw.valueSize != null) {
+            propertyDraw.valueWidth = clientPropertyDraw.valueSize.width;
+            propertyDraw.valueHeight = clientPropertyDraw.valueSize.height;
         }
 
         propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;

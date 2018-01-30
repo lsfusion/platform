@@ -31,22 +31,17 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
 
     public abstract String[] getExtensions();
 
-    public String getPreferredMask() {
+    public String getMask() {
         return "1234567";
     }
 
     @Override
-    public int getPreferredHeight(FontMetrics font) {
+    public int getHeight(FontMetrics font) {
         return 18;
     }
 
     @Override
-    public int getPreferredWidth(int prefCharWidth, FontMetrics font) {
-        return 18;
-    }
-
-    @Override
-    public int getMinimumWidth(int minCharWidth, FontMetrics font) {
+    public int getWidth(int minCharWidth, FontMetrics font) {
         return 18;
     }
     

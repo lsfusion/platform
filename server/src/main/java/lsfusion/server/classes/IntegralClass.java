@@ -9,8 +9,8 @@ import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
-    public int getMinimumWidth() { return 30; }
-    public int getPreferredWidth() { return 50; }
+    public int getReportMinimumWidth() { return 30; }
+    public int getReportPreferredWidth() { return 50; }
 
     protected IntegralClass(LocalizedString caption) {
         super(caption);

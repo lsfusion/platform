@@ -30,7 +30,7 @@ public abstract class GridPropertyTable {
         column.setPreferredWidth(width); // если не выставить grid начинает в какие-то моменты ужиматься в preferred, после чего delta при resize'е становится огромной
     }
 
-    // preferredSize чтобы учесть header отступы и т.п.
+    // size чтобы учесть header отступы и т.п.
     public Dimension getMaxPreferredSize(Dimension preferredSize) { // ради этого вся ветка maxPreferredSize и делалась
         JTable gridTable = getTable(); 
         Dimension preferredTableSize = gridTable.getPreferredScrollableViewportSize();
@@ -154,7 +154,7 @@ public abstract class GridPropertyTable {
             boolean flex = isColumnFlex(i);
             flexes[i] = flex;
 
-            int basePref = getColumnBasePref(i);
+            int basePref = getColumnBaseWidth(i);
             basePrefs[i] = basePref;
 
             Integer userWidth = getUserWidth(i);
@@ -179,7 +179,7 @@ public abstract class GridPropertyTable {
         return getUserWidth(getColumnPropertyDraw(i));
     }
 
-    protected int getColumnBasePref(int i) {
-        return getColumnPropertyDraw(i).getBaseValueWidth(getTable()); //property.getPreferredValuePixelWidth(font);
+    protected int getColumnBaseWidth(int i) {
+        return getColumnPropertyDraw(i).getValueWidth(getTable());
     }
 }

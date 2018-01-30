@@ -21,7 +21,7 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public String getPreferredMask(String pattern) {
+    public String getMask(String pattern) {
         return "9 999 999 999 999 999 999";
     }
 

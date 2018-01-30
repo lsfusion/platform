@@ -24,7 +24,7 @@ public class LogicalClass extends DataClass<Boolean> {
 
     private LogicalClass() { super(LocalizedString.create("{classes.logical}"));}
 
-    public int getPreferredWidth() { return 50; }
+    public int getReportPreferredWidth() { return 50; }
 
     public Class getReportJavaClass() {
         return Boolean.class;

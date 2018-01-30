@@ -12,11 +12,6 @@ public class GImageLinkType extends GLinkType {
     }
 
     @Override
-    public int getMaximumPixelWidth(int maximumCharWidth, GFont font, String pattern) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
     public String toString() {
         return "Ссылка на файл картинки";
     }

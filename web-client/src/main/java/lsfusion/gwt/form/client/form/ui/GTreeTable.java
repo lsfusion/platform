@@ -46,7 +46,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     
     private boolean autoSize;
 
-    private int hierarchicalPreferredWidth;
+    private int hierarchicalWidth;
     private Column hierarchicalColumn;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
@@ -70,7 +70,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         addColumn(column, header);
 
         hierarchicalColumn = column;
-        hierarchicalPreferredWidth = treeGroup.calculatePreferredSize();
+        hierarchicalWidth = treeGroup.calculateSize();
 
         keyboardSelectionHandler = new TreeTableKeyboardSelectionHandler(this);
         setKeyboardSelectionHandler(keyboardSelectionHandler);
@@ -255,10 +255,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected int getColumnBasePref(int i) {
+    protected int getColumnBaseWidth(int i) {
         if(i==0)
-            return hierarchicalPreferredWidth;
-        return super.getColumnBasePref(i - 1);
+            return hierarchicalWidth;
+        return super.getColumnBaseWidth(i - 1);
     }
 
     public void update() {
@@ -362,7 +362,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }
-            rowHeight = Math.max(rowHeight, property.getBaseValueHeight(font));
+            rowHeight = Math.max(rowHeight, property.getValueHeight(font));
         }
         setCellHeight(rowHeight);
         if (needsHeaderRefresh) {

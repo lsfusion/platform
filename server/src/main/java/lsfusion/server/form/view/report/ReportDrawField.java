@@ -10,7 +10,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public Class footerClass;
 
     public int minimumWidth;
-    private int preferredWidth;
+    public int preferredWidth;
     public Integer fixedCharWidth;
     public byte alignment;
 

@@ -43,18 +43,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         return getMap(objects);
     }
 
-    public void setMinimumWidth(int charWidth) {
-        property.drawOptions.setMinimumCharWidth(charWidth);
-    }
-
-    public void setPreferredWidth(int charWidth) {
-        property.drawOptions.setPreferredCharWidth(charWidth);
-    }
-
-    public void setMaximumWidth(int charWidth) {
-        property.drawOptions.setMaximumCharWidth(charWidth);
-    }
-
     public <U> ImMap<T, U> getMap(final U... mapping) {
         return listInterfaces.mapOrderValues(new GetIndex<U>() {
             public U getMapValue(int i) {
@@ -107,16 +95,8 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     }
     */
     
-    public void setMinimumCharWidth(int charWidth) {
-        property.drawOptions.setMinimumCharWidth(charWidth);
-    }
-
-    public void setPreferredCharWidth(int charWidth) {
-        property.drawOptions.setPreferredCharWidth(charWidth);
-    }
-
-    public void setMaximumCharWidth(int charWidth) {
-        property.drawOptions.setMaximumCharWidth(charWidth);
+    public void setCharWidth(int charWidth) {
+        property.drawOptions.setCharWidth(charWidth);
     }
 
     public void setFixedCharWidth(int charWidth) {

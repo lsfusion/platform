@@ -105,16 +105,16 @@ public abstract class GAbstractContainerView {
     }
 
     private static Dimension overrideSize(GComponent child, Dimension dimension, boolean max) {
-        if(child.preferredHeight == -1 && child.preferredWidth == -1) // оптимизация
+        if(child.height == -1 && child.width == -1) // оптимизация
             return dimension;
 
-        int preferredWidth = child.preferredWidth;
+        int preferredWidth = child.width;
         if(preferredWidth == -1)
             preferredWidth = dimension.width;
         else if(max)
             preferredWidth = Math.max(preferredWidth, dimension.width);
 
-        int preferredHeight = child.preferredHeight;
+        int preferredHeight = child.height;
         if(preferredHeight == -1)
             preferredHeight = dimension.height;
         else if(max)
@@ -122,7 +122,7 @@ public abstract class GAbstractContainerView {
         return new Dimension(preferredWidth, preferredHeight);
     }
 
-    // не предполагает явное использование (так как не содержит проверки на явный preferredSize)
+    // не предполагает явное использование (так как не содержит проверки на явный size)
     protected Dimension getMaxPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
         boolean vertical = container.isVertical();
         int width = 0;
@@ -181,21 +181,21 @@ public abstract class GAbstractContainerView {
             updateLayoutListener.updateLayout();
     }
 
-    private static Integer getMaxPreferredSize(boolean vertical, boolean mainAxis, GComponent component) {
-        int preferredSize;
+    private static Integer getSize(boolean vertical, boolean mainAxis, GComponent component) {
+        int size;
         if (mainAxis) {
-            preferredSize = vertical ? component.preferredHeight : component.preferredWidth;    
+            size = vertical ? component.height : component.width;    
         } else {
-            preferredSize = vertical ? component.preferredWidth : component.preferredHeight;
+            size = vertical ? component.width : component.height;
         }
-        if (preferredSize != -1)
-            return preferredSize;
+        if (size != -1)
+            return size;
         return null;
     }
     public static void add(FlexPanel panel, Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, GComponent component, boolean vertical) { // последний параметр временный хак для Scrollable
 //        assert alignment == component.alignment;
 //        assert flex == component.flex;
-        panel.add(widget, beforeIndex, alignment, flex, getMaxPreferredSize(vertical, true, component), getMaxPreferredSize(vertical, false, component));
+        panel.add(widget, beforeIndex, alignment, flex, getSize(vertical, true, component), getSize(vertical, false, component));
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view);

@@ -943,19 +943,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.setFixedCharWidth(fixedCharWidth);
     }
 
-    public void setMinCharWidth(LP property, Integer minCharWidth) {
-        if (minCharWidth != null)
-            property.setMinimumCharWidth(minCharWidth);
-    }
-
-    public void setMaxCharWidth(LP property, Integer maxCharWidth) {
-        if (maxCharWidth != null)
-            property.setMaximumCharWidth(maxCharWidth);
-    }
-
-    public void setPrefCharWidth(LP property, Integer prefCharWidth) {
-        if (prefCharWidth != null)
-            property.setPreferredCharWidth(prefCharWidth);
+    public void setCharWidth(LP property, Integer charWidth) {
+        if (charWidth != null)
+            property.setCharWidth(charWidth);
     }
 
     public void setImage(LP property, String path) {

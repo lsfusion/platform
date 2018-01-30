@@ -13,7 +13,7 @@ public class GTreeGroup extends GComponent {
     
     public boolean expandOnClick;
 
-    public int calculatePreferredSize() {
+    public int calculateSize() {
         int size = 0;
         for (GGroupObject groupObject : groups) {
             size += groupObject.isRecursive ? 20 * 4 : 20;
