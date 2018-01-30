@@ -496,11 +496,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                                 policy.property.view.deny(prop);
                             if (valueMap.get("fullForbidChange") != null)
                                 policy.property.change.deny(prop);
-                        } else {
-                            startLogger.info(String.format("Property '%s' was not found when applying security policy", cn));
                         }
                     } catch (CanonicalNameUtils.ParseException e) {
-                        startLogger.info(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+//                        startLogger.info(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
                     }
                 }
             }
