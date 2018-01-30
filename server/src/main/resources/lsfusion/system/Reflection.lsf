@@ -125,11 +125,11 @@ propertyDrawByFormNameAndPropertyDrawSid 'Код формы' (VARSTRING[100] str
 show 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
 show 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
 
-nameShow 'Показ свойства' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) PREFCHARWIDTH 50;
-nameShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) PREFCHARWIDTH 50;
+nameShow 'Показ свойства' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) CHARWIDTH 50;
+nameShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) CHARWIDTH 50;
 
-captionShow 'Показ свойства' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) PREFCHARWIDTH 20;
-captionShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) PREFCHARWIDTH 20;
+captionShow 'Показ свойства' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) CHARWIDTH 20;
+captionShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) CHARWIDTH 20;
 
 columnCaption 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
 columnCaption 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);

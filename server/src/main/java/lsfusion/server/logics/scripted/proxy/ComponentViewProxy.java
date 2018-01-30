@@ -13,76 +13,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         super(target);
     }
 
-    public void setMinimumSize(Dimension minimumSize) {
-        target.minimumSize = minimumSize;
-    }
-
-    public void setMinimumHeight(int minHeight) {
-        if (target.minimumSize == null) {
-            target.minimumSize = new Dimension(-1, minHeight);
-        } else {
-            target.minimumSize.height = minHeight;
-        }
-    }
-
-    public void setMinimumWidth(int minWidth) {
-        if (target.minimumSize == null) {
-            target.minimumSize = new Dimension(minWidth, -1);
-        } else {
-            target.minimumSize.width = minWidth;
-        }
-    }
-
-    public void setMaximumSize(Dimension maximumSize) {
-        target.maximumSize = maximumSize;
-    }
-
-    public void setMaximumHeight(int maxHeight) {
-        if (target.maximumSize == null) {
-            target.maximumSize = new Dimension(-1, maxHeight);
-        } else {
-            target.maximumSize.height = maxHeight;
-        }
-    }
-
-    public void setMaximumWidth(int maxWidth) {
-        if (target.maximumSize == null) {
-            target.maximumSize = new Dimension(maxWidth, -1);
-        } else {
-            target.maximumSize.width = maxWidth;
-        }
-    }
-
-    public void setPreferredSize(Dimension preferredSize) {
-        target.setPreferredSize(preferredSize);
-    }
-
-    public void setPreferredHeight(int prefHeight) {
-        target.setPreferredHeight(prefHeight);
-    }
-
-    public void setPreferredWidth(int prefWidth) {
-        target.setPreferredWidth(prefWidth);
-    }
-
-    public void setFixedSize(Dimension size) {
-        setMinimumSize(size);
-        setMaximumSize(size);
-        setPreferredSize(size);
-    }
-
-    public void setFixedHeight(int height) {
-        setMinimumHeight(height);
-        setMaximumHeight(height);
-        setPreferredHeight(height);
-    }
-
-    public void setFixedWidth(int width) {
-        setMinimumWidth(width);
-        setMaximumWidth(width);
-        setPreferredWidth(width);
-    }
-    
     public void setAutoSize(boolean autoSize) {
         target.autoSize = autoSize;
     }
@@ -96,6 +26,16 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     public void setFill(double fill) {
         setFlex(fill);
         setAlignment(fill == 0 ? FlexAlignment.LEADING : FlexAlignment.STRETCH);
+    }
+
+    public void setSize(Dimension size) {
+        target.setPreferredSize(size);
+    }
+    public void setHeight(int prefHeight) {
+        target.setPreferredHeight(prefHeight);
+    }
+    public void setWidth(int prefWidth) {
+        target.setPreferredWidth(prefWidth);
     }
 
     public void setFlex(double flex) {

@@ -68,7 +68,7 @@ enable 'Включить отсылку и получение почты' (Accou
 unpack 'Распаковывать архивы' = DATA BOOLEAN (Account);
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
-nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) PREFCHARWIDTH 3;
+nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
 
 CLASS Email 'Письмо';
 TABLE email(Email);
@@ -198,7 +198,7 @@ DESIGN mail {
                             type = CONTAINERV;        
                             MOVE PROPERTY(message(e)) {
                                 fill = 1;
-                                minimumValueSize = ( -1, 200);
+                                valueSize = ( -1, 200);
                                 panelCaptionAbove = TRUE;
                             }
                         }

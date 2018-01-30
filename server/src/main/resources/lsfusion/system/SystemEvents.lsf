@@ -17,8 +17,8 @@ TABLE exception (Exception);
 message 'Сообщение исключения' = DATA VARISTRING[250] (Exception);
 date 'Время возникновения' = DATA DATETIME (Exception);
 fromDate 'Дата возникновения' (Exception d)= DATE(date(d));
-erTrace 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
-lsfStackTrace 'LSF след исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
+erTrace 'След исключения'= DATA TEXT (Exception) CHARWIDTH 500;
+lsfStackTrace 'LSF след исключения'= DATA TEXT (Exception) CHARWIDTH 500;
 type 'Тип исключения' = DATA VARSTRING[250] (Exception);
 
 client 'Клиент' = DATA VARSTRING[100] (ClientException);
@@ -288,12 +288,12 @@ DESIGN exceptions {
 
                 MOVE PROPERTY(erTrace(e)) {
                     fill = 0.5;
-                    minimumValueSize = ( -1, 200);
+                    valueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
                 MOVE PROPERTY(lsfStackTrace(e)) {
                     fill = 0.5;
-                    minimumValueSize = ( -1, 200);
+                    valueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
             }
@@ -329,7 +329,7 @@ DESIGN changes {
 
                 MOVE PROPERTY(pChanges) {
                     fill = 0.5;
-                    minimumValueSize = ( -1, 200);
+                    valueSize = ( -1, 200);
                     panelCaptionAbove = TRUE;
                 }
             }

@@ -2027,9 +2027,7 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
 	|	forceViewTypeSetting [property]
 	|	fixedCharWidthSetting [property]
-	|	minCharWidthSetting [property]
-	|	maxCharWidthSetting [property]
-	|	prefCharWidthSetting [property]
+	|	charWidthSetting [property]
 	|   defaultCompareSetting [property]
 	|	imageSetting [property]
 	|	editKeySetting [property]
@@ -2148,31 +2146,13 @@ fixedCharWidthSetting [LP property]
 	:	'FIXEDCHARWIDTH' width = intLiteral
 	;
 
-minCharWidthSetting [LP property]
+charWidthSetting [LP property]
 @after {
 	if (inPropParseState()) {
 		self.setMinCharWidth(property, $width.val);
 	}
 }
-	:	'MINCHARWIDTH' width = intLiteral
-	;
-
-maxCharWidthSetting [LP property]
-@after {
-	if (inPropParseState()) {
-		self.setMaxCharWidth(property, $width.val);
-	}
-}
-	:	'MAXCHARWIDTH' width = intLiteral
-	;
-
-prefCharWidthSetting [LP property]
-@after {
-	if (inPropParseState()) {
-		self.setPrefCharWidth(property, $width.val);
-	}
-}
-	:	'PREFCHARWIDTH' width = intLiteral
+	:	'CHARWIDTH' width = intLiteral
 	;
 
 imageSetting [LP property]

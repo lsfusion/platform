@@ -13,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> {
 
@@ -68,92 +67,25 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.defaultCompare = PropertyUtils.stringToCompare(defaultCompare);
     }
 
-    public void setMinimumCharWidth(int minimumCharWidth) {
-        target.setMinimumCharWidth(minimumCharWidth);
+    public void setValueSize(Dimension size) {
+        target.setMinimumValueSize(size);
     }
-
-    public void setMaximumCharWidth(int maximumCharWidth) {
-        target.setMaximumCharWidth(maximumCharWidth);
-    }
-
-    public void setPreferredCharWidth(int preferredCharWidth) {
-        target.setPreferredCharWidth(preferredCharWidth);
-    }
-
-    public void setMinimumValueSize(Dimension minimumValueSize) {
-        target.setMinimumValueSize(minimumValueSize);
-    }
-    public void setMaximumValueSize(Dimension maximumValueSize) {
-        target.setMaximumValueSize(maximumValueSize);
-    }
-    public void setPreferredValueSize(Dimension preferredValueSize) {
-        target.setPreferredValueSize(preferredValueSize);
-    }
-
-    public void setMinimumValueHeight(int minHeight) {
+    public void setValueHeight(int prefHeight) {
         if (target.minimumValueSize == null) {
-            target.minimumValueSize = new Dimension(-1, minHeight);
+            target.minimumValueSize = new Dimension(-1, prefHeight);
         } else {
-            target.minimumValueSize.height = minHeight;
+            target.minimumValueSize.height = prefHeight;
         }
     }
-
-    public void setMinimumValueWidth(int minWidth) {
+    public void setValueWidth(int prefWidth) {
         if (target.minimumValueSize == null) {
-            target.minimumValueSize = new Dimension(minWidth, -1);
+            target.minimumValueSize = new Dimension(prefWidth, -1);
         } else {
-            target.minimumValueSize.width = minWidth;
+            target.minimumValueSize.width = prefWidth;
         }
     }
-
-    public void setMaximumValueHeight(int maxHeight) {
-        if (target.maximumValueSize == null) {
-            target.maximumValueSize = new Dimension(-1, maxHeight);
-        } else {
-            target.maximumValueSize.height = maxHeight;
-        }
-    }
-
-    public void setMaximumValueWidth(int maxWidth) {
-        if (target.maximumValueSize == null) {
-            target.maximumValueSize = new Dimension(maxWidth, -1);
-        } else {
-            target.maximumValueSize.width = maxWidth;
-        }
-    }
-
-    public void setPreferredValueHeight(int maxHeight) {
-        if (target.preferredValueSize == null) {
-            target.preferredValueSize = new Dimension(-1, maxHeight);
-        } else {
-            target.preferredValueSize.height = maxHeight;
-        }
-    }
-
-    public void setPreferredValueWidth(int maxWidth) {
-        if (target.preferredValueSize == null) {
-            target.preferredValueSize = new Dimension(maxWidth, -1);
-        } else {
-            target.preferredValueSize.width = maxWidth;
-        }
-    }
-
-    public void setFixedValueSize(Dimension size) {
-        setMinimumValueSize(size);
-        setMaximumValueSize(size);
-        setPreferredValueSize(size);
-    }
-
-    public void setFixedValueHeight(int height) {
-        setMinimumValueHeight(height);
-        setMaximumValueHeight(height);
-        setPreferredValueHeight(height);
-    }
-
-    public void setFixedValueWidth(int width) {
-        setMinimumValueWidth(width);
-        setMaximumValueWidth(width);
-        setPreferredValueWidth(width);
+    public void setCharWidth(int charWidth) {
+        target.setMinimumCharWidth(charWidth);
     }
 
     public void setChangeKey(KeyStroke editKey) {

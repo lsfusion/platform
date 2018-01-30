@@ -31,52 +31,16 @@ public class FormViewProxy extends ViewProxy<FormView> {
 
     /* ========= Redirection to Main Container ========= */
 
-    public void setMinimumSize(Dimension minimumSize) {
-        mainContainerProxy.setMinimumSize(minimumSize);
+    public void setSize(Dimension size) {
+        mainContainerProxy.setSize(size);
     }
 
-    public void setMinimumHeight(int minHeight) {
-        mainContainerProxy.setMinimumHeight(minHeight);
+    public void setHeight(int height) {
+        mainContainerProxy.setHeight(height);
     }
 
-    public void setMinimumWidth(int minWidth) {
-        mainContainerProxy.setMinimumWidth(minWidth);
-    }
-
-    public void setMaximumSize(Dimension maximumSize) {
-        mainContainerProxy.setMaximumSize(maximumSize);
-    }
-
-    public void setMaximumHeight(int maxHeight) {
-        mainContainerProxy.setMaximumHeight(maxHeight);
-    }
-
-    public void setMaximumWidth(int maxWidth) {
-        mainContainerProxy.setMaximumWidth(maxWidth);
-    }
-
-    public void setPreferredSize(Dimension preferredSize) {
-        mainContainerProxy.setPreferredSize(preferredSize);
-    }
-
-    public void setPreferredHeight(int prefHeight) {
-        mainContainerProxy.setPreferredHeight(prefHeight);
-    }
-
-    public void setPreferredWidth(int prefWidth) {
-        mainContainerProxy.setPreferredWidth(prefWidth);
-    }
-
-    public void setFixedSize(Dimension size) {
-        mainContainerProxy.setFixedSize(size);
-    }
-
-    public void setFixedHeight(int height) {
-        mainContainerProxy.setFixedHeight(height);
-    }
-
-    public void setFixedWidth(int width) {
-        mainContainerProxy.setFixedWidth(width);
+    public void setWidth(int width) {
+        mainContainerProxy.setWidth(width);
     }
 
     public void setColumns(int columns) {
