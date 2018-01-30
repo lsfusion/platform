@@ -590,7 +590,7 @@ public abstract class LogicsModule {
         else if (type == FormExportType.JSON)
             exportAction = new ExportJSONDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp);
+                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, hasListOption);
         else if (type == FormExportType.XML)
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,

@@ -1826,7 +1826,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 } 
 	:	'EXPORT'
 		(	'XML' { exportType = FormExportType.XML; } ('LIST' { hasListOption = true; }|'TABLE')?
-	    |  	'JSON' { exportType = FormExportType.JSON; }
+	    |  	'JSON' { exportType = FormExportType.JSON; } ('LIST' { hasListOption = true; }|'TABLE')?
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }

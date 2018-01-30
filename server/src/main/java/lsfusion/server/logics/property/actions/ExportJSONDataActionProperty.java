@@ -23,23 +23,27 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ExportJSONDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
+    private boolean hasListOption;
 
     public ExportJSONDataActionProperty(LocalizedString caption, String extension,
                                         ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
+                                        ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
+                                        boolean hasListOption) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
+        this.hasListOption = hasListOption;
     }
 
     @Override
     protected byte[] getFile(Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
         File file = File.createTempFile("export", ".json");
         try {
-            /*if (rows.size() == 1) {
+            if (hasListOption) {
                 JSONObject rowElement = getRow(fieldTypes, rows.single());
                 try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                     out.println(rowElement.toString());
                 }
-            } else {*/
+            } else {
                 JSONArray rootElement = new JSONArray();
                 for (ImMap<String, Object> row : rows) {
                     JSONObject rowElement = getRow(fieldTypes, row);
@@ -48,7 +52,7 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
                 try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                     out.println(rootElement.toString());
                 }
-            //}
+            }
             return IOUtils.getFileBytes(file);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
