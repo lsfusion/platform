@@ -137,13 +137,17 @@ public class ScriptingErrorLog {
     }
     
     public void emitIllegalInsertBeforeAfterElement(ScriptParser parser, String element, String parentElement, String anchorElement) throws SemanticErrorException {
-        emitSimpleError(parser, "can't insert '" + element + "' after or before '" + anchorElement + "' in '" + parentElement + "'");
+        emitSimpleError(parser, format("can't insert '%s' after or before '%s' in '%s'", element, anchorElement, parentElement));
     }
 
     public void emitIllegalNavigatorElementMove(ScriptParser parser, String element, String parentElement) throws SemanticErrorException {
-        emitSimpleError(parser, "can't move '" + element + "' because it's not a direct child of '" + parentElement + "'");
+        emitSimpleError(parser, format("can't move '%s' because it's not a direct child of '%s'", element, parentElement));
     }
 
+    public void emitIllegalParentNavigatorElement(ScriptParser parser, String parentElement) throws SemanticErrorException {
+        emitSimpleError(parser, format("element '%s' can't be a parent element because it's not a navigator folder", parentElement));
+    }
+    
     public void emitGroupObjectInTreeAfterBeforeError(ScriptParser parser, String groupObject) throws SemanticErrorException {
         emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
     }

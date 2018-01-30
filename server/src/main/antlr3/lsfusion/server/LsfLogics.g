@@ -3753,7 +3753,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	:	'{'
 			(	moveNavigatorElementStatement[parentElement]
 			|	newNavigatorElementStatement[parentElement]
-			|	setupNavigatorElementStatement[parentElement]
+			|	editNavigatorElementStatement[parentElement]
 			|	emptyStatement
 			)*
 		'}'
@@ -3764,7 +3764,7 @@ moveNavigatorElementStatement[NavigatorElement parentElement]
 	:	'MOVE' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
+				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]
@@ -3777,7 +3777,7 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 	:	'NEW' b=navigatorElementDescription opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, true);
+				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, false);
 			}
 		}
 		navigatorElementStatementBody[$b.element]
@@ -3814,11 +3814,11 @@ navigatorElementInsertPosition returns [InsertPosition position, NavigatorElemen
 	|	'FIRST' { $position = InsertPosition.FIRST; }
 	;
 
-setupNavigatorElementStatement[NavigatorElement parentElement]
+editNavigatorElementStatement[NavigatorElement parentElement]
 	:	elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
+				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]

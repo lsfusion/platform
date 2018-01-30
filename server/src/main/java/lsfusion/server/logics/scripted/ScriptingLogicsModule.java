@@ -3456,58 +3456,32 @@ public class ScriptingLogicsModule extends LogicsModule {
         return action;
     }
     
-    public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+    public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         if (caption != null) {
             element.caption = caption;
         }
 
-        applyNavigatorElementOptions(element, parentElement, options, adding);
+        applyNavigatorElementOptions(element, parentElement, options, isEditOperation);
     }
     
-    public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+    public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName);
         setNavigatorElementImage(element, parent, options.imagePath);
         
-        if (parent != null && (adding || options.position != InsertPosition.IN)) {
-            moveElement(element, parent, options.position, options.anchor, adding);
+        if (parent != null && (!isEditOperation || options.position != InsertPosition.IN)) {
+            moveElement(element, parent, options.position, options.anchor, isEditOperation);
         }
     } 
 
-    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
-        
-        // если редактирование существующего элемента, и происходит перемещение элемента, то оно должно происходить только внутри своего уровня 
-        if (!adding && !parentElement.equals(element.getNFParent(version))) {
-            errLog.emitIllegalNavigatorElementMove(parser, element.getCanonicalName(), parentElement.getCanonicalName());
-        }
-        
-        if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
-            errLog.emitIllegalInsertBeforeAfterElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
-        }
-
-        if (element.isAncestorOf(parentElement, version)) {
-            errLog.emitIllegalAddNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
-        }
-
-//        if (element.getNFParent(version) != null) {
-//            System.out.println(String.format("MOVE element [%s] from [%s] to [%s] in module [%s]", element.getCanonicalName(), 
-//                                            element.getNFParent(version).getCanonicalName(), parentElement, 
-//                                            getParser().getGlobalDebugPoint(getName(), false)));
-//        }
+        checks.checkNavigatorElementMoveOperation(element, parentElement, anchorElement, isEditOperation, version);
         
         switch (pos) {
-            case IN:
-                parentElement.add(element, version);
-                break;
-            case BEFORE:
-                parentElement.addBefore(element, anchorElement, version);
-                break;
-            case AFTER:
-                parentElement.addAfter(element, anchorElement, version);
-                break;
-            case FIRST:
-                parentElement.addFirst(element, version);
-                break;
+            case IN:    parentElement.add(element, version); break;
+            case BEFORE:parentElement.addBefore(element, anchorElement, version); break;
+            case AFTER: parentElement.addAfter(element, anchorElement, version); break;
+            case FIRST: parentElement.addFirst(element, version); break;
         }
     }
 

@@ -17,6 +17,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -548,6 +549,26 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkNavigatorElementMoveOperation(NavigatorElement element, NavigatorElement parentElement, 
+                                                   NavigatorElement anchorElement, boolean isEditOperation, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if (parentElement.isLeafElement()) {
+            errLog.emitIllegalParentNavigatorElement(parser, parentElement.getCanonicalName());
+        }
+
+        // если редактирование существующего элемента, и происходит перемещение элемента, то оно должно происходить только внутри своего уровня 
+        if (isEditOperation && !parentElement.equals(element.getNFParent(version))) {
+            errLog.emitIllegalNavigatorElementMove(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+        }
+
+        if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
+            errLog.emitIllegalInsertBeforeAfterElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
+        }
+
+        if (element.isAncestorOf(parentElement, version)) {
+            errLog.emitIllegalAddNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+        }
+    } 
+    
     public void checkAssignProperty(LPWithParams fromProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
         if (!(toProperty.property.property instanceof DataProperty || toProperty.property.property instanceof CaseUnionProperty || toProperty.property.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами
             errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toProperty.property.property.getName());
