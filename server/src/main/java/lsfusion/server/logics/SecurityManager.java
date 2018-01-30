@@ -489,11 +489,19 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (ImMap<String, Object> valueMap : propValues) {
                 String cn = ((String) valueMap.get("cn")).trim();
                 if (cn.length() < 512) {
-                    LP<?, ?> prop = businessLogics.findProperty(cn);
-                    if (valueMap.get("fullForbidView") != null)
-                        policy.property.view.deny(prop);
-                    if (valueMap.get("fullForbidChange") != null)
-                        policy.property.change.deny(prop);
+                    try {
+                        LP<?, ?> prop = businessLogics.findProperty(cn);
+                        if (prop != null) {
+                            if (valueMap.get("fullForbidView") != null)
+                                policy.property.view.deny(prop);
+                            if (valueMap.get("fullForbidChange") != null)
+                                policy.property.change.deny(prop);
+                        } else {
+                            startLogger.info(String.format("Property '%s' was not found when applying security policy", cn));
+                        }
+                    } catch (CanonicalNameUtils.ParseException e) {
+                        startLogger.info(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+                    }
                 }
             }
 
