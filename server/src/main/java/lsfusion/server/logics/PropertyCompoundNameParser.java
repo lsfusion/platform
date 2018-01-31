@@ -13,7 +13,9 @@ import java.util.List;
 
 import static lsfusion.server.logics.CompoundNameUtils.DELIMITER;
 import static lsfusion.server.logics.CompoundNameUtils.checkForCorrectness;
-import static lsfusion.server.logics.PropertyCanonicalNameUtils.*;
+import static lsfusion.server.logics.PropertyCompoundNameUtils.UNKNOWNCLASS;
+import static lsfusion.server.logics.PropertyCompoundNameUtils.signatureLBracket;
+import static lsfusion.server.logics.PropertyCompoundNameUtils.signatureRBracket;
 
 // Под compoundName мы в данном случае понимам любую форму обращения к свойству из скрипта
 // В compoundName может быть не указана сигнатура и/или пространство имен
