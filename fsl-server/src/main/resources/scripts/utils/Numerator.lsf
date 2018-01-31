@@ -100,7 +100,7 @@ FORM defaultNumerators 'Нумераторы'
 
 DESIGN defaultNumerators {
     BOX {
-        NEW defaultContainer AFTER BOX(n) {
+        NEW defaultContainer AFTER OBJECTS {
             type = COLUMNS;
             columns = 3;
             caption = 'Нумераторы по умолчанию';
