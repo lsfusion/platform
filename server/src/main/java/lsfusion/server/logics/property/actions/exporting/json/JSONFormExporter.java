@@ -25,18 +25,14 @@ public class JSONFormExporter extends HierarchicalFormExporter {
     public byte[] exportNodes(List<Node> rootNodes) throws IOException {
         File file = null;
         try {
-            JSONObject rootElement = new JSONOrderObject();
-            JSONObject exportObject = new JSONOrderObject();
-            JSONArray exportArray = new JSONArray();
-            exportObject.put("group", exportArray);
-            rootElement.put("export", exportObject);
+            JSONObject rootObject = new JSONObject();
 
             for (Node rootNode : rootNodes)
-                exportNode(exportArray, "group", rootNode);
+                exportNode(rootObject, groupId, rootNode);
 
             file = File.createTempFile("exportForm", ".json");
             try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
-                out.println(rootElement.toString());
+                out.println(rootObject.toString());
             }
             return IOUtils.getFileBytes(file);
         } catch (JSONException e) {
@@ -56,6 +52,8 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                 for(AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentId)) {
                         if (childNode instanceof Leaf) {
+                            exportNode(parentElement, child.getKey(), childNode);
+                        } else if (child.getKey().equals(groupId)) {
                             exportNode(parentElement, child.getKey(), childNode);
                         } else {
                             JSONObject object = new JSONOrderObject();

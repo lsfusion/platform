@@ -15,8 +15,9 @@ import java.io.IOException;
 import java.util.*;
 
 public abstract class FormExporter {
-    Map<String, ClientReportData> data = null;
-    Pair<String, Map<String, List<String>>> formHierarchy = null;
+    Map<String, ClientReportData> data;
+    Pair<String, Map<String, List<String>>> formHierarchy;
+    protected String groupId = "group";
 
     public FormExporter(ReportGenerationData reportData) {
         try {
@@ -45,7 +46,7 @@ public abstract class FormExporter {
         //данных нет, но создать пустой файл надо
         if(dataEntry.getKeyRows().isEmpty())
             node.addNode(object.object, createObjectValues(object, dataEntry, new HashMap<Integer, Object>(), new LinkedHashSet<String>()));
-        groupNode.addNode("group", node);
+        groupNode.addNode(groupId, node);
         return groupNode;
     }
 

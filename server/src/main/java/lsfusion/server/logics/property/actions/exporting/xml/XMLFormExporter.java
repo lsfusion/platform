@@ -27,8 +27,12 @@ public class XMLFormExporter extends HierarchicalFormExporter {
         File file = null;
         try {
             Element rootElement = new Element("export");
-            for (Node rootNode : rootNodes)
-                exportNode(rootElement, rootNode);
+            for (Node rootNode : rootNodes) {
+                for(Map.Entry<String, List<AbstractNode>> nodeEntry : rootNode.getChildren()) {
+                    for(AbstractNode childNode : nodeEntry.getValue())
+                        exportNode(rootElement, childNode);
+                }
+            }
 
             file = File.createTempFile("exportForm", ".xml");
             XMLOutputter xmlOutput = new XMLOutputter();
