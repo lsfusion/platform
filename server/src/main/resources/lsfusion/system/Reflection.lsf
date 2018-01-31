@@ -403,7 +403,7 @@ FORM forms 'Формы'
 ;
 
 DESIGN forms {
-    BOX {
+    OBJECTS {
         NEW groupingContainer BEFORE BOX(p) {
             type = CONTAINERH;
             fill = 1;

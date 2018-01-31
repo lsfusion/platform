@@ -1,6 +1,7 @@
 package lsfusion.interop.form.layout;
 
 public class ContainerConstants {
+    public static final String OBJECTS_CONTAINER = "objects";
     public static final String BOX_CONTAINER = ".box";
     public static final String GRID_CONTAINER = ".grid.box";
     public static final String PANEL_CONTAINER = ".panel";

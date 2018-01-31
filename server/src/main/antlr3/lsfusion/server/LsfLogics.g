@@ -3945,7 +3945,7 @@ formContainersComponentSelector returns [String sid]
 
 componentSingleSelectorType returns [String sid]
     :
-        ( 'BOX' { $sid = "box"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "controls.left"; } |
+        ( 'BOX' { $sid = "box"; } | 'OBJECTS' { $sid = "objects"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "controls.left"; } |
           'TOOLBARRIGHT' { $sid = "controls.right"; } | 'TOOLBAR' { $sid = "toolbar.props.box"; } | 'PANEL' { $sid = "panel"; }
         )
     ;
@@ -3957,6 +3957,9 @@ globalSingleSelectorType returns [String sid]
                 case "box":
                     $sid = "main";
                     break;
+                case "objects":
+                	$sid = "objects";
+                	break;
                 case "controls":
                     $sid = "functions.box";
                     break;
