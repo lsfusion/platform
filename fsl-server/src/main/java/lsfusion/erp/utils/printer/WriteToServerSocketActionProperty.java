@@ -8,6 +8,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.OutputStream;
@@ -45,12 +46,21 @@ public class WriteToServerSocketActionProperty extends ScriptingActionProperty {
             try (OutputStream os = new Socket(ip, port).getOutputStream()) {
                 os.write(text.getBytes(charset));
             }
+            findProperty("printed[]").change(true, context);
             ServerLoggers.printerLogger.info(String.format("Write to server socket finished for ip %s port %s", ip, port));
 
         } catch (ConnectException e) {
             ServerLoggers.printerLogger.error("Write to server socket error", e);
+            try {
+                findProperty("printed[]").change((Boolean) null, context);
+            } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+            }
             context.delayUserInteraction(new MessageClientAction(String.format("Сокет %s:%s недоступен. \n%s", ip, port, e.getMessage()), "Ошибка"));
         }catch (Exception e) {
+            try {
+                findProperty("printed[]").change((Boolean) null, context);
+            } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+            }
             ServerLoggers.printerLogger.error("Write to server socket error", e);
             throw Throwables.propagate(e);
         }
