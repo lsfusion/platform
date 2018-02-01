@@ -1796,8 +1796,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	}
 } 
 	:	'IMPORT' 
-		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
-		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; }
+		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
+		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; })?
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic]
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?

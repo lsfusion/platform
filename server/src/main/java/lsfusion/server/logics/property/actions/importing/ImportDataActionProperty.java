@@ -100,7 +100,8 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             return new ImportJDBCDataActionProperty(ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(ids, properties, baseLM);
-        }
+        } else if(format == null)
+            return new ImportDefaultDataActionProperty(ids, properties, baseLM);
         return null;
     }
 
@@ -130,10 +131,12 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             Object file = ((DataObject)value).object;
             if (file instanceof byte[]) {
                 try {
+                    String extension = "";
                     if (((DataObject)value).getType() instanceof DynamicFormatFileClass) {
+                        extension = BaseUtils.getExtension((byte[]) file);
                         file = BaseUtils.getFile((byte[]) file);
                     }
-                    ImportIterator iterator = getIterator((byte[]) file);
+                    ImportIterator iterator = getIterator((byte[]) file, extension);
 
                     MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
                     ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties);
@@ -239,7 +242,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return FlowResult.FINISH;
     }
     
-    public final static IntegerClass type = IntegerClass.instance; 
+    public final static IntegerClass type = IntegerClass.instance;
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
         List<Integer> columns = new ArrayList<>();
@@ -271,7 +274,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException, JSONException;
+    public abstract ImportIterator getIterator(byte[] file, String extension) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException, JSONException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

@@ -21,7 +21,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) {
+    public ImportIterator getIterator(byte[] file, String extension) {
         return new ImportCSVIterator(file, getSourceColumns(XLSColumnsMapping), properties, charset, separator, noHeader);
     }
 }

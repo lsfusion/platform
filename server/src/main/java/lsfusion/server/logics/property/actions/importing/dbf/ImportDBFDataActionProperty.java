@@ -55,21 +55,13 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException {
+    public ImportIterator getIterator(byte[] file, String extension) throws IOException {
         if(memo != null) {
             tempMemoFile = File.createTempFile("tempMemoFile", ".FPT");
             FileUtils.writeByteArrayToFile(tempMemoFile, memo);
         }
         CustomDbfReader reader = new CustomDbfReader(new ByteArrayInputStream(file), tempMemoFile);
-
-        Map<String, Integer> fieldMapping = new HashMap<>();
-        int i = 1;
-        for (DbfField field : reader.getMetadata().getFields()) {
-            fieldMapping.put(field.getName().toLowerCase(), i);
-            i++;
-        }
-        List<Integer> sourceColumns = getSourceColumns(fieldMapping);
-        return new ImportDBFIterator(reader, sourceColumns, getWheresList(), properties, tempMemoFile, charset);
+        return new ImportDBFIterator(reader, getSourceColumns(getFieldMapping(reader)), getWheresList(), properties, tempMemoFile, charset);
     }
 
     private List<List<String>> getWheresList() {
@@ -97,5 +89,15 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     @Override
     protected boolean ignoreIncorrectColumns() {
         return false;
+    }
+
+    public static Map<String, Integer> getFieldMapping(CustomDbfReader reader) {
+        Map<String, Integer> fieldMapping = new HashMap<>();
+        int i = 1;
+        for (DbfField field : reader.getMetadata().getFields()) {
+            fieldMapping.put(field.getName().toLowerCase(), i);
+            i++;
+        }
+        return fieldMapping;
     }
 }

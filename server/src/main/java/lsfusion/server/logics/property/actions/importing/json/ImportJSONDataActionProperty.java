@@ -29,7 +29,7 @@ public class ImportJSONDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, JSONException {
+    public ImportIterator getIterator(byte[] file, String extension) throws IOException, JSONException {
         return new ImportJSONIterator(file, properties, root, hasListOption) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {

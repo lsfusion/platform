@@ -17,7 +17,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.*;
 
-class ImportDBFIterator extends ImportIterator {
+public class ImportDBFIterator extends ImportIterator {
     private static final String EQ = "=";
     private static final String GE = ">=";
     private static final String GT = ">";
@@ -31,7 +31,7 @@ class ImportDBFIterator extends ImportIterator {
     private File tempMemoFile;
     private String charset;
     
-    ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile, String charset) {
+    public ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile, String charset) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
         this.wheresList = wheresList;
