@@ -1276,7 +1276,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams pathProp, boolean isAbsolutPath, boolean noDialog) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams pathProp, boolean isAbsolutPath, boolean noDialog, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
         List<LPWithParams> params = new ArrayList<>();
         params.add(property);
         if(pathProp != null)
@@ -1286,7 +1286,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (actionType) {
             case OPEN:
                 res = addOFAProp(property.property.property.getValueClass(ClassType.valuePolicy),
-                        pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy));
+                        pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy),
+                        syncType != null && syncType);
                 break;
             default: // SAVE
                 res = addSFAProp(property.property.property.getValueClass(ClassType.valuePolicy),

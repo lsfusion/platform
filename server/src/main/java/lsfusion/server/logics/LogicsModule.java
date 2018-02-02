@@ -1516,12 +1516,12 @@ public abstract class LogicsModule {
 
     // ------------------- OPEN FILE ----------------- //
 
-    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp) {
+    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp, boolean syncType) {
         List<ValueClass> valueClasses = new ArrayList<>();
         valueClasses.add(prop);
         if(nameProp != null)
             valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
+        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), syncType, valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- SAVE FILE ----------------- //

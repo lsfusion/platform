@@ -1973,6 +1973,19 @@ public class BaseUtils {
         try (FileOutputStream f = new FileOutputStream(file)) {
             f.write(data);
         }
+
+            ///Можно ждать, пока пользователь закроет файл
+
+            //https://mvnrepository.com/artifact/org.apache.commons/commons-exec
+            //https://stackoverflow.com/questions/847838/launch-file-from-java
+            //https://stackoverflow.com/questions/325299/cross-platform-way-to-open-a-file-using-java-1-5
+            /*if(SystemUtils.IS_OS_WINDOWS)
+                Runtime.getRuntime().exec("cmd.exe /C" + file.getAbsolutePath()).waitFor();
+            else if(SystemUtils.IS_OS_LINUX)
+                    Runtime.getRuntime().exec("xdg-open " + file.getAbsolutePath()).waitFor();
+            else if(SystemUtils.IS_OS_MAC)
+                Runtime.getRuntime().exec("open " + file.getAbsolutePath()).waitFor();*/
+
         Desktop.getDesktop().open(file);
     }
 
