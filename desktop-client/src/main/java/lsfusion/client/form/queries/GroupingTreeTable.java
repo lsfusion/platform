@@ -95,7 +95,7 @@ public class GroupingTreeTable extends JXTreeTable {
         for (int i = 1; i < treeTableModel.getColumnCount(); i++) {
             TableColumn column = getColumnModel().getColumn(i);
             ClientPropertyDraw property = columnProperties.get(i - 1);
-            int valueWidth = property.getValueWidth(this);
+            int valueWidth = (property != null ? property .getValueWidth(this) : MIN_COLUMN_WIDTH);
             column.setPreferredWidth(valueWidth);
             column.setMinWidth(valueWidth);
             
