@@ -1028,7 +1028,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (property.isSelector()) {
                 return true;
             } else if (securityPolicy.checkPermission(editAction.property)) {
-                if (property.hasContextMenuBinding(editActionSID) || securityPolicy.checkPermission(property.propertyObject.property)) {
+                if ((property.hasContextMenuBinding(editActionSID) && editAction.property.isNamed()) || securityPolicy.checkPermission(property.propertyObject.property)) { // если есть в меню и имеет собственный name, не смотрим на политику безопасности самого свойства (так как предполагается что есть своя)
                     return true;
                 }
             }
