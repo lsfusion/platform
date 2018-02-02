@@ -554,7 +554,11 @@ public class ScriptingErrorLog {
     public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "Navigator folder name should be defined");
     }
-    
+
+    public void emitImportFromWrongClassError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "FROM expression should return FILE value");
+    }
+
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
         emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }

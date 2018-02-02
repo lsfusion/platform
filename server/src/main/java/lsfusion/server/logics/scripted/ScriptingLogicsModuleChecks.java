@@ -579,4 +579,10 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitIncompatibleTypes(parser, "ASSIGN");
         }
     }
+
+    public void checkImportFromFileExpression(LPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
+        if (params.property != null && !(params.property.property.getValueClass(ClassType.valuePolicy).getType() instanceof FileClass)) {
+            errLog.emitImportFromWrongClassError(parser);    
+        }
+    }
 }

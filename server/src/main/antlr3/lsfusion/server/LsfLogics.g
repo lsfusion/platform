@@ -1799,7 +1799,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
 		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; })?
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
-		'FROM' expr=propertyExpression[context, dynamic]
+		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
 	;
 
