@@ -2249,15 +2249,6 @@ indexSetting [LP property]
 	:	'INDEXED'
 	;
 
-aggPropSetting [LP property]
-@after {
-	if (inPropParseState()) {
-		self.setAggProp(property);
-	}
-}
-	:	'AGGPROP'
-	;
-
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
 @init {
     $debugPoint = getEventDebugPoint();

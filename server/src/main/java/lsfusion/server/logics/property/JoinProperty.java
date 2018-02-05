@@ -159,10 +159,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             fillDepends(mImplementProps,implement.mapping.values());
             return SetFact.add(implementProperty.getUsedDataChanges(propChanges), propChanges.getUsedChanges(mImplementProps.immutable()));
         }
-        if(implement.mapping.size() == 1 && implementProperty.aggProp && Settings.get().isEnableAggProp()) {
-            // пока тупо MGProp'им назад
-            return SetFact.add((((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property).getUsedDataChanges(propChanges), implementProperty.getUsedChanges(propChanges));
-        }
 
         return super.calculateUsedDataChanges(propChanges);
     }
@@ -227,9 +223,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementChange)
             return implement.property.getChangeProps();
 
-        if(implement.mapping.size() == 1 && implement.property.aggProp && Settings.get().isEnableAggProp())
-            return implement.mapping.singleValue().mapChangeProps();
-
         return super.getChangeProps();
     }
 
@@ -258,16 +251,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(implementChange) // groupBy'им выбирая max
             return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, changedWhere); // пока implementChange = identity
         
-        if(implement.mapping.size() == 1 && implement.property.aggProp && Settings.get().isEnableAggProp()) {
-            // пока тупо MGProp'им назад
-            CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue();
-            KeyExpr keyExpr = new KeyExpr("key");
-            Expr groupExpr = GroupExpr.create(MapFact.singleton(0, implement.property.getExpr(MapFact.singleton(implement.property.interfaces.single(), keyExpr), propChanges)),
-                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass(ClassType.editPolicy)), GroupType.ASSERTSINGLE_CHANGE(), MapFact.singleton(0, change.expr));
-            return implementSingle.mapDataChanges(
-                    new PropertyChange<>(change, groupExpr), changedWhere, propChanges);
-        }
-
         return super.calculateDataChanges(change, changedWhere, propChanges);
     }
 

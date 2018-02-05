@@ -988,10 +988,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setEchoSymbols(true);
     }
 
-    public void setAggProp(LP property) {
-        ((CalcProperty)property.property).aggProp = true;
-    }
-
     public void setAggr(LP property) {
         ((CalcProperty)property.property).setAggr(true);
     }
