@@ -2932,7 +2932,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
-                                                        PropertyUsage fileProp, boolean hasListOption, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
+                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.formExportFile;
 
@@ -2942,8 +2942,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LPWithParams[exprs.size()+1]));
 
+        boolean extendContext = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props);
         if(type == null)
-            type = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props) ? FormExportType.XML : FormExportType.LIST;
+            type = extendContext ? FormExportType.XML : FormExportType.LIST;
+
+        if(hasListOption == null)
+            hasListOption = (type == FormExportType.XML || type == FormExportType.JSON) && !extendContext;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -3041,7 +3045,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
     }
 
-    public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, boolean hasListOption, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, Boolean hasListOption, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+        if (hasListOption == null)
+            hasListOption = false;
         List<LCP> props = findLPsForImport(propUsages, hasListOption);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
@@ -3050,7 +3056,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(params.size(), ids, props, hasListOption, attr, baseLM)), params);
     }
 
-    public LPWithParams addScriptedImportJSONActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportJSONActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, Boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
+        if (hasListOption == null)
+            hasListOption = false;
         List<LCP> props = findLPsForImport(propUsages, hasListOption);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);

@@ -1766,6 +1766,11 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	:	'WRITE' expr=propertyExpression[context, dynamic] 'FROM' fromExpr=propertyExpression[context, dynamic]
 	;
 
+hasListOptionLiteral returns [boolean val]
+	:	'LIST' { $val = true; }
+	|	'TABLE' { $val = false; }
+	;
+
 importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	ImportSourceFormat format = null;
@@ -1775,7 +1780,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean noHeader = false;
 	String charset = null;
 	LPWithParams root = null;
-	boolean hasListOption = false;
+	Boolean hasListOption = null;
 	boolean attr = false;
 
 }
@@ -1815,7 +1820,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean noHeader = false;
 	String charset = null;
 	LPWithParams root = null;
-	boolean hasListOption = false;
+	Boolean hasListOption = null;
 	boolean attr = false;
 
 }
@@ -1825,8 +1830,8 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormExportType.XML; } ('LIST' { hasListOption = true; }|'TABLE')?
-	    |  	'JSON' { exportType = FormExportType.JSON; } ('LIST' { hasListOption = true; }|'TABLE')?
+		(	'XML' { exportType = FormExportType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
+	    |  	'JSON' { exportType = FormExportType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
@@ -1952,12 +1957,12 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 		)? 
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, boolean hasListOption, LPWithParams root, boolean attr]
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, LPWithParams memo, String separator, boolean noHeader, String charset, Boolean hasListOption, LPWithParams root, boolean attr]
 	:	'XLS' 	{ $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	|	'DBF'	{ $format = ImportSourceFormat.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('LIST' { $hasListOption = true; }|'TABLE')? ('ATTR' { $attr = true; })?
-	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('LIST' { $hasListOption = true; }|'TABLE')?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })? ('ATTR' { $attr = true; })?
+	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
 	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
