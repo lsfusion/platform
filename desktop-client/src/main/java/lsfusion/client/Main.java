@@ -50,7 +50,7 @@ public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
-    public static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
+    public static final String DEFAULT_SPLASH_PATH = "/images/splash.png";
 
     public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 

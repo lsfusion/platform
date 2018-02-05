@@ -9,6 +9,7 @@ import lsfusion.interop.ServerInfo;
 import lsfusion.interop.remote.RMIUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
@@ -305,6 +306,7 @@ public class LoginDialog extends JDialog {
         imageLabel.setHorizontalTextPosition(0);
         imageLabel.setRequestFocusEnabled(true);
         imageLabel.setText("");
+        imageLabel.setBorder(new EmptyBorder(27, 27, 18, 27));
         contentPane.add(imageLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(4, 1, new Insets(4, 4, 4, 4), -1, -1));
