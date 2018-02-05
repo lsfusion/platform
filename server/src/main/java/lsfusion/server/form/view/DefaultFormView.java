@@ -117,8 +117,6 @@ public class DefaultFormView extends FormView {
         TreeGroupView treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
         boolean groupStarted = false;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
-            addGroupObjectView(groupObject, version);
-
             //если группа началась, ставим флаг. Если группа закончилась, addTreeGroupView и флаг снимаем
             if(treeNextGroup != null) {
                 boolean isInTree = groupObject.entity.isInTree();
@@ -130,6 +128,7 @@ public class DefaultFormView extends FormView {
                     groupStarted = isInTree && treeNextGroup != null && groupObject.entity.treeGroup.equals(treeNextGroup.entity);
                 }
             }
+            addGroupObjectView(groupObject, version);
         }
         if(groupStarted)
             addTreeGroupView(treeNextGroup, version);
