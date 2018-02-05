@@ -1,6 +1,7 @@
 package lsfusion.server.form.view;
 
 import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
@@ -23,8 +24,16 @@ public class GridView extends ComponentView {
     public GridView(int ID, GroupObjectView groupObject) {
         super(ID);
         this.groupObject = groupObject;
-        setFlex(1);
-        setAlignment(FlexAlignment.STRETCH);
+    }
+
+    @Override
+    public double getBaseDefaultFlex(FormEntity formEntity) {
+        return 1;
+    }
+
+    @Override
+    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
+        return FlexAlignment.STRETCH;
     }
 
     //todo: формально временное решение:
