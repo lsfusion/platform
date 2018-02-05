@@ -1393,7 +1393,7 @@ public class Settings implements Cloneable {
         this.disableGroupNotJoinsWheres = disableGroupNotJoinsWheres;
     }
 
-    private int defaultTypeExecuteEnvironment = 0;
+    private int defaultTypeExecuteEnvironment = 2;
 
     public int getDefaultTypeExecuteEnvironment() {
         return defaultTypeExecuteEnvironment;
