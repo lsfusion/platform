@@ -6,8 +6,8 @@ import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.EventThreadInfo;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.context.ThreadType;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
 import lsfusion.server.remote.RemoteLogics;
@@ -72,7 +72,7 @@ public class ExternalHttpServer extends MonitorServer {
         public void handle(HttpExchange request) {
 
             // поток создается HttpServer'ом, поэтому ExecutorService'ом как остальные не делается
-            ThreadLocalContext.aspectBeforeMonitor(ExternalHttpServer.this, ThreadType.HTTP);
+            ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
                         request.getRequestURI().getQuery(), request.getRequestBody(), getContentType(request));
@@ -89,7 +89,7 @@ public class ExternalHttpServer extends MonitorServer {
                 } catch (Exception ignored) {
                 }
             } finally {
-                ThreadLocalContext.aspectAfterMonitor(ThreadType.HTTP);
+                ThreadLocalContext.aspectAfterMonitorHTTP(ExternalHttpServer.this);
                 request.close();
             }
         }

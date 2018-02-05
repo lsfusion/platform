@@ -2042,7 +2042,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|	loggableSetting [ps]
 	|	echoSymbolsSetting [property]
 	|	indexSetting [property]
-	|	aggPropSetting [property]
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
 	|	asonEditActionSetting [property]

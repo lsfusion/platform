@@ -408,6 +408,13 @@ public class ThreadLocalContext {
         aspectAfterEvent(threadInfo);
     }
 
+    public static void aspectBeforeMonitorHTTP(MonitorServer monitor) {
+        aspectBeforeMonitor(monitor, EventThreadInfo.HTTP(monitor));
+    }
+    public static void aspectAfterMonitorHTTP(MonitorServer monitor) {
+        aspectAfterMonitor(EventThreadInfo.HTTP(monitor));
+    }
+    
     // СТАРТ СЕРВЕРА
 
     private final static TopExecutionStack lifecycleStack = new TopExecutionStack("init");
