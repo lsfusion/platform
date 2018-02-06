@@ -61,7 +61,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         ContainerView container = getContainer();
         if (container != null) {
             if (container.isScroll() || container.isSplit())
-                return 1;
+                return flex != null && flex != 0 ? flex : 1;
         }
 
         if (flex != null)
