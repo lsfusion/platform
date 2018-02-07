@@ -66,41 +66,6 @@ FORM processTypes 'Фильтры процессов'
     LIST ProcessType OBJECT t
 ;
 
-getActiveTasksAction 'Обновить список активных процессов' = CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
-getAllTasksAction 'Обновить список всех процессов' = CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
-cancelActiveTaskAction 'Снять процесс' = CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
-killActiveTaskAction 'Убить процесс' = CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);
-
-idActiveTask 'ID процесса' = DATA LOCAL INTEGER (INTEGER);
-queryActiveTask 'Запрос' = DATA LOCAL TEXT (INTEGER);
-computerActiveTask 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
-userActiveTask 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
-addressUserActiveTask 'Адрес пользователя' = DATA LOCAL VARSTRING[100] (INTEGER);
-dateTimeActiveTask 'Время запуска' = DATA LOCAL DATETIME (INTEGER);
-
-FORM activeTasks 'Активные процессы'
-    OBJECTS i = INTEGER
-    PROPERTIES(i) READONLY idActiveTask, queryActiveTask, computerActiveTask, userActiveTask, addressUserActiveTask, dateTimeActiveTask
-    PROPERTIES(i) TOOLBAR cancelActiveTaskAction, killActiveTaskAction
-    PROPERTIES() TOOLBAR getActiveTasksAction TODRAW i, getAllTasksAction TODRAW i
-    FILTERS idActiveTask(i)
-;
-
-getActiveBlocksAction 'Обновить список блокировок' = CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;
-
-processIdActiveBlock 'ID процесса блокировки' = DATA LOCAL INTEGER (INTEGER);
-typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
-idLockedObjectActiveBlock 'ID заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
-modeActiveBlock 'Уровень блокировки' = DATA LOCAL VARSTRING[100] (INTEGER);
-grantedActiveBlock 'Granted' = DATA LOCAL BOOLEAN (INTEGER);
-
-FORM activeBlocks 'Активные блокировки'
-    OBJECTS i = INTEGER
-    PROPERTIES(i) READONLY processIdActiveBlock, typeLockedObjectActiveBlock, idLockedObjectActiveBlock, modeActiveBlock, grantedActiveBlock
-    PROPERTIES() getActiveBlocksAction TOOLBAR TODRAW i
-    FILTERS processIdActiveBlock(i)
-;
-
 CLASS StateProcess 'Статус процесса' {
     active 'Active',
     idle 'Idle in transaction'
@@ -336,8 +301,6 @@ DESIGN processMonitor {
 
 NAVIGATOR {
     systemEvents {
-        NEW activeTasks;
-        NEW activeBlocks;
         NEW processMonitor;
     }
 }
