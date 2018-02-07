@@ -150,9 +150,4 @@ public class LogicalClass extends DataClass<Boolean> {
     public boolean calculateStat() {
         return false;
     }
-
-    @Override
-    public boolean isFlex() {
-        return false;
-    }
 }

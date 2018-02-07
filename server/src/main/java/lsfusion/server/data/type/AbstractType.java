@@ -70,7 +70,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     @Override
     public boolean isFlex() {
-        return true;
+        return false;
     }
 
     private static boolean isParseNullValue(String value) {

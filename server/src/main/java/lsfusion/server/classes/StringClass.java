@@ -362,4 +362,9 @@ public class StringClass extends DataClass<String> {
     public boolean fixedSize() {
         return false;
     }
+
+    @Override
+    public boolean isFlex() {
+        return true;
+    }
 }

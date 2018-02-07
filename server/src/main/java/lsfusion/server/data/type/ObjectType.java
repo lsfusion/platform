@@ -102,11 +102,6 @@ public class ObjectType extends AbstractType<Long> {
         return true;
     }
 
-    @Override
-    public boolean isFlex() {
-        return false;
-    }
-
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         ObjectValueClassSet objectClassSet = (ObjectValueClassSet)classSet.getValueClassSet(); // unknown не интересуют
         if(objectClassSet.isEmpty())

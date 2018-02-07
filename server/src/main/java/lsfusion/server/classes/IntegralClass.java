@@ -110,4 +110,9 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public String formatString(T value) {
         return value == null ? null : String.valueOf(value);
     }
+
+    @Override
+    public boolean isFlex() {
+        return true;
+    }
 }

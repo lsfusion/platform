@@ -213,11 +213,6 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public boolean isFlex() {
-        return false;
-    }
-
-    @Override
     public byte[] parse(Object o) throws ParseException {
         if(checkParseUnknownTypeNull(o))
             return null;
