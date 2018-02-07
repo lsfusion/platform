@@ -402,22 +402,33 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qne.addProperty("permit", permitNEExpr);
             qne.addProperty("forbid", forbidNEExpr);
 
-            ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
-            for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
-                if (valueMap.get("forbid") != null) {
-                    policy.navigator.deny(element);
-                } else if (valueMap.get("permit") != null) {
-                    policy.navigator.permit(element);
-                }
-            }
-
+            applyNavigatorElementPolicy(qne.execute(session).values(), policy);
             user.addSecurityPolicy(policy);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private void applyNavigatorElementPolicy(ImCol<ImMap<String, Object>> neQueryValues, SecurityPolicy policy) {
+        Map<String, ImMap<String, Object>> neMap = new HashMap<>();
+        for (ImMap<String, Object> valueMap : neQueryValues) {
+            neMap.put(((String) valueMap.get("canonicalName")).trim(), valueMap);
+        }
+
+        for (NavigatorElement ne : businessLogics.LM.root.getOrderedChildrenList()) {
+            String canonicalName = ne.getCanonicalName();
+            if (neMap.containsKey(canonicalName)) {
+                ImMap<String, Object> valueMap = neMap.get(canonicalName);
+                NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
+                if (valueMap.get("forbid") != null) {
+                    policy.navigator.deny(element);
+                } else if (valueMap.get("permit") != null) {
+                    policy.navigator.permit(element);
+                }
+            }
+        }
+    }
+    
     private void applyNavigatorElementDefinedUserPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
@@ -465,14 +476,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qne.addProperty("permit", permitUserNeExpr);
             qne.addProperty("forbid", forbidUserNeExpr);
 
-            ImCol<ImMap<String, Object>> neValues = qne.execute(session).values();
-            for (ImMap<String, Object> valueMap : neValues) {
-                NavigatorElement element = LM.root.getChildElement(((String) valueMap.get("canonicalName")).trim());
-                if (valueMap.get("forbid") != null)
-                    policy.navigator.deny(element);
-                else if (valueMap.get("permit") != null)
-                    policy.navigator.permit(element);
-            }
+            applyNavigatorElementPolicy(qne.execute(session).values(), policy);
 
             QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
             Expr propExpr = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
@@ -487,22 +491,20 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             for (ImMap<String, Object> valueMap : propValues) {
-                if (valueMap.get("fullForbidView") != null || valueMap.get("fullForbidChange") != null) {
-                    String cn = ((String) valueMap.get("cn")).trim();
-                    try {
-                        LP<?, ?> prop = businessLogics.findProperty(cn);
-                        if (prop != null) {
-                            if (valueMap.get("fullForbidView") != null)
-                                policy.property.view.deny(prop);
-                            if (valueMap.get("fullForbidChange") != null)
-                                policy.property.change.deny(prop);
-                        } else {
-//                            startLogger.info(String.format("Property '%s' is not found when applying security policy", cn));
-                        }
-                    } catch (CanonicalNameUtils.ParseException e) {
-//                        startLogger.info(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+                String cn = ((String) valueMap.get("cn")).trim();
+                try {
+                    LP<?, ?> prop = businessLogics.findProperty(cn);
+                    if (prop != null) {
+                        if (valueMap.get("fullForbidView") != null)
+                            policy.property.view.deny(prop);
+                        if (valueMap.get("fullForbidChange") != null)
+                            policy.property.change.deny(prop);
+                    } else {
+                       startLogger.debug(String.format("Property '%s' is not found when applying security policy", cn));
                     }
-                }    
+                } catch (CanonicalNameUtils.ParseException e) {
+                    startLogger.debug(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+                }
             }
 
             user.addSecurityPolicy(policy);

@@ -96,6 +96,14 @@ public abstract class NavigatorElement {
         return result;
     }
 
+    /** Возвращает предков перед их потомками */
+    public List<NavigatorElement> getOrderedChildrenList() {
+        List<NavigatorElement> orderedList = new ArrayList<>();
+        fillChildrenRecursive(orderedList);
+        return orderedList;
+    }
+
+    /** Прямой обход (Pre-order traversal) дерева. Возвращает сначала предков, потом его потомков */
     private void fillChildrenRecursive(Collection<NavigatorElement> result) {
         result.add(this);
         for (NavigatorElement child : getChildrenIt()) {
