@@ -50,7 +50,8 @@ public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
-    public static final String DEFAULT_SPLASH_PATH = "/images/splash.png";
+    public static final String DEFAULT_ICON_PATH = "/images/logo/";
+    public static final String DEFAULT_LOGO_PATH = DEFAULT_ICON_PATH + "logo.png";
 
     public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 
@@ -436,12 +437,19 @@ public class Main {
         });
     }
 
-    public static ImageIcon getMainIcon() {
-        return loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
+    public static List<Image> getMainIcons() {
+        Set<Image> images = new LinkedHashSet<>();
+        // для обратной совместимости пока оставил, как было. но похоже, надо вырезать свойство lsfusion.client.logo
+        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_256.png").getImage());
+        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_64.png").getImage());
+        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_48.png").getImage());
+        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_32.png").getImage());
+        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_16.png").getImage());
+        return new ArrayList<>(images);
     }
 
     public static ImageIcon getLogo() {
-        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
+        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_LOGO_PATH);
     }
 
     private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {

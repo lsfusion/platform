@@ -9,7 +9,7 @@ import lsfusion.interop.ServerInfo;
 import lsfusion.interop.remote.RMIUtils;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
@@ -43,7 +43,7 @@ public class LoginDialog extends JDialog {
         setContentPane(contentPane);
         setAlwaysOnTop(true);
         setModal(true);
-        setIconImage(Main.getLogo().getImage());
+        setIconImages(Main.getMainIcons());
         initServerHostList((MutableComboBoxModel) serverHost.getModel());
         setResizable(false);
 
@@ -300,14 +300,18 @@ public class LoginDialog extends JDialog {
     private void $$$setupUI$$$() {
         contentPane = new JPanel();
         contentPane.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
-        contentPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), null));
+        contentPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.DARK_GRAY), null));
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(0);
         imageLabel.setHorizontalTextPosition(0);
         imageLabel.setRequestFocusEnabled(true);
         imageLabel.setText("");
-        imageLabel.setBorder(new EmptyBorder(27, 27, 18, 27));
-        contentPane.add(imageLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        JPanel imagePanel = new JPanel();
+        imagePanel.add(imageLabel);
+        imagePanel.setBorder(new LineBorder(new Color(160, 160, 160)));
+        imagePanel.setBackground(Color.WHITE);
+        imageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPane.add(imagePanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(4, 1, new Insets(4, 4, 4, 4), -1, -1));
         contentPane.add(panel1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(24, 48), null, 0, false));

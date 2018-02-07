@@ -15,7 +15,7 @@
         <properties>
           <horizontalAlignment value="0"/>
           <horizontalTextPosition value="0"/>
-          <icon value="images/splash.png"/>
+          <icon value="images/logo/logo.png"/>
           <requestFocusEnabled value="true"/>
           <text value=""/>
         </properties>

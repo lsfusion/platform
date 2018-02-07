@@ -46,7 +46,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                 clientVMOptions = new VMOptions(null, null, null);
             }
 
-            handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion Client", request.getServerName(),
+            handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion", request.getServerName(),
                     blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
                     clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMaxHeapFreeRatio());
         } catch (RemoteException e) {

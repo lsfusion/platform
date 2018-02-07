@@ -11,7 +11,6 @@ import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
-import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -19,6 +18,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.*;
+import java.util.List;
 import java.util.Scanner;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -44,7 +44,7 @@ public abstract class MainFrame extends JFrame {
 
         this.remoteNavigator = remoteNavigator;
 
-        setIconImage(Main.getMainIcon().getImage());
+        setIconImages(Main.getMainIcons());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         updateUser();

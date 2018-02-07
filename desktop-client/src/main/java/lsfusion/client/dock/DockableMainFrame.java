@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -491,8 +492,11 @@ public class DockableMainFrame extends MainFrame {
                 JDialog dialog = new JDialog(DockableMainFrame.this);
                 Container contentPane = dialog.getContentPane();
                 contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+                contentPane.setPreferredSize(new Dimension(265, 100));
 
-                contentPane.add(new JLabel(Main.getLogo()));
+                JLabel label = new JLabel(Main.getLogo());
+                label.setBorder(new EmptyBorder(10, 10, 10, 10));
+                contentPane.add(label);
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
                 String text = Main.logicsDisplayName;
@@ -502,7 +506,7 @@ public class DockableMainFrame extends MainFrame {
                     text = "<html><b>" + text + "</b> powered by " + Main.LSFUSION_TITLE + "</html>";
                 }
                 JLabel labelName = new JLabel(text);
-                labelName.setFont(labelName.getFont().deriveFont(10));
+                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, 12));
                 contentPane.add(labelName);
 
                 dialog.setTitle(about.getText());
