@@ -53,6 +53,7 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void addImpl(int index, ClientComponent child, JComponentPanel view) {
+        assert child.getAlignment() == FlexAlignment.STRETCH && child.getFlex() > 0;// временные assert'ы чтобы проверить обратную совместимость
         if (container.children.get(0) == child) {
             setLeftComponent(child, view);
         } else if (container.children.get(1) == child) {
@@ -62,7 +63,6 @@ public class SplitClientContainerView extends AbstractClientContainerView {
 
     @Override
     public void removeImpl(int index, ClientComponent child, JComponentPanel view) {
-        assert child.getAlignment() == FlexAlignment.STRETCH && child.getFlex() > 0;// временные assert'ы чтобы проверить обратную совместимость
         if (container.children.get(0) == child) {
             removeLeftComponent(child, view);
         } else if (container.children.get(1) == child) {
