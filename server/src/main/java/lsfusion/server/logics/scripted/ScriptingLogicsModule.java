@@ -2766,7 +2766,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Boolean> nulls = new ArrayList<>();
 
         if(exportType == null)
-            exportType = FormExportType.XML;
+            exportType = FormExportType.JSON;
 
         List<O> allObjects = mapped.objects;
         for (int i = 0; i < allObjects.size(); i++) {
@@ -2941,7 +2941,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         boolean extendContext = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props);
         if(type == null)
-            type = extendContext ? FormExportType.XML : FormExportType.LIST;
+            type = extendContext ? FormExportType.JSON : FormExportType.LIST;
 
         if(hasListOption == null)
             hasListOption = (type == FormExportType.XML || type == FormExportType.JSON) && !extendContext;
