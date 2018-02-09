@@ -1754,16 +1754,21 @@ readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, $moveExpr.property, clientAction, delete);
 	}
 }
-	:	'READ' ('CLIENT' {clientAction = true; })? expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
+	:	'READ' ('CLIENT' { clientAction = true; })? expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
 	;
 
 writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    boolean clientAction = false;
+	boolean dialog = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedWriteActionProperty($expr.property, $fromExpr.property);
+		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, clientAction, dialog);
 	}
 }
-	:	'WRITE' expr=propertyExpression[context, dynamic] 'FROM' fromExpr=propertyExpression[context, dynamic]
+	:	'WRITE' (('CLIENT' { clientAction = true; } ('DIALOG' {dialog = true; })?  expr=propertyExpression[context, dynamic]? ) | expr=propertyExpression[context, dynamic]) 'FROM' fromExpr=propertyExpression[context, dynamic]
+
 	;
 
 hasListOptionLiteral returns [boolean val]
@@ -2933,7 +2938,7 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	(	'OPEN' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })? (sync = syncTypeLiteral { syncType = $sync.val; })?
 		|	'SAVE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; } | 'PATH' ppe=propertyExpression[context, dynamic] { filePathProp = $ppe.property; })? ('NODIALOG' { noDialog = true; })?
-		) 
+		)
 	;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]

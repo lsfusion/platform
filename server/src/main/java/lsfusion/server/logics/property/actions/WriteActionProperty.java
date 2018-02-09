@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.interop.action.SaveFileClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.SQLHandledException;
@@ -21,10 +22,14 @@ import java.util.regex.Pattern;
 
 public class WriteActionProperty extends SystemExplicitActionProperty {
     private final Type sourcePropertyType;
+    private boolean clientAction;
+    private boolean dialog;
 
-    public WriteActionProperty(Type sourcePropertyType, ValueClass... valueClasses) {
-        super(valueClasses);
+    public WriteActionProperty(Type sourcePropertyType, boolean clientAction, boolean dialog, ValueClass sourceProp, ValueClass pathProp) {
+        super(pathProp == null ? new ValueClass[]{sourceProp} : new ValueClass[]{sourceProp, pathProp});
         this.sourcePropertyType = sourcePropertyType;
+        this.clientAction = clientAction;
+        this.dialog = dialog;
     }
 
     @Override
@@ -34,13 +39,16 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataObject pathObject = context.getDataKeys().getValue(0);
-        assert pathObject.getType() instanceof StringClass;
-        String path = (String) pathObject.object;
-
-        DataObject sourceObject = context.getDataKeys().getValue(1);
+        DataObject sourceObject = context.getDataKeys().getValue(0);
         assert sourceObject.getType() instanceof FileClass;
         byte[] fileBytes = (byte[]) sourceObject.object;
+
+        String path = null;
+        if(context.getDataKeys().size() == 2) {
+            DataObject pathObject = context.getDataKeys().getValue(1);
+            assert pathObject.getType() instanceof StringClass;
+            path = (String) pathObject.object;
+        }
 
         String extension = null;
         if (fileBytes != null) {
@@ -52,59 +60,68 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
             }
         }
         try {
-            if (path != null && !path.isEmpty()) {
-                if (fileBytes != null) {
-                    if (extension != null && !extension.isEmpty()) {
-                        path += "." + extension;
-                    }
-                    Pattern p = Pattern.compile("(file|ftp|sftp):\\/\\/(.*)");
-                    Matcher m = p.matcher(path);
-                    if (m.matches()) {
-                        String type = m.group(1).toLowerCase();
-                        String url = m.group(2);
-
-                        switch (type) {
-                            case "file": {
-                                File file = new File(url);
-                                if (!file.getParentFile().exists())
-                                    throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
-                                else
-                                    IOUtils.putFileBytes(file, fileBytes);
-                                break;
-                            }
-                            case "ftp": {
-                                File file = null;
-                                try {
-                                    file = File.createTempFile("downloaded", ".tmp");
-                                    IOUtils.putFileBytes(file, fileBytes);
-                                    storeFileToFTP(path, file);
-                                } finally {
-                                    if (file != null && !file.delete())
-                                        file.deleteOnExit();
-                                }
-                                break;
-                            }
-                            case "sftp": {
-                                File file = null;
-                                try {
-                                    file = File.createTempFile("downloaded", ".tmp");
-                                    IOUtils.putFileBytes(file, fileBytes);
-                                    storeFileToSFTP(path, file);
-                                } finally {
-                                    if (file != null && !file.delete())
-                                        file.deleteOnExit();
-                                }
-                                break;
-                            }
-                        }
+            if (fileBytes != null) {
+                if (clientAction) {
+                    if (path == null || path.isEmpty())
+                        path = "new file";
+                    if (path.contains("/")) { //absolute path
+                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog));
                     } else {
-                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file"));
+                        String filePath = !dialog ? (System.getProperty("user.home") + "/Downloads/" + path + "." + extension) : (path + "." + extension);
+                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog));
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("File bytes not specified"));
+                    if (path != null && !path.isEmpty()) {
+                        if (extension != null && !extension.isEmpty()) {
+                            path += "." + extension;
+                        }
+                        Pattern p = Pattern.compile("(file|ftp|sftp):\\/\\/(.*)");
+                        Matcher m = p.matcher(path);
+                        if (m.matches()) {
+                            String type = m.group(1).toLowerCase();
+                            String url = m.group(2);
+
+                            switch (type) {
+                                case "file": {
+                                    File file = new File(url);
+                                    if (!file.getParentFile().exists())
+                                        throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
+                                    else
+                                        IOUtils.putFileBytes(file, fileBytes);
+                                    break;
+                                }
+                                case "ftp": {
+                                    File file = null;
+                                    try {
+                                        file = File.createTempFile("downloaded", ".tmp");
+                                        IOUtils.putFileBytes(file, fileBytes);
+                                        storeFileToFTP(path, file);
+                                    } finally {
+                                        if (file != null && !file.delete())
+                                            file.deleteOnExit();
+                                    }
+                                    break;
+                                }
+                                case "sftp": {
+                                    File file = null;
+                                    try {
+                                        file = File.createTempFile("downloaded", ".tmp");
+                                        IOUtils.putFileBytes(file, fileBytes);
+                                        storeFileToSFTP(path, file);
+                                    } finally {
+                                        if (file != null && !file.delete())
+                                            file.deleteOnExit();
+                                    }
+                                    break;
+                                }
+                            }
+                        } else {
+                            throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file"));
+                        }
+                    }
                 }
             } else {
-                throw Throwables.propagate(new RuntimeException("Path not specified"));
+                throw Throwables.propagate(new RuntimeException("File bytes not specified"));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

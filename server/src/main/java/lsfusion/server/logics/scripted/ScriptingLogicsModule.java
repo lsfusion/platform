@@ -2897,11 +2897,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
     }
 
-    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, LPWithParams sourceProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourceProp, LPWithParams pathProp, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkCalculationProperty(sourceProp.property);
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(sourceProp.property.property.getType(),
-                sourcePathProp.property.property.getValueClass(ClassType.valuePolicy),
-                sourceProp.property.property.getValueClass(ClassType.valuePolicy))), Arrays.asList(sourcePathProp, sourceProp));
+                clientAction, dialog, sourceProp.property.property.getValueClass(ClassType.valuePolicy),
+                pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy))),
+                pathProp == null ? Collections.singletonList(sourceProp) : Arrays.asList(sourceProp, pathProp));
     }
 
     public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, LPWithParams memoProp, List<String> ids, List<PropertyUsage> propUsages, String charset) throws ScriptingErrorLog.SemanticErrorException {
