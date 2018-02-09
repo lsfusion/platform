@@ -542,7 +542,7 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
-            targetProp = (staticType.isPlain() ? baseLM.formExportFiles : baseLM.formExportFile); 
+            targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
         return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
     }
 

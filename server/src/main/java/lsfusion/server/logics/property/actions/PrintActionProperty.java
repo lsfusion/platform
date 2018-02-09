@@ -45,11 +45,11 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                FormPrintType staticType,
                                boolean syncType,
                                Integer top,
-                               LCP formExportFile,
+                               LCP exportFile,
                                CalcPropertyMapImplement printer,
                                ImOrderSet<PropertyInterface> innerInterfaces,
                                LCP formPageCount, boolean removeNulls) {
-        super(caption, form, objectsToSet, nulls, staticType, formExportFile, top, printer == null ? null : printer.property);
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, top, printer == null ? null : printer.property);
 
         this.formPageCount = formPageCount;
 

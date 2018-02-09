@@ -107,8 +107,8 @@ confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
 requestPushed() = DATA LOCAL BOOLEAN ();
 formPageCount() = DATA LOCAL INTEGER ();
-formExportFile() = DATA LOCAL CUSTOMFILE ();
-formExportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
+exportFile() = DATA LOCAL CUSTOMFILE ();
+exportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 
 formImportFile() = DATA LOCAL CUSTOMFILE ();
 formImportFiles(id) = DATA LOCAL CUSTOMFILE (VARSTRING[100]);

@@ -37,11 +37,11 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
                                     List<O> objectsToSet,
                                     List<Boolean> nulls, 
                                     FormExportType staticType,
-                                    LCP formExportFile,
+                                    LCP exportFile,
                                     boolean noHeader,
                                     String separator,
                                     String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, formExportFile);
+        super(caption, form, objectsToSet, nulls, staticType, exportFile);
         
         this.noHeader = noHeader;
         this.separator = separator;

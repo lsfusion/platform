@@ -408,7 +408,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                         throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
                 }
             } else {
-                returnList.addAll(readReturnProperty(session, businessLogics.LM.formExportFile));
+                returnList.addAll(readReturnProperty(session, businessLogics.LM.exportFile));
             }
 
             session.apply(businessLogics, stack);

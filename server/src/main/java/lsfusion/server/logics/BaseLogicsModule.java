@@ -115,8 +115,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP requestPushed;
     private LCP isActiveForm;
     public LCP formPageCount;
-    public LCP formExportFile;
-    public LCP formExportFiles;
+    public LCP exportFile;
+    public LCP exportFiles;
     public LCP ignorePrintType;
 
     public LCP imported;
@@ -395,8 +395,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
         formPageCount = findProperty("formPageCount[]");
-        formExportFile = findProperty("formExportFile[]");
-        formExportFiles = findProperty("formExportFiles[VARSTRING[100]]");
+        exportFile = findProperty("exportFile[]");
+        exportFiles = findProperty("exportFiles[VARSTRING[100]]");
         ignorePrintType = findProperty("ignorePrintType[]");
 
         imported = findProperty("imported[INTEGER]");

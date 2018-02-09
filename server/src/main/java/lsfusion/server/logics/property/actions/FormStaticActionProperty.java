@@ -37,7 +37,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
 
     protected final T staticType;
     
-    private final LCP formExportFile;
+    private final LCP exportFile;
 
     private Integer selectTop;
 
@@ -46,9 +46,9 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                                     List<O> objectsToSet,
                                     List<Boolean> nulls,
                                     T staticType,
-                                    LCP formExportFile,
+                                    LCP exportFile,
                                     Property... extraProps) {
-        this(caption, form, objectsToSet, nulls, staticType, formExportFile, null, extraProps);
+        this(caption, form, objectsToSet, nulls, staticType, exportFile, null, extraProps);
     }
 
     public FormStaticActionProperty(LocalizedString caption,
@@ -56,13 +56,13 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                                     List<O> objectsToSet,
                                     List<Boolean> nulls,
                                     T staticType,
-                                    LCP formExportFile,
+                                    LCP exportFile,
                                     Integer selectTop,
                                     Property... extraProps) {
         super(caption, form, objectsToSet, nulls, false, extraProps);
 
         this.staticType = staticType;
-        this.formExportFile = formExportFile;
+        this.exportFile = exportFile;
         this.selectTop = selectTop;
     }
     
@@ -81,17 +81,17 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         int top = selectTop == null ? 0 : selectTop;
         ReportGenerationData reportData = newFormManager.getReportData(isExcel, ReportGenerationDataType.get(staticType), top);
 
-        if (formExportFile != null) {
+        if (exportFile != null) {
             try {
                 String extension = staticType.getExtension();
                 if(staticType instanceof FormExportType && ((FormExportType) staticType).isPlain()) { // plain = multiple files
                     Map<String, byte[]> files = exportPlain(reportData);
                     for(Map.Entry<String, byte[]> entry : files.entrySet()) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(entry.getValue(), extension.getBytes()), context, new DataObject(entry.getKey()));
+                        exportFile.change(BaseUtils.mergeFileAndExtension(entry.getValue(), extension.getBytes()), context, new DataObject(entry.getKey()));
                     }
                 } else { // hierarchical - single file
                     byte[] singleFile = exportHierarchical(reportData);
-                    formExportFile.change(BaseUtils.mergeFileAndExtension(singleFile, extension.getBytes()), context);
+                    exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, extension.getBytes()), context);
                 }
             } catch (JRException | IOException | ClassNotFoundException e) {
                 ServerLoggers.systemLogger.error(e);
