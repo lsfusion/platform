@@ -96,7 +96,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     }
 
     public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
-        if (format == ImportSourceFormat.JDBC) {
+        if (format == ImportSourceFormat.TABLE) {
             return new ImportJDBCDataActionProperty(ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(ids, properties, baseLM);
