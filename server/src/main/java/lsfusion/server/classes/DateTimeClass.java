@@ -3,6 +3,7 @@ package lsfusion.server.classes;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -156,5 +157,10 @@ public class DateTimeClass extends DataClass<Timestamp> {
     @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.date.with.time}")));
     }
 }
