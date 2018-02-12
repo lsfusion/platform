@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.importing.jdbc;
+package lsfusion.server.logics.property.actions.importing.table;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.DataClass;
@@ -11,13 +11,13 @@ import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportJDBCIterator extends ImportIterator {
+public class ImportTableIterator extends ImportIterator {
     private final JDBCTable rs;
     private int i=0;
     private final List<Integer> sourceColumns;
     private final List<LCP> properties;
 
-    public ImportJDBCIterator(JDBCTable rs, List<Integer> sourceColumns, List<LCP> properties) {
+    public ImportTableIterator(JDBCTable rs, List<Integer> sourceColumns, List<LCP> properties) {
         this.rs = rs;
         this.sourceColumns = sourceColumns;
         this.properties = properties;

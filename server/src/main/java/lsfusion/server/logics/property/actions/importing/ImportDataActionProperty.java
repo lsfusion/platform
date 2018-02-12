@@ -29,7 +29,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
@@ -97,7 +97,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.TABLE) {
-            return new ImportJDBCDataActionProperty(ids, properties, baseLM);
+            return new ImportTableDataActionProperty(ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(ids, properties, baseLM);
         } else if(format == null)

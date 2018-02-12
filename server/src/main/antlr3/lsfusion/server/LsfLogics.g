@@ -1840,7 +1840,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
-	    |  	'TABLE' { exportType = FormExportType.JDBC; }
+	    |  	'TABLE' { exportType = FormExportType.TABLE; }
 		)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?

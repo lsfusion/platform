@@ -14,11 +14,11 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 import java.io.IOException;
 
-public class ExportJDBCDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
+public class ExportTableDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
     private boolean singleRow;
-    public ExportJDBCDataActionProperty(LocalizedString caption, String extension, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types,
-                                        CalcPropertyInterfaceImplement<I> where, LCP targetProp, boolean singleRow) {
+    public ExportTableDataActionProperty(LocalizedString caption, String extension, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
+                                         ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types,
+                                         CalcPropertyInterfaceImplement<I> where, LCP targetProp, boolean singleRow) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
         this.singleRow = singleRow;
     }

@@ -8,8 +8,8 @@ import lsfusion.server.logics.property.actions.importing.csv.ImportCSVIterator;
 import lsfusion.server.logics.property.actions.importing.dbf.CustomDbfReader;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFIterator;
-import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCIterator;
+import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.table.ImportTableIterator;
 import lsfusion.server.logics.property.actions.importing.json.ImportJSONIterator;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBIterator;
@@ -60,7 +60,7 @@ public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
                 return new ImportDBFIterator(reader, getSourceColumns(ImportDBFDataActionProperty.getFieldMapping(reader)), new ArrayList<List<String>>(), properties, null, null);
             case "jdbc":
                 JDBCTable rs = JDBCTable.deserializeJDBC(file);
-                return new ImportJDBCIterator(rs, getSourceColumns(ImportJDBCDataActionProperty.getFieldMapping(rs)), properties);
+                return new ImportTableIterator(rs, getSourceColumns(ImportTableDataActionProperty.getFieldMapping(rs)), properties);
             case "mdb":
                 List<Map<String, Object>> rows = (List<Map<String, Object>>) BaseUtils.deserializeCustomObject(file);
                 return new ImportMDBIterator(ImportMDBDataActionProperty.getRowsList(rows), getSourceColumns(ImportMDBDataActionProperty.getFieldMapping(rows)));

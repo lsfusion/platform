@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.importing.jdbc;
+package lsfusion.server.logics.property.actions.importing.table;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
-    public ImportJDBCDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+public class ImportTableDataActionProperty extends ImportDataActionProperty {
+    public ImportTableDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
     }
 
@@ -22,7 +22,7 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
 
         try {
             JDBCTable rs = JDBCTable.deserializeJDBC(file);
-            return new ImportJDBCIterator(rs, getSourceColumns(getFieldMapping(rs)), properties);
+            return new ImportTableIterator(rs, getSourceColumns(getFieldMapping(rs)), properties);
             
         } catch (IOException e) {
             throw Throwables.propagate(e);

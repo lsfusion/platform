@@ -595,12 +595,12 @@ public abstract class LogicsModule {
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, hasListOption);
-        else if (type == FormExportType.JDBC)
-            exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
+        else if (type == FormExportType.TABLE)
+            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, false);
         else
-            exportAction = new ExportJDBCDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
+            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                 (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
                 conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, true);
 

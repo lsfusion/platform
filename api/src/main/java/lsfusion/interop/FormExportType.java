@@ -1,7 +1,7 @@
 package lsfusion.interop;
 
 public enum FormExportType implements FormStaticType {
-    XML, JSON, CSV, DBF, LIST, JDBC;
+    XML, JSON, CSV, DBF, LIST, TABLE;
 
     public boolean isCustom() {
         return true;
@@ -19,14 +19,14 @@ public enum FormExportType implements FormStaticType {
             case DBF:
                 return "dbf";
             case LIST:
-            case JDBC:
+            case TABLE:
                 return "jdbc";
         }
         throw new UnsupportedOperationException();
     }
 
     public boolean isPlain() {
-        return this == CSV || this == DBF || this == LIST || this == JDBC;
+        return this == CSV || this == DBF || this == LIST || this == TABLE;
     }
 
 
