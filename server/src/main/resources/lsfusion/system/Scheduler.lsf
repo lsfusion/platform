@@ -202,7 +202,7 @@ DESIGN scheduledTask {
     }
     NEW bottom {
         type = CONTAINERH;
-        align = TRAILING;
+        align = END;
         MOVE PROPERTY(runSetupSchedulerApply());
         MOVE PROPERTY(stopSchedulerApply());
     }
