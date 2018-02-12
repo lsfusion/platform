@@ -1840,7 +1840,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
-	    |  	'JDBC' { exportType = FormExportType.JDBC; }
+	    |  	'TABLE' { exportType = FormExportType.JDBC; }
 		)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
@@ -1968,7 +1968,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })? ('ATTR' { $attr = true; })?
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
-	|	'JDBC'	{ $format = ImportSourceFormat.JDBC; }
+	|	'TABLE'	{ $format = ImportSourceFormat.TABLE; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
 
