@@ -98,7 +98,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return getBaseDefaultAlignment(formEntity);
     }
     public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
-        return FlexAlignment.LEADING;
+        return FlexAlignment.START;
     }
 
     public int marginTop;

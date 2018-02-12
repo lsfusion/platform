@@ -17,7 +17,7 @@ public class CalculationsView extends JComponentPanel {
     private JLabel quantityLabel = new JLabel();
     
     public CalculationsView() {
-        setLayout(new FlexLayout(this, false, Alignment.LEADING));
+        setLayout(new FlexLayout(this, false, Alignment.START));
         add(averageLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
         add(sumLabel, new FlexConstraints(FlexAlignment.CENTER, 0));
         add(quantityLabel, new FlexConstraints(FlexAlignment.CENTER, 0));

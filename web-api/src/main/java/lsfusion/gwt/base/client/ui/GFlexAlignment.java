@@ -1,5 +1,5 @@
 package lsfusion.gwt.base.client.ui;
 
 public enum GFlexAlignment {
-    LEADING, CENTER, TRAILING, STRETCH
+    START, CENTER, END, STRETCH
 }

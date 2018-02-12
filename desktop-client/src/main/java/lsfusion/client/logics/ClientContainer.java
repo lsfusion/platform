@@ -21,7 +21,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     private ContainerType type = ContainerType.CONTAINERH;
 
-    public Alignment childrenAlignment = Alignment.LEADING;
+    public Alignment childrenAlignment = Alignment.START;
 
     public int columns = 4;
 

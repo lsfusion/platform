@@ -23,7 +23,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         window = iWindow;
 
         toolBar = (JToolBar) getComponent();
-        toolBar.setLayout(new FlexLayout(toolBar, iWindow.type == SwingConstants.VERTICAL, Alignment.LEADING));
+        toolBar.setLayout(new FlexLayout(toolBar, iWindow.type == SwingConstants.VERTICAL, Alignment.START));
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         toolBar.setFocusable(false);

@@ -265,7 +265,7 @@ public class DataPanelView extends JPanel implements PanelView {
             int tableWidth = tableSpace;
             if (property.getAlignment() != FlexAlignment.STRETCH) {
                 tableWidth = Math.min(tableSpace, tablePref.width);
-                if (property.getAlignment() == FlexAlignment.TRAILING) {
+                if (property.getAlignment() == FlexAlignment.END) {
                     tableLeft += tableSpace - tableWidth;
                 } else if (property.getAlignment() == FlexAlignment.CENTER) {
                     tableLeft += (tableSpace - tableWidth)/2;

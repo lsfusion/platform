@@ -195,7 +195,7 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         public void addTab(int index, ClientComponent child, Component childView) {
             // добавляем не сам компонент, а proxyPanel, чтобы TabbedPane не управляла его видимостью и не мешала логике autohide'ов
-            JComponentPanel proxyPanel = new JComponentPanel(true, Alignment.LEADING) {
+            JComponentPanel proxyPanel = new JComponentPanel(true, Alignment.START) {
                 @Override
                 public void validate() {
                     super.validate();

@@ -80,18 +80,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private GAlignment convertAlignment(Alignment alignment) {
         switch (alignment) {
-            case LEADING: return GAlignment.LEADING;
+            case START: return GAlignment.START;
             case CENTER: return GAlignment.CENTER;
-            case TRAILING: return GAlignment.TRAILING;
+            case END: return GAlignment.END;
         }
         throw new IllegalStateException("Unknown alignment");
     }
 
     private GFlexAlignment convertFlexAlignment(FlexAlignment alignment) {
         switch (alignment) {
-            case LEADING: return GFlexAlignment.LEADING;
+            case START: return GFlexAlignment.START;
             case CENTER: return GFlexAlignment.CENTER;
-            case TRAILING: return GFlexAlignment.TRAILING;
+            case END: return GFlexAlignment.END;
             case STRETCH: return GFlexAlignment.STRETCH;
         }
         throw new IllegalStateException("Unknown alignment");

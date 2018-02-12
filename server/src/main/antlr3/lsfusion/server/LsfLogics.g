@@ -4498,15 +4498,15 @@ containerTypeLiteral returns [ContainerType val]
 	;
 
 alignmentLiteral returns [Alignment val]
-    :   'START' { $val = Alignment.LEADING; }
+    :   'START' { $val = Alignment.START; }
     |   'CENTER' { $val = Alignment.CENTER; }
-    |   'END' { $val = Alignment.TRAILING; }
+    |   'END' { $val = Alignment.END; }
     ;
 
 flexAlignmentLiteral returns [FlexAlignment val]
-    :   'START' { $val = FlexAlignment.LEADING; }
+    :   'START' { $val = FlexAlignment.START; }
     |   'CENTER' { $val = FlexAlignment.CENTER; }
-    |   'END' { $val = FlexAlignment.TRAILING; }
+    |   'END' { $val = FlexAlignment.END; }
     |   'STRETCH' { $val = FlexAlignment.STRETCH; }
     ;
 

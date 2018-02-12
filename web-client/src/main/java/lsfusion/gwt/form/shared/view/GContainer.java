@@ -1,7 +1,5 @@
 package lsfusion.gwt.form.shared.view;
 
-import lsfusion.client.logics.ClientComponent;
-import lsfusion.client.logics.ClientContainer;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GAlignment;
 
@@ -33,9 +31,9 @@ public class GContainer extends GComponent {
 
     public FlexPanel.Justify getFlexJustify() {
         switch (childrenAlignment) {
-            case LEADING: return FlexPanel.Justify.LEADING;
+            case START: return FlexPanel.Justify.START;
             case CENTER: return FlexPanel.Justify.CENTER;
-            case TRAILING: return FlexPanel.Justify.TRAILING;
+            case END: return FlexPanel.Justify.END;
         }
         throw new IllegalStateException("Unknown alignment");
     }

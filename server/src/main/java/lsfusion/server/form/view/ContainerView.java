@@ -28,7 +28,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     private ContainerType type = ContainerType.CONTAINERV;
 
-    public Alignment childrenAlignment = Alignment.LEADING;
+    public Alignment childrenAlignment = Alignment.START;
 
     public int columns = 4;
     

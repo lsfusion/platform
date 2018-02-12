@@ -18,12 +18,12 @@ public class FlexPanelImplIE extends FlexPanelImpl {
     }
 
     @Override
-    protected String getLeadingAlignmentValue() {
+    protected String getStartAlignmentValue() {
         return "start";
     }
 
     @Override
-    protected String getTrailingAlignmentValue() {
+    protected String getEndAlignmentValue() {
         return "end";
     }
 
