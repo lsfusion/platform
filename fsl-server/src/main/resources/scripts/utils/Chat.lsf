@@ -380,7 +380,7 @@ DESIGN fullChat {
                             fill = 1;
                             MOVE PROPERTY(notificate(c)) {
                                 font = 'bold 24';
-                                alignment = TRAILING;
+                                alignment = END;
                             }
                         }
                     }
@@ -501,7 +501,7 @@ DESIGN shortChat {
             MOVE PROPERTY(closeChat());
             NEW notificate {
                 fill = 1;
-                MOVE PROPERTY(notificate(m)) { alignment = TRAILING; };
+                MOVE PROPERTY(notificate(m)) { alignment = END; };
             }
         }
         REMOVE TOOLBARBOX;

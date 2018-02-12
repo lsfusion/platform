@@ -292,7 +292,7 @@ DESIGN processMonitor {
     } 
     NEW bottom {
         type = CONTAINERH;
-        align = TRAILING;
+        align = END;
         MOVE PROPERTY(captionProcessType());
         MOVE PROPERTY(updateProcessMonitorAction());
     }
