@@ -135,12 +135,12 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
         KeyExpr stringExpr = new KeyExpr("string");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("formImportFiles", context.getBL().LM.findProperty("formImportFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr));
-        query.and(context.getBL().LM.findProperty("formImportFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr).getWhere());
+        query.addProperty("importFiles", context.getBL().LM.findProperty("importFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr));
+        query.and(context.getBL().LM.findProperty("importFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
         for (int i = 0; i < result.size(); i++) {
             String fileKey = (String) result.getKey(i).get("string");
-            byte[] file = BaseUtils.getFile((byte[]) result.getValue(i).get("formImportFiles"));
+            byte[] file = BaseUtils.getFile((byte[]) result.getValue(i).get("importFiles"));
             files.put(fileKey, file);
 
         }

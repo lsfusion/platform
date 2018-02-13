@@ -47,7 +47,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            byte[] file = (byte[]) context.getBL().LM.findProperty("System.formImportFile[]").read(context);
+            byte[] file = (byte[]) context.getBL().LM.findProperty("System.importFile[]").read(context);
             if (file != null) {
                 file = BaseUtils.getFile(file);
                 importData(context, file);
