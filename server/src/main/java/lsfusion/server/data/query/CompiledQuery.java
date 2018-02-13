@@ -1898,7 +1898,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     // key - какие есть, value - которые должны быть
-    public static String translateParam(String query,ImMap<String,String> paramValues) {
+    private static String translateParam(String query,ImMap<String,String> paramValues) {
         // генерируем промежуточные имена, перетранслируем на них
         ImRevMap<String, String> preTranslate = paramValues.mapRevValues(new GenNameIndex("transp", "nt"));
         for(int i=0,size=preTranslate.size();i<size;i++)
@@ -1911,10 +1911,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return query;
     }
     
-    private static GetValue<ParseInterface, ParseValue> GETPARSE(final QueryEnvironment env, final EnsureTypeEnvironment typeEnv) {
+    private static GetValue<ParseInterface, ParseValue> GETPARSE(final QueryEnvironment env) {
         return new GetValue<ParseInterface, ParseValue>() {
             public ParseInterface getMapValue(ParseValue value) {
-                return value.getParseInterface(env, typeEnv);
+                return value.getParseInterface(env);
             }
         };
     };
@@ -1940,7 +1940,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 return SystemProperties.isDebug;
             }
         });
-        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
+        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env)));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {

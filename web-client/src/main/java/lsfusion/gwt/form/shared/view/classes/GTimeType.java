@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.classes;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -17,17 +16,12 @@ import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeFormat;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeShortFormat;
 import static lsfusion.gwt.form.shared.view.classes.GDateType.parseDate;
 
-public class GTimeType extends GFormatType<DateTimeFormat> {
+public class GTimeType extends GDataType {
     public static GTimeType instance = new GTimeType();
 
     @Override
-    public DateTimeFormat getFormat(String pattern) {
-        return GwtSharedUtils.getTimeFormat(pattern);
-    }
-
-    @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property);
+        return new DateGridCellRenderer(property, GwtSharedUtils.getDefaultTimeFormat());
     }
 
     @Override
@@ -41,8 +35,8 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    protected Object getDefaultWidthValue() {
-        return GDateTimeType.getWideFormattableDateTime();
+    public String getMask(String pattern) {
+        return pattern != null ? pattern : "00:00:00";
     }
 
     @Override

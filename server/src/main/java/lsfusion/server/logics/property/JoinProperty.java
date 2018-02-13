@@ -54,15 +54,12 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
 
-    public static <T extends PropertyInterface> boolean isIdentity(ImSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+    private static <T extends PropertyInterface> boolean isIdentity(ImSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         Set<Interface> rest = SetFact.mAddRemoveSet(interfaces);
         for(CalcPropertyInterfaceImplement<Interface> impl : implement.mapping.values())
             if(!(impl instanceof Interface && rest.remove((Interface)impl)))
                 return false;
         return rest.isEmpty();
-    }
-    public boolean isIdentity() {
-        return isIdentity(this.interfaces, implement);
     }
     
     public JoinProperty(LocalizedString caption, ImOrderSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
@@ -72,7 +69,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         super(caption, interfaces);
         this.implement = implement;
         this.user = user;
-        this.implementChange = isIdentity();
+        this.implementChange = isIdentity(this.interfaces, implement);
 
         finalizeInit();
     }

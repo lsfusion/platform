@@ -67,7 +67,7 @@ public class ScriptingErrorLog {
         parser.emitErrorMessage(getRecognitionErrorText(scriptParser,  errorType, msg, e));
     }
 
-    public static void emitSemanticError(String msg, SemanticErrorException e) throws SemanticErrorException {
+    public void emitSemanticError(String msg, SemanticErrorException e) throws SemanticErrorException {
         e.setMessage(msg);
         throw e;
     }
@@ -137,17 +137,13 @@ public class ScriptingErrorLog {
     }
     
     public void emitIllegalInsertBeforeAfterElement(ScriptParser parser, String element, String parentElement, String anchorElement) throws SemanticErrorException {
-        emitSimpleError(parser, format("can't insert '%s' after or before '%s' in '%s'", element, anchorElement, parentElement));
+        emitSimpleError(parser, "can't insert '" + element + "' after or before '" + anchorElement + "' in '" + parentElement + "'");
     }
 
     public void emitIllegalNavigatorElementMove(ScriptParser parser, String element, String parentElement) throws SemanticErrorException {
-        emitSimpleError(parser, format("can't move '%s' because it's not a direct child of '%s'", element, parentElement));
+        emitSimpleError(parser, "can't move '" + element + "' because it's not a direct child of '" + parentElement + "'");
     }
 
-    public void emitIllegalParentNavigatorElement(ScriptParser parser, String parentElement) throws SemanticErrorException {
-        emitSimpleError(parser, format("element '%s' can't be a parent element because it's not a navigator folder", parentElement));
-    }
-    
     public void emitGroupObjectInTreeAfterBeforeError(ScriptParser parser, String groupObject) throws SemanticErrorException {
         emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
     }
@@ -223,11 +219,11 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
     }
 
-    public void emitCustomClassExpectedError(ScriptParser parser) throws SemanticErrorException {
+    public void emitCustomClassExpextedError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "custom class expected");
     }
 
-    public void emitCustomClassExpectedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+    public void emitCustomClassExpextedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("custom class parameter expected for property '%s'", propertyName));
     }
 
@@ -440,11 +436,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitAmbiguousPropertyNameError(ScriptParser parser, List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
-        StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', was found in modules:", name));
+        String msg = String.format("ambiguous name '%s', found properties:", name);
         for (NamespaceElementFinder.FoundItem<LP<?, ?>> item : foundItems) {
-            msg.append("\n\t").append(item.toString());                
+            msg += "\n\t" + item.value.property.toString();                
         }
-        emitSimpleError(parser, msg.toString());
+        emitSimpleError(parser, msg);
     }
 
     public void emitNeighbourPropertyError(ScriptParser parser, String name1, String name2) throws SemanticErrorException {
@@ -551,14 +547,6 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
     } 
     
-    public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Navigator folder name should be defined");
-    }
-
-    public void emitImportFromWrongClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "FROM expression should return FILE value");
-    }
-
     public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
         emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
     }

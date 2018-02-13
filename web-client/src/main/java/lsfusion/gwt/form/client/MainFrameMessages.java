@@ -21,7 +21,7 @@ public interface MainFrameMessages extends Messages {
     String formRendererNotDefined();
     String formRendererRequired();
 
-    String formGridExportToXlsx();
+    String formGridExportToXls();
     String formGridPrintGrid();
     String formGridGroupGroupChange();
 

@@ -1,7 +1,6 @@
 package lsfusion.server.data;
 
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -9,7 +8,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.MaterializedQuery;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
@@ -58,13 +58,11 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         final StringBuilder envString = new StringBuilder();
         final boolean recursionFunction = isRecursionFunction();
 
-        final EnsureTypeEnvironment ensureTypes = env.getEnsureTypes();
-
         ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(new GetValue<ParsedString, SQLQuery>() {
             public ParsedString getMapValue(SQLQuery value) {
                 MaterializedQuery matQuery = materializedQueries.get(value);
                 if(matQuery != null)
-                    return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion, ensureTypes));
+                    return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion));
 
                 ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
                 if (recursionFunction)
@@ -74,14 +72,6 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
             }
         });
 
-        return preparseStatement(command, parseParams, paramObjects, syntax, isVolatileStats, usedRecursion, envString, recursionFunction, parsedSubQueries, ensureTypes);
-    }
-
-    public static PreParsedStatement preparseStatement(String command, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax) {
-        return preparseStatement(command, false, paramObjects, syntax, false, false, new StringBuilder(), false, MapFact.<String, ParsedString>EMPTY(), null); // CONCATENATE'ов нет, поэтому ensureTypes null
-    }
-    
-    private static PreParsedStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax, boolean isVolatileStats, boolean usedRecursion, StringBuilder envString, boolean recursionFunction, ImMap<String, ParsedString> parsedSubQueries, EnsureTypeEnvironment ensureTypes) {
         ImFilterValueMap<String, ParsedString> mvSafeStrings = paramObjects.mapFilterValues();
         ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
         for(int i=0,size=paramObjects.size();i<size;i++) {
@@ -97,7 +87,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         }
         ImMap<String, ParsedString> safeStrings = mvSafeStrings.immutableValue().addExcl(parsedSubQueries);
         ImSet<String> params = paramObjects.keys().addExcl(parsedSubQueries.keys());
-        return new PreParsedStatement(command, params, safeStrings, mvNotSafeTypes.immutableValue(), isVolatileStats, envString.toString(), ensureTypes);
+        return new PreParsedStatement(command, params, safeStrings, mvNotSafeTypes.immutableValue(), isVolatileStats, envString.toString(), env.getEnsureTypes());
     }
 
     public String toString() {
@@ -132,14 +122,6 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         for(SQLQuery subQuery : subQueries.valueIt())
             result += subQuery.getLength();
         return result;
-    }
-
-    protected String getFullText() {
-        return CompiledQuery.translateParam(command, subQueries.mapValues(new GetValue<String, SQLQuery>() {
-            public String getMapValue(SQLQuery value) {
-                return value.getFullText();
-            }
-        }));
     }
 
     public abstract boolean isDML();

@@ -147,7 +147,7 @@ public abstract class LinkClass extends DataClass<String> {
     }
 
     @Override
-    public String formatString(String value) {
-        return value;
+    public boolean isFlex() {
+        return false;
     }
 }

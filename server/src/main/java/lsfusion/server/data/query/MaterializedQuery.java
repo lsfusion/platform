@@ -19,8 +19,8 @@ public class MaterializedQuery {
 
     public final Owner owner;
 
-    public String getParsedString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion, EnsureTypeEnvironment typeEnv) {
-        return "(SELECT " + mapFields + " FROM " + syntax.getQueryName(tableName, null, envString, usedRecursion, typeEnv) + ")";
+    public String getParsedString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+        return "(SELECT " + mapFields + " FROM " + syntax.getQueryName(tableName, null, envString, usedRecursion) + ")";
     }
 
     public static class Owner implements TableOwner {

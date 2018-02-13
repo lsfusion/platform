@@ -25,7 +25,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
@@ -109,6 +108,22 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
 
                 return reportManager.getReportData(groupId, toExcel, userPreferences);
+            }
+        });
+    }
+
+    public List<ReportPath> getReportPath(long requestIndex, long lastReceivedRequestIndex, final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences, final boolean useAuto) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<List<ReportPath>>() {
+            @Override
+            public List<ReportPath> call(ExecutionStack stack) throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("getReportPath Action. GroupID: %d", groupId));
+                }
+                
+                return useAuto ?
+                        reportManager.getAutoReportPathList(toExcel, groupId, userPreferences) :
+                        reportManager.getReportPathList(toExcel, groupId, userPreferences);
             }
         });
     }

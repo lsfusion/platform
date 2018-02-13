@@ -28,7 +28,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
     private ContainerType type = ContainerType.CONTAINERV;
 
-    public Alignment childrenAlignment = Alignment.START;
+    public Alignment childrenAlignment = Alignment.LEADING;
 
     public int columns = 4;
     
@@ -88,7 +88,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public boolean isVertical() {
-        return isLinearVertical() || isSplitVertical() || isColumns() || isScroll() || isTabbedPane();
+        return isLinearVertical() || isSplitVertical() || isColumns();
     }
     
     public boolean isHorizontal() {

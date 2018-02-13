@@ -66,14 +66,6 @@ public class GwtSharedUtils {
         return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat();
     }
 
-    public static DateTimeFormat getTimeFormat(String pattern) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultTimeFormat();
-    }
-
-    public static DateTimeFormat getDateTimeFormat(String pattern) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateTimeFormat();
-    }
-
     public static DateTimeFormat getDefaultDateFormat() {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
     }

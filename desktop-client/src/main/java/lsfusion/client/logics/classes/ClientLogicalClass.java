@@ -22,8 +22,16 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     }
 
     @Override
-    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
+    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
         return 25;
+    }
+
+    public String getMask() {
+        return "";
+    }
+
+    public Format getDefaultFormat() {
+        return null;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

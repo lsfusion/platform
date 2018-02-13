@@ -18,12 +18,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.base.ERunnable;
 import lsfusion.client.*;
-import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
-import lsfusion.client.report.ReportDialog;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
@@ -34,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.util.internal.NonReentrantLock;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -281,28 +278,13 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public Integer runReport(final ClientFormController formController, final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+    public Integer runReport(final List<ReportPath> reportPathList, final List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
-            public boolean hasCustomReports() throws RemoteException {
-                return !customReportPathList.isEmpty();
-            }
-            
-            @Override
-            public void invokeAddReport() throws RemoteException {
+            public void invokeEditReport(boolean useAuto) throws RemoteException {
                 assert Main.module.isFull();
                 try {
-                    Main.addReportPathList(customReportPathList, formSID);
-                } catch (Exception e) {
-                    throw new RuntimeException(getString("form.error.printing.form"), e);
-                }
-            }
-
-            @Override
-            public void invokeEditReport() throws RemoteException {
-                assert Main.module.isFull();
-                try {
-                    Main.editReportPathList(customReportPathList);
+                    Main.processReportPathList(useAuto ? autoReportPathList : reportPathList, useAuto);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
@@ -311,10 +293,15 @@ public class DockableMainFrame extends MainFrame {
             @Override
             public void invokeDeleteReport() throws RemoteException {
                 try {
-                    Main.deleteReportPathList(customReportPathList);
+                    Main.deleteReportPathList(reportPathList);
                 } catch (Exception e) {
                     throw new RuntimeException(getString("form.error.printing.form"), e);
                 }
+            }
+
+            @Override
+            public boolean hasCustomReports() throws RemoteException {
+                return !reportPathList.isEmpty();
             }
         });
     }
@@ -492,11 +479,8 @@ public class DockableMainFrame extends MainFrame {
                 JDialog dialog = new JDialog(DockableMainFrame.this);
                 Container contentPane = dialog.getContentPane();
                 contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-                contentPane.setPreferredSize(new Dimension(265, 100));
 
-                JLabel label = new JLabel(Main.getLogo());
-                label.setBorder(new EmptyBorder(10, 10, 10, 10));
-                contentPane.add(label);
+                contentPane.add(new JLabel(Main.getLogo()));
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
                 String text = Main.logicsDisplayName;
@@ -506,7 +490,7 @@ public class DockableMainFrame extends MainFrame {
                     text = "<html><b>" + text + "</b> powered by " + Main.LSFUSION_TITLE + "</html>";
                 }
                 JLabel labelName = new JLabel(text);
-                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, 12));
+                labelName.setFont(labelName.getFont().deriveFont(10));
                 contentPane.add(labelName);
 
                 dialog.setTitle(about.getText());

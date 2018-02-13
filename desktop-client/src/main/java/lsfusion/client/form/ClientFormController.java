@@ -7,6 +7,7 @@ import com.google.common.collect.Table;
 import lsfusion.base.*;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
+import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
@@ -132,6 +133,33 @@ public class ClientFormController implements AsyncListener {
 
     private boolean selected = true;
 
+    private EditReportInvoker editReportInvoker = new EditReportInvoker() {
+        @Override
+        public void invokeEditReport(final boolean useAuto) {
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    runEditReport(useAuto);
+                }
+            });
+        }
+
+        @Override
+        public void invokeDeleteReport() throws RemoteException {
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    runDeleteReport();
+                }
+            });
+        }
+
+        @Override
+        public boolean hasCustomReports() throws RemoteException {
+            return hasCustomReportsAction();
+        }
+    };
+
     private ScheduledExecutorService autoRefreshScheduler;
 
     public ClientFormController(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, ClientNavigator clientNavigator) {
@@ -214,10 +242,6 @@ public class ClientFormController implements AsyncListener {
     
     public DispatcherListener getDispatcherListener() { 
         return rmiQueue;
-    }
-
-    public RemoteFormInterface getRemoteForm() {
-        return remoteForm;
     }
     
     public void activateTab(ClientComponent component) {
@@ -1369,14 +1393,62 @@ public class ClientFormController implements AsyncListener {
         remoteForm = null;
     }
 
-    public void runEditReport(List<ReportPath> customReportPathList) {
+    public void runEditReport(final boolean useAuto) {
         assert Main.module.isFull();
 
         try {
-            Main.editReportPathList(customReportPathList);
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runEditReport") {
+                @Override
+                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), useAuto);
+                }
+
+                @Override
+                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
+                    Main.processReportPathList(reportPathList, useAuto);
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException(getString("form.error.printing.form"), e);
         }
+    }
+
+    public void runDeleteReport() {
+        try {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<List<ReportPath>>("runDeleteReport") {
+                @Override
+                protected List<ReportPath> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    return remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false);
+                }
+
+                @Override
+                public void onResponse(long requestIndex, List<ReportPath> reportPathList) throws Exception {
+                    Main.deleteReportPathList(reportPathList);
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.printing.form"), e);
+        }
+    }
+
+    public boolean hasCustomReportsAction() {
+        final HasCustomReports hasCustomReports = new HasCustomReports();
+        try {
+            rmiQueue.syncRequest(new RmiCheckNullFormRequest<Void>("hasCustomReports") {
+                @Override
+                protected Void doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                    hasCustomReports.result = remoteForm.getReportPath(requestIndex, lastReceivedRequestIndex, false, null, getUserPreferences(), false).isEmpty();
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(getString("form.error.printing.form"), e);
+        }
+        return hasCustomReports.result;
+    }
+
+    private class HasCustomReports {
+        public boolean result;
     }
 
     public void runSingleGroupReport(final GroupObjectController groupController) {

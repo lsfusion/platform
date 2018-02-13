@@ -19,6 +19,7 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
+import org.springframework.util.FileCopyUtils;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -50,8 +51,7 @@ public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
-    public static final String DEFAULT_ICON_PATH = "/images/logo/";
-    public static final String DEFAULT_LOGO_PATH = DEFAULT_ICON_PATH + "logo.png";
+    public static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
 
     public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 
@@ -437,19 +437,20 @@ public class Main {
         });
     }
 
-    public static List<Image> getMainIcons() {
-        Set<Image> images = new LinkedHashSet<>();
-        // для обратной совместимости пока оставил, как было. но похоже, надо вырезать свойство lsfusion.client.logo
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_256.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_64.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_48.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_32.png").getImage());
-        images.add(loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_ICON_PATH + "icon_16.png").getImage());
-        return new ArrayList<>(images);
+    public static int generateNewID() {
+        try {
+            return remoteLogics.generateNewID();
+        } catch (RemoteException e) {
+            throw new RuntimeException(getString("client.error.on.id.generation"));
+        }
+    }
+
+    public static ImageIcon getMainIcon() {
+        return loadResource(logicsMainIcon, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     public static ImageIcon getLogo() {
-        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_LOGO_PATH);
+        return loadResource(logicsLogo, LSFUSION_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {
@@ -575,28 +576,31 @@ public class Main {
             currentForm = null;
     }
 
-    public static void addReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
-        Main.remoteLogics.saveCustomReportPathList(formSID);
-        editReportPathList(reportPathList);
-    }
-    public static void editReportPathList(List<ReportPath> reportPathList) throws IOException {
-        for (ReportPath reportPath : reportPathList) {
-            Desktop.getDesktop().open(new File(reportPath.customPath));
+    public static void processReportPathList(List<ReportPath> reportPathList, boolean useAuto) throws IOException {
+        if (reportPathList != null) {
+            for (ReportPath reportPath : reportPathList) {
+                if(useAuto) {
+                    new File(reportPath.customPath).getParentFile().mkdirs();
+                    FileCopyUtils.copy(new File(reportPath.autoPath), new File(reportPath.customPath));
+                }
+                Desktop.getDesktop().open(new File(reportPath.customPath));
+            }
+            // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
+            new SavingThread(reportPathList).start();
         }
-        // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-        new SavingThread(reportPathList).start();
     }
 
-    public static void deleteReportPathList(List<ReportPath> reportPathList) {
-        for (ReportPath reportPath : reportPathList) {
-            File customFile = new File(reportPath.customPath);
-            if(!customFile.delete())
-                customFile.deleteOnExit();
-            File targetFile = new File(reportPath.targetPath);
-            if(!targetFile.delete())
-                targetFile.deleteOnExit();
+    public static void deleteReportPathList(List<ReportPath> reportPathList) throws IOException {
+        if (reportPathList != null) {
+            for (ReportPath reportPath : reportPathList) {
+                File customFile = new File(reportPath.customPath);
+                if(!customFile.delete())
+                    customFile.deleteOnExit();
+                File targetFile = new File(reportPath.targetPath);
+                if(!targetFile.delete())
+                    targetFile.deleteOnExit();
+            }
         }
-        reportPathList.clear();
     }
 
     private static void clean() {

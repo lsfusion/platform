@@ -5,13 +5,13 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.client.EditReportInvoker;
-import lsfusion.client.report.ReportViewer;
+import lsfusion.client.ReportViewer;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.swing.JRViewer;
+import net.sf.jasperreports.view.JRViewer;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;

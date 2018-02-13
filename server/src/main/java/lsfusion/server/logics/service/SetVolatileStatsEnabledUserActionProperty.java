@@ -7,6 +7,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class SetVolatileStatsEnabledUserActionProperty extends ScriptingActionProperty {
 
-    public SetVolatileStatsEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+    public SetVolatileStatsEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
     }
 

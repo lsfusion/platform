@@ -51,8 +51,8 @@ public class BaseClass extends AbstractCustomClass {
         this.fullTables = fullTables;
     }
 
-    public BaseClass(String canonicalName, LocalizedString caption, Version version) {
-        super(canonicalName, caption, version);
+    public BaseClass(String sID, LocalizedString caption, Version version) {
+        super(sID, caption, version);
         unknown = new UnknownClass(this);
     }
 
@@ -90,8 +90,8 @@ public class BaseClass extends AbstractCustomClass {
         return mAllClasses.immutable();
     }
 
-    public void initObjectClass(Version version, String canonicalName) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, this);
+    public void initObjectClass(Version version, String sid) { // чтобы сохранить immutability классов
+        objectClass = new ConcreteCustomClass(sid, LocalizedString.create("{classes.object.class}"), version, this);
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
@@ -113,7 +113,7 @@ public class BaseClass extends AbstractCustomClass {
         // baseClass'у и baseClass.objectClass'у нужны ID сразу потому как учавствуют в addObject
         ID = 0L;
 
-        objectClass.ID = Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
+        objectClass.ID = (long)Long.MAX_VALUE - 5; // в явную обрабатываем objectClass
 
         if(migrateObjectClassID)
             migrateObjectClassID(session.sql);
@@ -122,9 +122,9 @@ public class BaseClass extends AbstractCustomClass {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
             staticCaption.change(objectClass.caption.getSourceString(), session, classObject);
-            staticName.change(objectClass.getSID(), session, classObject);
+            staticName.change(objectClass.sID, session, classObject);
         }
-        usedSIds.put(objectClass.getSID(), objectClass);
+        usedSIds.put(objectClass.sID, objectClass);
         usedIds.add(objectClass.ID);
 
         Map<DataObject, String> modifiedSIDs = new HashMap<>();

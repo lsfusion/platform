@@ -53,7 +53,7 @@ public class PropertyController {
 
         extView = property.externalScreen == null ? null : new ExternalScreenComponent();
 
-        viewsPanel = new JComponentPanel(false, Alignment.START);
+        viewsPanel = new JComponentPanel(false, Alignment.LEADING);
     }
 
     public boolean forceEdit() {

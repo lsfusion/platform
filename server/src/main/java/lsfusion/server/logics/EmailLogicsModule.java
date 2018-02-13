@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -12,6 +13,7 @@ import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.mail.AttachmentFormat;
 import lsfusion.server.mail.SendEmailActionProperty;
@@ -64,6 +66,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(EmailLogicsModule.class.getResourceAsStream("/lsfusion/system/Email.lsf"), "/lsfusion/system/Email.lsf", baseLM, BL);
+        setBaseLogicsModule(baseLM);
     }
 
     @Override

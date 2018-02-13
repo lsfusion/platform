@@ -9,8 +9,8 @@ import java.io.IOException;
 public class PanelNavigatorWindow extends NavigatorWindow {
     public int orientation;
 
-    public PanelNavigatorWindow(String canonicalName, LocalizedString caption, int orientation) {
-        super(canonicalName, caption);
+    public PanelNavigatorWindow(int orientation, String sid, LocalizedString caption) {
+        super(sid, caption);
         this.orientation = orientation;
     }
 

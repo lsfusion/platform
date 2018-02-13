@@ -21,20 +21,20 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
     public float alignmentY = JToolBar.TOP_ALIGNMENT;
     public float alignmentX = JToolBar.LEFT_ALIGNMENT;
 
-    public ToolBarNavigatorWindow(int type, String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
-        super(canonicalName, caption, x, y, width, height);
+    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption, int x, int y, int width, int height) {
+        super(sID, caption, x, y, width, height);
 
         setType(type);
     }
 
-    public ToolBarNavigatorWindow(int type, String canonicalName, LocalizedString caption, String borderConstraint) {
-        super(canonicalName, caption, borderConstraint);
+    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption, String borderConstraint) {
+        super(sID, caption, borderConstraint);
 
         setType(type);
     }
 
-    public ToolBarNavigatorWindow(int type, String canonicalName, LocalizedString caption) {
-        super(canonicalName, caption);
+    public ToolBarNavigatorWindow(int type, String sID, LocalizedString caption) {
+        super(sID, caption);
 
         setType(type);
     }

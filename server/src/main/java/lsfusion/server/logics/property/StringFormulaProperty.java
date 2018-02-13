@@ -18,16 +18,12 @@ import lsfusion.server.session.PropertyChanges;
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
     private final CustomFormulaSyntax formula;
-    private final boolean hasNotNull;
-    
-    public static String getParamName(String prmID) {
-        return "prm" + prmID;
-    }
+    private final boolean hasNotNull; 
 
     public static class Interface extends PropertyInterface {
 
         private String getString() {
-            return getParamName(String.valueOf(ID+1));
+            return "prm"+(ID+1);
         }
 
         public Interface(int ID) {

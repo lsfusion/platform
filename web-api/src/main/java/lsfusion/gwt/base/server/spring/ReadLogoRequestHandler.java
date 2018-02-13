@@ -27,8 +27,8 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
             blProvider.invalidate();
         }
         if(logo == null)
-            logo = IOUtils.toByteArray(context.getResourceAsStream("images/logo.png"));
-        response.setContentType("image/jpg");
+            logo = IOUtils.toByteArray(context.getResourceAsStream("/splash.jpg"));
+        response.setContentType("application/jpg");
         response.addHeader("Content-Disposition", "attachment; filename=logo.jpg");
         response.getOutputStream().write(logo);
     }

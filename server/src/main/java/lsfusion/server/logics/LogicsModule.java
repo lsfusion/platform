@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
@@ -14,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -24,7 +26,6 @@ import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -74,6 +75,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
+import static lsfusion.server.logics.ElementCanonicalNameUtils.createCanonicalName;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
@@ -83,6 +85,15 @@ public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
 
     protected static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+
+    public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
+        List<ResolveClassSet> classSets;
+        classSets = new ArrayList<>();
+        for (ValueClass cls : classes) {
+            classSets.add(cls.getResolveSet());
+        }
+        return classSets;
+    }
 
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
@@ -101,20 +112,33 @@ public abstract class LogicsModule {
 
     public String getErrorsDescription() { return "";}
 
+    // Используется для всех элементов системы кроме свойств и действий
+    public String transformNameToSID(String name) {
+        return transformNameToSID(getNamespace(), name);
+    }
+
+    public static String transformNameToSID(String modulePrefix, String name) {
+        if (modulePrefix == null) {
+            return name;
+        } else {
+            return modulePrefix + "_" + name;
+        }
+    }
+
     public BaseLogicsModule<?> baseLM;
 
-    protected Map<String, List<LCP<?>>> namedProperties = new HashMap<>();
-    protected Map<String, List<LAP<?>>> namedActions = new HashMap<>();
+    protected Map<String, List<LCP<?>>> namedModuleProperties = new HashMap<>();
+    protected Map<String, List<LAP<?>>> namedModuleActions = new HashMap<>();
     
-    protected final Map<String, AbstractGroup> groups = new HashMap<>();
-    protected final Map<String, CustomClass> classes = new HashMap<>();
+    protected final Map<String, AbstractGroup> moduleGroups = new HashMap<>();
+    protected final Map<String, CustomClass> moduleClasses = new HashMap<>();
     protected final Map<String, AbstractWindow> windows = new HashMap<>();
-    protected final Map<String, NavigatorElement> navigatorElements = new HashMap<>();
-    protected final Map<String, FormEntity> namedForms = new HashMap<>();
-    protected final Map<String, ImplementTable> tables = new HashMap<>();
+    protected final Map<String, NavigatorElement> moduleNavigators = new HashMap<>();
+    protected final Map<String, FormEntity> namedModuleForms = new HashMap<>();
+    protected final Map<String, ImplementTable> moduleTables = new HashMap<>();
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
-    private final Set<FormEntity> unnamedForms = new HashSet<>();
+    private final Set<FormEntity> privateForms = new HashSet<>();
     
     public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
@@ -148,10 +172,6 @@ public abstract class LogicsModule {
         this.name = name;
     }
 
-    protected String elementCanonicalName(String name) {
-        return CanonicalNameUtils.createCanonicalName(getNamespace(), name);
-    }
-    
     public String getLogName(int moduleCount, int orderNum) {
         String result = name;
         if(order != null)
@@ -164,11 +184,11 @@ public abstract class LogicsModule {
     }
 
     public Iterable<LCP<?>> getNamedProperties() {
-        return Iterables.concat(namedProperties.values());
+        return Iterables.concat(namedModuleProperties.values());
     }
 
     public Iterable<LAP<?>> getNamedActions() {
-        return Iterables.concat(namedActions.values());
+        return Iterables.concat(namedModuleActions.values());
     }
 
     public Iterable<LP<?, ?>> getNamedPropertiesAndActions(String name) {
@@ -176,11 +196,11 @@ public abstract class LogicsModule {
     }
     
     public Iterable<LCP<?>> getNamedProperties(String name) {
-        return createEmptyIfNull(namedProperties.get(name));
+        return createEmptyIfNull(namedModuleProperties.get(name));
     }
 
     public Iterable<LAP<?>> getNamedActions(String name) {
-        return createEmptyIfNull(namedActions.get(name));
+        return createEmptyIfNull(namedModuleActions.get(name));
     }
     
     private <T extends LP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
@@ -191,34 +211,43 @@ public abstract class LogicsModule {
         }
     }
     
+    // todo [dale]: разобраться с использованием этого метода, здесь предполагается единственность свойства с определенным именем
+    protected LCP<?> getLCPByName(String name) {
+        List<LCP<?>> result = namedModuleProperties.get(name);
+        assert result.size() == 1;
+        return result.get(0);
+    }
+
     protected void addModuleLP(LP<?, ?> lp) {
         String name = lp.property.getName();
-        assert name != null;
-
-        if (lp instanceof LAP) {
-            putLPToMap(namedActions, (LAP) lp);
-        } else if (lp instanceof LCP) {
-            putLPToMap(namedProperties, (LCP)lp);
-        } else {
-            assert false;
+        if (name != null) {
+            if (lp instanceof LAP) {
+                putLPToMap(namedModuleActions, (LAP) lp);
+            } else if (lp instanceof LCP) {
+                putLPToMap(namedModuleProperties, (LCP)lp);
+            } else {
+                assert false;
+            }
         }
     }
 
     private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp) {
         String name = lp.property.getName();
-        if (!moduleMap.containsKey(name)) {
-            moduleMap.put(name, new ArrayList<T>());
+        if (name != null) { // todo [dale]: что это за странный случай?
+            if (!moduleMap.containsKey(name)) {
+                moduleMap.put(name, new ArrayList<T>());
+            }
+            moduleMap.get(name).add(lp);
         }
-        moduleMap.get(name).add(lp);
     }
     
     protected void removeModuleProperty(LCP<?> lp) {
         String name = lp.property.getName();
         if (name != null) {
-            if (namedProperties.containsKey(name)) {
-                namedProperties.get(name).remove(lp);
-                if (namedProperties.get(name).isEmpty()) {
-                    namedProperties.remove(name);
+            if (namedModuleProperties.containsKey(name)) {
+                namedModuleProperties.get(name).remove(lp);
+                if (namedModuleProperties.get(name).isEmpty()) {
+                    namedModuleProperties.remove(name);
                 }
             }
         }
@@ -235,54 +264,75 @@ public abstract class LogicsModule {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
 
-    public AbstractGroup getGroup(String name) {
-        return groups.get(name);
+    protected AbstractGroup getGroupBySID(String sid) {
+        return moduleGroups.get(sid);
     }
 
-    protected void addGroup(AbstractGroup group) {
-        assert !groups.containsKey(group.getName());
-        groups.put(group.getName(), group);
+    public AbstractGroup getGroup(String name) {
+        return getGroupBySID(transformNameToSID(name));
+    }
+
+    protected void addModuleGroup(AbstractGroup group) {
+        assert !moduleGroups.containsKey(group.getSID());
+        moduleGroups.put(group.getSID(), group);
+    }
+
+    protected CustomClass getClassBySID(String sid) {
+        return moduleClasses.get(sid);
     }
 
     public CustomClass getClass(String name) {
-        return classes.get(name);
+        return getClassBySID(transformNameToSID(name));
     }
 
     protected void addModuleClass(CustomClass valueClass) {
-        assert !classes.containsKey(valueClass.getName());
-        classes.put(valueClass.getName(), valueClass);
+        assert !moduleClasses.containsKey(valueClass.getSID());
+        moduleClasses.put(valueClass.getSID(), valueClass);
+    }
+
+    protected ImplementTable getTableBySID(String sid) {
+        return moduleTables.get(sid);
     }
 
     public ImplementTable getTable(String name) {
-        return tables.get(name);
+        return getTableBySID(transformNameToSID(name));
     }
 
     protected void addModuleTable(ImplementTable table) {
-        // В классе Table есть метод getName(), который используется для других целей, в частности
-        // в качестве имени таблицы в базе данных, поэтому пока приходится использовать отличный от
-        // остальных элементов системы способ получения простого имени 
-        String name = CanonicalNameUtils.getName(table.getCanonicalName());
-        assert !tables.containsKey(name);
-        tables.put(name, table);
+        assert !moduleTables.containsKey(table.getName());
+        moduleTables.put(table.getName(), table);
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {
-        assert !windows.containsKey(window.getName());
-        windows.put(window.getName(), window);
+        assert !windows.containsKey(window.getSID());
+        windows.put(window.getSID(), window);
         return window;
     }
 
+    protected <T extends AbstractWindow> T addWindow(String name, T window) {
+        window.setSID(transformNameToSID(name));
+        return addWindow(window);
+    }
+
     public AbstractWindow getWindow(String name) {
-        return windows.get(name);
+        return getWindowBySID(transformNameToSID(name));
+    }
+
+    protected AbstractWindow getWindowBySID(String sid) {
+        return windows.get(sid);
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
-        return metaCodeFragments.get(new Pair<>(name, paramCnt));
+        return getMetaCodeFragmentBySID(transformNameToSID(name), paramCnt);
     }
 
-    protected void addMetaCodeFragment(MetaCodeFragment fragment) {
-        assert !metaCodeFragments.containsKey(new Pair<>(fragment.getName(), fragment.parameters.size()));
-        metaCodeFragments.put(new Pair<>(fragment.getName(), fragment.parameters.size()), fragment);
+    protected MetaCodeFragment getMetaCodeFragmentBySID(String sid, int paramCnt) {
+        return metaCodeFragments.get(new Pair<>(sid, paramCnt));
+    }
+
+    protected void addMetaCodeFragment(String name, MetaCodeFragment fragment) {
+        assert !metaCodeFragments.containsKey(new Pair<>(transformNameToSID(name), fragment.parameters.size()));
+        metaCodeFragments.put(new Pair<>(transformNameToSID(name), fragment.parameters.size()), fragment);
     }
 
     // aliases для использования внутри иерархии логических модулей
@@ -306,6 +356,10 @@ public abstract class LogicsModule {
 
     protected void initBaseClassAliases() {
         this.baseClass = baseLM.baseClass;
+    }
+
+    protected AbstractGroup addAbstractGroup(String name, LocalizedString caption) {
+        return addAbstractGroup(name, caption, null);
     }
 
     public FunctionSet<Version> visible;
@@ -333,7 +387,7 @@ public abstract class LogicsModule {
     }
 
     protected AbstractGroup addAbstractGroup(String name, LocalizedString caption, AbstractGroup parent, boolean toCreateContainer) {
-        AbstractGroup group = new AbstractGroup(elementCanonicalName(name), caption);
+        AbstractGroup group = new AbstractGroup(transformNameToSID(name), caption);
         Version version = getVersion();
         if (parent != null) {
             parent.add(group, version);
@@ -342,7 +396,7 @@ public abstract class LogicsModule {
                 baseLM.privateGroup.add(group, version);
         }
         group.createContainer = toCreateContainer;
-        addGroup(group);
+        addModuleGroup(group);
         return group;
     }
 
@@ -350,8 +404,8 @@ public abstract class LogicsModule {
         addModuleClass(customClass);
     }
 
-    protected BaseClass addBaseClass(String canonicalName, LocalizedString caption) {
-        BaseClass baseClass = new BaseClass(canonicalName, caption, getVersion());
+    protected BaseClass addBaseClass(String sID, LocalizedString caption) {
+        BaseClass baseClass = new BaseClass(sID, caption, getVersion());
         storeCustomClass(baseClass);
         return baseClass;
     }
@@ -378,24 +432,21 @@ public abstract class LogicsModule {
 
     protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, List<String> objNames, List<LocalizedString> objCaptions, CustomClass... parents) {
         assert parents.length > 0;
-        ConcreteCustomClass customClass = new ConcreteCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
+        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, getVersion(), parents);
         customClass.addStaticObjects(objNames, objCaptions, getVersion());
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
+        AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, getVersion(), parents);
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
-        String canonicalName = elementCanonicalName(name);
-        ImplementTable table = baseLM.tableFactory.include(CanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
-        table.setCanonicalName(canonicalName);
+        ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), getVersion(), classes);
         addModuleTable(table);
-        
         if(isFull) {
             if(classes.length == 1)
                 table.markedFull = true;
@@ -413,7 +464,7 @@ public abstract class LogicsModule {
 //        addProperty(null, lcp);
 
         // делаем public, persistent
-        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), ClassCanonicalNameUtils.getResolveList(classes));
+        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), getResolveList(classes));
         addPersistent(lcp, table);
 
         // помечаем fullField из помеченного свойства
@@ -534,11 +585,11 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
         return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, boolean removeNulls, Object... params) {
+    protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         CalcPropertyMapImplement printer = hasPrinterProperty ? (CalcPropertyMapImplement) readImplements.get(0) : null;
-        return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, printer, listInterfaces, baseLM.formPageCount, removeNulls)));
+        return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, targetProp, printer, listInterfaces, baseLM.formPageCount)));
     }
     protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
@@ -558,54 +609,6 @@ public abstract class LogicsModule {
 
         return addAProp(new ChangeClassActionProperty<>(cls, false, innerInterfaces.getSet(),
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));
-    }
-
-    // ------------------- Export property action ----------------- //
-
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, final ImList<Type> types,
-                                         LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, String charset, Object... params) {
-        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
-        final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
-        ImMap<String, CalcPropertyInterfaceImplement<PropertyInterface>> aliasesExprs = aliases.mapOrderValues(new GetIndex<CalcPropertyInterfaceImplement<PropertyInterface>>() {
-            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
-                return exprs.get(i);
-            }
-        });
-        ImMap<String, Type> aliasesTypes = aliases.mapOrderValues(new GetIndex<Type>() {
-            public Type getMapValue(int i) {
-                return types.get(i);
-            }
-        });
-
-        ExtendContextActionProperty exportAction;
-        if (type == FormExportType.CSV)
-            exportAction = new ExportCSVDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, separator, noHeader, charset);
-        else if (type == FormExportType.DBF)
-            exportAction = new ExportDBFDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, charset);
-        else if (type == FormExportType.JSON)
-            exportAction = new ExportJSONDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, hasListOption);
-        else if (type == FormExportType.XML)
-            exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, hasListOption);
-        else if (type == FormExportType.TABLE)
-            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, false);
-        else
-            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
-                conditional ? readImplements.get(readImplements.size() - 1) : null, targetProp, true);
-
-
-        return addProperty(null, new LAP(exportAction));
     }
 
     // ------------------- Set property action ----------------- //
@@ -1377,16 +1380,27 @@ public abstract class LogicsModule {
     } 
 
     public static String getLogPropertyCN(LCP lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
-        String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-        String name = getLogPropertyName(namespace, lp.property.getName());
+        String name = "";
+        try {
+            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+            name = getLogPropertyName(namespace, lp.property.getName());
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
 
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         return PropertyCanonicalNameUtils.createName(logNamespace, name, signature);
     }
 
     private static String getLogPropertyName(LCP lp, boolean drop) {
-        String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-        return getLogPropertyName(namespace, lp.property.getName(), drop);
+        String name = "";
+        try {
+            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+            name = getLogPropertyName(namespace, lp.property.getName(), drop);
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
+        return name;
     }
 
     private static String getLogPropertyName(String namespace, String name) {
@@ -1516,12 +1530,12 @@ public abstract class LogicsModule {
 
     // ------------------- OPEN FILE ----------------- //
 
-    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp, boolean syncType) {
+    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp) {
         List<ValueClass> valueClasses = new ArrayList<>();
         valueClasses.add(prop);
         if(nameProp != null)
             valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), syncType, valueClasses.toArray(new ValueClass[valueClasses.size()]))));
+        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- SAVE FILE ----------------- //
@@ -1537,8 +1551,8 @@ public abstract class LogicsModule {
 
     // ------------------- EVAL ----------------- //
 
-    public LAP addEvalAProp(LCP<?> scriptSource, List<LCP<?>> params) {
-        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource, params));
+    public LAP addEvalAProp(LCP<?> scriptSource) {
+        return addAProp(null, new EvalActionProperty(LocalizedString.NONAME, scriptSource));
     }
 
     // ------------------- DRILLDOWN ----------------- //
@@ -1567,9 +1581,14 @@ public abstract class LogicsModule {
 
     private String nameForDrillDownAction(CalcProperty property, List<ResolveClassSet> signature) {
         assert property.isNamed();
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-        String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
-        signature.addAll(parser.getSignature());
+        String name = null;
+        try {
+            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+            name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+            signature.addAll(parser.getSignature());
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
         return name;
     }
 
@@ -1606,6 +1625,34 @@ public abstract class LogicsModule {
         return baseLM.getIsActiveFormProperty();
     }
 
+    public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
+        return new AnyValuePropertyHolder(
+                getLCPByName(sidPrefix + "Object"),
+                getLCPByName(sidPrefix + "String"),
+                getLCPByName(sidPrefix + "Text"),
+                getLCPByName(sidPrefix + "Integer"),
+                getLCPByName(sidPrefix + "Long"),
+                getLCPByName(sidPrefix + "Double"),
+                getLCPByName(sidPrefix + "Numeric"),
+                getLCPByName(sidPrefix + "Year"),
+                getLCPByName(sidPrefix + "DateTime"),
+                getLCPByName(sidPrefix + "Logical"),
+                getLCPByName(sidPrefix + "Date"),           
+                getLCPByName(sidPrefix + "Time"),
+                getLCPByName(sidPrefix + "Color"),
+                getLCPByName(sidPrefix + "WordFile"),
+                getLCPByName(sidPrefix + "ImageFile"),
+                getLCPByName(sidPrefix + "PdfFile"),
+                getLCPByName(sidPrefix + "CustomFile"),
+                getLCPByName(sidPrefix + "ExcelFile"),
+                getLCPByName(sidPrefix + "WordLink"),
+                getLCPByName(sidPrefix + "ImageLink"),
+                getLCPByName(sidPrefix + "PdfLink"),
+                getLCPByName(sidPrefix + "CustomLink"),
+                getLCPByName(sidPrefix + "ExcelLink")
+        );
+    }
+
     // ---------------------- VALUE ---------------------- //
 
     public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
@@ -1622,7 +1669,7 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<T, PropertyInterface> conditionalPart = (CalcPropertyMapImplement<T, PropertyInterface>)
                 (conditional ? readImplements.get(resInterfaces + (resultExists ? 1 : 0)) : null);
 
-        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
+        return addAProp(null, new AddObjectActionProperty(cls, innerInterfaces.getSet(), (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), conditionalPart, resultPart, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false, autoSet));
     }
 
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj, CustomClass explicitClass) {
@@ -1883,10 +1930,10 @@ public abstract class LogicsModule {
     }
 
     protected void addConstraint(LCP<?> lp, LCP<?> messageLP, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
-        if(!(lp.property).noDB())
+        if(!((CalcProperty)lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
-        setConstraint(lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugPoint);
+        setConstraint((CalcProperty) lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugPoint);
     }
 
     public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty messageProperty, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties, DebugInfo.DebugPoint debugPoint) {
@@ -1897,9 +1944,11 @@ public abstract class LogicsModule {
         property.checkProperties = checkProperties;
 
         ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
-//            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
-        //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null, true).property.getImplement();
+        if(Settings.get().isUseOldConstraints())
+            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
+        else
+            //  PRINT OUT property MESSAGE NOWAIT;
+            logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), false, FormPrintType.MESSAGE, false, 30, null).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
@@ -1929,7 +1978,7 @@ public abstract class LogicsModule {
     }
 
     public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionPropertyMapImplement<?, P> actionProperty, CalcPropertyMapImplement<?, P> whereImplement, ImOrderMap<CalcPropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, DebugInfo.DebugPoint debugPoint) {
-        if(!(whereImplement.property).noDB())
+        if(!((CalcProperty)whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
         ActionProperty<? extends PropertyInterface> action =
@@ -2060,49 +2109,59 @@ public abstract class LogicsModule {
 
     protected NavigatorElement addNavigatorFolder(String canonicalName, LocalizedString caption) {
         NavigatorElement elem = new NavigatorFolder(canonicalName, caption);
-        addNavigatorElement(elem);
+        addModuleNavigator(elem);
         return elem;
     }
 
     protected NavigatorAction addNavigatorAction(LAP<?> property, String canonicalName, LocalizedString caption) {
         NavigatorAction navigatorAction = new NavigatorAction(property.property, canonicalName, caption);
-        addNavigatorElement(navigatorAction);
+        addModuleNavigator(navigatorAction);
         return navigatorAction;
     }
 
     protected NavigatorForm addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
         NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
-        addNavigatorElement(navigatorForm);
+        addModuleNavigator(navigatorForm);
         return navigatorForm;
     }
     
-    public Collection<NavigatorElement> getNavigatorElements() {
-        return navigatorElements.values();
+    public Collection<NavigatorElement> getModuleNavigators() {
+        return moduleNavigators.values();
     }
 
     public Collection<FormEntity> getModuleForms() {
-        return namedForms.values();
+        return namedModuleForms.values();
     } 
     
     // в том числе и приватные 
     public Collection<FormEntity> getAllModuleForms() {
         List<FormEntity> elements = new ArrayList<>();
-        elements.addAll(unnamedForms);
-        elements.addAll(namedForms.values());
+        elements.addAll(privateForms);
+        elements.addAll(namedModuleForms.values());
         return elements;
     }
     
     public NavigatorElement getNavigatorElement(String name) {
-        return navigatorElements.get(name);
+        String canonicalName = createCanonicalName(getNamespace(), name);
+        return getNavigatorElementByCanonicalName(canonicalName);
     }
 
     public FormEntity getForm(String name) {
-        return namedForms.get(name);
+        String canonicalName = createCanonicalName(getNamespace(), name);
+        return namedModuleForms.get(canonicalName);
+    }
+    
+    private NavigatorElement getNavigatorElementByCanonicalName(String canonicalName) {
+        return moduleNavigators.get(canonicalName);
+    }
+
+    private FormEntity getFormByCanonicalName(String canonicalName) {
+        return namedModuleForms.get(canonicalName);
     }
     
     public <T extends FormEntity> T addFormEntity(T form) {
         if (form.isNamed()) {
-            addNamedForm(form);
+            addModuleForm(form);
         } else {
             addPrivateForm(form);
         }
@@ -2110,20 +2169,20 @@ public abstract class LogicsModule {
     }
     
     @NFLazy
-    private void addNavigatorElement(NavigatorElement element) {
-        assert !navigatorElements.containsKey(element.getName());
-        navigatorElements.put(element.getName(), element);
+    private void addModuleNavigator(NavigatorElement element) {
+        assert !moduleNavigators.containsKey(element.getCanonicalName());
+        moduleNavigators.put(element.getCanonicalName(), element);
     }
 
     @NFLazy
-    private void addNamedForm(FormEntity form) {
-        assert !namedForms.containsKey(form.getName());
-        namedForms.put(form.getName(), form);
+    private void addModuleForm(FormEntity form) {
+        assert !namedModuleForms.containsKey(form.getCanonicalName());
+        namedModuleForms.put(form.getCanonicalName(), form);
     }
     
     @NFLazy
     private void addPrivateForm(FormEntity form) {
-        unnamedForms.add(form);
+        privateForms.add(form);
     }
     
     public void addObjectActions(FormEntity form, ObjectEntity object) {
@@ -2279,39 +2338,39 @@ public abstract class LogicsModule {
         return namespaceToModules;
     }
 
-    public LP<?, ?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findProperty(compoundName, params);
+    public LP<?, ?> resolveProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findProperty(name, params);
     }
 
-    public LP<?, ?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findAbstractProperty(compoundName, params, prioritizeNotEquals);
+    public LP<?, ?> resolveAbstractProperty(String name, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findAbstractProperty(name, params, prioritizeNotEquals);
     }
 
-    public ValueClass resolveClass(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findClass(compoundName);
+    public ValueClass resolveCustomClass(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findCustomClass(name);
     }
 
-    public MetaCodeFragment resolveMetaCodeFragment(String compoundName, int paramCnt) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findMetaCodeFragment(compoundName, paramCnt);
+    public MetaCodeFragment resolveMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findMetaCodeFragment(name, paramCnt);
     }
     
-    public AbstractGroup resolveGroup(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findGroup(compoundName);
+    public AbstractGroup resolveGroup(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findGroup(name);
     }
     
-    public AbstractWindow resolveWindow(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findWindow(compoundName);    
+    public AbstractWindow resolveWindow(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findWindow(name);    
     }
     
-    public FormEntity resolveForm(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findForm(compoundName);
+    public FormEntity resolveForm(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findForm(name);
     }
     
-    public NavigatorElement resolveNavigatorElement(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findNavigatorElement(compoundName);
+    public NavigatorElement resolveNavigatorElement(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findNavigatorElement(name);
     } 
     
-    public ImplementTable resolveTable(String compoundName) throws ResolvingErrors.ResolvingError {
-        return resolveManager.findTable(compoundName);
+    public ImplementTable resolveTable(String name) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findTable(name);
     }
 }

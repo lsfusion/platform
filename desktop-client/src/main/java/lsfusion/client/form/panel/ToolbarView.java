@@ -14,7 +14,7 @@ public class ToolbarView extends JComponentPanel {
     private JPanel mainPanel;
 
     public ToolbarView(ClientToolbar toolbar) {
-        setLayout(new FlexLayout(this, false, Alignment.START));
+        setLayout(new FlexLayout(this, false, Alignment.LEADING));
         initBottomContainer();
         toolbar.installMargins(this);
     }

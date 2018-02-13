@@ -187,9 +187,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         businessLogics.updateStats(sql, false);
     }
 
-    public SQLSyntax getSyntax() {
-        return adapter.syntax;
-    }
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(adapter, "adapter must be specified");
@@ -204,7 +201,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
         try {
-            if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
+            if(adapter.getSyntaxType() == SQLSyntaxType.MSSQL)
                 Expr.useCasesCount = 5;
 
             startLogger.info("Synchronizing DB.");
@@ -665,7 +662,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             adapter.ensureScript("jumpWorkdays.sc", props);
         }
 
-        SQLSyntax syntax = getSyntax();
+        SQLSyntax syntax = adapter;
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
@@ -1296,7 +1293,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void ensureLogLevel() {
-        getSyntax().setLogLevel(Settings.get().getLogLevelJDBC());
+        adapter.ensureLogLevel(Settings.get().getLogLevelJDBC());
     }
 
     public interface RunServiceData {
@@ -1536,7 +1533,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         String oldName = oldProperty.getDBName();
         if (!oldName.equals(newName)) {
             startLogger.info("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
-            sql.renameColumn(oldProperty.getTableName(getSyntax()), oldName, newName);
+            sql.renameColumn(oldProperty.getTableName(adapter), oldName, newName);
             PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
             field.setName(newName);
         }
@@ -1665,14 +1662,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     String propCN = lp.property.getCanonicalName();
                     if (rChanges.containsKey(propCN)) {
                         String oldPropCN = rChanges.get(propCN);
-                        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
-                        String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
-                                LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
-                        
-                        if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                            storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                        try {
+                            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
+                            String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
+                                    LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
+                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
+                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                            }
+                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
+                        } catch (AbstractPropertyNameParser.ParseException e) {
+                            Throwables.propagate(e);
                         }
-                        storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                     }
                 }
             }
@@ -1857,11 +1857,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void analyzeDB(SQLSession session) throws SQLException {
-        session.executeDDL(getSyntax().getAnalyze());
+        session.executeDDL(adapter.getAnalyze());
     }
 
     public void vacuumDB(SQLSession session) throws SQLException {
-        session.executeDDL(getSyntax().getVacuumDB());
+        session.executeDDL(adapter.getVacuumDB());
     }
 
     public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {

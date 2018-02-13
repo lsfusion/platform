@@ -1,6 +1,5 @@
 package lsfusion.client.logics.classes.link;
 
-import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientDataClass;
 import lsfusion.client.logics.classes.ClientTypeClass;
 import lsfusion.interop.Compare;
@@ -29,14 +28,22 @@ public abstract class ClientLinkClass extends ClientDataClass implements ClientT
         outStream.writeBoolean(multiple);
     }
 
+    public String getMask() {
+        return "1234567";
+    }
+
     @Override
-    public int getDefaultHeight(FontMetrics font) {
+    public int getHeight(FontMetrics font) {
         return 18;
     }
 
     @Override
-    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
+    public int getWidth(int minCharWidth, FontMetrics font) {
         return 18;
+    }
+
+    public Format getDefaultFormat() {
+        return null;
     }
 
     public Object parseString(String s) throws ParseException {

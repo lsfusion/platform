@@ -43,7 +43,7 @@ public class MakeProcessDumpActionProperty extends ProcessDumpActionProperty {
 
     protected void makeProcessDump(ExecutionContext context, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
-        SQLSyntaxType syntaxType = context.getDbSyntax().getSyntaxType();
+        SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
         Map<Integer, SQLThreadInfo> sessionThreadMap = SQLSession.getSQLThreadMap();
 

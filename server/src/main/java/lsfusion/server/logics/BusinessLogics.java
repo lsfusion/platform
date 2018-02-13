@@ -55,6 +55,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -111,8 +112,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCanonicalName;
-import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCompoundName;
+import static lsfusion.server.logics.LogicsModule.getResolveList;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
@@ -576,7 +576,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initObjectClass() {
-        LM.baseClass.initObjectClass(LM.getVersion(), CanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
+        LM.baseClass.initObjectClass(LM.getVersion(), LM.transformNameToSID("CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);
     }
 
@@ -1077,14 +1077,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private Collection<String> customReports;
     @ManualLazy
-    public Collection<String> getAllCustomReports() {
-        if (SystemProperties.isDebug || customReports == null) {
-            customReports = calculateAllCustomReports();
+    public Collection<String> findAllCustomReports() {
+        if (customReports == null) {
+            customReports = findAllCustomReportsCalculated();
         }
         return customReports;
     }
 
-    public Collection<String> calculateAllCustomReports() {
+    public Collection<String> findAllCustomReportsCalculated() {
         Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
         return ResourceUtils.getResources(pattern);
     }
@@ -1103,7 +1103,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
     
-    private static class NamedDecl {
+    // todo [dale]: Временно сделал public для переименования log-свойств (issue #1725)
+    public static class NamedDecl {
         public final LP prop;
         public final String namespace;
         public final boolean defaultNamespace;
@@ -1512,23 +1513,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return false;
     }
 
-    private static boolean findCalcDependency(CalcProperty<?> property, CalcProperty<?> with, HSet<CalcProperty> proceeded, Stack<CalcProperty> path) {
-        if (property.equals(with))
-            return true;
-
-        if (proceeded.add(property))
-            return false;
-
-        for (CalcProperty link : property.getDepends()) {
-            path.push(link);
-            if (findCalcDependency(link, with, proceeded, path))
-                return true;
-            path.pop();
-        }
-
-        return false;
-    }
-
     private static String outDependency(String direction, Property property, Stack<Link> path) {
         String result = direction + " : " + property;
         for (Link link : path)
@@ -1536,34 +1520,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private static String outCalcDependency(String direction, CalcProperty property, Stack<CalcProperty> path) {
-        String result = direction + " : " + property;
-        for (CalcProperty link : path)
-            result += " " + link;
-        return result;
-    }
-
-    private static Property checkJoinProperty(Property<?> property) {
-        if(property instanceof JoinProperty) {
-            JoinProperty joinProperty = (JoinProperty) property;
-            if(joinProperty.isIdentity()) {
-                return checkJoinProperty(joinProperty.implement.property);
-            }
-        }
-        return property;
-    }
     private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
-        property1 = checkJoinProperty(property1);
-        property2 = checkJoinProperty(property2);
-
-        String result = findEventDependency(property1, property2, desiredType);
-        if(property1 instanceof CalcProperty && property2 instanceof CalcProperty)
-            result += findCalcDependency((CalcProperty)property1, (CalcProperty)property2);
-
-        return result;
-    }
-
-    private static String findEventDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
         String result = "";
 
         Stack<Link> forward = new Stack<>();
@@ -1576,23 +1533,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         if (result.isEmpty())
             result += "NO DEPENDENCY " + property1 + " " + property2 + '\n';
-        
-        return result;
-    }
 
-    public static String findCalcDependency(CalcProperty<?> property1, CalcProperty<?> property2) {
-        String result = "";
-
-        Stack<CalcProperty> forward = new Stack<>();
-        if (findCalcDependency(property1, property2, new HSet<CalcProperty>(), forward))
-            result += outCalcDependency("FORWARD CALC (" + forward.size() + ")", property1, forward) + '\n';
-
-        Stack<CalcProperty> backward = new Stack<>();
-        if (findCalcDependency(property2, property1, new HSet<CalcProperty>(), backward))
-            result += outCalcDependency("BACKWARD CALC (" + backward.size() + ")", property2, backward) + '\n';
-
-        if (result.isEmpty())
-            result += "NO CALC DEPENDENCY " + property1 + " " + property2 + '\n';
         return result;
     }
 
@@ -2086,9 +2027,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
+        session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
             for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
-                session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
                 Table table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
@@ -2097,8 +2038,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
                 session.addConstraint(table);
                 session.checkExtraIndices(getDbManager().getThreadLocalSql(), table, table.keys, sqlLogger);
-                session.commitTransaction();
             }
+            session.commitTransaction();
         } catch (Exception e) {
             session.rollbackTransaction();
             throw e;
@@ -2203,70 +2144,86 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return lp;
     }
 
-    public LP[] findProperties(String... canonicalNames) {
-        LP[] result = new LP[canonicalNames.length];
-        for (int i = 0; i < canonicalNames.length; i++) {
-            result[i] = findProperty(canonicalNames[i]);
+    public LP[] findProperties(String... names) {
+        LP[] result = new LP[names.length];
+        for (int i = 0; i < names.length; i++) {
+            result[i] = findProperty(names[i]);
         }
         return result;
     }
 
-    public LP<?, ?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
+    public LP findProperty(String canonicalName) {
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
+        try {
+            String namespaceName = parser.getNamespace();
+            String name = parser.getName();
+            List<ResolveClassSet> signature = parser.getSignature();
+            return findProperty(namespaceName, name, signature);
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
-    public LP<?, ?> findProperty(String namespace, String name, ValueClass... classes) {
-        return BusinessLogicsResolvingUtils.findProperty(this, namespace, name, ClassCanonicalNameUtils.getResolveList(classes));
+    public LP findProperty(String namespace, String name, ValueClass... classes) {
+        List<ResolveClassSet> classSets = null;
+        if (classes.length > 0) {
+            classSets = getResolveList(classes);
+        }
+        return findProperty(namespace, name, classSets);
     }
 
-    public LP<?, ?> findPropertyByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCompoundName(this, compoundName);
+    private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
+        assert namespaceToModules.get(namespace) != null;
+        NamespaceLPFinder finder = new NamespaceLPFinder(new ModuleEqualLPFinder(false), namespaceToModules.get(namespace));
+        List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
+        assert foundElements.size() <= 1;
+        return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
 
-    public CustomClass findClassByCompoundName(String compoundName) {
-        return findElementByCompoundName(this, compoundName, null, new ModuleClassFinder());
-    }
+    private <R, P> R findElement(String canonicalName, P param, ModuleFinder<R, P> moduleFinder) {
+        assert canonicalName != null;
+        if (canonicalName.contains(".")) {
+            String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
+            String className = canonicalName.substring(canonicalName.indexOf('.') + 1);
 
+            assert namespaceToModules.get(namespaceName) != null;
+            NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<>(moduleFinder, namespaceToModules.get(namespaceName));
+            List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, className, param);
+            assert resList.size() <= 1; 
+            return resList.size() == 0 ? null : resList.get(0).value;
+        }
+        return null;
+    }
+    
     public CustomClass findClass(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleClassFinder());
+        return findElement(canonicalName, null, new ModuleClassFinder());
     }
 
     public AbstractGroup findGroup(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleGroupFinder());
+        return findElement(canonicalName, null, new ModuleGroupFinder());
     }
 
     public ImplementTable findTable(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleTableFinder());
+        return findElement(canonicalName, null, new ModuleTableFinder());
     }
 
     public AbstractWindow findWindow(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleWindowFinder());
+        return findElement(canonicalName, null, new ModuleWindowFinder());
     }
 
     public NavigatorElement findNavigatorElement(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleNavigatorElementFinder());
+        return findElement(canonicalName, null, new ModuleNavigatorElementFinder());
     }
 
     public FormEntity findForm(String canonicalName) {
-        return findElementByCanonicalName(this, canonicalName, null, new ModuleFormFinder());
+        return findElement(canonicalName, null, new ModuleFormFinder());
     }
 
-    public MetaCodeFragment findMetaCodeFragment(String canonicalName, int paramCnt) {
-        return findElementByCanonicalName(this, canonicalName, paramCnt, new ModuleMetaCodeFragmentFinder());
+    public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
+        return findElement(canonicalName, paramCnt, new ModuleMetaCodeFinder());
     }
 
-    public Collection<String> getNamespacesList() {
-        return namespaceToModules.keySet();
-    }
-    
-    public List<LogicsModule> getNamespaceModules(String namespace) {
-        if (namespaceToModules.containsKey(namespace)) {
-            return namespaceToModules.get(namespace);
-        } else {
-            return Collections.emptyList();
-        }
-    }
-    
     private void outputPersistent() {
         String result = "";
 
@@ -2299,7 +2256,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<NavigatorElement> getNavigatorElements() {
         MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.getNavigatorElements())
+            for(NavigatorElement entry : logicsModule.getModuleNavigators())
                 mResult.exclAdd(entry);            
         }
         return mResult.immutable();
@@ -2315,7 +2272,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return mResult.immutable();
     }
     
-    // todo [dale]: Может быть можно заменить на поиск по каноническому имени
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
             for (FormEntity element : logicsModule.getModuleForms()) {
@@ -2327,7 +2283,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public <C, P> LogicsModule getModuleContainingElement(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
+    // Набор методов для поиска модуля, в котором находится элемент системы
+    private <C, P> LogicsModule getModuleContainingObject(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
         if (modules != null) {
             for (LogicsModule module : modules) {
@@ -2337,6 +2294,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }
         return null;
+    }
+
+    // Здесь ищется точное совпадение по сигнатуре
+    public LogicsModule getModuleContainingLP(String namespaceName, String name, List<ResolveClassSet> classes) {
+        return getModuleContainingObject(namespaceName, name, classes, new ModuleEqualLPFinder(false));
+    }
+
+    public LogicsModule getModuleContainingGroup(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleGroupFinder());
+    }
+
+    public LogicsModule getModuleContainingClass(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleClassFinder());
+    }
+
+    public LogicsModule getModuleContainingTable(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleTableFinder());
+    }
+
+    public LogicsModule getModuleContainingWindow(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleWindowFinder());
+    }
+
+    public LogicsModule getModuleContainingNavigatorElement(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleNavigatorElementFinder());
+    }
+
+    public LogicsModule getModuleContainingForm(String namespaceName, String name) {
+        return getModuleContainingObject(namespaceName, name, null, new ModuleFormFinder());
+    }
+    
+    public LogicsModule getModuleContainingMetaCode(String namespaceName, String name, int paramCnt) {
+        return getModuleContainingObject(namespaceName, name, paramCnt, new ModuleMetaCodeFinder());
     }
 
     public DBManager getDbManager() {

@@ -66,6 +66,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    public int generateNewID()  throws RemoteException {
+        return target.generateNewID();
+    }
+
     public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
         target.sendPingInfo(computerId, pingInfoMap);
     }
@@ -111,27 +115,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) throws RemoteException {
-        logRemoteMethodStartCall("exec");
-        List<Object> result = target.exec(action, returnCanonicalNames, params);
-        logRemoteMethodEndVoidCall("exec");
-        return result;
-    }
-
-    @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) throws RemoteException {
-        logRemoteMethodStartCall("eval");
-        List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params);
-        logRemoteMethodEndVoidCall("eval");
-        return result;
-    }
-
-    @Override
-    public List<Object> read(String property, Object[] params) throws RemoteException {
-        logRemoteMethodStartCall("read");
-        List<Object> result = target.read(property, params);
-        logRemoteMethodEndVoidCall("read");
-        return result;
+    public void runAction(String canonicalName, String... params) throws RemoteException {
+        logRemoteMethodStartCall("runAction");
+        target.runAction(canonicalName, params);
+        logRemoteMethodEndVoidCall("runAction");
     }
 
     public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
@@ -197,12 +184,5 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         Map<String, String> result = target.readMemoryLimits();
         logRemoteMethodEndVoidCall("readMemoryLimits");
         return result;
-    }
-
-    @Override
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
-        logRemoteMethodStartVoidCall("saveCustomReportPathList");
-        target.saveCustomReportPathList(formSID);
-        logRemoteMethodEndVoidCall("saveCustomReportPathList");
     }
 }

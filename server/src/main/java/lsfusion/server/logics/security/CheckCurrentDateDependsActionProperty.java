@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import javax.swing.*;
@@ -21,7 +22,7 @@ public class CheckCurrentDateDependsActionProperty extends ScriptingActionProper
 
     private final ClassPropertyInterface propertyInterface;
 
-    public CheckCurrentDateDependsActionProperty(SecurityLogicsModule LM, ValueClass... classes) {
+    public CheckCurrentDateDependsActionProperty(SecurityLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
         super(LM, classes);
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         propertyInterface = i.next();

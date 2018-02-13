@@ -62,14 +62,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     ExtInt getCharLength();
 
-    T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
-
-    String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)
-
-    T parse(Object o) throws ParseException; // возвращает String или byte[], o - not null, null'ы decode'ся в зависимости от типа
-
-    Object format(T value); // возвращает String или byte[] (не null), null'ы encode'ит в зависимости от типа
-
+    T parseString(String s) throws ParseException;
+    
     AndClassSet getBaseClassSet(BaseClass baseClass);
 
     String getSID();

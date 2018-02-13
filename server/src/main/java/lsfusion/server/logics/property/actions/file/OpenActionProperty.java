@@ -29,10 +29,9 @@ import static lsfusion.base.BaseUtils.trim;
 * To change this template use File | Settings | File Templates.
 */
 public class OpenActionProperty extends FileActionProperty {
-    boolean syncType;
-    public OpenActionProperty(LocalizedString caption, boolean syncType, ValueClass... valueClasses) {
+
+    public OpenActionProperty(LocalizedString caption, ValueClass... valueClasses) {
         super(caption, valueClasses);
-        this.syncType = syncType;
 
         drawOptions.setImage("open.png");
     }
@@ -48,24 +47,14 @@ public class OpenActionProperty extends FileActionProperty {
 
             if (dataClass instanceof FileClass) {
                 for (byte[] file : ((FileClass) dataClass).getFiles(files)) {
-                    OpenFileClientAction action;
                     if (dataClass instanceof DynamicFormatFileClass)
-                        action = new OpenFileClientAction(BaseUtils.getFile(file), fileName, BaseUtils.getExtension(file));
+                        context.delayUserInterfaction(new OpenFileClientAction(BaseUtils.getFile(file), fileName, BaseUtils.getExtension(file)));
                     else
-                        action = new OpenFileClientAction(file, fileName, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ","));
-
-                    if(syncType)
-                        context.requestUserInteraction(action);
-                    else
-                        context.delayUserInteraction(action);
-
+                        context.delayUserInterfaction(new OpenFileClientAction(file, fileName, BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
                 }
             } else if (dataClass instanceof LinkClass) {
                 for (URI file : ((LinkClass) dataClass).getFiles(files)) {
-                    if(syncType)
-                        context.requestUserInteraction(new OpenUriClientAction(file));
-                    else
-                        context.delayUserInteraction(new OpenUriClientAction(file));
+                    context.delayUserInterfaction(new OpenUriClientAction(file));
                 }
             }
         }

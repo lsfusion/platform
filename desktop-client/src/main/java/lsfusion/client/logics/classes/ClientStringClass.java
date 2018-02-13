@@ -36,8 +36,17 @@ public class ClientStringClass extends ClientDataClass {
     public final boolean rich;
     public final ExtInt length;
 
+    public Format getDefaultFormat() {
+        return null;
+    }
+
     public Object parseString(String s) throws ParseException {
         return s;
+    }
+
+    @Override
+    public Object transformServerValue(Object obj) {
+        return obj == null ? null : formatString(obj);
     }
 
     @Override
@@ -53,6 +62,8 @@ public class ClientStringClass extends ClientDataClass {
     public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
 
 
+    private String mask;
+
     protected String sID;
 
     public ClientStringClass(boolean blankPadded, boolean caseInsensitive, boolean rich, ExtInt length) {
@@ -63,6 +74,13 @@ public class ClientStringClass extends ClientDataClass {
         this.length = length;
 
         sID = "StringClass_" + (caseInsensitive ? "insensitive_" : "") + (blankPadded ? "bp_" : "") + length;
+
+        if(length.isUnlimited()) {
+            mask = "999 999";
+        } else {
+            int lengthValue = length.getValue();
+            mask = BaseUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
+        }
     }
 
     public static ClientTypeClass getTypeClass(boolean blankPadded, boolean caseInsensitive) {
@@ -94,13 +112,8 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public int getDefaultCharWidth() {
-        if(length.isUnlimited()) {
-            return 15;
-        } else {
-            int lengthValue = length.getValue();
-            return lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7));
-        }
+    public String getMask() {
+        return mask;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
@@ -140,11 +153,10 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics fontMetrics) {
-        int result = super.getDefaultHeight(fontMetrics);
+    public int getHeight(FontMetrics fontMetrics) {
         if(length.isUnlimited())
-            return 4 * result;
-        return result;
+            return 4 * (fontMetrics.getHeight() + 1);
+        return super.getHeight(fontMetrics);
     }
 
     @Override

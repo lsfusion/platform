@@ -11,7 +11,6 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -56,10 +55,6 @@ public abstract class NavigatorElement {
         return canonicalName;
     }
     
-    public String getName() { 
-        return CanonicalNameUtils.getName(canonicalName); 
-    }
-    
     public boolean isNamed() {
         return canonicalName != null;
     }
@@ -96,14 +91,6 @@ public abstract class NavigatorElement {
         return result;
     }
 
-    /** Возвращает предков перед их потомками */
-    public List<NavigatorElement> getOrderedChildrenList() {
-        List<NavigatorElement> orderedList = new ArrayList<>();
-        fillChildrenRecursive(orderedList);
-        return orderedList;
-    }
-
-    /** Прямой обход (Pre-order traversal) дерева. Возвращает сначала предков, потом его потомков */
     private void fillChildrenRecursive(Collection<NavigatorElement> result) {
         result.add(this);
         for (NavigatorElement child : getChildrenIt()) {

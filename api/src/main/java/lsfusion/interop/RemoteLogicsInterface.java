@@ -36,10 +36,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     byte[] readFile(String canonicalName, String... params) throws RemoteException;
 
-    //external requests
-    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) throws RemoteException;
-    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) throws RemoteException;
-    List<Object> read(String property, Object[] params) throws RemoteException;
+    void runAction(String canonicalName, String... params) throws RemoteException;
 
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
@@ -61,9 +58,9 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     void ping() throws RemoteException;
 
+    int generateNewID() throws RemoteException;
+
     void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 
     Map<String, String> readMemoryLimits() throws RemoteException;
-
-    void saveCustomReportPathList(String formSID) throws RemoteException;
 }

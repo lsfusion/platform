@@ -6,7 +6,6 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
-import org.apache.commons.net.util.Base64;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -97,12 +96,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     public byte[] parseString(String s) throws ParseException {
-        return Base64.decodeBase64(s);
-    }
-
-    @Override
-    public String formatString(byte[] value) {
-        return value != null ? Base64.encodeBase64String(value) : null;
+        throw new RuntimeException("not supported");
     }
 
     public String getSID() {
@@ -117,19 +111,5 @@ public class ByteArrayClass extends DataClass<byte[]> {
     @Override
     public boolean calculateStat() {
         return false;
-    }
-
-    @Override
-    public byte[] parse(Object o) throws ParseException {
-        if(((byte[])o).length == 0)
-            return null;
-        return (byte[])o;
-    }
-
-    @Override
-    public Object format(byte[] value) {
-        if(value == null)
-            return new byte[]{};
-        return value;
     }
 }

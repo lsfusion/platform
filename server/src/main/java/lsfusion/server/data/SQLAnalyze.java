@@ -1,7 +1,6 @@
 package lsfusion.server.data;
 
 import lsfusion.base.Result;
-import lsfusion.base.Supplier;
 import lsfusion.base.TwinImmutableObject;
 
 import java.sql.PreparedStatement;
@@ -27,11 +26,7 @@ public class SQLAnalyze extends SQLCommand<SQLDML.Handler> {
     }
 
     public void execute(PreparedStatement statement, SQLDML.Handler handler, SQLSession session) throws SQLException {
-        handler.proceed(session.executeExplain(statement, noAnalyze, dml, new Supplier<String>() {
-            public String get() {
-                return getFullText();
-            }
-        }));
+        handler.proceed(session.executeExplain(statement, noAnalyze, dml));
     }
 
     public void afterExecute(SQLDML.Handler handler) {

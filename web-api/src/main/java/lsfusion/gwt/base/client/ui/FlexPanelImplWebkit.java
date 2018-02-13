@@ -18,12 +18,12 @@ public class FlexPanelImplWebkit extends FlexPanelImpl {
     }
 
     @Override
-    protected String getStartAlignmentValue() {
+    protected String getLeadingAlignmentValue() {
         return "flex-start";
     }
 
     @Override
-    protected String getEndAlignmentValue() {
+    protected String getTrailingAlignmentValue() {
         return "flex-end";
     }
 

@@ -13,8 +13,8 @@ public class LPResolver extends ElementResolver<LP<?, ?>, List<ResolveClassSet>>
     private final boolean filter;
     private final boolean prioritizeNotEquals;
 
-    public LPResolver(LogicsModule startModule, ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
-        super(startModule, finder);
+    public LPResolver(LogicsModule LM, ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
+        super(LM, finder);
         this.filter = filter;
         this.prioritizeNotEquals = prioritizeNotEquals;
     }

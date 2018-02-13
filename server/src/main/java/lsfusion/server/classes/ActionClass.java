@@ -92,11 +92,6 @@ public class ActionClass extends DataClass<Object> {
         throw new RuntimeException("not supported");
     }
 
-    @Override
-    public String formatString(Object value) {
-        throw new RuntimeException("not supported");
-    }
-
     public String getSID() {
         return sid;
     }
@@ -109,5 +104,10 @@ public class ActionClass extends DataClass<Object> {
     @Override
     public Stat getTypeStat() {
         return Stat.ONE;
+    }
+
+    @Override
+    public boolean isFlex() {
+        return false;
     }
 }

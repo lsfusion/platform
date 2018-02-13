@@ -2,7 +2,6 @@ package lsfusion.gwt.form.shared.view.classes.link;
 
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.classes.GDataType;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -28,6 +27,11 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
+    public String getMask(String pattern) {
+        return "1234567";
+    }
+
+    @Override
     public GCompare[] getFilterCompares() {
         return new GCompare[] {EQUALS, NOT_EQUALS};
     }
@@ -48,7 +52,7 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 18;
     }
 

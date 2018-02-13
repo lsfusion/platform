@@ -205,7 +205,7 @@ textarea {
     border: 2px groove threedface;
     border-radius: 5px;
     margin: 0.8em 0.1em 0.2em 0.1em;
-    padding: 0.2em 0.1em;
+    padding: 0.4em 0.1em 0.1em;
 }
 
 .captionPanelLegend {

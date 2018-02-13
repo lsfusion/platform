@@ -92,15 +92,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>externalHandler</servlet-name>
+        <servlet-name>runActionHandler</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>externalHandler</servlet-name>
-        <url-pattern>/exec</url-pattern>
-        <url-pattern>/eval</url-pattern>
-        <url-pattern>/eval/action</url-pattern>
-        <url-pattern>/read</url-pattern>
+        <servlet-name>runActionHandler</servlet-name>
+        <url-pattern>/runAction</url-pattern>
     </servlet-mapping>
 
     <servlet>

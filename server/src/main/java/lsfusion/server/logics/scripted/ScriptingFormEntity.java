@@ -126,7 +126,7 @@ public class ScriptingFormEntity {
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
                         LP property = findLP(pUsage, groupObj);
-                        LM.getChecks().checkCalculationProperty(property);
+                        LM.checkCalculationProperty(property);
                         propertyObjects.add(form.addPropertyObject((LCP) property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                     }
                 }
@@ -335,7 +335,7 @@ public class ScriptingFormEntity {
 
     private void checkCustomClassParam(ValueClass cls, String propertyName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
-            LM.getErrLog().emitCustomClassExpectedError(LM.getParser(), propertyName);
+            LM.getErrLog().emitCustomClassExpextedError(LM.getParser(), propertyName);
         }
     }
 

@@ -169,25 +169,6 @@ Section "${IDEA_SECTION_NAME}" SecIdea
     !endif
 SectionEnd
 
-Section "${JASPER_SECTION_NAME}" SecJasper
-    !ifdef DEV
-        SetOutPath ${INSTBINDIR}
-        SetOverwrite on
-    
-        ${SFile} install-bin\${JASPER_INSTALLER}
-
-        DetailPrint 'ExecWait "${INSTBINDIR}\${JASPER_INSTALLER}" /S /D=$jasperDir'
-        nsExec::ExecToLog '"${INSTBINDIR}\${JASPER_INSTALLER}" /S /D=$jasperDir'
-        Pop $0
-        DetailPrint "Jaspersoft Studio installation returned $0"
-        
-        WriteRegStr HKLM "${REGKEY}\Components" "${JASPER_SECTION_NAME}" 1
-        WriteRegStr HKLM "${REGKEY}" "jaspersoftStudioInstallDir" "$jasperDir"
-
-        Delete "${INSTBINDIR}\${JASPER_INSTALLER}"
-    !endif
-SectionEnd
-
 # Section Descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${SecPlatform} $(strPlatformSectionDescription)
@@ -198,7 +179,6 @@ SectionEnd
 !insertmacro MUI_DESCRIPTION_TEXT ${SecServices} $(strServicesSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecPG} $(strPgSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecIdea} $(strIdeaSectionDescription)
-!insertmacro MUI_DESCRIPTION_TEXT ${SecJasper} $(strJasperSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecJava} $(strJavaSectionDescription)
 !insertmacro MUI_DESCRIPTION_TEXT ${SecTomcat} $(strTomcatSectionDescription)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -207,4 +187,3 @@ SectionEnd
 ;!insertmacro DefinePreFeatureFunction ${SecJava} java
 !insertmacro DefinePreFeatureFunction ${SecPG} pg
 !insertmacro DefinePreFeatureFunction ${SecIdea} idea
-!insertmacro DefinePreFeatureFunction ${SecJasper} jasper

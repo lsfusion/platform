@@ -28,7 +28,7 @@ final class SingleCellTableModel extends AbstractTableModel {
     }
 
     public void setValue(Object value) {
-        this.value = value;
+        this.value = property.baseType.transformServerValue(value);
     }
 
     public void setReadOnly(boolean readOnly) {

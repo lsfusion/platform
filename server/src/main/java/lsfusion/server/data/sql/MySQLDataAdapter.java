@@ -9,21 +9,45 @@ import java.sql.SQLException;
 public class MySQLDataAdapter extends DataAdapter {
 
     MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception {
-        super(MySQLSQLSyntax.instance, iDataBase, iServer, null, iUserID, iPassword, null, false);
+        super(iDataBase, iServer, null, iUserID, iPassword, null, false);
+    }
+
+    public boolean allowViews() {
+        return false;
+    }
+
+    public String getUpdate(String tableString, String setString, String fromString, String whereString) {
+        return tableString + "," + fromString + setString + whereString;
+    }
+
+    public String getClassName() {
+        return "com.mysql.jdbc.Driver";
     }
 
     public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
-        connect.createStatement().execute("DROP DATABASE " + dataBase);
-        connect.createStatement().execute("CREATE DATABASE " + dataBase);
+        Connection connect = DriverManager.getConnection("jdbc:mysql://"+ server +":3306/"+ dataBase);
+        connect.createStatement().execute("DROP DATABASE "+ dataBase);
+        connect.createStatement().execute("CREATE DATABASE "+ dataBase);
         connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection connect = DriverManager.getConnection("jdbc:mysql://" + server + ":3306/" + dataBase);
-        connect.createStatement().execute("USE " + dataBase);
+        Connection connect = DriverManager.getConnection("jdbc:mysql://"+ server +":3306/"+ dataBase);
+        connect.createStatement().execute("USE "+ dataBase);
 
         return connect;
+    }
+
+    public String isNULL(String exprs, boolean notSafe) {
+        return "IFNULL(" + exprs + ")";
+    }
+
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
+        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
+    }
+
+    public String getUnionOrder(String union, String orderBy, String top) {
+        return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 }

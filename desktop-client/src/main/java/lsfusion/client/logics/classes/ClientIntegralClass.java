@@ -2,18 +2,19 @@ package lsfusion.client.logics.classes;
 
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.renderer.IntegralPropertyRenderer;
+import lsfusion.client.form.renderer.IntegerPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
 import java.util.EventObject;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 import static lsfusion.interop.KeyStrokes.isSuitableNumberEditEvent;
 
-abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat> {
+abstract public class ClientIntegralClass extends ClientDataClass {
 
     private final static char UNBREAKABLE_SPACE = '\u00a0';
 
@@ -27,23 +28,15 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
     protected ClientIntegralClass() {
     }
 
-    protected abstract int getLength();
-    
     @Override
-    public int getDefaultCharWidth() {
-        int lengthValue = getLength();
-        return lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7));
+    public String getMask() {
+        return "99 999 999";
     }
 
     public NumberFormat getDefaultFormat() {
         NumberFormat format = NumberFormat.getInstance();
         format.setGroupingUsed(true);
         return format;
-    }
-
-    @Override
-    public NumberFormat createUserFormat(String pattern) {
-        return new DecimalFormat(pattern);
     }
 
     @Override
@@ -85,7 +78,7 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new IntegralPropertyRenderer(property);
+        return new IntegerPropertyRenderer(property);
     }
 
     protected abstract PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property);

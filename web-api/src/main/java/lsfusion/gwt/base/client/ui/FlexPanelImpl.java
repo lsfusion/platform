@@ -45,14 +45,14 @@ public class FlexPanelImpl {
 
     protected String getJustifyValue(Justify justify) {
         switch (justify) {
-            case START: return getStartAlignmentValue();
+            case LEADING: return getLeadingAlignmentValue();
             case CENTER: return getCenterAlignmentValue();
-            case END: return getEndAlignmentValue();
+            case TRAILING: return getTrailingAlignmentValue();
         }
         throw new IllegalStateException("Unknown alignment");
     }
 
-    protected String getStartAlignmentValue() {
+    protected String getLeadingAlignmentValue() {
         return "flex-start";
     }
 
@@ -60,7 +60,7 @@ public class FlexPanelImpl {
         return "center";
     }
 
-    protected String getEndAlignmentValue() {
+    protected String getTrailingAlignmentValue() {
         return "flex-end";
     }
 
@@ -74,9 +74,9 @@ public class FlexPanelImpl {
 
     protected String getAlignmentValue(GFlexAlignment justify) {
         switch (justify) {
-            case START: return getStartAlignmentValue();
+            case LEADING: return getLeadingAlignmentValue();
             case CENTER: return getCenterAlignmentValue();
-            case END: return getEndAlignmentValue();
+            case TRAILING: return getTrailingAlignmentValue();
             case STRETCH: return getStretchAlignmentValue();
         }
         throw new IllegalStateException("Unknown alignment");

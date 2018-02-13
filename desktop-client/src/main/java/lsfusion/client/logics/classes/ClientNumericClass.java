@@ -29,11 +29,6 @@ public class ClientNumericClass extends ClientDoubleClass {
         }
     };
 
-    @Override
-    protected int getLength() {
-        return length;
-    }
-
     public final int length;
     public final int precision;
 
@@ -68,7 +63,7 @@ public class ClientNumericClass extends ClientDoubleClass {
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DoublePropertyEditor(value, property.maxValue, getEditFormat(property), property.design, BigDecimal.class, property.hasMask());
+        return new DoublePropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, BigDecimal.class, property.hasMask());
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
@@ -30,6 +31,9 @@ import lsfusion.gwt.form.shared.view.classes.GObjectType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
 import lsfusion.gwt.form.shared.view.grid.editor.TextBasedGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import java.util.*;
 
@@ -376,7 +380,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
                 header.setHeaderHeight(headerHeight);
 
-                property.setUserPattern(getUserPattern(property));
+                String pattern = getUserPattern(property);
+                GridCellRenderer renderer = property.getGridCellRenderer();
+                if(renderer != null) {
+                    property.setPattern(pattern);
+                    if (renderer instanceof DateGridCellRenderer) {
+                        ((DateGridCellRenderer) renderer).setFormat(pattern);
+                    } else if (renderer instanceof NumberGridCellRenderer) {
+                        ((NumberGridCellRenderer) renderer).setFormat(pattern);
+                    }
+                }
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
 
@@ -476,24 +489,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         columnsUpdated = true;
         dataUpdated = true;
 
-        updatedColumnsImpl();
-        updateDataImpl();
-//
-//        final ArrayList<GFontWidthString> fonts = new ArrayList<>();
-//        for(GPropertyDraw property : properties)
-//            property.getValueWidth(font, new GWidthStringProcessor() {
-//                public void addWidthString(GFontWidthString fontWidthString) {
-//                    fonts.add(fontWidthString);
-//                }
-//            });
-//        GFontMetrics.calculateFontMetrics(fonts, new GFontMetrics.MetricsCallback() {
-//            @Override
-//            public Widget metricsCalculated() {
-//                updatedColumnsImpl();
-//                updateDataImpl();
-//                return null;
-//            }
-//        });
+        ArrayList<GFont> fonts = new ArrayList<>();
+        fonts.add(font);
+        GFontMetrics.calculateFontMetrics(fonts, new GFontMetrics.MetricsCallback() {
+            @Override
+            public Widget metricsCalculated() {
+                updatedColumnsImpl();
+                updateDataImpl();
+                return null;
+            }
+        });
     }
     
     public int getHeaderHeight() {

@@ -3,7 +3,6 @@ package lsfusion.server.form.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.layout.AbstractTreeGroup;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.TreeGroupEntity;
 import lsfusion.server.logics.mutables.Version;
@@ -46,16 +45,9 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         toolbar = new ToolbarView(form.idGenerator.idShift());
         filter = new FilterView(form.idGenerator.idShift());
-    }
 
-    @Override
-    public double getBaseDefaultFlex(FormEntity formEntity) {
-        return 1;
-    }
-
-    @Override
-    public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
-        return FlexAlignment.STRETCH;
+        setFlex(1);
+        setAlignment(FlexAlignment.STRETCH);
     }
 
     @Override

@@ -1,9 +1,9 @@
 package lsfusion.server.logics.property.actions.exporting.json;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,14 +25,18 @@ public class JSONFormExporter extends HierarchicalFormExporter {
     public byte[] exportNodes(List<Node> rootNodes) throws IOException {
         File file = null;
         try {
-            JSONObject rootObject = new JSONObject();
+            JSONObject rootElement = new JSONOrderObject();
+            JSONObject exportObject = new JSONOrderObject();
+            JSONArray exportArray = new JSONArray();
+            exportObject.put("group", exportArray);
+            rootElement.put("export", exportObject);
 
             for (Node rootNode : rootNodes)
-                exportNode(rootObject, groupId, rootNode);
+                exportNode(exportArray, "group", rootNode);
 
             file = File.createTempFile("exportForm", ".json");
-            try (PrintWriter out = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
-                out.println(rootObject.toString());
+            try (PrintWriter out = new PrintWriter(file)) {
+                out.println(rootElement.toString());
             }
             return IOUtils.getFileBytes(file);
         } catch (JSONException e) {
@@ -52,8 +56,6 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                 for(AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentId)) {
                         if (childNode instanceof Leaf) {
-                            exportNode(parentElement, child.getKey(), childNode);
-                        } else if (child.getKey().equals(groupId)) {
                             exportNode(parentElement, child.getKey(), childNode);
                         } else {
                             JSONObject object = new JSONOrderObject();

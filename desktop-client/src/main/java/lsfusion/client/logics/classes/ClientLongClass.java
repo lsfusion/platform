@@ -19,8 +19,8 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     }
 
     @Override
-    protected int getLength() {
-        return 10;
+    public String getMask() {
+        return "9 999 999 999 999 999 999";
     }
 
     @Override
@@ -42,11 +42,11 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
 
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return new IntegerPropertyEditor(value, getEditFormat(property), property.design, Long.class);
+        return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Long.class);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, property.maxValue, getEditFormat(property), property.design, Long.class);
+        return new IntegerPropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, Long.class);
     }
 
     @Override

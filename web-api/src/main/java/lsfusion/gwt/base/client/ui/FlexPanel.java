@@ -25,7 +25,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private boolean visible = true;
 
     public FlexPanel() {
-        this(Justify.START);
+        this(Justify.LEADING);
     }
 
     public FlexPanel(Justify justify) {
@@ -33,7 +33,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public FlexPanel(boolean vertical) {
-        this(vertical, Justify.START);
+        this(vertical, Justify.LEADING);
     }
 
     public FlexPanel(boolean vertical, Justify justify) {
@@ -69,7 +69,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     @Override
     public void add(Widget child) {
-        add(child, GFlexAlignment.START, 0);
+        add(child, GFlexAlignment.LEADING, 0);
     }
     
     public void addCentered(Widget child) {
@@ -81,7 +81,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public void add(Widget child, int beforeIndex) {
-        add(child, beforeIndex, GFlexAlignment.START, 0);
+        add(child, beforeIndex, GFlexAlignment.LEADING, 0);
     }
 
     public void add(Widget child, GFlexAlignment alignment) {
@@ -233,7 +233,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public enum Justify {
-        START, CENTER, END
+        LEADING, CENTER, TRAILING
     }
 
     public static final class LayoutData {

@@ -590,7 +590,7 @@ public class BaseUtils {
         throw new IOException();
     }
 
-    public static String deserializeString(DataInputStream inStream) throws IOException {
+    public static Object deserializeString(DataInputStream inStream) throws IOException {
         int chunksCount = inStream.readInt();
 
         if (chunksCount < 0) {
@@ -965,20 +965,19 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B> List<B> addList(B item, List<? extends B> list) {
+    public static <B, K1 extends B, K2 extends B> List<B> addList(K1 item, List<K2> list) {
         List<B> result = new ArrayList<>();
         result.add(item);
         result.addAll(list);
         return result;
     }
 
-    public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
+    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, List<K2> list2) {
         List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);
         return result;
     }
 
-    @SafeVarargs
     public static <B> List<B> mergeLists(List<B>... lists) {
         List<B> result = new ArrayList<>();
         for (List<B> list : lists) {
@@ -1973,19 +1972,6 @@ public class BaseUtils {
         try (FileOutputStream f = new FileOutputStream(file)) {
             f.write(data);
         }
-
-            ///Можно ждать, пока пользователь закроет файл
-
-            //https://mvnrepository.com/artifact/org.apache.commons/commons-exec
-            //https://stackoverflow.com/questions/847838/launch-file-from-java
-            //https://stackoverflow.com/questions/325299/cross-platform-way-to-open-a-file-using-java-1-5
-            /*if(SystemUtils.IS_OS_WINDOWS)
-                Runtime.getRuntime().exec("cmd.exe /C" + file.getAbsolutePath()).waitFor();
-            else if(SystemUtils.IS_OS_LINUX)
-                    Runtime.getRuntime().exec("xdg-open " + file.getAbsolutePath()).waitFor();
-            else if(SystemUtils.IS_OS_MAC)
-                Runtime.getRuntime().exec("open " + file.getAbsolutePath()).waitFor();*/
-
         Desktop.getDesktop().open(file);
     }
 

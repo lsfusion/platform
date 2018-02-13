@@ -3,7 +3,6 @@ package lsfusion.gwt.form.shared.view.classes;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.LogicalGridCellEditor;
@@ -26,7 +25,12 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
+    public String getMask(String pattern) {
+        return "";
+    }
+
+    @Override
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
         return 30;
     }
 

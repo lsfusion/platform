@@ -251,7 +251,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
                 if(result != 0)
                     return result;
 
-                return o1.getCanonicalName().compareTo(o2.getCanonicalName());
+                return o1.getSID().compareTo(o2.getSID());
             }
         }).get(0);
     }

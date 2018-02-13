@@ -2,7 +2,6 @@ package lsfusion.client;
 
 import com.jhlabs.image.BlurFilter;
 import lsfusion.client.dock.ClientFormDockable;
-import lsfusion.client.form.ClientFormController;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
@@ -11,6 +10,7 @@ import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
+import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -18,7 +18,6 @@ import java.awt.event.WindowEvent;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.*;
-import java.util.List;
 import java.util.Scanner;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -44,7 +43,7 @@ public abstract class MainFrame extends JFrame {
 
         this.remoteNavigator = remoteNavigator;
 
-        setIconImages(Main.getMainIcons());
+        setIconImage(Main.getMainIcon().getImage());
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         updateUser();
@@ -147,7 +146,7 @@ public abstract class MainFrame extends JFrame {
         forbidDuplicateForms = remoteNavigator.isForbidDuplicateForms();
     }
 
-    public abstract Integer runReport(ClientFormController formController, List<ReportPath> customReportPathList, String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(List<ReportPath> reportPathList, List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
 
     public Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, null, editInvoker);

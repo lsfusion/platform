@@ -27,7 +27,7 @@ public class ResolveManager {
     private ElementResolver<AbstractWindow, ?> windowResolver;
     private ElementResolver<ImplementTable, ?> tableResolver;
     private ElementResolver<CustomClass, ?> classResolver;
-    private ElementResolver<MetaCodeFragment, Integer> metaCodeFragmentResolver;
+    private ElementResolver<MetaCodeFragment, Integer> metaCodeResolver;
 
 
     public ResolveManager(LogicsModule LM) {
@@ -46,47 +46,47 @@ public class ResolveManager {
         windowResolver = new ElementResolver<>(LM, new ModuleWindowFinder());
         tableResolver = new ElementResolver<>(LM, new ModuleTableFinder());
         classResolver = new ElementResolver<>(LM, new ModuleClassFinder());
-        metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());
+        metaCodeResolver = new ElementResolver<>(LM, new ModuleMetaCodeFinder());
     }
     
-    public LP<?, ?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LP<?, ?> property = directLPResolver.resolve(compoundName, params);
+    public LP<?, ?> findProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?, ?> property = directLPResolver.resolve(name, params);
         if (property == null) {
-            property = indirectLPResolver.resolve(compoundName, params);
+            property = indirectLPResolver.resolve(name, params);
         }
         return property;
     }
     
-    public LP<?, ?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return getAbstractLPResolver(prioritizeNotEquals).resolve(compoundName, params);    
+    public LP<?, ?> findAbstractProperty(String name, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return getAbstractLPResolver(prioritizeNotEquals).resolve(name, params);    
     } 
     
-    public ValueClass findClass(String compoundName) throws ResolvingErrors.ResolvingError {
-        return classResolver.resolve(compoundName);
+    public ValueClass findCustomClass(String name) throws ResolvingErrors.ResolvingError {
+        return classResolver.resolve(name);
     }
 
-    public MetaCodeFragment findMetaCodeFragment(String compoundName, int paramCnt) throws ResolvingErrors.ResolvingError {
-        return metaCodeFragmentResolver.resolve(compoundName, paramCnt);
+    public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ResolvingErrors.ResolvingError {
+        return metaCodeResolver.resolve(name, paramCnt);
     }
 
-    public AbstractGroup findGroup(String compoundName) throws ResolvingErrors.ResolvingError {
-        return groupResolver.resolve(compoundName);
+    public AbstractGroup findGroup(String name) throws ResolvingErrors.ResolvingError {
+        return groupResolver.resolve(name);
     }    
     
-    public AbstractWindow findWindow(String compoundName) throws ResolvingErrors.ResolvingError {
-        return windowResolver.resolve(compoundName);
+    public AbstractWindow findWindow(String name) throws ResolvingErrors.ResolvingError {
+        return windowResolver.resolve(name);
     }
 
-    public NavigatorElement findNavigatorElement(String compoundName) throws ResolvingErrors.ResolvingError {
-        return navigatorResolver.resolve(compoundName);
+    public NavigatorElement findNavigatorElement(String name) throws ResolvingErrors.ResolvingError {
+        return navigatorResolver.resolve(name);
     }
     
-    public FormEntity findForm(String compoundName) throws ResolvingErrors.ResolvingError {
-        return formResolver.resolve(compoundName);
+    public FormEntity findForm(String name) throws ResolvingErrors.ResolvingError {
+        return formResolver.resolve(name);
     }
     
-    public ImplementTable findTable(String compoundName) throws ResolvingErrors.ResolvingError {
-        return tableResolver.resolve(compoundName);
+    public ImplementTable findTable(String name) throws ResolvingErrors.ResolvingError {
+        return tableResolver.resolve(name);
     }
 
     private ElementResolver<LP<?, ?>, List<ResolveClassSet>> getAbstractLPResolver(boolean prioritizeNotEquals) {

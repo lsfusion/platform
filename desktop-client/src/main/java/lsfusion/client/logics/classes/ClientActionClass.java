@@ -12,6 +12,7 @@ import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
+import java.awt.*;
 import java.text.Format;
 import java.text.ParseException;
 
@@ -25,9 +26,12 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return Data.ACTION;
     }
 
-    @Override
-    public String getDefaultWidthString(ClientPropertyDraw propertyDraw) {
+    public String getMask() {
         return "1234567";
+    }
+
+    public Format getDefaultFormat() {
+        return null;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

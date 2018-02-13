@@ -2,11 +2,11 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
+import lsfusion.client.ClientReportUtils;
 import lsfusion.client.Main;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
-import lsfusion.client.report.ClientReportUtils;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
@@ -63,7 +63,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     public void execute(RunEditReportClientAction action) {
-        getFormController().runEditReport(action.customReportPathList);
+        getFormController().runEditReport(false);
     }
 
     @Override
@@ -72,11 +72,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         try {
             if (action.printType == FormPrintType.AUTO) {
                 ClientReportUtils.autoprintReport(action.generationData, action.printerName);
-            } else if (action.printType != FormPrintType.PRINT) {
+            } else if (action.printType != null && action.printType != FormPrintType.PRINT) {
                 ReportGenerator.exportAndOpen(action.generationData, action.printType, false);
             } else {
                 if (action.isDebug) {
-                    pageCount = Main.frame.runReport(getFormController(), action.reportPathList, action.formSID, action.isModal, action.generationData);
+                    pageCount = Main.frame.runReport(action.reportPathList, action.autoReportPathList, action.isModal, action.generationData);
                 } else {
                     pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
                 }

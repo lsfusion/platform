@@ -1,7 +1,10 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.form.shared.view.GEditBindingMap;
+import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
+import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -32,11 +35,8 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    // добавляет поправку на кнопки и другие элементы
-    public abstract int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor);
-
-    public abstract int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor);
-    public int getDefaultHeight(GFont font) {
+    public abstract int getPixelWidth(int minimumCharWidth, GFont font, String pattern);
+    public int getPixelHeight(GFont font) {
         return font == null || font.size == null ? 16 : GFontMetrics.getSymbolHeight(font);
     }
 

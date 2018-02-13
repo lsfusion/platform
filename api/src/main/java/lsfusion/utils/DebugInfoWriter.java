@@ -15,7 +15,7 @@ public abstract class DebugInfoWriter {
 
     public abstract void addLines(String string); // здесь != null явно чтобы toString и другие лишние обработки не вызывались
 
-    public DebugInfoWriter pushPrefix(final String prefix) {
+    private DebugInfoWriter pushPrefix(final String prefix) {
         addLines(prefix);
         return new PrefixDebugInfoWriter(getTabPrefix() + '\t', getStringDebugInfoWriter());
     }

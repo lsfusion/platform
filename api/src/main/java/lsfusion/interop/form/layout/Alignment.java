@@ -1,5 +1,5 @@
 package lsfusion.interop.form.layout;
 
 public enum Alignment {
-    START, CENTER, END
+    LEADING, CENTER, TRAILING
 }

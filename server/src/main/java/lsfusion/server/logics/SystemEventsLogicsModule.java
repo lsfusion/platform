@@ -102,6 +102,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/lsfusion/system/SystemEvents.lsf"), "/lsfusion/system/SystemEvents.lsf", baseLM, BL);
+        setBaseLogicsModule(baseLM);
         this.authenticationLM = BL.authenticationLM;
     }
 

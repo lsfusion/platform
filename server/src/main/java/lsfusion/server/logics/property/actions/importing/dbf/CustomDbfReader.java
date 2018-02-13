@@ -53,19 +53,15 @@ public class CustomDbfReader implements Closeable {
         findFirstRecord();
     }
 
-    private void readHeader() {
-        try {
-            // 1. Allocate buffer
-            byte[] bytes = new byte[16];
-            // 2. Read 16 bytes
-            dbfInputStream.read(bytes);
-            // 3. Fill header fields
-            DbfMetadataUtils.fillHeaderFields(metadata, bytes);
-            // 4. Read next 16 bytes (for most DBF types these are reserved bytes)
-            dbfInputStream.read(bytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read header. Possible, corrupted or incorrect DBF", e);
-        }
+    private void readHeader() throws IOException {
+        // 1. Allocate buffer
+        byte[] bytes = new byte[16];
+        // 2. Read 16 bytes
+        dbfInputStream.read(bytes);
+        // 3. Fill header fields
+        DbfMetadataUtils.fillHeaderFields(metadata, bytes);
+        // 4. Read next 16 bytes (for most DBF types these are reserved bytes)
+        dbfInputStream.read(bytes);
     }
 
     @Override

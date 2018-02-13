@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.i18n.LocalizedString;
 
@@ -18,10 +17,6 @@ public abstract class SystemExplicitActionProperty extends ExplicitActionPropert
     
     protected SystemExplicitActionProperty(ValueClass... classes) {
         super(classes);
-    }
-
-    protected SystemExplicitActionProperty(ImOrderSet interfaces) {
-        super(interfaces);
     }
 
     @Override

@@ -18,6 +18,8 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final int LEFT    = 2;
     public static final int BOTTOM  = 3;
     public static final int RIGHT   = 4;
+    public static final int LEADING  = 10;
+    public static final int TRAILING = 11;
 
     public int type;
     public boolean showSelect;

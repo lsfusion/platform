@@ -37,10 +37,8 @@ public abstract class BaseExpr extends Expr {
     public static Expr create(BaseExpr expr) {
         if(!expr.getOrWhere().isFalse() && expr.getNotNullClassWhere().isFalse()) // (первая проверка - оптимизация) проблема, что при вычислении getWhere, если есть OrWhere вызывается calculateFollows, где assert'ся что Join.this.getWhere - DataWhere и падает ClassCast
             return NULL;
-        if(expr.getWhere().getClassWhere().isFalse()) {
-            assert expr.getWhere().isFalse(); //возможно даже getOrWhere достаточно
+        if(expr.getWhere().getClassWhere().isFalse())
             return NULL;
-        }
         
         return expr;
     }

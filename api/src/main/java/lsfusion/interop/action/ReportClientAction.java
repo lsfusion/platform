@@ -9,17 +9,17 @@ import java.util.List;
 public class ReportClientAction implements ClientAction {
 
     public List<ReportPath> reportPathList;
-    public String formSID;
+    public List<ReportPath> autoReportPathList;
     public boolean isModal;
     public ReportGenerationData generationData;
     public boolean isDebug;
     public FormPrintType printType;
     public String printerName;
 
-    public ReportClientAction(List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
+    public ReportClientAction(List<ReportPath> reportPathList, List<ReportPath> autoReportPathList, boolean isModal, ReportGenerationData generationData,
                               FormPrintType printType, String printerName, boolean isDebug) {
         this.reportPathList = reportPathList;
-        this.formSID = formSID;
+        this.autoReportPathList = autoReportPathList;
         this.isModal = isModal;
         this.generationData = generationData;
         this.printType = printType;

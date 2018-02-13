@@ -47,7 +47,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
 
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
@@ -149,8 +148,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         setBaseLogicsModule(this);
         this.BL = BL;
         this.propertyDBNamePolicy = propertyDBNamePolicy;
-        namedProperties = NFFact.simpleMap(namedProperties);
-        namedActions = NFFact.simpleMap(namedActions);
+        namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
+        namedModuleActions = NFFact.simpleMap(namedModuleActions);
     }
 
     @IdentityLazy
@@ -297,7 +296,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"));
+        baseClass = addBaseClass(transformNameToSID("Object"), LocalizedString.create("{logics.object}"));
         
         super.initClasses();
     }
@@ -460,7 +459,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         public AbstractWindow status;
     }
 
-    public Windows baseWindows;
+    public Windows windows;
 
     // Навигаторы
     public NavigatorElement root;
@@ -474,19 +473,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
         // Окна
-        baseWindows = new Windows();
-        baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
+        windows = new Windows();
+        windows.root = (ToolBarNavigatorWindow) findWindow("root");
 
-        baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
+        windows.toolbar = (NavigatorWindow) findWindow("toolbar");
 
-        baseWindows.tree = (NavigatorWindow) findWindow("tree");
+        windows.tree = (NavigatorWindow) findWindow("tree");
 
-        baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
+        windows.forms = addWindow("forms", new AbstractWindow(null, LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
 
-        baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
+        windows.log = addWindow("log", new AbstractWindow(null, LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 
-        baseWindows.status = addWindow(new AbstractWindow(elementCanonicalName("status"), LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
-        baseWindows.status.titleShown = false;
+        windows.status = addWindow("status", new AbstractWindow(null, LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
+        windows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
@@ -550,41 +549,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     @NFLazy
     public AnyValuePropertyHolder getRequestedValueProperty() {
-        return addAnyValuePropertyHolder("requested");
-    }
-
-    public AnyValuePropertyHolder addAnyValuePropertyHolder(String namePrefix) {
-        return new AnyValuePropertyHolder(
-                getLCPByUniqueName(namePrefix + "Object"),
-                getLCPByUniqueName(namePrefix + "String"),
-                getLCPByUniqueName(namePrefix + "Text"),
-                getLCPByUniqueName(namePrefix + "Integer"),
-                getLCPByUniqueName(namePrefix + "Long"),
-                getLCPByUniqueName(namePrefix + "Double"),
-                getLCPByUniqueName(namePrefix + "Numeric"),
-                getLCPByUniqueName(namePrefix + "Year"),
-                getLCPByUniqueName(namePrefix + "DateTime"),
-                getLCPByUniqueName(namePrefix + "Logical"),
-                getLCPByUniqueName(namePrefix + "Date"),
-                getLCPByUniqueName(namePrefix + "Time"),
-                getLCPByUniqueName(namePrefix + "Color"),
-                getLCPByUniqueName(namePrefix + "WordFile"),
-                getLCPByUniqueName(namePrefix + "ImageFile"),
-                getLCPByUniqueName(namePrefix + "PdfFile"),
-                getLCPByUniqueName(namePrefix + "CustomFile"),
-                getLCPByUniqueName(namePrefix + "ExcelFile"),
-                getLCPByUniqueName(namePrefix + "WordLink"),
-                getLCPByUniqueName(namePrefix + "ImageLink"),
-                getLCPByUniqueName(namePrefix + "PdfLink"),
-                getLCPByUniqueName(namePrefix + "CustomLink"),
-                getLCPByUniqueName(namePrefix + "ExcelLink")
-        );
-    }
-
-    protected LCP<?> getLCPByUniqueName(String name) {
-        Iterable<LCP<?>> result = getNamedProperties(name);
-        assert size(result) == 1;
-        return result.iterator().next();
+        return addAnyValuePropertyHolder("requested", "Requested");
     }
 
     public LCP getRequestCanceledProperty() {

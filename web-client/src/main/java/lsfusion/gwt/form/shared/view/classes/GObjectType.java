@@ -2,7 +2,6 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -25,13 +24,8 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
-        return GDataType.getFullWidthString(font, widthString, widthStringProcessor);
-    }
-
-    @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString("0000000", font, widthStringProcessor);
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+        return 50;
     }
 
     @Override

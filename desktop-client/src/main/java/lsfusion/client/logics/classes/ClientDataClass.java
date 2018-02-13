@@ -31,30 +31,20 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return false;
     }
 
-    // добавляет поправку на кнопки и другие элементы 
-    public int getFullWidthString(String widthString, FontMetrics fontMetrics) {
-        return fontMetrics.stringWidth(widthString) + 8;
-    }
-    
-    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
-        return getFullWidthString(getDefaultWidthString(property), fontMetrics);
-    }
+    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
+        String minMask = minCharWidth != 0
+                      ? BaseUtils.replicate('0', minCharWidth)
+                      : getMask();
 
-    protected int getDefaultCharWidth() {
-        return 0;
-    }
-
-    protected String getDefaultWidthString(ClientPropertyDraw propertyDraw) {
-        int defaultCharWidth = getDefaultCharWidth();
-        if(defaultCharWidth != 0)
-            return BaseUtils.replicate('0', defaultCharWidth);
-        throw new UnsupportedOperationException();
+        return fontMetrics.stringWidth(minMask) + 8;
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics fontMetrics) {
+    public int getHeight(FontMetrics fontMetrics) {
         return fontMetrics.getHeight() + 1;
     }
+
+    public abstract String getMask();
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
         return new DataPanelView(form, key, columnKey);
@@ -76,6 +66,11 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public boolean shouldBeDrawn(ClientFormController form) {
         return true;
+    }
+
+    @Override
+    public Object transformServerValue(Object obj) {
+        return obj;
     }
 
     public String getConfirmMessage() {

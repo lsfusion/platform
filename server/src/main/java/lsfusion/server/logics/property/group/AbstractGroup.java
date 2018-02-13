@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -27,7 +26,7 @@ import java.util.List;
 
 public class AbstractGroup extends AbstractNode {
 
-    private final String canonicalName;
+    private final String sID;
 
     public final LocalizedString caption;
 
@@ -35,8 +34,8 @@ public class AbstractGroup extends AbstractNode {
 
     public boolean createContainer = true;
 
-    public AbstractGroup(String canonicalName, LocalizedString caption) {
-        this.canonicalName = canonicalName;
+    public AbstractGroup(String sID, LocalizedString caption) {
+        this.sID = sID;
         this.caption = caption;
     }
 
@@ -160,25 +159,12 @@ public class AbstractGroup extends AbstractNode {
         return groupsList;
     }
 
+    public String getSID() {
+        return sID;
+    }
+
     @Override
     public String toString() {
         return caption == null ? super.toString() : ThreadLocalContext.localize(caption);
-    }
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public String getName() {
-        return CanonicalNameUtils.getName(canonicalName);
-    }
-
-    // todo [dale]: Используется для идентификации групп свойств в reflection, желательно перевести на canonical names
-    public String getSID() {
-        return CanonicalNameUtils.toSID(canonicalName);
-    }
-
-    public boolean isNamed() {
-        return canonicalName != null;
     }
 }

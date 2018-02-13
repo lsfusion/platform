@@ -117,6 +117,8 @@ public class DefaultFormView extends FormView {
         TreeGroupView treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
         boolean groupStarted = false;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
+            addGroupObjectView(groupObject, version);
+
             //если группа началась, ставим флаг. Если группа закончилась, addTreeGroupView и флаг снимаем
             if(treeNextGroup != null) {
                 boolean isInTree = groupObject.entity.isInTree();
@@ -128,7 +130,6 @@ public class DefaultFormView extends FormView {
                     groupStarted = isInTree && treeNextGroup != null && groupObject.entity.treeGroup.equals(treeNextGroup.entity);
                 }
             }
-            addGroupObjectView(groupObject, version);
         }
         if(groupStarted)
             addTreeGroupView(treeNextGroup, version);
@@ -175,12 +176,12 @@ public class DefaultFormView extends FormView {
 
         ContainerView leftControlsContainer = createContainer(null, null, "leftControls", version);
         leftControlsContainer.setType(ContainerType.CONTAINERH);
-        leftControlsContainer.childrenAlignment = Alignment.START;
+        leftControlsContainer.childrenAlignment = Alignment.LEADING;
         leftControlsContainer.setFlex(0);
 
         ContainerView rightControlsContainer = createContainer(null, null, "rightControls", version);
         rightControlsContainer.setType(ContainerType.CONTAINERH);
-        rightControlsContainer.childrenAlignment = Alignment.END;
+        rightControlsContainer.childrenAlignment = Alignment.TRAILING;
         rightControlsContainer.setFlex(1);
 
 //        leftControlsContainer.add(printFunction, version);
@@ -452,15 +453,22 @@ public class DefaultFormView extends FormView {
     }
 
     private String getPropertyGroupContainerSID(PropertyDrawEntity propertyDraw, AbstractGroup propertyGroup, Version version) {
-        String propertyGroupName = propertyGroup.getName();
+        String propertyGroupSID = propertyGroup.getSID();
+        if (propertyGroupSID.contains("_")) {
+            String[] sids = propertyGroupSID.split("_", 2);
+            propertyGroupSID = sids[1];
+        }
+        // todo : здесь конечно совсем хак - нужно более четкую схему сделать
+//        if (lm.getGroupBySID(propertyGroupSID) != null) {
+//            используем простое имя для групп данного модуля
+//            propertyGroupSID = lm.transformSIDToName(propertyGroupSID);
+//        }
         PropertyGroupContainerView propertyContainer = getPropertyContainer(propertyDraw, version);
-        
         String containerSID;
         if(propertyContainer == null)
             containerSID = "NOGROUP";
         else
             containerSID = propertyContainer.getPropertyGroupContainerSID();
-        
-        return containerSID + "." + propertyGroupName; // todo [dale]: разобраться с NOGROUP
+        return containerSID + "." + propertyGroupSID; // todo [dale]: разобраться с NOGROUP
     }
 }

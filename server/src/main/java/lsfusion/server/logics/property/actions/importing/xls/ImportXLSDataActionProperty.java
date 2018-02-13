@@ -38,7 +38,7 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, String extension) throws IOException, IncorrectFileException {
+    public ImportIterator getIterator(byte[] file) throws IOException, IncorrectFileException {
         return file[0] == 80 ?  //50 hex
                 new ImportXLSXIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex) :
                 new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);

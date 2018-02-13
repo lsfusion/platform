@@ -108,7 +108,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public static Where isValueClass(Expr expr, ObjectValueClassSet classSet) {
         Where result = Where.FALSE;
         for(ConcreteCustomClass customUsedClass : classSet.getSetConcreteChildren())
-            result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
+            result = result.or(expr.compare(customUsedClass.getClassObject().getStaticExpr(), Compare.EQUALS));
         return result;
     }
 
@@ -1054,7 +1054,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         updateSessionEvents(singleProp);
 
-        ModifyResult changed = aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(DataObject.TRUE));
+        ModifyResult changed = aspectChangeProperty(isDataChanged, new PropertyChange<ClassPropertyInterface>(new DataObject(true, LogicalClass.instance)));
         if (changed.dataChanged()) {
             updateProperties(singleProp, changed.sourceChanged());
         }

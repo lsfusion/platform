@@ -39,9 +39,7 @@ import lsfusion.server.session.SessionChanges;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SinglePropertyTableUsage;
 
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Set;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
@@ -58,21 +56,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     }
 
-    public <T extends Number> DataObject(T object, IntegralClass<T> dataClass) {
-        this(object, (DataClass<T>) dataClass);
-    }
-    public DataObject(Timestamp object, DateTimeClass dataClass) {
-        this(object, (DataClass<Timestamp>) dataClass);
-    }
-    public DataObject(Date object, DateClass dataClass) {
-        this(object, (DataClass<Date>) dataClass);
-    }
-    public DataObject(byte[] object, FileClass dataClass) {
-        this(object, (DataClass<byte[]>) dataClass);
-    }
-    public DataObject(String object, StringClass dataClass) {
-        this(object, (DataClass<String>) dataClass);
-    }
     public <T> DataObject(T object, DataClass<T> dataClass) {
         this((Object)object, dataClass);
     }
@@ -145,7 +128,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public Expr getStaticExpr() {
-        assert !(objectClass instanceof StringClass);
         return new StaticValueExpr(object, (StaticClass) objectClass);
     }
 
@@ -311,8 +293,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return objectClass;
     }
 
-    public ParseInterface getParse(Type type, SQLSyntax syntax) {
-        return new TypeObject(this, type, syntax);
+    public ParseInterface getParse(Field field, SQLSyntax syntax) {
+        return new TypeObject(this, field, syntax);
     }
 
     @Override

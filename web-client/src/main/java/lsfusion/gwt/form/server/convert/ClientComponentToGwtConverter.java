@@ -80,18 +80,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private GAlignment convertAlignment(Alignment alignment) {
         switch (alignment) {
-            case START: return GAlignment.START;
+            case LEADING: return GAlignment.LEADING;
             case CENTER: return GAlignment.CENTER;
-            case END: return GAlignment.END;
+            case TRAILING: return GAlignment.TRAILING;
         }
         throw new IllegalStateException("Unknown alignment");
     }
 
     private GFlexAlignment convertFlexAlignment(FlexAlignment alignment) {
         switch (alignment) {
-            case START: return GFlexAlignment.START;
+            case LEADING: return GFlexAlignment.LEADING;
             case CENTER: return GFlexAlignment.CENTER;
-            case END: return GFlexAlignment.END;
+            case TRAILING: return GFlexAlignment.TRAILING;
             case STRETCH: return GFlexAlignment.STRETCH;
         }
         throw new IllegalStateException("Unknown alignment");
@@ -313,8 +313,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.hide = clientPropertyDraw.hide;
         
         propertyDraw.notNull = clientPropertyDraw.notNull;
-
-//        propertyDraw.getValueWidth(null, form); // parentFont - null потому как на этом этапе интересуют только в панели свойства (а parentFont для грида, там своя ветка)
 
         return propertyDraw;
     }

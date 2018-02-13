@@ -24,11 +24,6 @@ public class NamespaceElementFinder<T, P> {
             this.value = value;
             this.module = module;
         }
-
-        @Override
-        public String toString() {
-            return module.getName() + " (" + value.toString() + ")";
-        }
     }
 
     public NamespaceElementFinder(ModuleFinder<T, P> finder, Collection<LogicsModule> modules) {

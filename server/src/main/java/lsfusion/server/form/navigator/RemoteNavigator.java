@@ -19,6 +19,7 @@ import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DateTimeClass;
@@ -828,9 +829,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            businessLogics.LM.baseWindows.log.serialize(dataStream);
-            businessLogics.LM.baseWindows.status.serialize(dataStream);
-            businessLogics.LM.baseWindows.forms.serialize(dataStream);
+            businessLogics.LM.windows.log.serialize(dataStream);
+            businessLogics.LM.windows.status.serialize(dataStream);
+            businessLogics.LM.windows.forms.serialize(dataStream);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
@@ -887,10 +888,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void runAction(DataSession session, String sid, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
         final ActionProperty action;
         if (isNavigatorAction) {
-            final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
+            final NavigatorElement element = businessLogics.LM.root.getChildElement(sid);
 
             if (!(element instanceof NavigatorAction)) {
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.action.not.found}"));
@@ -902,7 +903,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
             action = ((NavigatorAction) element).getAction();
         } else {
-            action = (ActionProperty) businessLogics.findProperty(canonicalName).property;
+            action = (ActionProperty) businessLogics.findProperty(sid).property;
         }
         action.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
     }

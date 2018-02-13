@@ -19,11 +19,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     protected ClientDoubleClass() {
     }
 
-    @Override
-    protected int getLength() {
-        return 10;
-    }
-
     public byte getTypeId() {
         return Data.DOUBLE;
     }
@@ -54,7 +49,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new DoublePropertyEditor(value, property.maxValue, getEditFormat(property), property.design, Double.class, property.hasMask());
+        return new DoublePropertyEditor(value, property.maxValue, (NumberFormat) property.getFormat(), property.design, Double.class, property.hasMask());
     }
 
     @Override

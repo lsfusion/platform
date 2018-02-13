@@ -74,7 +74,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createPrintGroupXlsButton() {
-        return new ToolbarGridButton(PRINT_XLS_ICON, ClientResourceBundle.getString("form.grid.export.to.xlsx")) {
+        return new ToolbarGridButton(PRINT_XLS_ICON, ClientResourceBundle.getString("form.grid.export.to.xls")) {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {

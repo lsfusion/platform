@@ -21,8 +21,8 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    protected int getLength() {
-        return 10;
+    public String getMask(String pattern) {
+        return "9 999 999 999 999 999 999";
     }
 
     @Override

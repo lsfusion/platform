@@ -58,12 +58,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
     
     public double getFlex(FormEntity formEntity) {
-        ContainerView container = getContainer();
-        if (container != null) {
-            if (container.isScroll() || container.isSplit())
-                return flex != null && flex != 0 ? flex : 1;
-        }
-
         if (flex != null)
             return flex;
 
@@ -73,7 +67,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public double getDefaultFlex(FormEntity formEntity) {
         ContainerView container = getContainer();
         if (container != null) {
-            if (container.isTabbedPane())
+            if ((container.isScroll() || container.isSplit() || container.isTabbedPane()))
                 return 1;
         }
         return getBaseDefaultFlex(formEntity);
@@ -98,7 +92,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return getBaseDefaultAlignment(formEntity);
     }
     public FlexAlignment getBaseDefaultAlignment(FormEntity formEntity) {
-        return FlexAlignment.START;
+        return FlexAlignment.LEADING;
     }
 
     public int marginTop;

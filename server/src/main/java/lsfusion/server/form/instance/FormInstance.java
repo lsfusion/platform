@@ -14,12 +14,16 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
-import lsfusion.interop.action.*;
+import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.interop.action.EditNotPerformedClientAction;
+import lsfusion.interop.action.HideFormClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -56,12 +60,8 @@ import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
-import lsfusion.server.remote.FormReportManager;
-import lsfusion.server.remote.StaticFormReportManager;
 import lsfusion.server.session.*;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.stack.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,6 +71,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 import static lsfusion.base.BaseUtils.systemLogger;
@@ -2487,15 +2488,5 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @Override
     public void close() throws SQLException { // в общем случае пытается закрыть, а не закрывает объект
         explicitClose();
-    }
-
-    public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
-        FormReportManager<?, ?, ?, ?, ?, ?, ?> newFormManager = new StaticFormReportManager(entity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
-        return newFormManager.getCustomReportPathList(false, null, null);
-    }
-
-    public static void saveCustomReportPathList(FormEntity formEntity) {
-        FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
-        newFormManager.saveCustomReportPathList(false, null, null);
     }
 }

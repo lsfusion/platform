@@ -82,7 +82,7 @@ public final class LoginAction {
             fileWr.write(loginInfo.getServerHost() + '\n');
             fileWr.write(loginInfo.getServerPort() + '\n');
             userNames.remove(loginInfo.getUserName());
-            userNames.add(0, loginInfo.getUserName());
+            userNames.add(loginInfo.getUserName());
             fileWr.write(BaseUtils.toString(userNames, "\t") + '\n');
             fileWr.write(loginInfo.getServerDB() + '\n');
             fileWr.write(String.valueOf(loginInfo.getSavePwd()) + '\n');

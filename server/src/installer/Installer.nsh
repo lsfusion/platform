@@ -2,11 +2,9 @@ Name "lsFusion Platform"
 
 SetCompressor lzma
 
-RequestExecutionLevel user
-
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.3.3
+!define VERSION 1.3.2
 !define COMPANY luxsoft
 !define URL lsfusion.ru
 
@@ -20,7 +18,6 @@ RequestExecutionLevel user
 !define JAVA_SECTION_NAME "JDK ${JDK_VERSION}"
 !define TOMCAT_SECTION_NAME "Apache Tomcat ${TOMCAT_FULL_VERSION}"
 !define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
-!define JASPER_SECTION_NAME "Jaspersoft Studio ${JASPER_VERSION}"
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
@@ -57,8 +54,6 @@ Var pgDir
 Var pgServiceName
 
 Var ideaDir
-
-Var jasperDir
 
 Var createShortcuts
 Var createServices
@@ -112,9 +107,6 @@ Page custom javaExistingDirPagePre javaExistingDirPageLeave
 
 # IntelliJ Idea pages
 !insertmacro CustomDirectoryPage $(strIdeaDirHeader) $(strIdeaDirTextTop) $(strDestinationFolder) $ideaDir ideaPagePre
-
-# Jaspersoft Studio pages
-!insertmacro CustomDirectoryPage $(strJasperDirHeader) $(strJasperDirTextTop) $(strDestinationFolder) $jasperDir jasperPagePre
 
 # Platform pages
 Page custom platformConfigPagePre platformConfigPageLeave
@@ -208,8 +200,6 @@ Function .onInit
     StrCpy $javaDir "$ProgramFiles${ARCH}\Java\jdk${JDK_VERSION}"
 
     StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition ${IDEA_VERSION}"
-    
-    StrCpy $jasperDir "$ProgramFiles${ARCH}\TIBCO\Jaspersoft Studio-${JASPER_VERSION}"
 
     StrCpy $pgDir "$ProgramFiles${ARCH}\PostgreSQL\${PG_VERSION}"
     StrCpy $pgHost "localhost"
@@ -264,7 +254,6 @@ Function .onInit
 
     !ifndef DEV
         !insertmacro HideSection ${SecIdea}
-        !insertmacro HideSection ${SecJasper}
     !else
         !insertmacro UnselectSection ${SecServices}
     !endif
@@ -472,8 +461,6 @@ Function createShortcuts
     DetailPrint "Creating shortcuts"
     
     SetOutPath "$INSTDIR"
-    
-    CreateDirectory "$SMPROGRAMS\lsFusion Platform ${VERSION}"
 
     ${if} ${SectionIsSelected} ${SecServer}
         ${if} $createServices == "1"

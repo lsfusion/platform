@@ -31,7 +31,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
     EmailLogicsModule emailLM;
 
 
-    public ReceiveEmailActionProperty(EmailLogicsModule LM) {
+    public ReceiveEmailActionProperty(EmailLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM);
         this.emailLM = LM;
 

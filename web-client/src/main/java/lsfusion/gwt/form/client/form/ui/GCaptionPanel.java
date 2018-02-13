@@ -21,11 +21,6 @@ public class GCaptionPanel extends FlexPanel {
         innerPanel.addFill(content);
 
         addFill(innerPanel);
-        
-        // если контейнеру с заголовком дали меньший размер (высоту), чем у содержимого, получалось, что верхний контейнер (с border'ом)
-        // грубо обрезался этим промежуточным контейнером, который получал размер содержимого. позволяем ему сжиматься, чтобы наружу 
-        // выходила только часть внутреннего контейнера
-        innerPanel.getElement().getStyle().setProperty("flexShrink", "1");
 
         setStyleName("captionPanel");
         innerPanel.setStyleName("captionPanelContainer");

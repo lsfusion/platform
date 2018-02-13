@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GForm implements Serializable, GWidthStringProcessor {
+public class GForm implements Serializable {
     public String sessionID;
 
     public String sID;
@@ -35,7 +35,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public GFormChangesDTO initialFormChanges;
     public GFormUserPreferences userPreferences;
 
-    public ArrayList<GFontWidthString> usedFonts = new ArrayList<>();
+    public ArrayList<GFont> usedFonts = new ArrayList<>();
     
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
@@ -123,11 +123,8 @@ public class GForm implements Serializable, GWidthStringProcessor {
     }
 
     public void addFont(GFont font) {
-        addWidthString(new GFontWidthString(font));
-    }
-    public void addWidthString(GFontWidthString fontWidthString) {
-        if (!usedFonts.contains(fontWidthString)) {
-            usedFonts.add(fontWidthString);
+        if (!usedFonts.contains(font)) {
+            usedFonts.add(font);
         }
     }
 

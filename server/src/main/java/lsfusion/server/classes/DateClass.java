@@ -4,7 +4,6 @@ import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -126,8 +125,8 @@ public class DateClass extends DataClass<Date> {
         }
     }
 
-    public String formatString(Date value) {
-        return value == null ? null : getDateFormat().format(value);
+    public static String format(Date date) {
+        return getDateFormat().format(date);
     }
 
     public String getSID() {
@@ -155,7 +154,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(("{classes.date}")));
+    public boolean isFlex() {
+        return false;
     }
 }

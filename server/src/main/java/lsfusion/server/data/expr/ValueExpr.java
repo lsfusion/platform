@@ -14,7 +14,6 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.EnsureTypeEnvironment;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
@@ -152,7 +151,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
         return ((ImSet<Value>)removeStatic(col1)).containsAll(removeStatic(col2));
     }
 
-    public TypeObject getParseInterface(QueryEnvironment env, EnsureTypeEnvironment typeEnv) {
+    public TypeObject getParseInterface(QueryEnvironment env) {
         return new TypeObject(object, objectClass.getType());
     }
 
@@ -174,7 +173,6 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     }
     public ValueExpr(DataObject dataObject) {
         this(dataObject.object, dataObject.objectClass);
-        this.dataObject = dataObject;
     }
 
     @Override

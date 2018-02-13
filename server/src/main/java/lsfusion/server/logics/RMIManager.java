@@ -38,8 +38,6 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     private int registryPort = 0;
 
-    private int httpPort = 0;
-
     private int exportPort = 0;
 
     private int jmxPort = 0;
@@ -62,14 +60,6 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     public void setRegistryPort(int registryPort) {
         this.registryPort = registryPort;
-    }
-
-    public int getHttpPort() {
-        return httpPort;
-    }
-
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
     }
 
     public int getJmxPort() {

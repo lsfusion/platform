@@ -10,16 +10,16 @@ public abstract class NavigatorWindow extends AbstractWindow {
     public boolean drawRoot = false;
     public boolean drawScrollBars = true;
 
-    public NavigatorWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
-        super(canonicalName, caption, x, y, width, height);
+    public NavigatorWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
+        super(sID, caption, x, y, width, height);
     }
 
-    public NavigatorWindow(String canonicalName, LocalizedString caption, String borderConstraint) {
-        super(canonicalName, caption, borderConstraint);
+    public NavigatorWindow(String sID, LocalizedString caption, String borderConstraint) {
+        super(sID, caption, borderConstraint);
     }
 
-    public NavigatorWindow(String canonicalName, LocalizedString caption) {
-        super(canonicalName, caption);
+    public NavigatorWindow(String sID, LocalizedString caption) {
+        super(sID, caption);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

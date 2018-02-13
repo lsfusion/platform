@@ -1,12 +1,10 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
-import org.apache.commons.net.util.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -93,11 +91,7 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     public byte[] parseString(String s) throws ParseException {
-        return Base64.decodeBase64(s);
-    }
-
-    public String formatString(byte[] value) {
-        return value != null ? Base64.encodeBase64String(value) : null;
+        throw new RuntimeException("not supported");
     }
 
     protected abstract String getFileSID();
@@ -213,25 +207,7 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parse(Object o) throws ParseException {
-        if(checkParseUnknownTypeNull(o))
-            return null;
-
-        if(BaseUtils.getExtension((byte[])o).equals("null"))
-            return null;
-
-        return parseNotNull((byte[])o);
+    public boolean isFlex() {
+        return false;
     }
-
-    @Override
-    public Object format(byte[] value) {
-        if(value == null)
-            return BaseUtils.mergeFileAndExtension(new byte[]{}, "null".getBytes());
-
-        return formatNotNull(value);
-    }
-
-    protected abstract byte[] parseNotNull(byte[] b);
-
-    protected abstract byte[] formatNotNull(byte[] b);
 }

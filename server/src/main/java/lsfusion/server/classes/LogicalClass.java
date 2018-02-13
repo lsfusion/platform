@@ -133,11 +133,6 @@ public class LogicalClass extends DataClass<Boolean> {
         }
     }
 
-    @Override
-    public String formatString(Boolean value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
     public String getSID() {
         return "BOOLEAN";
     }
@@ -148,6 +143,11 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public boolean calculateStat() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlex() {
         return false;
     }
 }

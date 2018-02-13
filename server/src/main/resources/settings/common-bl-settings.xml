@@ -694,7 +694,6 @@
     <!-- Remoting -->
     <bean id="rmiManager" class="lsfusion.server.logics.RMIManager">
         <property name="registryPort" value="${rmi.registryPort}"/>
-        <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
         <property name="exportPort" value="${rmi.exportPort:0}"/>
         <property name="exportName" value="${rmi.exportName:}"/>
@@ -731,11 +730,6 @@
         <property name="dbManager" ref="dbManager"/>
     </bean>
 
-    <bean id="externalHttpServer" class="lsfusion.server.logics.ExternalHttpServer">
-        <property name="logicsInstance" ref="logicsInstance"/>
-        <property name="remoteLogics" ref="remoteLogics"/>
-    </bean>
-
     <!-- Lifecycle Manager setup -->
     <bean id="lifecycleManager" class="lsfusion.server.lifecycle.LifecycleManager">
         <constructor-arg ref="lifecycleListeners"/>
@@ -758,7 +752,6 @@
         <ref bean="reflectionManager"/>
         <ref bean="modulesHashManager"/>
         <ref bean="scheduler"/>
-        <ref bean="externalHttpServer"/>
     </util:list>
 
     <!-- Список для задания дополнительных LifecycleListener'ов -->

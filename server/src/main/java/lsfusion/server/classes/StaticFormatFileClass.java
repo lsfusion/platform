@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -23,15 +22,5 @@ public abstract class StaticFormatFileClass extends FileClass {
             return "castfromcustomfile(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
-    }
-
-    @Override
-    protected byte[] parseNotNull(byte[] b) {
-        return BaseUtils.getFile(b);
-    }
-
-    @Override
-    protected byte[] formatNotNull(byte[] b) {
-        return BaseUtils.mergeFileAndExtension(b, getOpenExtension(b).getBytes());
     }
 }

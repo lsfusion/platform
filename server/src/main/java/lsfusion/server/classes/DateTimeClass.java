@@ -3,7 +3,6 @@ package lsfusion.server.classes;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -122,11 +121,6 @@ public class DateTimeClass extends DataClass<Timestamp> {
         }
     }
 
-    @Override
-    public String formatString(Timestamp value) {
-        return value == null ? null : getDateTimeFormat().format(value);
-    }
-
     public static DateFormat getDateTimeFormat() {
         return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
     }
@@ -160,7 +154,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(("{classes.date.with.time}")));
+    public boolean isFlex() {
+        return false;
     }
 }

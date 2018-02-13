@@ -9,7 +9,7 @@ import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.data.JDBCTable;
+//import lsfusion.server.data.JDBCTable;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -321,7 +321,8 @@ public class ReadUtils {
                     statement = conn.createStatement();
                     ResultSet rs = statement.executeQuery(jdbcQuery);
 
-                    FileUtils.writeByteArrayToFile(file, JDBCTable.serialize(rs));
+                    //JDBCTable.serialize(rs) ещё не замерджена
+                    FileUtils.writeByteArrayToFile(file, BaseUtils.serializeResultSet(rs));
 
                 } finally {
                     if (statement != null)

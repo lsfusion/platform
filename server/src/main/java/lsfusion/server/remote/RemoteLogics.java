@@ -20,15 +20,14 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.DynamicFormatFileClass;
+import lsfusion.server.classes.FileClass;
+import lsfusion.server.classes.StaticFormatFileClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.type.ParseException;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -39,13 +38,10 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
-import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -201,6 +197,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
         return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
     }
+    
+    public int generateNewID() throws RemoteException {
+        return BaseLogicsModule.generateStaticNewID();
+    }
 
     public void sendPingInfo(Long computerId, Map<Long, List<Long>> pingInfoMap) {
         Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
@@ -335,115 +335,28 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
-        List<Object> returnList;
-        try {
-            LAP property = (LAP) businessLogics.findPropertyByCompoundName(action);
-            if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params);
-            } else {
-                throw new RuntimeException(String.format("Action %s was not found", action));
-            }
-        } catch (ParseException | SQLHandledException | SQLException | IOException e) {
-            throw new RuntimeException(e);
-        }
-        return returnList;
-    }
-
-    @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) {
-        List<Object> returnList = new ArrayList<>();
-        if (paramScript != null) {
+    public void runAction(String canonicalName, String... params) throws RemoteException {
+        LAP property = (LAP) businessLogics.findProperty(canonicalName);
+        if (property != null) {
             try {
-                String script = StringClass.text.parse(paramScript);
-                if (action) {
-                    //оборачиваем в run без параметров
-                    script = "run() = {" + script + ";\n};";
-                }
-                ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
+                DataSession session = createSession();
+                ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
+                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
 
-                String runName = module.getName() + ".run";
-                LAP<?> runAction = module.findAction(runName);
-                if (runAction != null) {
-                    returnList = executeExternal(runAction, returnCanonicalNames, params);
+                DataObject[] objects = new DataObject[interfaces.size()];
+                for (int i = 0; i < interfaces.size(); i++) {
+                    ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
+                    objects[i] = session.getDataObject(valueClass, valueClass.getType().parseString(params[i]));
                 }
+                ExecutionStack stack = getStack();
+                property.execute(session, stack, objects);
+                session.apply(businessLogics, stack);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            throw new RuntimeException("Eval script was not found");
+            throw new RuntimeException("Action was not found");
         }
-        return returnList;
-    }
-
-    @Override
-    public List<Object> read(String property, Object[] params) {
-        try {
-            LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
-            if (lcp != null) {
-                try (DataSession session = createSession()) {
-                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params));
-                }
-            } else
-                throw new RuntimeException(String.format("Property %s was not found", property));
-
-        } catch (SQLException | SQLHandledException | ParseException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException, IOException {
-        List<Object> returnList = new ArrayList<>();
-        try (DataSession session = createSession()) {
-            ExecutionStack stack = getStack();
-
-            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params));
-
-            if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
-                for (String returnCanonicalName : returnCanonicalNames) {
-                    LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
-                    if (returnProperty != null) {
-                        returnList.addAll(readReturnProperty(session, returnProperty));
-                    } else
-                        throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                }
-            } else {
-                returnList.addAll(readReturnProperty(session, businessLogics.LM.exportFile));
-            }
-
-            session.apply(businessLogics, stack);
-        }
-        return returnList;
-    }
-
-    private List<Object> readReturnProperty(DataSession session, LCP returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
-        Object returnValue = returnProperty.read(session, params);
-        Type returnType = returnProperty.property.getType();
-        return readReturnProperty(returnValue, returnType);
-    }
-
-    private List<Object> readReturnProperty(Object returnValue, Type returnType) throws IOException {
-        List<Object> returnList = new ArrayList<>();
-        boolean jdbcSingleRow = false;
-        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
-            if (BaseUtils.getExtension((byte[]) returnValue).equals("jdbc")) {
-                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(BaseUtils.getFile((byte[]) returnValue));
-                if (jdbcTable.singleRow) {
-                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
-                    for (String field : jdbcTable.fields) {
-                        Type fieldType = jdbcTable.fieldTypes.get(field);
-                        if(row == null)
-                            returnList.add(null);
-                        else
-                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
-                    }
-                    jdbcSingleRow = true;
-                }
-            }
-        }
-        if (!jdbcSingleRow)
-            returnList.add(returnType.format(returnValue));
-        return returnList;
     }
 
     @Override
@@ -499,11 +412,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
         return true;
-    }
-
-    @Override
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
-        FormInstance.saveCustomReportPathList(businessLogics.findForm(formSID));
     }
 }
 

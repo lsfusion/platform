@@ -16,6 +16,12 @@ import java.text.ParseException;
 
 public interface ClientType {
 
+    int getWidth(int minCharWidth, FontMetrics fontMetrics);
+
+    int getHeight(FontMetrics fontMetrics);
+
+    Format getDefaultFormat();
+
     PropertyRenderer getRendererComponent(ClientPropertyDraw property);
 
     PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
@@ -30,6 +36,8 @@ public interface ClientType {
 
     String formatString(Object obj) throws ParseException;
 
+    Object transformServerValue(Object obj);
+
     boolean shouldBeDrawn(ClientFormController form);
     
     String getConfirmMessage();
@@ -41,11 +49,4 @@ public interface ClientType {
     Compare getDefaultCompare();
 
     EditBindingMap.EditEventFilter getEditEventFilter();
-
-    // добавляет поправку на кнопки и другие элементы 
-    int getFullWidthString(String widthString, FontMetrics fontMetrics);
-
-    int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property);
-
-    int getDefaultHeight(FontMetrics fontMetrics);    
 }

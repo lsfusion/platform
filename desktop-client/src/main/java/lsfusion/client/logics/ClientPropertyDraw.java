@@ -6,7 +6,6 @@ import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PanelView;
-import lsfusion.client.form.renderer.FormatPropertyRenderer;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
@@ -170,22 +169,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (valueSize != null && valueSize.width > -1) {
             return valueSize.width;
         }
-        FontMetrics fontMetrics = comp.getFontMetrics(design.getFont(comp));
-
-        String widthString = null;
-        if(widthString == null && charWidth != 0)
-            widthString = BaseUtils.replicate('0', charWidth);
-        if(widthString != null)
-            return baseType.getFullWidthString(widthString, fontMetrics);
-
-        return baseType.getDefaultWidth(fontMetrics, this);
+        return baseType.getWidth(charWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getValueHeight(JComponent comp) {
         if (valueSize != null && valueSize.height > -1) {
             return valueSize.height;
         }
-        int height = baseType.getDefaultHeight(comp.getFontMetrics(design.getFont(comp)));
+        int height = baseType.getHeight(comp.getFontMetrics(design.getFont(comp)));
         if (design.getImage() != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(design.getImage().getIconHeight() + 6, height);
         return height;
@@ -205,17 +196,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Format getFormat() {
-        assert baseType instanceof ClientFormatClass;
-        Format result = format;
-        Format defaultFormat = ((ClientFormatClass)baseType).getDefaultFormat();
-        if (result == null)
-            return defaultFormat;
-        if(baseType instanceof ClientIntegralClass) {
-            ((NumberFormat) result).setParseIntegerOnly(((NumberFormat) defaultFormat).isParseIntegerOnly());
-            ((NumberFormat) result).setMaximumIntegerDigits(((NumberFormat) defaultFormat).getMaximumIntegerDigits());
-            ((NumberFormat) result).setGroupingUsed(((NumberFormat) defaultFormat).isGroupingUsed());
+        if (format == null) {
+            return baseType.getDefaultFormat();
+        } else {
+            return mergeFormats(format, baseType.getDefaultFormat());
         }
-        return result;
     }
 
     public boolean hasMask() {
@@ -232,21 +217,26 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return null;
     }
 
-    public void setUserFormat(String pattern) {
-        if(baseType instanceof ClientFormatClass) {
-            Format setFormat = null;
-            if (pattern != null && !pattern.isEmpty())
-                setFormat = ((ClientFormatClass) baseType).createUserFormat(pattern);
-            else
-                setFormat = defaultFormat;
-
-            format = setFormat;
-            PropertyRenderer renderer = getRendererComponent();
-            if (renderer instanceof FormatPropertyRenderer) {
-                ((FormatPropertyRenderer) renderer).updateFormat();
-            } else
-                assert false;
+    public Format setFormat(String pattern) {
+        if (pattern != null && !pattern.isEmpty()) {
+            if (baseType instanceof ClientIntegralClass) {
+                format = mergeFormats(new DecimalFormat(pattern), baseType.getDefaultFormat());
+            } else if (baseType instanceof ClientDateClass) {
+                format = new SimpleDateFormat(pattern);
+            }
+        } else {
+            format = defaultFormat;
         }
+        return format;
+    }
+
+    private Format mergeFormats(Format format, Format defaultFormat) {
+        if(baseType instanceof ClientIntegralClass) {
+            ((DecimalFormat) format).setParseIntegerOnly(((NumberFormat)defaultFormat).isParseIntegerOnly());
+            ((DecimalFormat) format).setMaximumIntegerDigits(((NumberFormat)defaultFormat).getMaximumIntegerDigits());
+            ((DecimalFormat) format).setGroupingUsed(((NumberFormat)defaultFormat).isGroupingUsed());
+        }
+        return format;
     }
 
     public String getEditCaption(String caption) {

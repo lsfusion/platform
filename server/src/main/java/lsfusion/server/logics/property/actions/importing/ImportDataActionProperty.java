@@ -2,8 +2,10 @@ package lsfusion.server.logics.property.actions.importing;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -29,13 +31,13 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -97,11 +99,10 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.TABLE) {
-            return new ImportTableDataActionProperty(ids, properties, baseLM);
+            return new ImportJDBCDataActionProperty(ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(ids, properties, baseLM);
-        } else if(format == null)
-            return new ImportDefaultDataActionProperty(ids, properties, baseLM);
+        }
         return null;
     }
 
@@ -123,6 +124,18 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     }
 
     @Override
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+        // Сделано по подобию MessageAction
+        // TRUE AND a OR (NOT a), т.е. значение всегда TRUE, но при join'е будет учавствовать в classWhere - FULL
+        ImList props = ListFact.EMPTY();
+        for (PropertyInterface i : interfaces) {
+            props.addList(DerivedProperty.createAnd(DerivedProperty.createTrue(), i));
+            props.addList(DerivedProperty.createNot(i));
+        }
+        return DerivedProperty.createUnion(interfaces, props);
+    }
+
+    @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue value = context.getKeys().getValue(0);
         if(value instanceof DataObject) {
@@ -131,12 +144,10 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             Object file = ((DataObject)value).object;
             if (file instanceof byte[]) {
                 try {
-                    String extension = "";
                     if (((DataObject)value).getType() instanceof DynamicFormatFileClass) {
-                        extension = BaseUtils.getExtension((byte[]) file);
                         file = BaseUtils.getFile((byte[]) file);
                     }
-                    ImportIterator iterator = getIterator((byte[]) file, extension);
+                    ImportIterator iterator = getIterator((byte[]) file);
 
                     MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
                     ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties);
@@ -242,7 +253,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return FlowResult.FINISH;
     }
     
-    public final static IntegerClass type = IntegerClass.instance;
+    public final static DataClass type = IntegerClass.instance; 
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
         List<Integer> columns = new ArrayList<>();
@@ -274,7 +285,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file, String extension) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException, JSONException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException;
 
     protected boolean ignoreIncorrectColumns() {
         return true;

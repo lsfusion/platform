@@ -130,7 +130,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         }
 
         if (groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXlsx()) {
+            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExportToXls()) {
                 @Override
                 public void addListener() {
                     addClickHandler(new ClickHandler() {

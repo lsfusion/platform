@@ -31,7 +31,7 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, String extension) throws IOException, JDOMException {
+    public ImportIterator getIterator(byte[] file) throws IOException, JDOMException {
         return new ImportXMLIterator(file, properties, ids, root, hasListOption, attr) {
             @Override
             public List<Integer> getColumns(Map<String, Integer> mapping) {

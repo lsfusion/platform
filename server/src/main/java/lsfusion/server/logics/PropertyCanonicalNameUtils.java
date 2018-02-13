@@ -34,41 +34,33 @@ public final class PropertyCanonicalNameUtils {
     static public String createName(String namespace, String name, List<ResolveClassSet> signature) {
         StringBuilder builder = new StringBuilder();
         if (namespace != null) {
-            appendNamespace(builder, namespace);
+            builder.append(namespace);
+            builder.append(".");
         }
         builder.append(name);
         if (signature != null) {
-            appendSignature(builder, signature);
+            builder.append(signatureLBracket);
+            boolean isFirst = true;
+            for (ResolveClassSet cs : signature) {
+                if (!isFirst) {
+                    builder.append(",");
+                }
+                isFirst = false;
+                if (cs instanceof StringClass) {
+                    builder.append(commonStringClassName);
+                } else if (cs instanceof NumericClass) {
+                    builder.append(commonNumericClassName);
+                } else if (cs != null) {
+                    builder.append(cs.getCanonicalName());
+                } else {
+                    builder.append(UNKNOWNCLASS);
+                }
+            }
+            builder.append(signatureRBracket);
         }
         return builder.toString();
     }
 
-    static private void appendNamespace(StringBuilder builder, String namespace) {
-        builder.append(namespace);
-        builder.append(CanonicalNameUtils.DELIMITER);
-    }
-    
-    static private void appendSignature(StringBuilder builder, List<ResolveClassSet> signature) {
-        builder.append(signatureLBracket);
-        boolean isFirst = true;
-        for (ResolveClassSet cs : signature) {
-            if (!isFirst) {
-                builder.append(",");
-            }
-            isFirst = false;
-            if (cs instanceof StringClass) {
-                builder.append(commonStringClassName);
-            } else if (cs instanceof NumericClass) {
-                builder.append(commonNumericClassName);
-            } else if (cs != null) {
-                builder.append(cs.getCanonicalName());
-            } else {
-                builder.append(UNKNOWNCLASS);
-            }
-        }
-        builder.append(signatureRBracket);
-    }
-    
     static public String makeSafeName(String s) {
         return s.replaceAll("[^A-Za-z0-9_]", "_");    
     }

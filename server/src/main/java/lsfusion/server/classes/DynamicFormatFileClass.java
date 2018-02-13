@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -50,15 +49,5 @@ public class DynamicFormatFileClass extends FileClass {
             return "casttocustomfile(" + value + ", CAST('" + extension + "' AS VARCHAR))";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
-    }
-
-    @Override
-    protected byte[] parseNotNull(byte[] b) {
-        return b;
-    }
-
-    @Override
-    protected byte[] formatNotNull(byte[] b) {
-        return b;
     }
 }

@@ -27,14 +27,9 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberGridCellRenderer(property);
+        return new NumberGridCellRenderer(property, getFormat(property.pattern));
     }
-
-    @Override
-    protected int getLength() {
-        return length;
-    }
-
+    
     private String getPattern() {
         String pattern = "#,###";
         if (precision > 0) {
@@ -49,7 +44,7 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new NumericGridCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
+        return new NumericGridCellEditor(this, editManager, editProperty, getFormat(editProperty.pattern));
     }
 
     @Override

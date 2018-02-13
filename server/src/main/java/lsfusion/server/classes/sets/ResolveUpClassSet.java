@@ -1,6 +1,5 @@
 package lsfusion.server.classes.sets;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtraMultiIntersectSetWhere;
 import lsfusion.base.ExtraSetWhere;
 import lsfusion.base.col.SetFact;
@@ -119,10 +118,5 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
 
     public CustomClass[] getCommonClasses() {
         return wheres;
-    }
-
-    @Override
-    public boolean equalsCompatible(ResolveClassSet set) {
-        return BaseUtils.hashEquals(this, set);
     }
 }

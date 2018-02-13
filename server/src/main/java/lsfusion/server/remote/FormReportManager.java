@@ -2,11 +2,7 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
@@ -28,11 +24,9 @@ import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -50,50 +44,65 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         this.richDesign = formInterface.getEntity().getRichDesign();
     }
 
-    private static String getSourceFilePath(String fileName) { // предполагаем что структура каталогов соответствует lsfusion project в IDEA
-        return Paths.get(SystemProperties.userDir,"src/main/resources/", fileName).toString(); // userDir нужен так как отсылается на клиента, а там другой userDir
-    }
-
-    public static String targetPath = null;
-    private static String getTargetPath() {
-        if(targetPath == null) { // кэширование
-            for (String path : ResourceUtils.getClassPathElements()) {
-                if (!isRedundantString(path)) {
-                    path = path.replace('\\', '/'); // для windows
-                    if (path.contains("target/classes")) // maven
-                        return path;
-                    if (path.contains("out/production")) // maven
-                        return path;
-                }
-            }
-        }
-        return null;
-    }
-    
-    private String getTargetFilePath(String fileName) {
-        String targetPath = getTargetPath();
-        if(targetPath != null)
-            return Paths.get(targetPath, fileName).toString();
-        return null;
-    }
-    
-    // only for development / debug
-    public List<ReportPath> getCustomReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) throws SQLException, SQLHandledException {
+    public List<ReportPath> getReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
         List<ReportPath> ret = new ArrayList<>();
 
-        ImOrderMap<String, String> reportsFileNames = getCustomReportFileNames(toExcel, groupId);
-        for (String customReportDesignName : reportsFileNames.valueIt()) {
-            if(customReportDesignName != null)
-                ret.add(new ReportPath(getSourceFilePath(customReportDesignName), getTargetFilePath(customReportDesignName)));
+        List<String> reportsFileNames = getCustomReportsFileNames(toExcel, groupId);
+        if (reportsFileNames != null) {
+            for (String customReportDesignName : reportsFileNames) {
+                boolean foundInUserDir = new File(SystemProperties.userDir + "/src/main/resources/" + customReportDesignName).exists();
+                if(foundInUserDir) {
+                    ret.add(new ReportPath(
+                            SystemProperties.userDir + "/src/main/resources/" + customReportDesignName,
+                            SystemProperties.userDir + "/target/classes/" + customReportDesignName
+                    ));
+                }   else {
+                    String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+                    for(String path : classPath) {
+                        String sourcePath = path + "/../../src/main/resources/" + customReportDesignName;
+                        if(new File(sourcePath).exists()) {
+                            ret.add(new ReportPath(
+                                    sourcePath,
+                                    path + "/" + customReportDesignName
+                            ));
+                            break;
+                        }
+                    }
+                }
+                 
+            }
         }
         return ret;
     }
 
-    public void saveCustomReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
-        getAndSaveAutoReportDesigns(true, toExcel, groupId, userPreferences, null);
+    public List<ReportPath> getAutoReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
+        List<ReportPath> ret = new ArrayList<>();
+            try {
+                String sid = getDefaultReportSID(toExcel, groupId);
+                Map<String, JasperDesign> designs = getReportDesignsMap(toExcel, groupId, userPreferences, null);
+                for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+                    String id = entry.getKey();
+                    String autoReportName = getReportName("reports/auto/", id, sid);
+                    String customReportName = getReportName("reports/custom/", id, sid);
+                    new File(autoReportName).getParentFile().mkdirs();
+
+                    JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), autoReportName, "UTF-8");
+
+                    ret.add(new ReportPath(
+                            SystemProperties.userDir + "/src/main/resources/" + customReportName,
+                            SystemProperties.userDir + "/" + autoReportName,
+                            SystemProperties.userDir + "/target/classes/" + customReportName
+
+                    ));
+                }
+
+            } catch (JRException e) {
+                throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
+            }
+        return ret;
     }
 
-    public Map<String, JasperDesign> getAutoReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws JRException {
+    public Map<String, JasperDesign> getReportDesignsMap(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws JRException {
         ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId),
                 getHiddenGroups(groupId), userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? formInterface.getFormInstance() : null);
         return generator.generate();
@@ -167,7 +176,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         }
     }
 
-    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws SQLException, SQLHandledException {
+    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
@@ -191,60 +200,53 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    private final static String reportsDir = "reports/custom/"; 
-    
-    private String findCustomReportFileName(String filePath) {
+    private String findCustomReportDesignName(String name, String sid) {
 
-        Collection<String> result = formInterface.getBL().getAllCustomReports();
+        boolean root = name.equals(GroupObjectHierarchy.rootNodeName);
+        String filePath = "".equals(sid) ? name : (sid + (root ? "" : ("_" + name))) + ".jrxml";
+
+        Collection<String> result = SystemProperties.isDebug ?
+                formInterface.getBL().findAllCustomReportsCalculated() : formInterface.getBL().findAllCustomReports();
         
         for(String entry : result){
             if(entry.endsWith("/" + filePath))
-                return reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+                return "reports/custom/" + entry.split("reports/custom/")[1];
         }
         
-        return reportsDir + filePath;
+        return "reports/custom/" + filePath;
     }
 
-    private String getReportName(String goSID, boolean toExcel, Integer goId) {
-        String formSID = getDefaultReportSID(toExcel, goId);
-        if (goSID.equals(GroupObjectHierarchy.rootNodeName)) {
-            return formSID + ".jrxml";
+    private String getAutoReportName(String name, String sid) {
+        return getReportName("reports/auto/", name, sid);
+    }
+
+    private String getReportName(String prefix, String name, String sid) {
+        if (name.equals(GroupObjectHierarchy.rootNodeName)) {
+            return prefix + sid + ".jrxml";
         } else {
-            return formSID + "_" + goSID + ".jrxml";
+            return prefix + sid + "_" + name + ".jrxml";
         }
     }
 
-    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws SQLException, SQLHandledException {
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
             return customDesigns;
         }
 
-        // сохраняем пока в reports/auto (в принципе смысла уже нет, так как есть интерфейс программный)
-        return getAndSaveAutoReportDesigns(false, toExcel, groupId, userPreferences, columnGroupObjects);
-    }
-
-    private Map<String, JasperDesign> getAndSaveAutoReportDesigns(boolean customPath, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         try {
-            Map<String, JasperDesign> designs = getAutoReportDesigns(toExcel, groupId, userPreferences, columnGroupObjects);
-            saveAutoReportDesigns(designs, customPath, toExcel, groupId);
+            String sid = getDefaultReportSID(toExcel, groupId);
+            Map<String, JasperDesign> designs = getReportDesignsMap(toExcel, groupId, userPreferences, columnGroupObjects);
+            for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+                String id = entry.getKey();
+                String reportName = getAutoReportName(id, sid);
+                new File(reportName).getParentFile().mkdirs();
+
+                JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
+            }
             return designs;
         } catch (JRException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
-        }
-    }
-
-    // актуально только для разработки
-    private void saveAutoReportDesigns(Map<String, JasperDesign> designs, boolean customPath, boolean toExcel, Integer groupId) throws JRException {
-        for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
-            String id = entry.getKey();
-
-            String reportName = (customPath ? "reports/custom/" : "reports/auto/") + getReportName(id, toExcel, groupId);
-            if(customPath)
-                reportName = getSourceFilePath(reportName);                
-            
-            new File(reportName).getParentFile().mkdirs();
-            JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
         }
     }
 
@@ -259,58 +261,77 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return hidedGroupsId;
     }
 
-    private String getCustomReportPropFileName(CalcPropertyObjectEntity reportPathProp, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
+    private InputStream getCustomReportInputStream(String sid, GroupObjectHierarchy.ReportNode node, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
+        InputStream iStream = null;
+        if (node != null) {
+            String resourceName = getReportPathPropStreamResourceName(node.getGroupList().get(0).reportPathProp, toExcel, groupId);
+            if (resourceName != null) {
+                iStream = getClass().getResourceAsStream(resourceName);
+            }
+        }
+        if (iStream == null && node == null) {
+            String resourceName = getReportPathPropStreamResourceName(getFormEntity().reportPathProp, toExcel, groupId);
+            if (resourceName != null) {
+                iStream = getClass().getResourceAsStream(resourceName);
+            }
+        }
+        if (iStream == null) {
+            String resourceName = "/" + findCustomReportDesignName(sid, getDefaultReportSID(toExcel, groupId));
+            iStream = getClass().getResourceAsStream(resourceName);
+        }
+        return iStream;
+    }
+
+    private String getReportPathPropStreamResourceName(CalcPropertyObjectEntity reportPathProp, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
         if (reportPathProp != null) {
             String reportPath = (String) formInterface.read(reportPathProp);
             if (reportPath != null) {
-                return "/" + findCustomReportFileName(getReportPrefix(toExcel, groupId) + reportPath.trim());
+                return "/" + findCustomReportDesignName(getReportPrefix(toExcel, groupId) + reportPath.trim(), "");
             }
         }
         return null;
     }
     
-    private ImOrderMap<String, String> getCustomReportFileNames(boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
-        List<Pair<String, GroupObjectHierarchy.ReportNode>> reportNodes = getReportNodes(groupId);
-        MOrderExclMap<String, String> mResult = MapFact.mOrderExclMap(reportNodes.size());
-        for (Pair<String, GroupObjectHierarchy.ReportNode> node : reportNodes) {
-            String sid = node.first;
-            // Если не нашли custom design для xls, пробуем найти обычный
-            String fileName = getCustomReportFileName(sid, node.second, toExcel, groupId);
-            if (toExcel && fileName == null) {
-                fileName = getCustomReportFileName(node.first, node.second, false, groupId);
+    private List<String> getCustomReportsFileNames(boolean toExcel, Integer groupId) {
+        try {
+            List<String> result = new ArrayList<>();
+            for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
+                String resourceName = null;
+                if (node.second != null) {
+                    resourceName = getReportPathPropStreamResourceName(node.second.getGroupList().get(0).reportPathProp, toExcel, groupId);
+                }
+                if (resourceName == null && node.second == null) {
+                    resourceName = getReportPathPropStreamResourceName(getFormEntity().reportPathProp, toExcel, groupId);
+                }
+                if (resourceName == null) {
+                    resourceName = "/" + findCustomReportDesignName(node.first, getDefaultReportSID(toExcel, groupId));
+                }
+                result.add(resourceName);
             }
-            mResult.exclAdd(sid, fileName);
+            return result;
+        } catch (Exception e) {
+            systemLogger.error("Error loading custom report design: ", e);
+            return null;
         }
-        return mResult.immutableOrder();
     }
 
-    private String getCustomReportFileName(String sid, GroupObjectHierarchy.ReportNode reportNode, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
-        String resourceName = null;
-        if (reportNode != null) {
-            resourceName = getCustomReportPropFileName(reportNode.getGroupList().get(0).reportPathProp, toExcel, groupId);
-        }
-        if (resourceName == null && reportNode == null) {
-            resourceName = getCustomReportPropFileName(getFormEntity().reportPathProp, toExcel, groupId);
-        }
-        if (resourceName == null) {
-            resourceName = "/" + findCustomReportFileName(getReportName(sid, toExcel, groupId));
-        }
-        return resourceName;
-    }
-
-    private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
+    private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) {
         try {
             Map<String, JasperDesign> designs = new HashMap<>();
-            ImOrderMap<String, String> fileNames = getCustomReportFileNames(toExcel, groupId);
-            for(int i=0,size=fileNames.size();i<size;i++) {
-                String fileName = fileNames.getValue(i);
-                if(fileName == null) // если какого-то не хватает считаем что custom design'а нет
+            for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
+                InputStream iStream = getCustomReportInputStream(node.first, node.second, toExcel, groupId);
+                // Если не нашли custom design для xls, пробуем найти обычный
+                if (toExcel && iStream == null) {
+                    iStream = getCustomReportInputStream(node.first, node.second, false, groupId);
+                }
+                if (iStream == null) {
                     return null;
-                JasperDesign subreport = JRXmlLoader.load(getClass().getResourceAsStream(fileName));
-                designs.put(fileNames.getKey(i), subreport);
+                }
+                JasperDesign subreport = JRXmlLoader.load(iStream);
+                designs.put(node.first, subreport);
             }
             return designs;
-        } catch (JRException e) {
+        } catch (Exception e) {
             systemLogger.error("Error loading custom report design: ", e);
             return null;
         }
@@ -400,5 +421,5 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
                 stream.writeInt(formInterface.getObjectID(object));
             }
         }
-    }    
+    }
 }

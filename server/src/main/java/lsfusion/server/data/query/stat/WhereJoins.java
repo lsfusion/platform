@@ -1958,7 +1958,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 Expr order = orders.get(i);
                 if(order instanceof BaseExpr) {
                     whereJoins = whereJoins.and(new WhereJoins(new ExprStatJoin((BaseExpr)order, Stat.ONE)));
-                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType, null, debugInfoWriter != null ? debugInfoWriter.pushPrefix("LIMIT ORDER " + i + " of "  + size +" - " + order) : null);
+                    statKeys = whereJoins.getStatKeys(keys, null, keyStat, statType); // пока обойдемся без этой debugInfo
 
                     Cost newBaseCost = statKeys.getCost();
                     Stat newStat = statKeys.getRows();

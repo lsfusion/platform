@@ -98,8 +98,8 @@ public class ColumnsLayout extends CachableLayout<ColumnsConstraints> {
                         int childLeft = currentX;
                         switch (align) {
                             case CENTER: childLeft = (columnWidth - childWidth) / 2; break;
-                            case END: childLeft = columnWidth - childWidth; break;
-                            case START:
+                            case TRAILING: childLeft = columnWidth - childWidth; break;
+                            case LEADING:
                             case STRETCH:
                             default:
                                 break;

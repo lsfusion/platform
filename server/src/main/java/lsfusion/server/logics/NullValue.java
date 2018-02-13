@@ -98,8 +98,8 @@ public class NullValue extends ObjectValue<NullValue> {
         return ClassWhere.FALSE();
     }
 
-    public ParseInterface getParse(Type type, SQLSyntax syntax) {
-        return AbstractParseInterface.NULL(type);
+    public ParseInterface getParse(Field field, SQLSyntax syntax) {
+        return AbstractParseInterface.NULL(field.type);
     }
 
     public ParseInterface getParse(Type type) {

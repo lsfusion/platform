@@ -1,10 +1,10 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.linear.LAP;
+import org.antlr.runtime.RecognitionException;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 
@@ -49,6 +49,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/Scheduler.lsf"), "/lsfusion/system/Scheduler.lsf", baseLM, BL);
+        setBaseLogicsModule(baseLM);
     }
 
     @Override

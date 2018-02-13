@@ -1,6 +1,8 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.grid.renderer.ActionGridCellRenderer;
@@ -29,7 +31,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public String getDefaultWidthString(GPropertyDraw propertyDraw) {
+    public String getMask(String pattern) {
         return "1234567";
     }
 

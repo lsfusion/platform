@@ -1,18 +1,16 @@
 package lsfusion.server.form.window;
 
+import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class AbstractWindow {
-    private int ID;
-    private String canonicalName;
-    
+public class AbstractWindow extends IdentityObject {
+
     public LocalizedString caption = LocalizedString.NONAME;
 
     public int position;
@@ -28,20 +26,20 @@ public class AbstractWindow {
 
     public boolean visible = true;
 
-    public AbstractWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
-        this(canonicalName, caption);
+    public AbstractWindow(String sID, LocalizedString caption, int x, int y, int width, int height) {
+        this(sID, caption);
 
         setDockPosition(x, y, width, height);
     }
 
-    public AbstractWindow(String canonicalName, LocalizedString caption, String borderConstraint) {
-        this(canonicalName, caption);
+    public AbstractWindow(String sID, LocalizedString caption, String borderConstraint) {
+        this(sID, caption);
 
         setBorderPosition(borderConstraint);
     }
 
-    public AbstractWindow(String canonicalName, LocalizedString caption) {
-        this.canonicalName = canonicalName;
+    public AbstractWindow(String sID, LocalizedString caption) {
+        this.sID = sID;
         setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
     }
@@ -77,29 +75,5 @@ public class AbstractWindow {
     private void setBorderPosition(String borderConstraint) {
         this.position = AbstractWindowType.BORDER_POSITION;
         this.borderConstraint = borderConstraint;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int ID) {
-        this.ID = ID;
-    }
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-    
-    public String getName() {
-        return CanonicalNameUtils.getName(canonicalName);
-    }
-    
-    public String getSID() {
-        return CanonicalNameUtils.toSID(canonicalName);
-    }
-    
-    public boolean isNamed() {
-        return canonicalName != null;
     }
 }

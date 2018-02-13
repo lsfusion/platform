@@ -1,6 +1,5 @@
 package lsfusion.client.logics.classes;
 
-import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Compare;
 
 import java.awt.*;
@@ -32,14 +31,22 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
 
     public abstract String[] getExtensions();
 
+    public String getMask() {
+        return "1234567";
+    }
+
     @Override
-    public int getDefaultHeight(FontMetrics font) {
+    public int getHeight(FontMetrics font) {
         return 18;
     }
 
     @Override
-    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
+    public int getWidth(int minCharWidth, FontMetrics font) {
         return 18;
+    }
+    
+    public Format getDefaultFormat() {
+        return null;
     }
 
     public Object parseString(String s) throws ParseException {

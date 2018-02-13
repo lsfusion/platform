@@ -102,6 +102,11 @@ public class ObjectType extends AbstractType<Long> {
         return true;
     }
 
+    @Override
+    public boolean isFlex() {
+        return false;
+    }
+
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         ObjectValueClassSet objectClassSet = (ObjectValueClassSet)classSet.getValueClassSet(); // unknown не интересуют
         if(objectClassSet.isEmpty())
@@ -137,11 +142,6 @@ public class ObjectType extends AbstractType<Long> {
 
     public Long parseString(String s) throws ParseException {
         return idClass.parseString(s);
-    }
-
-    @Override
-    public String formatString(Long value) {
-        return value == null ? null : String.valueOf(value);
     }
 
     public AndClassSet getBaseClassSet(BaseClass baseClass) {

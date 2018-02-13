@@ -105,14 +105,4 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public boolean fixedSize() { // так как NumericClass не fixedSize, а getCompatible может "смешивать" другие Integral с NumericeClass'ами
         return false;
     }
-
-    @Override
-    public String formatString(T value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
-    @Override
-    public boolean isFlex() {
-        return true;
-    }
 }

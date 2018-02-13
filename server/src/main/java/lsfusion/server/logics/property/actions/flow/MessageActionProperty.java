@@ -29,6 +29,12 @@ public class MessageActionProperty extends SystemActionProperty {
         this.noWait = noWait;
     }
 
+    @Override
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+        // TRUE AND a OR (NOT a), т.е. значение всегда TRUE, но при join'е будет учавствовать в classWhere - FULL
+        return DerivedProperty.createUnion(interfaces, DerivedProperty.createAnd(DerivedProperty.createTrue(), interfaces.single()), DerivedProperty.createNot(interfaces.single()));
+    }
+
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue objValue = context.getSingleKeyValue();
         showMessage(context, objValue == null ? null : objValue.getValue());

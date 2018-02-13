@@ -163,7 +163,7 @@ FORM mail 'Почта'
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) READONLY imported, importError, name, lastError PANEL
+    PROPERTIES(ae) READONLY imported, importError, name, lastError SHOWIF showError(ae)
     PROPERTIES(ae) GRID openFile, saveFile, markImported
     FILTERS email(ae)==e
     
@@ -202,16 +202,7 @@ DESIGN mail {
                                 panelCaptionAbove = TRUE;
                             }
                         }
-                        NEW attachment {
-                            fill = 1;
-                            caption = 'Вложения';
-                            type = CONTAINERH;
-                            MOVE BOX(ae);
-                            MOVE PROPERTY (lastError(ae)){ 
-                                panelCaptionAbove = TRUE;
-                                fill = 0.3;
-                            };
-                        }
+                        MOVE BOX(ae) {caption = 'Вложения';}
                     }
                 }
                 NEW notificationContainer {

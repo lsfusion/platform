@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 
 import static lsfusion.gwt.form.shared.view.filter.GCompare.*;
@@ -12,33 +12,16 @@ public abstract class GDataType extends GType implements GClass {
         return false;
     }
 
-    public static int getFullWidthString(GFont font, String widthString, GWidthStringProcessor widthStringProcessor) {
-        GFontWidthString fontWidthString = new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString);
-        if(widthStringProcessor != null) {
-            widthStringProcessor.addWidthString(fontWidthString);
-            return 0;
-        }
-        return GFontMetrics.getStringWidth(fontWidthString) + 8;
-    }
-
-    public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString(font, widthString, widthStringProcessor);
-    }
-
-    protected int getDefaultCharWidth() {
-        return 0;
-    }
+    public abstract String getMask(String pattern);
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
-        return getFullWidthString(getDefaultWidthString(propertyDraw), font, widthStringProcessor);
+    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+        int charWidth = getCharWidth(minimumCharWidth, pattern);
+        return charWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null? null : font) + 8;
     }
 
-    protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        int defaultCharWidth = getDefaultCharWidth();
-        if(defaultCharWidth != 0)
-            return GwtSharedUtils.replicate('0', defaultCharWidth);
-        throw new UnsupportedOperationException();
+    public int getCharWidth(int definedMinimumCharWidth, String pattern) {
+        return (definedMinimumCharWidth > 0 ? definedMinimumCharWidth : getMask(pattern).length());
     }
 
     @Override
