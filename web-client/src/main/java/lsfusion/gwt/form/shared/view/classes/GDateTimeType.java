@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import com.google.gwt.i18n.shared.DateTimeFormat;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -14,12 +16,17 @@ import java.util.Date;
 
 import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
-public class GDateTimeType extends GDataType {
+public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTimeFormat> {
     public static GDateTimeType instance = new GDateTimeType();
 
     @Override
+    public com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern) {
+        return GwtSharedUtils.getDateTimeFormat(pattern);
+    }
+
+    @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property, getDefaultDateTimeFormat());
+        return new DateGridCellRenderer(property);
     }
 
     @Override
@@ -36,9 +43,17 @@ public class GDateTimeType extends GDataType {
         return new Timestamp(date.getTime());
     }
 
+    private static Date wideFormattableDateTime = null;
+
+    public static Date getWideFormattableDateTime() {
+        if(wideFormattableDateTime == null)
+            wideFormattableDateTime = DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").parse("1991-11-21 10:55:55");
+        return wideFormattableDateTime;
+    }
+
     @Override
-    public String getMask(String pattern) {
-        return pattern != null ? pattern : "01.01.2001 00:00:00";
+    protected Object getDefaultWidthValue() {
+        return getWideFormattableDateTime();
     }
 
     @Override

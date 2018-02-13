@@ -126,12 +126,13 @@ public abstract class DefaultFormsController implements FormsController {
 
     private Widget openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         // перед открытием формы необходимо рассчитать размеры используемых шрифтов
-        return GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
-            @Override
-            public Widget metricsCalculated() {
-                return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
-            }
-        });
+        return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
+//        return GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
+//            @Override
+//            public Widget metricsCalculated() {
+//                return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
+//            }
+//        });
     }
 
     private Widget openForm(FormDockable dockable, final GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {

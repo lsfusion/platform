@@ -8,7 +8,6 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.*;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
-import lsfusion.client.form.renderer.LabelPropertyRenderer;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
 import lsfusion.client.logics.ClientForm;
@@ -39,7 +38,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -530,11 +528,8 @@ public class GridTable extends ClientPropertyTable {
 
             column.setHeaderValue(getColumnCaption(i));
 
-            Format format = property.setFormat(getColumnPattern(i));
-            PropertyRenderer renderer = property.getRendererComponent();
-            if (renderer instanceof LabelPropertyRenderer) {
-                ((LabelPropertyRenderer) renderer).setFormat(format);
-            }
+            // устанавливаем user pattern
+            property.setUserFormat(getColumnUserPattern(i));
 
             rowHeight = max(rowHeight, property.getValueHeight(this));
 
@@ -589,7 +584,7 @@ public class GridTable extends ClientPropertyTable {
         return userCaption != null ? userCaption : model.getColumnName(column);
     }
 
-    private String getColumnPattern(int column) {
+    private String getColumnUserPattern(int column) {
         return getUserPattern(model.getColumnProperty(column));
     }
 

@@ -6,22 +6,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
-public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
-    private NumberFormat defaultFormat;
-    protected NumberFormat format;
+public class NumberGridCellRenderer extends FormatGridCellRenderer<Number, NumberFormat> {
 
     public NumberGridCellRenderer(GPropertyDraw property) {
-        this(property, NumberFormat.getDecimalFormat());
-    }
-
-    public NumberGridCellRenderer(GPropertyDraw property, NumberFormat format) {
-        super(property, Style.TextAlign.RIGHT);
-        this.format = format;
-        this.defaultFormat = format;
-    }
-
-    public void setFormat(String pattern) {
-        this.format = pattern != null ? NumberFormat.getFormat(pattern) : defaultFormat;
+        super(property);
     }
 
     @Override

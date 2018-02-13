@@ -5,19 +5,14 @@ import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 
-public class DatePropertyRenderer extends LabelPropertyRenderer {
+public class DatePropertyRenderer extends FormatPropertyRenderer {
 
     public DatePropertyRenderer(ClientPropertyDraw property) {
         super(property);
-
-        getComponent().setHorizontalAlignment(JLabel.RIGHT);
     }
 
-    public void setValue(Object value) {
-        super.setValue(value);
-
-        if (value != null || property == null || !property.isEditableNotNull()) {
-            getComponent().setText(value == null ? "" : format.format(DateConverter.sqlToDate((java.sql.Date) value)));
-        }
+    @Override
+    protected Object preformat(Object value) {
+        return DateConverter.sqlToDate((java.sql.Date) value);
     }
 }

@@ -34,7 +34,9 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 public class PropertyDrawView extends ComponentView {
@@ -61,7 +63,6 @@ public class PropertyDrawView extends ComponentView {
     public boolean drawAsync = false;
 
     public Format format;
-    public String pattern;
 
     public Boolean focusable;
 
@@ -178,7 +179,7 @@ public class PropertyDrawView extends ComponentView {
             reportField.footerClass = java.lang.String.class;
         }
 
-        reportField.pattern = pattern;
+        reportField.pattern = getFormatPattern();
         
         if (!getType().fillReportDrawField(reportField)) {
             return null;
@@ -344,6 +345,16 @@ public class PropertyDrawView extends ComponentView {
             }
         }
         return contextMenuItems;
+    }
+
+    public String getFormatPattern() {
+        if (format != null) {
+            if (format instanceof DecimalFormat)
+                return ((DecimalFormat) format).toPattern();
+            else if (format instanceof SimpleDateFormat)
+                return ((SimpleDateFormat) format).toPattern();
+        }
+        return null;
     }
 
     @Override

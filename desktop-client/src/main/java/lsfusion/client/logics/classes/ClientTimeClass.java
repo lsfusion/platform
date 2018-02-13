@@ -13,25 +13,37 @@ import java.sql.Time;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static lsfusion.client.Main.*;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
-public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
+public class ClientTimeClass extends ClientFormatClass<SimpleDateFormat> implements ClientTypeClass {
 
     public final static ClientTimeClass instance = new ClientTimeClass();
 
-    public String getMask() {
-        return timeEditFormat.format(wideFormattableDateTime) + "BT";
+    @Override
+    protected Object getDefaultWidthValue() {
+        return wideFormattableDateTime;
+    }
+
+    @Override
+    protected SimpleDateFormat getEditFormat(Format format) {
+        return DateConverter.createTimeEditFormat((DateFormat)format);
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new TimePropertyEditor(value, DateConverter.createTimeEditFormat((DateFormat) property.getFormat()), property.design);
+        return new TimePropertyEditor(value, getEditFormat(property), property.design);
     }
 
     public Format getDefaultFormat() {
         return timeFormat;
+    }
+
+    @Override
+    public SimpleDateFormat createUserFormat(String pattern) {
+        return new SimpleDateFormat(pattern);
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

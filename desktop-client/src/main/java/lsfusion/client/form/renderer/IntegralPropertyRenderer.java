@@ -4,8 +4,9 @@ import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 
-public class TimePropertyRenderer extends FormatPropertyRenderer {
-    public TimePropertyRenderer(ClientPropertyDraw property) {
+public class IntegralPropertyRenderer extends FormatPropertyRenderer {
+
+    public IntegralPropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
 }

@@ -3,7 +3,6 @@ package lsfusion.gwt.form.shared.view.classes;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GExtInt;
 import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -42,14 +41,6 @@ public class GStringType extends GDataType {
         return caseInsensitive ? GCompare.CONTAINS : GCompare.EQUALS;
     }
 
-    @Override
-    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
-        int minCharWidth = getCharWidth(minimumCharWidth, pattern);
-        return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
-    }
-
-    private String mask;
-
     public GStringType() {}
 
     public GStringType(int length) {
@@ -62,21 +53,24 @@ public class GStringType extends GDataType {
         this.caseInsensitive = caseInsensitive;
         this.rich = rich;
         this.length = length;
+    }
 
-        if (length.isUnlimited()) {
-            mask = "999 999";
+    @Override
+    public int getDefaultCharWidth() {
+        if(length.isUnlimited()) {
+            return 15;
         } else {
             int lengthValue = length.getValue();
-            mask = GwtSharedUtils.replicate('0', lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7)));
+            return lengthValue <= 12 ? lengthValue : (int) round(12 + pow(lengthValue - 12, 0.7));
         }
     }
 
     @Override
-    public int getPixelHeight(GFont font) {
+    public int getDefaultHeight(GFont font) {
         if (length.isUnlimited()) {
-            return super.getPixelHeight(font) * 4;
+            return super.getDefaultHeight(font) * 4;
         }
-        return super.getPixelHeight(font);
+        return super.getDefaultHeight(font);
     }
 
     @Override
@@ -93,16 +87,6 @@ public class GStringType extends GDataType {
             return rich ? new RichTextGridCellEditor(editManager, editProperty) : new TextGridCellEditor(editManager, editProperty);
         }
         return new StringGridCellEditor(editManager, editProperty, !blankPadded, length.getValue());
-    }
-
-    @Override
-    public String getMask(String pattern) {
-        return mask;
-    }
-
-    @Override
-    public int getCharWidth(int definedMinimumCharWidth, String pattern) {
-        return definedMinimumCharWidth > 0 ? definedMinimumCharWidth : mask.length();
     }
 
     @Override

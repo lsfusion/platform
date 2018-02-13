@@ -69,8 +69,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
                 return null;
             }
 
-            Object o = values.get(property).get(((TreeGroupNode) node).key);
-            return property.baseType.transformServerValue(o);
+            return values.get(property).get(((TreeGroupNode) node).key);
         }
         return node.toString();
     }

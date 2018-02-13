@@ -54,7 +54,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> backgroundValues = mapBackgroundValues.get(columnProp);
                 Map<ClientGroupObjectValue, Object> foregroundValues = mapForegroundValues.get(columnProp);
 
-                data[i][j] = propValues == null ? null : columnProp.baseType.transformServerValue(propValues.get(cellKey));
+                data[i][j] = propValues == null ? null : propValues.get(cellKey);
                 readOnly[i][j] = readOnlyValues != null && readOnlyValues.get(cellKey) != null;
 
                 if (rowBackground != null) {

@@ -12,21 +12,18 @@ import static javax.swing.BorderFactory.createCompoundBorder;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static lsfusion.client.form.ClientFormController.colorPreferences;
 
+// renderer идет в виде label
 public abstract class LabelPropertyRenderer extends PropertyRenderer {
     protected Color defaultForeground = NORMAL_FOREGROUND;
     
     private JLabel label;
-    protected Format format;
 
     protected LabelPropertyRenderer(ClientPropertyDraw property) {
         super(property);
         
-        if (property != null) {
-            format = property.getFormat();
-            getComponent().setOpaque(true);
+        getComponent().setOpaque(true);
             
-            defaultForeground = getComponent().getForeground();
-        }
+        defaultForeground = getComponent().getForeground();
     }
 
     @Override
@@ -44,10 +41,6 @@ public abstract class LabelPropertyRenderer extends PropertyRenderer {
     }
     
     public void paintLabelComponent(Graphics g) {}
-
-    public void setFormat(Format format) {
-        this.format = format != null || property == null ? format : property.getFormat();
-    }
 
     @Override
     protected void drawForeground(Color conditionalForeground) {

@@ -2,7 +2,7 @@ package lsfusion.gwt.form.shared.view.window;
 
 import java.io.Serializable;
 
-public class GAbstractWindow implements Serializable {
+public class GAbstractWindow implements Serializable, com.google.gwt.user.client.rpc.IsSerializable {
     public String caption;
     public int position;
 

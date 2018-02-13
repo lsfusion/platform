@@ -7,12 +7,16 @@ import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GClass;
+import lsfusion.gwt.form.shared.view.classes.GFormatType;
 import lsfusion.gwt.form.shared.view.classes.GStringType;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.FormatGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 import lsfusion.gwt.form.shared.view.reader.*;
@@ -131,8 +135,16 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return baseType.createValueCellEditor(editManager, this);
     }
 
-    public void setPattern(String pattern) {
-        this.pattern = pattern != null ? pattern : defaultPattern;
+    public void setUserPattern(String pattern) {
+        if(baseType instanceof GFormatType) {
+            this.pattern = pattern != null ? pattern : defaultPattern;
+
+            GridCellRenderer renderer = getGridCellRenderer();
+            if (renderer instanceof FormatGridCellRenderer) {
+                ((FormatGridCellRenderer) renderer).updateFormat();
+            } else
+                assert false;
+        }
     }
 
     public Object parseChangeValueOrNull(String s) {
@@ -144,14 +156,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         } catch (ParseException pe) {
             return null;
         }
-    }
-
-    public Object parseBaseValue(String s) throws ParseException {
-        return baseType.parseString(s, pattern);
-    }
-
-    public boolean canUsePasteValueForRendering() {
-        return changeWYSType != null && baseType.getClass() == changeWYSType.getClass();
     }
 
     public boolean canUseChangeValueForRendering() {
@@ -280,23 +284,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public int getValueWidth(GFont parentFont) {
+        return getValueWidth(parentFont, null);
+    }
+
+    public int getValueWidth(GFont parentFont, GWidthStringProcessor widthStringProcessor) {
         if (valueWidth != -1) {
             return valueWidth;
-        } else {
-            return baseType.getPixelWidth(charWidth, font != null ? font : parentFont, pattern);
         }
+
+        GFont font = this.font != null ? this.font : parentFont;
+
+        String widthString = null;
+        if(widthString == null && charWidth != 0)
+            widthString = GwtSharedUtils.replicate('0', charWidth);
+        if(widthString != null)
+            return baseType.getFullWidthString(widthString, font, widthStringProcessor);
+
+        return baseType.getDefaultWidth(font, this, widthStringProcessor);
+    }
+
+    public Object getFormat() {
+        assert baseType instanceof GFormatType;
+        return ((GFormatType)baseType).getFormat(pattern);
     }
 
     public int getValueHeight(GFont parentFont) {
         if (valueHeight != -1) {
             return valueHeight;
-        } else {
-            return baseType.getPixelHeight(font != null ? font : parentFont);
         }
+
+        return baseType.getDefaultHeight(font != null ? font : parentFont);
     }
 
     public int getLabelHeight() {
-        return new GStringType().getPixelHeight(captionFont);
+        return new GStringType().getDefaultHeight(captionFont);
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

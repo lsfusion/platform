@@ -13,16 +13,21 @@ import java.text.ParseException;
 public class GDoubleType extends GIntegralType {
     public static GDoubleType instance = new GDoubleType();
 
-    protected String defaultPattern = "#,###.##########";
+    protected static String defaultPattern = "#,###.##########";
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DoubleGridCellRenderer(property, getFormat(property.pattern));
+        return new DoubleGridCellRenderer(property);
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DoubleGridCellEditor(editManager, editProperty, getFormat(editProperty.pattern));
+        return new DoubleGridCellEditor(editManager, editProperty, getEditFormat(editProperty));
+    }
+
+    @Override
+    protected int getLength() {
+        return 10;
     }
 
     @Override

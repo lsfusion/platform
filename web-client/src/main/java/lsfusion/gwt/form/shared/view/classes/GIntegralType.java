@@ -9,12 +9,23 @@ import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import java.text.ParseException;
 
-public abstract class GIntegralType extends GDataType {
+import static java.lang.Math.pow;
+import static java.lang.Math.round;
+
+public abstract class GIntegralType extends GFormatType<NumberFormat> {
     public final static String UNBREAKABLE_SPACE = "\u00a0";
     
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new NumberGridCellRenderer(property);
+    }
+
+    protected abstract int getLength();
+
+    @Override
+    public int getDefaultCharWidth() {
+        int lengthValue = getLength();
+        return lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7));
     }
 
     protected Double parseToDouble(String s, String pattern) throws ParseException {
@@ -33,11 +44,6 @@ public abstract class GIntegralType extends GDataType {
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
-    }
-
-    @Override
-    public String getMask(String pattern) {
-        return "9 999 999";
     }
 
     @Override

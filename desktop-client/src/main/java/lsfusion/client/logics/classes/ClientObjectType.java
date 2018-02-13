@@ -8,7 +8,7 @@ import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.cell.DataPanelView;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.editor.IntegerPropertyEditor;
-import lsfusion.client.form.renderer.IntegerPropertyRenderer;
+import lsfusion.client.form.renderer.IntegralPropertyRenderer;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Compare;
@@ -32,20 +32,22 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return Data.OBJECT;
     }
 
-    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
-        return fontMetrics.stringWidth("999 999") + 8;
+    @Override
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics) {
+        return fontMetrics.stringWidth(widthString) + 8;
     }
 
-    public int getHeight(FontMetrics fontMetrics) {
+    @Override
+    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
+        return getFullWidthString("0000000", fontMetrics);
+    }
+
+    public int getDefaultHeight(FontMetrics fontMetrics) {
         return fontMetrics.getHeight() + 1;
     }
 
-    public Format getDefaultFormat() {
-        return NumberFormat.getInstance();
-    }
-
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new IntegerPropertyRenderer(property);
+        return new IntegralPropertyRenderer(property);
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
@@ -77,11 +79,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     @Override
     public String formatString(Object obj) {
         return obj.toString();
-    }
-
-    @Override
-    public Object transformServerValue(Object obj) {
-        return obj;
     }
 
     public String getConfirmMessage() {

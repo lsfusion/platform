@@ -19,6 +19,11 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
     }
 
     @Override
+    protected int getLength() {
+        return 8;
+    }
+
+    @Override
     public NumberFormat getDefaultFormat() {
         NumberFormat format = super.getDefaultFormat();
         format.setParseIntegerOnly(true);
@@ -41,11 +46,11 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
 
     @Override
     public PropertyEditor getValueEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value) {
-        return new IntegerPropertyEditor(value, (NumberFormat) property.getFormat(), property.design, Integer.class);
+        return new IntegerPropertyEditor(value, getEditFormat(property), property.design, Integer.class);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new IntegerPropertyEditor(value, maxValue(property.maxValue), (NumberFormat) property.getFormat(), property.design, Integer.class);
+        return new IntegerPropertyEditor(value, maxValue(property.maxValue), getEditFormat(property), property.design, Integer.class);
     }
 
     private Integer maxValue(Long maxValue) {

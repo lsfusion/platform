@@ -6,8 +6,8 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import java.math.BigDecimal;
 
 public class DoubleGridCellRenderer extends NumberGridCellRenderer {
-    public DoubleGridCellRenderer(GPropertyDraw property, NumberFormat format) {
-        super(property, format);
+    public DoubleGridCellRenderer(GPropertyDraw property) {
+        super(property);
     }
 
     @Override

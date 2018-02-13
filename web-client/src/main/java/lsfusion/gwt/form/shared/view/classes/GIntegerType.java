@@ -21,6 +21,11 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
+    protected int getLength() {
+        return 8;
+    }
+
+    @Override
     public String toString() {
         return "Целое число";
     }

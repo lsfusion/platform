@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
@@ -15,9 +16,14 @@ import java.util.Date;
 
 import static lsfusion.gwt.base.shared.GwtSharedUtils.getDateFormat;
 
-public class GDateType extends GDataType {
+public class GDateType extends GFormatType<DateTimeFormat> {
 
     public static GDateType instance = new GDateType();
+
+    @Override
+    public DateTimeFormat getFormat(String pattern) {
+        return GwtSharedUtils.getDateFormat(pattern);
+    }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
@@ -31,12 +37,12 @@ public class GDateType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateGridCellRenderer(property, property.pattern);
+        return new DateGridCellRenderer(property);
     }
 
     @Override
-    public String getMask(String pattern) {
-        return pattern != null ? pattern : "01.01.01";
+    protected Object getDefaultWidthValue() {
+        return GDateTimeType.getWideFormattableDateTime();
     }
 
     @Override

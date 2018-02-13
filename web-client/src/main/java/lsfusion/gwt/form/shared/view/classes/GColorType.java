@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.ColorGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -24,12 +25,7 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public String getMask(String pattern) {
-        return "";
-    }
-
-    @Override
-    public int getPixelWidth(int minimumCharWidth, GFont font, String pattern) {
+    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw, GWidthStringProcessor widthStringProcessor) {
         return 40;
     }
 

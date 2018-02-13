@@ -16,16 +16,6 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
 
     public final static ClientColorClass instance = new ClientColorClass();
 
-    @Override
-    public String getMask() {
-        return "";
-    }
-
-    @Override
-    public Format getDefaultFormat() {
-        return null;
-    }
-
     public static Color getDefaultValue() {
         return Color.WHITE;
     }
@@ -64,7 +54,7 @@ public class ClientColorClass extends ClientDataClass implements ClientTypeClass
     }
 
     @Override
-    public int getWidth(int minCharWidth, FontMetrics fontMetrics) {
+    public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
         return 40;
     }
 }
