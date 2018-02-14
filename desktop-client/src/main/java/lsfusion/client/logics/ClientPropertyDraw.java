@@ -207,16 +207,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Format getFormat() {
         ClientType formatType = this.baseType;
         if(formatType instanceof ClientObjectType)
-            formatType = ClientLongClass.instance; 
-            
+            formatType = ClientLongClass.instance;
+
         Format result = format;
-        Format defaultFormat = ((ClientFormatClass) formatType).getDefaultFormat();
-        if (result == null)
-            return defaultFormat;
-        if(formatType instanceof ClientIntegralClass) {
-            ((NumberFormat) result).setParseIntegerOnly(((NumberFormat) defaultFormat).isParseIntegerOnly());
-            ((NumberFormat) result).setMaximumIntegerDigits(((NumberFormat) defaultFormat).getMaximumIntegerDigits());
-            ((NumberFormat) result).setGroupingUsed(((NumberFormat) defaultFormat).isGroupingUsed());
+        if(formatType instanceof ClientFormatClass) {
+            Format defaultFormat = ((ClientFormatClass) formatType).getDefaultFormat();
+            if (result == null)
+                return defaultFormat;
+            if (formatType instanceof ClientIntegralClass) {
+                ((NumberFormat) result).setParseIntegerOnly(((NumberFormat) defaultFormat).isParseIntegerOnly());
+                ((NumberFormat) result).setMaximumIntegerDigits(((NumberFormat) defaultFormat).getMaximumIntegerDigits());
+                ((NumberFormat) result).setGroupingUsed(((NumberFormat) defaultFormat).isGroupingUsed());
+            }
         }
         return result;
     }

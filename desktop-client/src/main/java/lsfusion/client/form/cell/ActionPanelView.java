@@ -193,12 +193,17 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
         propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(ActionPanelView.this), getBounds(), null);
 
-        //для всего, кроме диалогов ничего не записываем..
+        //для всего, кроме диалогов выдаём ошибку.
         //для диалогов - сначала спрашиваем, изменилось ли значение
-        if (propertyEditor instanceof DialogBasedPropertyEditor && ((DialogBasedPropertyEditor) propertyEditor).valueChanged()) {
-            editDispatcher.commitValue(propertyEditor.getCellEditorValue());
+        if (propertyEditor instanceof DialogBasedPropertyEditor) {
+            if (((DialogBasedPropertyEditor) propertyEditor).valueChanged()) {
+                editDispatcher.commitValue(propertyEditor.getCellEditorValue());
+            } else {
+                editDispatcher.cancelEdit();
+            }
         } else {
             editDispatcher.cancelEdit();
+            throw new RuntimeException("INPUT in action is allowed only for dialog based types (file, color, etc.)");
         }
 
         return true;
