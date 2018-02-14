@@ -33,11 +33,6 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
     public abstract String[] getExtensions();
 
     @Override
-    public int getDefaultHeight(FontMetrics font) {
-        return 18;
-    }
-
-    @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
         return 18;
     }

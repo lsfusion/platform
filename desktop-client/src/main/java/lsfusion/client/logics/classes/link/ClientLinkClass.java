@@ -30,11 +30,6 @@ public abstract class ClientLinkClass extends ClientDataClass implements ClientT
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics font) {
-        return 18;
-    }
-
-    @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
         return 18;
     }
