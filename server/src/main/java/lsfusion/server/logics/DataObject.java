@@ -58,21 +58,21 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     }
 
-    public <T extends Number> DataObject(T object, IntegralClass<T> dataClass) {
-        this(object, (DataClass<T>) dataClass);
-    }
-    public DataObject(Timestamp object, DateTimeClass dataClass) {
-        this(object, (DataClass<Timestamp>) dataClass);
-    }
-    public DataObject(Date object, DateClass dataClass) {
-        this(object, (DataClass<Date>) dataClass);
-    }
-    public DataObject(byte[] object, FileClass dataClass) {
-        this(object, (DataClass<byte[]>) dataClass);
-    }
-    public DataObject(String object, StringClass dataClass) {
-        this(object, (DataClass<String>) dataClass);
-    }
+//    public <T extends Number> DataObject(T object, IntegralClass<T> dataClass) {
+//        this(object, (DataClass<T>) dataClass);
+//    }
+//    public DataObject(Timestamp object, DateTimeClass dataClass) {
+//        this(object, (DataClass<Timestamp>) dataClass);
+//    }
+//    public DataObject(Date object, DateClass dataClass) {
+//        this(object, (DataClass<Date>) dataClass);
+//    }
+//    public DataObject(byte[] object, FileClass dataClass) {
+//        this(object, (DataClass<byte[]>) dataClass);
+//    }
+//    public DataObject(String object, StringClass dataClass) {
+//        this(object, (DataClass<String>) dataClass);
+//    }
     public <T> DataObject(T object, DataClass<T> dataClass) {
         this((Object)object, dataClass);
     }
