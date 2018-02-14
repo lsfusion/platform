@@ -1388,7 +1388,6 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	PropertyUsage pUsage = null;
 	PartitionType type = null;
 	int groupExprCnt;
-	int groupExprContextSize;
 	boolean strict = false;
 	int precision = 0;
 	boolean ascending = true;
@@ -1396,7 +1395,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, groupExprContextSize, paramProps, context);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps, context);
 	}
 }
 	:	'PARTITION' 
@@ -1417,7 +1416,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 		(	'BY'
 			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
 		)?
-		{ groupExprCnt = paramProps.size() - 1; groupExprContextSize = context.size(); }
+		{ groupExprCnt = paramProps.size() - 1; }
 		(	'ORDER' ('DESC' { ascending = false; } )?				
 			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
 		)? 
