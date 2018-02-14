@@ -595,8 +595,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 }
                 session.apply(businessLogics, stack);
             }
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
+        } catch (Exception e) {
+            logger.error("UpdateOpenFormCount error: ", e);
         }
     }
 
@@ -649,7 +649,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
         } catch (Exception e) {
             logger.error("UpdatePingInfo error: ", e);
-            throw Throwables.propagate(e);
         }
     }
 
