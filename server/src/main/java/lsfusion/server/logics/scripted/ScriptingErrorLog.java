@@ -328,8 +328,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "number of properties specified after PARENT should be equal to number of objects");
     }
 
-    public void emitCreatingClassInstanceError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, "error occurred during creation of " + className + " instance");
+    public void emitCreatingClassInstanceError(ScriptParser parser, String exceptionMessage, String className) throws SemanticErrorException {
+        emitSimpleError(parser, String.format("error '%s' occurred during creation of %s instance", exceptionMessage, className));
     }
 
     public void emitNotActionPropertyError(ScriptParser parser) throws SemanticErrorException {

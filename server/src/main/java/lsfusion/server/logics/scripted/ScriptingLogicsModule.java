@@ -1312,7 +1312,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {
-            errLog.emitCreatingClassInstanceError(parser, javaClassName);
+            errLog.emitCreatingClassInstanceError(parser, e.getMessage(), javaClassName);
         }
         return null;
     }
@@ -1357,7 +1357,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             return baseLM.addAProp(null, instance);
         } catch (Exception e) {
-            errLog.emitCreatingClassInstanceError(parser, script);
+            errLog.emitCreatingClassInstanceError(parser, e.getMessage(), script);
         }
         return null;
     }
