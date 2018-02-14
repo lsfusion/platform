@@ -193,16 +193,16 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
 
     private final static String reportsDir = "reports/custom/"; 
     
-    private String findCustomReportFileName(String filePath) {
+    private String findCustomReportFileName(String fileName) {
 
         Collection<String> result = formInterface.getBL().getAllCustomReports();
         
         for(String entry : result){
-            if(entry.endsWith("/" + filePath))
-                return reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+            if(entry.endsWith("/" + fileName))
+                return "/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
         }
         
-        return reportsDir + filePath;
+        return null; // не нашли "/" + reportsDir + filePath;
     }
 
     private String getReportName(String goSID, boolean toExcel, Integer goId) {
@@ -263,7 +263,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         if (reportPathProp != null) {
             String reportPath = (String) formInterface.read(reportPathProp);
             if (reportPath != null) {
-                return "/" + findCustomReportFileName(getReportPrefix(toExcel, groupId) + reportPath.trim());
+                return findCustomReportFileName(getReportPrefix(toExcel, groupId) + reportPath.trim());
             }
         }
         return null;
@@ -293,7 +293,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             resourceName = getCustomReportPropFileName(getFormEntity().reportPathProp, toExcel, groupId);
         }
         if (resourceName == null) {
-            resourceName = "/" + findCustomReportFileName(getReportName(sid, toExcel, groupId));
+            resourceName = findCustomReportFileName(getReportName(sid, toExcel, groupId));
         }
         return resourceName;
     }
