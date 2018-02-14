@@ -6,10 +6,7 @@ import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.classes.GClass;
-import lsfusion.gwt.form.shared.view.classes.GFormatType;
-import lsfusion.gwt.form.shared.view.classes.GStringType;
-import lsfusion.gwt.form.shared.view.classes.GType;
+import lsfusion.gwt.form.shared.view.classes.*;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -304,8 +301,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     }
 
     public Object getFormat() {
-        assert baseType instanceof GFormatType;
-        return ((GFormatType)baseType).getFormat(pattern);
+        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
     }
 
     public int getValueHeight(GFont parentFont) {

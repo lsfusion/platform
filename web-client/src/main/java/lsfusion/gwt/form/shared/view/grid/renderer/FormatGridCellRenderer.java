@@ -10,7 +10,7 @@ public abstract class FormatGridCellRenderer<T, F> extends TextBasedGridCellRend
     public FormatGridCellRenderer(GPropertyDraw property) {
         super(property, Style.TextAlign.RIGHT);
 
-        this.format = (F) property.getFormat();
+        updateFormat();
     }
 
     public void updateFormat() {

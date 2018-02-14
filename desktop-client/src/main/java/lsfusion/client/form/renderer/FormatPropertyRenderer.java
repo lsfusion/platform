@@ -13,10 +13,10 @@ public abstract class FormatPropertyRenderer extends LabelPropertyRenderer {
     public FormatPropertyRenderer(ClientPropertyDraw property) {
         super(property);
 
-        format = property.getFormat();
+        updateFormat();
         getComponent().setHorizontalAlignment(JLabel.RIGHT);
     }
-
+    
     public void updateFormat() {
         this.format = property.getFormat();
     }
