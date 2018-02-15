@@ -2321,4 +2321,15 @@ public class Settings implements Cloneable {
     public void setStacktraceInSQLSession(boolean stacktraceInSQLSession) {
         this.stacktraceInSQLSession = stacktraceInSQLSession;
     }
+
+    //для блокирующего чтения в операторе READ.
+    private boolean blockingFileRead = false;
+
+    public boolean isBlockingFileRead() {
+        return blockingFileRead;
+    }
+
+    public void setBlockingFileRead(boolean blockingFileRead) {
+        this.blockingFileRead = blockingFileRead;
+    }
 }

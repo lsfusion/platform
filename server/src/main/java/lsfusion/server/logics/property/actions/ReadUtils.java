@@ -9,6 +9,7 @@ import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.data.JDBCTable;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
@@ -22,6 +23,8 @@ import java.io.*;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -83,10 +86,22 @@ public class ReadUtils {
                         break;
                 }
                 if (file != null && file.exists()) {
-                    if (isDynamicFormatFileClass) {
-                        fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
+                    if (Settings.get().isBlockingFileRead()) {
+                        try(FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
+                            try (java.nio.channels.FileLock lock = channel.lock()) {
+                                if (isDynamicFormatFileClass) {
+                                    fileBytes = BaseUtils.mergeFileAndExtension(readBytesFromChannel(channel), extension.getBytes());
+                                } else {
+                                    fileBytes = readBytesFromChannel(channel);
+                                }
+                            }
+                        }
                     } else {
-                        fileBytes = IOUtils.getFileBytes(file);
+                        if (isDynamicFormatFileClass) {
+                            fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
+                        } else {
+                            fileBytes = IOUtils.getFileBytes(file);
+                        }
                     }
                 } else {
                     errorCode = 3;
@@ -603,6 +618,18 @@ public class ReadUtils {
                 throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid \"IN\" condition"));
         }
         return values;
+    }
+
+    private static byte[] readBytesFromChannel(FileChannel channel) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteBuffer buffer = ByteBuffer.allocate(IOUtils.BUFFER_SIZE);
+        int left = Integer.MAX_VALUE;
+        int readCount;
+        while (left > 0 && (readCount = channel.read(buffer)) > 0) {
+            out.write(buffer.array(), 0, readCount);
+            left -= readCount;
+        }
+        return out.toByteArray();
     }
 
     public static class ReadResult implements Serializable {
