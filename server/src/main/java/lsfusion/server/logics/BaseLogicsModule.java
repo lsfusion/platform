@@ -66,6 +66,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP greater2, less2;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
+    public LCP like2;
     public LCP sum;
     public LCP subtract;
     public LCP multiply;
@@ -362,6 +363,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
+        like2 = addCFProp(Compare.LIKE);
 
         // Математические операции
         sum = addSumProp();

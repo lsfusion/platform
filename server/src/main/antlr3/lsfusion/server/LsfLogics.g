@@ -1175,15 +1175,32 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 		}
 	}	
 }
-	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; }
+	:	lhs=likePE[context, dynamic] { leftProp = $lhs.property; }
 		(
 			(   operand=relOperand { op = $operand.text; }
-			    rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
+			    rhs=likePE[context, dynamic] { rightProp = $rhs.property; }
 			)
 		|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
+
+likePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	LPWithParams leftProp = null, rightProp = null;
+}
+@after {
+	if (inPropParseState()) {
+	    if(rightProp != null)
+		    $property = self.addScriptedLikeProp(leftProp, rightProp);
+	    else
+		    $property = leftProp;
+	}
+}
+	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; }
+		('LIKE'
+		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; })?
+	;
 
 additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
