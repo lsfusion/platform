@@ -117,7 +117,7 @@ public final class LoginAction {
                 }
                 String userName = loginInfo.getUserName();
                 if (userName == null && !userNames.isEmpty()){
-                    userName = userNames.get(userNames.size() - 1);
+                    userName = userNames.get(0);
                 }
                 String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
                 if (loginInfo.getServerDB() != null) {
