@@ -203,7 +203,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         if(Settings.get().isNoDisablingNestedLoop()) {
             Step nextStep = getCachedNextStep(step, command, step.subQueries.getSet().addExcl(materializedQueries.keys())); // по идее коррелировано с assertSameMaterialized
             if (nextStep.isLastStep())
-                step.setTimeout(100*60*60);
+                step.setTimeout(100*60*60*60);
         }
     }
     
