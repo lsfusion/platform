@@ -238,7 +238,6 @@ public abstract class NavigatorElement {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
-        outStream.writeInt(getID());
         SerializationUtil.writeString(outStream, canonicalName);
         SerializationUtil.writeString(outStream, creationPath);
 

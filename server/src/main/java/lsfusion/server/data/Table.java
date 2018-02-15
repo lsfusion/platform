@@ -235,7 +235,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(name);
-            outStream.writeInt(keys.size());
+        outStream.writeInt(keys.size());
         for(KeyField key : keys)
             key.serialize(outStream);
         outStream.writeInt(properties.size());

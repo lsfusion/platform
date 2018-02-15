@@ -15,7 +15,6 @@ import java.util.Set;
 
 public abstract class ClientNavigatorElement {
 
-    private int ID;
     private String canonicalName;
 
     public String creationPath;
@@ -30,7 +29,6 @@ public abstract class ClientNavigatorElement {
     public ClientNavigatorWindow window;
 
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
-        ID = inStream.readInt();
         canonicalName = SerializationUtil.readString(inStream);
         creationPath = SerializationUtil.readString(inStream);
         
@@ -40,10 +38,6 @@ public abstract class ClientNavigatorElement {
 
         image = IOUtils.readImageIcon(inStream);
         imageFileName = inStream.readUTF();
-    }
-
-    public int getID() {
-        return ID;
     }
 
     public String getCanonicalName() {
@@ -60,12 +54,12 @@ public abstract class ClientNavigatorElement {
 
     @Override
     public int hashCode() {
-        return ID;
+        return canonicalName.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ClientNavigatorElement && ((ClientNavigatorElement) obj).ID == ID;
+        return obj instanceof ClientNavigatorElement && ((ClientNavigatorElement) obj).canonicalName.equals(canonicalName);
     }
 
     public String toString() {
@@ -102,12 +96,15 @@ public abstract class ClientNavigatorElement {
                 throw new IOException("Incorrect navigator element type");
         }
 
+        // todo [dale]: Это не помешало бы отрефакторить 
+        // Так как окна десериализуются при десериализации каждого элемента навигатора, то необходимо замещать
+        // окна с неуникальным каноническим именем, потому что такое окно уже было создано.
         if (element.window != null) {
-            String windowSID = element.window.getSID();
-            if (windows.containsKey(windowSID)) {
-                element.window = windows.get(windowSID);
+            String windowCanonicalName = element.window.canonicalName;
+            if (windows.containsKey(windowCanonicalName)) {
+                element.window = windows.get(windowCanonicalName);
             } else {
-                windows.put(windowSID, element.window);
+                windows.put(windowCanonicalName, element.window);
             }
         }
 
