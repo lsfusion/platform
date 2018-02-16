@@ -40,7 +40,7 @@ public class ReadUtils {
     private static final String LT = "<";
     private static final String IN = " IN ";
 
-    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass) throws IOException, SftpException, JSchException, SQLException {
+    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead) throws IOException, SftpException, JSchException, SQLException {
         String type = null;
         File file = null;
         byte[] fileBytes = null;
@@ -86,7 +86,7 @@ public class ReadUtils {
                         break;
                 }
                 if (file != null && file.exists()) {
-                    if (Settings.get().isBlockingFileRead()) {
+                    if (isBlockingFileRead) {
                         try(FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
                             try (java.nio.channels.FileLock lock = channel.lock()) {
                                 if (isDynamicFormatFileClass) {

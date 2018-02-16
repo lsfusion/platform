@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
@@ -52,15 +53,16 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
         try {
 
             boolean isDynamicFormatFileClass = targetProp.property.getType() instanceof DynamicFormatFileClass;
+            boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
             ReadUtils.ReadResult readResult;
             if (clientAction) {
-                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass));
+                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead));
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     context.requestUserInteraction(new PostReadClientAction(sourcePath, readResult.type, readResult.filePath, movePath, delete));
                 }
             } else {
-                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass);
+                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead);
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     ReadUtils.postProcessFile(sourcePath, readResult.type, readResult.filePath, movePath, delete);
