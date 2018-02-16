@@ -26,7 +26,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     Object getInfiniteValue(boolean min);
 
-    Object castValue(Object object, Type type, SQLSyntax syntax);
     String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv); // как правило нужен, чтобы указать СУБД класс, а не реально прокастить 
     String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom);
     String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom);

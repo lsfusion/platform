@@ -150,11 +150,6 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
-        return syntax.fixDateTime((Timestamp) object);
-    }
-
-    @Override
     public boolean useIndexedJoin() {
         return true;
     }

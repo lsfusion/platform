@@ -47,17 +47,6 @@ public class StringClass extends DataClass<String> {
         return "'" + value + "'";
     }
 
-    @Override
-    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
-        if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded) { // по идее не актуально, так как SessionData.castTypes должен быть сделан, везде по синтаксису  
-            String string = (String) object;
-            String result = BaseUtils.rtrim(string);
-            ServerLoggers.assertLog(result.length() == string.length(), "SHOULD BE TRIMMED BY CASTTYPES");
-            return result;
-        }
-        return super.castValue(object, typeFrom, syntax);
-    }
-    
     public String getRTrim(String value) {
         assert blankPadded;
         return "RTRIM(" + value + ")";

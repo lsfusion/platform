@@ -36,11 +36,6 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return false;
     }
 
-    @Override
-    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
-        return object;
-    }
-
     protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
     public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException {
         writeParam(statement, num.get(), value, syntax);
