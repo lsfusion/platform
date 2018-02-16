@@ -576,7 +576,11 @@ public class Main {
     }
 
     public static void addReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
-        Main.remoteLogics.saveCustomReportPathList(formSID);
+        reportPathList.addAll(Main.remoteLogics.saveAndGetCustomReportPathList(formSID, false));
+        editReportPathList(reportPathList);
+    }
+    public static void recreateReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
+        Main.remoteLogics.saveAndGetCustomReportPathList(formSID, true);
         editReportPathList(reportPathList);
     }
     public static void editReportPathList(List<ReportPath> reportPathList) throws IOException {

@@ -1,6 +1,7 @@
 package lsfusion.interop;
 
 import lsfusion.base.NavigatorInfo;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -65,5 +66,5 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     Map<String, String> readMemoryLimits() throws RemoteException;
 
-    void saveCustomReportPathList(String formSID) throws RemoteException;
+    List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }

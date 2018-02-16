@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -502,8 +503,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
-        FormInstance.saveCustomReportPathList(businessLogics.findForm(formSID));
+    public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
+        try {
+            return FormInstance.saveAndGetCustomReportPathList(businessLogics.findForm(formSID), recreate);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 }
 

@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -58,7 +59,7 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
 
             @Override
             public BusinessLogics getBL() {
-                return context.getBL();
+                return context == null ? ThreadLocalContext.getBusinessLogics() : context.getBL(); // для getAllCustomReports надо
             }
 
             @Override

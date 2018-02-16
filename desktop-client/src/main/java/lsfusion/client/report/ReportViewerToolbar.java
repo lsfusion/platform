@@ -153,8 +153,10 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     private void addButtonPressed(EditReportInvoker editInvoker) {
         if(hasCustomReports) { // при добавлении, если есть уже сохраненные отчеты предлагаем их удалить
             if(showConfirmDialog(reportViewer, getString("layout.menu.file.edit.auto.report.confirm"),
-                    getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0)
-                deleteReport(editInvoker);
+                    getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
+                recreateReport(editInvoker);
+                return;
+            }
         }
         
         if (!hasCustomReports) {
@@ -200,6 +202,15 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     private void addReport(EditReportInvoker editInvoker) {
         try {
             editInvoker.invokeAddReport();
+        } catch (RemoteException e) {
+            throw Throwables.propagate(e);
+        }
+        hasCustomReports = true;
+    }
+
+    private void recreateReport(EditReportInvoker editInvoker) { // нужен чтобы сохранить путь
+        try {
+            editInvoker.invokeRecreateReport();;
         } catch (RemoteException e) {
             throw Throwables.propagate(e);
         }

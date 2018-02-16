@@ -2494,8 +2494,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return newFormManager.getCustomReportPathList(false, null, null);
     }
 
-    public static void saveCustomReportPathList(FormEntity formEntity) {
+    public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
-        newFormManager.saveCustomReportPathList(false, null, null);
+        return newFormManager.saveAndGetCustomReportPathList(false, null, null, recreate);
     }
 }

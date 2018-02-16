@@ -299,6 +299,16 @@ public class DockableMainFrame extends MainFrame {
             }
 
             @Override
+            public void invokeRecreateReport() throws RemoteException {
+                assert Main.module.isFull();
+                try {
+                    Main.recreateReportPathList(customReportPathList, formSID);
+                } catch (Exception e) {
+                    throw new RuntimeException(getString("form.error.printing.form"), e);
+                }
+            }
+
+            @Override
             public void invokeEditReport() throws RemoteException {
                 assert Main.module.isFull();
                 try {

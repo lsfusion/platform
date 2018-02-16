@@ -4,6 +4,7 @@ import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
+import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -200,9 +201,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public void saveCustomReportPathList(String formSID) throws RemoteException {
+    public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         logRemoteMethodStartVoidCall("saveCustomReportPathList");
-        target.saveCustomReportPathList(formSID);
+        List<ReportPath> result = target.saveAndGetCustomReportPathList(formSID, recreate);
         logRemoteMethodEndVoidCall("saveCustomReportPathList");
+        return result;
     }
 }
