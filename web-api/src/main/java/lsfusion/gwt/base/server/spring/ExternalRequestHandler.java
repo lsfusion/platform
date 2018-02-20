@@ -22,7 +22,7 @@ public class ExternalRequestHandler implements HttpRequestHandler {
             String query = request.getQueryString();
             String contentType = request.getContentType();
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
-                    query == null ? null : URLDecoder.decode(query, "utf-8"), request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
+                    query == null ? "" : query, request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
 
             if (responseHttpEntity.response != null) {
                 response.setContentType(responseHttpEntity.response.getContentType().getValue());

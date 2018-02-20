@@ -42,17 +42,19 @@ public class ExternalUtils {
     private static final String PROPERTY_PARAM = "property";
 
     public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
-        List<Object> paramsList = BaseUtils.mergeList(getParameterValues(query, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
-        List<String> returns = getParameterValues(query, RETURNS_PARAM);
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, getCharsetFromContentType(requestContentType));
+
+        List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
+        List<String> returns = getParameterValues(queryParams, RETURNS_PARAM);
         List<Object> paramList = new ArrayList<>();
 
         String filename = "export";
 
         if (uri.startsWith("/exec")) {
-            String action = getParameterValue(query, ACTION_CN_PARAM);
+            String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/eval")) {
-            Object script = getParameterValue(query, SCRIPT_PARAM);
+            Object script = getParameterValue(queryParams, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
                 //Первый параметр считаем скриптом
                 script = paramsList.get(0);
@@ -60,7 +62,7 @@ public class ExternalUtils {
             }
             paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/read")) {
-            String property = getParameterValue(query, PROPERTY_PARAM);
+            String property = getParameterValue(queryParams, PROPERTY_PARAM);
             if (property != null) {
                 filename = property;
                 paramList.addAll(remoteLogics.read(property, paramsList.toArray()));
@@ -118,18 +120,16 @@ public class ExternalUtils {
         return null;
     }
 
-    private static String getParameterValue(String query, String key) {
-        List<String> params = getParameterValues(query, key);
+    private static String getParameterValue(List<NameValuePair> queryParams, String key) {
+        List<String> params = getParameterValues(queryParams, key);
         return params.isEmpty() ? null : params.get(0);
     }
 
-    private static List<String> getParameterValues(String query, String key) {
+    private static List<String> getParameterValues(List<NameValuePair> queryParams, String key) {
         List<String> values = new ArrayList<>();
-        if (query != null) {
-            for (String entry : query.split("&")) {
-                if (entry.contains("=") && entry.substring(0, entry.indexOf("=")).equals(key))
-                    values.add(entry.substring(Math.min(entry.indexOf("=") + 1, entry.length() - 1)));
-            }
+        for(NameValuePair queryParam : queryParams) {
+            if(queryParam.getName().equalsIgnoreCase(key))
+                values.add(queryParam.getValue());
         }
         return values;
     }

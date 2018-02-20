@@ -75,7 +75,7 @@ public class ExternalHttpServer extends MonitorServer {
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        request.getRequestURI().getQuery(), request.getRequestBody(), getContentType(request));
+                        request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request));
 
                 if (response.response != null)
                     sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
