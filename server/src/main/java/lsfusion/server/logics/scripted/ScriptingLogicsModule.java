@@ -2901,10 +2901,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
     }
 
-    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourceProp, LPWithParams pathProp, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourceProp, LPWithParams pathProp, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkCalculationProperty(sourceProp.property);
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(sourceProp.property.property.getType(),
-                clientAction, dialog, sourceProp.property.property.getValueClass(ClassType.valuePolicy),
+                clientAction, dialog, append, sourceProp.property.property.getValueClass(ClassType.valuePolicy),
                 pathProp == null ? null : pathProp.property.property.getValueClass(ClassType.valuePolicy))),
                 pathProp == null ? Collections.singletonList(sourceProp) : Arrays.asList(sourceProp, pathProp));
     }

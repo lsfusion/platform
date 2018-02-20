@@ -1777,13 +1777,15 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 @init {
     boolean clientAction = false;
 	boolean dialog = false;
+	boolean append = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, clientAction, dialog);
+		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, clientAction, dialog, append);
 	}
 }
-	:	'WRITE' (('CLIENT' { clientAction = true; } ('DIALOG' {dialog = true; })?  expr=propertyExpression[context, dynamic]? ) | expr=propertyExpression[context, dynamic]) 'FROM' fromExpr=propertyExpression[context, dynamic]
+	:	'WRITE' (('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })?  expr=propertyExpression[context, dynamic]? ) | expr=propertyExpression[context, dynamic])
+	    'FROM' fromExpr=propertyExpression[context, dynamic] ('APPEND' { append = true; })?
 
 	;
 

@@ -12,10 +12,14 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,12 +28,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
     private final Type sourcePropertyType;
     private boolean clientAction;
     private boolean dialog;
+    private boolean append;
 
-    public WriteActionProperty(Type sourcePropertyType, boolean clientAction, boolean dialog, ValueClass sourceProp, ValueClass pathProp) {
+    public WriteActionProperty(Type sourcePropertyType, boolean clientAction, boolean dialog, boolean append, ValueClass sourceProp, ValueClass pathProp) {
         super(pathProp == null ? new ValueClass[]{sourceProp} : new ValueClass[]{sourceProp, pathProp});
         this.sourcePropertyType = sourcePropertyType;
         this.clientAction = clientAction;
         this.dialog = dialog;
+        this.append = append;
     }
 
     @Override
@@ -65,10 +71,10 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     if (path == null || path.isEmpty())
                         path = "new file";
                     if (path.contains("/")) { //absolute path
-                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog));
+                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
                     } else {
                         String filePath = !dialog ? (System.getProperty("user.home") + "/Downloads/" + path + "." + extension) : (path + "." + extension);
-                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog));
+                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog, append));
                     }
                 } else {
                     if (path != null && !path.isEmpty()) {
@@ -85,12 +91,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                                 case "file": {
                                     File file = new File(url);
                                     if (!file.getParentFile().exists())
-                                        throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
+                                        throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
                                     else
-                                        IOUtils.putFileBytes(file, fileBytes);
+                                        writeFile(file.getAbsolutePath(), fileBytes, append);
                                     break;
                                 }
                                 case "ftp": {
+                                    if(append)
+                                        throw new RuntimeException("APPEND is not supported in WRITE to FTP");
                                     File file = null;
                                     try {
                                         file = File.createTempFile("downloaded", ".tmp");
@@ -103,6 +111,8 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                                     break;
                                 }
                                 case "sftp": {
+                                    if(append)
+                                        throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
                                     File file = null;
                                     try {
                                         file = File.createTempFile("downloaded", ".tmp");
@@ -116,15 +126,31 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                                 }
                             }
                         } else {
-                            throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file"));
+                            throw new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file");
                         }
                     }
                 }
             } else {
-                throw Throwables.propagate(new RuntimeException("File bytes not specified"));
+                throw new RuntimeException("File bytes not specified");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
+        if (append) {
+            String extension = BaseUtils.getFileExtension(filePath);
+            if (extension.equals("csv")) {
+                if (new File(filePath).exists())
+                    Files.write(Paths.get(filePath), ArrayUtils.addAll("\r\n".getBytes(), fileBytes), StandardOpenOption.APPEND);
+                else
+                    IOUtils.putFileBytes(new File(filePath), fileBytes);
+            } else {
+                throw new RuntimeException("APPEND is supported only for csv files");
+            }
+        } else {
+            IOUtils.putFileBytes(new File(filePath), fileBytes);
         }
     }
 
@@ -161,10 +187,10 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
                         ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
-                        throw Throwables.propagate(new RuntimeException("Some error occurred while writing file to ftp"));
+                        throw new RuntimeException("Some error occurred while writing file to ftp");
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("Incorrect login or password. Writing file from ftp failed"));
+                    throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
                 }
             } finally {
                 try {
@@ -177,7 +203,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 }
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file"));
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file");
         }
     }
 
@@ -222,7 +248,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     session.disconnect();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/path_to_file"));
+            throw new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/path_to_file");
         }
     }
 }

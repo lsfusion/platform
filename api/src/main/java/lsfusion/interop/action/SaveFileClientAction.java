@@ -8,11 +8,13 @@ public class SaveFileClientAction extends ExecuteClientAction {
     public final byte[] file;
     public final String path;
     public final boolean noDialog;
+    public final boolean append;
 
-    public SaveFileClientAction(byte[] file, String path, boolean noDialog) {
+    public SaveFileClientAction(byte[] file, String path, boolean noDialog, boolean append) {
         this.file = file;
         this.path = path;
         this.noDialog = noDialog;
+        this.append = append;
     }
     
     public Map<String, byte[]> getFileMap() {

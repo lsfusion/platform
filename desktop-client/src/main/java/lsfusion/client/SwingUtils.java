@@ -10,6 +10,7 @@ import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
+import org.apache.commons.lang.ArrayUtils;
 import org.jdesktop.swingx.SwingXUtilities;
 import org.jfree.ui.ExtensionFileFilter;
 import sun.swing.SwingUtilities2;
@@ -24,6 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static java.lang.Math.max;
@@ -586,14 +590,14 @@ public class SwingUtils {
     }
 
     public static void showSaveFileDialog(Map<String, byte[]> files) {
-        showSaveFileDialog(files, false);
+        showSaveFileDialog(files, false, false);
     }
 
-    public static void showSaveFileDialog(Map<String, byte[]> files, boolean noDialog) {
+    public static void showSaveFileDialog(Map<String, byte[]> files, boolean noDialog, boolean append) {
         try {
             if (noDialog) {
                 for (Map.Entry<String, byte[]> fileEntry : files.entrySet()) {
-                    IOUtils.putFileBytes(new File(fileEntry.getKey()), fileEntry.getValue());
+                    writeFile(fileEntry.getKey(), fileEntry.getValue(), append);
                 }
             } else {
                 JFileChooser fileChooser = new JFileChooser();
@@ -636,6 +640,22 @@ public class SwingUtils {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
+        if (append) {
+            String extension = BaseUtils.getFileExtension(filePath);
+            if (extension.equals("csv")) {
+                if (new File(filePath).exists())
+                    Files.write(Paths.get(filePath), ArrayUtils.addAll("\r\n".getBytes(), fileBytes), StandardOpenOption.APPEND);
+                else
+                    IOUtils.putFileBytes(new File(filePath), fileBytes);
+            } else {
+                throw new RuntimeException("APPEND is supported only for csv files");
+            }
+        } else {
+            IOUtils.putFileBytes(new File(filePath), fileBytes);
         }
     }
 

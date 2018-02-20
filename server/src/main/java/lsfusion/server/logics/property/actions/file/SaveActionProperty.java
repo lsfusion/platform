@@ -55,12 +55,12 @@ public class SaveActionProperty extends FileActionProperty {
         byte[] saveFile = isDynamic && !isEmpty ? BaseUtils.getFile(file) : file;
         if (isAbsolutPath) {
             String filePath = trim((String) context.getKeys().getValue(1).getValue());
-            context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog));
+            context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog, false));
         } else {
             String fileName = context.getKeyCount() >= 2 ? trim((String) context.getKeys().getValue(1).getValue()) : "new file";
             String extension = isEmpty ? "" : ("." + (isDynamic ? BaseUtils.getExtension(file) : BaseUtils.firstWord(((StaticFormatFileClass) dataClass).getOpenExtension(file), ",")));
             String filePath = noDialog ? (System.getProperty("user.home") + "/Downloads/" + fileName + extension) : fileName + extension;
-            context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog));
+            context.delayUserInterfaction(new SaveFileClientAction(saveFile, filePath, noDialog, false));
         }
     }
 }
