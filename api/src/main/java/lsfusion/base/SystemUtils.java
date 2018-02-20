@@ -8,12 +8,12 @@ import org.springframework.util.FileCopyUtils;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
@@ -560,12 +560,17 @@ public class SystemUtils {
 
     public static String getRevision() {
         String revision = null;
-        InputStream manifestStream = SystemUtils.class.getResourceAsStream("/META-INF/MANIFEST.MF");
         try {
-            if (manifestStream != null) {
-                Manifest manifest = new Manifest(manifestStream);
-                Attributes attributes = manifest.getMainAttributes();
-                revision = attributes.getValue("SCM-Version");
+            Class clazz = SystemUtils.class;
+            String className = clazz.getSimpleName() + ".class";
+            String classPath = clazz.getResource(className).toString();
+            if (classPath.startsWith("jar")) { // Class from JAR
+                String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
+                InputStream manifestStream = new URL(manifestPath).openStream();
+                if (manifestStream != null) {
+                    Manifest manifest = new Manifest(manifestStream);
+                    revision = manifest.getMainAttributes().getValue("SCM-Version");
+                }
             }
         } catch (IOException ignore) {
         }
