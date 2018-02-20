@@ -384,26 +384,27 @@ FORM pings 'Журнал клиентских приложений'
 ;
 
 DESIGN pings {
-    NEW computer {
-        fill = 1;
-        MOVE BOX(c);
-    }
-    NEW options {
-        fill = 1;
-        type = TABBED;
-        NEW data {
-            caption = 'Данные';
-            MOVE BOX(dates);
-            PROPERTY(dFromObj) { caption = 'Время (с)'; }
-            PROPERTY(dToObj) { caption = 'Время (по)'; }
-            PROPERTY(subtractSeconds(dFrom, dTo)) { caption = 'Промежуток в секундах'; }
+    OBJECTS {
+        NEW computer {
+            fill = 1;
+            MOVE BOX(c);
         }
-        NEW connections {
-            caption = 'Подключения';
-            MOVE BOX(cn);
+        NEW options {
+            fill = 1;
+            type = TABBED;
+            NEW data {
+                caption = 'Данные';
+                MOVE BOX(dates);
+                PROPERTY(dFromObj) { caption = 'Время (с)'; }
+                PROPERTY(dToObj) { caption = 'Время (по)'; }
+                PROPERTY(subtractSeconds(dFrom, dTo)) { caption = 'Промежуток в секундах'; }
+            }
+            NEW connections {
+                caption = 'Подключения';
+                MOVE BOX(cn);
+            }
         }
     }
-    MOVE TOOLBARBOX;
     PROPERTY(limitDFromObj) { caption = 'Время (с)'; }
     PROPERTY(limitDToObj) { caption = 'Время (по)'; }    
 }
