@@ -3,6 +3,8 @@ package lsfusion.base;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -133,40 +135,57 @@ public class ExternalUtils {
     }
 
     private static Object getRequestParam(Object object, ContentType contentType, boolean convertedToString) throws IOException {
-        assert object instanceof InputStream || (object instanceof String && convertedToString);
-        if(object instanceof InputStream)
-            object = IOUtils.readBytesFromStream((InputStream) object);
+        assert object instanceof byte[] || (object instanceof String && convertedToString);
         Result<Boolean> humanReadable = new Result<>();
         String extension = getExtensionFromContentType(contentType, humanReadable);
+        Charset charset = getCharsetFromContentType(contentType);
         if(extension != null) { // CUSTOMFILE
             byte[] file;
             if(humanReadable.result && convertedToString)
-                file = ((String)object).getBytes(contentType.getCharset());
+                file = ((String)object).getBytes(charset);
             else
                 file = (byte[])object;
             return BaseUtils.mergeFileAndExtension(file, extension.getBytes());
         } else {
             if(!convertedToString)
-                object = new String((byte[])object, contentType.getCharset());
+                object = new String((byte[]) object, charset);
             return object;
         }
     }
-    // возвращает или byte[] для CustomFile или String для остальных, contentType может быть null если нет параметров
+
+    private static Charset getCharsetFromContentType(ContentType contentType) {
+        Charset charset = contentType.getCharset();
+        if(charset == null)
+            charset = Consts.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка         
+        return charset;
+    }
+
     public static List<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
+        return getListFromInputStream(IOUtils.readBytesFromStream(is), contentType);
+    }
+    // возвращает или byte[] для CustomFile или String для остальных, contentType может быть null если нет параметров
+    public static List<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
         List<Object> paramsList = new ArrayList<>();
         if (contentType != null) { // если есть параметры, теоретически можно было бы пытаться по другому угадать
-            String mimeType;
-            if ((mimeType = contentType.getMimeType()).startsWith("multipart/")) {
-                byte[] postParams = IOUtils.readBytesFromStream(is);
-                MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(postParams, mimeType));
+            String mimeType = contentType.getMimeType();
+            if (mimeType.startsWith("multipart/")) {
+                MimeMultipart multipart = new MimeMultipart(new ByteArrayDataSource(bytes, mimeType));
                 for (int i = 0; i < multipart.getCount(); i++) {
                     BodyPart bodyPart = multipart.getBodyPart(i);
                     Object param = bodyPart.getContent();
-                    paramsList.add(getRequestParam(param, ContentType.parse(bodyPart.getContentType()), true)); // multipart автоматически text/* возвращает как String
+                    ContentType partContentType = ContentType.parse(bodyPart.getContentType());
+                    if(param instanceof InputStream)
+                        paramsList.addAll(getListFromInputStream((InputStream)param, partContentType));
+                    else
+                        paramsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
                 }
-            } else {
-                paramsList.add(getRequestParam(is, contentType, false));
-            }
+            } else if(mimeType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+                Charset charset = getCharsetFromContentType(contentType);
+                List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
+                for(NameValuePair param : params)
+                    paramsList.add(getRequestParam(param.getValue(), ContentType.create(TEXT_PLAIN.getMimeType(), charset), true));                    
+            } else
+                paramsList.add(getRequestParam(bytes, contentType, false));
         }
         return paramsList;
     }
