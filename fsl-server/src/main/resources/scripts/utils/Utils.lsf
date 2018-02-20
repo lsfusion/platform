@@ -15,6 +15,9 @@ fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (
 listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
 listFiles 'Получить список файлов'(VARISTRING[255] path) = { listFiles(path, 'UTF-8'); }
 
+//file://path
+listFilesClient 'Получить список файлов (на клиенте)' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesClientActionProperty' (VARISTRING[255]); 
+
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
 stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
