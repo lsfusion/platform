@@ -460,8 +460,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             ImRevMap<Object, KeyExpr> memoryLimitKeys = MapFact.singletonRev((Object) "memoryLimit", memoryLimitExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(memoryLimitKeys);
 
-            String[] names = new String[]{"name", "maxHeapSize"};
-            LCP[] properties = businessLogics.securityLM.findProperties("name[MemoryLimit]", "maxHeapSize[MemoryLimit]");
+            String[] names = new String[]{"name", "maxHeapSize", "vmargs"};
+            LCP[] properties = businessLogics.securityLM.findProperties("name[MemoryLimit]", "maxHeapSize[MemoryLimit]",
+                    "vmargs[MemoryLimit]");
             for (int j = 0; j < properties.length; j++) {
                 query.addProperty(names[j], properties[j].getExpr(memoryLimitExpr));
             }
@@ -470,8 +471,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
             for (ImMap<Object, Object> entry : result.values()) {
                 String name = (String) entry.get("name");
+                String line = "";
                 String maxHeapSize = (String) entry.get("maxHeapSize");
-                memoryLimitMap.put(name, "maxHeapSize=" + maxHeapSize);
+                if(maxHeapSize != null)
+                    line += "maxHeapSize=" + maxHeapSize;
+                String vmargs = (String) entry.get("vmargs");
+                if(vmargs != null)
+                    line += (line.isEmpty() ? "" : "&") + "vmargs=" + vmargs;
+                memoryLimitMap.put(name, line);
             }
         } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             logger.error("Error reading MemoryLimit: ", e);

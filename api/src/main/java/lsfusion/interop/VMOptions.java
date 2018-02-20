@@ -6,11 +6,13 @@ public class VMOptions implements Serializable {
     private String initHeapSize;
     private String maxHeapSize;
     private String maxHeapFreeRatio;
+    private String vmargs;
 
-    public VMOptions(String initHeapSize, String maxHeapSize, String maxHeapFreeRatio) {
+    public VMOptions(String initHeapSize, String maxHeapSize, String maxHeapFreeRatio, String vmargs) {
         this.initHeapSize = initHeapSize;
         this.maxHeapSize = maxHeapSize;
         this.maxHeapFreeRatio = maxHeapFreeRatio;
+        this.vmargs = vmargs;
     }
 
     public String getInitHeapSize() {
@@ -35,5 +37,13 @@ public class VMOptions implements Serializable {
 
     public void setMaxHeapFreeRatio(String maxHeapFreeRatio) {
         this.maxHeapFreeRatio = maxHeapFreeRatio;
+    }
+
+    public String getVmargs() {
+        return vmargs;
+    }
+
+    public void setVmargs(String vmargs) {
+        this.vmargs = vmargs;
     }
 }

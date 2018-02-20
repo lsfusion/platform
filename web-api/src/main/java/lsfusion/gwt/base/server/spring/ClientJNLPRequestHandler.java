@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.web.HttpRequestHandler;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
     private BusinessLogicsProvider blProvider;
 
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         logger.debug("Handling jnlp request");
 
         try {
@@ -43,12 +43,13 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                 clientVMOptions = blProvider.getLogics().getClientVMOptions();
             } catch (Exception e) {
                 //use default
-                clientVMOptions = new VMOptions(null, null, null);
+                clientVMOptions = new VMOptions(null, null, null, null);
             }
 
             handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion", request.getServerName(),
                     blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
-                    clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMaxHeapFreeRatio());
+                    clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMaxHeapFreeRatio(),
+                    clientVMOptions.getVmargs());
         } catch (RemoteException e) {
             blProvider.invalidate();
             logger.debug("Error handling jnlp request: ", e);
@@ -66,8 +67,8 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      String appName,
                                      String registryHost,
                                      int registryPort,
-                                     String exportName) throws ServletException, IOException {
-        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, false, null, null, null);
+                                     String exportName) throws IOException {
+        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, false, null, null, null, null);
     }
 
     protected void handleJNLPRequest(HttpServletRequest request,
@@ -81,13 +82,15 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      boolean singleInstance,
                                      String initHeapSize,
                                      String maxHeapSize,
-                                     String maxHeapFreeRatio) throws ServletException, IOException {
+                                     String maxHeapFreeRatio,
+                                     String vmargs) throws IOException {
         logger.debug("Generating jnlp response.");
 
         try {
 
             Map<String, String> queryParams = getQueryParams(request);
             String jnlpMaxHeapSize = queryParams.get("maxHeapSize");
+            String jnlpVmargs = queryParams.get("vmargs");
 
             Properties properties = new Properties();
             properties.put("jnlp.codebase", codebaseUrl);
@@ -100,6 +103,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             properties.put("jnlp.initHeapSize", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE);
             properties.put("jnlp.maxHeapSize", jnlpMaxHeapSize != null ? jnlpMaxHeapSize : (!isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE));
             properties.put("jnlp.maxHeapFreeRatio", !isRedundantString(maxHeapFreeRatio) ? String.valueOf(maxHeapFreeRatio) : DEFAULT_MAX_HEAP_FREE_RATIO);
+            properties.put("jnlp.vmargs", jnlpVmargs != null ? URLDecoder.decode(jnlpVmargs, "utf-8") : (!isRedundantString(vmargs) ? vmargs : ""));
 
             String content = stringResolver.replacePlaceholders(
                     IOUtils.readStreamToString(getClass().getResourceAsStream("/client.jnlp")), properties
