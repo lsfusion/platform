@@ -45,7 +45,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 53;
+        return 54;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
