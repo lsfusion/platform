@@ -1077,7 +1077,7 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof Time) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "H:mm:ss")).setCellValue((Date) value);
                 } else if (value instanceof Date) {
-                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "M/d/yy")).setCellValue((Date) value);
+                    getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, "dd/MM/yy")).setCellValue((Date) value);
                 } else if (value instanceof Boolean) {
                     getOrCreateCell(sheet, currentRow, column, getOrCreateCellStyle(workbook, null)).setCellValue((Boolean) value);
                 } else if (value instanceof byte[]) { // здесь ожидается изображение
@@ -1095,16 +1095,17 @@ public abstract class GroupingDialog extends JDialog {
             currentRow++;
         }
 
-        //int parentRow = currentRow;
+        int parentRow = currentRow;
         Enumeration<? extends MutableTreeTableNode> children = parent.children();
         while (children.hasMoreElements()) {
             GroupingTreeTable.SortableTreeTableNode child = (GroupingTreeTable.SortableTreeTableNode) children.nextElement();
 
             currentRow = addExcelSubrows(workbook, sheet, currentRow, child, maxWidth);
         }
-        /*if (parent.children().hasMoreElements() && parent.getParent() != null) {
-            sheet.setRowGroup(parentRow , currentRow - 1, false);
-        }*/
+        if (parent.children().hasMoreElements() && parent.getParent() != null) {
+            sheet.groupRow(parentRow, currentRow - 1);
+            sheet.setRowGroupCollapsed(currentRow - 1, false);
+        }
 
         return currentRow;
     }
