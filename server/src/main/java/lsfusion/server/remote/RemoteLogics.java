@@ -51,6 +51,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -453,7 +455,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public Map<String, String> readMemoryLimits() throws RemoteException {
+    public Map<String, String> readMemoryLimits() {
         Map<String, String> memoryLimitMap = new HashMap<>();
         try (DataSession session = createSession()) {
             KeyExpr memoryLimitExpr = new KeyExpr("memoryLimit");
@@ -477,10 +479,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     line += "maxHeapSize=" + maxHeapSize;
                 String vmargs = (String) entry.get("vmargs");
                 if(vmargs != null)
-                    line += (line.isEmpty() ? "" : "&") + "vmargs=" + vmargs;
+                    line += (line.isEmpty() ? "" : "&") + "vmargs=" + URLEncoder.encode(vmargs, "utf-8");
                 memoryLimitMap.put(name, line);
             }
-        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException | UnsupportedEncodingException e) {
             logger.error("Error reading MemoryLimit: ", e);
         }
         return memoryLimitMap;
