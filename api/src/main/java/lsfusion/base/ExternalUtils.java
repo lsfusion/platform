@@ -42,7 +42,8 @@ public class ExternalUtils {
     private static final String PROPERTY_PARAM = "property";
 
     public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, getCharsetFromContentType(requestContentType));
+        Charset charset = getCharsetFromContentType(requestContentType);
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
         List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
         List<String> returns = getParameterValues(queryParams, RETURNS_PARAM);
@@ -52,7 +53,7 @@ public class ExternalUtils {
 
         if (uri.startsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
+            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
         } else if (uri.startsWith("/eval")) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
@@ -60,12 +61,12 @@ public class ExternalUtils {
                 script = paramsList.get(0);
                 paramsList = paramsList.subList(1, paramsList.size());
             }
-            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray());
+            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
         } else if (uri.startsWith("/read")) {
             String property = getParameterValue(queryParams, PROPERTY_PARAM);
             if (property != null) {
                 filename = property;
-                paramList.addAll(remoteLogics.read(property, paramsList.toArray()));
+                paramList.addAll(remoteLogics.read(property, paramsList.toArray(), charset));
             }
         }
 
@@ -153,7 +154,7 @@ public class ExternalUtils {
         }
     }
 
-    private static Charset getCharsetFromContentType(ContentType contentType) {
+    public static Charset getCharsetFromContentType(ContentType contentType) {
         Charset charset = contentType.getCharset();
         if(charset == null)
             charset = Consts.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка         

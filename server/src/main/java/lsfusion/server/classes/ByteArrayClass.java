@@ -8,6 +8,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -120,7 +121,13 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parse(Object o) throws ParseException {
+    public byte[] parse(Object o, Charset charset) throws ParseException {
+        if(checkParseUnknownTypeNull(o))
+            return null;
+        
+        if(o instanceof String)
+            o = ((String)o).getBytes(charset);
+
         if(((byte[])o).length == 0)
             return null;
         return (byte[])o;

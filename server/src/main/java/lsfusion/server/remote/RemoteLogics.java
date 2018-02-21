@@ -53,6 +53,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -338,12 +339,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) {
         List<Object> returnList;
         try {
             LAP property = (LAP) businessLogics.findPropertyByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params);
+                returnList = executeExternal(property, returnCanonicalNames, params, charset);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -354,11 +355,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
-                String script = StringClass.text.parse(paramScript);
+                String script = StringClass.text.parse(paramScript, charset);
                 if (action) {
                     //оборачиваем в run без параметров
                     script = "run() = {" + script + ";\n};";
@@ -368,7 +369,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 String runName = module.getName() + ".run";
                 LAP<?> runAction = module.findAction(runName);
                 if (runAction != null) {
-                    returnList = executeExternal(runAction, returnCanonicalNames, params);
+                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -380,12 +381,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> read(String property, Object[] params) {
+    public List<Object> read(String property, Object[] params, Charset charset) {
         try {
             LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
             if (lcp != null) {
                 try (DataSession session = createSession()) {
-                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params));
+                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params, charset));
                 }
             } else
                 throw new RuntimeException(String.format("Property %s was not found", property));
@@ -395,12 +396,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException, IOException {
+    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
         List<Object> returnList = new ArrayList<>();
         try (DataSession session = createSession()) {
             ExecutionStack stack = getStack();
 
-            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params));
+            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
             if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {

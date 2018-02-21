@@ -13,6 +13,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -65,7 +66,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)
 
-    T parse(Object o) throws ParseException; // возвращает String или byte[], o - not null, null'ы decode'ся в зависимости от типа
+    T parse(Object o, Charset charset) throws ParseException; // возвращает String или byte[], o - not null, null'ы decode'ся в зависимости от типа
 
     Object format(T value); // возвращает String или byte[] (не null), null'ы encode'ит в зависимости от типа
 

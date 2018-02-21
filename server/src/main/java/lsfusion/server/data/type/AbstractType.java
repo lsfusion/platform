@@ -7,6 +7,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -81,15 +82,15 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     protected boolean checkParseUnknownTypeNull(Object o) {
         if(o instanceof String) {
-            if(!isParseNullValue((String)o))
-                throw new RuntimeException("passed not null string parameter instead of byte array");
-            return true;
+            if(isParseNullValue((String)o))
+                return true;
+//            throw new RuntimeException("passed not null string parameter instead of byte array");
         }
         return false;
     }
 
     @Override
-    public T parse(Object o) throws ParseException {
+    public T parse(Object o, Charset charset) throws ParseException {
         String s = (String) o;
         if(isParseNullValue(s))
             return null;

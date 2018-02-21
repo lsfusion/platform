@@ -28,6 +28,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +54,9 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             if (response.getStatusLine().getStatusCode() != 200)
                 throw new RuntimeException(response.getStatusLine().toString());
             else {
-                List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), ContentType.get(responseEntity));
-                fillResults(context, targetPropList, requestParams); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+                ContentType contentType = ContentType.get(responseEntity);
+                List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
+                fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -83,7 +85,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         }
     }
 
-    public static ObjectValue[] getParams(DataSession session, LP property, Object[] params) throws ParseException, SQLException, SQLHandledException {
+    public static ObjectValue[] getParams(DataSession session, LP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {
         ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
         ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
         ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
@@ -92,14 +94,14 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
             Object value = null;
             if (i < params.length) // для лишних записываем null
-                value = valueClass.getType().parse(params[i]);
+                value = valueClass.getType().parse(params[i], charset);
 
             objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
         }
         return objectValues;
     }
 
-    public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, List<Object> results) throws ParseException, SQLException, SQLHandledException {
+    public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, List<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
         for(int i = 0, size = targetPropList.size(); i < size; i++) {
             LCP targetProp = targetPropList.get(i);
 
@@ -107,7 +109,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             if (i < results.size()) // для недостающих записываем null
                 value = results.get(i);
 
-            targetProp.change(value == null ? null : targetProp.property.getType().parse(value), context);
+            targetProp.change(value == null ? null : targetProp.property.getType().parse(value, charset), context);
         }
     }
 

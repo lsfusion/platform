@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -213,9 +214,12 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parse(Object o) throws ParseException {
+    public byte[] parse(Object o, Charset charset) throws ParseException {
         if(checkParseUnknownTypeNull(o))
             return null;
+        
+        if(o instanceof String)
+            o = BaseUtils.mergeFileAndExtension(((String)o).getBytes(charset), "unknown".getBytes());
 
         if(BaseUtils.getExtension((byte[])o).equals("null"))
             return null;
