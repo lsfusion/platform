@@ -11,7 +11,6 @@ import lsfusion.interop.Compare;
 
 import java.awt.*;
 import java.io.IOException;
-import java.text.Format;
 import java.text.ParseException;
 
 public interface ClientType {
@@ -43,7 +42,7 @@ public interface ClientType {
     EditBindingMap.EditEventFilter getEditEventFilter();
 
     // добавляет поправку на кнопки и другие элементы 
-    int getFullWidthString(String widthString, FontMetrics fontMetrics);
+    int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw);
 
     int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property);
 

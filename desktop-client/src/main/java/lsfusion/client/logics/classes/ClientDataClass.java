@@ -32,12 +32,12 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     // добавляет поправку на кнопки и другие элементы 
-    public int getFullWidthString(String widthString, FontMetrics fontMetrics) {
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
         return fontMetrics.stringWidth(widthString) + 8;
     }
     
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
-        return getFullWidthString(getDefaultWidthString(property), fontMetrics);
+        return getFullWidthString(getDefaultWidthString(property), fontMetrics, property);
     }
 
     protected int getDefaultCharWidth() {

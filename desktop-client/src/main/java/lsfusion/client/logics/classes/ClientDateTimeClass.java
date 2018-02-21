@@ -33,8 +33,11 @@ public class ClientDateTimeClass extends ClientFormatClass<SimpleDateFormat> imp
     }
 
     @Override
-    public int getFullWidthString(String widthString, FontMetrics fontMetrics) {
-        return super.getFullWidthString(widthString, fontMetrics) + 21;
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
+        int result = super.getFullWidthString(widthString, fontMetrics, propertyDraw);
+        if(propertyDraw.isEditableChangeAction()) // добавляем кнопку если не readonly
+            result += 21;
+        return result;
     }
 
     public Format getDefaultFormat() {

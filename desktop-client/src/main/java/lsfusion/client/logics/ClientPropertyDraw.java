@@ -139,6 +139,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return notNull && !isReadOnly();
     }
 
+    public boolean isEditableChangeAction() {
+        assert !hasChangeAction || !isReadOnly(); // по идее если readOnly то не hasChangeAction 
+        return hasChangeAction && !isReadOnly();
+    }
+
     public boolean isReadOnly() {
         return editType == PropertyEditType.READONLY;
     }
@@ -176,7 +181,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if(widthString == null && charWidth != 0)
             widthString = BaseUtils.replicate('0', charWidth);
         if(widthString != null)
-            return baseType.getFullWidthString(widthString, fontMetrics);
+            return baseType.getFullWidthString(widthString, fontMetrics, this);
 
         return baseType.getDefaultWidth(fontMetrics, this);
     }

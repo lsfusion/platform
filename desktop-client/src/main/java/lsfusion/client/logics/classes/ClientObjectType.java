@@ -16,8 +16,6 @@ import lsfusion.interop.Data;
 
 import java.awt.*;
 import java.io.IOException;
-import java.text.Format;
-import java.text.NumberFormat;
 import java.text.ParseException;
 
 import static lsfusion.interop.Compare.*;
@@ -33,13 +31,13 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     @Override
-    public int getFullWidthString(String widthString, FontMetrics fontMetrics) {
+    public int getFullWidthString(String widthString, FontMetrics fontMetrics, ClientPropertyDraw propertyDraw) {
         return fontMetrics.stringWidth(widthString) + 8;
     }
 
     @Override
     public int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property) {
-        return getFullWidthString("0000000", fontMetrics);
+        return getFullWidthString("0000000", fontMetrics, property);
     }
 
     public int getDefaultHeight(FontMetrics fontMetrics) {
