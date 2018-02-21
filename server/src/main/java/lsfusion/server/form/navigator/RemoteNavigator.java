@@ -135,7 +135,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         try(DataSession session = dbManager.createSession()) {
             this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
+        }
+        this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
+        this.currentForm = NullValue.instance;
 
+        this.remoteAddress = navigatorInfo.remoteAddress;
+        this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
+
+        try(DataSession session = createSession()) {
             String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
             boolean allowExcessAllocatedBytes = businessLogics.authenticationLM.currentUserAllowExcessAllocatedBytes.read(session) != null;
             String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
@@ -143,11 +150,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             logInfo = new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
         }
         this.userRole = getRole();
-        this.computer = new DataObject(navigatorInfo.computer, businessLogics.authenticationLM.computer);
-        this.currentForm = NullValue.instance;
-
-        this.remoteAddress = navigatorInfo.remoteAddress;
-        this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
 
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
