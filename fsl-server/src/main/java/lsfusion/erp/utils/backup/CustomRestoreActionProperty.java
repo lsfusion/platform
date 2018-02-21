@@ -197,7 +197,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     ValueClass classValue = ((StoredDataProperty) prop.property).value;
                                     if (classValue instanceof CustomClass) {
                                         //TODO: убрать new Long, когда все базы перейдут на LONG
-                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, new Long((Integer) object));
+                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object instanceof Integer ? new Long((Integer) object) : object);
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
                                     } else if (object instanceof String)
