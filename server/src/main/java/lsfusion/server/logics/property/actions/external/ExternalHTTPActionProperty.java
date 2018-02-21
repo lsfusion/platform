@@ -46,7 +46,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         try {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams);
+            String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams, ExternalUtils.TEXT_PLAIN.getMimeType());
             HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result);
             HttpEntity responseEntity = response.getEntity();
 
@@ -68,7 +68,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
         List<Object> paramList = new ArrayList<>();
         for (PropertyInterface i : bodyParams) {
-            paramList.add(format(context, i));
+            paramList.add(format(context, i, null)); // пока в body ничего не кодируем (так как content-type'ы другие)
         }
 
         if (!paramList.isEmpty()) {

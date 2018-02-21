@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.external;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -8,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -21,6 +21,9 @@ import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 public abstract class ExternalActionProperty extends SystemActionProperty {
 
@@ -61,21 +64,28 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
         return AbstractType.getUnknownTypeNull();
     }
 
-    protected Object format(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface) {
+    protected Object format(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, String urlEncodeCharset) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        return getParamType(paramInterface, value).format(value.getValue());
+        Object result = getParamType(paramInterface, value).format(value.getValue());
+        if(result instanceof String && urlEncodeCharset != null)
+            try {
+                result = URLEncoder.encode((String) result, urlEncodeCharset);
+            } catch (UnsupportedEncodingException e) {
+                throw Throwables.propagate(e);
+            }
+        return result;
     }
 
     protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString) {
-        return replaceParams(context, connectionString, null);
+        return replaceParams(context, connectionString, null, null);
     }
-    protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString, Result<ImOrderSet<PropertyInterface>> rNotUsedParams) {
+    protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, String urlEncodeCharset) {
         ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
         MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.<PropertyInterface>mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {
             String prmName = getParamName(String.valueOf(i + 1));
             PropertyInterface paramInterface = orderInterfaces.get(i);
-            Object replacement = format(context, paramInterface);
+            Object replacement = format(context, paramInterface, urlEncodeCharset);
             if (replacement instanceof byte[] ||
                     (mNotUsedParams != null && !connectionString.contains(prmName))) {
                 if(mNotUsedParams != null)

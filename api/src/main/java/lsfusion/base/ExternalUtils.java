@@ -110,7 +110,7 @@ public class ExternalUtils {
             return m.group(2);
         }
 
-        p = Pattern.compile("\\btext/(xml|json|csv)\\b");
+        p = Pattern.compile("\\btext/(xml|json|csv|html)\\b");
         m = p.matcher(mimeType);
         if(m.find()) {
             humanReadable.set(true);
