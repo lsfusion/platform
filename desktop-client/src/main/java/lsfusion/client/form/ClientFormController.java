@@ -783,7 +783,7 @@ public class ClientFormController implements AsyncListener {
 
     public void expandGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) throws IOException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObject") {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("expandGroupObject - " + group.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.expandGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
@@ -803,7 +803,7 @@ public class ClientFormController implements AsyncListener {
 
     public void changeGroupObject(final ClientGroupObject groupObject, final Scroll changeType) throws IOException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGroupObject.end") {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGroupObject.end - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.changeGroupObject(requestIndex, lastReceivedRequestIndex, groupObject.getID(), changeType.serialize());
@@ -966,9 +966,9 @@ public class ClientFormController implements AsyncListener {
         SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
-
+        
         ServerResponse result =
-                rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEditAction") {
+                rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEditAction - " + property.getLogName()) {
                     @Override
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                         return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
@@ -1134,7 +1134,7 @@ public class ClientFormController implements AsyncListener {
 
     public void changeGridClass(final ClientObject object, final ClientObjectClass cls) throws IOException {
         commitOrCancelCurrentEditing();
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGridClass") {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeGridClass - " + object.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.changeGridClass(requestIndex, lastReceivedRequestIndex, object.getID(), cls.getID());
@@ -1152,7 +1152,7 @@ public class ClientFormController implements AsyncListener {
 
         SwingUtils.commitDelayedGroupObjectChange(groupObject);
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeClassView") {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changeClassView - " + groupObject.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.changeClassView(requestIndex, lastReceivedRequestIndex, groupObject.getID(), show);
@@ -1164,7 +1164,7 @@ public class ClientFormController implements AsyncListener {
         if (defaultOrdersInitialized) {
             commitOrCancelCurrentEditing();
 
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder") {
+            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("changePropertyOrder - " + property.getLogName()) {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.changePropertyOrder(requestIndex, lastReceivedRequestIndex, property.getID(), modiType.serialize(), columnKey.serialize());
@@ -1177,7 +1177,7 @@ public class ClientFormController implements AsyncListener {
         if (defaultOrdersInitialized) {
             commitOrCancelCurrentEditing();
 
-            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("clearPropertyOrders") {
+            rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("clearPropertyOrders - " + groupObject.getLogName()) {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.clearPropertyOrders(requestIndex, lastReceivedRequestIndex, groupObject.getID());
@@ -1233,7 +1233,7 @@ public class ClientFormController implements AsyncListener {
     private void setRegularFilter(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter filter) throws IOException {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter") {
+        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("setRegularFilter - " + filterGroup.getLogName()) {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setRegularFilter(requestIndex, lastReceivedRequestIndex, filterGroup.getID(), (filter == null) ? -1 : filter.getID());

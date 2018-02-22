@@ -15,6 +15,8 @@ public class ServerResponse implements Serializable {
     public final ClientAction[] actions;
     public final boolean resumeInvocation;
     public final long requestIndex;
+    
+    public long timeSpent = -1;
 
     public ServerResponse(ClientAction[] actions) {
         this(-1, actions);

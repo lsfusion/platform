@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.form.navigator.RemoteNavigator;
@@ -46,6 +47,9 @@ public class RemoteLoggerAspect {
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
             long runTime = System.currentTimeMillis() - startTime;
+            
+            if(result instanceof ServerResponse)
+                ((ServerResponse)result).timeSpent = runTime;
 
             userActivityMap.put(user, new UserActivity(computer, startTime));
 

@@ -2,6 +2,8 @@ package lsfusion.client.form;
 
 import lsfusion.base.Pair;
 import lsfusion.client.ClientLoggers;
+import lsfusion.client.Main;
+import lsfusion.interop.form.ServerResponse;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -61,10 +63,23 @@ public abstract class RmiRequest<T> {
     }
 
     final T doRequest() throws RemoteException {
-        if (logger.isDebugEnabled()) {
+        boolean logDebugEnabled = logger.isDebugEnabled();
+        long started = 0;
+        if (logDebugEnabled) {
             logger.debug("DoRequest: " + this);
+            started = System.currentTimeMillis();
         }
-        return doRequest(requestIndex, lastReceivedRequestIndex);
+        T result = doRequest(requestIndex, lastReceivedRequestIndex);
+        if(logDebugEnabled && result instanceof ServerResponse) {
+            long serverSpent = ((ServerResponse) result).timeSpent;
+            if(serverSpent >= 0) {
+                long totalSpent = System.currentTimeMillis() - started;
+                long commSpent = totalSpent - serverSpent;
+                if (commSpent > Main.timeDiffServerClientLog)
+                    logger.debug("Request communication time threshold exceeded (" + commSpent + " ms) : " + this);
+            }
+        }
+        return result;
     }
 
     final void onAsyncRequest() {

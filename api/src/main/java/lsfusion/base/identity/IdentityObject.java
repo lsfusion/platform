@@ -28,7 +28,11 @@ public class IdentityObject implements IdentityInterface {
     public String getSID() {
         return sID;
     }
-    
+
+    public String getLogName() {
+        return getSID();
+    }
+
     public void setSID(String sID) {
         this.sID = sID;
     }

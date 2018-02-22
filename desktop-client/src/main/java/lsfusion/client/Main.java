@@ -94,6 +94,8 @@ public class Main {
     static SingleInstance singleInstance;
     public static boolean busyDialog;
     public static boolean useRequestTimeout;
+    
+    public static long timeDiffServerClientLog = 1000;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
