@@ -24,6 +24,7 @@ import org.apache.commons.httpclient.util.URIUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 public abstract class ExternalActionProperty extends SystemActionProperty {
 
@@ -64,12 +65,12 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
         return AbstractType.getUnknownTypeNull();
     }
 
-    protected Object format(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, String urlEncodeCharset) {
+    protected Object format(ExecutionContext<PropertyInterface> context, PropertyInterface paramInterface, Charset urlEncodeCharset) {
         ObjectValue value = context.getKeyValue(paramInterface);
-        Object result = getParamType(paramInterface, value).format(value.getValue());
+        Object result = getParamType(paramInterface, value).formatHTTP(value.getValue(), urlEncodeCharset);
         if(result instanceof String && urlEncodeCharset != null)
             try {
-                result = URLEncoder.encode((String) result, urlEncodeCharset);
+                result = URLEncoder.encode((String) result, urlEncodeCharset.name());
             } catch (UnsupportedEncodingException e) {
                 throw Throwables.propagate(e);
             }
@@ -79,7 +80,7 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
     protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString) {
         return replaceParams(context, connectionString, null, null);
     }
-    protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, String urlEncodeCharset) {
+    protected String replaceParams(ExecutionContext<PropertyInterface> context, String connectionString, Result<ImOrderSet<PropertyInterface>> rNotUsedParams, Charset urlEncodeCharset) {
         ImOrderSet<PropertyInterface> orderInterfaces = paramInterfaces;
         MOrderExclSet<PropertyInterface> mNotUsedParams = rNotUsedParams != null ? SetFact.<PropertyInterface>mOrderExclSetMax(orderInterfaces.size()) : null;
         for (int i = 0, size = orderInterfaces.size(); i < size ; i++) {

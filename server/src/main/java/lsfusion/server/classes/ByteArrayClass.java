@@ -121,21 +121,27 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parse(Object o, Charset charset) throws ParseException {
-        if(checkParseUnknownTypeNull(o))
-            return null;
+    public byte[] parseHTTP(Object o, Charset charset) throws ParseException {
+        if(o instanceof String) {
+            if (isParseNullValue((String) o))
+                return null;
+            return ((String) o).getBytes(charset);
+        }
         
-        if(o instanceof String)
-            o = ((String)o).getBytes(charset);
-
-        if(((byte[])o).length == 0)
+        if (((byte[]) o).length == 0)
             return null;
         return (byte[])o;
     }
-
+    
     @Override
-    public Object format(byte[] value) {
-        if(value == null)
+    public Object formatHTTP(byte[] value, Charset charset) {
+        if(charset != null) {
+            if (value == null)
+                return getParseNullValue();
+            return new String(value, charset);
+        } 
+
+        if (value == null)
             return new byte[]{};
         return value;
     }

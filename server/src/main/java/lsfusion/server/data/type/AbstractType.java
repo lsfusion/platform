@@ -69,28 +69,20 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return false;
     }
 
-    private static boolean isParseNullValue(String value) {
+    protected static boolean isParseNullValue(String value) {
         return value.equals("");
     }
 
-    private static String getParseNullValue() {
+    protected static String getParseNullValue() {
         return "";
     }
 
     public static Type getUnknownTypeNull() { // хак для общения нетипизированными параметрами
         return IntegerClass.instance;
     }
-    protected boolean checkParseUnknownTypeNull(Object o) {
-        if(o instanceof String) {
-            if(isParseNullValue((String)o))
-                return true;
-//            throw new RuntimeException("passed not null string parameter instead of byte array");
-        }
-        return false;
-    }
 
     @Override
-    public T parse(Object o, Charset charset) throws ParseException {
+    public T parseHTTP(Object o, Charset charset) throws ParseException {
         String s = (String) o;
         if(isParseNullValue(s))
             return null;
@@ -98,7 +90,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object format(T value) {
+    public Object formatHTTP(T value, Charset charset) {
         if(value == null)
             return getParseNullValue();
         return formatString(value);

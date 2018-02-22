@@ -214,28 +214,32 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parse(Object o, Charset charset) throws ParseException {
-        if(checkParseUnknownTypeNull(o))
-            return null;
-        
-        if(o instanceof String)
+    public byte[] parseHTTP(Object o, Charset charset) throws ParseException {
+        if(o instanceof String) {
+            if(isParseNullValue((String)o))
+                return null;
             o = BaseUtils.mergeFileAndExtension(((String)o).getBytes(charset), "unknown".getBytes());
+        }
 
-        if(BaseUtils.getExtension((byte[])o).equals("null"))
+        if (BaseUtils.getExtension((byte[]) o).equals("null"))
             return null;
-
-        return parseNotNull((byte[])o);
+        return parseHTTPNotNull((byte[])o);
     }
 
     @Override
-    public Object format(byte[] value) {
+    public Object formatHTTP(byte[] value, Charset charset) {
+        if(charset != null) {
+            if (value == null)
+                return getParseNullValue();
+            return new String(BaseUtils.getFile(formatHTTPNotNull(value)), charset);
+        }
+
         if(value == null)
             return BaseUtils.mergeFileAndExtension(new byte[]{}, "null".getBytes());
-
-        return formatNotNull(value);
+        return formatHTTPNotNull(value);
     }
 
-    protected abstract byte[] parseNotNull(byte[] b);
+    protected abstract byte[] parseHTTPNotNull(byte[] b);
 
-    protected abstract byte[] formatNotNull(byte[] b);
+    protected abstract byte[] formatHTTPNotNull(byte[] b);
 }

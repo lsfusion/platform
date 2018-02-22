@@ -359,7 +359,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
-                String script = StringClass.text.parse(paramScript, charset);
+                String script = StringClass.text.parseHTTP(paramScript, charset);
                 if (action) {
                     //оборачиваем в run без параметров
                     script = "run() = {" + script + ";\n};";
@@ -446,7 +446,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         }
         if (!jdbcSingleRow)
-            returnList.add(returnType.format(returnValue));
+            returnList.add(returnType.formatHTTP(returnValue, null));
         return returnList;
     }
 

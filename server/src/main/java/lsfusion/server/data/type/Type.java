@@ -66,9 +66,9 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)
 
-    T parse(Object o, Charset charset) throws ParseException; // возвращает String или byte[], o - not null, null'ы decode'ся в зависимости от типа
+    T parseHTTP(Object o, Charset charset) throws ParseException; // o - String или byte[], o - not null, null'ы decode'ся в зависимости от типа
 
-    Object format(T value); // возвращает String или byte[] (не null), null'ы encode'ит в зависимости от типа
+    Object formatHTTP(T value, Charset charset); // возвращает String или byte[] (не null), null'ы encode'ит в зависимости от типа
 
     AndClassSet getBaseClassSet(BaseClass baseClass);
 

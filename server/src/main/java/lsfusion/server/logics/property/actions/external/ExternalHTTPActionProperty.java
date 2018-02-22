@@ -47,7 +47,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         try {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams, ExternalUtils.TEXT_PLAIN.getMimeType());
+            String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
             HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result);
             HttpEntity responseEntity = response.getEntity();
 
@@ -94,7 +94,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
             Object value = null;
             if (i < params.length) // для лишних записываем null
-                value = valueClass.getType().parse(params[i], charset);
+                value = valueClass.getType().parseHTTP(params[i], charset);
 
             objectValues[i] = value == null ? NullValue.instance : session.getObjectValue(valueClass, value);
         }
@@ -109,7 +109,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             if (i < results.size()) // для недостающих записываем null
                 value = results.get(i);
 
-            targetProp.change(value == null ? null : targetProp.property.getType().parse(value, charset), context);
+            targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value, charset), context);
         }
     }
 

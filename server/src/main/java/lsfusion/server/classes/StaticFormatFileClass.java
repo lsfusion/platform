@@ -26,12 +26,12 @@ public abstract class StaticFormatFileClass extends FileClass {
     }
 
     @Override
-    protected byte[] parseNotNull(byte[] b) {
+    protected byte[] parseHTTPNotNull(byte[] b) {
         return BaseUtils.getFile(b);
     }
 
     @Override
-    protected byte[] formatNotNull(byte[] b) {
+    protected byte[] formatHTTPNotNull(byte[] b) {
         return BaseUtils.mergeFileAndExtension(b, getOpenExtension(b).getBytes());
     }
 }
