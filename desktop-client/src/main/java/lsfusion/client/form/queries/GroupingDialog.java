@@ -42,7 +42,9 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
@@ -620,7 +622,7 @@ public abstract class GroupingDialog extends JDialog {
                 List<Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>> orders = new ArrayList<>(); 
                 for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
                     for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> checkEntry : groupChecks.entrySet()) {
-                        if (checkEntry.getKey().first.getSID().equals(propGrouping.propertySID)) {
+                        if (checkEntry.getKey().first.getPropertyFormName().equals(propGrouping.propertySID)) {
                             if (propGrouping.groupingOrder != null) {
                                 orders.add(new Pair<>(propGrouping.groupingOrder, checkEntry.getKey()));        
                             }
@@ -1224,9 +1226,9 @@ public abstract class GroupingDialog extends JDialog {
             Boolean max = (maxBox != null && maxBox.isSelected()) ? true : null;
             JCheckBox pivotBox = groupPivotChecks.get(entry.getKey());
             Boolean pivot = (pivotBox != null && pivotBox.isSelected()) ? true : null;
-            if (!isAlreadyInList(props, entry.getKey().first.getSID()) || order != null) { // хоть какая-то определённость для групп в колонках
+            if (!isAlreadyInList(props, entry.getKey().first.getPropertyFormName()) || order != null) { // хоть какая-то определённость для групп в колонках
                                                                                            // сохраняем порядок, если хоть одна выбрана
-                props.add(grouping.new PropertyGrouping(entry.getKey().first.getSID(), order, sum, max, pivot));
+                props.add(grouping.new PropertyGrouping(entry.getKey().first.getPropertyFormName(), order, sum, max, pivot));
             }
         }
 

@@ -167,8 +167,8 @@ public class ReportDesignGenerator {
         
         for (PropertyDrawView property : formView.getPropertiesList()) {
             ColumnUserPreferences columnUserPreferences = null;
-            if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID())) {
-                columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
+            if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getPropertyFormName())) {
+                columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getPropertyFormName());
             }
             
             properties.add(new Pair<>(property, columnUserPreferences));
@@ -189,7 +189,7 @@ public class ReportDesignGenerator {
             if (isValidProperty(group, prop.first, prop.second, groupId)) {
                 int scale = 1;
                 LinkedHashSet<List<Object>> objects;
-                if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getSID())) != null) // на не null на всякий случай проверка
+                if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getPropertyFormName())) != null) // на не null на всякий случай проверка
                     scale = objects.size();
                 
                 ReportDrawField reportField = prop.first.getReportDrawField(charWidth, scale);

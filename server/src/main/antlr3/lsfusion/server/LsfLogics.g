@@ -3953,56 +3953,23 @@ formComponentSelector[ScriptingFormView formView] returns [ComponentView compone
 	;
 formContainersComponentSelector returns [String sid]
     :   gt = groupObjectTreeComponentSelector { $sid = $gt.sid; }
-    |   gs = globalSingleSelectorType { $sid = $gs.sid; }
-    |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = $ggo.sid + ".panel.props"; }
-                    |   ggr = ID ',' ggo = groupObjectTreeSelector { $sid = $ggo.sid + "." + $ggr.text; }
-                    |   ggr = ID { $sid = "NOGROUP." + $ggr.text; }
-                    |   { $sid = "nogroup.panel.props"; }
+    |   gs = componentSingleSelectorType { $sid = $gs.text; }
+    |   'GROUP' '(' (   ',' ggo = groupObjectTreeSelector { $sid = "GROUP(," + $ggo.sid + ")"; }
+                    |   ggr = ID ',' ggo = groupObjectTreeSelector { $sid = "GROUP(" + $ggr.text + "," + $ggo.sid + ")"; }
+                    |   ggr = ID { $sid = "GROUP(" + $ggr.text + ")"; }
+                    |   { $sid = "GROUP()"; }
                     ) ')'
-    |   'FILTERGROUP' '(' gfg = ID ')' { $sid = "filters." + $gfg.text; }
+    |   'FILTERGROUP' '(' gfg = ID ')' { $sid = "FILTERGROUP(" + $gfg.text + ")"; }
     ;
 
-componentSingleSelectorType returns [String sid]
+componentSingleSelectorType
     :
-        ( 'BOX' { $sid = "box"; } | 'OBJECTS' { $sid = "objects"; } | 'TOOLBARBOX' { $sid = "controls"; } | 'TOOLBARLEFT' { $sid = "controls.left"; } |
-          'TOOLBARRIGHT' { $sid = "controls.right"; } | 'TOOLBAR' { $sid = "toolbar.props.box"; } | 'PANEL' { $sid = "panel"; }
-        )
-    ;
-
-globalSingleSelectorType returns [String sid]
-    :
-        cst=componentSingleSelectorType {
-            switch($cst.sid) {
-                case "box":
-                    $sid = "main";
-                    break;
-                case "objects":
-                	$sid = "objects";
-                	break;
-                case "controls":
-                    $sid = "functions.box";
-                    break;
-                case "controls.left":
-                    $sid = "leftControls";
-                    break;
-                case "controls.right":
-                    $sid = "rightControls";
-                    break;
-                case "panel":
-                    $sid = "nogroup.panel";
-                    break;
-                case "toolbar.props.box":
-                    $sid = "nogroup.toolbar.props.box";
-                    break;
-                default:
-                    $sid = $cst.sid;
-            }
-        }
+    	'BOX' | 'OBJECTS' | 'TOOLBARBOX' | 'TOOLBARLEFT' | 'TOOLBARRIGHT' | 'TOOLBAR' | 'PANEL'
     ;
 
 groupObjectTreeSelector returns [String sid]
     :
-           'TREE' tg = ID { $sid = $tg.text + ".tree"; }
+           'TREE' tg = ID { $sid = "TREE " + $tg.text; }
         |   go = ID { $sid = $go.text; }
     ;
 
@@ -4011,14 +3978,16 @@ groupObjectTreeComponentSelector returns [String sid]
 	String result = null;
 }
     :
-        ( cst=componentSingleSelectorType { result = $cst.sid; } | 'TOOLBARSYSTEM' { result = "toolbar"; } |
-         'FILTERGROUPS' { result = "filters"; } | 'USERFILTER' { result = "filter"; } | 'GRIDBOX' { result = "grid.box"; } | 'CLASSCHOOSER' { result = "classChooser"; } |
-         'GRID' { result = "grid"; } | 'SHOWTYPE' { result = "showType"; }
-         )
+        ( cst=componentSingleSelectorType { result = $cst.text; } | gost=groupObjectTreeComponentSelectorType { result = $gost.text; } )
         '(' gots = groupObjectTreeSelector ')'
         {
-            $sid = $gots.sid + "." + result;
+            $sid = result + "(" + $gots.sid + ")";
         }
+    ;
+
+groupObjectTreeComponentSelectorType
+    :
+    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'SHOWTYPE'
     ;
 
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]

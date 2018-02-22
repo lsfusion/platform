@@ -1116,7 +1116,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             for (GPropertyDraw propertyDraw : preferences.getColumnUserPreferences().keySet()) {
                 Boolean userHide = preferences.getColumnPreferences(propertyDraw).userHide;
                 if (userHide != null && userHide) {
-                    result.add(propertyDraw.sID);
+                    result.add(propertyDraw.propertyFormName);
                 }
             }
         }

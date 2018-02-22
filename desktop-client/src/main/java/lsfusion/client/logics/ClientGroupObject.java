@@ -13,7 +13,6 @@ import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.layout.AbstractGroupObject;
-import lsfusion.interop.form.layout.ContainerConstants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -89,12 +88,12 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     @Override
-    public ClientComponent getToolbar() {
+    public ClientComponent getToolbarSystem() {
         return toolbar;
     }
 
     @Override
-    public ClientComponent getFilter() {
+    public ClientComponent getUserFilter() {
         return filter;
     }
 
@@ -156,10 +155,6 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     @Override
     public String toString() {
         return getCaption() + " (" + getID() + ")";
-    }
-
-    public ClientContainer getClientComponent(ClientContainer parent) {
-        return parent.findContainerBySID(getSID() + ContainerConstants.BOX_CONTAINER);
     }
 
     // по аналогии с сервером

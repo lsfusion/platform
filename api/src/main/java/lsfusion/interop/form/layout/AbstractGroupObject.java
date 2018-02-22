@@ -8,7 +8,7 @@ public interface AbstractGroupObject<T extends AbstractComponent, Str> {
 
     T getGrid();
     T getShowType();
-    T getToolbar();
-    T getFilter();
+    T getToolbarSystem();
+    T getUserFilter();
     T getCalculations();
 }

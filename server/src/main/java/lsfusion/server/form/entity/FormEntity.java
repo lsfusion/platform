@@ -182,9 +182,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
-//        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
-//        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
         applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);

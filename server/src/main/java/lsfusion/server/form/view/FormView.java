@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
+import static lsfusion.server.form.view.GroupObjectContainerSet.*;
 
 public class FormView extends IdentityObject implements ServerCustomSerializable, AbstractForm<ContainerView, ComponentView, LocalizedString> {
 
@@ -158,7 +159,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         this.entity = entity;
 
         mainContainer = new ContainerView(idGenerator.idShift(), true);
-        setComponentSID(mainContainer, getMainContainerSID(), version);
+        setComponentSID(mainContainer, getBoxContainerSID(), version);
 
         for (GroupObjectEntity group : entity.getNFGroupsListIt(version)) {
             addGroupObjectBase(group, version);
@@ -222,8 +223,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         if(!isInTree) { // правильнее вообще не создавать компоненты, но для этого потребуется более сложный рефакторинг, поэтому пока просто сделаем так чтобы к ним нельзя было обратиться
             setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
             setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView), version);
-            setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getToolbarSystem(), getToolbarSystemSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getUserFilter(), getUserFilterSID(groupObjectView), version);
             setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
         }
 
@@ -260,8 +261,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
         setComponentSID(treeGroupView, getGridSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView), version);
-        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getToolbarSystem(), getToolbarSystemSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getUserFilter(), getUserFilterSID(treeGroupView), version);
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
@@ -273,7 +274,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private void addRegularFilterGroupView(RegularFilterGroupView filterGroupView, Version version) {
         mfilters.put(filterGroupView.entity, filterGroupView);
-        setComponentSID(filterGroupView, getRegularFilterGroupSID(filterGroupView.entity), version);
+        setComponentSID(filterGroupView, getFilterGroupSID(filterGroupView.entity), version);
     }
 
     private RegularFilterGroupView addRegularFilterGroupBase(RegularFilterGroupEntity filterGroup, Version version) {
@@ -313,15 +314,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private void initButtons(Version version) {
-//        printButton = setupFormButton(entity.printActionPropertyDraw, "print", version);
-        editButton = setupFormButton(entity.editActionPropertyDraw, "edit", version);
-//        xlsButton = setupFormButton(entity.xlsActionPropertyDraw, "xls", version);
-        refreshButton = setupFormButton(entity.refreshActionPropertyDraw, "refresh", version);
-        applyButton = setupFormButton(entity.applyActionPropertyDraw, "apply", version);
-        cancelButton = setupFormButton(entity.cancelActionPropertyDraw, "cancel", version);
-        okButton = setupFormButton(entity.okActionPropertyDraw, "ok", version);
-        closeButton = setupFormButton(entity.closeActionPropertyDraw, "close", version);
-        dropButton = setupFormButton(entity.dropActionPropertyDraw, "drop", version);
+        editButton = getNFProperty(entity.editActionPropertyDraw, version);
+        refreshButton = getNFProperty(entity.refreshActionPropertyDraw, version);
+        applyButton = getNFProperty(entity.applyActionPropertyDraw, version);
+        cancelButton = getNFProperty(entity.cancelActionPropertyDraw, version);
+        okButton = getNFProperty(entity.okActionPropertyDraw, version);
+        closeButton = getNFProperty(entity.closeActionPropertyDraw, version);
+        dropButton = getNFProperty(entity.dropActionPropertyDraw, version);
     }
 
     public ContainerView createContainer(Version version) {
@@ -816,30 +815,24 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return (ContainerView) component;
     }
 
-    private PropertyDrawView setupFormButton(PropertyDrawEntity function, String type, Version version) {
-        PropertyDrawView functionView = getNFProperty(function, version);        
-        setComponentSID(functionView, getClientFunctionSID(type), version);
-        return functionView;         
+    private static String getBoxContainerSID() {
+        return FormContainerSet.BOX_CONTAINER;
     }
 
-    private static String getMainContainerSID() {
-        return "main";
-    }
-
-    private static String getRegularFilterGroupSID(RegularFilterGroupEntity entity) {
-        return "filters." + entity.getSID();
+    private static String getFilterGroupSID(RegularFilterGroupEntity entity) {
+        return FILTERGROUP_COMPONENT + "(" + entity.getSID() + ")";
     }
 
     private static String getGridSID(PropertyGroupContainerView entity) {
-        return entity.getPropertyGroupContainerSID() + ".grid";
+        return GRID_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
-    private static String getToolbarSID(PropertyGroupContainerView entity) {
-        return entity.getPropertyGroupContainerSID() + ".toolbar";
+    private static String getToolbarSystemSID(PropertyGroupContainerView entity) {
+        return TOOLBAR_SYSTEM_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
-    private static String getFilterSID(PropertyGroupContainerView entity) {
-        return entity.getPropertyGroupContainerSID() + ".filter";
+    private static String getUserFilterSID(PropertyGroupContainerView entity) {
+        return USERFILTER_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
     
     private static String getCalculationsSID(PropertyGroupContainerView entity) {
@@ -847,15 +840,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private static String getShowTypeSID(PropertyGroupContainerView entity) {
-        return entity.getPropertyGroupContainerSID() + ".showType";
+        return SHOWTYPE_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
 
     private static String getClassChooserSID(ObjectEntity entity) {
-        return entity.getSID() + ".classChooser";
-    }
-
-    private static String getClientFunctionSID(String type) {
-        return "functions." + type;
+        return CLASSCHOOSER_COMPONENT + "(" + entity.getSID() + ")";
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

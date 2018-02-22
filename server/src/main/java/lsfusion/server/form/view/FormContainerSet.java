@@ -1,18 +1,27 @@
 package lsfusion.server.form.view;
 
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.ContainerAdder;
+import lsfusion.interop.form.layout.ContainerFactory;
+import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.logics.i18n.LocalizedString;
 
-import static lsfusion.interop.form.layout.ContainerConstants.*;
-
 public class FormContainerSet {
+    public static final String BOX_CONTAINER = "BOX";
+        public static final String OBJECTS_CONTAINER = "OBJECTS";
+        public static final String PANEL_CONTAINER = "PANEL";
+            public static final String GROUP_CONTAINER = "GROUP";
+        public static final String TOOLBARBOX_CONTAINER = "TOOLBARBOX";
+            public static final String TOOLBARLEFT_CONTAINER = "TOOLBARLEFT";
+            public static final String TOOLBARRIGHT_CONTAINER = "TOOLBARRIGHT";
+                public static final String TOOLBAR_CONTAINER = "TOOLBAR";
 
     private ContainerView mainContainer;
     private ContainerView objectsContainer;
-    private ContainerView formButtonContainer;
-    private ContainerView noGroupPanelContainer;
-    private ContainerView noGroupPanelPropsContainer;
-    private ContainerView noGroupToolbarPropsContainer;
+    private ContainerView toolbarBoxContainer;
+    private ContainerView panelContainer;
+    private ContainerView groupContainer;
+    private ContainerView toolbarContainer;
 
     public ContainerView getMainContainer() {
         return mainContainer;
@@ -22,20 +31,20 @@ public class FormContainerSet {
         return objectsContainer;
     }
 
-    public ContainerView getFormButtonContainer() {
-        return formButtonContainer;
+    public ContainerView getToolbarBoxContainer() {
+        return toolbarBoxContainer;
     }
 
-    public ContainerView getNoGroupPanelContainer() {
-        return noGroupPanelContainer;
+    public ContainerView getPanelContainer() {
+        return panelContainer;
     }
 
-    public ContainerView getNoGroupPanelPropsContainer() {
-        return noGroupPanelPropsContainer;
+    public ContainerView getGroupContainer() {
+        return groupContainer;
     }
 
-    public ContainerView getNoGroupToolbarPropsContainer() {
-        return noGroupToolbarPropsContainer;
+    public ContainerView getToolbarContainer() {
+        return toolbarContainer;
     }
 
     public static FormContainerSet fillContainers(FormView form, ContainerFactory<ContainerView> contFactory) {
@@ -51,37 +60,37 @@ public class FormContainerSet {
         set.mainContainer.setAlignment(FlexAlignment.STRETCH);
         
         set.objectsContainer = contFactory.createContainer();
-        set.objectsContainer.setSID(OBJECTS_CONTAINER);
+        set.objectsContainer.setSID(DefaultFormView.getObjectsContainerSID());
         set.objectsContainer.setDescription(LocalizedString.create("{form.layout.objects.container}"));
         set.objectsContainer.setFlex(1);
         set.objectsContainer.setAlignment(FlexAlignment.STRETCH);
 
-        set.noGroupPanelContainer = contFactory.createContainer();
-        set.noGroupPanelContainer.setSID(NOGROUP_PANEL_CONTAINER);
-        set.noGroupPanelContainer.setType(ContainerType.CONTAINERH);
-        set.noGroupPanelContainer.setAlignment(FlexAlignment.STRETCH);
+        set.panelContainer = contFactory.createContainer();
+        set.panelContainer.setSID(DefaultFormView.getPanelContainerSID());
+        set.panelContainer.setType(ContainerType.CONTAINERH);
+        set.panelContainer.setAlignment(FlexAlignment.STRETCH);
 
-        set.formButtonContainer = contFactory.createContainer();
-        set.formButtonContainer.setSID(FUNCTIONS_CONTAINER);
-        set.formButtonContainer.setDescription(LocalizedString.create("{form.layout.service.buttons}"));
-        set.formButtonContainer.setType(ContainerType.CONTAINERH);
-        set.formButtonContainer.setAlignment(FlexAlignment.STRETCH);
+        set.toolbarBoxContainer = contFactory.createContainer();
+        set.toolbarBoxContainer.setSID(DefaultFormView.getToolbarBoxContainerSID());
+        set.toolbarBoxContainer.setDescription(LocalizedString.create("{form.layout.service.buttons}"));
+        set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
 
-        set.noGroupPanelPropsContainer = contFactory.createContainer();
-        set.noGroupPanelPropsContainer.setSID(NOGROUP_PANEL_PROPS_CONTAINER);
-        set.noGroupPanelPropsContainer.setType(ContainerType.COLUMNS);
-        set.noGroupPanelPropsContainer.setColumns(2);
+        set.groupContainer = contFactory.createContainer();
+        set.groupContainer.setSID(DefaultFormView.getGroupContainerSID(""));
+        set.groupContainer.setType(ContainerType.COLUMNS);
+        set.groupContainer.setColumns(2);
 
-        set.noGroupToolbarPropsContainer = contFactory.createContainer(); // контейнер тулбара
-        set.noGroupToolbarPropsContainer.setSID(ContainerConstants.NOGROUP_TOOLBAR_PROPS_CONTAINER);
-        set.noGroupToolbarPropsContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
-        set.noGroupToolbarPropsContainer.setType(ContainerType.CONTAINERH);
-        set.noGroupToolbarPropsContainer.setAlignment(FlexAlignment.CENTER);
+        set.toolbarContainer = contFactory.createContainer(); // контейнер тулбара
+        set.toolbarContainer.setSID(DefaultFormView.getToolbarContainerSID());
+        set.toolbarContainer.setDescription(LocalizedString.create("{form.layout.toolbar.props.container}"));
+        set.toolbarContainer.setType(ContainerType.CONTAINERH);
+        set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
 
         adder.add(set.mainContainer, set.objectsContainer);
-        adder.add(set.mainContainer, set.noGroupPanelContainer);
-        adder.add(set.mainContainer, set.formButtonContainer);
-        adder.add(set.noGroupPanelContainer, set.noGroupPanelPropsContainer);
+        adder.add(set.mainContainer, set.panelContainer);
+        adder.add(set.mainContainer, set.toolbarBoxContainer);
+        adder.add(set.panelContainer, set.groupContainer);
 
         return set;
     }

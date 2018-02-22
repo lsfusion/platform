@@ -5,7 +5,10 @@ import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.*;
+import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.ClientPropertyTable;
+import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
@@ -1504,7 +1507,7 @@ public class GridTable extends ClientPropertyTable {
             for (ClientPropertyDraw propertyDraw : preferences.columnUserPreferences.keySet()) {
                 Boolean userHide = preferences.columnUserPreferences.get(propertyDraw).userHide;
                 if (userHide != null && userHide) {
-                    result.add(propertyDraw.getSID());
+                    result.add(propertyDraw.getPropertyFormName());
                 }
             }
         }

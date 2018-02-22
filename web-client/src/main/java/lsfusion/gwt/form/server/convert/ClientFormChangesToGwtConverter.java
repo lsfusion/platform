@@ -149,7 +149,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     private Object convertFileValue(ClientPropertyDraw property, Object value) {
         if (property.baseType instanceof ClientImageClass) {
-            return FileUtils.createPropertyImage((byte[]) value, property.getSID());
+            return FileUtils.createPropertyImage((byte[]) value, property.getPropertyFormName());
         } else {
             return value == null ? null : true;
         }

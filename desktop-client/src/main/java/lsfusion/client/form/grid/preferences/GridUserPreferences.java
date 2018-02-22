@@ -158,7 +158,7 @@ public class GridUserPreferences {
     public GroupObjectUserPreferences convertPreferences() {
         Map<String, ColumnUserPreferences> columns = new HashMap<>();
         for (Map.Entry<ClientPropertyDraw, ColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
-            columns.put(entry.getKey().getSID(), entry.getValue());
+            columns.put(entry.getKey().getPropertyFormName(), entry.getValue());
         }
         return new GroupObjectUserPreferences(columns, groupObject.getSID(), fontInfo, pageSize, headerHeight, hasUserPreferences());
     }

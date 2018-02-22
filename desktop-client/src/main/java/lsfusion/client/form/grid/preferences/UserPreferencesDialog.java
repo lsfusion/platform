@@ -403,7 +403,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             UserPreferencesPropertyListItem propertyItem = invisibleItems[i];
             initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), visibleListModel.getSize() + i, true);
             if (propertyItem.inGrid == null || propertyItem.inGrid) {
-                hiddenPropSids[i] = propertyItem.property.getSID();
+                hiddenPropSids[i] = propertyItem.property.getPropertyFormName();
             }
         }
 
