@@ -33,8 +33,6 @@ public class ContactLogicsModule extends ScriptingLogicsModule{
         nameContact = findProperty("name[Contact]");
 
         emailContact = findProperty("email[Contact]");
-        emailContact.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
-        emailContact.setRegexpMessage("<html>Неверный формат e-mail</html>");
         contactEmail = findProperty("contact[VARSTRING[400]]");
     }
 }
