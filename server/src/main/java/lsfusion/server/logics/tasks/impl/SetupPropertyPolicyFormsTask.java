@@ -19,7 +19,7 @@ public class SetupPropertyPolicyFormsTask extends GroupPropertiesTask {
 
     @Override
     protected boolean prerun() {
-        if (SystemProperties.isDebug) {
+        if (SystemProperties.lightStart) {
             return false;
         }
 

@@ -921,7 +921,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
         
         if(calcType.isStatAlot() && explicitClasses != null && this instanceof AggregateProperty && !((AggregateProperty)this).hasAlotKeys()) {
-            assert SystemProperties.isDebug;
+            assert SystemProperties.lightStart;
             assert !hasChanges(propChanges) && modify == null;
             return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
         }                    

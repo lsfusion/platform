@@ -79,7 +79,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.isDebug));
+            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode));
             formPageCount.change(pageCount, context);
         }
     }

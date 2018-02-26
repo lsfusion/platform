@@ -248,7 +248,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     public boolean hasAlotKeys() {
 //        if(1==1) return false;
-        if(SystemProperties.isDebug) {
+        if(SystemProperties.lightStart) {
             if (!isFull(AlgType.statAlotType))
                 return true;
             if (isStored())

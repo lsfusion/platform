@@ -318,7 +318,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
         String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.<KeyField>nameGetter(session.syntax))),
                                                 properties.mapSet(propOrder.mapOrderSetValues(Field.<PropertyField>nameGetter(session.syntax))));
-        return new MaterializedQuery(table, mapFields, SystemProperties.isDebug ? keyOrder : null, SystemProperties.isDebug ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
+        return new MaterializedQuery(table, mapFields, SystemProperties.inDevMode ? keyOrder : null, SystemProperties.inDevMode ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
     }
 
     private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner, RegisterChange registerChange) {

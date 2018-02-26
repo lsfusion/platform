@@ -18,7 +18,7 @@ public abstract class SyncTask extends ReflectionTask {
     }
 
     public void run(Logger logger) {
-        if ((!SystemProperties.isDebug || runInDebug()) && getReflectionManager().isSourceHashChanged()) {
+        if ((!SystemProperties.lightStart || runInDebug()) && getReflectionManager().isSourceHashChanged()) {
             runSync();
         }
     }

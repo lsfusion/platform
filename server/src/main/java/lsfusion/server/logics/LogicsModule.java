@@ -1543,9 +1543,9 @@ public abstract class LogicsModule {
 
     // ------------------- DRILLDOWN ----------------- //
 
-    public void setupDrillDownProperty(Property property, boolean isDebug) {
+    public void setupDrillDownProperty(Property property, boolean isLightStart) {
         if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
-            LAP<?> drillDownFormProperty = isDebug ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
+            LAP<?> drillDownFormProperty = isLightStart ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
             ActionProperty formProperty = drillDownFormProperty.property;
             formProperty.checkReadOnly = false;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);

@@ -1078,7 +1078,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private Collection<String> customReports;
     @ManualLazy
     public Collection<String> getAllCustomReports() {
-        if (SystemProperties.isDebug || customReports == null) {
+        if (SystemProperties.inDevMode || customReports == null) {
             customReports = calculateAllCustomReports();
         }
         return customReports;
@@ -2524,7 +2524,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public List<Scheduler.SchedulerTask> getSystemTasks(Scheduler scheduler) {
-        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+        if(SystemProperties.inDevMode) // чтобы не мешать при включенных breakPoint'ах
             return new ArrayList<>();
 
         List<Scheduler.SchedulerTask> result = new ArrayList<>();

@@ -12,19 +12,19 @@ public class ReportClientAction implements ClientAction {
     public String formSID;
     public boolean isModal;
     public ReportGenerationData generationData;
-    public boolean isDebug;
+    public boolean inDevMode;
     public FormPrintType printType;
     public String printerName;
 
     public ReportClientAction(List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
-                              FormPrintType printType, String printerName, boolean isDebug) {
+                              FormPrintType printType, String printerName, boolean inDevMode) {
         this.reportPathList = reportPathList;
         this.formSID = formSID;
         this.isModal = isModal;
         this.generationData = generationData;
         this.printType = printType;
         this.printerName = printerName;
-        this.isDebug = isDebug;
+        this.inDevMode = inDevMode;
     }
 
     @Override

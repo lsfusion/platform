@@ -25,7 +25,7 @@ public class KeyExpr extends ParamExpr {
         }
     };
     public static <T> ImRevMap<T, KeyExpr> getMapKeys(ImSet<T> objects) {
-        if (SystemProperties.isDebug)
+        if (SystemProperties.inDevMode)
             return objects.mapRevValues((GetValue<KeyExpr, T>) genStringKeys);
 
         return objects.mapRevValues(genIndexKeys);

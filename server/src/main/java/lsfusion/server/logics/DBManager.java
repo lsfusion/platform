@@ -696,7 +696,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
 
             if(newDBStructure.version >= 22 && oldDBStructure.version < 22 && oldDBStructure.version > 0) { // временно, для явной типизации
-                if (SystemProperties.isDebug) {
+                if (SystemProperties.lightStart) {
                     throw new RuntimeException("YOU HAVE TO START SERVER WITH ISDEBUG : FALSE");
                 }
                 Settings.get().setStartServerAnyWay(true);
@@ -1476,17 +1476,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private String calculateHashModules() {
-        try {
-            String modulesString = SystemProperties.isDebug ? "ISDEBUG" : "";
-            for (LogicsModule module : businessLogics.getLogicModules()) {
-                if (module instanceof ScriptingLogicsModule)
-                    modulesString += new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(((ScriptingLogicsModule) module).getCode().getBytes())));
+        List<Integer> moduleHashCodes = new ArrayList<>();
+        for (LogicsModule module : businessLogics.getLogicModules()) {
+            if (module instanceof ScriptingLogicsModule) {
+                moduleHashCodes.add(((ScriptingLogicsModule) module).getCode().hashCode());
             }
-
-            return new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(modulesString.getBytes())));
-        } catch (NoSuchAlgorithmException e) {
-            return null;
         }
+        moduleHashCodes.add((SystemProperties.lightStart ? "light" : "full").hashCode());
+        return Integer.toHexString(moduleHashCodes.hashCode());
     }
 
     private boolean checkHashModulesChanged(String oldHash, String newHash) {

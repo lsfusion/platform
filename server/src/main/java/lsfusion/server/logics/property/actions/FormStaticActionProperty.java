@@ -97,7 +97,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                 ServerLoggers.systemLogger.error(e);
             }
         } else { // assert printType != null;
-            List<ReportPath> customReportPathList = SystemProperties.isDebug && staticType != FormPrintType.MESSAGE ? newFormManager.getCustomReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
+            List<ReportPath> customReportPathList = SystemProperties.inDevMode && staticType != FormPrintType.MESSAGE ? newFormManager.getCustomReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
             exportClient(context, form.getCaption(), reportData, customReportPathList, form.getSID());
         }
     }

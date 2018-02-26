@@ -5,8 +5,27 @@ public class SystemProperties {
     
     public static final boolean isActionDebugEnabled = System.getProperty("lsfusion.server.debug.actions") != null;
 
-    public static final boolean isDebug = "true".equals(System.getProperty("lsfusion.server.isdebug"));
+    public static final boolean lightStart;
+    public static final boolean inDevMode; 
+    public static final boolean inTestMode;
+    
+    static {
+        String lightStartValue = System.getProperty("lsfusion.server.lightstart");
+        String devModePropertyValue = System.getProperty("lsfusion.server.devmode");
+        String testModePropertyValue = System.getProperty("lsfusion.server.testmode");
+        
+        lightStart = lightStartValue == null ? false : "true".equals(lightStartValue.toLowerCase());
+        inDevMode = testModePropertyValue == null ? isActionDebugEnabled : "true".equals(testModePropertyValue.toLowerCase());
+        inTestMode  = devModePropertyValue == null ? getAssertsStatus() : "true".equals(devModePropertyValue.toLowerCase());
+    }
 
+    // https://docs.oracle.com/javase/7/docs/technotes/guides/language/assert.html#design-faq-enable-disable 
+    private static boolean getAssertsStatus() {
+        boolean assertsEnabled = false;
+        assert assertsEnabled = true;
+        return assertsEnabled;
+    }
+    
     public static final String settingsPath = System.getProperty("lsfusion.server.settingsPath", "lsfusion.xml");
 
     public static final boolean doNotCalculateStats = "true".equals(System.getProperty("lsfusion.server.logics.donotcalculatestats"));

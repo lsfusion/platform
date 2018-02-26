@@ -5,7 +5,6 @@ import lsfusion.server.SystemProperties;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
 
-import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.base.BaseUtils.systemLogger;
 
 public class PrereadPropertyCachesTask extends GroupPropertiesTask {
@@ -30,7 +29,7 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
 
     @Override
     protected boolean prerun() {
-        if (SystemProperties.isDebug || Settings.get().isDisablePrereadCaches()) {
+        if (SystemProperties.lightStart || Settings.get().isDisablePrereadCaches()) {
             return false;
         }
         return true;

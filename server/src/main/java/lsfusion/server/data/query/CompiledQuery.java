@@ -1937,7 +1937,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.isFullClientParam, env.getIsFullClient());
         mMapValues.exclAdd(SQLSession.isDebugParam, new LogicalParseInterface() {
             public boolean isTrue() {
-                return SystemProperties.isDebug;
+                return SystemProperties.inDevMode;
             }
         });
         return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));

@@ -11,6 +11,6 @@ public class SetupDrillDownTask extends GroupPropertiesTask {
     }
 
     protected void runTask(Property property) {
-        getBL().LM.setupDrillDownProperty(property, SystemProperties.isDebug);
+        getBL().LM.setupDrillDownProperty(property, SystemProperties.lightStart);
     }
 }

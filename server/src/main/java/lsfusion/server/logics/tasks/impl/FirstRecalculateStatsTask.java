@@ -23,7 +23,7 @@ public class FirstRecalculateStatsTask extends ReflectionTask {
 
     @Override
     public void run(Logger logger) {
-        if(!SystemProperties.isDebug)
+        if(!SystemProperties.lightStart)
             BL.firstRecalculateStats();
     }
 }

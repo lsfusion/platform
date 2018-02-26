@@ -19,13 +19,11 @@ import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
@@ -498,7 +496,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<byte[]>() {
             @Override
             public byte[] call(ExecutionStack stack) throws Exception {
-                List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<>(BaseUtils.toList(groupMap, sumMap, maxMap));
+                List<Map<Integer, List<byte[]>>> inMaps = Arrays.asList(groupMap, sumMap, maxMap);
                 List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
                     MOrderExclMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> mOutMap = MapFact.mOrderExclMap(one.size());

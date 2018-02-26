@@ -12,7 +12,7 @@ public class PrereadCachesTask extends SimpleBLTask {
     }
 
     public void run(Logger logger) {
-        if (!SystemProperties.isDebug && !Settings.get().isDisablePrereadCaches()) {
+        if (!SystemProperties.lightStart && !Settings.get().isDisablePrereadCaches()) {
             getBL().prereadCaches();
         }
     }
