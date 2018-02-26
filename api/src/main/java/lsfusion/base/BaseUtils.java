@@ -1153,14 +1153,6 @@ public class BaseUtils {
         return replaced;
     }
 
-    public static ArrayList<Integer> toListFromArray(int[] ints) {
-        ArrayList<Integer> list = new ArrayList();
-        for (int i : ints) {
-            list.add(i);
-        }
-        return list;
-    }
-    
     public static Long nullToZero(Long value) {
         return value == null ? 0 : value;
     }
@@ -1726,16 +1718,10 @@ public class BaseUtils {
         return result;
     }
 
+    @SafeVarargs
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<>();
         Collections.addAll(list, elements);
-        return list;
-    }
-
-    public static <K> List<Boolean> toBooleanList(boolean... elements) {
-        List<Boolean> list = new ArrayList<>();
-        for (boolean element : elements)
-            list.add(element);
         return list;
     }
 

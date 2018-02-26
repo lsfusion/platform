@@ -73,7 +73,6 @@ import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.janino.SimpleCompiler;
 
@@ -1399,7 +1398,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLCPsByPropertyUsage(toPropertyUsageList))),
-                BaseUtils.mergeList(BaseUtils.toList(connectionString, exec), params));
+                BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
     public LPWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
@@ -1413,17 +1412,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedExternalLSFActionProp(LPWithParams connectionString, LPWithParams action, boolean eval, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), BaseUtils.toList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false)), new ArrayList<Integer>()))),
+        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false)), new ArrayList<Integer>()))),
                 BaseUtils.add(params, action), context, toPropertyUsageList);
-    }
-
-    private int getSignatureSize(String action, Integer bodyParamsCount) {
-        if (bodyParamsCount == null) {
-            int bracketPos = action.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
-            if (bracketPos >= 0 && action.lastIndexOf(PropertyCanonicalNameUtils.signatureRBracket) == action.length() - 1)
-                bodyParamsCount = StringUtils.countMatches(action.substring(bracketPos + 1, action.length() - 1), ",") + 1;
-        }
-        return bodyParamsCount == null ? 0 : bodyParamsCount;
     }
 
     private ImList<LCP> findLCPsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -2701,7 +2691,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 
                 ScriptingLogicsModule.setDebugInfo(null, assignLP.second, ((LAP<?>)assignAction.property).property);
                 
-                doAction = addScriptedListAProp(BaseUtils.toList(assignAction, doAction), new ArrayList<LP>());
+                doAction = addScriptedListAProp(Arrays.asList(assignAction, doAction), new ArrayList<LP>());
             }
 
             LPWithParams nullExec = nullExec(doAction, paramNum); // передает NULL в качестве параметра
@@ -3010,7 +3000,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedNewExecutorActionProperty(LPWithParams actionProp, LPWithParams threadsProp) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> propParams = toList(actionProp, threadsProp);
+        List<LPWithParams> propParams = Arrays.asList(actionProp, threadsProp);
         List<Integer> allParams = mergeAllParams(propParams);
         LAP<?> property = addNewExecutorAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
         return new LPWithParams(property, allParams);
