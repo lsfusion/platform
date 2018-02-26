@@ -15,8 +15,8 @@ public class SystemProperties {
         String testModePropertyValue = System.getProperty("lsfusion.server.testmode");
         
         lightStart = lightStartValue == null ? false : "true".equals(lightStartValue.toLowerCase());
-        inDevMode = testModePropertyValue == null ? isActionDebugEnabled : "true".equals(testModePropertyValue.toLowerCase());
-        inTestMode  = devModePropertyValue == null ? getAssertsStatus() : "true".equals(devModePropertyValue.toLowerCase());
+        inDevMode  = devModePropertyValue == null ? getAssertsStatus() : "true".equals(devModePropertyValue.toLowerCase());
+        inTestMode = testModePropertyValue == null ? isActionDebugEnabled : "true".equals(testModePropertyValue.toLowerCase());
     }
 
     // https://docs.oracle.com/javase/7/docs/technotes/guides/language/assert.html#design-faq-enable-disable 
