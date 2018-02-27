@@ -2,6 +2,7 @@ package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -785,6 +786,15 @@ public class GridTable extends ClientPropertyTable {
                 : null;
     }
 
+    public ClientGroupObjectValue getCurrentColumn() {
+        ClientGroupObjectValue selectedColumn = getSelectedColumnKey();
+        return selectedColumn != null
+                ? selectedColumn
+                : model.getColumnCount() > 0
+                ? model.getColumnKey(0)
+                : null;
+    }
+
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getCurrentProperty();
@@ -1026,11 +1036,18 @@ public class GridTable extends ClientPropertyTable {
 
     private void quickFilter(EventObject editEvent) {
         if (KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
+            ClientPropertyDraw filterProperty = null;
+            ClientGroupObjectValue filterColumnKey = null;
+
             ClientPropertyDraw currentProperty = getCurrentProperty();
-            ClientPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
-                                                ? currentProperty.quickFilterProperty
-                                                : null;
-            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty);
+            if(currentProperty != null && currentProperty.quickFilterProperty != null) {
+                filterProperty = currentProperty.quickFilterProperty;
+                if(BaseUtils.nullHashEquals(currentProperty.columnGroupObjects, filterProperty.columnGroupObjects)) {
+                    filterColumnKey = getCurrentColumn();                    
+                }                    
+            }
+             
+            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty, filterColumnKey);
         }
     }
 
@@ -1163,6 +1180,20 @@ public class GridTable extends ClientPropertyTable {
         }
 
         return model.getColumnProperty(colModel);
+    }
+
+    public ClientGroupObjectValue getSelectedColumnKey() {
+        int colView = getSelectedColumn();
+        if (colView < 0 || colView >= getColumnCount()) {
+            return null;
+        }
+
+        int colModel = convertColumnIndexToModel(colView);
+        if (colModel < 0) {
+            return null;
+        }
+
+        return model.getColumnKey(colModel);
     }
 
     public boolean isPressed(int row, int column) {

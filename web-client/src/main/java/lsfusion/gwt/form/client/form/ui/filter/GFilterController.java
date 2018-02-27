@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -157,20 +158,27 @@ public abstract class GFilterController {
     }
 
     public void addPressed() {
-        if (addNewCondition(false, null)) {
+        if (addNewCondition(false, null, null)) {
             changeState(State.EXPANDED);
         }
     }
 
     public void replaceConditionPressed() {
-        if (addNewCondition(true, null)) {
+        if (addNewCondition(true, null, null)) {
             changeState(State.EXPANDED);
         }
     }
 
-    private boolean addNewCondition(boolean replace, GPropertyDraw property) {
-        GPropertyDraw filterProperty = property != null ? property : logicsSupplier.getSelectedProperty();
+    private boolean addNewCondition(boolean replace, GPropertyDraw property, GGroupObjectValue columnKey) {
+        GPropertyDraw filterProperty = property;
+        GGroupObjectValue filterColumnKey = columnKey;
+
+        if(filterProperty == null) {
+            filterProperty = logicsSupplier.getSelectedProperty();
+            filterColumnKey = logicsSupplier.getSelectedColumn();
+        }
         if (filterProperty == null) {
+            //не добавляем, если нет ни одного свойства
             return false;
         }
 
@@ -180,6 +188,7 @@ public abstract class GFilterController {
 
         GPropertyFilter filter = new GPropertyFilter();
         filter.property = filterProperty;
+        filter.columnKey = filterColumnKey;
         filter.groupObject = logicsSupplier.getSelectedGroupObject();
         conditions.add(filter);
         filterView.addCondition(filter, logicsSupplier);
@@ -234,8 +243,8 @@ public abstract class GFilterController {
         }
     }
 
-    public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw) {
-        if (addNewCondition(true, propertyDraw)) {
+    public void quickEditFilter(EditEvent keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+        if (addNewCondition(true, propertyDraw, columnKey)) {
             changeState(State.EXPANDED);
             filterView.startEditing(keyEvent, propertyDraw);
         }

@@ -99,6 +99,12 @@ public class GwtToClientConverter extends ObjectConverter {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
+        serializeGroupObjectValue(dataStream, groupObjectValue);
+
+        return outStream.toByteArray();
+    }
+
+    public static void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {
         try {
             int size = groupObjectValue.size();
             dataStream.writeInt(size);
@@ -109,10 +115,8 @@ public class GwtToClientConverter extends ObjectConverter {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-
-        return outStream.toByteArray();
     }
-    
+
     @Converter(from = GFormUserPreferences.class)
     public FormUserPreferences convertFormUserPreferences(GFormUserPreferences gprefs) {
         java.util.List<GroupObjectUserPreferences> generalPrefs = new ArrayList<>();

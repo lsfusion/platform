@@ -321,6 +321,9 @@ public class GridController {
     public ClientPropertyDraw getCurrentProperty() {
         return table.getCurrentProperty();
     }
+    public ClientGroupObjectValue getCurrentColumn() {
+        return table.getCurrentColumn();
+    }
 
     public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
         return table.getSelectedValue(cell, columnKey);

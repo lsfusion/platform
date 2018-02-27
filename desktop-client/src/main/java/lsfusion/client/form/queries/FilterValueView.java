@@ -1,5 +1,6 @@
 package lsfusion.client.form.queries;
 
+import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
@@ -16,7 +17,7 @@ abstract class FilterValueView extends JPanel {
         setLayout(new BorderLayout());
     }
 
-    public void propertyChanged(ClientPropertyDraw property) {
+    public void propertyChanged(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         //do nothing by default
     }
 

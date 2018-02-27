@@ -464,10 +464,14 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     public GPropertyDraw getSelectedProperty() {
         return grid.getCurrentProperty();
     }
+    @Override
+    public GGroupObjectValue getSelectedColumn() {
+        return grid.getCurrentColumn();
+    }
 
     @Override
-    public Object getSelectedValue(GPropertyDraw property) {
-        return grid.getSelectedValue(property);
+    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return grid.getSelectedValue(property, columnKey);
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add, int position) {

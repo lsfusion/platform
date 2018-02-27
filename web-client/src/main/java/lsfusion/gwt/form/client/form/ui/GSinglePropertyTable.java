@@ -155,6 +155,11 @@ public class GSinglePropertyTable extends GPropertyTable<Object> {
         return property;
     }
 
+    @Override
+    public GGroupObjectValue getSelectedColumn() {
+        return columnKey;
+    }
+
     public GPropertyDraw getProperty(Cell.Context context) {
         assert context.getIndex() == 0 && context.getColumn() == 0;
         return property;

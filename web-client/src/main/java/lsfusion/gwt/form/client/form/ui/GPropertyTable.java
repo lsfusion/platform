@@ -76,6 +76,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     public abstract boolean isEditable(Context context);
 
     public abstract GPropertyDraw getSelectedProperty();
+    public abstract GGroupObjectValue getSelectedColumn();
 
     public abstract GPropertyDraw getProperty(Context editContext);
 

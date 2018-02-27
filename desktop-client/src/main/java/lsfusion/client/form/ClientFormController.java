@@ -467,7 +467,7 @@ public class ClientFormController implements AsyncListener {
     public void quickEditFilter(KeyEvent initFilterKeyEvent, int initialFilterPropertyDrawID) {
         ClientPropertyDraw propertyDraw = form.getProperty(initialFilterPropertyDrawID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).quickEditFilter(initFilterKeyEvent, propertyDraw);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(initFilterKeyEvent, propertyDraw, null);
         }
     }
 

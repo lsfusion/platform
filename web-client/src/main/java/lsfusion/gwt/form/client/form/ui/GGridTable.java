@@ -633,7 +633,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public GGroupObject getGroupObject() {
         return groupObject;
     }
-
+    
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 0) {
@@ -642,10 +642,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return property;
     }
 
-    public Object getSelectedValue(GPropertyDraw property) {
+    public GGroupObjectValue getCurrentColumn() {
+        GGroupObjectValue property = getSelectedColumn();
+        if (property == null && getColumnCount() > 0) {
+            property = getColumnKey(0);
+        }
+        return property;
+    }
+
+    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-        if (selectedRecord != null && getMinPropertyIndex(property) != -1) {
-            return getColumn(getMinPropertyIndex(property)).getValue(selectedRecord);
+        int column = getPropertyIndex(property, columnKey);
+        if (selectedRecord != null && column != -1 && column < getColumnCount()) {
+            return getColumn(column).getValue(selectedRecord);
         }
 
         return null;
@@ -788,6 +797,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     @Override
     String getCellForeground(GridDataRecord rowValue, int row, int column) {
         return rowValue.getForeground(((GridColumn) getColumn(column)).columnID);
+    }
+
+    public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
+        for (int i = 0; i < columnProperties.size(); ++i) {
+            if (property == columnProperties.get(i) && (columnKey == null || columnKey.equals(columnKeysList.get(i)))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private int getMinPropertyIndex(GPropertyDraw property) {
@@ -935,8 +953,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
-        groupObjectController.quickEditFilter(event, filterProperty);
+    public void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
+        groupObjectController.quickEditFilter(event, filterProperty, columnKey);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.logics;
 
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.reader.*;
@@ -27,5 +26,6 @@ public interface GGroupObjectLogicsSupplier {
     List<GObject> getObjects();
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedProperty();
-    Object getSelectedValue(GPropertyDraw property);
+    GGroupObjectValue getSelectedColumn();
+    Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
 }

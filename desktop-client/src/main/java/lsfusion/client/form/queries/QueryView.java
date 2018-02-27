@@ -5,7 +5,6 @@ import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.cell.DataPanelView;
 import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.KeyStrokes;
@@ -143,14 +142,14 @@ public abstract class QueryView extends JComponentPanel implements QueryConditio
         comp.getActionMap().put("newFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
                 if(comp instanceof DataPanelView)
-                    controller.replaceConditionPressed(((DataPanelView) comp).getProperty());
+                    controller.replaceConditionPressed(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey());
             }
         });
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getKeyStroke(InputEvent.ALT_DOWN_MASK), "addFilter");
         comp.getActionMap().put("addFilter", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                controller.addConditionPressed(((DataPanelView) comp).getProperty());
+                controller.addConditionPressed(((DataPanelView) comp).getProperty(), ((DataPanelView) comp).getColumnKey());
             }
         });
 

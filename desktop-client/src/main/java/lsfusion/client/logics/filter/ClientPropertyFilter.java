@@ -2,6 +2,7 @@ package lsfusion.client.logics.filter;
 
 import lsfusion.client.logics.ClientFilterValue;
 import lsfusion.client.logics.ClientGroupObject;
+import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Compare;
 import lsfusion.interop.FilterType;
@@ -15,6 +16,8 @@ public class ClientPropertyFilter {
     public ClientPropertyDraw property;
     public ClientFilterValue value;
 
+    public ClientGroupObjectValue columnKey; // nullable означает что надо текущий брать
+
     public boolean negation;
     public Compare compare;
     public boolean junction = true; //true - conjunction, false - disjunction
@@ -23,6 +26,9 @@ public class ClientPropertyFilter {
         outStream.writeByte(FilterType.COMPARE);
 
         outStream.writeInt(property.getID());
+        outStream.writeBoolean(columnKey != null);
+        if(columnKey != null)
+            columnKey.serialize(outStream);
         outStream.writeBoolean(negation);
         compare.serialize(outStream);
         value.serialize(outStream);

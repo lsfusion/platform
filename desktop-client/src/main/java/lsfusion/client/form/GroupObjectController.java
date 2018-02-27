@@ -456,14 +456,17 @@ public class GroupObjectController extends AbstractGroupObjectController {
     public ClientPropertyDraw getSelectedProperty() {
         return grid.getCurrentProperty();
     }
+    public ClientGroupObjectValue getSelectedColumn() {
+        return grid.getCurrentColumn();
+    }
 
     public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
         if (filter != null) {
-            filter.quickEditFilter(initFilterKeyEvent, propertyDraw);
+            filter.quickEditFilter(initFilterKeyEvent, propertyDraw, columnKey);
         }
     }
 
