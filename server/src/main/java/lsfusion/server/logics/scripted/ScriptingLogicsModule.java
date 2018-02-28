@@ -2499,20 +2499,17 @@ public class ScriptingLogicsModule extends LogicsModule {
                 windowType = WindowFormType.DOCKED;
         }
             
-        List<LPWithParams> propParams = new ArrayList<>();
-        List<Integer> allParams = mergeAllParams(propParams);
-
         LAP property = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
                                  manageSession, noCancel,
-                                 syncType, windowType, checkOnOk,
-                                 readonly, getParamsPlainList(propParams).toArray());
+                                 syncType, windowType, false, checkOnOk,
+                                 readonly);
         
         property = addSessionScopeAProp(formSessionScope, property);
         
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
         } else {
-            return new LPWithParams(property, allParams);
+            return new LPWithParams(property, new ArrayList<Integer>());
         }
     }
 
@@ -2614,8 +2611,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  inputObjects, inputProps, inputNulls,
                                  manageSession, noCancel,
                                  contextObjects, contextProps,
-                true, windowType, checkOnOk,
-                readonly, getParamsPlainList(propParams).toArray());
+                true, windowType, false, checkOnOk,
+                readonly);
         
         property = addSessionScopeAProp(scope, property, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 

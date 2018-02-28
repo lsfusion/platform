@@ -277,7 +277,7 @@ public class Main {
                     
                     useRequestTimeout = remoteNavigator.isUseRequestTimeout();
 
-                    ((DockableMainFrame) frame).executeAction("SystemEvents.onClientStarted[]", 0, null);
+                    ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null);
 
                 } catch (Exception e) {
                     closeSplashScreen();
@@ -557,7 +557,7 @@ public class Main {
             if (currentForm != null)
                 currentForm.executeNotificationAction(idNotification);
             else
-                ((DockableMainFrame) frame).executeAction(String.valueOf(idNotification), 2, new Runnable() {
+                ((DockableMainFrame) frame).executeNavigatorAction(String.valueOf(idNotification), 2, new Runnable() {
                     @Override
                     public void run() {
                         executeNotificationAction(idNotification);

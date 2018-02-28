@@ -83,8 +83,8 @@ public class WrapperContext extends AbstractContext implements Context {
     }
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
-        wrappedContext.requestFormUserInteraction(formInstance, modalityType, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        wrappedContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, stack);
     }
 
     public ObjectValue requestUserObject(DialogRequest dialogRequest, ExecutionStack stack) throws SQLException, SQLHandledException {

@@ -107,10 +107,10 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
-        executeAction(action.getCanonicalName(), 1, null);
+        executeNavigatorAction(action.getCanonicalName(), 1, null);
     }
 
-    public void executeAction(final String actionSID, final int type, final Runnable action) {
+    public void executeNavigatorAction(final String actionSID, final int type, final Runnable action) {
         if (action != null) {
             if (lock.tryLock()) {
                 tryExecuteNavigatorAction(actionSID, type);
@@ -340,9 +340,9 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public ClientFormDockable runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            return dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, firstChanges, closeListener);
+            return dockableManager.openForm(mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed();

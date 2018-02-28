@@ -59,10 +59,10 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
         FormEntity formEntity = formInstance.entity;
         RemoteForm remoteForm = createRemoteForm(formInstance, stack);
-        requestUserInteraction(new FormClientAction(formEntity.getCanonicalName(), formEntity.getSID(), remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType));
+        requestUserInteraction(new FormClientAction(formEntity.getCanonicalName(), formEntity.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType));
         if(modalityType.isModal())
             formInstance.syncLikelyOnClose(true, stack);
     }
@@ -73,7 +73,7 @@ public abstract class AbstractContext implements Context {
             return null;
         }
 
-        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, stack);
+        requestFormUserInteraction(dialogInstance, ModalityType.DIALOG_MODAL, false, stack);
 
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;

@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
+import lsfusion.interop.WindowFormType;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -15,10 +16,7 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.ClassFormEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyFormEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -658,6 +656,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;
+    }
+
+    @IdentityStrongLazy
+    public LAP getFormNavigatorAction(FormEntity form) {
+        return addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
     }
 
     @IdentityStrongLazy

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
-import jasperapi.ReportGenerator;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.Processor;
@@ -11,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ConcreteObjectClass;
@@ -37,18 +35,9 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
-import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.session.*;
-import net.sf.jasperreports.engine.JRAbstractExporter;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
@@ -531,9 +520,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException {

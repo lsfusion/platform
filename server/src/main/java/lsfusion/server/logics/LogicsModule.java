@@ -30,10 +30,10 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.navigator.DefaultIcon;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.navigator.NavigatorFolder;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.debug.ActionDelegationType;
@@ -521,18 +521,18 @@ public abstract class LogicsModule {
 
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, true, WindowFormType.FLOAT);
+        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), true, WindowFormType.FLOAT, false);
         return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
-    protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType) {
-        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), manageSession, noCancel, syncType, windowType, false, false);
+    protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
+        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
     }
-    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
-        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, checkOnOk, readonly, params);
+    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+        return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
-    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, Object... params) {
-        return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, checkOnOk, readonly)));
+    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+        return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
     protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, boolean hasPrinterProperty, FormPrintType staticType, boolean syncType, Integer selectTop, LCP targetProp, boolean removeNulls, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
@@ -2070,8 +2070,15 @@ public abstract class LogicsModule {
         return navigatorAction;
     }
 
-    protected NavigatorForm addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
-        NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
+    protected LAP<?> getNavigatorAction(FormEntity form) {
+        return baseLM.getFormNavigatorAction(form);
+    }
+
+    protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
+//        NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
+        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).property, canonicalName, caption);
+        navigatorForm.setImage("/images/form.png", DefaultIcon.FORM);
+
         addNavigatorElement(navigatorForm);
         return navigatorForm;
     }

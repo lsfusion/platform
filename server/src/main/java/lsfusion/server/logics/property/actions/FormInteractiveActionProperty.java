@@ -56,6 +56,9 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     private final ManageSessionType manageSession;
     private final Boolean noCancel;
 
+    // NAVIGATOR
+    private final Boolean forbidDuplicate;
+
     // CONTEXT
     private final ImList<O> contextObjects;
     private final ImList<CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>> contextPropertyImplements;
@@ -70,7 +73,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
                                          ManageSessionType manageSession,
                                          Boolean noCancel,
                                          boolean syncType,
-                                         WindowFormType windowType,
+                                         WindowFormType windowType, boolean forbidDuplicate,
                                          boolean checkOnOk,
                                          boolean readOnly) {
         super(caption, form, objectsToSet, nulls, true, contextProperties.toArray(new CalcProperty[contextProperties.size()]));
@@ -82,6 +85,8 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
 
         this.syncType = syncType;
         this.windowType = windowType;
+
+        this.forbidDuplicate = forbidDuplicate;
 
         this.manageSession = manageSession;
         this.noCancel = noCancel;
@@ -118,7 +123,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
         
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
-        context.requestFormUserInteraction(newFormInstance, getModalityType(), context.stack);
+        context.requestFormUserInteraction(newFormInstance, getModalityType(), forbidDuplicate, context.stack);
 
         if (syncType) {
             //для немодальных форм следующее бессмысленно, т.к. они остаются открытыми...
