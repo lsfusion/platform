@@ -197,11 +197,12 @@ public class DockableMainFrame extends MainFrame {
             logger.error("Error loading default layout", e);
         } finally {
             if (pageToFocus != null) {
-                pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
-
                 if (showDefaultForms == DefaultFormsType.DEFAULT) {
                     pageToFocus.setExtendedMode(ExtendedMode.MAXIMIZED);
                 }
+                pageToFocus.toFront();
+                pageToFocus.requestFocusInWindow();
+                pageToFocus.onOpened();
             }
         }
     }
