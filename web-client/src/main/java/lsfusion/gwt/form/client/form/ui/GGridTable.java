@@ -849,6 +849,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         sortableHeaderManager.changeOrder(key, modiType);
     }
 
+    public GGroupObjectValue getSelectedColumn() {
+        return getColumnKey(getCurrentCellContext());
+    }
+
     @Override
     public GGroupObjectValue getColumnKey(Cell.Context context) {
         return columnKeysList.get(context.getColumn());

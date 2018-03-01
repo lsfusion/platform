@@ -170,9 +170,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GPropertyDraw getSelectedProperty() {
         return getProperty(getCurrentCellContext());
     }
-    public GGroupObjectValue getSelectedColumn() {
-        return getColumnKey(getCurrentCellContext());
-    }
 
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, Map<GGroupObjectValue, Object> values) {
         cellBackgroundValues.put(propertyDraw, values);
