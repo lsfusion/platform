@@ -14,9 +14,15 @@ fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (
 //ftp://username:password@host:port/path or file://path
 listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
 listFiles 'Получить список файлов'(VARISTRING[255] path) = { listFiles(path, 'UTF-8'); }
-
 //file://path
 listFilesClient 'Получить список файлов (на клиенте)' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesClientActionProperty' (VARISTRING[255]); 
+
+// ------------------------------ Проверка существования файла по пути ------------------------------ //
+fileExists = DATA LOCAL BOOLEAN ();
+//path, charset, isClient
+fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
+fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, 'UTF-8', NULL); }
+fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, NULL, TRUE); } 
 
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
