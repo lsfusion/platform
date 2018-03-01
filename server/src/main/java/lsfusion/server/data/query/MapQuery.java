@@ -20,7 +20,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 
 public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
 
-    final Query<MK,MV> query;
+    private final Query<MK,MV> query;
 
     final ImRevMap<V,MV> mapProps;
     final ImRevMap<K,MK> mapKeys;
@@ -95,6 +95,10 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
             return packedQuery.map(mapKeys, mapProps, mapValues);
         else
             return this;
+    }
+
+    public Query<MK, MV> getMapQuery() {
+        return query;
     }
 
     @IdentityInstanceLazy

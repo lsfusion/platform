@@ -84,7 +84,7 @@ public class QueryCacheAspect {
                     logger.debug("cached");
                     CacheStats.incrementHit(CacheStats.CacheType.QUERY);
 
-                    assert packed.getQuery() == cache && ((QueryCacheInterface)cache).getCacheTwin() == cache;
+                    assert packed.getMapQuery() == cache && ((QueryCacheInterface)cache).getCacheTwin() == cache;
                     queryCacheInterface.setCacheTwin(packed);
                     return packed;
                 }
@@ -126,7 +126,7 @@ public class QueryCacheAspect {
     @Around("execution(@lsfusion.server.caches.ContextTwin * *.*(..)) && target(query)")
     public Object callContextTwinMethod(ProceedingJoinPoint thisJoinPoint, Query query) throws Throwable {
         IQuery cache = cacheTwin(query);
-        if(cache!=query) { // тут в joinExprs - был цикл каким-то образом (видимо из-за очистки LRU), то есть cacheTwin
+        if(cache!=query) {
             MethodSignature signature = (MethodSignature) thisJoinPoint.getSignature();
             return ReflectionUtils.invokeTransp(cache.getClass().getMethod(signature.getName(), signature.getParameterTypes()), cache, thisJoinPoint.getArgs());
         }
