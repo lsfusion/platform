@@ -56,10 +56,12 @@ public class QueryCacheAspect {
         return null;
     }
 
-    final static LRUSVSMap<Integer, MAddCol<Query>> hashTwins = new LRUSVSMap<>(LRUUtil.G2);
+    private final static LRUSVSMap<Integer, MAddCol<Query>> hashTwins = new LRUSVSMap<>(LRUUtil.G2);
 
-    <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
-        IQuery<K, V> result = ((QueryCacheInterface)query).getCacheTwin();
+    private <K,V> IQuery<K,V> cacheTwin(Query<K,V> query) throws Throwable {
+        QueryCacheInterface queryCacheInterface = (QueryCacheInterface) query;
+
+        IQuery<K, V> result = queryCacheInterface.getCacheTwin();
         if(result!=null)
             return result;
 
@@ -71,13 +73,19 @@ public class QueryCacheAspect {
             hashTwins.put(hashQuery, hashCaches);
         }
         synchronized(hashCaches) {
+            result = queryCacheInterface.getCacheTwin(); // double check, важно что в hashCaches только "самоtwin'ы", и здесь их уже не должно быть (так как заmapp'иться на себя и будет StackOverflow), при этом может быть race condition между верхней проверкой и этой синхронизацией (если один и тот же запрос 2 раза cacheTwin делает)
+            if(result!=null)
+                return result;
+
             for(Query<?,?> cache : hashCaches.it()) {
-                IQuery<K,V> packed = cacheTwinQuery(cache, query);
+                assert query != cache;
+                MapQuery<K,V,?,?> packed = cacheTwinQuery(cache, query);
                 if(packed !=null) {
                     logger.debug("cached");
                     CacheStats.incrementHit(CacheStats.CacheType.QUERY);
 
-                    ((QueryCacheInterface)query).setCacheTwin(packed);
+                    assert packed.getQuery() == cache && ((QueryCacheInterface)cache).getCacheTwin() == cache;
+                    queryCacheInterface.setCacheTwin(packed);
                     return packed;
                 }
             }
@@ -88,7 +96,7 @@ public class QueryCacheAspect {
             ((QueryCacheInterface)cache.result).setCacheTwin(cache.result);
             hashCaches.add(cache.result);
 
-            ((QueryCacheInterface)query).setCacheTwin(result);
+            queryCacheInterface.setCacheTwin(result);
             return result;
         }
     }
