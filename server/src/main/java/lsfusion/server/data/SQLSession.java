@@ -170,9 +170,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private interface SQLRunnable {
-        void run() throws SQLException, SQLHandledException;
-    }
     private static void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
         try {
             run.run();

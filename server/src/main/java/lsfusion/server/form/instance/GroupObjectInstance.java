@@ -23,9 +23,7 @@ import lsfusion.server.classes.OrderClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -519,7 +517,22 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public NoPropertyTableUsage<ObjectInstance> keyTable = null;
     public NoPropertyTableUsage<ObjectInstance> expandTable = null;
-    
+
+    // так как в updateKeys мы не drop'аем таблицу (чтобы не collapse'илось дерево) надо обновлять классы
+    public void updateExpandClasses(final DataSession session) throws SQLException, SQLHandledException {
+        if(expandTable != null) {
+            final SessionData sessionData = expandTable.saveData();
+            expandTable.updateCurrentClasses(session);
+            session.addRollbackInfo(new SQLRunnable() {
+                public void run() throws SQLException, SQLHandledException {
+                    OperationOwner owner = session.getOwner();
+                    expandTable.drop(session.sql, owner);
+                    expandTable.rollData(session.sql, sessionData, owner);
+                }
+            });
+        }
+    }
+
     private Where getExpandWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys) {
         if(expandTable==null)
             return Where.FALSE;

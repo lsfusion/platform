@@ -310,6 +310,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public SessionData saveData() {
         return table;
     }
+    // предварительно таблица drop'ается в rollback (вызов dropTables, или явный drop перед вызовом)
     public void rollData(SQLSession sql, SessionData table, OperationOwner owner) throws SQLException {
         assert this.table == null;
         this.table = table;

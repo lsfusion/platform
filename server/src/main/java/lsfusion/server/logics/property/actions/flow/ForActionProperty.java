@@ -18,6 +18,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.LogTime;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -115,7 +116,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
             final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
-            session.addRollbackInfo(new Runnable() {
+            session.addRollbackInfo(new SQLRunnable() {
                 public void run() {
                     rows = prevRows;
                 }

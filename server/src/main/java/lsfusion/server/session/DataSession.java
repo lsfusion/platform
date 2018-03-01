@@ -292,7 +292,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     public void rollbackTransaction() throws SQLException, SQLHandledException {
         try {
-            for (Runnable info : rollbackInfo)
+            for (SQLRunnable info : rollbackInfo)
                 info.run();
         } catch (Throwable t) {
             ServerLoggers.assertLog(false, "SHOULD NOT BE");
@@ -2254,8 +2254,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.applyFilter = applyFilter;
     }
     
-    private List<Runnable> rollbackInfo = new ArrayList<>(); 
-    public void addRollbackInfo(Runnable run) {
+    private List<SQLRunnable> rollbackInfo = new ArrayList<>();
+    public void addRollbackInfo(SQLRunnable run) {
         assert isInTransaction();
         
         rollbackInfo.add(run);

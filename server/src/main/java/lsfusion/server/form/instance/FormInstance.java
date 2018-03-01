@@ -25,6 +25,7 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.SameThreadExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -862,13 +863,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void expandCurrentGroupObject(ValueClass cls) throws SQLException, SQLHandledException {
-        for (ObjectInstance object : getObjects()) {
-            if (object.getBaseClass().isCompatibleParent(cls))
-                expandCurrentGroupObject(object);
-        }
-    }
-
     public void expandCurrentGroupObject(ObjectInstance object) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = object.groupTo;
         if (groupObject != null && groupObject.isInTree()) {
@@ -1337,8 +1331,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, stack, interaction);
     }
 
+    private class FormStack extends SameThreadExecutionStack {
+
+        public FormStack(ExecutionStack upStack) {
+            super(upStack);
+        }
+
+        protected DataSession getSession() {
+            return session;
+        }
+
+        @Override
+        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+            for (GroupObjectInstance group : getGroups())
+                group.updateExpandClasses(session);
+            super.updateOnApply(session);
+        }
+    }
+
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         assert sessionEventFormEnv == null || this == sessionEventFormEnv;
+
+        stack = new FormStack(stack);
 
         fireOnBeforeApply(stack);
 

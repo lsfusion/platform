@@ -22,6 +22,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -124,7 +125,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
             final ImMap<P, ? extends ObjectValue> prevKeys = keys;
             keys = session.updateCurrentClasses(keys);
-            session.addRollbackInfo(new Runnable() {
+            session.addRollbackInfo(new SQLRunnable() {
                 public void run() {
                     keys = prevKeys;
                 }});
