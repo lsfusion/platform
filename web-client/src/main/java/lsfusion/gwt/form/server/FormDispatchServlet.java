@@ -7,6 +7,8 @@ import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.rmi.RemoteException;
+
 public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogicsInterface> {
     @Autowired
     private FormSessionManager formSessionManager;
@@ -14,20 +16,21 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
     @Override
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         // navigator
+        registry.addHandler(new CleanHandler(this));
         registry.addHandler(new ClientMessageHandler(this));
         registry.addHandler(new ContinueNavigatorActionHandler(this));
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
         registry.addHandler(new ForbidDuplicateFormsHandler(this));
         registry.addHandler(new GetNavigatorInfoHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
-        registry.addHandler(new IsBusyDialogHandler(this));
         registry.addHandler(new GetLocaleHandler(this));
+        registry.addHandler(new IsBusyDialogHandler(this));
         registry.addHandler(new IsConfigurationAccessAllowedHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
+        registry.addHandler(new RegisterTabActionHandler(this));
         registry.addHandler(new SetCurrentFormHandler(this));
         registry.addHandler(new ShowDefaultFormsHandler(this));
         registry.addHandler(new ThrowInNavigatorActionHandler(this));
-        registry.addHandler(new CleanHandler(this));
 
         //form
         registry.addHandler(new CalculateSumHandler(this));
@@ -66,5 +69,11 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
 
     public FormSessionManager getFormSessionManager() {
         return formSessionManager;
+    }
+
+    @Override
+    public void tabClosed(String tabSID) throws RemoteException {
+        formSessionManager.removeFormSessionObjects(tabSID);
+        super.tabClosed(tabSID);
     }
 }

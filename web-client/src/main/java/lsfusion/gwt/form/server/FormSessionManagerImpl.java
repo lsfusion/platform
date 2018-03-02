@@ -23,10 +23,7 @@ import org.springframework.util.Assert;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
 import static lsfusion.gwt.form.server.convert.StaticConverters.convertFont;
@@ -40,7 +37,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     public FormSessionManagerImpl() {}
 
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
+    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String tabSID, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
         FormClientAction.methodNames = FormClientAction.methodNames; // чтобы не потерять
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(immutableMethods != null ? (byte[])immutableMethods[2] : remoteForm.getRichDesignByteArray())));
 
@@ -65,7 +62,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                                                             convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));
         }
 
-        currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm));
+        currentForms.put(gForm.sessionID, new FormSessionObject(clientForm, remoteForm, tabSID));
 
         return gForm;
     }
@@ -127,6 +124,16 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     public FormSessionObject removeFormSessionObject(String formSessionID) {
         return currentForms.remove(formSessionID);
+    }
+
+    @Override
+    public void removeFormSessionObjects(String tabSID) {
+        Collection<String> sessionIDs = new HashSet<>(currentForms.keySet());
+        for (String sessionID : sessionIDs) {
+            if (currentForms.get(sessionID).tabSID.equals(tabSID)) {
+                currentForms.remove(sessionID);
+            }
+        }
     }
 
     @Override

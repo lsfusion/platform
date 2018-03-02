@@ -18,7 +18,7 @@ public class CleanHandler extends LoggableActionHandler<CleanAction, VoidResult,
 
     @Override
     public VoidResult executeEx(CleanAction action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.invalidate();
+        servlet.tabClosed(action.tabSID);
         return new VoidResult();
     }
 }

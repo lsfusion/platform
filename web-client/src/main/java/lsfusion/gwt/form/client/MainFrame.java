@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
@@ -59,13 +60,15 @@ public class MainFrame implements EntryPoint {
 
     private static Boolean shouldRepeatPingRequest = true;
     
+    private final String tabSID = GwtSharedUtils.randomString(25);
+    
     public void onModuleLoad() {
+        dispatcher.execute(new RegisterTabAction(tabSID), new ErrorHandlingCallback<VoidResult>());
 
         dispatcher.execute(new GetLocaleAction(), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 setLocale(result.get());
-
             }
         });
 
@@ -88,10 +91,10 @@ public class MainFrame implements EntryPoint {
 
         hackForGwtDnd();
 
-        formsController = new DefaultFormsController() {
+        formsController = new DefaultFormsController(tabSID) {
             @Override
             public void executeNavigatorAction(GNavigatorAction action) {
-                dispatcher.execute(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(tabSID, action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);
@@ -101,7 +104,7 @@ public class MainFrame implements EntryPoint {
 
             @Override
             public void executeNotificationAction(String actionSID, int type) {
-                dispatcher.execute(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(tabSID, actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);
@@ -292,19 +295,19 @@ public class MainFrame implements EntryPoint {
 
     public void clean() {
         GConnectionLostManager.invalidate();
-        dispatcher.execute(new CleanAction(), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.execute(new CleanAction(tabSID), new ErrorHandlingCallback<VoidResult>());
         System.gc();
     }
 
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {
         @Override
         protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
-            dispatcher.execute(new ThrowInNavigatorAction(t), callback);
+            dispatcher.execute(new ThrowInNavigatorAction(tabSID, t), callback);
         }
 
         @Override
         protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-            dispatcher.execute(new ContinueNavigatorAction(actionResults), callback);
+            dispatcher.execute(new ContinueNavigatorAction(tabSID, actionResults), callback);
         }
 
         @Override

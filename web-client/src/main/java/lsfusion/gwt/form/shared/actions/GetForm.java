@@ -10,14 +10,16 @@ public class GetForm extends RequestAction<GetFormResult> implements NavigatorAc
     public String canonicalName;
     public boolean isModal;
     public Map<String, String> initialObjects;
+    public String tabSID;
 
     public GetForm() {
     }
 
-    public GetForm(String canonicalName, String sid, boolean isModal, Map<String, String>initialObjects) {
+    public GetForm(String canonicalName, String sid, boolean isModal, Map<String, String>initialObjects, String tabSID) {
         this.canonicalName = canonicalName;
         this.sid = sid;
         this.isModal = isModal;
         this.initialObjects = initialObjects;
+        this.tabSID = tabSID;
     }
 }
