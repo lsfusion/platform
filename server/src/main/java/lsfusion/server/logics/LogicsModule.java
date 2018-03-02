@@ -1492,7 +1492,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     protected LAP addConfirmAProp(String title, boolean yesNo, CalcProperty property) {
-        return addProperty(null, new LAP(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, getConfirmedProperty(), yesNo, property != null ? new LCP(property) : null)));
+        return addProperty(null, new LAP(new ConfirmActionProperty(LocalizedString.create("Confirm"), title, yesNo, property != null ? new LCP(property) : null)));
     }
 
     // ------------------- Async Update Action ----------------- //
@@ -1596,10 +1596,6 @@ public abstract class LogicsModule {
 
     public SessionDataProperty getAddedObjectProperty() {
         return baseLM.getAddedObjectProperty();
-    }
-
-    public LCP getConfirmedProperty() {
-        return baseLM.getConfirmedProperty();
     }
 
     public LCP getIsActiveFormProperty() {

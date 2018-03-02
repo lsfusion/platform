@@ -600,15 +600,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return isActiveForm;
     }
 
-    @IdentityLazy
-    public LCP<?> getConfirmedProperty() {
-        try {
-            return findProperty("confirmed[]");
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     @Override
     @IdentityStrongLazy
     public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {

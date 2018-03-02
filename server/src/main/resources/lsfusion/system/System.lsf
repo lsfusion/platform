@@ -103,9 +103,6 @@ reportToStretch 'Растягивать поле по вертикали' = NOT 
 hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
   
 addedObject() = DATA LOCAL Object ();
-confirmed() = DATA LOCAL BOOLEAN ();
-requestCanceled() = DATA LOCAL BOOLEAN ();
-requestPushed() = DATA LOCAL BOOLEAN ();
 formPageCount() = DATA LOCAL INTEGER ();
 exportFile() = DATA LOCAL CUSTOMFILE ();
 exportFiles = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
@@ -133,33 +130,32 @@ loadFont 'Загрузить шрифт' (path)  = {
     loadDownloadedFont(path);
 }
 
-META defineAnyValue(name, param) 
-    name##Object = DATA LOCAL Object (param);
-    name##String = DATA LOCAL STRING[4000] (param);
-    name##Text = DATA LOCAL TEXT (param);
-    name##Integer = DATA LOCAL INTEGER (param);
-    name##Long = DATA LOCAL LONG (param);
-    name##Double = DATA LOCAL DOUBLE (param);
-    name##Numeric = DATA LOCAL NUMERIC[20,7] (param);
-    name##Year = DATA LOCAL YEAR (param);
-    name##DateTime = DATA LOCAL DATETIME (param);
-    name##Logical = DATA LOCAL BOOLEAN (param);
-    name##Date = DATA LOCAL DATE (param);
-    name##Time = DATA LOCAL TIME (param);
-    name##Color = DATA LOCAL COLOR (param);
-    name##WordFile = DATA LOCAL WORDFILE (param);
-    name##ImageFile = DATA LOCAL IMAGEFILE (param);
-    name##PdfFile = DATA LOCAL PDFFILE (param);
-    name##CustomFile = DATA LOCAL CUSTOMFILE (param);
-    name##ExcelFile = DATA LOCAL EXCELFILE (param);
-    name##WordLink = DATA LOCAL WORDLINK (param);
-    name##ImageLink = DATA LOCAL IMAGELINK (param);
-    name##PdfLink = DATA LOCAL PDFLINK (param);
-    name##CustomLink = DATA LOCAL CUSTOMLINK (param);
-    name##ExcelLink = DATA LOCAL EXCELLINK (param);    
-END
+requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
+requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 
-@defineAnyValue(requested, );
+requestedObject = DATA LOCAL NESTED Object ();
+requestedString = DATA LOCAL NESTED STRING[4000] ();
+requestedText = DATA LOCAL NESTED TEXT ();
+requestedInteger = DATA LOCAL NESTED INTEGER ();
+requestedLong = DATA LOCAL NESTED LONG ();
+requestedDouble = DATA LOCAL NESTED DOUBLE ();
+requestedNumeric = DATA LOCAL NESTED NUMERIC[20,7] ();
+requestedYear = DATA LOCAL NESTED YEAR ();
+requestedDateTime = DATA LOCAL NESTED DATETIME ();
+requestedLogical = DATA LOCAL NESTED BOOLEAN ();
+requestedDate = DATA LOCAL NESTED DATE ();
+requestedTime = DATA LOCAL NESTED TIME ();
+requestedColor = DATA LOCAL NESTED COLOR ();
+requestedWordFile = DATA LOCAL NESTED WORDFILE ();
+requestedImageFile = DATA LOCAL NESTED IMAGEFILE ();
+requestedPdfFile = DATA LOCAL NESTED PDFFILE ();
+requestedCustomFile = DATA LOCAL NESTED CUSTOMFILE ();
+requestedExcelFile = DATA LOCAL NESTED EXCELFILE ();
+requestedWordLink = DATA LOCAL NESTED WORDLINK ();
+requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
+requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
+requestedCustomLink = DATA LOCAL NESTED CUSTOMLINK ();
+requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

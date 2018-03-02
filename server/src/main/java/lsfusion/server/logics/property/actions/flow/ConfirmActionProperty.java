@@ -7,7 +7,6 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -18,17 +17,14 @@ import javax.swing.*;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.toCaption;
-import static lsfusion.interop.form.UserInputResult.canceled;
 
 public class ConfirmActionProperty extends MessageActionProperty {
-    private final LCP<?> confirmedProperty; // deprecated
     
     private final boolean yesNo;
     private final LCP targetProp;
 
-    public <I extends PropertyInterface> ConfirmActionProperty(LocalizedString caption, String title, LCP confirmedProperty, boolean yesNo, LCP targetProp) {
+    public <I extends PropertyInterface> ConfirmActionProperty(LocalizedString caption, String title, boolean yesNo, LCP targetProp) {
         super(caption, title);
-        this.confirmedProperty = confirmedProperty;
         
         this.yesNo = yesNo;
         this.targetProp = targetProp;
@@ -58,6 +54,5 @@ public class ConfirmActionProperty extends MessageActionProperty {
                 requestResults = null; // NO_OPTION
         }
         context.writeRequested(requestResults);
-        confirmedProperty.change(requestResults == null ? null : true, context);
     }
 }
