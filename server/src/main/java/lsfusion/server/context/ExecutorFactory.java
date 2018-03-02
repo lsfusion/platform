@@ -16,7 +16,7 @@ import java.util.concurrent.*;
 public class ExecutorFactory {
 
     // ГЛОБАЛЬНЫЕ СЕРВИСЫ (МОНИТОРИНГ)
-    private static final boolean useThreadFactoryForContext = true;
+    private static final boolean useThreadFactoryForContext = false; // вообще run вызывается при запуске потока, а не выполнении submit'ого задания 
 
     public static ExecutorService createMonitorThreadService(Integer threads, final MonitorServer monitorServer) {
 
