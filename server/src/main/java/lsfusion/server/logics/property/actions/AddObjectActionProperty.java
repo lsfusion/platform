@@ -100,18 +100,25 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
+        ObjectClass concreteClass = getConcreteClass(context);
+
+        if(concreteClass !=null)
+            executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) concreteClass);
+
+        return FlowResult.FINISH;
+    }
+
+    private ObjectClass getConcreteClass(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectClass readClass;
         if (needDialog()) {
             ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
             if (!(objectValue instanceof DataObject)) // cancel
-                return FlowResult.FINISH;
-            readClass = valueClass.getBaseClass().findClassID((Long) ((DataObject) objectValue).object);
+                readClass = null;
+            else
+                readClass = valueClass.getBaseClass().findClassID((Long) ((DataObject) objectValue).object);
         } else
             readClass = valueClass;
-
-        executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) readClass);
-
-        return FlowResult.FINISH;
+        return readClass;
     }
 
     protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException, SQLHandledException {

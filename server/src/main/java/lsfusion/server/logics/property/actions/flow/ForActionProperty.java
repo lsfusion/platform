@@ -260,7 +260,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @Override
     @IdentityLazy
     protected boolean forceCompile() {
-        return isHackAdd() | !forIsFull(); // очень тормозит
+        return isHackAdd() || !forIsFull(); // очень тормозит
     }
 
     @Override
@@ -277,7 +277,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         if(recursive)
             return null;
 
-        if(addObject != null && autoSet)
+        if(addObject != null && ifProp != null && autoSet)
             return null;
 
         ImSet<I> context = mapInterfaces.valuesSet();
@@ -333,13 +333,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
         }
 
-        // проталкиваем for'ы
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
-            return null;
-
         if(addObject != null) {
-            assert !hackAdd; // должен отработать сверху
-
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
             CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass, mLocals);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
@@ -347,6 +341,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
                             addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)), mLocals.immutable());
         }
+
+        // проталкиваем for'ы
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
+            return null;
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
