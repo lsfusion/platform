@@ -131,7 +131,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         Collection<String> sessionIDs = new HashSet<>(currentForms.keySet());
         for (String sessionID : sessionIDs) {
             if (currentForms.get(sessionID).tabSID.equals(tabSID)) {
-                currentForms.remove(sessionID);
+                currentForms.remove(sessionID); // по хорошему надо вызывать remoteForm.close (по аналогии с RemoteNavigator), если остались открытые вкладки (так как если их нет, всю работу выполнит RemoteNavigator.close) - но это редкий и нестандартный случай так что пока делать не будем 
             }
         }
     }

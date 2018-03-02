@@ -981,7 +981,8 @@ public class ClientFormController implements AsyncListener {
 
                     @Override
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                        rmiQueue.postponeDispatchingEnded();                       
+                        if(remoteForm != null)
+                            rmiQueue.postponeDispatchingEnded();                       
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;

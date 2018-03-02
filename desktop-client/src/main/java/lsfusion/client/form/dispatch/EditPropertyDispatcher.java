@@ -89,7 +89,8 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             try {
                 return internalDispatchResponse(response);
             } finally {
-                dispatcherListener.dispatchingPostponedEnded(this);
+                if(response != ServerResponse.EMPTY) // проверка нужна, если запрос заблокируется то и postponeDispatchingEnded не будет, а значит "скобки" нарушатся и упадет assertion
+                    dispatcherListener.dispatchingPostponedEnded(this);
             }
         } catch (IOException ex) {
             throw Throwables.propagate(ex);
