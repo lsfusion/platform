@@ -853,7 +853,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 } else {
                     try (DataSession session = createSession()) {
                         runAction(session, actionSID, type == 1, stack);
-                        session.apply(businessLogics, stack);
                     }
                 }
                 assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
