@@ -982,8 +982,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     @ThisMessage
     public void executeEditAction(final PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
+        if(editAction == null) {
+            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
+            return;
+        }
 
-        if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && editAction != null && ((ActionProperty) editAction.property).checkReadOnly) {
+        if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && ((ActionProperty) editAction.property).checkReadOnly) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
@@ -1018,13 +1022,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     
     private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
         ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
-        if (editAction != null) {
-            if (property.isSelector()) {
+        if (property.isSelector()) {
+            return true;
+        } else if (securityPolicy.checkPermission(editAction.property)) {
+            if ((property.hasContextMenuBinding(editActionSID) && editAction.property.isNamed()) || securityPolicy.checkPermission(property.propertyObject.property)) { // если есть в меню и имеет собственный name, не смотрим на политику безопасности самого свойства (так как предполагается что есть своя)
                 return true;
-            } else if (securityPolicy.checkPermission(editAction.property)) {
-                if ((property.hasContextMenuBinding(editActionSID) && editAction.property.isNamed()) || securityPolicy.checkPermission(property.propertyObject.property)) { // если есть в меню и имеет собственный name, не смотрим на политику безопасности самого свойства (так как предполагается что есть своя)
-                    return true;
-                }
             }
         }
         return false;  
@@ -1032,7 +1034,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private boolean checkReadOnlyPermission(ActionPropertyObjectInstance editAction, PropertyDrawInstance property) {
          ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
-        return editAction != null && securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
+        return securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
