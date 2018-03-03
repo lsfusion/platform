@@ -170,7 +170,7 @@ formDelete(Object o) = {
     IF sessionOwners() THEN
         delete(o);
     ELSE 
-        CONFIRM '{form.instance.do.you.really.want.to.take.action} \'{logics.delete}\'' DO {
+        ASK '{form.instance.do.you.really.want.to.take.action} \'{logics.delete}\'' DO {
             delete(o);
             APPLY;
         }
