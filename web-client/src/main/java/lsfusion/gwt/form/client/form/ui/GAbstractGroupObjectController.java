@@ -116,7 +116,10 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
     // поэтому крутим все скроллы-предки вверх при открытии формы.
     // неоднозначное решение, т.к. вовсе необязательно фокусный компонент находится вверху скролла, но пока должно хватать. 
     public void scrollToTop() {
-        scrollToTop(getGridComponent().container);
+        GComponent gridComponent = getGridComponent();
+        if (gridComponent != null) {
+            scrollToTop(gridComponent.container);
+        }
     }
 
     private void scrollToTop(GContainer container) {

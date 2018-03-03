@@ -491,7 +491,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
     @Override
     public GComponent getGridComponent() {
-        return groupObject.grid;
+        return groupObject != null ? groupObject.grid : null;
     }
 
     @Override
