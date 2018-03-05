@@ -1,6 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -109,5 +110,10 @@ public class ActionClass extends DataClass<Object> {
     @Override
     public Stat getTypeStat() {
         return Stat.ONE;
+    }
+
+    @Override
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.actionclass}")));
     }
 }

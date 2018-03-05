@@ -1,7 +1,10 @@
 package lsfusion.server.classes.link;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.Data;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -64,5 +67,10 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
     @Override
     public byte getTypeID() {
         return Data.CUSTOMSTATICFORMATFILE;
+    }
+
+    @Override
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create("{classes.static.format.file}"))+ " " + BaseUtils.toString(",", filterExtensions);
     }
 }

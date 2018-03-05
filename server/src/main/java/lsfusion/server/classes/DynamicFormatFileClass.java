@@ -1,9 +1,11 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,5 +61,10 @@ public class DynamicFormatFileClass extends FileClass {
     @Override
     protected byte[] formatHTTPNotNull(byte[] b) {
         return b;
+    }
+
+    @Override
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.custom.file}")));
     }
 }
