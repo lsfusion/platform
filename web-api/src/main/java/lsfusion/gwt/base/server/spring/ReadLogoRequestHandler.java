@@ -1,6 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.ByteStreams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -8,7 +8,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 
 public class ReadLogoRequestHandler implements HttpRequestHandler {
 
@@ -21,15 +21,19 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         byte[] logo = null;
+        InputStream inputStream;
         try {
             logo = blProvider.getLogics().getGUIPreferences().logicsLogo;
         } catch (Exception e) {
             blProvider.invalidate();
         }
-        if(logo == null)
-            logo = IOUtils.toByteArray(context.getResourceAsStream("images/logo.png"));
+        if (logo == null) {
+            inputStream = new FileInputStream(new File(context.getRealPath("images/logo.png")));
+        } else {
+            inputStream = new ByteArrayInputStream(logo);
+        }
         response.setContentType("image/jpg");
         response.addHeader("Content-Disposition", "attachment; filename=logo.jpg");
-        response.getOutputStream().write(logo);
+        ByteStreams.copy(inputStream, response.getOutputStream());
     }
 }
