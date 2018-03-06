@@ -2,11 +2,11 @@ package lsfusion.client.form.editor;
 
 import lsfusion.client.logics.ClientPropertyDraw;
 
-import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
-import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 import static lsfusion.base.BaseUtils.rtrim;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -72,15 +72,11 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
 
         setToolTipText(currentError);
 
-        showToolTip();
+        //имитируем ctrl+F1 http://qaru.site/questions/368838/force-a-java-tooltip-to-appear
+        dispatchEvent(new KeyEvent(this, KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(), InputEvent.CTRL_MASK,
+                KeyEvent.VK_F1, KeyEvent.CHAR_UNDEFINED));
 
         setToolTipText(null);
-    }
-
-    private void showToolTip() {
-        Action action = getActionMap().get("postTip");
-        if (action != null) {
-            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "postTip"));
-        }
     }
 }

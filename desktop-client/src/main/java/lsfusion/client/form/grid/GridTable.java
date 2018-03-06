@@ -820,65 +820,86 @@ public class GridTable extends ClientPropertyTable {
         }
 
         try {
-            if (singleV && !singleC) {
-                //т.е. вставляем в одну ячейку, но не одно значение
-                int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-                List<ClientPropertyDraw> propertyList = new ArrayList<>();
-                List<ClientGroupObjectValue> columnKeys = new ArrayList<>();
-                for (int i = 0; i < columnsToInsert; i++) {
-                    ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
-                    propertyList.add(propertyDraw);
-                    columnKeys.add(model.getColumnKey(selectedColumn + i));
-                }
-
-                form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
-            } else {
-                //вставляем в несколько ячеек, используем только 1е значение
-                String sPasteValue = table.get(0).get(0);
-
-                Map<ClientPropertyDraw, PasteData> paste = new HashMap<>();
-
-                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
-                    Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
-                    List<ClientGroupObjectValue> rowKeys = e.getValue().first;
-                    List<Object> oldValues = e.getValue().second;
-
-                    ClientPropertyDraw property = propertyColumn.first;
-                    ClientGroupObjectValue columnKey = propertyColumn.second;
-
-                    List<ClientGroupObjectValue> keys;
-                    if (columnKey.isEmpty()) {
-                        keys = rowKeys;
-                    } else {
-                        keys = new ArrayList<>();
-                        for (ClientGroupObjectValue rowKey : rowKeys) {
-                            keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
-                        }
-                    }
-
-                    Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
-                    if (property.canUsePasteValueForRendering()) {
-                        for (ClientGroupObjectValue key : keys) {
-                            Map<ClientGroupObjectValue, Object> propValues = values.get(property);
-                            if (propValues.containsKey(key)) {
-                                propValues.put(key, newValue);
+            boolean matches = true;
+            for (List<String> row : table) {
+                if(matches) {
+                    for (int j = 0; j < row.size(); j++) {
+                        String cell = row.get(j);
+                        ClientPropertyDraw property = model.getColumnProperty(selectedColumn + j);
+                        if (property.regexp != null && cell != null && !cell.isEmpty()) {
+                            if (!cell.matches(property.regexp)) {
+                                //показываем только первую ошибку
+                                JOptionPane.showMessageDialog(form.getLayout(), (property.regexpMessage == null ? getString("form.editor.incorrect.value") : property.regexpMessage) + ": " + cell,
+                                        getString("form.editor.error"), JOptionPane.WARNING_MESSAGE);
+                                matches = false;
                             }
                         }
                     }
-
-                    PasteData pasteData = paste.get(property);
-                    if (pasteData == null) {
-                        pasteData = new PasteData(newValue, keys, oldValues);
-                        paste.put(property, pasteData);
-                    } else {
-                        pasteData.keys.addAll(keys);
-                        pasteData.oldValues.addAll(oldValues);
-                    }
                 }
+            }
 
-                form.pasteMulticellValue(paste);
-                selectionController.resetSelection();
+            if(matches) {
+                if (singleV && !singleC) {
+                    //т.е. вставляем в одну ячейку, но не одно значение
+                    int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+
+                    List<ClientPropertyDraw> propertyList = new ArrayList<>();
+                    List<ClientGroupObjectValue> columnKeys = new ArrayList<>();
+                    for (int i = 0; i < columnsToInsert; i++) {
+                        ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
+                        propertyList.add(propertyDraw);
+                        columnKeys.add(model.getColumnKey(selectedColumn + i));
+                    }
+
+                    form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
+                } else {
+                    //вставляем в несколько ячеек, используем только 1е значение
+                    String sPasteValue = table.get(0).get(0);
+
+                    Map<ClientPropertyDraw, PasteData> paste = new HashMap<>();
+
+                    for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
+                        Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
+                        List<ClientGroupObjectValue> rowKeys = e.getValue().first;
+                        List<Object> oldValues = e.getValue().second;
+
+                        ClientPropertyDraw property = propertyColumn.first;
+                        ClientGroupObjectValue columnKey = propertyColumn.second;
+
+                        List<ClientGroupObjectValue> keys;
+                        if (columnKey.isEmpty()) {
+                            keys = rowKeys;
+                        } else {
+                            keys = new ArrayList<>();
+                            for (ClientGroupObjectValue rowKey : rowKeys) {
+                                keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
+                            }
+                        }
+
+                        Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
+                        if (property.canUsePasteValueForRendering()) {
+                            for (ClientGroupObjectValue key : keys) {
+                                Map<ClientGroupObjectValue, Object> propValues = values.get(property);
+                                if (propValues.containsKey(key)) {
+                                    propValues.put(key, newValue);
+                                }
+                            }
+                        }
+
+                        PasteData pasteData = paste.get(property);
+                        if (pasteData == null) {
+                            pasteData = new PasteData(newValue, keys, oldValues);
+                            paste.put(property, pasteData);
+                        } else {
+                            pasteData.keys.addAll(keys);
+                            pasteData.oldValues.addAll(oldValues);
+                        }
+                    }
+
+                    form.pasteMulticellValue(paste);
+                    selectionController.resetSelection();
+                }
             }
             updateTable();
         } catch (IOException e) {
