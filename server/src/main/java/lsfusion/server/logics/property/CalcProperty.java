@@ -1853,10 +1853,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean allowHintIncrement() {
         assert isFull(AlgType.hintType);
 
-        if(!isEmpty(AlgType.hintType))
+        if(!isEmpty(AlgType.hintType)) {
             for(ValueClass usedClass : getInterfaceClasses(ClassType.materializeChangePolicy).values().toSet().merge(getValueClass(ClassType.materializeChangePolicy)))
                 if(usedClass instanceof OrderClass)
                     return false;
+            // по идее эта проверка не нужна, так как при кидании hint'а есть проверка на changed.getFullStatKeys().less значения, но там есть проблема с интервалами так как x<=a<=b вернет маленькую статистику, и пропустит такой хинт, после чего возникнет висячий ключ
+            // вообще правильнее либо statType специальный сделать, либо поддержку интервалов при компиляции (хотя с double'ами все равно будет проблема)
+            // этот фикс решит проблему в большинстве случаев (кроме когда в свойсте явный интервал, что очень редко имеет смысл)
+            if(this instanceof AggregateProperty && ((AggregateProperty)this).hasAlotKeys()) 
+                return false;
+        }
 
         return true;
     }
