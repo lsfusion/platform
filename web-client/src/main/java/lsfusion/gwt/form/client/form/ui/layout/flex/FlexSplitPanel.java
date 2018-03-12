@@ -7,7 +7,6 @@ import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.layout.BeforeSelectionTabHandler;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
-import lsfusion.gwt.form.client.form.ui.layout.TabbedPanelBase;
 import lsfusion.gwt.form.shared.view.GComponent;
 
 import java.util.ArrayList;
@@ -44,12 +43,12 @@ public class FlexSplitPanel extends SplitPanelBase<FlexPanel> {
         style.setOverflowY(vertical ? Style.Overflow.AUTO : Style.Overflow.HIDDEN);
         style.setOverflowX(vertical ? Style.Overflow.HIDDEN : Style.Overflow.AUTO);
 
-        if(widget instanceof TabbedPanelBase) // assert что все flex (дублирование с flexlinearcontainerview, но предполагается что flexSplit уйдет)
-            ((TabbedPanelBase)widget).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
+        if(widget instanceof FlexTabbedContainerView.Panel) // assert что все flex (дублирование с flexlinearcontainerview, но предполагается что flexSplit уйдет)
+            ((FlexTabbedContainerView.Panel)widget).addBeforeSelectionTabHandler(new BeforeSelectionTabHandler() {
                 @Override
                 public void onBeforeSelection(int tabIndex) {
                     if(tabIndex > 0)
-                        panel.fixFlexBasis(widget);
+                        panel.fixFlexBasis((FlexTabbedContainerView.Panel)widget);
                 }
             });
     }

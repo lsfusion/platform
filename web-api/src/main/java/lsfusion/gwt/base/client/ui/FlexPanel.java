@@ -174,10 +174,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
-    public void fixFlexBasis(Widget w) {
+    public void fixFlexBasis(FixFlexBasisComposite w) {
         int index = getWidgetIndex(w);
         if (index != -1) {
-            impl.fixFlexBasis((LayoutData) w.getLayoutData(), w.getElement(), vertical);
+            impl.fixFlexBasis((LayoutData) w.getLayoutData(), w, vertical);
         }
     }
 
@@ -242,10 +242,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public double flex;
         public Integer flexBasis;
 //        public String flexBasis;
-
-        public String getFlexBasisString() {
-            return flexBasis == null ? "auto" : (flexBasis + "px");
-        }
 
         public LayoutData(Element child, GFlexAlignment alignment, double flex, Integer flexBasis) {
             this.child = child;

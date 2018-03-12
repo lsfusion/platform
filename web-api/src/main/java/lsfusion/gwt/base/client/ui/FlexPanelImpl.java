@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Widget;
 
 import static lsfusion.gwt.base.client.ui.FlexPanel.Justify;
 
@@ -112,40 +113,74 @@ public class FlexPanelImpl {
         layoutData.child.removeFromParent();
     }
 
+    public String getFlexBasisString(Integer flexBasis) {
+        return flexBasis == null ? "auto" : flexBasis + "px";
+    }
+
+    public void setFlex(Element child, double flex, Integer flexBasis) {
+        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, getFlexBasisString(flexBasis)));
+    }
+    
+    public int getSize(Element child, boolean vertical) {
+        return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
+    }
+
     public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex, Integer flexBasis) {
         layoutData.flex = flex;
         layoutData.flexBasis = flexBasis;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(flex, layoutData.getFlexBasisString()));
+        setFlex(child, flex, flexBasis);
     }
 
     public void setFlex(FlexPanel.LayoutData layoutData, Element child, double flex) {
         layoutData.flex = flex;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+        setFlex(child, flex, layoutData.flexBasis);
+    }
+
+    public void setFlex(FlexPanel.LayoutData layoutData, Element child) {
+        setFlex(child, layoutData.flex, layoutData.flexBasis);
     }
 
     public void setFlexBasis(FlexPanel.LayoutData layoutData, Element child, Integer flexBasis) {
         layoutData.flexBasis = flexBasis;
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+        setFlex(child, layoutData.flex, flexBasis);
     }
 
-    public void fixFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
+    public void fixFlexBasis(FlexPanel.LayoutData layoutData, FixFlexBasisComposite child, boolean vertical) {
         if(layoutData.flexBasis != null)
             return;
 
-        Style style = child.getStyle();
-        String flexAttrName = getFlexAttrName();
-        style.setProperty(flexAttrName, getFlexValue(0, layoutData.getFlexBasisString()));
+        Element childElement = child.getElement();
+        // фиксируем явную ширину composite'а (ставим базис равный ширине, flex - 0)
+        int size = getSize(childElement, vertical);
 
-        layoutData.flexBasis = child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
+        Element childWidgetElement = child.widget.getElement();
 
-        style.setProperty(flexAttrName, getFlexValue(layoutData.flex, layoutData.getFlexBasisString()));
+        if(layoutData.flex == 0) // оптимизация если flex'а нет, этот размер и фиксируем 
+            layoutData.flexBasis = size;
+        else {
+            setFlex(childElement, 0, size);
+
+            // у widget'a comoposite'а убираем растягивание
+            setFlex(childWidgetElement, 0, null);
+            setAlignment(childWidgetElement, GFlexAlignment.START);
+
+            // измеряем ширину, запоминаем в базис
+            layoutData.flexBasis = getSize(childWidgetElement, vertical);
+
+            // возвращаем растягивание
+            setFlex(childWidgetElement, 1, null);
+            setAlignment(childWidgetElement, GFlexAlignment.STRETCH);
+
+            // выставляем расчитанный базис (возвращаем flex)
+            setFlex(layoutData, childElement);
+        }
     }
 
     public int getFlexBasis(FlexPanel.LayoutData layoutData, Element child, boolean vertical) {
         if(layoutData.flexBasis != null)
             return layoutData.flexBasis;
 
-        child.getStyle().setProperty(getFlexAttrName(), getFlexValue(0, layoutData.getFlexBasisString()));
+        setFlex(child, 0, null);
         return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
     }
 
@@ -155,6 +190,10 @@ public class FlexPanelImpl {
 
     public void setAlignment(FlexPanel.LayoutData layoutData, Element child, GFlexAlignment alignment) {
         layoutData.alignment = alignment;
+        setAlignment(child, alignment);
+    }
+
+    public void setAlignment(Element child, GFlexAlignment alignment) {
         child.getStyle().setProperty(getAlignAttrName(), getAlignmentValue(alignment));
     }
 }

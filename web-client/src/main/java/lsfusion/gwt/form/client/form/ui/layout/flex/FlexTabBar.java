@@ -10,10 +10,9 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import lsfusion.gwt.base.client.ui.FlexPanel;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.form.ui.layout.TabbedPanelBase;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
-public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, TabbedPanelBase.TabBar {
+public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, FlexTabbedContainerView.Panel.TabBar {
     private static final String STYLENAME_DEFAULT = "gwt-TabBarItem";
 
     public interface Tab extends HasAllKeyHandlers, HasClickHandlers {
