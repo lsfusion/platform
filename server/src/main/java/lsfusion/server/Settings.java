@@ -1825,6 +1825,16 @@ public class Settings implements Cloneable {
         this.explainNoAnalyze = explainNoAnalyze;
     }
 
+    private boolean logConflictStack = false;
+
+    public boolean isLogConflictStack() {
+        return logConflictStack;
+    }
+
+    public void setLogConflictStack(boolean logConflictStack) {
+        this.logConflictStack = logConflictStack;
+    }
+
     private boolean explainJavaStack = false;
 
     public boolean isExplainJavaStack() {
