@@ -39,7 +39,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         if(calcType instanceof CalcClassType) {
             return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
         }
-        return property.getExpr(joinImplement); // возвращаем старое значение
+        return property.getExpr(joinImplement, calcType); // возвращаем старое значение
     }
 
     @Override

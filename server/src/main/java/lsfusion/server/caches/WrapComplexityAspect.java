@@ -22,7 +22,7 @@ import lsfusion.server.session.PropertyChanges;
 @Aspect
 public class WrapComplexityAspect {
 
-    <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, CalcProperty<K> property, ImMap<K, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
+    <K extends PropertyInterface> Expr wrapComplexity(Expr expr, Where where, CalcProperty<K> property, ImMap<K, ? extends Expr> joinImplement, WhereBuilder changedWhere, CalcType calcType) {
         Expr wrapExpr = expr;
         if(expr.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
 //            System.out.println("WRAP COMPLEX EXPR " + property + "(" + property.getSID() + ") : " + expr.getComplexity(true));
@@ -31,7 +31,7 @@ public class WrapComplexityAspect {
         if(where != null) {
             if(where.getComplexity(true) > Settings.get().getLimitWrapComplexity()) {
 //                System.out.println("WRAP COMPLEX WHERE " + property + " : " + where.getComplexity(true));
-                where = SubQueryExpr.create(where.and(expr.getWhere().or(property.getExpr(joinImplement).getWhere())));
+                where = SubQueryExpr.create(where.and(expr.getWhere().or(property.getExpr(joinImplement, calcType).getWhere())));
             }
             changedWhere.add(where);
         }
@@ -43,7 +43,7 @@ public class WrapComplexityAspect {
             return (Expr) thisJoinPoint.proceed();
         WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
         return wrapComplexity((Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere}),
-                changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere);
+                changedWhere!=null?cascadeWhere.toWhere():null, property, joinExprs, changedWhere, calcType);
     }
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
@@ -64,8 +64,8 @@ public class WrapComplexityAspect {
         boolean changedWhere = queryType.needChange();
         Where where = changedWhere ? query.getExpr("changed").getWhere() : null;
         WhereBuilder wrapWhere = changedWhere ? new WhereBuilder() : null;
-        Expr wrapExpr = wrapComplexity(expr, where, property, MapFact.addExcl(interfaceValues, mapKeys), wrapWhere);
-
+        Expr wrapExpr = wrapComplexity(expr, where, property, MapFact.addExcl(interfaceValues, mapKeys), wrapWhere, calcType);
+        
         if(BaseUtils.hashEquals(expr, wrapExpr) && BaseUtils.nullHashEquals(where, changedWhere ? wrapWhere.toWhere() : null))
             return query;
         else {
