@@ -16,18 +16,22 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
+import lsfusion.base.EProvider;
 import lsfusion.base.ERunnable;
 import lsfusion.client.*;
-import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.*;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
 import lsfusion.client.report.ReportDialog;
 import lsfusion.interop.AbstractWindowType;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
@@ -51,7 +55,7 @@ import java.util.Map;
 import static lsfusion.base.BaseUtils.mergeLinked;
 import static lsfusion.client.ClientResourceBundle.getString;
 
-public class DockableMainFrame extends MainFrame {
+public class DockableMainFrame extends MainFrame implements AsyncListener {
     private static final Logger logger = Logger.getLogger(DockableMainFrame.class);
 
     private final ClientNavigatorActionDispatcher actionDispatcher;
@@ -64,6 +68,46 @@ public class DockableMainFrame extends MainFrame {
     private final ClientNavigator mainNavigator;
 
     private NonReentrantLock lock = new NonReentrantLock();
+
+    private final TableManager tableManager = new TableManager();
+
+    private final EProvider<String> serverMessageProvider = new EProvider<String>() {
+        @Override
+        public String getExceptionally() throws Exception {
+            return remoteNavigator == null ? null : remoteNavigator.getRemoteActionMessage();
+        }
+        @Override
+        public void interrupt(boolean cancelable) {
+            try {
+                remoteNavigator.interrupt(cancelable);
+            } catch (Exception ignored) {
+            }
+        }
+    };
+
+    private final EProvider<List<Object>> serverMessageListProvider = new EProvider<List<Object>>() {
+        @Override
+        public List<Object> getExceptionally() throws Exception {
+            return remoteNavigator == null ? null : remoteNavigator.getRemoteActionMessageList();
+        }
+        @Override
+        public void interrupt(boolean cancelable) {
+            try {
+                remoteNavigator.interrupt(cancelable);
+            } catch (Exception ignored) {
+            }
+        }
+    };
+
+    @Override
+    public void onAsyncStarted() {
+    }
+
+    @Override
+    public void onAsyncFinished() {
+    }
+
+    private final RmiQueue rmiQueue;
 
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
         super(remoteNavigator);
@@ -85,7 +129,11 @@ public class DockableMainFrame extends MainFrame {
             }
         };
 
-        actionDispatcher = new ClientNavigatorActionDispatcher(mainNavigator);
+        rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
+
+        actionDispatcher = new ClientNavigatorActionDispatcher(rmiQueue, mainNavigator);
+
+        rmiQueue.setDispatcher(actionDispatcher);
 
         navigatorController = new NavigatorController(mainNavigator);
 
@@ -135,12 +183,31 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
+    private void processServerResponse(ServerResponse serverResponse) throws IOException {
+        //ХАК: serverResponse == null теоретически может быть при реконнекте, когда RMI-поток убивается и remote-method возвращает null
+        if (serverResponse != null) {
+            actionDispatcher.dispatchResponse(serverResponse);
+        }
+    }
 
-    private void tryExecuteNavigatorAction(String actionSID, int type) {
+    private void tryExecuteNavigatorAction(final String actionSID, final int type) {
         try {
-            actionDispatcher.dispatchResponse(remoteNavigator.executeNavigatorAction(actionSID, type));
-        } catch (IOException e) {
-            throw new RuntimeException(getString("errors.error.executing.action"), e);
+            rmiQueue.syncRequest(new RmiRequest<ServerResponse>("executeNavigatorAction") {
+                @Override
+                protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
+                    return remoteNavigator.executeNavigatorAction(actionSID, type);
+                }
+
+                @Override
+                protected void onResponseGetFailed(long requestIndex, Exception e) throws Exception {
+                    processServerResponse(new ServerResponse(requestIndex, new ClientAction[] {new ExceptionClientAction(e)}, true)); // тут не понятно, по идее не нужен isInServerInvocation(requestIndex)
+                }
+
+                @Override
+                protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                    processServerResponse(result);
+                }
+            });
         } finally {
             lock.unlock();
         }

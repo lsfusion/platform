@@ -992,20 +992,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return isInServerInvocation;
     }
 
-    @Override
-    public void interrupt(boolean cancelable) throws RemoteException {
-        try {
-            Thread thread = ThreadLocalContext.getLastThread();
-            if (thread != null) {
-                if (cancelable)
-                    ThreadUtils.cancelThread(context, thread);
-                else
-                    ThreadUtils.interruptThread(context, thread);
-            }
-        } catch (SQLException | SQLHandledException ignored) {
-        }
-    }
-
     private ServerResponse continueInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Callable<ServerResponse> continueRequest) throws RemoteException {
         if (continueIndex != -1) {
             Integer cachedContinueIndex = requestsContinueIndices.get(requestIndex);

@@ -71,6 +71,10 @@ public class ClientFormController implements AsyncListener {
         }
         @Override
         public void interrupt(boolean cancelable) {
+            try {
+                remoteForm.interrupt(cancelable);
+            } catch (Exception ignored) {
+            }
         }
     };
 
