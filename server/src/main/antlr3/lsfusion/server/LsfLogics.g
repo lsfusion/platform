@@ -409,18 +409,17 @@ reportFilesDeclaration
 reportPath
 @init {
 	GroupObjectEntity groupObject = null;
-	PropertyUsage propUsage = null;
-	List<String> mapping = null;
+	CalcPropertyObjectEntity property = null;
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.setReportPath(groupObject, propUsage, mapping);	
+		$formStatement::form.setReportPath(groupObject, property);	
 	}
 }
 	:	(	'TOP' 
 		| 	go = formGroupObjectEntity { groupObject = $go.groupObject; }
 		) 
-		prop = formMappedProperty { propUsage = $prop.propUsage; mapping = $prop.mapping; }
+		prop = formCalcPropertyObject { property = $prop.property; }
 	;
 
 formDeclaration returns [ScriptingFormEntity form]
@@ -727,6 +726,15 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 	;
 
 formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+	:   fd = formDesignOrFormCalcPropertyObject[null] { $property = $fd.property; }	
+	;
+
+designCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+	:   fd = formDesignOrFormCalcPropertyObject[$designStatement::design] { $property = $fd.property; }
+	;
+
+// may be used in design
+formDesignOrFormCalcPropertyObject[ScriptingFormView design] returns [CalcPropertyObjectEntity property = null]
 @init {
     AbstractPropertyUsage propUsage = null;
     List<String> mapping = null;
@@ -736,7 +744,10 @@ formCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
         )
 		{
 			if (inPropParseState()) {
-				$property = $formStatement::form.addCalcPropertyObject(propUsage, mapping);
+			    if(design != null)
+			        $property = design.addCalcPropertyObject(propUsage, mapping);
+                else
+				    $property = $formStatement::form.addCalcPropertyObject(propUsage, mapping);
 			}
 		}
 	;
@@ -4022,15 +4033,6 @@ componentPropertyValue returns [Object value]
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
 	|   calcProp=designCalcPropertyObject { $value = $calcProp.property; }
-	;
-	
-designCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
-	:	mProperty=formMappedProperty
-		{
-			if (inPropParseState()) {
-				$property = $designStatement::design.addCalcPropertyObject($mProperty.propUsage, $mProperty.mapping);
-			}
-		}
 	;
 
 

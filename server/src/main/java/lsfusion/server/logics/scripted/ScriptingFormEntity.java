@@ -212,11 +212,11 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) throws ScriptingErrorLog.SemanticErrorException {
         if (groupObject != null) {
-            groupObject.reportPathProp = addCalcPropertyObject(propUsage, mapping);
+            groupObject.reportPathProp = property;
         } else {
-            form.reportPathProp = addCalcPropertyObject(propUsage, mapping);
+            form.reportPathProp = property;
         }
     }
     
