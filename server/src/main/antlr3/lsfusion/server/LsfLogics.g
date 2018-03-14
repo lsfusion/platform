@@ -1159,7 +1159,7 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams 
 relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
-	LP mainProp = null;
+	LCP mainProp = null;
 	String op = null;
 }
 @after {
@@ -1324,7 +1324,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
-contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+contextIndependentPD[boolean innerPD] returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
@@ -1364,7 +1364,7 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-groupPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+groupPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	List<LPWithParams> groupProps = new ArrayList<LPWithParams>();
@@ -1441,7 +1441,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	;
 
 
-dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+dataPropertyDefinition[boolean innerPD] returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
 	LocalNestedType nestedType = null;
@@ -1468,7 +1468,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
         )?
 	;
 
-abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+abstractPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1701,7 +1701,7 @@ activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'ACTIVE' 'TAB' fc = formComponentID
 	;
 
-formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+formulaPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	boolean hasNotNullCondition = false;
@@ -1727,7 +1727,7 @@ formulaPropertySyntaxType returns [SQLSyntaxType type = null]
 	:	('PG' { $type = SQLSyntaxType.POSTGRES; } | 'MS' { $type = SQLSyntaxType.MSSQL; })? 
 	;
 
-groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+groupObjectPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	GroupObjectProp prop = null;
@@ -1742,7 +1742,7 @@ groupObjectPropertyDefinition returns [LP property, List<ResolveClassSet> signat
 		gobj=formGroupObjectID
 	;
 	
-reflectionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
+reflectionPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	ReflectionPropertyType type = null;
 	PropertyUsage propertyUsage = null;
@@ -1990,7 +1990,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
 
-typePropertyDefinition returns [LP property] 
+typePropertyDefinition returns [LCP property] 
 @init {
 	boolean bIs = false;
 }
@@ -2014,7 +2014,7 @@ propertyUsage returns [PropertyUsage propUsage]
 	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })? 
 	;
 
-inlineProperty returns [LP property]
+inlineProperty returns [LCP property]
 @init {
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>();
 	List<ResolveClassSet> signature = null;
@@ -2024,7 +2024,7 @@ inlineProperty returns [LP property]
 		property.setExplicitClasses(signature);	
 	}
 }
-	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
+	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = (LCP)$expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
 				|	ciPD=contextIndependentPD[true] { $property = $ciPD.property; signature = $ciPD.signature; }
 //                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.property; signature = self.getClassesFromTypedParams(newContext); }}
 //                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
@@ -3139,16 +3139,16 @@ execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 } 
 @after {
 	if (inPropParseState()) {
-		if (isInline) {
-			$property = self.addScriptedJoinAProp($iProp.property, $exprList.props);
-		} else {
+//		if (isInline) {
+//			$property = self.addScriptedJoinAProp($iProp.property, $exprList.props);
+//		} else {
 			$property = self.addScriptedJoinAProp($uProp.propUsage, $exprList.props, context);
-		}
+//		}
 	}
 }
 	:	('EXEC')?
 		(	uProp=propertyUsage
-		|	iProp=inlineProperty { isInline = true; }
+//		|	iProp=inlineProperty { isInline = true; }
 		)
 		'('
 		exprList=propertyExpressionList[context, dynamic]
