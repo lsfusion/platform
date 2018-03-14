@@ -35,10 +35,10 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     lastTextEndsWithSeparator = false;
                 }
                 if (minusZeroText == null) {
-                    int minFractionDigits = df.getMinimumFractionDigits();
+                    int maxFractionDigits = df.getMaximumFractionDigits();
                     int currentFractionDigits = countFractionDigits(result, false);
                     if(hasMask && result != null) {
-                        while (minFractionDigits < currentFractionDigits) {
+                        while (maxFractionDigits < currentFractionDigits) {
                             result = result.substring(0, result.length() - 1);
                             currentFractionDigits--;
                         }
