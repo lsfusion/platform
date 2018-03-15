@@ -1,5 +1,6 @@
 package lsfusion.client.logics.classes;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.renderer.IntegralPropertyRenderer;
@@ -32,7 +33,7 @@ abstract public class ClientIntegralClass extends ClientFormatClass<NumberFormat
     @Override
     public int getDefaultCharWidth() {
         int lengthValue = getLength();
-        return lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7));
+        return BaseUtils.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 
     public NumberFormat getDefaultFormat() {

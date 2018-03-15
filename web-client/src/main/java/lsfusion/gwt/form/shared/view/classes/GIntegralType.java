@@ -25,7 +25,7 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
     @Override
     public int getDefaultCharWidth() {
         int lengthValue = getLength();
-        return lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7));
+        return Math.min(lengthValue <= 6 ? lengthValue : (int) round(6 + pow(lengthValue - 6, 0.7)), 10);
     }
 
     protected Double parseToDouble(String s, String pattern) throws ParseException {
