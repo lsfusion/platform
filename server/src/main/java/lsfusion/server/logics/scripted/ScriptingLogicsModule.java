@@ -676,8 +676,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    public void addImplementationToAbstract(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
-        LP abstractLP = findJoinMainProp(abstractPropUsage, context, true);
+    public void addImplementationToAbstractAction(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+        LAP abstractLP = findActionJoinMainProp(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLP, context.size());
         checks.checkImplementIsNotMain(abstractLP, implement.property);
         
@@ -690,13 +690,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> params = getParamsPlainList(allProps);
 
         List<ResolveClassSet> signature = getClassesFromTypedParams(context);
-        if (abstractLP instanceof LCP) {
-            checks.checkCalculationProperty(implement.property);
-            addImplementationToAbstractProp(abstractPropUsage.name, (LCP) abstractLP, signature, when != null, params);
-        } else {
-            checks.checkActionProperty(implement.property);
-            addImplementationToAbstractAction(abstractPropUsage.name, (LAP) abstractLP, signature, when != null, params);
+        addImplementationToAbstractAction(abstractPropUsage.name, abstractLP, signature, when != null, params);
+    }
+    public void addImplementationToAbstractProp(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
+        LCP abstractLP = findCalcJoinMainProp(abstractPropUsage, context, true);
+        checks.checkParamCount(abstractLP, context.size());
+        checks.checkImplementIsNotMain(abstractLP, implement.property);
+        
+        List<LPWithParams> allProps = new ArrayList<>();
+        allProps.add(implement);
+        if (when != null) {
+            checks.checkCalculationProperty(when.property);
+            allProps.add(when);
         }
+        List<Object> params = getParamsPlainList(allProps);
+
+        List<ResolveClassSet> signature = getClassesFromTypedParams(context);
+        addImplementationToAbstractProp(abstractPropUsage.name, abstractLP, signature, when != null, params);
     }
 
     private void addImplementationToAbstractProp(String propName, LCP abstractProp, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
@@ -1093,12 +1103,18 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP findCalcJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, params, false);
+        return findCalcJoinMainProp(mainProp, params, false);
+    }
+    private LCP findCalcJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        LP lp = findJoinMainProp(mainProp, params, onlyAbstract);
         checks.checkCalculationProperty(lp);
         return (LCP)lp;
     }
     private LAP findActionJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, params, false);
+        return findActionJoinMainProp(mainProp, params, false); 
+    }
+    private LAP findActionJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        LP lp = findJoinMainProp(mainProp, params, onlyAbstract);
         checks.checkActionProperty(lp);
         return (LAP)lp;
     }

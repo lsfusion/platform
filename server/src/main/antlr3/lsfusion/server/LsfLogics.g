@@ -889,7 +889,7 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
    boolean action = false;
 }
     :
-        (ACTION { action = true; } )?
+        ('ACTION' { action = true; } )?
         pu=propertyUsage { $propUsage = action ? new ActionPropertyUsage($pu.propUsage) : new CalcOrActionPropertyUsage($pu.propUsage); }    
     ;
 
@@ -3377,10 +3377,14 @@ overrideStatement
 	boolean dynamic = true;
 	LPWithParams property = null;
 	LPWithParams when = null;
+	boolean isAction = false;
 }
 @after {
 	if (inPropParseState()) {
-		self.addImplementationToAbstract($prop.propUsage, $list.params, property, when);
+	    if(isAction)
+		    self.addImplementationToAbstractAction($prop.propUsage, $list.params, property, when);
+        else
+            self.addImplementationToAbstractProp($prop.propUsage, $list.params, property, when);
 	}
 }
 	:	prop=propertyUsage
@@ -3388,7 +3392,7 @@ overrideStatement
 		'+='
 		('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
 		(	(expr=propertyExpression[context, dynamic] { property = $expr.property; } ';')
-		|	action=listTopContextDependentActionDefinitionBody[context, dynamic, true] { property = $action.property; }
+		|	action=listTopContextDependentActionDefinitionBody[context, dynamic, true] { property = $action.property; isAction = true; }
 		)
 	;
 
