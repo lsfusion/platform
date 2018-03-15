@@ -309,17 +309,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return obj;
     }
-
-    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractPropertyUsage pDrawUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    
+    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        assert !(pDrawUsage instanceof PredefinedUsage);
         LP<?, ?> property;
-        if(pDrawUsage instanceof PropertyUsage) {
-            PropertyUsage pUsage = (PropertyUsage) pDrawUsage;
-            if (pUsage.classNames != null) {
-                property = findLPByPropertyUsage(pUsage);
-            } else {
-                List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
-                property = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);
-            }
+        if(pDrawUsage instanceof FormFindPropertyUsage) {
+            property = findPropertyWithMapping(form, (FormFindPropertyUsage) pDrawUsage, mapping);
         } else {
             property = ((LPUsage)pDrawUsage).lp;
         }
@@ -328,6 +323,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             getErrLog().emitParamCountError(parser, property, mapping.size());
         }
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
+    }
+
+    public LP<?, ?> findPropertyWithMapping(FormEntity form, ScriptingLogicsModule.FormFindPropertyUsage findProperty, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?, ?> lp;
+        PropertyUsage pUsage = findProperty.property;
+        if (pUsage.classNames != null) {
+            lp = findLPByPropertyUsage(pUsage);
+        } else {
+            List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
+            lp = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);
+        }
+        return lp;
     }
 
     private void convertResolveError(ResolvingError e) throws ScriptingErrorLog.SemanticErrorException {
@@ -809,9 +816,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
 
-    public LPUsage checkPropertyIsNew(LPUsage property) {
+    public LPUsage checkPropertyIsNew(LCPUsage property) {
         if(property.lp.property.getSID().equals(lastOptimizedJPropSID))
-            property = new LPUsage(addJProp(false, LocalizedString.NONAME, (LCP) property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.signature);
+            property = new LCPUsage(addJProp(false, LocalizedString.NONAME, (LCP) property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.signature);
         return property;
     }
     
@@ -3699,24 +3706,52 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public interface AbstractPropertyUsage {
-        
+    public interface AbstractFormPropertyUsage {
+    }     
+
+    public interface FormPropertyUsage extends AbstractFormPropertyUsage {
+    }     
+
+    public interface AbstractCalcPropertyUsage extends AbstractFormPropertyUsage { // lcp or calc
+    }     
+
+    public interface AbstractActionPropertyUsage extends AbstractFormPropertyUsage { // lap or calc
     }     
     
-    public static class LPUsage implements AbstractPropertyUsage {
-        public final LP lp;
+    public static abstract class LPUsage<L extends LP> implements AbstractFormPropertyUsage {
+        public final L lp;
         public final List<ResolveClassSet> signature;
 
-        public LPUsage(LP lp) {
+        public LPUsage(L lp) {
             this(lp, null);
         }
-        public LPUsage(LP lp, List<ResolveClassSet> signature) {
+        public LPUsage(L lp, List<ResolveClassSet> signature) {
             this.lp = lp;
             this.signature = signature;
         }
     }
+
+    public static class LCPUsage extends LPUsage<LCP> implements AbstractCalcPropertyUsage {
+        public LCPUsage(LCP lp) {
+            super(lp);
+        }
+
+        public LCPUsage(LCP lp, List<ResolveClassSet> signature) {
+            super(lp, signature);
+        }
+    }
+
+    public static class LAPUsage extends LPUsage<LAP> implements AbstractActionPropertyUsage {
+        public LAPUsage(LAP lp) {
+            super(lp);
+        }
+
+        public LAPUsage(LAP lp, List<ResolveClassSet> signature) {
+            super(lp, signature);
+        }
+    }
     
-    public static class PropertyUsage implements AbstractPropertyUsage {
+    public static class PropertyUsage {
         public String name;
         public List<String> classNames;
         
@@ -3747,7 +3782,41 @@ public class ScriptingLogicsModule extends LogicsModule {
             return result;
         }
     }
+
+    public static class PredefinedUsage implements FormPropertyUsage {
+        public final PropertyUsage property;
+
+        public PredefinedUsage(PropertyUsage property) {
+            this.property = property;
+        }
+    }
     
+    public abstract static class FormFindPropertyUsage implements FormPropertyUsage {
+        public final PropertyUsage property;
+
+        public FormFindPropertyUsage(PropertyUsage property) {
+            this.property = property;
+        }
+    }
+    
+    public static class CalcPropertyUsage extends FormFindPropertyUsage implements AbstractCalcPropertyUsage {
+        public CalcPropertyUsage(PropertyUsage property) {
+            super(property);
+        }
+    }
+
+    public static class CalcOrActionPropertyUsage extends FormFindPropertyUsage {
+        public CalcOrActionPropertyUsage(PropertyUsage property) {
+            super(property);
+        }
+    }
+
+    public static class ActionPropertyUsage extends FormFindPropertyUsage implements AbstractActionPropertyUsage {
+        public ActionPropertyUsage(PropertyUsage property) {
+            super(property);
+        }
+    }
+
     public class TypedParameter {
         public ValueClass cls;
         public String paramName;

@@ -130,7 +130,7 @@ public class ScriptingFormView {
         return view.get(drawEntity);
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return ScriptingFormEntity.addCalcPropertyObject(LM, view.entity, property, mapping);
     }
 

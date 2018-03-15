@@ -657,13 +657,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return addPropertyObject(property, property.getMap(objects));
     }
 
-    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        if (property instanceof LCP) {
-            return addPropertyObject((LCP) property, objects);
-        } else {
-            return addPropertyObject((LAP) property, objects);
-        }
-    }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
         return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
