@@ -1,11 +1,12 @@
 package lsfusion.gwt.form.client.window;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TabbedWindowElement extends WindowElement {
@@ -39,9 +40,7 @@ public class TabbedWindowElement extends WindowElement {
         for (WindowElement child : children) {
             tabPanel.add(child.initializeView(), child.getCaption());    
         }
-        initialWidth = Window.getClientWidth() / 100 * width;
-        initialHeight = Window.getClientHeight() / 100 * height;
-        return tabPanel;
+        return super.initializeView();
     }
 
     @Override
@@ -72,6 +71,38 @@ public class TabbedWindowElement extends WindowElement {
         }
         if (tabPanel.getWidgetCount() == 0) {
             setVisible(false);
+        }
+    }
+
+    @Override
+    public String getSID() {
+        List<String> childrenSIDs = new ArrayList<>();
+        for (WindowElement child : children) {
+            childrenSIDs.add(child.getSID());
+        }
+        Collections.sort(childrenSIDs, String.CASE_INSENSITIVE_ORDER);
+        
+        StringBuilder sid = new StringBuilder();
+        for (String childSID : childrenSIDs) {
+            sid.append(childSID);
+            if (childrenSIDs.indexOf(childSID) < childrenSIDs.size() - 1) {
+                sid.append("_");
+            }
+        }
+        return sid.toString();
+    }
+
+    @Override
+    public void storeWindowsSizes(Storage storage) {
+        for (WindowElement child : children) {
+            child.storeWindowsSizes(storage);
+        }
+    }
+
+    @Override
+    public void restoreWindowsSizes(Storage storage) {
+        for (WindowElement child : children) {
+            child.restoreWindowsSizes(storage);
         }
     }
 }

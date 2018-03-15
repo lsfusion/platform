@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.client.window;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
@@ -28,26 +27,19 @@ public class SimpleWindowElement extends WindowElement {
     }
 
     @Override
-    public Widget initializeView() {
-        initialWidth = Window.getClientWidth() / 100 * width;
-        initialHeight = Window.getClientHeight() / 100 * height;
-        return getView();
-    }
-
-    @Override
     public Widget getView() {
         return main.getWindowView(window);
     }
 
     @Override
     public void changeInitialSize(int width, int height) {
-        if (window != null) {
-            if (width > initialWidth) {
+        if (window != null && !sizeStored) {
+            if (width > pixelWidth) {
                 // затычка. не позволяем окну расширяться, насколько оно хочет, если это происходит вдоль главной оси
                 if (!(window instanceof GTreeNavigatorWindow) &&
                         !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isHorizontal()) &&
                         !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isHorizontal())) {
-                    initialWidth = width;
+                    pixelWidth = width;
                 }
 
                 // если горизональному окну нужно больше места по горизонтали, чем ему предоставили, добавляем к высоте высоту скроллбара
@@ -56,14 +48,19 @@ public class SimpleWindowElement extends WindowElement {
                     height += AbstractNativeScrollbar.getNativeScrollbarHeight();
                 }
             }
-            if (height > initialHeight &&
+            if (height > pixelHeight &&
                     !(window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical()) &&
                     !(window instanceof GPanelNavigatorWindow && ((GPanelNavigatorWindow) window).isVertical())) {
-                initialHeight = height;
+                pixelHeight = height;
             }
         }
         if (parent != null) {
-            parent.changeInitialSize(this);
+            parent.setChildSize(this);
         }
+    }
+
+    @Override
+    public String getSID() {
+        return window.canonicalName;
     }
 }

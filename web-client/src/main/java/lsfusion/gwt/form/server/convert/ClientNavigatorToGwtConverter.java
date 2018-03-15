@@ -76,6 +76,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
         window.borderConstraint = clientWindow.borderConstraint;
         window.caption = clientWindow.caption;
+        window.canonicalName = clientWindow.canonicalName;
         window.position = clientWindow.position;
         window.titleShown = clientWindow.titleShown;
         window.x = clientWindow.x;

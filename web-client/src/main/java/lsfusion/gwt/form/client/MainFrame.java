@@ -29,7 +29,7 @@ import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
-import lsfusion.gwt.form.shared.actions.form.*;
+import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
 import lsfusion.gwt.form.shared.view.GDefaultFormsType;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
@@ -108,6 +108,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         Window.addWindowClosingHandler(new Window.ClosingHandler() {
             @Override
             public void onWindowClosing(Window.ClosingEvent event) {
+                windowsController.storeWindowsSizes();
                 clean();
             }
         });

@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.window;
 
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
@@ -9,6 +10,8 @@ import java.util.*;
 public abstract class WindowsController extends SplitLayoutPanel {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
 
+    private SplitWindowElement rootElement;
+    
     private boolean fullScreenMode;
 
     public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, boolean fullScreenMode) {
@@ -18,12 +21,14 @@ public abstract class WindowsController extends SplitLayoutPanel {
         
         initializeNodes(allWindows, rootNode);
 
-        SplitWindowElement rootElement = (SplitWindowElement) fillWindowChildren(rootNode);
+        rootElement = (SplitWindowElement) fillWindowChildren(rootNode);
         rootElement.addElement(new SimpleWindowElement(this, formsWindow, -1, -1, -1, -1));
 
         Widget rootView = rootElement.initializeView();
 
         setDefaultVisible();
+
+        restoreWindowsSizes();
 
         return rootView;
     }
@@ -185,6 +190,22 @@ public abstract class WindowsController extends SplitLayoutPanel {
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
+
+    public void storeWindowsSizes() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (storage != null) {
+            rootElement.storeWindowsSizes(storage);
+        }
+    }
+    
+    public void restoreWindowsSizes() {
+        if (!fullScreenMode) {
+            Storage storage = Storage.getLocalStorageIfSupported();
+            if (storage != null) {
+                rootElement.restoreWindowsSizes(storage);
+            }
+        }
+    }
 
     private class WindowNode {
         private GAbstractWindow window;

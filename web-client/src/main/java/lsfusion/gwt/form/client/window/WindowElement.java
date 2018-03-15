@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.client.window;
 
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 public abstract class WindowElement {
@@ -11,8 +13,9 @@ public abstract class WindowElement {
     public int width;
     public int height;
 
-    public double initialWidth;
-    public double initialHeight;
+    public double pixelWidth;
+    public double pixelHeight;
+    public boolean sizeStored = false;
 
     public WindowElement(WindowsController main, int x, int y, int width, int height) {
         this.main = main;
@@ -31,33 +34,49 @@ public abstract class WindowElement {
             }
         }
     }
+    
+    public void storeWindowsSizes(Storage storage) {}
+    public void restoreWindowsSizes(Storage storage) {}
 
     public void setWindowVisible(WindowElement window) {}
     public void setWindowInvisible(WindowElement window) {}
-    protected void changeInitialSize(WindowElement child) {}
-
-    public abstract void addElement(WindowElement window);
-    public abstract String getCaption();
-    public abstract Widget initializeView();
-    public abstract Widget getView();
     
-    protected double getInitialHeight() {
-        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : initialHeight;
+    public Widget initializeView() {
+        pixelWidth = Window.getClientWidth() / 100 * width;
+        pixelHeight = Window.getClientHeight() / 100 * height;
+        return getView();
     }
 
-    protected double getInitialWidth() {
-        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : initialWidth;
+    protected void setChildSize(WindowElement child) {}
+    public abstract void addElement(WindowElement window);
+    public abstract String getCaption();
+    public abstract Widget getView();
+    
+    public abstract String getSID();
+    
+    public String getStorageSizeKey() {
+        return getSID() + "_size";
+    }
+    
+    protected double getPixelHeight() {
+        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : pixelHeight;
+    }
+
+    protected double getPixelWidth() {
+        return (main.isFullScreenMode() && parent != null && parent.parent == null) ? 0 : pixelWidth;
     }
 
     public void changeInitialSize(int width, int height) {
-        if (width > initialWidth) {
-            initialWidth = width;
-        }
-        if (height > initialHeight) {
-            initialHeight = height;
+        if (!sizeStored) {
+            if (width > pixelWidth) {
+                pixelWidth = width;
+            }
+            if (height > pixelHeight) {
+                pixelHeight = height;
+            }
         }
         if (parent != null) {
-            parent.changeInitialSize(this);
+            parent.setChildSize(this);
         }
     }
 }
