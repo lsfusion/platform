@@ -313,8 +313,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         assert !(pDrawUsage instanceof PredefinedUsage);
         LP<?, ?> property;
-        if(pDrawUsage instanceof FormFindPropertyUsage) {
-            property = findPropertyWithMapping(form, (FormFindPropertyUsage) pDrawUsage, mapping);
+        if(pDrawUsage instanceof ActionOrPropertyUsage) {
+            property = findPropertyByPropertyUsage((ActionOrPropertyUsage) pDrawUsage, form, mapping);
         } else {
             property = ((LPUsage)pDrawUsage).lp;
         }
@@ -325,7 +325,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
-    public LP<?, ?> findPropertyWithMapping(FormEntity form, ScriptingLogicsModule.FormFindPropertyUsage findProperty, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?, ?> findPropertyByPropertyUsage(ActionOrPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return findLPByPropertyUsage(pUsage.property);
+    }
+
+    public LP<?, ?> findPropertyByPropertyUsage(ActionOrPropertyUsage findProperty, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         LP<?, ?> lp;
         PropertyUsage pUsage = findProperty.property;
         if (pUsage.classNames != null) {
@@ -909,12 +913,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingErrorLog.emitSemanticError(errorMessage.toString(), new ScriptingErrorLog.SemanticErrorException(parser.getCurrentParser().input));
     }
 
-    public void addToContextMenuFor(LP onContextAction, LocalizedString contextMenuCaption, PropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public void addToContextMenuFor(LP onContextAction, LocalizedString contextMenuCaption, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert mainPropertyUsage != null;
 
         checks.checkActionProperty(onContextAction);
 
-        LP<?, ?> mainProperty = findLPByPropertyUsage(mainPropertyUsage);
+        LP<?, ?> mainProperty = findPropertyByPropertyUsage(mainPropertyUsage);
         LAP onContextLAP = (LAP) onContextAction;
         onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
         ((ActionProperty) onContextLAP.property).checkReadOnly = false;
@@ -922,12 +926,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         onContextLAP.setAsEditActionFor(onContextLAP.property.getSID(), mainProperty);
     }
 
-    public void setAsEditActionFor(LP onEditAction, String editActionSID, PropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public void setAsEditActionFor(LP onEditAction, String editActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert mainPropertyUsage != null;
 
         checks.checkActionProperty(onEditAction);
 
-        LP<?, ?> mainProperty = findLPByPropertyUsage(mainPropertyUsage);
+        LP<?, ?> mainProperty = findPropertyByPropertyUsage(mainPropertyUsage);
         LAP onEditLAP = (LAP) onEditAction;
         onEditLAP.setAsEditActionFor(editActionSID, mainProperty);
     }
@@ -3199,17 +3203,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         addEventAction(baseEvent, descending, false, noInline.size(), forceInline, debugPoint, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, PropertyUsage showDep) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LPWithParams event, Event baseEvent, boolean single, ActionOrPropertyUsage showDep) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkActionProperty(event.property);
         checks.checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
         if(showDep!=null)
-            action.showDep = findLPByPropertyUsage(showDep).property;
+            action.showDep = findPropertyByPropertyUsage(showDep).property;
         addBaseEvent(action, baseEvent, false, single);
     }
 
-    public void addScriptedShowDep(PropertyUsage property, PropertyUsage propFrom) throws ScriptingErrorLog.SemanticErrorException {
-        findLPByPropertyUsage(property).property.showDep = findLPByPropertyUsage(propFrom).property;
+    public void addScriptedShowDep(ActionOrPropertyUsage property, ActionOrPropertyUsage propFrom) throws ScriptingErrorLog.SemanticErrorException {
+        findPropertyByPropertyUsage(property).property.showDep = findPropertyByPropertyUsage(propFrom).property;
     }
 
     public void addScriptedAspect(PropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
@@ -3791,27 +3795,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     
-    public abstract static class FormFindPropertyUsage implements FormPropertyUsage {
+    public abstract static class ActionOrPropertyUsage implements FormPropertyUsage {
         public final PropertyUsage property;
 
-        public FormFindPropertyUsage(PropertyUsage property) {
+        public ActionOrPropertyUsage(PropertyUsage property) {
             this.property = property;
         }
     }
     
-    public static class CalcPropertyUsage extends FormFindPropertyUsage implements AbstractCalcPropertyUsage {
+    public static class CalcPropertyUsage extends ActionOrPropertyUsage implements AbstractCalcPropertyUsage {
         public CalcPropertyUsage(PropertyUsage property) {
             super(property);
         }
     }
 
-    public static class CalcOrActionPropertyUsage extends FormFindPropertyUsage {
+    public static class CalcOrActionPropertyUsage extends ActionOrPropertyUsage {
         public CalcOrActionPropertyUsage(PropertyUsage property) {
             super(property);
         }
     }
 
-    public static class ActionPropertyUsage extends FormFindPropertyUsage implements AbstractActionPropertyUsage {
+    public static class ActionPropertyUsage extends ActionOrPropertyUsage implements AbstractActionPropertyUsage {
         public ActionPropertyUsage(PropertyUsage property) {
             super(property);
         }

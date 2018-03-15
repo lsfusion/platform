@@ -49,6 +49,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.CalcOrActionPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.AbstractFormPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.FormPropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.ActionOrPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PredefinedUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.AbstractCalcPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.AbstractActionPropertyUsage;
@@ -867,12 +868,8 @@ formPropertyUsage returns [FormPropertyUsage propUsage]
 @init {
    String systemName = null;
    List<String> signature = null;
-   boolean action = false;
 }
-	:	( 
-            (ACTION { action = true; } )?
-            pu=propertyUsage { $propUsage = action ? new ActionPropertyUsage($pu.propUsage) : new CalcOrActionPropertyUsage($pu.propUsage); }
-	    )
+	:	fpp = actionOrPropertyUsage { $propUsage = $fpp.propUsage; } 
 	    |	
 	    (
 			(
@@ -887,6 +884,14 @@ formPropertyUsage returns [FormPropertyUsage propUsage]
 		) { $propUsage = new PredefinedUsage(new PropertyUsage(systemName, signature)); }
    ;
 
+actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
+@init {
+   boolean action = false;
+}
+    :
+        (ACTION { action = true; } )?
+        pu=propertyUsage { $propUsage = action ? new ActionPropertyUsage($pu.propUsage) : new CalcOrActionPropertyUsage($pu.propUsage); }    
+    ;
 
 formFiltersList
 @init {
@@ -2182,7 +2187,7 @@ shortcutSetting [LP property, LocalizedString caption]
 		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
 	}
 }
-	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = propertyUsage
+	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = actionOrPropertyUsage
 	;
 
 asonEditActionSetting [LP property]
@@ -2194,7 +2199,7 @@ asonEditActionSetting [LP property]
 		self.setAsEditActionFor(property, $et.type, $usage.propUsage);
 	}
 }
-	:	'ASON' et=formEventType usage=propertyUsage 
+	:	'ASON' et=formEventType usage=actionOrPropertyUsage
 	;
 
 forceViewTypeSetting [LP property]
@@ -3559,7 +3564,7 @@ globalEventStatement
 	:	'ON' 
 		et=baseEvent
 		('SINGLE' { single = true; })?
-		('SHOWDEP' property=propertyUsage)?
+		('SHOWDEP' property=actionOrPropertyUsage)?
 		{
 			if (inPropParseState()) {
 				self.setPrevScope($et.event);
@@ -3605,9 +3610,9 @@ showDepStatement
     }
 }
     :	'SHOWDEP'
-        property=propertyUsage
+        property=actionOrPropertyUsage
         'FROM'
-        propFrom=propertyUsage
+        propFrom=actionOrPropertyUsage
         ';'
     ;
 
