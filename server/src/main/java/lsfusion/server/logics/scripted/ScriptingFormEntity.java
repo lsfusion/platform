@@ -334,8 +334,8 @@ public class ScriptingFormEntity {
         }
     }
 
-    private void checkPropertyParameters(LP<PropertyInterface, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ImMap<PropertyInterface, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
+    private <P extends PropertyInterface> void checkPropertyParameters(LP<P, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
             @Override
             public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
                 return value.getAndClassSet();
@@ -343,7 +343,7 @@ public class ScriptingFormEntity {
         });
 
         if (!property.property.isInInterface(map, true)) {
-            LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.property.getName());
+            LM.getErrLog().emitWrongPropertyParametersError(LM.getParser(), property.property.getOrName());
         }
     }
 
@@ -528,7 +528,7 @@ public class ScriptingFormEntity {
             }
 
             List<String> mapping = info.mapping;
-            LP property = info.property;
+            LCP<?> property = info.property;
 
             checkPropertyParameters(property, getMappingObjectsArray(mapping));
 
@@ -619,11 +619,11 @@ public class ScriptingFormEntity {
     public static class RegularFilterInfo {
         LocalizedString caption;
         String keystroke;
-        LP property;
+        LCP property;
         List<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keystroke, LCP property, List<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

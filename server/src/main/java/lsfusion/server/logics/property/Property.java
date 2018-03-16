@@ -59,7 +59,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     private int ID = 0;
     private String dbName;
-    private String canonicalName;
+    protected String canonicalName;
     public String annotation;
 
     private boolean local = false;
@@ -170,7 +170,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return dbName;
     }
 
-    public String getName() {
+    // временно, чтобы понять где используется вместе и action и property
+    public String getOrName() {
         if (isNamed()) {
             return PropertyCanonicalNameParser.getName(canonicalName);
         }
@@ -184,7 +185,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
 
-    public String getCanonicalName() {
+    // временно, чтобы понять где используется вместе и action и property
+    public String getOrCanonicalName() {
         return canonicalName;
     }
 

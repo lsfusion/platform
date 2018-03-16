@@ -184,20 +184,18 @@ public abstract class LogicsModule {
     }
     
     protected void addModuleLP(LP<?, ?> lp) {
-        String name = lp.property.getName();
-        assert name != null;
-
+        String name = null;
         if (lp instanceof LAP) {
-            putLPToMap(namedActions, (LAP) lp);
+            name = ((LAP<?>)lp).property.getName();
+            putLPToMap(namedActions, (LAP) lp, name);
         } else if (lp instanceof LCP) {
-            putLPToMap(namedProperties, (LCP)lp);
-        } else {
-            assert false;
+            name = ((LCP<?>)lp).property.getName();
+            putLPToMap(namedProperties, (LCP)lp, name);
         }
+        assert name != null;
     }
 
-    private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp) {
-        String name = lp.property.getName();
+    private <T extends LP<?, ?>> void putLPToMap(Map<String, List<T>> moduleMap, T lp, String name) {
         if (!moduleMap.containsKey(name)) {
             moduleMap.put(name, new ArrayList<T>());
         }
@@ -1381,7 +1379,7 @@ public abstract class LogicsModule {
         return getSignatureForLogProperty(signature, systemEventsLM);    
     } 
 
-    public static String getLogPropertyCN(LCP lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
+    public static String getLogPropertyCN(LCP<?> lp, String logNamespace, SystemEventsLogicsModule systemEventsLM) {
         String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
         String name = getLogPropertyName(namespace, lp.property.getName());
 
@@ -1389,7 +1387,7 @@ public abstract class LogicsModule {
         return PropertyCanonicalNameUtils.createName(logNamespace, name, signature);
     }
 
-    private static String getLogPropertyName(LCP lp, boolean drop) {
+    private static String getLogPropertyName(LCP<?> lp, boolean drop) {
         String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
         return getLogPropertyName(namespace, lp.property.getName(), drop);
     }

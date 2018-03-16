@@ -1022,7 +1022,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     @NFLazy
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
         if (property.isNamed()) {
-            String propertyCN = property.getCanonicalName();
+            String propertyCN = property.getOrCanonicalName();
             
             // issue #1725 Потенциальное совпадение канонических имен различных свойств 
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
@@ -1125,7 +1125,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
                 for (LP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
-                    String propertyName = property.property.getName();
+                    String propertyName = property.property.getOrName();
                     
                     if (result.get(propertyName) == null) {
                         result.put(propertyName, new ArrayList<NamedDecl>());
@@ -1264,8 +1264,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         public int compare(Property o1, Property o2) {
 
-            String c1 = o1.getCanonicalName();
-            String c2 = o2.getCanonicalName();
+            String c1 = o1.getOrCanonicalName();
+            String c2 = o2.getOrCanonicalName();
             if(c1 == null && c2 == null) {
                 return ActionProperty.compareChangeExtProps(o1, o2, strictCompare);
             }
@@ -1739,7 +1739,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public AggregateProperty getAggregateStoredProperty(String propertyCanonicalName) {
         for (Property property : getStoredProperties()) {
-            if (property instanceof AggregateProperty && propertyCanonicalName.equals(property.getCanonicalName()))
+            if (property instanceof AggregateProperty && propertyCanonicalName.equals(((AggregateProperty)property).getCanonicalName()))
                 return (AggregateProperty) property;
         }
         return null;

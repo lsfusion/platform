@@ -109,7 +109,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private ScriptParser parser;
     private ScriptingLogicsModuleChecks checks;
     private List<String> warningList = new ArrayList<>();
-    private Map<Property, String> alwaysNullProperties = new HashMap<>();
+    private Map<CalcProperty, String> alwaysNullProperties = new HashMap<>();
 
     private String lastOptimizedJPropSID = null;
 
@@ -977,7 +977,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
         StringBuilder errorMessage = new StringBuilder();
-        for (Property property : alwaysNullProperties.keySet()) {
+        for (CalcProperty property : alwaysNullProperties.keySet()) {
             if (errorMessage.length() > 0) {
                 errorMessage.append("\n");
             }

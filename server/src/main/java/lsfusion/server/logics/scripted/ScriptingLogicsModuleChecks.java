@@ -120,7 +120,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPropertyValue(LCP<?> property, Map<Property, String> alwaysNullProperties) {
+    public void checkPropertyValue(LCP<?> property, Map<CalcProperty, String> alwaysNullProperties) {
         if (!property.property.checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(LM.getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
@@ -425,14 +425,15 @@ public class ScriptingLogicsModuleChecks {
             if (lp.property != null) {
                 checkCalculationProperty(lp.property);
                 CalcProperty<?> calcProperty = (CalcProperty<?>) lp.property.property;
+                String name = calcProperty.getName();
                 if (!calcProperty.isStored()) {
-                    errLog.emitShouldBeStoredError(parser, calcProperty.getName());
+                    errLog.emitShouldBeStoredError(parser, name);
                 }
                 if (table == null) {
                     table = calcProperty.mapTable.table;
-                    firstPropertyName = calcProperty.getName();
+                    firstPropertyName = name;
                 } else if (table != calcProperty.mapTable.table) {
-                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, calcProperty.getName());
+                    errLog.emitIndexPropertiesDifferentTablesError(parser, firstPropertyName, name);
                 }
             }
         }
@@ -582,12 +583,13 @@ public class ScriptingLogicsModuleChecks {
     } 
     
     public void checkAssignProperty(LPWithParams fromProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(toProperty.property.property instanceof DataProperty || toProperty.property.property instanceof CaseUnionProperty || toProperty.property.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами
-            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toProperty.property.property.getName());
+        LCP<?> toLCP = (LCP<?>)toProperty.property;
+        if (!(toLCP.property instanceof DataProperty || toLCP.property instanceof CaseUnionProperty || toLCP.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами
+            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toLCP.property.getName());
         }
 
         if (fromProperty.property != null && fromProperty.property.property.getType() != null &&
-                toProperty.property.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
+                toLCP.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
             errLog.emitIncompatibleTypes(parser, "ASSIGN");
         }
     }

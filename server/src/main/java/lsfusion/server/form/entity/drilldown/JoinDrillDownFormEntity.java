@@ -85,7 +85,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
             for (PropertyDrawEntity detailProperty : detailsProperties) {
                 PropertyDrawView detailPropertyView = design.get(detailProperty);
                 if (detailPropertyView.getCaption().isEmpty()) {
-                    detailPropertyView.caption = LocalizedString.create(detailProperty.propertyObject.property.getName());
+                    detailPropertyView.caption = LocalizedString.create(((CalcProperty)detailProperty.propertyObject.property).getName());
                 }
                 detailsContainer.add(detailPropertyView, version);
             }

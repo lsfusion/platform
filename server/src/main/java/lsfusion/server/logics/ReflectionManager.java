@@ -455,7 +455,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
+                    dataProperty.add(asList(property.getOrCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
@@ -507,7 +507,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> dataParent = new ArrayList<>();
         for (Property property : businessLogics.getOrderProperties()) {
             if (needsToBeSynchronized(property))
-                dataParent.add(asList(property.getCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+                dataParent.add(asList(property.getOrCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
         startLogger.info("synchronizePropertyParents integration service started");
