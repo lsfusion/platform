@@ -140,7 +140,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         };
     }
 
-    private ObjectValue getJavaMapValue(LCP prop, JavaProcess javaProcess, String idThread) {
+    private ObjectValue getJavaMapValue(LCP<?> prop, JavaProcess javaProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
@@ -171,7 +171,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         }
     }
 
-    private ObjectValue getSQLMapValue(LCP prop, SQLProcess sqlProcess, String idThread) {
+    private ObjectValue getSQLMapValue(LCP<?> prop, SQLProcess sqlProcess, String idThread) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
