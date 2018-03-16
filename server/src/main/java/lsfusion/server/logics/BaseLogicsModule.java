@@ -378,7 +378,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
             watch = addProperty((AbstractGroup) null, new LAP<>(WatchActionProperty.instance));
-            makePropertyPublic(watch, "watch");
+            makeActionPublic(watch, "watch");
         }
 
         super.initProperties();
@@ -644,7 +644,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         
         if (formEntity.getCanonicalName() != null) {
             String name = "_NEW_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
-            makePropertyPublic(result, name, cls.getResolveSet());
+            makeActionPublic(result, name, cls.getResolveSet());
         }
         return result;
     }
@@ -661,7 +661,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
 
-        makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
+        makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
 
         // temporary for migration
 //        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_ADDFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
@@ -676,7 +676,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         LAP result = addEditFormAction(scope, cls);
         // issue #1725 Потенциальное совпадение канонических имен различных свойств
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
-        makePropertyPublic(result, name, form.object.getResolveClassSet());
+        makeActionPublic(result, name, form.object.getResolveClassSet());
 
         // temporary for migration
         String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
@@ -690,7 +690,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         LAP res = addDeleteAction(cls, scope);
 
         String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
-        makePropertyPublic(res, name, cls.getResolveSet());
+        makeActionPublic(res, name, cls.getResolveSet());
         return res;
     }
 

@@ -12,26 +12,26 @@ import java.util.List;
  * Из всех вариантов отбирает те, для которых не существует более подходящих вариантов
  */
 
-public class NamespaceLPFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {
+public class NamespaceLPFinder<L extends LP<?, ?>> extends NamespaceElementFinder<L, List<ResolveClassSet>> {
 
-    public NamespaceLPFinder(ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, List<LogicsModule> modules) {
+    public NamespaceLPFinder(ModuleFinder<L, List<ResolveClassSet>> finder, List<LogicsModule> modules) {
         super(finder, modules);
     }
 
     @Override
-    protected List<FoundItem<LP<?, ?>>> finalizeResult(final List<FoundItem<LP<?, ?>>> result) {
+    protected List<FoundItem<L>> finalizeResult(final List<FoundItem<L>> result) {
         return filterFoundProperties(result);
     }
     
-    public static List<FoundItem<LP<?, ?>>> filterFoundProperties(List<FoundItem<LP<?, ?>>> result) {
+    public static <L extends LP<?,?>> List<FoundItem<L>> filterFoundProperties(List<FoundItem<L>> result) {
         int cnt = result.size();
-        List<FoundItem<LP<?, ?>>> finalResult = new ArrayList<>();
+        List<FoundItem<L>> finalResult = new ArrayList<>();
         for (int i = 0; i < cnt; i++) {
-            LP<?, ?> iProp = result.get(i).value;
+            L iProp = result.get(i).value;
             List<ResolveClassSet> iParams = result.get(i).module.propClasses.get(iProp);
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
-                LP<?, ?> jProp = result.get(j).value;
+                L jProp = result.get(j).value;
                 if (i != j && SignatureMatcher.isCompatible(iParams, result.get(j).module.propClasses.get(jProp), false, true) && 
                               !SignatureMatcher.isCompatible(result.get(j).module.propClasses.get(jProp), iParams, false, true)) {
                     foundMoreSpecialized = true;

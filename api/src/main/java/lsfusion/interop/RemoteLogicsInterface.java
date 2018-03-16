@@ -43,14 +43,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException;
     List<Object> read(String property, Object[] params, Charset charset) throws RemoteException;
 
-    boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
-
-    boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
-
-    boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException;
-
-    boolean checkFormExportPermission(String canonicalName) throws RemoteException;
-    
     String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException; 
 
     boolean isSingleInstance() throws RemoteException;

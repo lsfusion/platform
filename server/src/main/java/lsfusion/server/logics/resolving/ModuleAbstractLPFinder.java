@@ -9,20 +9,13 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 
 import java.util.List;
 
-public class ModuleAbstractLPFinder extends ModulePropertyOrActionFinder<LP<?, ?>> {
-    @Override
-    protected Iterable<LP<?, ?>> getSourceList(LogicsModule module, String name) {
-        return module.getNamedPropertiesAndActions(name);
-    }
+public abstract class ModuleAbstractLPFinder<L extends LP<?, ?>> extends ModulePropertyOrActionFinder<L> {
 
     @Override
-    protected boolean accepted(LogicsModule module, LP<?, ?> property, List<ResolveClassSet> signature) {
+    protected boolean accepted(LogicsModule module, L property, List<ResolveClassSet> signature) {
         return isAbstract(property.property) && 
                 SignatureMatcher.isCompatible(module.getParamClasses(property), signature, false, false);
     }
 
-    private boolean isAbstract(Property<?> property) {
-        return property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract() ||
-               property instanceof ListCaseActionProperty && ((ListCaseActionProperty) property).isAbstract();        
-    } 
+    protected abstract boolean isAbstract(Property property);
 }

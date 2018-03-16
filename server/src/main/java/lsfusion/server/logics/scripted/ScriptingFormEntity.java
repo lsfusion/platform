@@ -126,7 +126,7 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LP property = findLCP(pUsage, groupObj);
+                        LP property = findLCPByPropertyUsage(pUsage, groupObj);
                         LM.getChecks().checkCalculationProperty(property);
                         propertyObjects.add(form.addPropertyObject((LCP) property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                     }
@@ -139,7 +139,7 @@ public class ScriptingFormEntity {
         form.addTreeGroupObject(treeGroup, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
-    private LCP findLCP(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+    private LCP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
         if (property.classNames != null) {
             return LM.findLCPByPropertyUsage(property);
         } else {
@@ -147,7 +147,7 @@ public class ScriptingFormEntity {
             for (ObjectEntity obj : group.getOrderObjects()) {
                 classSets.add(obj.baseClass.getResolveSet());
             }
-            return (LCP) LM.findLPByNameAndClasses(property.name, property.getSourceName(), classSets);
+            return LM.findLCPByNameAndClasses(property.name, property.getSourceName(), classSets);
         }
     }
     
@@ -286,7 +286,7 @@ public class ScriptingFormEntity {
             if(property == null) {
                 MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, mapping);
                 if(alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage)
-                    LM.makePropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage)pDrawUsage));
+                    LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage)pDrawUsage));
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;

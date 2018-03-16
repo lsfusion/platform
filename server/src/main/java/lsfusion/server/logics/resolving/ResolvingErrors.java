@@ -1,5 +1,6 @@
 package lsfusion.server.logics.resolving;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LP;
 
@@ -21,12 +22,13 @@ public class ResolvingErrors {
         }
     }
 
+    // java не позволяет generics от throwable делать
     public static class ResolvingAmbiguousPropertyError extends ResolvingError {
         public List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems;
         public String name;
         
-        public ResolvingAmbiguousPropertyError(List<NamespaceElementFinder.FoundItem<LP<?, ?>>> items, String name) {
-            foundItems = items;
+        public <L extends LP<?,?>> ResolvingAmbiguousPropertyError(List<NamespaceElementFinder.FoundItem<L>> items, String name) {
+            foundItems = BaseUtils.<List<NamespaceElementFinder.FoundItem<LP<?, ?>>>>immutableCast(items);
             this.name = name;
         }
     }

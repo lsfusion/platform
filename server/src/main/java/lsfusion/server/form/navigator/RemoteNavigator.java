@@ -40,9 +40,11 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.remote.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
@@ -888,7 +890,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final ActionProperty action;
+        final LAP<?> action;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
 
@@ -900,11 +902,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            action = ((NavigatorAction) element).getAction();
+            action = new LAP(((NavigatorAction) element).getAction());
         } else {
-            action = (ActionProperty) businessLogics.findProperty(canonicalName).property;
+            action = businessLogics.findAction(canonicalName);
         }
-        action.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
+        action.execute(session, stack);
     }
 
     @Override

@@ -314,7 +314,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert !(pDrawUsage instanceof PredefinedUsage);
         LP<?, ?> property;
         if(pDrawUsage instanceof ActionOrPropertyUsage) {
-            property = findPropertyByPropertyUsage((ActionOrPropertyUsage) pDrawUsage, form, mapping);
+            property = findLPByActionOrPropertyUsage((ActionOrPropertyUsage) pDrawUsage, form, mapping);
         } else {
             property = ((LPUsage)pDrawUsage).lp;
         }
@@ -325,20 +325,46 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
-    public LP<?, ?> findPropertyByPropertyUsage(ActionOrPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByPropertyUsage(pUsage.property);
+    public LCP<?> findLCPByPropertyUsage(PropertyUsage pUsage, FormEntity form, List<String> mapping, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+        if (pUsage.classNames != null)
+            return findLCPByPropertyUsage(nullIfNotFound, pUsage);
+        List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
+        return findLCPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes, nullIfNotFound);
+    }
+    public LAP<?> findLAPByPropertyUsage(PropertyUsage pUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        if (pUsage.classNames != null)
+            return findLAPByPropertyUsage(pUsage);
+        List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
+        return findLAPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);
     }
 
-    public LP<?, ?> findPropertyByPropertyUsage(ActionOrPropertyUsage findProperty, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> lp;
-        PropertyUsage pUsage = findProperty.property;
-        if (pUsage.classNames != null) {
-            lp = findLPByPropertyUsage(pUsage);
-        } else {
-            List<ResolveClassSet> classes = getMappingClassesArray(form, mapping);
-            lp = findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), classes);
+    public LP<?, ?> findLPByActionOrPropertyUsage(ActionOrPropertyUsage orUsage) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyUsage pUsage = orUsage.property;
+        if(orUsage instanceof CalcPropertyUsage) {
+            return findLCPByPropertyUsage(pUsage);
         }
-        return lp;
+        if(orUsage instanceof ActionPropertyUsage) {
+            return findLAPByPropertyUsage(pUsage);
+        }
+        assert orUsage instanceof PropertyElseActionUsage;
+        LP<?, ?> result = findLCPByPropertyUsage(true, pUsage);
+        if(result == null)
+            result = findLAPByPropertyUsage(pUsage);
+        return result;        
+    }
+    public LP<?, ?> findLPByActionOrPropertyUsage(ActionOrPropertyUsage orUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyUsage pUsage = orUsage.property;
+        if(orUsage instanceof CalcPropertyUsage) {
+            return findLCPByPropertyUsage(pUsage, form, mapping, false);
+        }
+        if(orUsage instanceof ActionPropertyUsage) {
+            return findLAPByPropertyUsage(pUsage, form, mapping);
+        }
+        assert orUsage instanceof PropertyElseActionUsage;
+        LP<?, ?> result = findLCPByPropertyUsage(pUsage, form, mapping, true);
+        if(result == null)
+            result = findLAPByPropertyUsage(pUsage, form, mapping);
+        return result;
     }
 
     private void convertResolveError(ResolvingError e) throws ScriptingErrorLog.SemanticErrorException {
@@ -446,11 +472,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LAP<?>) findLP(name);
+        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
+        return findLAPByNameAndClasses(parser.propertyCompoundNameWithoutSignature(), name, parser.getSignature());
     }
 
     public LCP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LCP<?>) findLP(name);
+        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
+        return findLCPByNameAndClasses(parser.propertyCompoundNameWithoutSignature(), name, parser.getSignature());
     }
 
     public LCP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
@@ -461,18 +489,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    private LP<?, ?> findLP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyCompoundNameParser parser = new PropertyCompoundNameParser(this, name);
-        return findLPByNameAndClasses(parser.propertyCompoundNameWithoutSignature(), name, parser.getSignature());
+    public LCP<?> findLCPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByNameAndClasses(name, sourceName, params, false);
     }
+    public LCP<?> findLCPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByNameAndClasses(name, sourceName, params, false, false, nullIfNotFound);
+    }
+    public LCP<?> findLCPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByNameAndClasses(name, sourceName, params, onlyAbstract, prioritizeNotEqual, false);
+    }
+    public LCP<?> findLCPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> property = null;
 
-    public LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByNameAndClasses(name, sourceName, params, false, false);
-    }
-    
-    private LP<?, ?> findLPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property = null;
-        
         try {
             if (onlyAbstract) {
                 property = resolveAbstractProperty(name, params, prioritizeNotEqual);
@@ -486,32 +514,58 @@ public class ScriptingLogicsModule extends LogicsModule {
             convertResolveError(e);
         } catch (ResolvingError e) {
             convertResolveError(e);
-        } 
-        
-        checks.checkProperty(property, sourceName == null ? name : sourceName, params);
+        }
+
+        if(!nullIfNotFound)
+            checks.checkProperty(property, sourceName == null ? name : sourceName, params);
+        return property;
+    }
+    private LAP<?> findLAPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findLAPByNameAndClasses(name, sourceName, params, false, false);
+    }
+    private LAP<?> findLAPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params, boolean onlyAbstract, boolean prioritizeNotEqual) throws ScriptingErrorLog.SemanticErrorException {
+        LAP<?> property = null;
+
+        try {
+            if (onlyAbstract) {
+                property = resolveAbstractAction(name, params, prioritizeNotEqual);
+            } else {
+                property = resolveAction(name, params);
+            }
+        } catch (ResolvingErrors.ResolvingAmbiguousPropertyError e) {
+            if (sourceName != null) {
+                e.name = sourceName;
+            }
+            convertResolveError(e);
+        } catch (ResolvingError e) {
+            convertResolveError(e);
+        }
+
+        checks.checkAction(property, sourceName == null ? name : sourceName, params);
         return property;
     }
 
     public LCP<?> findLCPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> lp = findLPByPropertyUsage(pUsage, false, false);
-        checks.checkCalculationProperty(lp);
-        return (LCP<?>) lp; 
+        return findLCPByPropertyUsage(pUsage, false);
+    }
+    public LCP<?> findLCPByPropertyUsage(boolean nullIfNotFound, PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByPropertyUsage(pUsage, false, nullIfNotFound);
     }
 
     public LAP<?> findLAPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> lp = findLPByPropertyUsage(pUsage, false, false);
-        checks.checkActionProperty(lp);
-        return (LAP<?>) lp;
+        return findLAPByPropertyUsage(pUsage, false);
     }
 
-    public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByPropertyUsage(pUsage, false, false);
+    public LCP<?> findLCPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByPropertyUsage(pUsage, isAbstract, false);
+    }
+    public LCP<?> findLCPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, false, nullIfNotFound);
+    }
+    public LAP<?> findLAPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        return findLAPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, false);
     }
 
-    public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage, boolean isAbstract, boolean prioritizeNotEquals) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, prioritizeNotEquals);
-    }
-    
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         try {
             AbstractWindow window = resolveWindow(name);
@@ -662,7 +716,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addAUProp(null, false, isExclusive, isChecked, isLast, type, LocalizedString.NONAME, value, params);
     }
 
-    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
+    public LAP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
@@ -677,7 +731,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addImplementationToAbstractAction(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
-        LAP abstractLP = findActionJoinMainProp(abstractPropUsage, context, true);
+        LAP abstractLP = findLAPByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLP, context.size());
         checks.checkImplementIsNotMain(abstractLP, implement.property);
         
@@ -693,7 +747,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addImplementationToAbstractAction(abstractPropUsage.name, abstractLP, signature, when != null, params);
     }
     public void addImplementationToAbstractProp(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
-        LCP abstractLP = findCalcJoinMainProp(abstractPropUsage, context, true);
+        LCP abstractLP = findLCPByPropertyUsage(abstractPropUsage, context, true);
         checks.checkParamCount(abstractLP, context.size());
         checks.checkImplementIsNotMain(abstractLP, implement.property);
         
@@ -836,77 +890,88 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
     
-    public void makePropertyPublic(FormEntity form, String alias, LPUsage lpUsage) {
+    public void makeActionOrPropertyPublic(FormEntity form, String alias, LPUsage lpUsage) {
         String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
-        makePropertyPublic(lpUsage.lp, name, lpUsage.signature);
+        makeActionOrPropertyPublic(lpUsage.lp, name, lpUsage.signature);
     }
     
-    public LP addSettingsToProperty(LP baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
-                                      String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, 
-                                      BooleanDebug notNullResolve, Event notNullEvent, String annotation, boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
-        LP property = baseProperty;
-        checks.checkDuplicateProperty(name, signature, BL);
-
-        property.property.annotation = annotation;
+    public void addSettingsToActionOrProperty(LP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
+                                      ActionOrPropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
+        property.property.annotation = ps.annotation;
 
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checks.checkDistinctParameters(paramNames);
         checks.checkNamedParams(property, paramNames);
-        
-        // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
-        if (property.property.getSID().equals(lastOptimizedJPropSID)) {
-            property = addJProp(false, LocalizedString.NONAME, (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
-        }
-        
-        makePropertyPublic(property, name, signature);
-        
+
+        String groupName = ps.groupName;
         AbstractGroup group = (groupName == null ? null : findGroup(groupName));
         property.property.caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(property.property, group);
+    }
+    public void addSettingsToAction(LAP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings ps) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkDuplicateAction(name, signature, BL);
+
+        addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
+
+        makeActionPublic(property, name, signature);
+    }
+    public LCP addSettingsToProperty(LCP<?> baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
+                                      PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkDuplicateProperty(name, signature, BL);
+
+        LCP<?> property = baseProperty;
+        // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
+        if (property.property.getSID().equals(lastOptimizedJPropSID)) {
+            property = addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+        }
+
+        addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
+
+        makePropertyPublic(property, name, signature);
 
         ImplementTable targetTable = null;
+        String tableName = ps.table;
         if (tableName != null) {
             targetTable = findTable(tableName);
-            if (!targetTable.equalClasses(((LCP<?>)property).property.getOrderTableInterfaceClasses(ClassType.storedPolicy))) {
+            if (!targetTable.equalClasses(property.property.getOrderTableInterfaceClasses(ClassType.storedPolicy))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
         }
         if (property.property instanceof StoredDataProperty) {
-            ((StoredDataProperty)property.property).markStored(baseLM.tableFactory, targetTable);
-        } else if (isPersistent && (property.property instanceof AggregateProperty)) {
-            addPersistent((LCP) property, targetTable);
+            property.property.markStored(baseLM.tableFactory, targetTable);
+        } else if (ps.isPersistent && (property.property instanceof AggregateProperty)) {
+            addPersistent(property, targetTable);
         }
 
-        if(isComplex)
-            ((LCP<?>)property).property.complex = true;
+        if(ps.isComplex)
+            property.property.complex = true;
 
-        if(noHint)
-            ((LCP<?>)property).property.noHint = true;
+        if(ps.noHint)
+            property.property.noHint = true;
 
+        BooleanDebug notNull = ps.notNull;
         if (notNull != null) {
-            setNotNull((LCP)property, notNull.debugPoint, notNullEvent, 
+            BooleanDebug notNullResolve = ps.notNullResolve;
+            setNotNull(property, notNull.debugPoint, ps.notNullEvent,
                     notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(false, true, notNullResolve.debugPoint)) :
                                              ListFact.<PropertyFollowsDebug>EMPTY());
             
             if(notNullResolve != null)
-                ((LCP<?>)property).property.setAggr(true);
+                property.property.setAggr(true);
         }
 
-        if (property.property instanceof CalcProperty) {
-            
-            if (Settings.get().isCheckAlwaysNull()) {
-                checks.checkPropertyValue(property, alwaysNullProperties);
-                if (!alwaysNullProperties.isEmpty()) {
-                    showAlwaysNullErrors();
-                }
+        if (Settings.get().isCheckAlwaysNull()) {
+            checks.checkPropertyValue(property, alwaysNullProperties);
+            if (!alwaysNullProperties.isEmpty()) {
+                showAlwaysNullErrors();
             }
+        }
 
 //            if (Settings.get().isCheckClassWhere()) {
 //                checks.checkClassWhere((LCP) property, name);
 //            }
-        }
-        makeLoggable(baseProperty, isLoggable);
+        makeLoggable(baseProperty, ps.isLoggable);
         return property;
     }
 
@@ -928,7 +993,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         checks.checkActionProperty(onContextAction);
 
-        LP<?, ?> mainProperty = findPropertyByPropertyUsage(mainPropertyUsage);
+        LP<?, ?> mainProperty = findLPByActionOrPropertyUsage(mainPropertyUsage);
         LAP onContextLAP = (LAP) onContextAction;
         onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
         ((ActionProperty) onContextLAP.property).checkReadOnly = false;
@@ -936,14 +1001,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         onContextLAP.setAsEditActionFor(onContextLAP.property.getSID(), mainProperty);
     }
 
-    public void setAsEditActionFor(LP onEditAction, String editActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public void setAsEditActionFor(LAP onEditAction, String editActionSID, ActionOrPropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {
         assert mainPropertyUsage != null;
 
-        checks.checkActionProperty(onEditAction);
-
-        LP<?, ?> mainProperty = findPropertyByPropertyUsage(mainPropertyUsage);
-        LAP onEditLAP = (LAP) onEditAction;
-        onEditLAP.setAsEditActionFor(editActionSID, mainProperty);
+        LP<?, ?> mainProperty = findLPByActionOrPropertyUsage(mainPropertyUsage);
+        onEditAction.setAsEditActionFor(editActionSID, mainProperty);
     }
 
     public void setForceViewType(LP property, ClassViewType viewType) {
@@ -974,8 +1036,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             property.setShowChangeKey(showEditKey);
     }
 
-    public void setAutoset(LP property, boolean autoset) {
-        ((LCP)property).setAutoset(autoset);
+    public void setAutoset(LCP property, boolean autoset) {
+        property.setAutoset(autoset);
     }
 
     public void setAskConfirm(LP property, boolean askConfirm) {
@@ -989,10 +1051,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void makeLoggable(LP property, boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
+    public void makeLoggable(LCP property, boolean isLoggable) throws ScriptingErrorLog.SemanticErrorException {
         if (isLoggable && property != null) {
-            checks.checkCalculationProperty(property);
-            ((LCP) property).makeLoggable(this, BL.systemEventsLM);
+            property.makeLoggable(this, BL.systemEventsLM);
         }
     }
 
@@ -1083,52 +1144,38 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getParamClassesByParamProperties(paramProps, params);
     }
 
-    private LP findJoinMainProp(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
-        if (mainProp.classNames != null) {
-            return findLPByPropertyUsage(mainProp);
-        } else {
-            List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
-            return findLPByNameAndClasses(mainProp.name, mainProp.getSourceName(), classes);
-        }
+    private LCP findLCPByPropertyUsage(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null)
+            return findLCPByPropertyUsage(mainProp);
+        List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
+        return findLCPByNameAndClasses(mainProp.name, mainProp.getSourceName(), classes);
     }
-    private LCP findCalcJoinMainProp(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, paramProps, context);
-        checks.checkCalculationProperty(lp);
-        return (LCP)lp;
-    }
-    private LAP findActionJoinMainProp(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, paramProps, context);
-        checks.checkActionProperty(lp);
-        return (LAP)lp;
+    private LAP findLAPByPropertyUsage(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null)
+            return findLAPByPropertyUsage(mainProp);
+        List<ResolveClassSet> classes = getParamClassesByParamProperties(paramProps, context);
+        return findLAPByNameAndClasses(mainProp.name, mainProp.getSourceName(), classes);
     }
 
-    private LCP findCalcJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        return findCalcJoinMainProp(mainProp, params, false);
+    private LCP findLCPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPByPropertyUsage(mainProp, params, false);
     }
-    private LCP findCalcJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, params, onlyAbstract);
-        checks.checkCalculationProperty(lp);
-        return (LCP)lp;
+    private LCP findLCPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null)
+            return findLCPByPropertyUsage(mainProp, onlyAbstract); 
+        return findLCPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
     }
-    private LAP findActionJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        return findActionJoinMainProp(mainProp, params, false); 
+    private LAP findLAPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findLAPByPropertyUsage(mainProp, params, false); 
     }
-    private LAP findActionJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp = findJoinMainProp(mainProp, params, onlyAbstract);
-        checks.checkActionProperty(lp);
-        return (LAP)lp;
+    private LAP findLAPByPropertyUsage(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null)
+            return findLAPByPropertyUsage(mainProp, onlyAbstract); 
+        return findLAPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
     }
-    
-    private LP findJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
-        if (mainProp.classNames != null) {
-            return findLPByPropertyUsage(mainProp, onlyAbstract, false); 
-        } else {
-            return findLPByNameAndClasses(mainProp.name, mainProp.getSourceName(), getClassesFromTypedParams(params), onlyAbstract, true);
-        }
-    }
-    
+
     public LPWithParams addScriptedJProp(boolean user, PropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LCP mainProp = findCalcJoinMainProp(pUsage, paramProps, params);
+        LCP mainProp = findLCPByPropertyUsage(pUsage, paramProps, params);
         return addScriptedJProp(user, mainProp, paramProps);
     }
     
@@ -1327,7 +1374,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(res, params);
     }
 
-    public LP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LAP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             ActionProperty instance;
             if (classes == null || classes.isEmpty()) {
@@ -1351,7 +1398,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LP addScriptedCustomActionProp(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+    public LAP addScriptedCustomActionProp(String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         String script = "";
         try {
 
@@ -1751,7 +1798,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LPWithParams addScriptedJoinAProp(PropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LAP mainProp = findActionJoinMainProp(pUsage, properties, params);    
+        LAP mainProp = findLAPByPropertyUsage(pUsage, properties, params);    
         return addScriptedJoinAProp(mainProp, properties);                        
     }
     
@@ -1877,7 +1924,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        LCP toPropertyLP = findCalcJoinMainProp(toPropertyUsage, toPropertyMapping, newContext);
+        LCP toPropertyLP = findLCPByPropertyUsage(toPropertyUsage, toPropertyMapping, newContext);
 
         LPWithParams toProperty = addScriptedJProp(toPropertyLP, toPropertyMapping);
 
@@ -1910,7 +1957,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LPWithParams toProperty = null;
         if (toPropUsage != null && toPropMapping != null) {
-            toProperty = addScriptedJProp(findCalcJoinMainProp(toPropUsage, toPropMapping, newContext), toPropMapping);
+            toProperty = addScriptedJProp(findLCPByPropertyUsage(toPropUsage, toPropMapping, newContext), toPropMapping);
         }
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, whereProperty);
@@ -2257,7 +2304,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, PropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
                                                  boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkPartitionWindowConsistence(partitionType, useLast);
-        LCP ungroupProp = ungroupPropUsage != null ? findCalcJoinMainProp(ungroupPropUsage, paramProps.subList(1, groupPropsCnt + 1), context) : null;
+        LCP ungroupProp = ungroupPropUsage != null ? findLCPByPropertyUsage(ungroupPropUsage, paramProps.subList(1, groupPropsCnt + 1), context) : null;
         checks.checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
         boolean ordersNotNull = doesExtendContext(0, paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));
@@ -2895,15 +2942,15 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
 
-    public LCP addScriptedReflectionProperty(ReflectionPropertyType type, PropertyUsage propertyUsage, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedReflectionProperty(ReflectionPropertyType type, ActionOrPropertyUsage propertyUsage, List<ResolveClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
         switch (type) {
             case CANONICAL_NAME:
             default: return addCanonicalNameProp(propertyUsage);
         }
     }
 
-    public LCP addCanonicalNameProp(PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return new LCP<>(new CanonicalNameProperty(findLPByPropertyUsage(propertyUsage)));
+    public LCP addCanonicalNameProp(ActionOrPropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return new LCP<>(new CanonicalNameProperty(findLPByActionOrPropertyUsage(propertyUsage)));
     }
 
     public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) {
@@ -3173,7 +3220,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        LCP mainProp = findCalcJoinMainProp(mainPropUsage, namedParams);
+        LCP mainProp = findLCPByPropertyUsage(mainPropUsage, namedParams);
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
@@ -3185,7 +3232,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedWriteWhen(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
-        LCP mainProp = findCalcJoinMainProp(mainPropUsage, namedParams);
+        LCP mainProp = findLCPByPropertyUsage(mainPropUsage, namedParams);
         if (!(mainProp.property instanceof DataProperty)) {
             errLog.emitOnlyDataPropertyIsAllowedError(parser, mainPropUsage.name);
         }
@@ -3224,16 +3271,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkEventNoParameters(event.property);
         ActionProperty action = (ActionProperty) event.property.property;
         if(showDep!=null)
-            action.showDep = findPropertyByPropertyUsage(showDep).property;
+            action.showDep = findLPByActionOrPropertyUsage(showDep).property;
         addBaseEvent(action, baseEvent, false, single);
     }
 
     public void addScriptedShowDep(ActionOrPropertyUsage property, ActionOrPropertyUsage propFrom) throws ScriptingErrorLog.SemanticErrorException {
-        findPropertyByPropertyUsage(property).property.showDep = findPropertyByPropertyUsage(propFrom).property;
+        findLPByActionOrPropertyUsage(property).property.showDep = findLPByActionOrPropertyUsage(propFrom).property;
     }
 
     public void addScriptedAspect(PropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
-        LAP mainProp = findActionJoinMainProp(mainPropUsage, mainPropParams);
+        LAP mainProp = findLAPByPropertyUsage(mainPropUsage, mainPropParams);
         checks.checkParamCount(mainProp, mainPropParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams));
         checks.checkActionProperty(actionProp.property);
@@ -3263,7 +3310,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
-        LCP toPropertyLP = findCalcJoinMainProp(toPropertyUsage, toPropertyMapping, context);
+        LCP toPropertyLP = findLCPByPropertyUsage(toPropertyUsage, toPropertyMapping, context);
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
     
@@ -3658,7 +3705,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(wrappedLAP, wrappedUsed);
     }
 
-    public void checkPropertyValue(LP property) {
+    public void checkPropertyValue(LCP property) {
         checks.checkPropertyValue(property, alwaysNullProperties);        
     } 
 
@@ -3825,8 +3872,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class CalcOrActionPropertyUsage extends ActionOrPropertyUsage {
-        public CalcOrActionPropertyUsage(PropertyUsage property) {
+    public static class PropertyElseActionUsage extends ActionOrPropertyUsage {
+        public PropertyElseActionUsage(PropertyUsage property) {
             super(property);
         }
     }

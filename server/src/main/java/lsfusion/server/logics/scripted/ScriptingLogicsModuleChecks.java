@@ -60,9 +60,15 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkProperty(LP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkProperty(LCP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
             errLog.emitPropertyNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
+        }
+    }
+
+    public void checkAction(LAP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+        if (lp == null) {
+            errLog.emitActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
         }
     }
 
@@ -114,8 +120,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPropertyValue(LP property, Map<Property, String> alwaysNullProperties) {
-        if (property.property instanceof CalcProperty && !((CalcProperty)property.property).checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
+    public void checkPropertyValue(LCP<?> property, Map<Property, String> alwaysNullProperties) {
+        if (!property.property.checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(LM.getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
             alwaysNullProperties.put(property.property, location);
@@ -137,11 +143,17 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDuplicateProperty(String propName, List<ResolveClassSet> signature, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), propName, signature, new ModuleEqualLPFinder(false));
+        checkDuplicateActionOrProperty(propName, signature, BL, new ModuleEqualLCPFinder());
+    }
+    public void checkDuplicateAction(String propName, List<ResolveClassSet> signature, BusinessLogics<?> BL) throws ScriptingErrorLog.SemanticErrorException {
+        checkDuplicateActionOrProperty(propName, signature, BL, new ModuleEqualLAPFinder());
+    }
+    public <L extends LP<?, ?>> void checkDuplicateActionOrProperty(String propName, List<ResolveClassSet> signature, BusinessLogics<?> BL, ModuleEqualLPFinder<L> finder) throws ScriptingErrorLog.SemanticErrorException {
+        LogicsModule module = BL.getModuleContainingElement(LM.getNamespace(), propName, signature, finder);
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, module.getName());
         }
-        ModuleEqualLPFinder finder = new ModuleEqualLPFinder(true);
+        finder = finder.findLocals();
         if (!finder.resolveInModule(LM, propName, signature).isEmpty()) {
             errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, LM.getName());
         }

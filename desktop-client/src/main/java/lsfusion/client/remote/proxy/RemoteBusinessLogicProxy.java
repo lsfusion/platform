@@ -136,35 +136,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
-        logRemoteMethodStartCall("checkDefaultViewPermission");
-        boolean result = target.checkDefaultViewPermission(propertySid);
-        logRemoteMethodEndVoidCall("checkDefaultViewPermission");
-        return result;
-    }
-
-    public boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException {
-        logRemoteMethodStartCall("checkPropertyViewPermission");
-        boolean result = target.checkPropertyViewPermission(userName, propertySID);
-        logRemoteMethodEndVoidCall("checkPropertyViewPermission");
-        return result;
-    }
-
-    @Override
-    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
-        logRemoteMethodStartCall("checkPropertyChangePermission");
-        boolean result = target.checkPropertyChangePermission(userName, propertySID);
-        logRemoteMethodEndVoidCall("checkPropertyChangePermission");
-        return result;
-    }
-
-    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
-        logRemoteMethodStartCall("checkFormExportPermission");
-        boolean result = target.checkFormExportPermission(canonicalName);
-        logRemoteMethodEndVoidCall("checkFormExportPermission");
-        return result;
-    }
-
     @Override
     public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
         logRemoteMethodStartCall("getFormCanonicalName");

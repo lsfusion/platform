@@ -7,20 +7,17 @@ import lsfusion.server.logics.linear.LP;
 import java.util.List;
 
 // Находит идентичные по имени и сигнатуре свойства.   
-public class ModuleEqualLPFinder extends ModulePropertyOrActionFinder<LP<?, ?>> {
-    private final boolean findLocals;
+public abstract class ModuleEqualLPFinder<L extends LP<?, ?>> extends ModulePropertyOrActionFinder<L> {
+    protected final boolean findLocals;
 
-    public ModuleEqualLPFinder(boolean findLocals) {
+    protected ModuleEqualLPFinder(boolean findLocals) {
         this.findLocals = findLocals;
     }
+    
+    public abstract ModuleEqualLPFinder<L> findLocals();
 
     @Override
-    protected Iterable<LP<?, ?>> getSourceList(LogicsModule module, String name) {
-        return module.getNamedPropertiesAndActions(name);
-    }
-
-    @Override
-    protected boolean accepted(LogicsModule module, LP<?, ?> property, List<ResolveClassSet> signature) {
+    protected boolean accepted(LogicsModule module, L property, List<ResolveClassSet> signature) {
         if (findLocals || !property.property.isLocal()) {
             List<ResolveClassSet> paramClasses = module.getParamClasses(property);
             boolean equals = SignatureMatcher.isEqualsCompatible(paramClasses, signature); // чтобы не вызывать ветку в ResolveOrObjectClassSet.containsAll

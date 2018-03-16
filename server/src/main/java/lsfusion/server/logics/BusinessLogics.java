@@ -790,11 +790,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (changes.containsKey(canonicalName)) {
                 canonicalName = changes.get(canonicalName);
             }
-            LP lp = findProperty(canonicalName);
+            LCP<?> lcp = findProperty(canonicalName);
             Integer statsProperty = (Integer) values.get("overStatsProperty");
-            statsProperty = statsProperty == null && lp != null ? getStatsProperty(lp.property) : statsProperty;
-            if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP) {
-                LM.makeUserLoggable(systemEventsLM, (LCP) lp);
+            statsProperty = statsProperty == null && lcp != null ? getStatsProperty(lcp.property) : statsProperty;
+            if(statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
+                LM.makeUserLoggable(systemEventsLM, lcp);
             }
         }
     }
@@ -820,7 +820,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP<?> prop = (LCP) findProperty(values.get("CNProperty").toString().trim());
+            LCP<?> prop = findProperty(values.get("CNProperty").toString().trim());
             prop.property.reflectionNotNull = true;
             LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
         }
@@ -851,7 +851,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             String cnProperty = trim((String) entry.get("CNProperty"));
             if(cnProperty != null) {
-                LCP prop = (LCP) findProperty(cnProperty);
+                LCP prop = findProperty(cnProperty);
 
                 boolean isDerivedChange = entry.get("isDerivedChange") != null;
                 String subject = trim((String) entry.get("subject"));
@@ -1032,7 +1032,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
-            LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
+            LM.makeActionPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             setupPolicyAction.checkReadOnly = false;
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
@@ -1124,7 +1124,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
-                for (LP<?, ?> property : module.getNamedPropertiesAndActions()) {
+                for (LP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
                     String propertyName = property.property.getName();
                     
                     if (result.get(propertyName) == null) {
@@ -2194,8 +2194,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return formatMessageList(messageList);
     }
 
-    public LP findSafeProperty(String canonicalName) {
-        LP lp = null;
+    public LCP findSafeProperty(String canonicalName) {
+        LCP lp = null;
         try {
             lp = findProperty(canonicalName);
         } catch (Exception e) {
@@ -2203,24 +2203,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return lp;
     }
 
-    public LP[] findProperties(String... canonicalNames) {
-        LP[] result = new LP[canonicalNames.length];
-        for (int i = 0; i < canonicalNames.length; i++) {
-            result[i] = findProperty(canonicalNames[i]);
-        }
-        return result;
+    public LP<?,?> findPropertyElseAction(String canonicalName) {
+        LP<?,?> property = findProperty(canonicalName);
+        if(property == null)
+            property = findAction(canonicalName);
+        return property;
     }
-
-    public LP<?, ?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
+    public LCP<?> findProperty(String canonicalName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder());
     }
-
-    public LP<?, ?> findProperty(String namespace, String name, ValueClass... classes) {
-        return BusinessLogicsResolvingUtils.findProperty(this, namespace, name, ClassCanonicalNameUtils.getResolveList(classes));
+    public LAP<?> findAction(String canonicalName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAPFinder());
     }
-
-    public LP<?, ?> findPropertyByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCompoundName(this, compoundName);
+    public LAP<?> findActionByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAPFinder());
+    }
+    public LCP<?> findPropertyByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLCPFinder());
     }
 
     public CustomClass findClassByCompoundName(String compoundName) {

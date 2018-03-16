@@ -271,25 +271,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public boolean checkPropertyViewPermission(String userName, String propertySID) {
-        return securityManager.checkPropertyViewPermission(userName, propertySID);
-    }
-
-    @Override
-    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
-        return securityManager.checkPropertyChangePermission(userName, propertySID);
-    }
-
-    @Override
-    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
-        return securityManager.checkDefaultViewPermission(propertySid);
-    }
-
-    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
-        return securityManager.checkNavigatorElementExportPermission(canonicalName);
-    }
-
-    @Override
     public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
         NavigatorElement element = businessLogics.findNavigatorElement(navigatorElementCanonicalName);
         if (element != null && element instanceof NavigatorForm) {
@@ -309,7 +290,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public byte[] readFile(String canonicalName, String... params) throws RemoteException {
-        LCP<PropertyInterface> property = (LCP) businessLogics.findProperty(canonicalName);
+        LCP<PropertyInterface> property = businessLogics.findProperty(canonicalName);
         if (property != null) {
             if (!(property.property.getType() instanceof FileClass)) {
                 throw new RuntimeException("Property type is distinct from FileClass");
@@ -342,7 +323,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) {
         List<Object> returnList;
         try {
-            LAP property = (LAP) businessLogics.findPropertyByCompoundName(action);
+            LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
                 returnList = executeExternal(property, returnCanonicalNames, params, charset);
             } else {
@@ -383,7 +364,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public List<Object> read(String property, Object[] params, Charset charset) {
         try {
-            LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
+            LCP lcp = businessLogics.findPropertyByCompoundName(property);
             if (lcp != null) {
                 try (DataSession session = createSession()) {
                     return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params, charset));
@@ -405,7 +386,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
             if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {
-                    LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
+                    LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
                     if (returnProperty != null) {
                         returnList.addAll(readReturnProperty(session, returnProperty));
                     } else

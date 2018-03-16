@@ -159,10 +159,6 @@ public abstract class LogicsModule {
         return result;
     }
 
-    public Iterable<LP<?, ?>> getNamedPropertiesAndActions() {
-        return Iterables.<LP<?, ?>>concat(getNamedProperties(), getNamedActions());
-    }
-
     public Iterable<LCP<?>> getNamedProperties() {
         return Iterables.concat(namedProperties.values());
     }
@@ -171,10 +167,6 @@ public abstract class LogicsModule {
         return Iterables.concat(namedActions.values());
     }
 
-    public Iterable<LP<?, ?>> getNamedPropertiesAndActions(String name) {
-        return Iterables.<LP<?, ?>>concat(getNamedProperties(name), getNamedActions(name)); 
-    }
-    
     public Iterable<LCP<?>> getNamedProperties(String name) {
         return createEmptyIfNull(namedProperties.get(name));
     }
@@ -225,14 +217,27 @@ public abstract class LogicsModule {
     }
 
     @NFLazy
-    protected <P extends PropertyInterface, T extends LP<P, ?>> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
+    protected <P extends PropertyInterface, T extends LP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamePolicy());
         propClasses.put(lp, signature);
         addModuleLP(lp);
     }
 
-    protected <T extends LP> void makePropertyPublic(T lp, String name, ResolveClassSet... signature) {
+    protected <T extends LP> void makeActionOrPropertyPublic(T lp, String name, ResolveClassSet... signature) {
+        makeActionOrPropertyPublic(lp, name, Arrays.asList(signature));
+    }
+    protected void makePropertyPublic(LCP<?> lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
+    }
+    protected void makeActionPublic(LAP<?> lp, String name, ResolveClassSet... signature) {
+        makeActionPublic(lp, name, Arrays.asList(signature));
+    }
+
+    protected <P extends PropertyInterface> void makePropertyPublic(LCP<P> lp, String name, List<ResolveClassSet> signature) {
+        makeActionOrPropertyPublic(lp, name, signature);
+    }
+    protected <P extends PropertyInterface> void makeActionPublic(LAP<P> lp, String name, List<ResolveClassSet> signature) {
+        makeActionOrPropertyPublic(lp, name, signature);
     }
 
     public AbstractGroup getGroup(String name) {
@@ -1579,7 +1584,7 @@ public abstract class LogicsModule {
         LAP result = addMFAProp(LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
             String name = nameForDrillDownAction(property, signature);
-            makePropertyPublic(result, name, signature);
+            makeActionPublic(result, name, signature);
         }
         return result;
     }
@@ -1589,7 +1594,7 @@ public abstract class LogicsModule {
         if (property.isNamed()) {
             List<ResolveClassSet> signature = new ArrayList<>();
             String name = nameForDrillDownAction(property, signature);
-            makePropertyPublic(result, name, signature);
+            makeActionPublic(result, name, signature);
         }
         return result;
     }
@@ -2282,12 +2287,20 @@ public abstract class LogicsModule {
         return namespaceToModules;
     }
 
-    public LP<?, ?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+    public LCP<?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
         return resolveManager.findProperty(compoundName, params);
     }
 
-    public LP<?, ?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+    public LCP<?> resolveAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
         return resolveManager.findAbstractProperty(compoundName, params, prioritizeNotEquals);
+    }
+
+    public LAP<?> resolveAction(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findAction(compoundName, params);
+    }
+
+    public LAP<?> resolveAbstractAction(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return resolveManager.findAbstractAction(compoundName, params, prioritizeNotEquals);
     }
 
     public ValueClass resolveClass(String compoundName) throws ResolvingErrors.ResolvingError {

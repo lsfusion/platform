@@ -1420,9 +1420,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
+    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, CalcProperty<?> property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
-            for (CalcProperty prop : (Iterable<CalcProperty>) ((CalcProperty) property).getDepends()) {
+            for (CalcProperty prop : property.getDepends()) {
                 if (prop != property && !calculated.contains(prop)) {
                     recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }

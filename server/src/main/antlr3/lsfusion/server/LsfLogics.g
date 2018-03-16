@@ -46,7 +46,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.CalcPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.ActionPropertyUsage;
-	import lsfusion.server.logics.scripted.ScriptingLogicsModule.CalcOrActionPropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyElseActionUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.AbstractFormPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.FormPropertyUsage;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.ActionOrPropertyUsage;
@@ -74,6 +74,8 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.DebugInfo;
 	import lsfusion.server.logics.property.PropertySettings;
+	import lsfusion.server.logics.property.ActionSettings;
+	import lsfusion.server.logics.property.ActionOrPropertySettings;
 	import javax.mail.Message;
 
 	import lsfusion.server.form.entity.GroupObjectProp;
@@ -890,7 +892,7 @@ actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 }
     :
         ('ACTION' { action = true; } )?
-        pu=propertyUsage { $propUsage = action ? new ActionPropertyUsage($pu.propUsage) : new CalcOrActionPropertyUsage($pu.propUsage); }    
+        pu=propertyUsage { $propUsage = action ? new ActionPropertyUsage($pu.propUsage) : new PropertyElseActionUsage($pu.propUsage); }    
     ;
 
 formFiltersList
@@ -1056,7 +1058,6 @@ formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = 
 
 propertyStatement
 @init {
-	LP property = null;
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<ResolveClassSet> signature = null; 
 	boolean dynamic = true;
@@ -1064,12 +1065,12 @@ propertyStatement
 	
 	String propertyName = null;
 	LocalizedString caption = null;
-	PropertySettings ps = null;
+	LP lp = null;
 }
 @after {
 	if (inPropParseState()) {
-	    if (property != null) // not native
-		    self.setPropertyScriptInfo(property, $text, point);
+	    if (lp != null) // not native
+		    self.setPropertyScriptInfo(lp, $text, point);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
@@ -1078,25 +1079,49 @@ propertyStatement
 			caption = $declaration.caption;
 		}
 		EQ
-		(	(	pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
-			|	ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
-			)
-			((opt=propertyOptions[property, propertyName, caption, context, signature] { ps = $opt.ps; } ) | ';')
-		|	aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
-			(opt=propertyOptions[property, propertyName, caption, context, signature]  { ps = $opt.ps; } )?
-		)
-		{
-			if (inPropParseState() && property != null) { // not native
-				if(ps == null)
-					ps = new PropertySettings();
-				property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps.groupName, ps.isPersistent, ps.isComplex, ps.noHint, ps.table, ps.notNull, ps.notNullResolve, ps.notNullEvent, ps.annotation, ps.isLoggable);
-            }
-        }
+		(	
+		    (
+                { LCP property = null; PropertySettings ps = null; }
+		        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+                ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
+                {
+                    if (inPropParseState() && property != null) { // not native
+                        if(ps == null)
+                            ps = new PropertySettings();
+                        property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
+                        lp = property;
+                    }
+                }
+            )
+        |
+            (
+                { LAP property = null; ActionSettings ps = null; }
+            (
+                (
+                    ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+                    ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
+                )
+    		|	
+    		    (
+    		        aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = (LAP)$aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
+	    		    (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
+                )
+            )
+                {
+                    if (inPropParseState()) {
+                        if(ps == null)
+                            ps = new ActionSettings();
+                        self.addSettingsToAction(property, propertyName, caption, context, signature, ps);
+                        lp = property;
+                    }
+                }
+		    )
+        )
 	;
 
-propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LP property, List<ResolveClassSet> signature]
+propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[false] { $property = $ciPD.property; $signature = $ciPD.signature; }
-	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = $expr.property.property; } }
+	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = (LCP)$expr.property.property; } }
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
@@ -1351,7 +1376,7 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LPWithPa
 expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		self.checkPropertyValue($property.property);
+		self.checkPropertyValue((LCP)$property.property);
 	}
 }
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; } 
@@ -1543,7 +1568,7 @@ abstractPropertyDefinition returns [LCP property, List<ResolveClassSet> signatur
 		')'
 	;
 
-abstractActionDefinition returns [LP property, List<ResolveClassSet> signature]
+abstractActionDefinition returns [LAP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1792,7 +1817,7 @@ groupObjectPropertyDefinition returns [LCP property, List<ResolveClassSet> signa
 reflectionPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	ReflectionPropertyType type = null;
-	PropertyUsage propertyUsage = null;
+	ActionOrPropertyUsage propertyUsage = null;
 }
 @after{
 	if (inPropParseState()) {
@@ -1800,7 +1825,7 @@ reflectionPropertyDefinition returns [LCP property, List<ResolveClassSet> signat
 		$property = self.addScriptedReflectionProperty(type, propertyUsage, $signature);
 	}
 }
-	:	'REFLECTION' t=reflectionPropertyType { type = $t.type; } pu=propertyUsage { propertyUsage = $pu.propUsage; }
+	:	'REFLECTION' t=reflectionPropertyType { type = $t.type; } pu=actionOrPropertyUsage { propertyUsage = $pu.propUsage; }
 	;
 	
 reflectionPropertyType returns [ReflectionPropertyType type]
@@ -2083,49 +2108,69 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
-   //	non-LL : ( semiPropertyOption | nonSemiPropertyOption )* (semiPropertyOption ';' | nonSemiPropertyOption)
+propertyOptions[LCP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
 	:       recursivePropertyOptions[property, propertyName, caption, $ps, context] 
 	;
 
-recursivePropertyOptions[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+recursivePropertyOptions[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
 	:       semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context]) 
 	    |   nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
 	;
 
-semiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+actionOptions[LAP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings ps = new ActionSettings()]
+	:       recursiveActionOptions[property, propertyName, caption, $ps, context] 
+	;
+
+recursiveActionOptions[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
+	:       semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context]) 
+	    |   nonSemiActionOption[property, propertyName, caption, ps, context] recursiveActionOptions[property, propertyName, caption, ps, context]?
+	;
+
+semiActionOrPropertyOption[LP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	inSetting [ps]
-	|	persistentSetting [ps]
-	|	complexSetting [ps]
-	|	noHintSetting [ps]
-	|	tableSetting [ps]
-	|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
 	|	forceViewTypeSetting [property]
 	|	fixedCharWidthSetting [property]
 	|	charWidthSetting [property]
-	|   defaultCompareSetting [property]
-	|	imageSetting [property]
 	|	editKeySetting [property]
+	|   '@@' ann = ID { ps.annotation = $ann.text; }
+    ;
+semiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+    :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
+    |   persistentSetting [ps]
+	|	complexSetting [ps]
+	|	noHintSetting [ps]
+	|	tableSetting [ps]
+	|   defaultCompareSetting [property]
 	|	autosetSetting [property]
-	|	confirmSetting [property]
 	|	regexpSetting [property]
 	|	loggableSetting [ps]
 	|	echoSymbolsSetting [property]
 	|	indexSetting [property]
 	|	setNotNullSetting [ps]
 	|	aggrSetting [property]
-	|	asonEditActionSetting [property]
 	|	eventIdSetting [property]
-	|   '@@' ann = ID { ps.annotation = $ann.text; }
+    ;
+semiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
+    :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
+    |   imageSetting [property]
+	|	shortcutSetting [property, caption != null ? caption : LocalizedString.create(propertyName)]
+	|	asonEditActionSetting [property]
+	|	confirmSetting [property]
     ;
 
-nonSemiPropertyOption[LP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+nonSemiActionOrPropertyOption[LP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :
         onEditEventSetting [property, context]
     |   onContextMenuEventSetting [property, context]
     ;
+nonSemiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
+    ;
+nonSemiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
+    :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
+    ;
 
-inSetting [PropertySettings ps]
+inSetting [ActionOrPropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
 	
@@ -2190,7 +2235,7 @@ shortcutSetting [LP property, LocalizedString caption]
 	:	'ASON' 'CONTEXTMENU' (c=localizedStringLiteral)? usage = actionOrPropertyUsage
 	;
 
-asonEditActionSetting [LP property]
+asonEditActionSetting [LAP property]
 @init {
 	String editActionSID = null;
 }
@@ -2263,7 +2308,7 @@ editKeySetting [LP property]
 		)?
 	;
 
-autosetSetting [LP property]
+autosetSetting [LCP property]
 @init {
 	boolean autoset = false;
 }
@@ -2497,7 +2542,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $property = $emptyADB.property; }
 	;
 
-contextIndependentActionDB returns [LP property, List<ResolveClassSet> signature]
+contextIndependentActionDB returns [LAP property, List<ResolveClassSet> signature]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 	Boolean needToCreateDelegate = null;
@@ -2768,7 +2813,7 @@ idEqualPEList[List<TypedParameter> context, boolean dynamic] returns [List<Strin
 		(',' id=ID { $ids.add($id.text); } EQ expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); } { allowNulls = false; } ('NULL' { allowNulls = true; })? { $nulls.add(allowNulls); })*
 	;
 	
-customActionDefinitionBody returns [LP property, List<ResolveClassSet> signature]
+customActionDefinitionBody returns [LAP property, List<ResolveClassSet> signature]
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
