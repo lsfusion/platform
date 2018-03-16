@@ -122,7 +122,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             for (ImMap<Object, Object> columnEntry : tableColumnResult.values()) {
                 String sidTableColumn = trimToNull((String) columnEntry.get("sidTableColumn"));
                 String canonicalNameTableColumn = trimToNull((String) columnEntry.get("canonicalNameTableColumn"));
-                LP lpProperty = context.getBL().findProperty(canonicalNameTableColumn);
+                LCP lpProperty = context.getBL().findProperty(canonicalNameTableColumn);
                 if(lpProperty != null && lpProperty.property instanceof StoredDataProperty) {
                     CustomRestoreTable table = tables.get(sidTable);
                     if (table == null)
