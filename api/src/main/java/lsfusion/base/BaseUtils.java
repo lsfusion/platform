@@ -2158,7 +2158,7 @@ public class BaseUtils {
                     outStream.writeBytes(file.getName());
                 }
                 byte fileBytes[] = IOUtils.getFileBytes(file);
-                byte ext[] = new byte[0];
+                byte ext[] = null;
                 //int length = fileBytes.length;
 
                 if (custom) {
@@ -2183,16 +2183,9 @@ public class BaseUtils {
         return result;
     }
 
-    public static byte[] mergeFileWithoutExtension(byte[] file) {
-        byte[] result = new byte[1 + file.length];
-        result[0] = (byte) 0;
-        System.arraycopy(file, 0, result, 1, file.length);
-        return result;
-    }
-
     public static byte[] mergeFileAndExtension(byte[] file, byte[] ext) {
         byte[] extBytes = new byte[0];
-        if (ext.length != 0) {
+        if (ext != null) {
             extBytes = new byte[ext.length + 1];
             extBytes[0] = (byte) ext.length;
             System.arraycopy(ext, 0, extBytes, 1, ext.length);
