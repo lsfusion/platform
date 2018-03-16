@@ -35,7 +35,7 @@ public class StringToFileActionProperty extends ScriptingActionProperty {
         try {
             byte[] file = inputValue == null ? new byte[0] : inputValue.getBytes(charset);
             byte[] ext = extension == null ? new byte[0] : extension.getBytes(charset);
-            byte[] fileBytes = ext.length == 0 ? BaseUtils.mergeFileWithoutExtension(file) : BaseUtils.mergeFileAndExtension(file, ext);
+            byte[] fileBytes = BaseUtils.mergeFileAndExtension(file, ext);
             if (fileBytes != null) {
                 findProperty("resultCustomFile[]").change(fileBytes, context);
             }
