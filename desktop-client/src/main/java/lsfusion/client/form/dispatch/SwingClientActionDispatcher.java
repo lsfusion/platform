@@ -510,9 +510,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public byte[] execute(ThreadDumpClientAction action) {
-        String text = "";
-        for(StackTraceElement[] stackTrace : Thread.getAllStackTraces().values())
-            text += stackTraceToString(stackTrace) + "\n";
+        String text = dumpStackTraces();
         File file = null;
         try {
             file = File.createTempFile("threaddump", ".txt");
@@ -526,7 +524,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    private String stackTraceToString(StackTraceElement[] stackTrace) {
+    public static String dumpStackTraces() {
+        String text = "";
+        for(Map.Entry<Thread, StackTraceElement[]> stackTrace : Thread.getAllStackTraces().entrySet())
+            text += stackTrace.getKey().toString() + '\n' + stackTraceToString(stackTrace.getValue()) + '\n';
+        return text;
+    }
+
+    private static String stackTraceToString(StackTraceElement[] stackTrace) {
         StringBuilder sb = new StringBuilder();
         for (StackTraceElement element : stackTrace) {
             sb.append(element.toString());
