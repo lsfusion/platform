@@ -10,6 +10,7 @@ public class FixFlexBasisComposite extends FlexPanel {
     public Widget widget;
     
     public FixFlexBasisComposite() {
+        super(true);
     }
     
     protected void initWidget(Widget widget) {
