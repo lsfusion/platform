@@ -42,7 +42,7 @@ public class PropertyFormEntity extends FormEntity {
         ImSet<ObjectEntity> objects = groupObject.getObjects();
         for(ObjectEntity object : objects)
             addPropertyDraw(LM.getObjValueProp(this, object), version, object);
-        addPropertyDraw(recognizeGroup, prev, true, true, version, objects.toList().toArray(new ObjectEntity[objects.size()]));
+        addPropertyDraw(recognizeGroup, prev, true, null, true, version, objects.toList().toArray(new ObjectEntity[objects.size()]));
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {

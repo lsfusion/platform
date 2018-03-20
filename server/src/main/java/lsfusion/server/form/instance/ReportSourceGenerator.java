@@ -450,5 +450,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         return formInterface.getOrderGroups().filterOrderIncl(groups.immutable());
     }
 
+    public FormSourceInterface<?, ?, ?, ?, Order, Obj, PropertyReaderInstance> getFormInterface() {
+        return formInterface;
+    }
+
     public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND}
 }

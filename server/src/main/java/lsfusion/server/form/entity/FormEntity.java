@@ -443,19 +443,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addPropertyDraw(groups, false, version, object);
     }
 
-    public void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, Version version, Object... groups) {
-        addPropertyDraw(groups, false, version, object1, object2);
-    }
-
-    public void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, Version version, Object... groups) {
-        addPropertyDraw(groups, false, version, object1, object2, object3);
-    }
-
-    public void addPropertyDraw(ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, Version version, Object... groups) {
-        addPropertyDraw(groups, false, version, object1, object2, object3, object4);
-    }
-
-    private void addPropertyDraw(Object[] groups, boolean useObjSubsets, Version version, ObjectEntity... objects) {
+    public void addPropertyDraw(Object[] groups, boolean useObjSubsets, Version version, ObjectEntity... objects) {
 
         for (int i = 0; i < groups.length; i++) {
 
@@ -480,16 +468,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return addPropertyDraw(group, upClasses, null, false, version, objects);
     }
 
-    public List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, Version version, ObjectEntity... objects) {
-        return addPropertyDraw(group, false, null, false, version, objects);
-    }
-
     public void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, Version version, ObjectEntity... objects) {
         addPropertyDraw(group, false, upClasses, null, useObjSubsets, version, objects);
-    }
-
-    protected void addPropertyDraw(AbstractNode group, boolean prev, boolean upClasses, boolean useObjSubsets, Version version, ObjectEntity... objects) {
-        addPropertyDraw(group, prev, upClasses, null, useObjSubsets, version, objects);
     }
 
     protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, Version version, ObjectEntity... objects) {

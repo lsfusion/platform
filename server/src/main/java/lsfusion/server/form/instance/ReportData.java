@@ -49,6 +49,12 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
 
     public int getRowCount() { return keyRows.size(); }
 
+    public static <OI, O extends OI, PRI> String getPropFullID(String id, PRI reader, ReportGenerationDataType reportType, FormSourceInterface<?,?,?,?, OI, O, PRI> formInterface) {
+        if(reportType.isPrintMessage()) // возможно еще для CSV надо
+            return id + "." + formInterface.getID(reader);
+        return id;        
+    }
+    
     public void serialize(DataOutputStream outStream, ReportGenerationDataType reportType, FormReportInterface<?, ?, ?, ?, Order, Obj, PropertyReader> formInterface) throws IOException {
         outStream.writeBoolean(keyRows.size() == 0);
         if (keyRows.size() == 0 && reportType.isPrintJasper()) return;
@@ -61,7 +67,7 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
 
         outStream.writeInt(properties.size());
         for(Pair<String, PropertyReader> propertyData : properties) {
-            outStream.writeUTF(propertyData.first);
+            outStream.writeUTF(getPropFullID(propertyData.first, propertyData.second, reportType, formInterface));
             outStream.writeInt(formInterface.getTypeID(propertyData.second));
             outStream.writeInt(formInterface.getID(propertyData.second));
             PropertyType type = formInterface.getPropertyType(propertyData.second);
@@ -82,10 +88,10 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
         }
     }
 
-    public Map<String, String> getPropertyCaptionsMap(FormView formView) throws IOException {
+    public Map<String, String> getPropertyCaptionsMap(FormView formView, ReportGenerationDataType reportType, FormSourceInterface<?,?,?,?, Order, Obj, PropertyReader> formInterface) throws IOException {
         Map<String, String> propertyCaptionsMap = new HashMap<>();
         for (Pair<String, PropertyReader> propertyData : properties) {
-            propertyCaptionsMap.put(propertyData.first, ThreadLocalContext.localize(formView.getProperty(((PropertyDrawEntity) propertyData.second)).getCaption()));
+            propertyCaptionsMap.put(getPropFullID(propertyData.first, propertyData.second, reportType, formInterface), ThreadLocalContext.localize(formView.getProperty(((PropertyDrawEntity) propertyData.second)).getCaption()));
         }
         return propertyCaptionsMap;
     }

@@ -25,7 +25,6 @@ public interface FormReportInterface<PD extends PRI, GO, PO, CPO extends OI, OI,
     ClassViewType getGroupViewType(GO go); // interface
 
     byte getTypeID(PRI pri);
-    int getID(PRI pri);
     PropertyType getPropertyType(PRI pri);
 
     GO getGroupByID(int id);

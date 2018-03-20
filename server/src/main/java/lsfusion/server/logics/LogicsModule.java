@@ -2221,54 +2221,6 @@ public abstract class LogicsModule {
         form.addHintsIncrementTable(getVersion(), lps);
     }
 
-    public List<PropertyDrawEntity> addFormPropertyDraw(FormEntity form, AbstractNode group, boolean upClasses, ObjectEntity... objects) {
-        return form.addPropertyDraw(group, upClasses, getVersion(), objects);
-    }
-    
-    public void addFormPropertyDraw(FormEntity form, AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
-        form.addPropertyDraw(group, upClasses, useObjSubsets, getVersion(), objects);
-    }
-
-    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, Object... groups) {
-        form.addPropertyDraw(object1, object2, object3, getVersion(), groups);
-    }
-
-    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, Object... groups) {
-        form.addPropertyDraw(object1, object2, getVersion(), groups);
-    }
-
-    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, Object... groups) {
-        form.addPropertyDraw(object1, object2, object3, object4, getVersion(), groups);
-    }
-
-    public void addFormPropertyDraw(FormEntity form, ObjectEntity object, Object... groups) {
-        form.addPropertyDraw(object, getVersion(), groups);
-    }
-
-    public PropertyDrawEntity addFormPropertyDraw(FormEntity form, LP property, PropertyObjectInterfaceEntity... objects) {
-        return form.addPropertyDraw(property, getVersion(), objects);
-    }
-
-    public <P extends PropertyInterface> PropertyDrawEntity addFormPropertyDraw(FormEntity form, LP<P, ?> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
-        return form.addPropertyDraw(property, groupObject, getVersion(), objects);
-    }
-
-    public void addFormPropertyDraw(FormEntity form, LP[] properties, ObjectEntity... objects) {
-        form.addPropertyDraw(properties, getVersion(), objects);
-    }
-
-    public void addFormRegularFilterGroup(FormEntity form, RegularFilterGroupEntity group) {
-        form.addRegularFilterGroup(group, getVersion());
-    }
-
-    protected PropertyDrawEntity<?> getFormPropertyDraw(FormEntity form, LP<?, ?> lp, ObjectEntity object) {
-        return form.getNFPropertyDraw(lp.property, object.groupTo, getVersion());
-    }
-
-    public PropertyDrawEntity getFormPropertyDraw(FormEntity form, AbstractNode group, ObjectEntity object) {
-        return form.getNFPropertyDraw(group, object, getVersion());
-    }
-
     public int getModuleComplexity() {
         return 1;
     }
