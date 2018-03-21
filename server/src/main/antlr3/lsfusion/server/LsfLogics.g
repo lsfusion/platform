@@ -534,8 +534,7 @@ formCommonGroupObject returns [ScriptingGroupObject groupObject]
 	;
 
 formGroupObjectViewType returns [ClassViewType type]
-	:
-		viewType=classViewType { $type = $viewType.type; }
+	:	viewType=classViewType { $type = $viewType.type; }
 	;
 
 formGroupObjectInitViewType returns [boolean isInitType]
@@ -1096,17 +1095,17 @@ propertyStatement
         |
             (
                 { LAP property = null; ActionSettings ps = null; }
-            (
-                (
-                    ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
-                    ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
-                )
-    		|	
-    		    (
-    		        aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = (LAP)$aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
-	    		    (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
-                )
-            )
+	            (
+	                (
+	                    ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+	                    ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
+	                )
+	    		|	
+	    		    (
+	    		        aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = (LAP)$aDB.property.property; signature = self.getClassesFromTypedParams(context); }}
+		    		    (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
+	                )
+	            )
                 {
                     if (inPropParseState()) {
                         if(ps == null)
@@ -2109,21 +2108,21 @@ propertyName returns [String name]
 	;
 
 propertyOptions[LCP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
-	:       recursivePropertyOptions[property, propertyName, caption, $ps, context] 
+	:	recursivePropertyOptions[property, propertyName, caption, $ps, context] 
 	;
 
 recursivePropertyOptions[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-	:       semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context]) 
-	    |   nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
+	:	semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context]) 
+	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
 	;
 
 actionOptions[LAP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings ps = new ActionSettings()]
-	:       recursiveActionOptions[property, propertyName, caption, $ps, context] 
+	:	recursiveActionOptions[property, propertyName, caption, $ps, context] 
 	;
 
 recursiveActionOptions[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-	:       semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context]) 
-	    |   nonSemiActionOption[property, propertyName, caption, ps, context] recursiveActionOptions[property, propertyName, caption, ps, context]?
+	:	semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context]) 
+	|	nonSemiActionOption[property, propertyName, caption, ps, context] recursiveActionOptions[property, propertyName, caption, ps, context]?
 	;
 
 semiActionOrPropertyOption[LP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
@@ -2134,6 +2133,7 @@ semiActionOrPropertyOption[LP property, String propertyName, LocalizedString cap
 	|	editKeySetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
+    
 semiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
     |   persistentSetting [ps]
@@ -2150,6 +2150,7 @@ semiPropertyOption[LCP property, String propertyName, LocalizedString caption, P
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
     ;
+    
 semiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
     |   imageSetting [property]
@@ -2159,13 +2160,14 @@ semiActionOption[LAP property, String propertyName, LocalizedString caption, Act
     ;
 
 nonSemiActionOrPropertyOption[LP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
-    :
-        onEditEventSetting [property, context]
-    |   onContextMenuEventSetting [property, context]
+    :	onEditEventSetting [property, context]
+    |	onContextMenuEventSetting [property, context]
     ;
+    
 nonSemiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
     ;
+    
 nonSemiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
     :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
     ;
@@ -2568,22 +2570,24 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
     boolean edit = false;
 }
 	:
-	(   (   formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } } 
-	        ('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $props = $list.props; })?
-	        {
-	            if(inPropParseState())
-	                $mapped = MappedForm.create(form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
-	        }
+	(   
+		(	formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } } 
+			('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $props = $list.props; })?
+			{
+				if(inPropParseState())
+					$mapped = MappedForm.create(form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
+			}
 		)
 	    |
-	    (   ('LIST' | ('EDIT' { edit = true; } ))
-	         cls = classId { if(inPropParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
-	         (object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })
-	        {
-	            if(inPropParseState())
-	                $mapped = MappedForm.create(mappedCls, edit);
-	        }
-	    ))
+	    (	('LIST' | ('EDIT' { edit = true; } ))
+			cls = classId { if(inPropParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
+			(object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })
+			{
+				if(inPropParseState())
+					$mapped = MappedForm.create(mappedCls, edit);
+			}
+		)
+	)
 ;
 
 
@@ -4177,8 +4181,8 @@ metaCodeIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:		firstId=metaCodeId { ids.add($firstId.sid); }
-			( ',' nextId=metaCodeId { ids.add($nextId.sid); })* 
+	:	firstId=metaCodeId { ids.add($firstId.sid); }
+		( ',' nextId=metaCodeId { ids.add($nextId.sid); })* 
 	;
 
 
