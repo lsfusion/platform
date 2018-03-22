@@ -2982,7 +2982,7 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LPWithParams 
 		$property = self.addScriptedConfirmProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
 	}
 }
-	:	('CONFIRM' | 'ASK')
+	:	'ASK'
         pe=propertyExpression[context, false]
         { newContext = new ArrayList<TypedParameter>(context); }
 	    ((varID=ID { if (inPropParseState()) { self.getParamIndex(self.new TypedParameter("BOOLEAN", $varID.text), newContext, true, insideRecursion); } } EQ)? 'YESNO' { yesNo = true;} )?
