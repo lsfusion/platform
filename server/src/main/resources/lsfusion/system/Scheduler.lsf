@@ -50,16 +50,23 @@ order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
 script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
 scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
-property = DATA Property (ScheduledTaskDetail);
-captionProperty 'Свойство' (ScheduledTaskDetail scheduledTaskDetail) = caption(property(scheduledTaskDetail)) CHARWIDTH 50;
-canonicalNameProperty 'Код свойства' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(property(scheduledTaskDetail)) CHARWIDTH 50;
-parameter 'Параметр свойства' = DATA TEXT (ScheduledTaskDetail);
-classProperty 'Класс свойства' (ScheduledTaskDetail scheduledTaskDetail) = class(property(scheduledTaskDetail)) CHARWIDTH 25;
-returnProperty 'Возвращаемый класс' (ScheduledTaskDetail scheduledTaskDetail) = return(property(scheduledTaskDetail)) CHARWIDTH 25;
+property = DATA Property (ScheduledTaskDetail); // temporary for migration
+action = DATA Action (ScheduledTaskDetail);
+captionAction 'Действие' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
+canonicalNameAction 'Код действия' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
+parameter 'Параметр действия' = DATA TEXT (ScheduledTaskDetail);
+classAction 'Класс действия' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
 timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
 ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
-CONSTRAINT script(ScheduledTaskDetail d) AND property(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
+// temporary for migration
+copyAction() = {
+    FOR Action action = actionCanonicalName(canonicalName(property(ScheduledTaskDetail td))) INLINE DO {
+        action(td) <- action;
+    }    
+}
+
+CONSTRAINT script(ScheduledTaskDetail d) AND action(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
 
 CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
@@ -109,7 +116,7 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(S
                                          OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
                                          OR CHANGED (active(t))) OR
                                                 (((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
-                                         OR CHANGED (scheduledTask(td)) OR CHANGED (property(td)) 
+                                         OR CHANGED (scheduledTask(td)) OR CHANGED (action(td)) 
                                          OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
                                          AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
@@ -129,9 +136,9 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (t) NEW, DELETE GRID
          
     OBJECTS td=ScheduledTaskDetail
-    PROPERTIES (td) active, ignoreExceptions, order, captionProperty, 
-                    canonicalNameProperty, parameter, classProperty, 
-                    returnProperty, timeout, script PANEL
+    PROPERTIES (td) active, ignoreExceptions, order, captionAction, 
+                    canonicalNameAction, parameter, classAction, 
+                    timeout, script PANEL
     PROPERTIES (td) NEW, DELETE GRID
     
     OBJECTS tl=ScheduledTaskLog LAST
@@ -209,10 +216,9 @@ DESIGN scheduledTask {
     MOVE TOOLBARBOX;
 }
 
-FORM scheduledTaskProperties 'Свойства'
-    OBJECTS p = Property
-    PROPERTIES(p) READONLY caption, canonicalName, class, return
-    FILTERS return(p) == 'ActionClass'
+FORM scheduledTaskProperties 'Действия'
+    OBJECTS p = Action
+    PROPERTIES(p) READONLY caption, canonicalName, class
 ;
 
 NAVIGATOR {

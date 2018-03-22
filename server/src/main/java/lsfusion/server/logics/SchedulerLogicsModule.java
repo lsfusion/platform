@@ -32,7 +32,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP parameterScheduledTaskDetail;
     public LCP scheduledTaskScheduledTaskDetail;
 
-    public LCP canonicalNamePropertyScheduledTaskDetail;
+    public LCP canonicalNameActionScheduledTaskDetail;
     
     public LCP resultScheduledTaskLog;
     public LCP exceptionOccurredScheduledTaskLog;
@@ -46,6 +46,8 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public LCP scriptText;
     public LAP evalScript;
+    
+    public LAP copyAction;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/Scheduler.lsf"), "/lsfusion/system/Scheduler.lsf", baseLM, BL);
@@ -82,7 +84,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         parameterScheduledTaskDetail = findProperty("parameter[ScheduledTaskDetail]");
         scheduledTaskScheduledTaskDetail = findProperty("scheduledTask[ScheduledTaskDetail]");
 
-        canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNameProperty[ScheduledTaskDetail]");
+        canonicalNameActionScheduledTaskDetail = findProperty("canonicalNameAction[ScheduledTaskDetail]");
 
         resultScheduledTaskLog = findProperty("result[ScheduledTaskLog]");
         exceptionOccurredScheduledTaskLog = findProperty("exceptionOccurred[ScheduledTaskLog]");
@@ -96,5 +98,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
         scriptText = findProperty("scriptText[]");
         evalScript = findAction("evalScript[]");
+
+        copyAction = findAction("copyAction[]");
     }
 }

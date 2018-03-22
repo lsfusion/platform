@@ -479,15 +479,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             applyNavigatorElementPolicy(qne.execute(session).values(), policy);
 
             QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
-            Expr propExpr = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
+            Expr actionOrPropertyExpr = qp.getMapExprs().get("propertyCN");
+            userExpr = qp.getMapExprs().get("userId");
+            Expr propExpr = reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr);
             qp.and(propExpr.getWhere());
-            qp.and(qp.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qp.and(securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere().or(
-                    securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere()));
+            qp.and(userExpr.compare(userObject, Compare.EQUALS));
+            qp.and(securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr).getWhere().or(
+                    securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr).getWhere()));
 
             qp.addProperty("cn", propExpr);
-            qp.addProperty("fullForbidView", securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("fullForbidView", securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr));
+            qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             for (ImMap<String, Object> valueMap : propValues) {

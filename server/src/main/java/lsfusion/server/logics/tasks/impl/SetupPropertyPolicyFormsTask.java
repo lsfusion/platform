@@ -6,33 +6,30 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
 
-public class SetupPropertyPolicyFormsTask extends GroupPropertiesTask {
-
-    LAP<?> setupPolicyForPropByCN;
+public class SetupPropertyPolicyFormsTask extends SetupActionOrPropertyPolicyFormsTask {
 
     public String getCaption() {
         return "Setup property policy";
     }
 
     @Override
-    protected boolean prerun() {
-        if (SystemProperties.lightStart) {
-            return false;
-        }
+    protected FormEntity getForm() {
+        return getBL().securityLM.propertyPolicyForm;
+    }
 
-        BusinessLogics BL = getBL();
-        FormEntity policyFormEntity = BL.securityLM.propertyPolicyForm;
-        ObjectEntity propertyObj = policyFormEntity.getObject("p");
-        LAP<?> setupPolicyFormProperty = BL.LM.addMFAProp(LocalizedString.NONAME, policyFormEntity, new ObjectEntity[]{propertyObj}, true);
-        setupPolicyForPropByCN = BL.LM.addJoinAProp(setupPolicyFormProperty, BL.reflectionLM.propertyCanonicalName, 1);
-        return true;
+    @Override
+    protected LCP getCanonicalName() {
+        return getBL().reflectionLM.propertyCanonicalName;
     }
 
     @Override
     protected void runTask(Property property) {
-        getBL().setupPropertyPolicyForms(setupPolicyForPropByCN, property);
+        if(property instanceof CalcProperty)
+            getBL().setupPropertyPolicyForms(setupPolicyByCN, property, false);
     }
 }

@@ -663,11 +663,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
 
-        // temporary for migration
-//        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_ADDFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
-        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
-        DBManager.copyAccess.put(result.property.getCanonicalName(), oldName);
-        
         return result;
     }
 
@@ -677,10 +672,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // issue #1725 Потенциальное совпадение канонических имен различных свойств
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
         makeActionPublic(result, name, form.object.getResolveClassSet());
-
-        // temporary for migration
-        String oldName = PropertyCanonicalNameUtils.createName(getNamespace(), "_EDITFORM" + scope + getClassPrefix(cls) + getFormPrefix(form.form), new ArrayList<ResolveClassSet>());
-        DBManager.copyAccess.put(result.property.getCanonicalName(), oldName);
 
         return result;
     }

@@ -25,6 +25,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
@@ -86,6 +87,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     };
 
     private TreeMap<DBVersion, List<SIDChange>> propertyCNChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> actionCNChanges = new TreeMap<>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(dbVersionComparator);
@@ -945,13 +947,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Migrating reflection properties and actions");
             if(!migrateReflectionProperties(oldDBStructure))
                 throw new RuntimeException("Error while migrating reflection properties and actions");
-
-            if(newDBStructure.version >= 24 && oldDBStructure.version < 24) {
-                startLogger.info("Migrating ADDFORMS access");
-                if (!migrateAccessProperties())
-                    throw new RuntimeException("Error while migrating ADDFORMS access");
-            }
-
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
@@ -969,7 +964,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             
             if(oldDBStructure.version < NavElementDBVersion)
                 DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
-            
+
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) {
+                startLogger.info("Migrating properties to actions data started");
+                if (!synchronizePropertyEntities(sql))
+                    throw new RuntimeException("Error while migrating properties to actions");
+                startLogger.info("Migrating properties to actions data ended");
+            }
+
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -1001,6 +1003,118 @@ public class DBManager extends LogicsManager implements InitializingBean {
             String oldHashModules = (String) businessLogics.LM.findProperty("hashModules[]").read(session);
             hashModules = calculateHashModules();
             return checkHashModulesChanged(oldHashModules, hashModules);
+        }
+    }
+
+    // temporary for migration
+    public boolean synchronizePropertyEntities(SQLSession sql) {
+        boolean result = synchronizePropertyEntities(true, sql);
+        if(!result)
+            return false;
+        try {
+            try(DataSession session = createSession(sql)) {
+                businessLogics.schedulerLM.copyAction.execute(session, getStack());
+                businessLogics.securityLM.copyAccess.execute(session, getStack());
+                result = session.apply(businessLogics, getStack());
+            }
+            return result;
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    private boolean needsToBeSynchronized(Property property) {
+        return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
+    }
+    public boolean synchronizePropertyEntities(boolean actions, SQLSession sql) {
+
+        startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities collecting data started");
+        ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+        ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
+        ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
+        ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
+        ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
+        ImportField isSetNotNullPropertyField = new ImportField(reflectionLM.propertyIsSetNotNullValueClass);
+        ImportField returnPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
+        ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
+        ImportField complexityPropertyField = new ImportField(LongClass.instance);
+        ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
+        ImportField annotationPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
+        ImportField statsPropertyField = new ImportField(ValueExpr.COUNTCLASS);
+
+        ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
+        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
+        ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
+
+        try {
+            List<List<Object>> dataProperty = new ArrayList<>();
+            for (Property property : businessLogics.getOrderProperties()) {
+                if (needsToBeSynchronized(property)) {
+                    if((property instanceof ActionProperty) != actions)
+                        continue;
+
+                    String returnClass = "";
+                    String classProperty = "";
+                    String tableSID = "";
+                    Long complexityProperty = null;
+
+                    try {
+                        classProperty = property.getClass().getSimpleName();
+
+                        if(property instanceof CalcProperty) {
+                            CalcProperty calcProperty = (CalcProperty)property;
+                            complexityProperty = calcProperty.getComplexity();
+                            if (calcProperty.mapTable != null) {
+                                tableSID = calcProperty.mapTable.table.getName();
+                            } else {
+                                tableSID = "";
+                            }
+                        }
+
+                        returnClass = property.getValueClass(ClassType.syncPolicy).getSID();
+                    } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
+                    }
+
+                    dataProperty.add(asList(property.getOrCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
+                            property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
+                            property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
+                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer) Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
+                }
+            }
+
+            startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities integration service started");
+            List<ImportProperty<?>> properties = new ArrayList<>();
+            properties.add(new ImportProperty(canonicalNamePropertyField, nameByObject.getMapping(keyProperty)));
+            properties.add(new ImportProperty(dbNamePropertyField, reflectionLM.dbNameProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(tableSIDPropertyField, reflectionLM.tableSIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(annotationPropertyField, reflectionLM.annotationProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(statsPropertyField, reflectionLM.statsProperty.getMapping(keyProperty)));
+
+            List<ImportDelete> deletes = new ArrayList<>();
+            deletes.add(new ImportDelete(keyProperty, LM.is(customClass).getMapping(keyProperty), false));
+
+            ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
+                    storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
+                    classPropertyField, complexityPropertyField, tableSIDPropertyField, annotationPropertyField, statsPropertyField), dataProperty);
+
+            try (DataSession session = createSession(sql)) {
+                session.pushVolatileStats("RM_PE");
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                boolean result = session.apply(businessLogics, getStack());
+                startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities finished");
+                return result;
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 
@@ -1162,12 +1276,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private boolean migrateReflectionProperties(OldDBStructure oldDBStructure) {
+        if(!migrateReflectionProperties(oldDBStructure, false))
+            return false;
+        return migrateReflectionProperties(oldDBStructure, true);
+    }
+    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, boolean actions) {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
-        Map<String, String> nameChanges = getChangesAfter(oldDBVersion, propertyCNChanges);
+        Map<String, String> nameChanges = getChangesAfter(oldDBVersion, actions ? actionCNChanges : propertyCNChanges);
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(oldCanonicalNameField));
+        ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
+        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
+        ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(oldCanonicalNameField));
 
         try {
             List<List<Object>> data = new ArrayList<>();
@@ -1176,7 +1298,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
 
             List<ImportProperty<?>> properties = new ArrayList<>();
-            properties.add(new ImportProperty(newCanonicalNameField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(newCanonicalNameField, nameByObject.getMapping(keyProperty)));
 
             ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
 
@@ -1186,35 +1308,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 return session.apply(businessLogics, getStack());
             }
         } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    // temporary
-    public static Map<String, String> copyAccess = new HashMap<>(); 
-    private <P extends PropertyInterface> boolean migrateAccessProperties() {
-        try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
-            SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("maccp", StringClass.text, StringClass.text);
-            table.writeRows(session.sql, OperationOwner.unknown, MapFact.fromJavaMap(copyAccess).mapKeyValues(new GetValue<DataObject, String>() {
-                public DataObject getMapValue(String value) {
-                    return new DataObject(value, StringClass.text);
-                }
-            }, new GetValue<ObjectValue, String>() {
-                public ObjectValue getMapValue(String value) {
-                    return new DataObject(value, StringClass.text);
-                }
-            }));
-
-            try {
-                LCP lp = businessLogics.securityLM.dataCopyAccess;
-                session.change(((LCP<P>) lp).property, SingleKeyPropertyUsage.getChange(table, ((LCP<P>) lp).listInterfaces.single()));
-            } finally {
-                table.drop(session.sql, OperationOwner.unknown);
-            }
-
-            businessLogics.securityLM.copyAccess.execute(session, getStack());
-            return session.apply(businessLogics, getStack());
-        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -1491,19 +1584,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
-    private void reRunMigrationScript() {
-        migrationScriptWasRead = false;
-        
-        propertyCNChanges.clear();
-        propertyDrawNameChanges.clear();
-        storedPropertyCNChanges.clear();
-        classSIDChanges.clear(); 
-        tableSIDChanges.clear();
-        objectSIDChanges.clear();
-        
-        runMigrationScript();
-    }
-
     private synchronized void runMigrationScript() {
         if (ignoreMigration) {
             //todo: добавить возможность задавать расположение для migration.script, чтобы можно было запускать разные логики из одного модуля
@@ -1706,6 +1786,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if (!propertyCNChanges.isEmpty() && curVersion.compare(propertyCNChanges.lastKey()) < 0) {
             curVersion = propertyCNChanges.lastKey();
         }
+        if (!actionCNChanges.isEmpty() && curVersion.compare(actionCNChanges.lastKey()) < 0) {
+            curVersion = actionCNChanges.lastKey();
+        }
         if (!classSIDChanges.isEmpty() && curVersion.compare(classSIDChanges.lastKey()) < 0) {
             curVersion = classSIDChanges.lastKey();
         }
@@ -1737,6 +1820,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if (stored) {
             addSIDChange(storedPropertyCNChanges, version, oldName + oldSignature, newName + newSignature);
         }
+    }   
+    public void addActionCNChange(String version, String oldName, String oldSignature, String newName, String newSignature) {
+        if (newSignature == null) {
+            newSignature = oldSignature;
+        } 
+        addSIDChange(actionCNChanges, version, oldName + oldSignature, newName + newSignature);
     }   
     
     public void addClassSIDChange(String version, String oldSID, String newSID) {
@@ -2152,7 +2241,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = NavElementDBVersion;
+            version = 28;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

@@ -12,6 +12,7 @@ import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
@@ -412,8 +413,12 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyEntities() {
+        synchronizePropertyEntities(true);
+        synchronizePropertyEntities(false);
+    }
+    public void synchronizePropertyEntities(boolean actions) {
 
-        startLogger.info("synchronizePropertyEntities collecting data started");
+        startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities collecting data started");
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
@@ -427,12 +432,18 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField annotationPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
         ImportField statsPropertyField = new ImportField(ValueExpr.COUNTCLASS);
 
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
+        ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
+        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
+        ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
 
         try {
             List<List<Object>> dataProperty = new ArrayList<>();
             for (Property property : businessLogics.getOrderProperties()) {
                 if (needsToBeSynchronized(property)) {
+                    if((property instanceof ActionProperty) != actions)
+                        continue;
+                    
                     String returnClass = "";
                     String classProperty = "";
                     String tableSID = "";
@@ -462,9 +473,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 }
             }
 
-            startLogger.info("synchronizePropertyEntities integration service started");
+            startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities integration service started");
             List<ImportProperty<?>> properties = new ArrayList<>();
-            properties.add(new ImportProperty(canonicalNamePropertyField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(canonicalNamePropertyField, nameByObject.getMapping(keyProperty)));
             properties.add(new ImportProperty(dbNamePropertyField, reflectionLM.dbNameProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
@@ -478,7 +489,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             properties.add(new ImportProperty(statsPropertyField, reflectionLM.statsProperty.getMapping(keyProperty)));
 
             List<ImportDelete> deletes = new ArrayList<>();
-            deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
+            deletes.add(new ImportDelete(keyProperty, LM.is(customClass).getMapping(keyProperty), false));
 
             ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
                     storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
@@ -490,7 +501,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics, getStack());
-                startLogger.info("synchronizePropertyEntities finished");
+                startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities finished");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -498,7 +509,11 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizePropertyParents() {
-        startLogger.info("synchronizePropertyParents collecting data started");
+        synchronizePropertyParents(true);
+        synchronizePropertyParents(false);
+    }
+    public void synchronizePropertyParents(boolean actions) {
+        startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents collecting data started");
 
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
@@ -506,12 +521,17 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         List<List<Object>> dataParent = new ArrayList<>();
         for (Property property : businessLogics.getOrderProperties()) {
-            if (needsToBeSynchronized(property))
+            if (needsToBeSynchronized(property)) {
+                if((property instanceof ActionProperty) != actions)
+                    continue;
                 dataParent.add(asList(property.getOrCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+            }
         }
 
-        startLogger.info("synchronizePropertyParents integration service started");
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
+        startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents integration service started");
+        ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
+        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
+        ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<>();
 
@@ -526,7 +546,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics, getStack());
-                startLogger.info("synchronizePropertyParents finished");
+                startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

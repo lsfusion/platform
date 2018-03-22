@@ -29,6 +29,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass tableColumn;
     public ConcreteCustomClass dropColumn;
     public ConcreteCustomClass property;
+    public ConcreteCustomClass action;
     public ConcreteCustomClass groupObject;
     
     public LCP captionPropertyGroup;
@@ -41,8 +42,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP parentProperty;
     public LCP numberProperty;
     public LCP dbNameProperty;
+    public LCP canonicalNameActionOrProperty;
+    public LCP canonicalNameAction;
     public LCP canonicalNameProperty;
-    public LCP shortNameProperty;
     public LCP loggableProperty;
     public LCP userLoggableProperty;
     public LCP storedProperty;
@@ -58,6 +60,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP overStatsProperty;
     public LCP maxStatsProperty;
     public LCP propertyCanonicalName;
+    public LCP actionCanonicalName;
     public LCP propertyTableSID;
     public LCP quantityProperty;
     public LCP quantityTopProperty;
@@ -206,6 +209,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableColumn = (ConcreteCustomClass) findClass("TableColumn");
         dropColumn = (ConcreteCustomClass) findClass("DropColumn");
         property = (ConcreteCustomClass) findClass("Property");
+        action = (ConcreteCustomClass) findClass("Action");
         groupObject = (ConcreteCustomClass) findClass("GroupObject");
     }
 
@@ -226,16 +230,17 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertyGroupSID = findProperty("propertyGroup[VARSTRING[100]]");
 
         // Свойства
-        parentProperty = findProperty("parent[Property]");
+        parentProperty = findProperty("parent[ActionOrProperty]");
         tableSIDProperty = findProperty("tableSID[Property]");
         annotationProperty = findProperty("annotation[Property]");
         statsProperty = findProperty("stats[Property]");
         overStatsProperty = findProperty("overStats[Property]");
         maxStatsProperty = findProperty("maxStatsProperty[]");
-        numberProperty = findProperty("number[Property]");
+        numberProperty = findProperty("number[ActionOrProperty]");
         dbNameProperty = findProperty("dbName[Property]");
+        canonicalNameActionOrProperty = findProperty("canonicalName[ActionOrProperty]");
+        canonicalNameAction = findProperty("canonicalName[Action]");
         canonicalNameProperty = findProperty("canonicalName[Property]");
-        shortNameProperty = findProperty("shortName[Property]");
         loggableProperty = findProperty("loggable[Property]");
         userLoggableProperty = findProperty("userLoggable[Property]");
         storedProperty = findProperty("stored[Property]");
@@ -245,6 +250,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         complexityProperty = findProperty("complexity[Property]");
         captionProperty = findProperty("caption[Property]");
         propertyCanonicalName = findProperty("propertyCanonicalName[VARSTRING[512]]");
+        actionCanonicalName = findProperty("actionCanonicalName[VARSTRING[512]]");
         propertyTableSID = findProperty("propertyTable[VARSTRING[100],VARSTRING[100]]");
         quantityProperty = findProperty("quantity[Property]");
         quantityTopProperty = findProperty("quantityTop[Property]");

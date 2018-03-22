@@ -6,9 +6,13 @@ CLASS UserRole 'Роль';
 TABLE userRole (UserRole);
 TABLE customUserRole (CustomUser, UserRole);
 TABLE userUserRole (User, UserRole);
+TABLE userRoleActionOrProperty (UserRole, ActionOrProperty);
 TABLE userRoleProperty (UserRole, Property);
+TABLE userRoleAction (UserRole, Action);
 TABLE userRolePropertyGroup (UserRole, PropertyGroup);
+TABLE userActionOrProperty (User, ActionOrProperty);
 TABLE userProperty (User, Property);
+TABLE userAction (User, Action);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
 name 'Наименование' = DATA VARISTRING[100](UserRole);
@@ -74,8 +78,33 @@ levelPermitViewParent (propertyGroup) =
 levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitView (propertyGroup), levelPermitView (propertyGroup);
 
-dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (Property);
-permitView 'Разрешить просмотр свойства' (Property property) = OVERRIDE dataPermitView (property), levelPermitView (parent(property)) MATERIALIZED;
+migrateAccess = ABSTRACT LIST (Property, Action); // temporary for migration
+migrateUserRoleAccess = ABSTRACT LIST (Property, Action); // temporary for migration
+
+META defineActionOrPropertySecurityUserRoleData(name, caption)
+    name caption = DATA BOOLEAN (UserRole, Property);
+    name caption = DATA BOOLEAN (UserRole, Action);
+    name caption (UserRole userRole, ActionOrProperty actionOrProperty) = MULTI name[UserRole, Property](userRole, actionOrProperty), name[UserRole, Action](userRole, actionOrProperty) MATERIALIZED;
+    
+    migrateUserRoleAccess(Property property, Action action) += {
+        name(UserRole userRole, action) <- name(userRole, property);
+    }
+END
+
+META defineActionOrPropertySecurityData(name, caption)
+    name caption = DATA BOOLEAN (Property);
+    name caption = DATA BOOLEAN (Action);
+    name caption (ActionOrProperty actionOrProperty) = MULTI name[Property](actionOrProperty), name[Action](actionOrProperty) MATERIALIZED;
+
+    migrateAccess(Property property, Action action) += {
+        name(action) <- name(property);
+    }
+    
+    @defineActionOrPropertySecurityUserRoleData(name, caption);
+END
+
+@defineActionOrPropertySecurityData(dataPermitView, 'Разрешить просмотр свойства');
+permitView 'Разрешить просмотр свойства' (ActionOrProperty property) = OVERRIDE dataPermitView (property), levelPermitView (parent(property)) MATERIALIZED;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -86,8 +115,8 @@ levelForbidViewParent (propertyGroup) =
 levelForbidView = TRUE IF levelForbidViewParent (PropertyGroup propertyGroup);
 forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidView (propertyGroup), levelForbidView (propertyGroup);
 
-dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (Property);
-forbidView 'Запретить просмотр свойства' (Property property) = OVERRIDE dataForbidView (property), levelForbidView (parent(property)) MATERIALIZED;
+@defineActionOrPropertySecurityData(dataForbidView, 'Запретить просмотр свойства');
+forbidView 'Запретить просмотр свойства' (ActionOrProperty property) = OVERRIDE dataForbidView (property), levelForbidView (parent(property)) MATERIALIZED;
 
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -98,8 +127,8 @@ levelPermitChangeParent (propertyGroup) =
 levelPermitChange = TRUE IF levelPermitChangeParent (PropertyGroup propertyGroup);
 permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (propertyGroup), levelPermitChange (propertyGroup);
 
-dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (Property);
-permitChange 'Разрешить изменение свойства' (Property property) = OVERRIDE dataPermitChange (property), levelPermitChange (parent(property)) MATERIALIZED;
+@defineActionOrPropertySecurityData(dataPermitChange, 'Разрешить изменение свойства');
+permitChange 'Разрешить изменение свойства' (ActionOrProperty property) = OVERRIDE dataPermitChange (property), levelPermitChange (parent(property)) MATERIALIZED;
 
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -110,10 +139,10 @@ levelForbidChangeParent (propertyGroup) =
 levelForbidChange = TRUE IF levelForbidChangeParent (PropertyGroup propertyGroup);
 forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (propertyGroup), levelForbidChange (propertyGroup);
 
-dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (Property);
-forbidChange 'Запретить изменение свойства' (Property property) = OVERRIDE dataForbidChange (property), levelForbidChange (parent(property)) MATERIALIZED;
+@defineActionOrPropertySecurityData(dataForbidChange, 'Запретить изменение свойства');
+forbidChange 'Запретить изменение свойства' (ActionOrProperty property) = OVERRIDE dataForbidChange (property), levelForbidChange (parent(property)) MATERIALIZED;
 
-notNullPermission (Property property) = OVERRIDE forbidChange(property), permitChange(property), forbidView(property), permitView(property) MATERIALIZED INDEXED;
+notNullPermission (ActionOrProperty property) = OVERRIDE forbidChange(property), permitChange(property), forbidView(property), permitView(property) MATERIALIZED INDEXED;
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -124,8 +153,7 @@ levelPermitViewParent (userRole, propertyGroup) =
 levelPermitView = TRUE IF levelPermitViewParent (UserRole userRole, PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitView (userRole, propertyGroup), levelPermitView (userRole, propertyGroup) MATERIALIZED;
 
-dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-permitView 'Разрешить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE dataPermitView (userRole, property), levelPermitView (userRole, parent(property)) MATERIALIZED;
+permitView 'Разрешить просмотр свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataPermitView (userRole, property), levelPermitView (userRole, parent(property)) MATERIALIZED;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -136,14 +164,13 @@ levelForbidViewParent (userRole, propertyGroup) =
 levelForbidView = TRUE IF levelForbidViewParent (UserRole userRole, PropertyGroup propertyGroup);
 forbidView 'Запретить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidView (userRole, propertyGroup), levelForbidView (userRole, propertyGroup) MATERIALIZED;
 
-dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
-forbidView 'Запретить просмотр свойства' (UserRole userRole, Property property) = OVERRIDE dataForbidView (userRole, property), levelForbidView (userRole, parent(property)) MATERIALIZED;
-fullForbidView (Property property) = (forbidView(property) AND NOT permitView(property)); 
+forbidView 'Запретить просмотр свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataForbidView (userRole, property), levelForbidView (userRole, parent(property)) MATERIALIZED;
+fullForbidView (ActionOrProperty property) = (forbidView(property) AND NOT permitView(property)); 
 
-forbidView = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidView(userRole, Property property) BY user, property;
-permitView = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitView(userRole, Property property) BY user, property;
+forbidView = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidView(userRole, ActionOrProperty property) BY user, property;
+permitView = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitView(userRole, ActionOrProperty property) BY user, property;
 
-fullForbidView (User user, Property property) = 
+fullForbidView (User user, ActionOrProperty property) = 
     (fullForbidView(property) OR hasUserRoleCustom(user) == forbidView (user, property)) AND NOT permitView(user, property);
          
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
@@ -155,9 +182,8 @@ levelPermitChangeParent (userRole, propertyGroup) =
 levelPermitChange = TRUE IF levelPermitChangeParent (UserRole userRole, PropertyGroup propertyGroup);
 permitChange 'Разрешить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (userRole, propertyGroup), levelPermitChange (userRole, propertyGroup) MATERIALIZED;
 
-dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-permitChange 'Разрешить изменение свойства' (UserRole userRole, Property property) = OVERRIDE dataPermitChange (userRole, property), levelPermitChange (userRole, parent(property)) MATERIALIZED;
-fullForbidChange (Property property) = (forbidChange(property) AND NOT permitChange(property));
+permitChange 'Разрешить изменение свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataPermitChange (userRole, property), levelPermitChange (userRole, parent(property)) MATERIALIZED;
+fullForbidChange (ActionOrProperty property) = (forbidChange(property) AND NOT permitChange(property));
     
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -168,13 +194,12 @@ levelForbidChangeParent (userRole, propertyGroup) =
 levelForbidChange = TRUE IF levelForbidChangeParent (UserRole userRole, PropertyGroup propertyGroup);
 forbidChange 'Запретить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (userRole, propertyGroup), levelForbidChange (userRole, propertyGroup) MATERIALIZED;
 
-dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
-forbidChange 'Запретить изменение свойства' (UserRole userRole, Property property) = OVERRIDE dataForbidChange (userRole, property), levelForbidChange (userRole, parent(property)) MATERIALIZED;
+forbidChange 'Запретить изменение свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataForbidChange (userRole, property), levelForbidChange (userRole, parent(property)) MATERIALIZED;
 
-forbidChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidChange(userRole, Property property) BY user, property;
-permitChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitChange(userRole, Property property) BY user, property;
+forbidChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidChange(userRole, ActionOrProperty property) BY user, property;
+permitChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitChange(userRole, ActionOrProperty property) BY user, property;
 
-fullForbidChange (User user, Property property) = 
+fullForbidChange (User user, ActionOrProperty property) = 
     (fullForbidChange(property) OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
 
 CLASS DefaultForms 'Отображение форм при запуске' {
@@ -294,6 +319,11 @@ copyData(UserRole userRole, UserRole ur) = {
     dataPermitChange(ur, Property property) <- dataPermitChange(userRole, property);
     dataForbidChange(ur, Property property) <- dataForbidChange(userRole, property);
     
+    dataPermitView(ur, Action action) <- dataPermitView(userRole, action);
+    dataForbidView(ur, Action action) <- dataForbidView(userRole, action);
+    dataPermitChange(ur, Action action) <- dataPermitChange(userRole, action);
+    dataForbidChange(ur, Action action) <- dataForbidChange(userRole, action);
+    
     dataPermitView(ur, PropertyGroup propertyGroup) <- dataPermitView(userRole, propertyGroup);
     dataForbidView(ur, PropertyGroup propertyGroup) <- dataForbidView(userRole, propertyGroup);
     dataPermitChange(ur, PropertyGroup propertyGroup) <- dataPermitChange(userRole, propertyGroup);
@@ -332,7 +362,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(f) number
     PROPERTIES(ur, f) permit, forbid, defaultNumber
 
-    OBJECTS pr=Property
+    OBJECTS pr=ActionOrProperty
     PROPERTIES(pr) caption, canonicalName
     PROPERTIES(ur, pr) permitView, forbidView, permitChange, forbidChange
     ORDER canonicalName(pr)
@@ -342,7 +372,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(df) number, permit, forbid, permitExport
     ORDER canonicalName(pr)
 
-    OBJECTS dpr=Property
+    OBJECTS dpr=ActionOrProperty
     PROPERTIES(dpr) caption, canonicalName, permitView, forbidView, permitChange, forbidChange
 
     TREE navigatorElements te = NavigatorElement PARENT parent
@@ -351,7 +381,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(ur, te) permit BACKGROUND backgroundPermit(ur, te), forbid BACKGROUND backgroundForbid(ur, te), defaultNumber
     ORDER number(te)
 
-    TREE treePropertyObject tprs = PropertyGroup PARENT parent, prs = Property
+    TREE treePropertyObject tprs = PropertyGroup PARENT parent, prs = ActionOrProperty
     PROPERTIES(tprs) caption, SID, number
     ORDER number(tprs)
     PROPERTIES(prs) caption, canonicalName, number
@@ -364,7 +394,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(tdf) number, permit, forbid, permitExport
     ORDER number(tdf)
 
-    TREE treeDefaultProperty tdprs = PropertyGroup PARENT parent, dprs = Property
+    TREE treeDefaultProperty tdprs = PropertyGroup PARENT parent, dprs = ActionOrProperty
     PROPERTIES (tdprs) caption, SID, number, permitView, forbidView, permitChange, forbidChange
     ORDER number(tdprs)
 
@@ -480,13 +510,21 @@ FORM propertyPolicy 'Политика безопасности для свойс
     PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
 ;
 
+FORM actionPolicy 'Политика безопасности для действия'
+    OBJECTS p=Action PANEL, ur=UserRole
+    PROPERTIES(p) READONLY caption, canonicalName
+    PROPERTIES(ur) READONLY name, sid
+    PROPERTIES(p) permitView, forbidView, permitChange, forbidChange
+    PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
+;
+
 checkCurrentDateDependsAction = CUSTOM 'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 
 DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
-        caption = 'Свойства';
+        caption = 'Свойство';
         MOVE PROPERTY(caption(p));
         MOVE PROPERTY(canonicalName(p));
     }
@@ -504,6 +542,25 @@ DESIGN propertyPolicy {
     MOVE TOOLBARBOX;
 }
 
+DESIGN actionPolicy {
+    NEW property {
+        type = CONTAINERH;
+        caption = 'Действие';
+        MOVE PROPERTY(caption(p));
+        MOVE PROPERTY(canonicalName(p));
+    }
+    NEW permission {
+        type = CONTAINERH;
+        caption = 'Доступ';
+        MOVE PROPERTY(permitView(p));
+        MOVE PROPERTY(forbidView(p));
+        MOVE PROPERTY(permitChange(p));
+        MOVE PROPERTY(forbidChange(p));
+    }
+    MOVE BOX(ur);
+    MOVE TOOLBARBOX;
+}
+
 NAVIGATOR {
     security {
         NEW Security.userRoles;
@@ -513,16 +570,9 @@ NAVIGATOR {
 }
 
 // temporary for migration
-
-dataCopyAccess = DATA TEXT (TEXT);
 copyAccess() = {
-    FOR TEXT old == dataCopyAccess(TEXT new) AND NOT propertyCanonicalName(new) INLINE NEW p = Property DO
-        canonicalName(p) <- new;
-        
-    FOR TEXT old == dataCopyAccess(TEXT new) AND Property newProp == propertyCanonicalName(new) AND Property oldProp == propertyCanonicalName(old) INLINE DO {
-        dataPermitView(newProp) <- dataPermitView(oldProp);
-        dataForbidView(newProp) <- dataForbidView(oldProp);
-        dataPermitView(UserRole ur, newProp) <- dataPermitView(ur, oldProp);
-        dataForbidView(UserRole ur, newProp) <- dataForbidView(ur, oldProp);
+    FOR Property prop = propertyCanonicalName(TEXT name) AND Action action = actionCanonicalName(name) INLINE DO {
+        migrateAccess(prop, action);
+        migrateUserRoleAccess(prop, action);
     }    
 }

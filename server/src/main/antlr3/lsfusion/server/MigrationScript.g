@@ -40,12 +40,21 @@ statement
 propertyRename
 @init {
 	boolean stored = false;
+	boolean action = false;
 	String newClasses = null;
 }
-	:	('STORED' { stored = true; })?
-		'PROPERTY' 
+	:	(
+	        ('STORED' { stored = true; })?	'PROPERTY'
+        |
+            ('ACTION') { action = true; }
+        ) 
 		oldName=compoundID oldSignature=signature '->' newName=compoundID (newSignature=signature { newClasses = $newSignature.result; })?
-		{ self.addPropertyCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses, stored); }
+		{ 
+		    if(action)
+		        self.addActionCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses);
+		    else 
+		        self.addPropertyCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses, stored);
+        }
 	;
 	
 classRename

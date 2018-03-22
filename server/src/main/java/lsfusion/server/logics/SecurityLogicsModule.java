@@ -58,10 +58,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP nameMainRoleUser;
     public LCP currentUserMainRoleName;
 
-    public LCP dataCopyAccess;
     public LAP copyAccess;    
 
     public FormEntity propertyPolicyForm;
+    public FormEntity actionPolicyForm;
 
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SecurityLogicsModule.class.getResourceAsStream("/lsfusion/system/Security.lsf"), "/lsfusion/system/Security.lsf", baseLM, BL);
@@ -98,11 +98,11 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // ---- Политики для доменной логики
 
         // -- Глобальные разрешения для всех ролей
-        permitViewProperty = findProperty("permitView[Property]");
-        forbidViewProperty = findProperty("forbidView[Property]");
-        permitChangeProperty = findProperty("permitChange[Property]");
-        forbidChangeProperty = findProperty("forbidChange[Property]");
-        notNullPermissionProperty = findProperty("notNullPermission[Property]");
+        permitViewProperty = findProperty("permitView[ActionOrProperty]");
+        forbidViewProperty = findProperty("forbidView[ActionOrProperty]");
+        permitChangeProperty = findProperty("permitChange[ActionOrProperty]");
+        forbidChangeProperty = findProperty("forbidChange[ActionOrProperty]");
+        notNullPermissionProperty = findProperty("notNullPermission[ActionOrProperty]");
 
         // -- Разрешения для каждой роли
 
@@ -114,8 +114,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole[User]");
 
         // Разрешения для каждого свойства
-        fullForbidViewUserProperty = findProperty("fullForbidView[User,Property]");
-        fullForbidChangeUserProperty = findProperty("fullForbidChange[User,Property]");
+        fullForbidViewUserProperty = findProperty("fullForbidView[User,ActionOrProperty]");
+        fullForbidChangeUserProperty = findProperty("fullForbidChange[User,ActionOrProperty]");
 
         // ---- Политики для логики представлений
 
@@ -141,8 +141,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         transactTimeoutUser = findProperty("transactTimeout[User]");
 
         propertyPolicyForm = findForm("propertyPolicy");
+        actionPolicyForm = findForm("actionPolicy");
 
-        dataCopyAccess = findProperty("dataCopyAccess[TEXT]");
         copyAccess = findAction("copyAccess[]");
     }
 }

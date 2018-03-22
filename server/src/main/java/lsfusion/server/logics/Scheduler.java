@@ -261,7 +261,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
         QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
-        scheduledTaskDetailQuery.addProperty("canonicalNameProperty", BL.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+        scheduledTaskDetailQuery.addProperty("canonicalNameAction", BL.schedulerLM.canonicalNameActionScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
         scheduledTaskDetailQuery.addProperty("ignoreExceptions", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
         scheduledTaskDetailQuery.addProperty("order", BL.schedulerLM.orderScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
         scheduledTaskDetailQuery.addProperty("script", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
@@ -274,7 +274,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
         int defaultOrder = propertyResult.size() + 100;
         for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
-            String canonicalName = (String) propertyValues.get("canonicalNameProperty");
+            String canonicalName = (String) propertyValues.get("canonicalNameAction");
             String script = (String) propertyValues.get("script");
             if(script != null && !script.isEmpty())
                 script = String.format("run() = {%s;\n};", script);

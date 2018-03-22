@@ -1020,14 +1020,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @NFLazy
-    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
+    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property, boolean actions) {
         if (property.isNamed()) {
             String propertyCN = property.getOrCanonicalName();
             
             // issue #1725 Потенциальное совпадение канонических имен различных свойств 
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
             // базового свойства, заменив спецсимволы на подчеркивания
-            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
+            String setupPolicyActionName = (actions ? PropertyCanonicalNameUtils.policyPropPrefix : PropertyCanonicalNameUtils.policyActionPrefix) + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
             LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, LocalizedString.create("{logics.property.propertypolicy.action}"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             

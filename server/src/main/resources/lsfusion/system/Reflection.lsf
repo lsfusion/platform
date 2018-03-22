@@ -51,25 +51,31 @@ currentForm = NATIVE Form ();
 
 formCanonicalName 'Имя формы' (NavigatorElement e) = DATA VARSTRING[100] (NavigatorElement);
 
-CLASS Property 'Свойство';
+CLASS ABSTRACT ActionOrProperty 'Свойство или действие';
+
+CLASS Property 'Свойство' : ActionOrProperty;
 TABLE property (Property);
 
-parent 'Родит. группа' = DATA PropertyGroup (Property);
-number 'Номер' = DATA INTEGER (Property);
-dbName 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
+CLASS Action 'Действие' : ActionOrProperty;
+
+parent 'Родит. группа' = DATA PropertyGroup (ActionOrProperty);
+number 'Номер' = DATA INTEGER (ActionOrProperty);
 canonicalName 'Имя свойства' = DATA STRING[512] (Property) IN recognize;
+canonicalName 'Имя свойства' = DATA STRING[512] (Action) IN recognize;
+canonicalName 'Имя свойства' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
+caption 'Заголовок' = DATA VARISTRING[250] (ActionOrProperty) IN base;
+annotation 'Аннотация' = DATA VARSTRING[100] (ActionOrProperty);
+class 'Класс свойства' = DATA VARSTRING[100] (ActionOrProperty);
+
+dbName 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
-shortName 'Имя свойства' (Property p) = leftTo(canonicalName(p), '[');
 loggable 'Логируется' = DATA BOOLEAN (Property);
 userLoggable 'Логируется пользователем' = DATA BOOLEAN (Property);
 stored 'Постоянно хранимое' = DATA BOOLEAN (Property);
 isSetNotNull 'Не может быть null' = DATA BOOLEAN (Property);
 return 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
-class 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexity 'Сложность свойства' = DATA LONG (Property);
-caption 'Заголовок' = DATA VARISTRING[250] (Property) IN base;
 tableSID 'Таблица' = DATA VARSTRING[100] (Property);
-annotation 'Аннотация' = DATA VARSTRING[100] (Property);
 
 stats 'Кол-во записей' = DATA INTEGER (Property);
 maxStatsProperty 'Максимальное кол-во записей для логируемого свойства' = DATA INTEGER ();
@@ -87,6 +93,7 @@ DESIGN options {
 }
 
 propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property BY canonicalName(property) WHERE property IS Property;
+actionCanonicalName 'Действие' (cn) = GROUP AGGR Action property BY canonicalName(property) WHERE property IS Action;
 propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property BY tableSID(property), dbName(property) WHERE stored(property);
 
 quantity 'Количество разновидностей' = DATA INTEGER (Property);
@@ -456,10 +463,47 @@ DESIGN properties {
     }
 }
 
+FORM actions 'Действия'
+    OBJECTS p=Action
+    PROPERTIES(p) GRID READONLY caption, canonicalName, annotation, class, parent, number
+
+    TREE treeActionsObject tps=PropertyGroup PARENT parent, ps=Action
+    PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, number
+    PROPERTIES(ps) GRID READONLY caption, canonicalName, class, parent, number
+
+    ORDER number(p)
+    ORDER number(tps)
+
+    FILTERS
+        parent(ps)==tps
+;
+
+DESIGN actions {
+    BOX {
+        NEW container BEFORE TOOLBARBOX {
+            fill = 1;
+            type = TABBED;
+
+            NEW treeContainer {
+                fill = 1;
+                caption = 'Дерево';
+                MOVE BOX(TREE treeActionsObject);
+            }
+
+            NEW tableContainer {
+                fill = 1;
+                caption = 'Таблица';
+                MOVE BOX(p);
+            }
+        }
+    }
+}
+
 NAVIGATOR {
     configuration {
         NEW Reflection.physicalModel;
         NEW Reflection.forms;
         NEW Reflection.properties;
+        NEW Reflection.actions;
     }
 }
