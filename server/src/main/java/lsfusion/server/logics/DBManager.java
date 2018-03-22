@@ -1075,7 +1075,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
 
-                    dataProperty.add(asList(property.getOrCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
+                    dataProperty.add(asList(((ActionProperty)property).getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer) Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
