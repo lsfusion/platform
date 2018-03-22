@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -47,12 +48,15 @@ public class ChangeAllDatesActionProperty extends ScriptingActionProperty {
 
                 ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "property", propertyExpr);
                 QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-                query.addProperty("dbName", findProperty("dbName[Property]").getExpr(propertyExpr));
-                query.addProperty("return", findProperty("return[Property]").getExpr(propertyExpr));
-                query.addProperty("tableSID", findProperty("tableSID[Property]").getExpr(propertyExpr));
-                query.and(findProperty("dbName[Property]").getExpr(propertyExpr).getWhere());
-                query.and(findProperty("return[Property]").getExpr(propertyExpr).getWhere());
-                query.and(findProperty("tableSID[Property]").getExpr(propertyExpr).getWhere());
+                Expr dbNameExpr = findProperty("dbName[Property]").getExpr(propertyExpr);
+                Expr returnExpr = findProperty("return[Property]").getExpr(propertyExpr);
+                Expr tableSIDExpr = findProperty("tableSID[Property]").getExpr(propertyExpr);
+                query.addProperty("dbName", dbNameExpr);
+                query.addProperty("return", returnExpr);
+                query.addProperty("tableSID", tableSIDExpr);
+                query.and(dbNameExpr.getWhere());
+                query.and(returnExpr.getWhere());
+                query.and(tableSIDExpr.getWhere());
 
                 ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
                 for (ImMap<Object, Object> valueEntry : result.values()) {
