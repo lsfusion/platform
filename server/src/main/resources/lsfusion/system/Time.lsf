@@ -155,7 +155,7 @@ DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
 
 extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
 extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));
-extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date));
+extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date)) CHARWIDTH 12;
 
 distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2) < number(d1));     
 
