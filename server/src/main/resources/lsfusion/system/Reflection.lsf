@@ -57,6 +57,7 @@ CLASS Property 'Свойство' : ActionOrProperty;
 TABLE property (Property);
 
 CLASS Action 'Действие' : ActionOrProperty;
+TABLE action (Action);
 
 parent 'Родит. группа' = DATA PropertyGroup (ActionOrProperty);
 number 'Номер' = DATA INTEGER (ActionOrProperty);

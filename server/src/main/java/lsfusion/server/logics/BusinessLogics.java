@@ -791,11 +791,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 canonicalName = changes.get(canonicalName);
             }
             LCP<?> lcp = findProperty(canonicalName);
-            Integer statsProperty = (Integer) values.get("overStatsProperty");
-            statsProperty = statsProperty == null && lcp != null ? getStatsProperty(lcp.property) : statsProperty;
-            if(statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                LM.makeUserLoggable(systemEventsLM, lcp);
-            }
+            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
+                Integer statsProperty = (Integer) values.get("overStatsProperty");
+                statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
+                if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
+                    LM.makeUserLoggable(systemEventsLM, lcp);
+                }
+            }            
         }
     }
 
@@ -874,45 +876,70 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void updateClassStats(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
+        if(useSIDs)
+            updateClassSIDStats(session);
+        else
+            updateClassStats(session);
+    }
+    public void updateClassStats(SQLSession session) throws SQLException, SQLHandledException {
+        ImMap<Long, Integer> customObjectClassMap = readClassStatsFromDB(session);
 
-        Map<Long, Integer> customObjectClassMap = new HashMap<>();
-        Map<String, Integer> customSIDObjectClassMap = new HashMap<>();
+        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
+            if(customClass instanceof ConcreteCustomClass) {
+                ((ConcreteCustomClass) customClass).updateStat(customObjectClassMap);
+            }
+        }
+    }
 
+    public ImMap<Long, Integer> readClassStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"key", customObjectClassExpr);
 
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
-        if(useSIDs) {
-            query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
-        }
 
         query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
 
+        MExclMap<Long, Integer> mCustomObjectClassMap = MapFact.mExclMap(result.size());
         for (int i=0,size=result.size();i<size;i++) {
             Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
-            if(useSIDs) {
-                String sID = (String)result.getValue(i).get("staticName");
-                if(sID != null)
-                    customSIDObjectClassMap.put(sID.trim(), statCustomObjectClass);
-            } else {
-                customObjectClassMap.put((Long) result.getKey(i).get("key"), statCustomObjectClass);
-            }
+            mCustomObjectClassMap.exclAdd((Long) result.getKey(i).get("key"), statCustomObjectClass);
         }
+        return mCustomObjectClassMap.immutable();
+    }
+
+    public void updateClassSIDStats(SQLSession session) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> customSIDObjectClassMap = readClassSIDStatsFromDB(session);
 
         for(CustomClass customClass : LM.baseClass.getAllClasses()) {
             if(customClass instanceof ConcreteCustomClass) {
-                Integer stat;
-                if(useSIDs) {
-                    assert customClass.ID == null;
-                    stat = customSIDObjectClassMap.get(customClass.getSID());
-                } else
-                    stat = customObjectClassMap.get(customClass.ID);
-                ((ConcreteCustomClass) customClass).stat = stat;
+                ((ConcreteCustomClass) customClass).updateSIDStat(customSIDObjectClassMap);
             }
         }
+    }
+
+    public ImMap<String, Integer> readClassSIDStatsFromDB(SQLSession session) throws SQLException, SQLHandledException {
+        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"key", customObjectClassExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
+        query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
+
+        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
+
+        MExclMap<String, Integer> mCustomObjectClassMap = MapFact.mExclMapMax(result.size());
+        for (int i=0,size=result.size();i<size;i++) {
+            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            String sID = (String)result.getValue(i).get("staticName");
+            if(sID != null)
+                mCustomObjectClassMap.exclAdd(sID.trim(), statCustomObjectClass);
+        }
+        return mCustomObjectClassMap.immutable();
     }
 
     public ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
@@ -1967,11 +1994,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             count++;
             long start = System.currentTimeMillis();
             serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
-            dataTable.calculateStat(this.reflectionLM, session);
+            dataTable.recalculateStat(this.reflectionLM, session);
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
-        recalculateClassStat(session, true);
+        recalculateClassStats(session, true);
     }
 
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
@@ -2010,31 +2037,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return resultSet;
     }
 
-    public void recalculateClassStat(DataSession session, boolean log) throws SQLException, SQLHandledException {
+    public void recalculateClassStats(DataSession session, boolean log) throws SQLException, SQLHandledException {
         for (ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
-            long start = System.currentTimeMillis();
-            if(log)
-                serviceLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
-            QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
-
-            KeyExpr countKeyExpr = new KeyExpr("count");
-            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
-                    ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
-
-            classes.addProperty(0, countExpr);
-            classes.and(countExpr.getWhere());
-
-            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-            ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
-            for (int i = 0, size = concreteChilds.size(); i < size; i++) {
-                ConcreteCustomClass customClass = concreteChilds.get(i);
-                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
-                LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
-            }
-            long time = System.currentTimeMillis() - start;
-            if(log)
-                serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
+            recalculateClassStat(tableClasses, session, log);
         }
+    }
+
+    public ImMap<Long, Integer> recalculateClassStat(ObjectValueClassSet tableClasses, DataSession session, boolean log) throws SQLException, SQLHandledException {
+        long start = System.currentTimeMillis();
+        if(log)
+            serviceLogger.info(String.format("Recalculate Class Stats: %s", String.valueOf(tableClasses)));
+        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
+
+        KeyExpr countKeyExpr = new KeyExpr("count");
+        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
+                ValueExpr.COUNT, countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
+
+        classes.addProperty(0, countExpr);
+        classes.and(countExpr.getWhere());
+
+        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+        ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
+        MExclMap<Long, Integer> mResult = MapFact.mExclMap(concreteChilds.size());
+        for (int i = 0, size = concreteChilds.size(); i < size; i++) {
+            ConcreteCustomClass customClass = concreteChilds.get(i);
+            ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+            int statValue = classStat == null ? 1 : (Integer) classStat.singleValue();
+            mResult.exclAdd(customClass.ID, statValue);
+            LM.statCustomObjectClass.change(statValue, session, customClass.getClassObject());
+        }
+        long time = System.currentTimeMillis() - start;
+        if(log)
+            serviceLogger.info(String.format("Recalculate Class Stats: %s, %sms", String.valueOf(tableClasses), time));
+        return mResult.immutable();
     }
 
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction, final ExecutionStack stack) throws SQLException, SQLHandledException {

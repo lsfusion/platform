@@ -37,7 +37,7 @@ public class RecalculateTableStatsActionProperty extends ScriptingActionProperty
         ServiceDBActionProperty.run(context, new RunService() {
                     public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                         try (DataSession dataSession = context.getDbManager().createSession()) {
-                            context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).calculateStat(context.getBL().reflectionLM, dataSession);
+                            context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM, dataSession);
                             applySession(context, dataSession);
                         }
                     }

@@ -70,6 +70,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP numberNavigatorElement;
     
+    // temporary for migration
     public ImplementTable navigatorElementTable;
 
     public LCP navigatorElementCanonicalName;

@@ -319,4 +319,12 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public boolean isZero(Object object) {
         return false;
     }
+    
+    public void updateStat(ImMap<Long, Integer> classStats) {
+        stat = classStats.get(ID);
+    }
+    public void updateSIDStat(ImMap<String, Integer> classStats) {
+        assert ID == null;
+        stat = classStats.get(getSID());
+    }
 }

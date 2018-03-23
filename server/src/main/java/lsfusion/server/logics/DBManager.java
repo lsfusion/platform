@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
@@ -48,22 +49,18 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyPropertyUsage;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.StackProgress;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -932,7 +929,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (oldDBStructure.isEmpty()) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
-                    businessLogics.recalculateClassStat(session, false);
+                    businessLogics.recalculateClassStats(session, false);
                     session.apply(businessLogics, getStack());
                 }
             }
@@ -959,8 +956,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             recalculateProperties.addAll(recalculateStatProperties);
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) { // temporary for migration
+                recalculateProperties = SetFact.fromJavaOrderSet(recalculateProperties).filterOrder(new SFunctionSet<CalcProperty>() {
+                    public boolean contains(CalcProperty element) {
+                        return !element.toString().contains("SystemEvents.Session");
+                    }
+                }).toJavaList();
+            }
             updateAggregationStats(recalculateProperties, tableStats);
-            updateAggregationStats(recalculateStatProperties, tableStats);
             
             if(oldDBStructure.version < NavElementDBVersion)
                 DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
@@ -1007,20 +1010,28 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     // temporary for migration
-    public boolean synchronizePropertyEntities(SQLSession sql) {
-        boolean result = synchronizePropertyEntities(true, sql);
-        if(!result)
+    public boolean synchronizePropertyEntities(SQLSession sql) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        if(!synchronizePropertyEntities(true, sql))
             return false;
+        
         try {
+            recalculateAndUpdateClassStat((CustomClass) reflectionLM.findClass("Action"));
+            recalculateAndUpdateStat(reflectionLM.findTable("action"), null);
+
             try(DataSession session = createSession(sql)) {
                 businessLogics.schedulerLM.copyAction.execute(session, getStack());
                 businessLogics.securityLM.copyAccess.execute(session, getStack());
-                result = session.apply(businessLogics, getStack());
+                if(!session.apply(businessLogics, getStack()))
+                    return false;
+                
+                for(String tableName : new String[]{"action", "userRoleActionOrProperty", "userRoleAction", "userActionOrProperty", "userAction"}) {
+                    recalculateAndUpdateStat((tableName.equals("action")?reflectionLM:businessLogics.securityLM).findTable(tableName), null);
+                }
             }
-            return result;
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+        return true;
     }
     private boolean needsToBeSynchronized(Property property) {
         return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
@@ -1242,25 +1253,47 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 entry.add(property);
                 calcPropertiesMap.put(property.mapTable.table, entry);
             }
-            for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet()) {
-                ImplementTable table = entry.getKey();
-                List<CalcProperty> properties = entry.getValue();
-                ImMap<PropertyField, String> fields = MapFact.EMPTY();
-                for(CalcProperty property : properties)
-                    fields = fields.addExcl(property.field, property.getCanonicalName());
-                Pair<ImMap<String, Integer>, ImMap<String, Pair<Integer, Integer>>> calculateStatResult;
-                try (DataSession session = createSession()) {
-                    long start = System.currentTimeMillis();
-                    startLogger.info(String.format("Update Aggregation Stats started: %s", table));
-                    calculateStatResult = table.calculateStat(reflectionLM, session, fields, false);
-                    calculateStatResult = table.calculateStat(reflectionLM, session, fields, true);
-                    session.apply(businessLogics, getStack());
-                    long time = System.currentTimeMillis() - start;
-                    startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
-                }
-                table.updateStat(tableStats, calculateStatResult.first, calculateStatResult.second, fields.keys(), false);
-            }
+            for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet())
+                recalculateAndUpdateStat(entry.getKey(), entry.getValue());
         }
+    }
+
+    public void recalculateAndUpdateClassStat(CustomClass customClass) throws SQLException, SQLHandledException {
+        for(ObjectValueClassSet set : customClass.getUpObjectClassFields().valueIt())
+            recalculateAndUpdateClassStat(set);        
+    }
+    public void recalculateAndUpdateClassStat(ObjectValueClassSet tableClasses) throws SQLException, SQLHandledException {
+        ImMap<Long, Integer> classStats;
+        try (DataSession session = createSession()) {
+            classStats = businessLogics.recalculateClassStat(tableClasses, session, true);
+        }
+        for(ConcreteCustomClass tableClass : tableClasses.getSetConcreteChildren())
+            tableClass.updateStat(classStats);
+    }
+    private void recalculateAndUpdateStat(ImplementTable table, List<CalcProperty> properties) throws SQLException, SQLHandledException {
+        ImMap<PropertyField, String> fields = null;
+        if(properties != null) {
+            fields = SetFact.fromJavaOrderSet(properties).getSet().mapKeyValues(new GetValue<PropertyField, CalcProperty>() {
+                public PropertyField getMapValue(CalcProperty value) {
+                    return value.field;
+                }
+            }, new GetValue<String, CalcProperty>() {
+                public String getMapValue(CalcProperty value) {
+                    return value.getCanonicalName();
+                }
+            });
+        }
+        ImplementTable.CalcStat calculateStatResult;
+        try (DataSession session = createSession()) {
+            long start = System.currentTimeMillis();
+            startLogger.info(String.format("Update Aggregation Stats started: %s", table));
+            calculateStatResult = table.recalculateStat(reflectionLM, session, fields, false);
+            calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
+            session.apply(businessLogics, getStack());
+            long time = System.currentTimeMillis() - start;
+            startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
+        }
+        table.updateStat(MapFact.singleton(table.getName(), calculateStatResult.rows), calculateStatResult.keys, calculateStatResult.props, fields != null ? fields.keys() : null, false);
     }
 
     public void writeModulesHash() {

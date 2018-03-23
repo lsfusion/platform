@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
@@ -37,7 +36,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected void runInnerTask(Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
         try (DataSession session = getDbManager().createSession()) {
             if (element instanceof ImplementTable) {
-                ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
+                ((ImplementTable) element).recalculateStat(getBL().reflectionLM, session);
             } else if (element instanceof ObjectValueClassSet) {
                 QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
