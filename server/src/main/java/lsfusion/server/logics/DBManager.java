@@ -1027,6 +1027,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 for(String tableName : new String[]{"action", "userRoleActionOrProperty", "userRoleAction", "userActionOrProperty", "userAction"}) {
                     recalculateAndUpdateStat((tableName.equals("action")?reflectionLM:businessLogics.securityLM).findTable(tableName), null);
                 }
+                
+                ALRUMap.forceRemoveAllLRU(1.0); // чтобы synchronizeActionEntities отработал
             }
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
