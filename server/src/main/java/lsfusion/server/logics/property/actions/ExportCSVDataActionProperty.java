@@ -12,11 +12,14 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.PropertyInterface;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +35,7 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
                                        String separator, boolean noHeader, String charset) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
 
-        this.separator = separator == null ? "|" : separator;
+        this.separator = separator == null || separator.isEmpty() ? "|" : separator;
         this.noHeader = noHeader;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
@@ -47,11 +50,12 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
                 lines.add(fields.toJavaList());
             }
 
+            CsvEscaper csvEscaper = new CsvEscaper(separator);
             for (ImMap<String, Object> row : rows) {
                 List<String> line = new ArrayList<>();
                 for (String key : row.keyIt()) {
                     String cellValue = fieldTypes.getType(key).formatString(row.get(key));
-                    line.add(cellValue != null ? cellValue : "");
+                    line.add(cellValue != null ? csvEscaper.translate(cellValue) : "");
                 }
                 lines.add(line);
             }
@@ -69,6 +73,35 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
             if (!file.delete()) {
                 file.deleteOnExit();
             }
+        }
+    }
+
+    //modified from StringEscapeUtils
+    private static class CsvEscaper extends CharSequenceTranslator {
+
+        private static final char CSV_QUOTE = '"';
+        private static final String CSV_QUOTE_STR = String.valueOf(CSV_QUOTE);
+        private char[] CSV_SEARCH_CHARS;
+
+        public CsvEscaper(String separator) {
+            this.CSV_SEARCH_CHARS = new char[] {separator.charAt(0), CSV_QUOTE, CharUtils.CR, CharUtils.LF};
+        }
+
+        @Override
+        public int translate(final CharSequence input, final int index, final Writer out) throws IOException {
+
+            if(index != 0) {
+                throw new IllegalStateException("CsvEscaper should never reach the [1] index");
+            }
+
+            if (StringUtils.containsNone(input.toString(), CSV_SEARCH_CHARS)) {
+                out.write(input.toString());
+            } else {
+                out.write(CSV_QUOTE);
+                out.write(StringUtils.replace(input.toString(), CSV_QUOTE_STR, CSV_QUOTE_STR + CSV_QUOTE_STR));
+                out.write(CSV_QUOTE);
+            }
+            return Character.codePointCount(input, 0, input.length());
         }
     }
 }
