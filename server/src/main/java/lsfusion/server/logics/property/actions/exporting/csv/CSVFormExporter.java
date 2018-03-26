@@ -56,7 +56,12 @@ public class CSVFormExporter extends PlainFormExporter {
         PrintWriter writer = writersMap.get(id);
         if (writer == null) { //объявляем
             File file = File.createTempFile("group_" + id, ".csv");
-            writer = new PrintWriter(file, charset);
+            writer = new PrintWriter(file, charset) {
+                @Override
+                public void println() {
+                    write("\r\n");
+                }
+            };
             filesMap.put(id, file);
             writersMap.put(id, writer);
             if(!noHeader)
