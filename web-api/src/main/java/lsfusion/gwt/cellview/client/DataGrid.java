@@ -1784,7 +1784,11 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         int rowCount = pendingState.rowData.size();
         int colCount = getColumnCount();
 
-        int tableHeight = rowCount * rowHeight;
+        int tableHeight = 0;
+        if (rowCount > 0) {
+            TableRowElement lastRowElement = getChildElement(rowCount - 1);
+            tableHeight = lastRowElement.getOffsetTop() + lastRowElement.getClientHeight(); 
+        }
 
         int offsetWidth = tableDataScroller.getOffsetWidth();
 
@@ -1804,15 +1808,16 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
             if (scrollTop < 0) {
                 scrollTop = currentScrollTop;
             }
-            if (scrollTop >= tableHeight - scrollHeight) {
+            if (scrollTop > tableHeight - scrollHeight) {
                 scrollTop = tableHeight - scrollHeight;
             }
         }
 
         //scroll row to visible if needed
-        if (rowToShow >=0 && rowToShow < rowCount) {
-            int rowTop = rowHeight * rowToShow;
-            int rowBottom = rowTop + rowHeight;
+        if (rowToShow >= 0 && rowToShow < rowCount) {
+            TableRowElement rowElement = getChildElement(rowToShow);
+            int rowTop = rowElement.getOffsetTop();
+            int rowBottom = rowTop + rowElement.getClientHeight();
             if (rowBottom >= scrollTop + scrollHeight) {
                 scrollTop = rowBottom - scrollHeight;
             }

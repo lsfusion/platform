@@ -4,6 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
@@ -159,20 +160,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 int selectedRow = getKeyboardSelectedRow();
                 GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
                 if (selectedRecord != null) {
-                    int rowHeight = getRowHeight();
-
                     int scrollHeight = getTableDataScroller().getClientHeight();
                     int scrollTop = getTableDataScroller().getVerticalScrollPosition();
-
-                    int rowTop = selectedRow * rowHeight;
-                    int rowBottom = rowTop + rowHeight;
+                    
+                    TableRowElement rowElement = getChildElement(selectedRow);
+                    int rowTop = rowElement.getOffsetTop();
+                    int rowBottom = rowTop + rowElement.getClientHeight();
 
                     int newRow = -1;
-                    if (rowBottom > scrollTop + scrollHeight) {
-                        newRow = (scrollTop + scrollHeight - rowHeight) / rowHeight;
+                    if (rowBottom > scrollTop + scrollHeight + 1) { // поправка на 1 пиксель при скроллировании вверх - компенсация погрешности, возникающей при setScrollTop() / getScrollTop()
+                        newRow = getLastSeenRow(scrollTop + scrollHeight, selectedRow);
                     }
                     if (rowTop < scrollTop) {
-                        newRow = scrollTop / rowHeight + 1;
+                        newRow = getFirstSeenRow(scrollTop, selectedRow);
                     }
                     if (newRow != -1) {
                         setKeyboardSelectedRow(newRow, false);
@@ -183,6 +183,28 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
         getElement().setPropertyObject("groupObject", groupObject);
         gridController.setForceHidden(true);
+    }
+
+    protected int getFirstSeenRow(int tableTop, int start) {
+        for (int i = start; i < getRowCount(); i++) {
+            TableRowElement rowElement = getChildElement(i);
+            int rowTop = rowElement.getOffsetTop();
+            if (rowTop >= tableTop) {
+                return i;
+            }
+        }
+        return 0;
+    }
+    
+    protected int getLastSeenRow(int tableBottom, int start) {
+        for (int i = start; i >= 0; i--) {
+            TableRowElement rowElement = getChildElement(i);
+            int rowBottom = rowElement.getOffsetTop() + rowElement.getClientHeight();
+            if (rowBottom <= tableBottom) {
+                return i;
+            }
+        }
+        return 0;
     }
     
     public void update() {
@@ -942,11 +964,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 return;
             }
             Integer currentPageSize = currentGridPreferences.pageSize;
-            int newPageSize = currentPageSize != null ? currentPageSize : (tableHeight / getRowHeight() + 1);
-            if (newPageSize != pageSize) {
-                form.changePageSizeAfterUnlock(groupObject, newPageSize);
-                pageSize = newPageSize;
-                setPageIncrement(pageSize - 1);
+            TableRowElement rowElement = getChildElement(getKeyboardSelectedRow());
+            if (rowElement != null) {
+                int rowHeight = rowElement.getClientHeight();
+                int newPageSize = currentPageSize != null ? currentPageSize : (tableHeight / rowHeight + 1);
+                if (newPageSize != pageSize) {
+                    form.changePageSizeAfterUnlock(groupObject, newPageSize);
+                    pageSize = newPageSize;
+                    setPageIncrement(pageSize - 1);
+                }
             }
         }
     }

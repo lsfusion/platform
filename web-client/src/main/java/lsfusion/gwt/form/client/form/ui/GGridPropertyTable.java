@@ -242,7 +242,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             oldKey = selectedRecord.getKey();
             TableRowElement childElement = getChildElement(selectedRow);
             if (childElement != null) {
-                oldRowScrollTop = selectedRow * getRowHeight() - getTableDataScroller().getVerticalScrollPosition();
+                oldRowScrollTop = childElement.getOffsetTop() - getTableDataScroller().getVerticalScrollPosition();
             }
         }
     }
@@ -252,13 +252,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             int currentInd = getKeyboardSelectedRow();
             GGroupObjectValue currentKey = getCurrentKey();
             if (currentKey != null && currentKey.equals(oldKey) && isRowWithinBounds(currentInd)) {
-                int newVerticalScrollPosition = max(0, currentInd * getRowHeight() - oldRowScrollTop);
+                TableRowElement childElement = getChildElement(currentInd);
+                if (childElement != null) {
+                    int newVerticalScrollPosition = max(0, childElement.getOffsetTop() - oldRowScrollTop);
 
-                setDesiredVerticalScrollPosition(newVerticalScrollPosition);
+                    setDesiredVerticalScrollPosition(newVerticalScrollPosition);
 
-                oldKey = null;
-                oldRowScrollTop = -1;
-                needToRestoreScrollPosition = false;
+                    oldKey = null;
+                    oldRowScrollTop = -1;
+                    needToRestoreScrollPosition = false;
+                }
             }
         }
     }
