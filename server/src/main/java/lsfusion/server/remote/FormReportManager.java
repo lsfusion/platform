@@ -209,7 +209,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    private final static String reportsDir = "reports/custom/"; 
+    public final static String reportsDir = "reports/custom"; 
     
     private String findCustomReportFileName(String fileName) {
 
@@ -217,7 +217,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         
         for(String entry : result){
             if(entry.endsWith("/" + fileName))
-                return "/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+                return "/" + entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
         }
         
         return null; // не нашли "/" + reportsDir + filePath;
@@ -263,7 +263,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
             String id = entry.getKey();
 
-            String reportName = (custom ? "reports/custom/" : "reports/auto/") + getReportName(id, toExcel, groupId);
+            String reportName = (custom ? reportsDir : "reports/auto") + "/" + getReportName(id, toExcel, groupId);
             ReportPath defaultCustomReportPath = null;
             if(custom) {
                 defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(entry.getKey())) : getDefaultCustomReportPath(reportName);

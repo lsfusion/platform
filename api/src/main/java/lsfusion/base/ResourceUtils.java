@@ -6,11 +6,12 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static com.sun.nio.file.ExtendedWatchEventModifier.FILE_TREE;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -65,10 +66,7 @@ public class ResourceUtils {
         while (e.hasMoreElements()) {
             final ZipEntry ze = (ZipEntry) e.nextElement();
             final String fileName = ze.getName();
-            final boolean accept = pattern.matcher(fileName).matches();
-            if (accept) {
-                retval.add(fileName);
-            }
+            fillResourcesResult(fileName, pattern, retval);
         }
         try {
             zf.close();
@@ -88,14 +86,17 @@ public class ResourceUtils {
                     result.addAll(getResourcesFromDirectory(file, relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(), pattern));
                 } else {
                     final String fileName = relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
-                    final boolean accept = pattern.matcher(fileName).matches();
-                    if (accept) {
-                        result.add(fileName);
-                    }
+                    fillResourcesResult(fileName, pattern, result);
                 }
             }
         }
         return result;
+    }
+
+    private static void fillResourcesResult(String fileName, Pattern pattern, List<String> result) {
+        Matcher matcher = pattern.matcher(fileName);
+        if (matcher.matches())
+            result.add(matcher.groupCount() > 0 ? matcher.group(1) : fileName);
     }
 
     public static String getClassPath() {

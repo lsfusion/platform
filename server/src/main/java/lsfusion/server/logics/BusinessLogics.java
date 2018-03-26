@@ -83,6 +83,7 @@ import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
+import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
@@ -1112,7 +1113,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Collection<String> calculateAllCustomReports() {
-        Pattern pattern = Pattern.compile(".*reports/custom/.*\\.jrxml");
+        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+"/.*\\.jrxml)");
         return ResourceUtils.getResources(pattern);
     }
     
@@ -2646,7 +2647,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
-                final Path path = Paths.get(element).resolve("reports/custom");
+                final Path path = Paths.get(element).resolve(FormReportManager.reportsDir);
 //                logger.info("Reset reports cache: processing path : " + path);
                 if (Files.isDirectory(path)) {
 //                    logger.info("Reset reports cache: path is directory: " + path);
