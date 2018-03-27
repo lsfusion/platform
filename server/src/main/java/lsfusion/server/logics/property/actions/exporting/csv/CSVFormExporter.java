@@ -19,7 +19,7 @@ public class CSVFormExporter extends PlainFormExporter {
     public CSVFormExporter(ReportGenerationData reportData, boolean noHeader, String separator, String charset) {
         super(reportData);
         this.noHeader = noHeader;
-        this.separator = separator == null ? ";" : separator;
+        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
 

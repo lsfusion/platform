@@ -23,7 +23,7 @@ public class ImportCSVIterator extends ImportIterator {
         this.columns = columns;
         this.properties = properties;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
-        this.separator = separator == null ? ";" : separator;
+        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
 
         this.row = 0;
         this.lastRow = getLastRow(file, noHeader);

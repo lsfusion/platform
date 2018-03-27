@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 public class ExternalUtils {
 
+    public static final String defaultCSVSeparator = ";";
     public static final String defaultCSVCharset = "UTF-8";
     public static final String defaultXMLJSONCharset = "UTF-8";
 
