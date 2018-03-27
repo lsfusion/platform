@@ -48,7 +48,11 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
 
             writer = new DBFWriter(file.getAbsolutePath(), jdbfFields, charset);
             for (ImMap<String, Object> row : rows) {
-                writer.addRecord(row.values().toArray(new Object[row.size()]));
+                List<Object> record = new ArrayList<>();
+                for (String field : fields) {
+                    record.add(row.get(field));
+                }
+                writer.addRecord(record.toArray(new Object[record.size()]));
             }
             return IOUtils.getFileBytes(file);
 

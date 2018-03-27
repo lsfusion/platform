@@ -53,8 +53,8 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
             CsvEscaper csvEscaper = new CsvEscaper(separator);
             for (ImMap<String, Object> row : rows) {
                 List<String> line = new ArrayList<>();
-                for (String key : row.keyIt()) {
-                    String cellValue = fieldTypes.getType(key).formatString(row.get(key));
+                for (String field : fields) {
+                    String cellValue = fieldTypes.getType(field).formatString(row.get(field));
                     line.add(cellValue != null ? csvEscaper.translate(cellValue) : "");
                 }
                 lines.add(line);
