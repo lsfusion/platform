@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -31,7 +32,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     private byte[] memo;
     private File tempMemoFile;
     private String charset;
-    public ImportDBFDataActionProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
+    public ImportDBFDataActionProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, String charset, BaseLogicsModule baseLM) {
         super(paramsCount, ids, properties, baseLM);
         this.hasWheres = hasWheres;
         this.hasMemo = hasMemo;

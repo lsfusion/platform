@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
 
-    public ImportDefaultDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportDefaultDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
     }
 

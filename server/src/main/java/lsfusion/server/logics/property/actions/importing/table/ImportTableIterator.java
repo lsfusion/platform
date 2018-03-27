@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.table;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.type.Type;
@@ -15,9 +16,9 @@ public class ImportTableIterator extends ImportIterator {
     private final JDBCTable rs;
     private int i=0;
     private final List<Integer> sourceColumns;
-    private final List<LCP> properties;
+    private final ImOrderSet<LCP> properties;
 
-    public ImportTableIterator(JDBCTable rs, List<Integer> sourceColumns, List<LCP> properties) {
+    public ImportTableIterator(JDBCTable rs, List<Integer> sourceColumns, ImOrderSet<LCP> properties) {
         this.rs = rs;
         this.sourceColumns = sourceColumns;
         this.properties = properties;

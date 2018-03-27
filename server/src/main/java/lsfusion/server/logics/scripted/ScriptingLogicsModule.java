@@ -566,6 +566,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         return findLAPByNameAndClasses(pUsage.name, pUsage.getSourceName(), getParamClasses(pUsage), isAbstract, false);
     }
 
+    public LAP<?> findLAPNoParamsByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+        if (pUsage.classNames == null) {
+            pUsage.classNames = Collections.emptyList();
+        }
+        LAP<?> lap = findLAPByPropertyUsage(pUsage);
+        ValueClass[] paramClasses = lap.getInterfaceClasses(ClassType.signaturePolicy);
+        if (paramClasses.length != 0) {
+            errLog.emitPropertyWithParamsExpected(getParser(), pUsage.name, "");
+        }
+        return lap;
+    }
+    public LCP<?> findLCPNoParamsByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+        if (pUsage.classNames == null) {
+            pUsage.classNames = Collections.emptyList();
+        }
+        LCP<?> lap = findLCPByPropertyUsage(pUsage);
+        ValueClass[] paramClasses = lap.getInterfaceClasses(ClassType.signaturePolicy);
+        if (paramClasses.length != 0) {
+            errLog.emitPropertyWithParamsExpected(getParser(), pUsage.name, "");
+        }
+        return lap;
+    }
+
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         try {
             AbstractWindow window = resolveWindow(name);
@@ -578,8 +601,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public FormEntity findForm(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return findForm(name, false);
+    }
+    public FormEntity findForm(String name, boolean nullIfNotFound) throws ScriptingErrorLog.SemanticErrorException {
         try {
             FormEntity form = resolveForm(name);
+            if(form == null && nullIfNotFound)
+                return null;
             checks.checkForm(form, name);
             return form;
         } catch (ResolvingError e) {
@@ -1475,17 +1503,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedExternalDBActionProp(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLCPsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));
     }
 
     public LPWithParams addScriptedExternalDBFActionProp(LPWithParams connectionString, String charset, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalDBFActionProperty(getTypesForExternalProp(params, context), charset, findLCPsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalDBFActionProperty(getTypesForExternalProp(params, context), charset, findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
     public LPWithParams addScriptedExternalHTTPActionProp(LPWithParams connectionString, List<LPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsByPropertyUsage(toPropertyUsageList))),
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.addList(connectionString, params));
     }
 
@@ -1494,13 +1522,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.add(params, action), context, toPropertyUsageList);
     }
 
-    private ImList<LCP> findLCPsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    private ImList<LCP> findLCPsNoParamsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(propUsages == null)
             return ListFact.EMPTY();
 
         MList<LCP> mProps = ListFact.mList(propUsages.size());
         for (PropertyUsage propUsage : propUsages) {
-            LCP<?> lcp = findLCPByPropertyUsage(propUsage);
+            LCP<?> lcp = findLCPNoParamsByPropertyUsage(propUsage);
             mProps.add(lcp);
         }
         return mProps.immutableList();
@@ -2592,7 +2620,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private LCP<?> getInputProp(PropertyUsage targetProp, ValueClass valueClass, Set<CalcProperty> usedProps) throws ScriptingErrorLog.SemanticErrorException {
         if(targetProp != null) {
-            LCP<?> result = findLCPByPropertyUsage(targetProp);
+            LCP<?> result = findLCPNoParamsByPropertyUsage(targetProp);
             usedProps.add(result.property);
             return result;
         }
@@ -2815,7 +2843,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP<?> targetProp = null;
         if(propUsage != null)
-            targetProp = findLCPByPropertyUsage(propUsage);
+            targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
                 printerProperty != null, printType, syncType, selectTop, targetProp, false, getParamsPlainList(propParams).toArray());
@@ -2853,7 +2881,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP<?> targetProp = null;
         if(propUsage != null)
-            targetProp = findLCPByPropertyUsage(propUsage);
+            targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
                 exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
@@ -2959,7 +2987,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public LPWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage, LPWithParams movePathProp, boolean clientAction, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.property.property.getValueClass(ClassType.valuePolicy);
-        LCP<?> targetProp = findLCPByPropertyUsage(propUsage);
+        LCP<?> targetProp = findLCPNoParamsByPropertyUsage(propUsage);
         ValueClass moveProp = movePathProp == null ? null : movePathProp.property.property.getValueClass(ClassType.valuePolicy);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, delete)),
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
@@ -2974,7 +3002,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportDBFActionProperty(LPWithParams fileProp, LPWithParams whereProp, LPWithParams memoProp, List<String> ids, List<PropertyUsage> propUsages, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = findLPsForImport(propUsages);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(whereProp != null)
@@ -2988,7 +3016,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = findLPsForImport(propUsages);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, baseLM)), Collections.singletonList(fileProp));
     }
 
@@ -2999,7 +3027,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LPWithParams> exprs, LPWithParams whereProperty,
                                                         PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         
-        LCP<?> targetProp = fileProp != null ? findLCPByPropertyUsage(fileProp) : BL.LM.exportFile;
+        LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : BL.LM.exportFile;
 
         List<LPWithParams> props = exprs;
         if(whereProperty != null)
@@ -3080,40 +3108,43 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(property, allParams);
     }
 
-    private List<LCP> findLPsForImport(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    private ImOrderSet<LCP> findLPsForImport(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         return findLPsForImport(propUsages, false);
     }
 
-    private List<LCP> findLPsForImport(List<PropertyUsage> propUsages, boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = new ArrayList<>();
+    private ImOrderSet<LCP> findLPsForImport(List<PropertyUsage> propUsages, boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
+        if(hasListOption)
+            return findLCPsNoParamsByPropertyUsage(propUsages).toOrderExclSet();
+        
+        MOrderExclSet<LCP> mProps = SetFact.mOrderExclSet(propUsages.size());
         for (PropertyUsage propUsage : propUsages) {
             if (propUsage.classNames == null) {
-                propUsage.classNames = hasListOption ? Collections.<String>emptyList() : Collections.singletonList("INTEGER"); 
+                propUsage.classNames = Collections.singletonList("INTEGER"); 
             }
             LCP<?> lcp = findLCPByPropertyUsage(propUsage);
             ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-            if (hasListOption ? paramClasses.length != 0 : (paramClasses.length != 1 || paramClasses[0].getType() != ImportDataActionProperty.type)) {
+            if (paramClasses.length != 1 || paramClasses[0].getType() != ImportDataActionProperty.type) {
                 errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, hasListOption ? "" : ImportDataActionProperty.type.getParsedName());
             }
-            props.add(lcp);
+            mProps.exclAdd(lcp);
         }
-        return props;
+        return mProps.immutableOrder();
     }
 
     public LPWithParams addScriptedImportExcelActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = findLPsForImport(propUsages);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, baseLM)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = findLPsForImport(propUsages);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages);
         return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(ids, props, separator, noHeader, charset, baseLM)), Collections.singletonList(fileProp));
     }
 
     public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, Boolean hasListOption, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
         if (hasListOption == null)
             hasListOption = false;
-        List<LCP> props = findLPsForImport(propUsages, hasListOption);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages, hasListOption);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(rootProp != null)
@@ -3124,7 +3155,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedImportJSONActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams rootProp, Boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
         if (hasListOption == null)
             hasListOption = false;
-        List<LCP> props = findLPsForImport(propUsages, hasListOption);
+        ImOrderSet<LCP> props = findLPsForImport(propUsages, hasListOption);
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(rootProp != null)
@@ -3452,13 +3483,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
-                                                           PropertyUsage actionUsage, String formName) throws ScriptingErrorLog.SemanticErrorException {
+                                                           PropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
         LAP<?> action = null;
         FormEntity form = null;
-        if (actionUsage != null) {
-            action = findNavigatorAction(actionUsage);
-        } else if (formName != null) {
+        if (formName != null) {
             form = findForm(formName);
+        }
+        if (actionUsage != null) {
+            if(!isAction)
+                form = findForm(actionUsage.name, true);
+            if(form == null)
+                action = findNavigatorAction(actionUsage);
         }
         
         if (name == null) {
@@ -3514,7 +3549,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (actionUsage.classNames == null) {
             actionUsage.classNames = Collections.emptyList(); 
         }
-        LAP<?> action = findLAPByPropertyUsage(actionUsage);
+        LAP<?> action = findLAPNoParamsByPropertyUsage(actionUsage);
         checks.checkNavigatorAction(action);
         return action;
     }

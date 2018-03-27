@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.xml;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.apache.commons.collections.iterators.SingletonIterator;
@@ -17,10 +18,10 @@ import java.util.*;
 public abstract class ImportXMLIterator extends ImportIterator {
     private boolean attr;
     private Iterator iterator;
-    private final List<LCP> properties;
+    private final ImOrderSet<LCP> properties;
     private final List<String> ids;
 
-    public ImportXMLIterator(byte[] file, List<LCP> properties, List<String> ids, String root, boolean hasListOption, boolean attr) throws JDOMException, IOException {
+    public ImportXMLIterator(byte[] file, ImOrderSet<LCP> properties, List<String> ids, String root, boolean hasListOption, boolean attr) throws JDOMException, IOException {
         this.properties = properties;
         this.attr = attr;
         this.ids = ids;
@@ -94,7 +95,7 @@ public abstract class ImportXMLIterator extends ImportIterator {
 
     public abstract List<Integer> getColumns(Map<String, Integer> mapping);
 
-    private String formatValue(List<LCP> properties, List<Integer> columns, Integer column, String value) {
+    private String formatValue(ImOrderSet<LCP> properties, List<Integer> columns, Integer column, String value) {
         DateFormat dateFormat = getDateFormat(properties, columns, column);
         if (dateFormat != null && value != null) {
             value = parseFormatDate(dateFormat, value);

@@ -3883,14 +3883,17 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 	;
 
 navigatorElementDescription returns [NavigatorElement element]
+@init {
+	boolean isAction = false;
+}
 @after {
 	if (inPropParseState()) {
- 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
 	:	'FOLDER' name=ID (caption=localizedStringLiteral)? 
-	|	'FORM'? ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID 
-	|	'ACTION' ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
+	|	'FORM' ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID 
+	|	('ACTION' { isAction = true; } )? ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 

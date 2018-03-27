@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -19,7 +20,7 @@ import java.util.List;
 public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     protected Integer sheetIndex;
     
-    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
         super(paramsCount, ids, properties, baseLM);
     }
 

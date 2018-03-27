@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -48,7 +49,7 @@ import java.util.Map;
 public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     protected final List<String> ids;
-    protected final List<LCP> properties;
+    protected final ImOrderSet<LCP> properties;
 
     protected final boolean hasListOption;
     private final LCP<?> importedProperty;
@@ -83,7 +84,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         }
     }
 
-    public static ImportDataActionProperty createDBFProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, List<LCP> properties, String charset, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createDBFProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, String charset, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -95,7 +96,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return new ImportDBFDataActionProperty(paramsCount, hasWheres, hasMemo, ids, properties, charset, baseLM);
     }
 
-    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.TABLE) {
             return new ImportTableDataActionProperty(ids, properties, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
@@ -105,11 +106,11 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return null;
     }
 
-    public ImportDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
         this(paramsCount, ids, properties, false, baseLM);
     }
 
-    public ImportDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
+    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -139,7 +140,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                     ImportIterator iterator = getIterator((byte[]) file, extension);
 
                     MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
-                    ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties);
+                    ImOrderSet<LCP> props = properties;
                     if(!hasListOption)
                         props = props.addOrderExcl(importedProperty);
                     for (LCP prop : props) {

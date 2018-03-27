@@ -1,5 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.csv;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -12,7 +14,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     private boolean noHeader;
     private String charset;
 
-    public ImportCSVDataActionProperty(List<String> ids, List<LCP> properties,
+    public ImportCSVDataActionProperty(List<String> ids, ImOrderSet<LCP> properties,
                                        String separator, boolean noHeader, String charset, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
         this.separator = separator;

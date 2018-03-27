@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.json;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class ImportJSONDataActionProperty extends ImportDataActionProperty {
     String root;
 
-    public ImportJSONDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
+    public ImportJSONDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
         super(paramsCount, ids, properties, hasListOption, baseLM);
     }
 
