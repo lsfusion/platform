@@ -209,7 +209,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    public final static String reportsDir = "reports/custom"; 
+    public final static String reportsDir = "reports/custom/"; 
     
     private String findCustomReportFileName(String fileName) {
 
@@ -263,7 +263,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
             String id = entry.getKey();
 
-            String reportName = (custom ? reportsDir : "reports/auto") + "/" + getReportName(id, toExcel, groupId);
+            String reportName = (custom ? reportsDir : "reports/auto/") + getReportName(id, toExcel, groupId);
             ReportPath defaultCustomReportPath = null;
             if(custom) {
                 defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(entry.getKey())) : getDefaultCustomReportPath(reportName);

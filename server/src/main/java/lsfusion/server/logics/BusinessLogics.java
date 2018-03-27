@@ -1113,7 +1113,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Collection<String> calculateAllCustomReports() {
-        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+"/.*\\.jrxml)");
+        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+".*\\.jrxml)");
         return ResourceUtils.getResources(pattern);
     }
     
