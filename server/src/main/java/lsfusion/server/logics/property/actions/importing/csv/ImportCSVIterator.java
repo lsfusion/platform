@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.csv;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 
@@ -21,8 +22,8 @@ public class ImportCSVIterator extends ImportIterator {
     public ImportCSVIterator(byte[] file, List<Integer> columns, List<LCP> properties, String charset, String separator, boolean noHeader) {
         this.columns = columns;
         this.properties = properties;
-        this.charset = charset == null ? "UTF-8" : charset;
-        this.separator = separator;
+        this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
+        this.separator = separator == null ? ";" : separator;
 
         this.row = 0;
         this.lastRow = getLastRow(file, noHeader);

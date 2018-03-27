@@ -35,7 +35,7 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
                                        String separator, boolean noHeader, String charset) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
 
-        this.separator = separator == null || separator.isEmpty() ? "|" : separator;
+        this.separator = separator == null ? ";" : separator;
         this.noHeader = noHeader;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
@@ -84,7 +84,7 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
         private char[] CSV_SEARCH_CHARS;
 
         public CsvEscaper(String separator) {
-            this.CSV_SEARCH_CHARS = new char[] {separator.charAt(0), CSV_QUOTE, CharUtils.CR, CharUtils.LF};
+            this.CSV_SEARCH_CHARS = separator.isEmpty() ? new char[] {CSV_QUOTE, CharUtils.CR, CharUtils.LF} : new char[] {separator.charAt(0), CSV_QUOTE, CharUtils.CR, CharUtils.LF};
         }
 
         @Override

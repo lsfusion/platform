@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.csv;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
@@ -21,8 +22,8 @@ public class ImportFormCSVDataActionProperty extends ImportFormPlainDataActionPr
     public ImportFormCSVDataActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) {
         super(new ValueClass[]{}, formEntity);
         this.noHeader = noHeader;
-        this.charset = charset == null ? "cp1251" : charset;
-        this.separator = separator == null ? "|" : separator;
+        this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
+        this.separator = separator == null ? ";" : separator;
     }
 
     @Override

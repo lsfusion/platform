@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.exporting.csv;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
 
@@ -18,8 +19,8 @@ public class CSVFormExporter extends PlainFormExporter {
     public CSVFormExporter(ReportGenerationData reportData, boolean noHeader, String separator, String charset) {
         super(reportData);
         this.noHeader = noHeader;
-        this.separator = separator == null ? "|" : separator;
-        this.charset = charset == null ? "UTF-8" : charset;
+        this.separator = separator == null ? ";" : separator;
+        this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
 
     @Override

@@ -15,7 +15,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     public ImportCSVDataActionProperty(List<String> ids, List<LCP> properties,
                                        String separator, boolean noHeader, String charset, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
-        this.separator = separator == null ? "|" : separator;
+        this.separator = separator;
         this.noHeader = noHeader;
         this.charset = charset;
     }
