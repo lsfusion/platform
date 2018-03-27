@@ -96,6 +96,7 @@ public class ExternalUtils {
             case "csv":
                 return ContentType.create("text/" + extension, defaultCSVCharset);
             case "json":
+                return ContentType.create("application/" + extension, defaultXMLJSONCharset);
             case "xml":
                 return ContentType.create("text/" + extension, defaultXMLJSONCharset);
             default:
