@@ -105,14 +105,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
-        Window.addWindowClosingHandler(new Window.ClosingHandler() {
-            @Override
-            public void onWindowClosing(Window.ClosingEvent event) {
-                windowsController.storeWindowsSizes();
-                clean();
-            }
-        });
-
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
@@ -205,6 +197,14 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public void success(final ShowDefaultFormsResult result) {
                 initializeWindows(result.defaultFormsType, result.defaultForms);
+            }
+        });
+
+        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
+            @Override
+            public void onWindowClosing(Window.ClosingEvent event) {
+                windowsController.storeWindowsSizes();
+                clean();
             }
         });
 
