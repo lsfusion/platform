@@ -24,9 +24,14 @@ fileExists 'Проверка существования файла' = CUSTOM 'ls
 fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, 'UTF-8', NULL); }
 fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, NULL, TRUE); } 
 
+// --------------------------------- STRING -> CUSTOMFILE -> STRING --------------------------------- //
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
 stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
+
+resultString = DATA LOCAL TEXT ();
+//customFile, charset
+customFileToString 'Запись файла в строку' = CUSTOM 'lsfusion.erp.utils.utils.FileToStringActionProperty' (CUSTOMFILE, VARSTRING[10]);
 
 mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
 
