@@ -171,7 +171,7 @@ forbidView = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidView(use
 permitView = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitView(userRole, ActionOrProperty property) BY user, property;
 
 fullForbidView (User user, ActionOrProperty property) = 
-    (fullForbidView(property) OR hasUserRoleCustom(user) == forbidView (user, property)) AND NOT permitView(user, property);
+    (fullForbidView(property) AND user IS User OR hasUserRoleCustom(user) == forbidView (user, property)) AND NOT permitView(user, property);
          
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -200,7 +200,17 @@ forbidChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND forbidChange
 permitChange = GROUP SUM 1 IF has(User user, UserRole userRole) AND permitChange(userRole, ActionOrProperty property) BY user, property;
 
 fullForbidChange (User user, ActionOrProperty property) = 
-    (fullForbidChange(property) OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
+    (fullForbidChange(property) AND user IS User OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
+
+cachePropertyPolicy 'Кэшировать политику безопасности для свойств' = DATA BOOLEAN (User);
+updatePropertyPolicyCaches = CUSTOM 'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
+WHEN [=GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty)) OR CHANGED(fullForbidChange(user, actionOrProperty))) AND cachePropertyPolicy(user) BY user](User user) DO
+    updatePropertyPolicyCaches(user);
+onStarted() += {
+    FOR cachePropertyPolicy(User user) DO 
+        updatePropertyPolicyCaches(user);
+}
+
 
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
@@ -411,7 +421,7 @@ FORM securityPolicy 'Политика безопасности'
     
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login
-    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, forbidEditProfile
+    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, forbidEditProfile, cachePropertyPolicy
     
     FILTERS mainRole(u) == ur2 
 

@@ -45,6 +45,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP overPermitUserNavigatorElement;
     public LCP overForbidUserNavigatorElement;
 
+    public LCP cachePropertyPolicyUser;
+
     public LCP transactTimeoutUser;
     
     public LCP sidUserRole;
@@ -137,6 +139,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // Разрешения для каждого элемента
         overPermitUserNavigatorElement = findProperty("overPermit[User,NavigatorElement]");
         overForbidUserNavigatorElement = findProperty("overForbid[User,?]");
+
+        cachePropertyPolicyUser = findProperty("cachePropertyPolicy[User]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
 

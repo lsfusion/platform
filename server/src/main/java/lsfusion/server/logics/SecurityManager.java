@@ -7,6 +7,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.Compare;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
@@ -28,8 +30,11 @@ import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.Modifier;
+import lsfusion.server.session.SessionModifier;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -443,7 +448,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qu.addProperty("forbidViewAllProperty", securityLM.forbidViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("permitChangeAllProperty", securityLM.permitChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllProperty", securityLM.forbidChangeAllPropertyRole.getExpr(session.getModifier(), userExpr));
+            
+            qu.addProperty("cachePropertyPolicy", securityLM.cachePropertyPolicyUser.getExpr(session.getModifier(), userExpr));
 
+            boolean cachePropertyPolicy = false;
+            
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
                 if (valueMap.get("forbidAllForms") != null)
@@ -460,8 +469,9 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     policy.property.change.defaultPermission = false;
                 else if (valueMap.get("permitChangeAllProperty") != null)
                     policy.property.change.defaultPermission = true;
+                
+                cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
             }
-
 
             QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qne.getMapExprs().get("neId"));
@@ -478,20 +488,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
 
             applyNavigatorElementPolicy(qne.execute(session).values(), policy);
 
-            QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
-            Expr actionOrPropertyExpr = qp.getMapExprs().get("propertyCN");
-            userExpr = qp.getMapExprs().get("userId");
-            Expr propExpr = reflectionLM.canonicalNameActionOrProperty.getExpr(session.getModifier(), actionOrPropertyExpr);
-            qp.and(propExpr.getWhere());
-            qp.and(userExpr.compare(userObject, Compare.EQUALS));
-            qp.and(securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr).getWhere().or(
-                    securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr).getWhere()));
-
-            qp.addProperty("cn", propExpr);
-            qp.addProperty("fullForbidView", securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr));
-            qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), userExpr, actionOrPropertyExpr));
-
-            ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
+            ImCol<ImMap<String, Object>> propValues = readPropertyPolicy(null, session, userObject, cachePropertyPolicy, false);
             for (ImMap<String, Object> valueMap : propValues) {
                 String cn = ((String) valueMap.get("cn")).trim();
                 try {
@@ -513,6 +510,43 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private LRUSVSMap<Long, ImCol<ImMap<String, Object>>> propertyPolicyCache = new LRUSVSMap<>(LRUUtil.G1);
+
+    private ImCol<ImMap<String, Object>> readPropertyPolicy(ExecutionContext context, DataSession session, DataObject userObject, boolean cache, boolean reupdateCache) throws SQLException, SQLHandledException {
+
+        ImCol<ImMap<String, Object>> result = null;
+        if(cache && !reupdateCache) {
+            result = propertyPolicyCache.get((long) userObject.object);
+            if (result != null)
+                return result;
+        }
+
+        Modifier modifier = context != null ? context.getModifier() : session.getModifier();
+        
+        Expr userExpr;QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
+        Expr actionOrPropertyExpr = qp.getMapExprs().get("propertyCN");
+        userExpr = qp.getMapExprs().get("userId");
+        Expr propExpr = reflectionLM.canonicalNameActionOrProperty.getExpr(modifier, actionOrPropertyExpr);
+        qp.and(propExpr.getWhere());
+        qp.and(userExpr.compare(userObject, Compare.EQUALS));
+        qp.and(securityLM.fullForbidViewUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr).getWhere().or(
+                securityLM.fullForbidChangeUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr).getWhere()));
+
+        qp.addProperty("cn", propExpr);
+        qp.addProperty("fullForbidView", securityLM.fullForbidViewUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr));
+        qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(modifier, userExpr, actionOrPropertyExpr));
+
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = context != null ? qp.execute(context) : qp.execute(session);
+        result = queryResult.values();
+        if(cache)
+            propertyPolicyCache.put((long)userObject.object, result);
+        return result;
+    }
+    
+    public void updatePropertyPolicyCaches(ExecutionContext context, DataObject userObject) throws SQLException, SQLHandledException {
+        readPropertyPolicy(context, null, userObject, true, true);
     }
 
     public DefaultFormsType showDefaultForms(DataObject user) {
