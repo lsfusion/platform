@@ -648,7 +648,7 @@ public class SwingUtils {
             String extension = BaseUtils.getFileExtension(filePath);
             if (extension.equals("csv")) {
                 if (new File(filePath).exists())
-                    Files.write(Paths.get(filePath), ArrayUtils.addAll("\r\n".getBytes(), fileBytes), StandardOpenOption.APPEND);
+                    Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
                 else
                     IOUtils.putFileBytes(new File(filePath), fileBytes);
             } else {

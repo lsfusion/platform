@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -16,9 +15,9 @@ import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +41,9 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
 
     @Override
     protected byte[] getFile(final Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException {
-
-        File file = File.createTempFile("export", ".csv");
-        try (PrintWriter writer = new PrintWriter(file, charset)) {
-            List<List<String>> lines = new ArrayList<>();
-            if (!noHeader) {
-                lines.add(fields.toJavaList());
-            }
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            if (!noHeader)
+                os.write(getLineBytes(fields.toJavaList()));
 
             CsvEscaper csvEscaper = new CsvEscaper(separator);
             for (ImMap<String, Object> row : rows) {
@@ -57,23 +52,14 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
                     String cellValue = fieldTypes.getType(field).formatString(row.get(field));
                     line.add(cellValue != null ? csvEscaper.translate(cellValue) : "");
                 }
-                lines.add(line);
+                os.write(getLineBytes(line));
             }
-
-            for (int i = 0; i < lines.size(); i++) {
-                String line = StringUtils.join(lines.get(i).toArray(), separator);
-                if (i < lines.size() - 1)
-                    writer.println(line);
-                else
-                    writer.print(line);
-            }
-            writer.flush();
-            return IOUtils.getFileBytes(file);
-        } finally {
-            if (!file.delete()) {
-                file.deleteOnExit();
-            }
+            return os.toByteArray();
         }
+    }
+
+    private byte[] getLineBytes(List<String> line) throws UnsupportedEncodingException {
+        return (StringUtils.join(line.toArray(), separator) + "\r\n").getBytes(charset);
     }
 
     //modified from StringEscapeUtils
