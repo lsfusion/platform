@@ -13,7 +13,7 @@ text 'Действие' = DATA STRING[1000] (ProfileObject) IN recognize CHARWID
 onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
-profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
+profileObject = GROUP BY text(ProfileObject profileObject) AGGR profileObject;
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
@@ -63,11 +63,11 @@ stopProfiler 'Остановить профилировщик' () = {
 id(User user) = INTEGER(user AS User) MATERIALIZED INDEXED; 
 
 writeProfilerBatch () = {
-    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
+    FOR [= GROUP BY TEXT t1 SUM 1 IF callCount(t1, TEXT t2, INTEGER u, VARSTRING[100] f)](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
         text(p) <- t1;    
     }     
 
-    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t2](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
+    FOR [= GROUP BY TEXT t2 SUM 1 IF callCount(TEXT t1, t2, INTEGER u, VARSTRING[100] f)](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
         text(p) <- t2;    
     }     
     
@@ -132,7 +132,7 @@ order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, Form f) = val
 
 dataInFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (User);
 inFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (UserRole);
-overFilter 'Отм' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), [=GROUP SUM 1 IF in(User u, UserRole r) AND inFilter(r) BY u](u) > 0;
+overFilter 'Отм' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), [=GROUP BY User u SUM 1 IF in(u, UserRole r) AND inFilter(r)](u) > 0;
 inFilter 'Отм' (User u) = OVERRIDE overFilter(u), NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User;
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
@@ -143,14 +143,14 @@ background(Form u) = IF inFilter(u) THEN RGB(220,220,220);
 
 inFilter 'Отм' (User u, Form f) = inFilter(u) AND inFilter(f);
 
-link 'Количество вызовов' = GROUP SUM callCount(ProfileObject down, ProfileObject up, User u, Form f) IF inFilter(u, f) BY up, down;
+link 'Количество вызовов' = GROUP BY ProfileObject up, ProfileObject down SUM callCount(down, up, User u, Form f) IF inFilter(u, f);
 
 value 'Вызов' (ProfileObject up, ProfileObject down, ProfilerIndex pi) = CASE WHEN pi != ProfilerIndex.minTime AND pi != ProfilerIndex.maxTime AND pi != ProfilerIndex.averageTime AND pi != ProfilerIndex.averageSquaredTime  
-    THEN [=GROUP SUM value(ProfileObject down, ProfileObject up, User u, Form f, ProfilerIndex pi) IF inFilter(u, f) BY up, down, pi](up, down, pi);
+    THEN [=GROUP BY ProfileObject up, ProfileObject down, ProfilerIndex pi SUM value(down, up, User u, Form f, pi) IF inFilter(u, f)](up, down, pi);
 order 'Порядок'(ProfileObject p1, ProfileObject p2) = value(p1, p2, order());
 
-downValue 'Общее' = GROUP SUM value(ProfileObject up, ProfileObject down, ProfilerIndex pi) BY down, pi;
-upValue 'Вызванных' = GROUP SUM value(ProfileObject up, ProfileObject down, ProfilerIndex pi) BY up, pi;
+downValue 'Общее' = GROUP BY ProfileObject down, ProfilerIndex pi SUM value(ProfileObject up, down, pi);
+upValue 'Вызванных' = GROUP BY ProfileObject up, ProfilerIndex pi SUM value(up, ProfileObject down, pi);
 value 'Значение показателя' (ProfileObject po, ProfilerIndex pi) = CASE 
     WHEN pi == ProfilerIndex.callCount OR pi == ProfilerIndex.totalTime OR pi == ProfilerIndex.totalSQLTime OR pi == ProfilerIndex.totalUserInteractionTime OR pi == ProfilerIndex.totalTimeNoWait OR pi == ProfilerIndex.totalJavaTime 
         THEN downValue(po, pi)
@@ -182,8 +182,8 @@ isTotalTimeNoWait() = active(ProfilerIndex.totalTimeNoWait);
 isTotalJavaTime() = active(ProfilerIndex.totalJavaTime);
 
 //по пользователям, формам
-downValue 'Общее' = GROUP SUM value(ProfileObject down, ProfileObject up, User u, Form f, ProfilerIndex pi) BY down, u, f, pi;
-upValue 'Вызванных' = GROUP SUM value(ProfileObject down, ProfileObject up, User u, Form f, ProfilerIndex pi) BY up, u, f, pi;
+downValue 'Общее' = GROUP BY ProfileObject down, User u, Form f, ProfilerIndex pi SUM value(down, ProfileObject up, u, f, pi);
+upValue 'Вызванных' = GROUP BY ProfileObject up, User u, Form f, ProfilerIndex pi SUM value(ProfileObject down, up, u, f, pi);
 value 'Внутреннее' (ProfileObject po, User u, Form f, ProfilerIndex pi) = downValue(po, u, f, pi) (-) upValue(po, u, f, pi);
 order 'Порядок' (ProfileObject po, User u, Form f) = value(po, u, f, order());
 
@@ -196,11 +196,11 @@ pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STE
 pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
-        OVERRIDE [=GROUP LAST ProfileObject up IF link(up, ProfileObject down) AND pathTo(selectedTop(), up) BY down ORDER order(up, down)](down), 
+        OVERRIDE [=GROUP BY ProfileObject down LAST ProfileObject up IF link(up, down) AND pathTo(selectedTop(), up) ORDER order(up, down)](down), 
             ProfileObject.top IF down IS ProfileObject;
         
 child(ProfileObject up) = IF NOT up == selectedTop() THEN 
-        OVERRIDE [=GROUP LAST ProfileObject down IF link(ProfileObject up, down) AND pathFrom(selectedTop(), down) BY up ORDER order(up, down)](up),
+        OVERRIDE [=GROUP BY ProfileObject up LAST ProfileObject down IF link(up, down) AND pathFrom(selectedTop(), down) ORDER order(up, down)](up),
             ProfileObject.top IF up IS ProfileObject;
        
 initFilters() = {

@@ -89,14 +89,14 @@ threadStackTraceSQLProcess 'След java-потока (SQL)' = DATA LOCAL TEXT 
 nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 computerProcess 'Компьютер (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (Computer i) = INTEGER(i AS Computer);
-computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
+computerObject (value) = GROUP BY objValue(Computer computer) AGGR computer;
 nameComputerSQL 'Компьютер (SQL)' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
 nameComputer 'Компьютер' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
 nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 userProcess 'Пользователь (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (User i) = INTEGER(i AS User);
-userObject (value) = GROUP AGGR User user BY objValue(user);
+userObject (value) = GROUP BY objValue(User user) AGGR user;
 nameUserSQL 'Пользователь (SQL)' (VARSTRING[10] process) = name(userObject(userProcess(process)));
 nameUser 'Пользователь' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
 dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME (VARSTRING[10]);
@@ -131,17 +131,17 @@ lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[
 isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (VARSTRING[10]);
    
-processThread (id) = GROUP AGGR VARSTRING[10] process BY idThreadProcess(process) WHERE process IS VARSTRING[10];
+processThread (id) = GROUP BY idThreadProcess(VARSTRING[10] process) AGGR process WHERE process IS VARSTRING[10];
 threadOwnerProcess (VARSTRING[10] i) = processThread(lockOwnerIdProcess(i));
                                                                                                                                                                                                                                                           
 blockingProcess 'Уровень' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
                                                         STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                       
 isBlockingProcess 'Блокируется' (VARSTRING[10] child, VARSTRING[10] parent) = TRUE IF blockingProcess(child, parent);
-sumPlusOneBlocked  (process) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] child, VARSTRING[10] parent) BY parent;
+sumPlusOneBlocked  (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(VARSTRING[10] child, parent);
 sumBlocked 'Кол-во заблокированных процессов' (VARSTRING[10] process) = sumPlusOneBlocked(process) - 1;
-deadlock (process) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED' BY parent;
+deadlock (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
 isDeadlock 'Deadlock' (VARSTRING[10] process) = NOT deadlock(process) AND process IS VARSTRING[10];
-sumPlusOneBlocking 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] parent, VARSTRING[10] child) BY parent;
+sumPlusOneBlocking 'Кол-во блокирующих процессов' (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
 sumBlocking 'Глубина блокировки' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
 
 activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));

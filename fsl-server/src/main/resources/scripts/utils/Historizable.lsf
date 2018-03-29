@@ -30,8 +30,7 @@ END
 META defineHistorizable(property, propPostfix, caption, type, object, objectIdentity, group)
     data###property caption = DATA type (###object, DATE) IN group;
 
-    property caption (object, date) = GROUP LAST  data###property(###object object, DATE dateIn)
-                                                                         BY    object, DATE date
+    property caption (object, date) = GROUP BY (###object object), DATE date LAST data###property(object, DATE dateIn)
                                                                          ORDER dateIn
                                                                          WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
@@ -67,8 +66,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
     data###property caption = DATA type (###object, DATE);
     data###typeIdentity###classIdentity###property caption (###object object, DATE date) = typeIdentity(data###property(object, date)) IN group;
 
-    property caption (object, date) = GROUP LAST  data###property(###object object, DATE dateIn)
-                                                           BY    object, DATE date
+    property caption (object, date) = GROUP BY (###object object), DATE date LAST  data###property(object, DATE dateIn)
                                                            ORDER dateIn
                                                            WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
@@ -102,8 +100,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
     data###property caption = DATA type (###object1, ###object2, DATE) IN group;
 
     property caption (object1, object2, date) = 
-        GROUP LAST  data###property(###object1 object1, ###object2 object2, DATE dateIn)
-              BY    object1, object2, DATE date
+        GROUP BY (###object1 object1), ###object2 object2, DATE date LAST  data###property(object1, object2, DATE dateIn)
               ORDER dateIn
               WHERE data###property(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
 

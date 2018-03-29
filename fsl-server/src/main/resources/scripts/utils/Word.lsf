@@ -21,7 +21,7 @@ openProcess 'Сгенерировать документ'(Template template) = {
     openResultTemplate();
 }
 
-templateId (string1) = GROUP AGGR Template template BY id(template) WHERE template IS Template;
+templateId (string1) = GROUP BY id(Template template) AGGR template WHERE template IS Template;
 
 CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
@@ -43,7 +43,7 @@ columnSeparator 'Разделитель колонок' (TemplateEntry e)= OVERR
 dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
 rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
 
-templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry BY  key(templateEntry), id(template(templateEntry)) WHERE templateEntry IS TemplateEntry;
+templateEntryKeyEntryIdTemplate (string1, string2) = GROUP BY  key(TemplateEntry templateEntry), id(template(templateEntry)) AGGR templateEntry WHERE templateEntry IS TemplateEntry;
 
 FORM template 'Шаблон Word'
 

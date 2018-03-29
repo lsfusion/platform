@@ -239,7 +239,7 @@ FORM printBlankPageLandscape;
 
 META defineAggregationCustom1 (primProperty, primObject, primClass, aggrObject, aggrClass, aggrProperty)
     aggrObject (primObject) =
-        GROUP AGGR aggrClass aggrObject BY primObject(aggrObject)
+        GROUP BY primObject(aggrClass aggrObject) AGGR aggrObject
         WHERE aggrObject IS aggrClass MATERIALIZED INDEXED;
 
     aggrProperty(primClass primObject) => aggrObject(primObject) RESOLVE LEFT;
@@ -266,7 +266,7 @@ END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
     aggrObject (prim1Object, prim2Object) =
-        GROUP AGGR aggrClass aggrObject BY prim1Object(aggrObject), prim2Object(aggrObject)
+        GROUP BY prim1Object(aggrClass aggrObject), prim2Object(aggrObject) AGGR aggrObject
         WHERE aggrObject IS aggrClass;
 
     aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT;
@@ -294,7 +294,7 @@ END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
     aggrClass (prim1Object, prim2Object, prim3Object) =
-        GROUP AGGR aggrClass aggrObject BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject)
+        GROUP BY prim1Object(aggrClass aggrObject), prim2Object(aggrObject), prim3Object(aggrObject) AGGR aggrObject
         WHERE aggrObject IS aggrClass MATERIALIZED INDEXED;
 
     aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) => aggrClass(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
@@ -322,7 +322,7 @@ END
 // -- Агрегации для 4х объектов -- //   
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
     aggrObject (prim1Object, prim2Object, prim3Object, prim4Object) =
-        GROUP AGGR aggrClass aggrObject BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject) 
+        GROUP BY prim1Object(aggrClass aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject) AGGR aggrObject 
         WHERE aggrObject IS aggrClass;// MATERIALIZED INDEXED;
 
     aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) => aggrObject(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE LEFT;
