@@ -26,7 +26,7 @@ CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 
 name 'Имя' = DATA VARSTRING[100] (ScheduledTask);
-scheduledTask (name) = GROUP AGGR ScheduledTask task BY name(task) WHERE task IS ScheduledTask;
+scheduledTask (name) = GROUP BY name(ScheduledTask task) AGGR task WHERE task IS ScheduledTask;
 
 runAtStart 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
 timeFrom 'Время с' = DATA TIME (ScheduledTask);
@@ -40,7 +40,7 @@ daysOfMonth 'Выполнять по дням (через запятую)' = DAT
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
 in 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
-daysOfWeek (t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,ScheduledTask t), ', ' BY t ORDER d;   
+daysOfWeek (t)= GROUP BY ScheduledTask t CONCAT VARSTRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
 
 CLASS ScheduledTaskDetail 'Строка задания планировщика';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -89,7 +89,7 @@ message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
-isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
+isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP BY scheduledTaskLog(ScheduledClientTaskLog stcl) SUM 1 IF message(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler 'Остановить планировщик' = CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
 stopSchedulerApply 'Остановить планировщик' = {
@@ -111,7 +111,7 @@ onStarted() += { runSetupScheduler(); }
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = { EVAL scriptText(); }
                                          
-changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(ScheduledTask t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
+changedSchedulerTask (ScheduledTask t) = GROUP BY ScheduledTask t SUM 1 IF (((CHANGED (runAtStart(t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
                                          OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
                                          OR CHANGED (active(t))) OR
@@ -119,7 +119,7 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(S
                                          OR CHANGED (scheduledTask(td)) OR CHANGED (action(td)) 
                                          OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
                                          AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
-                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW BY t;
+                                                CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
 executeScheduledTask 'Выполнить задание' = CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
 setupScheduledTask 'Перезапустить задание' = CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         

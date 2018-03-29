@@ -84,7 +84,7 @@ javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
 is64Java '64-битная java' = DATA BOOLEAN (Connection);
 screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
-countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
+countConnection 'Кол-во подключений' = GROUP BY user(Connection connection) SUM 1 MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
@@ -117,7 +117,7 @@ shutdown 'Отключить' (CustomUser user) = {
         }
 } CONFIRM;
 
-hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == CustomUser user AND connectionStatus(conn) == ConnectionStatus.connectedConnection BY user;
+hasConnectedConnections (CustomUser user) = GROUP BY CustomUser user SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
 
 fileUserLogs = DATA CUSTOMFILE (Connection);
 userLogs () = CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
@@ -201,7 +201,7 @@ maxTotalMemoryFromTo 'Максимум памяти' = DATA INTEGER (Computer, D
 minUsedMemoryFromTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 maxUsedMemoryFromTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
-lastConnection(computer) = GROUP LAST Connection connection BY computer(connection) ORDER connection;
+lastConnection(computer) = GROUP BY computer(Connection connection) LAST connection ORDER connection;
 remoteAddress 'IP пользователя' (Computer computer) = remoteAddress(lastConnection(computer));
 osVersion 'Операционная система' (Computer computer) = osVersion(lastConnection(computer));
 processor 'Процессор' (Computer computer) = processor(lastConnection(computer));
@@ -339,25 +339,25 @@ DESIGN changes {
 }
 
 limitPing 'Пороговый пинг (мс)' = DATA INTEGER ();
-limitPingSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
-    IF pingFromTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo;
+limitPingSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averagePingDateFrom 'Средний пинг (мс)' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP SUM pingFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM pingFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);
     
 limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
-limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
-    IF maxTotalMemoryFromTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
+limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averageMaxTotalMemoryDateFrom 'Средняя память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP SUM maxTotalMemoryFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM maxTotalMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);        
 
 limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
-limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
-    IF maxUsedMemoryFromTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
+limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
+    IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averageMaxUsedMemoryDateFrom 'Средняя использованная память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP SUM maxUsedMemoryFromTo(Computer computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo) / 
-    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND limitDTo > dTo] (computer, limitDFrom, limitDTo);        
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM maxUsedMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
+    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);        
 
 FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)

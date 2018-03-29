@@ -13,7 +13,7 @@ level 'Уровень' (PropertyGroup child, PropertyGroup parent) = RECURSION 1
 caption 'Имя' = DATA VARSTRING[250] (PropertyGroup);
 number 'Номер' = DATA INTEGER (PropertyGroup);
 SID 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
-propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup BY SID(propertyGroup) WHERE propertyGroup IS PropertyGroup;
+propertyGroup 'Свойство' (sID) = GROUP BY SID(PropertyGroup propertyGroup) AGGR propertyGroup WHERE propertyGroup IS PropertyGroup;
 
 
 CLASS NavigatorElement 'Элемент навигатора';
@@ -28,7 +28,7 @@ TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 caption 'Название элемента навигатора' = DATA VARSTRING[250] (NavigatorElement);
 canonicalName 'Каноническое имя элемента навигатора' = DATA VARSTRING[100] (NavigatorElement);
 number 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElementCanonicalName 'Элемент навигатора' (sid) = GROUP AGGR NavigatorElement navigatorElement BY canonicalName(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+navigatorElementCanonicalName 'Элемент навигатора' (sid) = GROUP BY canonicalName(NavigatorElement navigatorElement) AGGR navigatorElement WHERE navigatorElement IS NavigatorElement;
 parent 'Родительский элемент' = DATA NavigatorElement (NavigatorElement);
 
 isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
@@ -44,7 +44,7 @@ TABLE formNames (VARSTRING[100]);
 
 caption 'Название формы' = DATA VARSTRING[250] (Form);
 canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (Form);
-form 'Форма' (sid) = GROUP AGGR Form form BY canonicalName(form) WHERE form IS Form MATERIALIZED TABLE formNames; // для profiler'а
+form 'Форма' (sid) = GROUP BY canonicalName(Form form) AGGR form WHERE form IS Form MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
 
 currentForm = NATIVE Form ();
@@ -93,9 +93,9 @@ DESIGN options {
     } 
 }
 
-propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property BY canonicalName(property) WHERE property IS Property;
-actionCanonicalName 'Действие' (cn) = GROUP AGGR Action property BY canonicalName(property) WHERE property IS Action;
-propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property BY tableSID(property), dbName(property) WHERE stored(property);
+propertyCanonicalName 'Свойство' (cn) = GROUP BY canonicalName(Property property) AGGR property WHERE property IS Property;
+actionCanonicalName 'Действие' (cn) = GROUP BY canonicalName(Action property) AGGR property WHERE property IS Action;
+propertyTable 'Свойство' (string, sID) = GROUP BY tableSID(Property property), dbName(property) AGGR property WHERE stored(property);
 
 quantity 'Количество разновидностей' = DATA INTEGER (Property);
 quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (Property);
@@ -127,7 +127,7 @@ caption 'Название свойства на форме' = DATA VARSTRING[250
 form 'Форма' = DATA Form (PropertyDraw) INDEXED;
 nameForm 'Форма' (PropertyDraw pd) = canonicalName(form(pd)) IN recognize;
 groupObject 'Группа объектов' = DATA GroupObject (PropertyDraw);
-propertyDraw 'Свойство на форме' (form, sID) = GROUP AGGR PropertyDraw propertyDraw BY form (propertyDraw), sid (propertyDraw) WHERE propertyDraw IS PropertyDraw;
+propertyDraw 'Свойство на форме' (form, sID) = GROUP BY form (PropertyDraw propertyDraw), sid (propertyDraw) AGGR propertyDraw WHERE propertyDraw IS PropertyDraw;
 propertyDrawByFormNameAndPropertyDrawSid 'Код формы' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (form(str1), str2);
 
 show 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
@@ -158,10 +158,10 @@ columnAscendingSort 'Восходящая сортировка для польз
 columnAscendingSort 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
 
 hasUserPreferences 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-countShowPropertyDraw(g, u) = GROUP SUM 1 IF show(PropertyDraw property, CustomUser user) == PropertyDrawShowStatus.Show BY groupObject(property), user;
+countShowPropertyDraw(g, u) = GROUP BY groupObject(PropertyDraw property), CustomUser user SUM 1 IF show(property, user) == PropertyDrawShowStatus.Show;
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
 hasUserPreferences 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
-countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
+countShowPropertyDraw(g) = GROUP BY groupObject(PropertyDraw property) SUM 1 IF show(property) == PropertyDrawShowStatus.Show;
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
 hasUserPreferencesOverride 'Настройки сохранены' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
 
@@ -184,7 +184,7 @@ CLASS Table 'Таблица';
 TABLE tables (Table);
 
 sid 'Имя таблицы' = DATA VARISTRING[100] (Table);
-table 'Имя таблицы' (sID) = GROUP AGGR Table table BY sid (table) WHERE table IS Table;
+table 'Имя таблицы' (sID) = GROUP BY sid (Table table) AGGR table WHERE table IS Table;
 rows 'Количество записей' = DATA INTEGER (Table);
 skipVacuum 'Не упаковывать' = DATA BOOLEAN (Table);
 table 'Таблица' = DATA Table (TableKey);
@@ -194,7 +194,7 @@ CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
 sid 'Код ключа' = DATA VARISTRING[100] (TableKey);
-tableKey 'Ключ' (sID) = GROUP AGGR TableKey tableKey BY sid (tableKey) WHERE tableKey IS TableKey;
+tableKey 'Ключ' (sID) = GROUP BY sid (TableKey tableKey) AGGR tableKey WHERE tableKey IS TableKey;
 class 'Класс ключа' = DATA VARISTRING[40] (TableKey);
 classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
 name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
@@ -207,11 +207,11 @@ TABLE tableColumn (TableColumn);
 
 table 'Таблица' = DATA Table(TableColumn);
 sid 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
-tableSID (sid) = GROUP MAX Table table BY sid(table);
+tableSID (sid) = GROUP BY sid(Table table) MAX table;
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
-tableColumnLong 'Колонка' (sID) = GROUP AGGR TableColumn tableColumn BY longSID(tableColumn) WHERE tableColumn IS TableColumn; 
-tableColumnSID (sid) = GROUP MAX TableColumn tableColumn BY sid(tableColumn);
+tableColumnLong 'Колонка' (sID) = GROUP BY longSID(TableColumn tableColumn) AGGR tableColumn WHERE tableColumn IS TableColumn; 
+tableColumnSID (sid) = GROUP BY sid(TableColumn tableColumn) MAX tableColumn;
 property 'Свойство' (TableColumn tableColumn) = propertyTable(sid(table(tableColumn)), sid(tableColumn));
 lastRecalculateProperty 'Последний пересчёт аггрегаций' (TableColumn tableColumn) = lastRecalculate(property(tableColumn));
 caption 'Заголовок свойства' (TableColumn tableColumn) = caption(property(tableColumn));
@@ -227,7 +227,7 @@ return 'Возвращаемый класс свойства ' (TableColumn tabl
 percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableColumn)) == 0
                                                           THEN 100.00
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
-sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
+sparseColumns 'Количество разреженных колонок' (table) = GROUP BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50 SUM 1;
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
 notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
@@ -259,7 +259,7 @@ CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
 sid 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
-dropColumn 'Удалённая колонка' (sID) = GROUP NAGGR DropColumn dropColumn BY sid (dropColumn) WHERE dropColumn IS DropColumn;
+dropColumn 'Удалённая колонка' (sID) = GROUP BY sid (DropColumn dropColumn) NAGGR dropColumn WHERE dropColumn IS DropColumn;
 sidTable 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
 time 'Время удаления' = DATA DATETIME (DropColumn);
 revision 'Версия' = DATA VARSTRING[10] (DropColumn);
@@ -272,7 +272,7 @@ sid 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) I
 form 'Форма' = DATA Form (GroupObject);
 canonicalNameForm (GroupObject groupObject) = canonicalName (form(groupObject)) IN recognize;
 captionForm (GroupObject groupObject) = caption (form(groupObject)) IN recognize; 
-groupSIDFormGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject BY sid (groupObject), canonicalNameForm (groupObject) WHERE groupObject IS GroupObject;
+groupSIDFormGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP BY sid (GroupObject groupObject), canonicalNameForm (groupObject) AGGR groupObject WHERE groupObject IS GroupObject;
 
 CLASS FormGrouping 'Группировка';
 TABLE formGrouping (FormGrouping); 
@@ -280,7 +280,7 @@ TABLE formGrouping (FormGrouping);
 name 'Имя группировки' = DATA VARSTRING[100] (FormGrouping);
 groupObject = DATA GroupObject (FormGrouping);
 itemQuantity 'Количество записей' = DATA BOOLEAN (FormGrouping);
-formGrouping 'Группировка' (nameFormGrouping, groupObject) = GROUP AGGR FormGrouping formGrouping BY name(formGrouping), groupObject(formGrouping) WHERE formGrouping IS FormGrouping;
+formGrouping 'Группировка' (nameFormGrouping, groupObject) = GROUP BY name(FormGrouping formGrouping), groupObject(formGrouping) AGGR formGrouping WHERE formGrouping IS FormGrouping;
 
 TABLE formGroupingPropertyDraw (FormGrouping, PropertyDraw);
 groupOrder 'Порядок группировки' = DATA INTEGER (FormGrouping, PropertyDraw);

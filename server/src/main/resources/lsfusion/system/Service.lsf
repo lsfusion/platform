@@ -289,7 +289,7 @@ CLASS ReflectionProperty 'Настройки';
 TABLE reflectionProperty (ReflectionProperty);
 
 name 'Имя настройки' = DATA VARISTRING[100] (ReflectionProperty);
-reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
+reflectionProperty (name) = GROUP BY name(ReflectionProperty reflectionProperty) AGGR reflectionProperty;
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
 baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (ReflectionProperty, UserRole);
 overBaseValue 'Сохранённое значение для текущего пользователя' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);

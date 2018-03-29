@@ -1449,9 +1449,9 @@ groupPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 	}
 }
 	:	'GROUP'
+	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
 		type=groupingType
 		mainList=nonEmptyPropertyExpressionList[groupContext, true]
-		('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
 		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
 		('WHERE' whereExpr=propertyExpression[groupContext, false])?
