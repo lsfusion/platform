@@ -65,7 +65,7 @@ public class PropertyController {
 
     public boolean requestFocusInWindow() {
         if (views != null && !views.isEmpty()) {
-            views.values().iterator().next().getComponent().requestFocusInWindow();
+            views.values().iterator().next().getFocusComponent().requestFocusInWindow();
             return true;
         }
         return false;

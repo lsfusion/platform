@@ -7,6 +7,7 @@ import java.awt.*;
 
 public interface PanelView {
     JComponent getComponent();
+    JComponent getFocusComponent();
     void setValue(Object ivalue);
     void setReadOnly(boolean readOnly);
     boolean forceEdit();

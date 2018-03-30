@@ -131,6 +131,10 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         return panel;
     }
 
+    public JComponent getFocusComponent() {
+        return this;
+    }
+
     public void setValue(Object value) {
         this.value = value;
         updateButton();

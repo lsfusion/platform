@@ -132,6 +132,10 @@ public class DataPanelView extends JPanel implements PanelView {
         return this;
     }
 
+    public JComponent getFocusComponent() {
+        return this;
+    }
+
     public void setValue(Object ivalue) {
         table.setValue(ivalue);
     }
