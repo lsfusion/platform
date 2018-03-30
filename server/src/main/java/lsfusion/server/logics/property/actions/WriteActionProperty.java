@@ -70,7 +70,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 if (clientAction) {
                     if (path == null || path.isEmpty())
                         path = "new file";
-                    if (path.contains("/")) { //absolute path
+                    if (path.contains("/") || path.contains("\\")) { //absolute path
                         context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
                     } else {
                         String filePath = !dialog ? (System.getProperty("user.home") + "/Downloads/" + path + "." + extension) : (path + "." + extension);
