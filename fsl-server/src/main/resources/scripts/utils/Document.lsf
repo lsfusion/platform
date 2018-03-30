@@ -451,7 +451,7 @@ EXTEND FORM customUser
 META defineDocumentDetailIndex (object, detailClass)
     dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass) INDEXED; 
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
-        PARTITION SUM 1 BY object(d)
+        PARTITION BY object(d) SUM 1
         ORDER d CHARWIDTH 4;
     index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize;  
 END
@@ -459,7 +459,7 @@ END
 META defineDocumentDetailIndexPersistent (object, detailClass)
     dataIndex 'Номер строки (польз.)' = DATA INTEGER (detailClass); 
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
-        PARTITION SUM 1 BY object(d)
+        PARTITION BY object(d) SUM 1
         ORDER d CHARWIDTH 4;
     index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize MATERIALIZED;  
 END
