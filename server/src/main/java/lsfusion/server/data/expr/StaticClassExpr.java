@@ -3,12 +3,11 @@ package lsfusion.server.data.expr;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.classes.ValueClassSet;
+import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
@@ -33,8 +32,14 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return classExpr(this, classes, type);
     }
 
+    private final static DataClass defaultUnknownFormulaStaticClass = IntegerClass.instance;
+    
     public static Where isClass(StaticClassExprInterface expr, AndClassSet set, boolean notConsistent) {
-        return expr.getStaticClass().inSet(set)?Where.TRUE:Where.FALSE; // тут конечно из-за отсутствия keyType могут быть чудеса вроде f(a) <- b (+) 5 WHERE g(a)
+        ConcreteClass staticClass = expr.getStaticClass();
+        // тут конечно из-за отсутствия keyType могут быть чудеса вроде f(a) <- b (+) 5 WHERE g(a) или просто (b (+) NULL) AS  NUMERIC
+        if(staticClass == null && (expr instanceof LinearExpr || expr instanceof FormulaExprInterface)) // поэтому пока вставим подстраховку от таких случаев, чтобы не падала
+            staticClass = defaultUnknownFormulaStaticClass;
+        return staticClass.inSet(set)?Where.TRUE:Where.FALSE;
     }
     public Where isClass(ValueClassSet set, boolean inconsistent) {
         return isClass(this, set, inconsistent);
