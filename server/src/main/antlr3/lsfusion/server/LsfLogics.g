@@ -1385,6 +1385,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	maxDef=maxPropertyDefinition[context, dynamic] { $property = $maxDef.property; }
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
+	|	groupDef=groupCDPropertyDefinition[context, dynamic] { $property = $groupDef.property; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
@@ -1407,7 +1408,7 @@ contextIndependentPD[boolean innerPD] returns [LCP property, List<ResolveClassSe
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
-	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; $signature = $groupDef.signature; }
+	|	groupDef=groupCIPropertyDefinition { $property = $groupDef.property; $signature = $groupDef.signature; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
@@ -1435,27 +1436,42 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-groupPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
+groupCIPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
 @init {
-	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
-	List<LPWithParams> groupProps = new ArrayList<LPWithParams>();
 	List<TypedParameter> groupContext = new ArrayList<TypedParameter>();
-	boolean ascending = true;
 }
 @after {
 	if (inPropParseState()) {
-		$signature = self.getSignatureForGProp(groupProps, groupContext);
-		$property = self.addScriptedGProp($type.type, $mainList.props, groupProps, orderProps, ascending, $whereExpr.property, groupContext);
+		$signature = self.getSignatureForGProp($exprList.props, groupContext);
+		$property = self.addScriptedCIGProp($exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
 	}
 }
 	:	'GROUP'
-	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
-		type=groupingType
-		mainList=nonEmptyPropertyExpressionList[groupContext, true]
-		('ORDER' ('DESC' { ascending = false; } )?
-		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
-		('WHERE' whereExpr=propertyExpression[groupContext, false])?
+	    'BY' exprList=nonEmptyPropertyExpressionList[groupContext, true]
+	    gp=groupPropertyBodyDefinition[groupContext]
 	;
+	
+groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	List<TypedParameter> groupContext = new ArrayList<TypedParameter>(context);
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedCDGProp(context.size(), $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
+	}
+}
+	:	'GROUP'
+	    gp=groupPropertyBodyDefinition[groupContext]
+	;
+	
+groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LPWithParams> mainProps = new ArrayList<LPWithParams>(), List<LPWithParams> orderProps = new ArrayList<LPWithParams>(), boolean ascending = true, LPWithParams whereProp = null]
+	:	
+    	gt=groupingType { $type = $gt.type; }
+        mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
+        ('ORDER' ('DESC' { $ascending = false; } )?
+        orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
+        ('WHERE' whereExpr=propertyExpression[context, false] { $whereProp = $whereExpr.property; } )?
+    ;
 
 
 groupingType returns [GroupingType type]
