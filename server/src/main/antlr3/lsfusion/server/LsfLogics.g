@@ -1487,6 +1487,9 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'PARTITION' 
+		(	'BY'
+			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
+		)?
 		(
 			(	'SUM'	{ type = PartitionType.SUM; } 
 			|	'PREV'	{ type = PartitionType.PREVIOUS; }
@@ -1501,9 +1504,6 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 			)
 		)
 		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
-		(	'BY'
-			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
-		)?
 		{ groupExprCnt = paramProps.size() - 1; }
 		(	'ORDER' ('DESC' { ascending = false; } )?				
 			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
@@ -1897,8 +1897,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	:	'IMPORT' 
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
 		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; })?
-		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
+		'TO' plist=nonEmptyPropertyUsageListWithIds
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
 	;
 

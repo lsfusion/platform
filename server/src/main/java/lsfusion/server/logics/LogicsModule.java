@@ -1039,8 +1039,8 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> interfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(interfaces, params);
 
-        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> mainProp = listImplements.subList(0, 1);
-        ImSet<CalcPropertyInterfaceImplement<PropertyInterface>> partitions = listImplements.subList(1, partNum + 1).toOrderSet().getSet();
+        ImSet<CalcPropertyInterfaceImplement<PropertyInterface>> partitions = listImplements.subList(0, partNum).toOrderSet().getSet();
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> mainProp = listImplements.subList(partNum, partNum + 1);
         ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createOProp(caption, partitionType, interfaces.getSet(), mainProp, partitions, orders, ordersNotNull, includeLast), interfaces);
@@ -1094,11 +1094,11 @@ public abstract class LogicsModule {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
-        CalcPropertyInterfaceImplement<PropertyInterface> restriction = listImplements.get(0);
         ImMap<L, CalcPropertyInterfaceImplement<PropertyInterface>> groupImplement = ungroup.listInterfaces.mapOrderValues(new GetIndex<CalcPropertyInterfaceImplement<PropertyInterface>>() {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
-                return listImplements.get(i+1);
+                return listImplements.get(i);
             }});
+        CalcPropertyInterfaceImplement<PropertyInterface> restriction = listImplements.get(partNum);
         ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders = listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
         return mapLProp(group, persistent, DerivedProperty.createUGProp(caption, innerInterfaces.getSet(),
@@ -1109,11 +1109,11 @@ public abstract class LogicsModule {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
-        CalcPropertyInterfaceImplement<PropertyInterface> proportion = listImplements.get(0);
         ImMap<L, CalcPropertyInterfaceImplement<PropertyInterface>> groupImplement = ungroup.listInterfaces.mapOrderValues(new GetIndex<CalcPropertyInterfaceImplement<PropertyInterface>>() {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
-                return listImplements.get(i+1);
+                return listImplements.get(i);
             }});
+        CalcPropertyInterfaceImplement<PropertyInterface> proportion = listImplements.get(partNum);
         ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
                 listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
