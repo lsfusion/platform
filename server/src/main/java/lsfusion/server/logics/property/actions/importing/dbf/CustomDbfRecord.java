@@ -152,7 +152,8 @@ public class CustomDbfRecord {
         }
         int offsetInBlocks = 0;
         if (f.getLength() == 10) {
-            offsetInBlocks = getBigDecimal(fieldName).intValueExact();
+            BigDecimal bd = getBigDecimal(fieldName);
+            offsetInBlocks = bd != null ? bd.intValueExact() : 0;
         } else {
             byte[] dbfFieldBytes = new byte[f.getLength()];
             System.arraycopy(bytes, f.getOffset(), dbfFieldBytes, 0, f.getLength());
