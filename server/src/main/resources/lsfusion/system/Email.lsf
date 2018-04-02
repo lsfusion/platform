@@ -129,7 +129,7 @@ attachmentEmail (id, email) = GROUP BY id (AttachmentEmail attachment), id(email
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
 openFile 'Открыть' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
-saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { SAVE file(attachmentEmail) ; }
+saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { WRITE CLIENT DIALOG 'attachment' FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 importErrors 'Ошибки при импорте' (Email e) = GROUP BY email(AttachmentEmail ae) MAX importError(ae);
 
