@@ -342,22 +342,22 @@ limitPing 'Пороговый пинг (мс)' = DATA INTEGER ();
 limitPingSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
     IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averagePingDateFrom 'Средний пинг (мс)' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM pingFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);
+    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM pingFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
+    [=GROUP BY DATETIME dlimitDTo IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);
     
 limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
 limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
     IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averageMaxTotalMemoryDateFrom 'Средняя память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM maxTotalMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);        
+    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM maxTotalMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
+    [=GROUP BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);        
 
 limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
 limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo
     IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo);
 averageMaxUsedMemoryDateFrom 'Средняя использованная память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF limitDFrom < DATETIME dFrom AND limitDTo > DATETIME dTo SUM maxUsedMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo) / 
-    [=GROUP BY Computer computer, DATETIME limitDFrom, DATETIME limitDTo IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND limitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (computer, limitDFrom, limitDTo);        
+    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM maxUsedMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
+    [=GROUP BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);        
 
 FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
