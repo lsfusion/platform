@@ -46,10 +46,9 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                boolean syncType,
                                Integer top,
                                LCP exportFile,
-                               CalcPropertyMapImplement printer,
-                               ImOrderSet<PropertyInterface> innerInterfaces,
+                               CalcProperty printer,
                                LCP formPageCount, boolean removeNulls) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, top, printer == null ? null : printer.property);
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, top, printer);
 
         this.formPageCount = formPageCount;
 
@@ -58,8 +57,9 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         this.removeNulls = removeNulls;
 
         if (printer != null) {
-            ImRevMap<PropertyInterface, ClassPropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-            this.printerProperty = printer.map(mapInterfaces);
+            this.printerProperty = printer.getImplement(
+                    getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
+            );
         }
     }
 

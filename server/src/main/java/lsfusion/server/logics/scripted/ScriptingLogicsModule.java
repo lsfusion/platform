@@ -2768,7 +2768,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         property = addSessionScopeAProp(scope, property, inputProps.addList(baseLM.getRequestCanceledProperty()).getCol());
 
         LPWithParams formAction;
-        if (mapping.size() > 0) {
+        if (mapping.size() > 0) { // тут надо contextLPs просто в mapping закинуть по идее сразу
             for(LPWithParams contextLP : contextLPs)
                 for (int usedParam : contextLP.usedParams) {
                     mapping.add(new LPWithParams(null, singletonList(usedParam)));
@@ -2892,9 +2892,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                printerProperty != null, printType, syncType, selectTop, targetProp, false, getParamsPlainList(propParams).toArray());
+                printerProperty != null ? (CalcProperty)printerProperty.property.property : null, printType, syncType, selectTop, targetProp, false);
 
-        if (mapping.size() > 0) {
+        if (mapping.size() > 0)  { // тут надо printerProperty просто в mapping закинуть по идее сразу
+            if(printerProperty != null) {
+                for (int usedParam : printerProperty.usedParams) {
+                    mapping.add(new LPWithParams(null, singletonList(usedParam)));
+                }
+            }
             return addScriptedJoinAProp(property, mapping);
         } else {
             return new LPWithParams(property, allParams);
