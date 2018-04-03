@@ -4,6 +4,7 @@ grammar LsfLogics;
 	package lsfusion.server;
 
 	import lsfusion.base.OrderedMap;
+	import lsfusion.base.Pair;
 	import lsfusion.interop.ClassViewType;
 	import lsfusion.interop.PropertyEditType;
 	import lsfusion.interop.form.layout.ContainerType;
@@ -1119,7 +1120,7 @@ propertyStatement
 	;
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
-	:	ciPD=contextIndependentPD[false] { $property = $ciPD.property; $signature = $ciPD.signature; }
+	:	ciPD=contextIndependentPD[Collections.<TypedParameter>emptyList(), false] { $property = $ciPD.property; $signature = $ciPD.signature; }
 	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = (LCP)$expr.property.property; } }
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
@@ -1396,7 +1397,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
-contextIndependentPD[boolean innerPD] returns [LCP property, List<ResolveClassSet> signature]
+contextIndependentPD[List<TypedParameter> context, boolean innerPD] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
@@ -1408,7 +1409,7 @@ contextIndependentPD[boolean innerPD] returns [LCP property, List<ResolveClassSe
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
-	|	groupDef=groupCIPropertyDefinition { $property = $groupDef.property; $signature = $groupDef.signature; }
+	|	groupDef=groupCIPropertyDefinition[context] { $property = $groupDef.property; $signature = $groupDef.signature; $usedContext = $groupDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
@@ -1416,11 +1417,12 @@ contextIndependentPD[boolean innerPD] returns [LCP property, List<ResolveClassSe
 joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean isInline = false;
+	List<Integer> usedContext = null;
 }
 @after {
 	if (inPropParseState()) {
 		if (isInline) {
-			$property = self.addScriptedJProp(true, $iProp.property, $exprList.props);
+			$property = self.addScriptedJProp(true, $iProp.property, $exprList.props, usedContext);
 		} else {
 			$property = self.addScriptedJProp(true, $uProp.propUsage, $exprList.props, context);	
 		}
@@ -1428,7 +1430,7 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 }
 	:	('JOIN')? 
 		(	uProp=propertyUsage
-		|	iProp=inlineProperty { isInline = true; }
+		|	iProp=inlineProperty[context] { isInline = true; usedContext = $iProp.usedContext; }
 		)
 		'('
 		exprList=propertyExpressionList[context, dynamic]
@@ -1436,14 +1438,16 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-groupCIPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
+groupCIPropertyDefinition[List<TypedParameter> context] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
 @init {
-	List<TypedParameter> groupContext = new ArrayList<TypedParameter>();
+    List<TypedParameter> groupContext = new ArrayList<TypedParameter>(context);
 }
 @after {
 	if (inPropParseState()) {
-		$signature = self.getSignatureForGProp($exprList.props, groupContext);
-		$property = self.addScriptedCIGProp($exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
+		Pair<LCP, List<Integer>> lcpAndUsedOldContext = self.addScriptedCIGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext); 
+		$property = lcpAndUsedOldContext.first;
+		$usedContext = lcpAndUsedOldContext.second;		
+		$signature = self.getSignatureForGProp($usedContext, $exprList.props, groupContext);
 	}
 }
 	:	'GROUP'
@@ -1470,7 +1474,7 @@ groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType 
         mainList=nonEmptyPropertyExpressionList[context, true] { $mainProps = $mainList.props; }
         ('ORDER' ('DESC' { $ascending = false; } )?
         orderList=nonEmptyPropertyExpressionList[context, true] { $orderProps = $orderList.props; })?
-        ('WHERE' whereExpr=propertyExpression[context, false] { $whereProp = $whereExpr.property; } )?
+        ('WHERE' whereExpr=propertyExpression[context, true] { $whereProp = $whereExpr.property; } )?
     ;
 
 
@@ -2101,18 +2105,18 @@ propertyUsage returns [PropertyUsage propUsage]
 	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })? 
 	;
 
-inlineProperty returns [LCP property]
+inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer> usedContext]
 @init {
-	List<TypedParameter> newContext = new ArrayList<TypedParameter>();
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	List<ResolveClassSet> signature = null;
 }
 @after {
 	if (inPropParseState()) { // not native
-		property.setExplicitClasses(signature);	
+		$property.setExplicitClasses(signature);	
 	}
 }
-	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = (LCP)$expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
-				|	ciPD=contextIndependentPD[true] { $property = $ciPD.property; signature = $ciPD.signature; }
+	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = (LCP)$expr.property.property; $usedContext = self.getResultInterfaces(context.size(), $expr.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext); } }
+				|	ciPD=contextIndependentPD[context, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; }
 //                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.property; signature = self.getClassesFromTypedParams(newContext); }}
 //                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
 				)

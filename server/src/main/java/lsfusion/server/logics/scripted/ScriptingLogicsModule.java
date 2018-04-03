@@ -1168,8 +1168,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classes;
     }
     
-    public List<ResolveClassSet> getSignatureForGProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
-        return getParamClassesByParamProperties(paramProps, params);
+    public List<ResolveClassSet> getSignatureForGProp(List<Integer> resultInterfaces, List<LPWithParams> paramProps, List<TypedParameter> params) {
+        return getParamClassesByParamProperties(getAllGroupProps(resultInterfaces, paramProps), params);
     }
 
     private LCP findLCPByPropertyUsage(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
@@ -1211,6 +1211,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(false, mainProp, paramProps);
     }
     
+    public LPWithParams addScriptedJProp(boolean user, LCP mainProp, List<LPWithParams> paramProps, List<Integer> usedContext) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(user, mainProp, getAllGroupProps(usedContext, paramProps));
+    }
     public LPWithParams addScriptedJProp(boolean user, LCP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkParamCount(mainProp, paramProps.size());
         List<Object> resultParams = getParamsPlainList(paramProps);
@@ -2052,7 +2055,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res,  resultInterfaces);
     }
 
-    private List<Integer> getResultInterfaces(int contextSize, LPWithParams... params) {
+    public List<Integer> getResultInterfaces(int contextSize, LPWithParams... params) {
         List<LPWithParams> lpList = new ArrayList<>();
         for (LPWithParams lp : params) {
             if (lp != null) {
@@ -2258,16 +2261,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LCP addScriptedCIGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
-                                  boolean ascending, LPWithParams whereProp, List<TypedParameter> innerInterfaces) throws ScriptingErrorLog.SemanticErrorException {
-        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(innerInterfaces);
-        checks.checkGPropAggrConstraints(type, mainProps, groupProps);
-
-        return addScriptedGProp(0, groupProps, type, mainProps, orderProps, ascending, whereProp, explicitInnerClasses);
-    }
-
-    public LCP addScriptedGProp(int contextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedGProp(List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps, boolean ascending, LPWithParams whereProp, List<ResolveClassSet> explicitInnerClasses) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkGPropOrderConsistence(type, orderProps.size());
+        checks.checkGPropAggrConstraints(type, mainProps, groupProps);
         checks.checkGPropAggregateConsistence(type, mainProps.size());
         checks.checkGPropWhereConsistence(type, whereProp);
         checks.checkGPropSumConstraints(type, mainProps.get(0));
@@ -2289,9 +2285,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(mainProps, whereProps, orderProps, groupProps);
 
-        boolean ordersNotNull = doesExtendContext(0, mergeLists(mainProps, groupProps), orderProps);
+        boolean ordersNotNull = doesExtendContext(0, mergeLists(mainProps, groupProps, whereProps), orderProps);
 
-        int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
+        int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps, whereProps)).size();
         assert groupPropParamCount == explicitInnerClasses.size();
         LocalizedString emptyCaption = LocalizedString.NONAME;
         LCP resultProp = null;
@@ -2311,23 +2307,49 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
+    public Pair<LCP, List<Integer>> addScriptedCIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
+                                  boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
+    }
+
+    public List<LPWithParams> getAllGroupProps(List<Integer> resultInterfaces, List<LPWithParams> groupProps) {
+        List<LPWithParams> allGroupProps = new ArrayList<>();
+
+        for (int resI : resultInterfaces) {
+            allGroupProps.add(new LPWithParams(null, Collections.singletonList(resI)));
+        }
+        allGroupProps.addAll(groupProps);
+        
+        return allGroupProps;
+    }
+    
+    // второй результат в паре использованные параметры из внешнего контекста (LCP на выходе имеет сначала эти использованные параметры, потом группировки)
+    public Pair<LCP, List<Integer>> addScriptedCDIGProp(int oldContextSize, List<LPWithParams> groupProps, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
+                                  boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+        List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Arrays.asList(whereProp));
+        List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LPWithParams[lpWithParams.size()]));
+
+        List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps);
+
+        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
+
+        LCP gProp = addScriptedGProp(allGroupProps, type, mainProps, orderProps, ascending, whereProp, explicitInnerClasses);
+        return new Pair<>(gProp, resultInterfaces);
+    }
+
+    public List<ResolveClassSet> getClassesFromTypedParams(int oldContextSize, List<Integer> resultInterfaces, List<TypedParameter> newContext) {
+        List<TypedParameter> usedInnerInterfaces = new ArrayList<>();
+        for (int resI : resultInterfaces)
+            usedInnerInterfaces.add(newContext.get(resI));
+        usedInnerInterfaces.addAll(newContext.subList(oldContextSize, newContext.size()));
+        return getClassesFromTypedParams(usedInnerInterfaces);
+    }
+
     public LPWithParams addScriptedCDGProp(int oldContextSize, GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> orderProps,
                                   boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
 
-        List<LPWithParams> lpWithParams = mergeLists(mainProps, orderProps, Arrays.<LPWithParams>asList(whereProp));
-        List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LPWithParams[lpWithParams.size()]));
-
-        List<TypedParameter> usedInnerInterfaces = new ArrayList<>();
-        List<LPWithParams> groupProps = new ArrayList<>();
-        for (int resI : resultInterfaces) {
-            groupProps.add(new LPWithParams(null, Collections.singletonList(resI)));
-            usedInnerInterfaces.add(newContext.get(resI));
-        }
-        usedInnerInterfaces.addAll(newContext.subList(oldContextSize, newContext.size()));
-        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(usedInnerInterfaces);
-
-        LCP gProp = addScriptedGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, explicitInnerClasses);
-        return new LPWithParams(gProp, resultInterfaces);
+        Pair<LCP, List<Integer>> lcpAndUsedOldContext = addScriptedCDIGProp(oldContextSize, Collections.<LPWithParams>emptyList(), type, mainProps, orderProps, ascending, whereProp, newContext);
+        return new LPWithParams(lcpAndUsedOldContext.first, lcpAndUsedOldContext.second);
     }
 
     public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps, boolean isMin) throws ScriptingErrorLog.SemanticErrorException {
