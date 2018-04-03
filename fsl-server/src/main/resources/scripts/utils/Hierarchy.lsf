@@ -47,7 +47,7 @@ META defineHierarchyCustom (object, class)
     isParentLeaf (class child, class parent) = isParent(child, parent) AND isLeaf(child);
 
     canonicalName 'Полное имя' (class object) = VARISTRING[255](
-                           [= GROUP BY class child CONCAT name(class parent), ' / ' ORDER DESC level(child, parent)](object))
+                           [= GROUP CONCAT name(class parent), ' / ' ORDER DESC level(object, parent)]())
                            CHARWIDTH 50 MATERIALIZED;
 END
 

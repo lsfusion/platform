@@ -13,14 +13,14 @@ EXTEND CLASS UserRole : Chat;
 in 'Вкл.' = DATA BOOLEAN (Chat, CustomUser);
 overIn 'Вкл.' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
 in (Chat c) = overIn(c, currentUser()); 
-isDialog(Chat chat) = [=GROUP BY chat SUM 1 IF in(chat, CustomUser user)](chat) == 2;
+isDialog(Chat chat) = [=GROUP SUM 1 IF in(chat, CustomUser user)]() == 2;
 chatIn(user1, user2) = GROUP BY CustomUser user1, CustomUser user2 MAX Chat chat IF in(chat, user1) AND in(chat, user2) AND isDialog(chat);
 readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
 readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
 dataName 'Имя' = DATA VARISTRING[100] (Chat);
 nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE name(user), login(user);
-name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP BY chat CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser())](chat)) CHARWIDTH 15;
+name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE [=GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser())]()) CHARWIDTH 15;
 
 CLASS MessageStatus {
     sent 'Отправлено',

@@ -132,8 +132,8 @@ order 'Порядок'(ProfileObject p1, ProfileObject p2, User u, Form f) = val
 
 dataInFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (User);
 inFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (UserRole);
-overFilter 'Отм' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), [=GROUP BY User u SUM 1 IF in(u, UserRole r) AND inFilter(r)](u) > 0;
-inFilter 'Отм' (User u) = OVERRIDE overFilter(u), NOT [=GROUP SUM 1 IF overFilter(User u)]() AND u IS User;
+overFilter 'Отм' = OVERRIDE dataInFilter(User u), inFilter(mainRole(u)), [=GROUP SUM 1 IF in(u, UserRole r) AND inFilter(r)]() > 0;
+inFilter 'Отм' (User u) = OVERRIDE overFilter(u), NOT [=GROUP SUM 1 IF overFilter(User uu)]() AND u IS User;
 background(User u) = IF inFilter(u) THEN RGB(220,220,220);
 
 dataFilter 'Отм' = DATA LOCAL NESTED BOOLEAN (Form);
@@ -146,7 +146,7 @@ inFilter 'Отм' (User u, Form f) = inFilter(u) AND inFilter(f);
 link 'Количество вызовов' = GROUP BY ProfileObject up, ProfileObject down SUM callCount(down, up, User u, Form f) IF inFilter(u, f);
 
 value 'Вызов' (ProfileObject up, ProfileObject down, ProfilerIndex pi) = CASE WHEN pi != ProfilerIndex.minTime AND pi != ProfilerIndex.maxTime AND pi != ProfilerIndex.averageTime AND pi != ProfilerIndex.averageSquaredTime  
-    THEN [=GROUP BY ProfileObject up, ProfileObject down, ProfilerIndex pi SUM value(down, up, User u, Form f, pi) IF inFilter(u, f)](up, down, pi);
+    THEN [=GROUP SUM value(down, up, User u, Form f, pi) IF inFilter(u, f)]();
 order 'Порядок'(ProfileObject p1, ProfileObject p2) = value(p1, p2, order());
 
 downValue 'Общее' = GROUP BY ProfileObject down, ProfilerIndex pi SUM value(ProfileObject up, down, pi);
@@ -196,11 +196,11 @@ pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STE
 pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
-        OVERRIDE [=GROUP BY ProfileObject down LAST ProfileObject up IF link(up, down) AND pathTo(selectedTop(), up) ORDER order(up, down)](down), 
+        OVERRIDE [=GROUP LAST ProfileObject up IF link(up, down) AND pathTo(selectedTop(), up) ORDER order(up, down)](), 
             ProfileObject.top IF down IS ProfileObject;
         
 child(ProfileObject up) = IF NOT up == selectedTop() THEN 
-        OVERRIDE [=GROUP BY ProfileObject up LAST ProfileObject down IF link(up, down) AND pathFrom(selectedTop(), down) ORDER order(up, down)](up),
+        OVERRIDE [=GROUP LAST ProfileObject down IF link(up, down) AND pathFrom(selectedTop(), down) ORDER order(up, down)](),
             ProfileObject.top IF up IS ProfileObject;
        
 initFilters() = {
