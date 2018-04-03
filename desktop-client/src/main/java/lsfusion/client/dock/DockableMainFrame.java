@@ -349,8 +349,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final ClientFormController formController, final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        return runReport(isModal, generationData, new EditReportInvoker() {
+    public Integer runReport(final ClientFormController formController, final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
+        return runReport(isModal, generationData, printerName, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
                 return !customReportPathList.isEmpty();
@@ -400,7 +400,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     @Override
     public Integer runReport(boolean isModal, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            return ReportDialog.showReportDialog(generationData, editInvoker);
+            return ReportDialog.showReportDialog(generationData, printerName, editInvoker);
         } else {
             return dockableManager.openReport(generationData, printerName, editInvoker);
         }
