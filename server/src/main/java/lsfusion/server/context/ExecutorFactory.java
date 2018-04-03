@@ -6,6 +6,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
+import lsfusion.server.remote.RmiServer;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.*;
@@ -82,6 +83,44 @@ public class ExecutorFactory {
                     ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
                 }
             });
+    }
+
+    public static ExecutorService createRMIThreadService(Integer threads, final RmiServer rmiServer) {
+
+        ThreadFactory threadFactory = createRMIThreadFactory(rmiServer);
+
+        ExecutorService executorService;
+        if(threads == null)
+            executorService = Executors.newCachedThreadPool(threadFactory);
+        else if(threads > 1)
+            executorService = Executors.newFixedThreadPool(threads, threadFactory);
+        else
+            executorService = Executors.newSingleThreadExecutor(threadFactory);
+
+        if(useThreadFactoryForContext)
+            return executorService;
+        else
+            return wrapService(executorService, new TaskAspect() {
+                @Override
+                public void aspectBeforeRun() {
+                    ThreadLocalContext.aspectBeforeRmi(rmiServer, false, ExecutorFactoryThreadInfo.instance);
+                }
+
+                @Override
+                public void aspectAfterRun() {
+                    ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
+                }
+            });
+//
+    }
+
+    private static ThreadFactory createRMIThreadFactory(RmiServer rmiServer) {
+        ThreadFactory threadFactory;
+        if(useThreadFactoryForContext)
+            threadFactory = new GlobalDaemonThreadRmiServerFactory(rmiServer);
+        else
+            threadFactory = new ClosableDaemonThreadFactory(rmiServer.getLogicsInstance(), rmiServer.getEventName());
+        return threadFactory;
     }
 
     // ЛОКАЛЬНЫЕ СЕРВИСЫ (когда есть верхний контекст \ стек)
@@ -332,6 +371,46 @@ public class ExecutorFactory {
                 } finally {
                     if (monitor != null)
                         ThreadLocalContext.aspectAfterMonitor(ExecutorFactoryThreadInfo.instance);
+                }
+            }
+        }
+    }
+
+    public static class GlobalDaemonThreadRmiServerFactory extends ClosableDaemonThreadFactory {
+
+        protected final WeakReference<RmiServer> wRmi;
+
+        public GlobalDaemonThreadRmiServerFactory(RmiServer rmi) {
+            super(rmi.getLogicsInstance(), rmi.getEventName());
+
+            wRmi = new WeakReference<>(rmi);
+        }
+
+        protected Thread newThreadInstance(ThreadGroup group, Runnable r, String name, int stackSize) {
+            return new ContextAwareThread(wLogicsInstance, wRmi, group, r, name, stackSize);
+        }
+
+        public static class ContextAwareThread extends ClosableThread {
+
+            protected final WeakReference<RmiServer> wRmi;
+
+            private final String name;
+            public ContextAwareThread(WeakReference<LogicsInstance> wLogicsInstance, WeakReference<RmiServer> wRmi, ThreadGroup group, Runnable target, String name, long stackSize) {
+                super(wLogicsInstance, group, target, name, stackSize);
+                this.name = name;
+                this.wRmi = wRmi;
+            }
+
+            @Override
+            public void run() {
+                RmiServer rmi = wRmi.get();
+                try {
+                    if (rmi != null)
+                        ThreadLocalContext.aspectBeforeRmi(rmi, false, ExecutorFactoryThreadInfo.instance);
+                    super.run();
+                } finally {
+                    if (rmi != null)
+                        ThreadLocalContext.aspectAfterRmi(ExecutorFactoryThreadInfo.instance);
                 }
             }
         }
