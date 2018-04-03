@@ -36,7 +36,7 @@ mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
 has 'Вкл.' (User user, UserRole role) = mainRole(user) == role OR in(user, role) MATERIALIZED;
-hasUserRoleCustom(user) = GROUP BY User user SUM 1 IF has(user, UserRole role) MATERIALIZED;
+hasUserRoleCustom(User user) = GROUP SUM 1 IF has(user, UserRole role) MATERIALIZED;
 
 CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE 'Запрещено удалять используемую роль';
@@ -71,9 +71,9 @@ forbidChangeAllPropertyRole 'Запретить изменение всех св
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitViewParent (propertyGroup) =
+levelPermitViewParent (PropertyGroup propertyGroup) =
     GROUP
-          BY PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataPermitView(parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataPermitView(parent) MATERIALIZED;
 
 levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitView (propertyGroup), levelPermitView (propertyGroup);
@@ -108,9 +108,9 @@ permitView 'Разрешить просмотр свойства' (ActionOrPrope
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidViewParent (propertyGroup) =
+levelForbidViewParent (PropertyGroup propertyGroup) =
     GROUP
-          BY PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataForbidView(parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataForbidView(parent) MATERIALIZED;
 
 levelForbidView = TRUE IF levelForbidViewParent (PropertyGroup propertyGroup);
 forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidView (propertyGroup), levelForbidView (propertyGroup);
@@ -120,9 +120,9 @@ forbidView 'Запретить просмотр свойства' (ActionOrPrope
 
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelPermitChangeParent (propertyGroup) =
+levelPermitChangeParent (PropertyGroup propertyGroup) =
     GROUP
-          BY PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataPermitChange(parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataPermitChange(parent) MATERIALIZED;
 
 levelPermitChange = TRUE IF levelPermitChangeParent (PropertyGroup propertyGroup);
 permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (propertyGroup), levelPermitChange (propertyGroup);
@@ -132,9 +132,9 @@ permitChange 'Разрешить изменение свойства' (ActionOrP
 
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
 
-levelForbidChangeParent (propertyGroup) =
+levelForbidChangeParent (PropertyGroup propertyGroup) =
     GROUP
-          BY PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataForbidChange(parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataForbidChange(parent) MATERIALIZED;
 
 levelForbidChange = TRUE IF levelForbidChangeParent (PropertyGroup propertyGroup);
 forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (propertyGroup), levelForbidChange (propertyGroup);
@@ -146,9 +146,9 @@ notNullPermission (ActionOrProperty property) = OVERRIDE forbidChange(property),
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitViewParent (userRole, propertyGroup) =
+levelPermitViewParent (UserRole userRole, PropertyGroup propertyGroup) =
     GROUP
-          BY UserRole userRole, PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataPermitView(userRole, parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataPermitView(userRole, parent) MATERIALIZED;
 
 levelPermitView = TRUE IF levelPermitViewParent (UserRole userRole, PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitView (userRole, propertyGroup), levelPermitView (userRole, propertyGroup) MATERIALIZED;
@@ -157,9 +157,9 @@ permitView 'Разрешить просмотр свойства' (UserRole user
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidViewParent (userRole, propertyGroup) =
+levelForbidViewParent (UserRole userRole, PropertyGroup propertyGroup) =
     GROUP
-          BY UserRole userRole, PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataForbidView(userRole, parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataForbidView(userRole, parent) MATERIALIZED;
 
 levelForbidView = TRUE IF levelForbidViewParent (UserRole userRole, PropertyGroup propertyGroup);
 forbidView 'Запретить просмотр группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidView (userRole, propertyGroup), levelForbidView (userRole, propertyGroup) MATERIALIZED;
@@ -167,17 +167,17 @@ forbidView 'Запретить просмотр группы свойств' (Us
 forbidView 'Запретить просмотр свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataForbidView (userRole, property), levelForbidView (userRole, parent(property)) MATERIALIZED;
 fullForbidView (ActionOrProperty property) = (forbidView(property) AND NOT permitView(property)); 
 
-forbidView = GROUP BY User user, ActionOrProperty property SUM 1 IF has(user, UserRole userRole) AND forbidView(userRole, property);
-permitView = GROUP BY User user, ActionOrProperty property SUM 1 IF has(user, UserRole userRole) AND permitView(userRole, property);
+forbidView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND forbidView(userRole, property);
+permitView (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permitView(userRole, property);
 
 fullForbidView (User user, ActionOrProperty property) = 
     (fullForbidView(property) AND user IS User OR hasUserRoleCustom(user) == forbidView (user, property)) AND NOT permitView(user, property);
          
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelPermitChangeParent (userRole, propertyGroup) =
+levelPermitChangeParent (UserRole userRole, PropertyGroup propertyGroup) =
     GROUP
-          BY UserRole userRole, PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataPermitChange(userRole, parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataPermitChange(userRole, parent) MATERIALIZED;
 
 levelPermitChange = TRUE IF levelPermitChangeParent (UserRole userRole, PropertyGroup propertyGroup);
 permitChange 'Разрешить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (userRole, propertyGroup), levelPermitChange (userRole, propertyGroup) MATERIALIZED;
@@ -187,17 +187,17 @@ fullForbidChange (ActionOrProperty property) = (forbidChange(property) AND NOT p
     
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
-levelForbidChangeParent (userRole, propertyGroup) =
+levelForbidChangeParent (UserRole userRole, PropertyGroup propertyGroup) =
     GROUP
-          BY UserRole userRole, PropertyGroup propertyGroup MIN level(propertyGroup, PropertyGroup parent) IF dataForbidChange(userRole, parent) MATERIALIZED;
+          MIN level(propertyGroup, PropertyGroup parent) IF dataForbidChange(userRole, parent) MATERIALIZED;
 
 levelForbidChange = TRUE IF levelForbidChangeParent (UserRole userRole, PropertyGroup propertyGroup);
 forbidChange 'Запретить изменение группы свойств' (UserRole userRole, PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (userRole, propertyGroup), levelForbidChange (userRole, propertyGroup) MATERIALIZED;
 
 forbidChange 'Запретить изменение свойства' (UserRole userRole, ActionOrProperty property) = OVERRIDE dataForbidChange (userRole, property), levelForbidChange (userRole, parent(property)) MATERIALIZED;
 
-forbidChange = GROUP BY User user, ActionOrProperty property SUM 1 IF has(user, UserRole userRole) AND forbidChange(userRole, property);
-permitChange = GROUP BY User user, ActionOrProperty property SUM 1 IF has(user, UserRole userRole) AND permitChange(userRole, property);
+forbidChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND forbidChange(userRole, property);
+permitChange (User user, ActionOrProperty property) = GROUP SUM 1 IF has(user, UserRole userRole) AND permitChange(userRole, property);
 
 fullForbidChange (User user, ActionOrProperty property) = 
     (fullForbidChange(property) AND user IS User OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
@@ -244,10 +244,10 @@ permit 'Разрешить' = permit(mainRole(User user), NavigatorElement navig
 forbid 'Запретить' = DATA BOOLEAN (UserRole, NavigatorElement);
 forbid 'Запретить' = forbid(mainRole(User user), NavigatorElement navigatorElement);
 
-overDefaultNumber 'Номер по умолчанию' (user, navigatorElement) = 
-    GROUP BY User user, NavigatorElement navigatorElement MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole) AND permit(userRole, navigatorElement);
-overPermit 'Разрешить элемент навигатора' (user, navigatorElement) = 
-    GROUP BY User user, NavigatorElement navigatorElement MAX permit(UserRole userRole, navigatorElement) IF has(user, userRole);
+overDefaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = 
+    GROUP MIN defaultNumber(UserRole userRole, navigatorElement) IF has(user, userRole) AND permit(userRole, navigatorElement);
+overPermit 'Разрешить элемент навигатора' (User user, NavigatorElement navigatorElement) = 
+    GROUP MAX permit(UserRole userRole, navigatorElement) IF has(user, userRole);
 overForbid 'Запретить элемент навигатора' (User user, navigatorElement) = 
     TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(user, userRole)] ();
 
@@ -256,8 +256,8 @@ level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECUR
 
 isParent 'Является потомком' (NavigatorElement child, NavigatorElement parent) = TRUE IF level(child, parent);
 
-hasChildrenPermit = GROUP BY UserRole role, NavigatorElement parent SUM 1 IF isParent(NavigatorElement child, parent) AND permit(role, child);  
-hasChildrenForbid = GROUP BY UserRole role, NavigatorElement parent SUM 1 IF isParent(NavigatorElement child, parent) AND forbid(role, child);  
+hasChildrenPermit (UserRole role, NavigatorElement parent) = GROUP SUM 1 IF isParent(NavigatorElement child, parent) AND permit(role, child);  
+hasChildrenForbid (UserRole role, NavigatorElement parent) = GROUP SUM 1 IF isParent(NavigatorElement child, parent) AND forbid(role, child);  
 backgroundPermit (UserRole role, NavigatorElement element)= RGB(203,203,203) IF hasChildrenPermit(role, element) AND NOT permit(role, element);
 backgroundForbid (UserRole role, NavigatorElement element) = RGB(203,203,203) IF hasChildrenForbid(role, element) AND NOT forbid(role, element);
 

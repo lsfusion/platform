@@ -117,7 +117,7 @@ shutdown 'Отключить' (CustomUser user) = {
         }
 } CONFIRM;
 
-hasConnectedConnections (CustomUser user) = GROUP BY CustomUser user SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
+hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
 
 fileUserLogs = DATA CUSTOMFILE (Connection);
 userLogs () = CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();

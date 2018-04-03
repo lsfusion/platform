@@ -40,7 +40,7 @@ daysOfMonth 'Выполнять по дням (через запятую)' = DAT
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
 in 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
-daysOfWeek (t)= GROUP BY ScheduledTask t CONCAT VARSTRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
+daysOfWeek (ScheduledTask t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
 
 CLASS ScheduledTaskDetail 'Строка задания планировщика';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -111,7 +111,7 @@ onStarted() += { runSetupScheduler(); }
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = { EVAL scriptText(); }
                                          
-changedSchedulerTask (ScheduledTask t) = GROUP BY ScheduledTask t SUM 1 IF (((CHANGED (runAtStart(t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
+changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
                                          OR CHANGED (schedulerStartType(t)) OR CHANGED (schedulerStartType(t))) AND active(t)
                                          OR CHANGED (active(t))) OR
