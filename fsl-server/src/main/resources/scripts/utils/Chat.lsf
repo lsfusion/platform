@@ -14,7 +14,7 @@ in 'Вкл.' = DATA BOOLEAN (Chat, CustomUser);
 overIn 'Вкл.' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
 in (Chat c) = overIn(c, currentUser()); 
 isDialog(Chat chat) = [=GROUP SUM 1 IF in(chat, CustomUser user)]() == 2;
-chatIn(user1, user2) = GROUP BY CustomUser user1, CustomUser user2 MAX Chat chat IF in(chat, user1) AND in(chat, user2) AND isDialog(chat);
+chatIn(CustomUser user1, CustomUser user2) = GROUP MAX Chat chat IF in(chat, user1) AND in(chat, user2) AND isDialog(chat);
 readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
 readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
 
@@ -68,11 +68,11 @@ showText 'Текст' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF last
 readonly (Message m) = readonly(chat(m));
 editable (Message m) = NOT readonly(m);
 
-seenCount(Message m) = GROUP BY m SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
-deliveredCount(Message m) = GROUP BY m SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
+seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
+deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
 status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' FIXEDCHARWIDTH 10;
  
-countMessages 'Кол-во сообщений' (chat) = GROUP BY Chat chat SUM 1 IF text(Message message) AND chat(message) == chat;
+countMessages 'Кол-во сообщений' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
 lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP BY chat(Message m) LAST dateTime(m) ORDER dateTime(m), m;
 lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
@@ -80,7 +80,7 @@ lastMessageDateTime 'Последнее сообщение' (CustomUser u) = las
 unreadMessages 'Непрочитанных' (chat, user) = GROUP BY chat(Message message), CustomUser user SUM 1 IF (status(message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user);
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) FIXEDCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) FIXEDCHARWIDTH 10;
-sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP BY CustomUser user SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
+sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
 
 chatNotFound = DATA LOCAL BOOLEAN ();
 defaultNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT ();

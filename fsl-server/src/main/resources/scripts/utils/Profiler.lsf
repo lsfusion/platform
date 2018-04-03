@@ -143,14 +143,14 @@ background(Form u) = IF inFilter(u) THEN RGB(220,220,220);
 
 inFilter 'Отм' (User u, Form f) = inFilter(u) AND inFilter(f);
 
-link 'Количество вызовов' = GROUP BY ProfileObject up, ProfileObject down SUM callCount(down, up, User u, Form f) IF inFilter(u, f);
+link 'Количество вызовов' (ProfileObject up, ProfileObject down) = GROUP SUM callCount(down, up, User u, Form f) IF inFilter(u, f);
 
 value 'Вызов' (ProfileObject up, ProfileObject down, ProfilerIndex pi) = CASE WHEN pi != ProfilerIndex.minTime AND pi != ProfilerIndex.maxTime AND pi != ProfilerIndex.averageTime AND pi != ProfilerIndex.averageSquaredTime  
     THEN [=GROUP SUM value(down, up, User u, Form f, pi) IF inFilter(u, f)]();
 order 'Порядок'(ProfileObject p1, ProfileObject p2) = value(p1, p2, order());
 
-downValue 'Общее' = GROUP BY ProfileObject down, ProfilerIndex pi SUM value(ProfileObject up, down, pi);
-upValue 'Вызванных' = GROUP BY ProfileObject up, ProfilerIndex pi SUM value(up, ProfileObject down, pi);
+downValue 'Общее' (ProfileObject down, ProfilerIndex pi) = GROUP SUM value(ProfileObject up, down, pi);
+upValue 'Вызванных' (ProfileObject up, ProfilerIndex pi) = GROUP SUM value(up, ProfileObject down, pi);
 value 'Значение показателя' (ProfileObject po, ProfilerIndex pi) = CASE 
     WHEN pi == ProfilerIndex.callCount OR pi == ProfilerIndex.totalTime OR pi == ProfilerIndex.totalSQLTime OR pi == ProfilerIndex.totalUserInteractionTime OR pi == ProfilerIndex.totalTimeNoWait OR pi == ProfilerIndex.totalJavaTime 
         THEN downValue(po, pi)
@@ -182,8 +182,8 @@ isTotalTimeNoWait() = active(ProfilerIndex.totalTimeNoWait);
 isTotalJavaTime() = active(ProfilerIndex.totalJavaTime);
 
 //по пользователям, формам
-downValue 'Общее' = GROUP BY ProfileObject down, User u, Form f, ProfilerIndex pi SUM value(down, ProfileObject up, u, f, pi);
-upValue 'Вызванных' = GROUP BY ProfileObject up, User u, Form f, ProfilerIndex pi SUM value(ProfileObject down, up, u, f, pi);
+downValue 'Общее' (ProfileObject down, User u, Form f, ProfilerIndex pi) = GROUP SUM value(down, ProfileObject up, u, f, pi);
+upValue 'Вызванных' (ProfileObject up, User u, Form f, ProfilerIndex pi) = GROUP SUM value(ProfileObject down, up, u, f, pi);
 value 'Внутреннее' (ProfileObject po, User u, Form f, ProfilerIndex pi) = downValue(po, u, f, pi) (-) upValue(po, u, f, pi);
 order 'Порядок' (ProfileObject po, User u, Form f) = value(po, u, f, order());
 

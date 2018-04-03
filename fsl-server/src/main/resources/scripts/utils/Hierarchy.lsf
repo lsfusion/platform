@@ -26,10 +26,10 @@ META defineHierarchyCustom (object, class)
     level 'Уровень' (class child, class parent) = RECURSION 1l IF child IS class AND parent == child
                                                                   STEP 2l IF parent == parent($parent) MATERIALIZED;
 
-    object (child, level) = GROUP
-                                                   BY class child, LONG level MAX class parent IF level == level(child, parent);
+    object(class child, LONG level)  = GROUP
+                                                   MAX class parent IF level == level(child, parent);
 
-    level 'Уровень' (child) = GROUP BY class child SUM 1 IF level(child, class parent);
+    level 'Уровень'(class child)  = GROUP SUM 1 IF level(child, class parent);
 
     levelRoot 'Уровень' (class child, class parent) = PARTITION
                                                                       BY child SUM 1 IF level(child, parent)
@@ -40,7 +40,7 @@ META defineHierarchyCustom (object, class)
 
     childNumber 'Кол-во непосредственных потомков' (object) = GROUP BY parent(class child) SUM 1 MATERIALIZED;
 
-    descendantNumber 'Кол-во всех потомков' (object) = GROUP BY class parent SUM 1 IF isParent(class child, parent) MATERIALIZED;
+    descendantNumber 'Кол-во всех потомков'(class parent)  = GROUP SUM 1 IF isParent(class child, parent) MATERIALIZED;
 
     isLeaf 'Лист' (class object) = object IS class AND NOT childNumber(object) MATERIALIZED;
 
@@ -54,8 +54,8 @@ END
 META defineHierarchyFilter(object, class, property)
     // фильтры по имени
     filter###property###object 'Фильтр по наименованию' = DATA LOCAL NESTED VARSTRING[255] ();
-    inFilterName = GROUP BY class parent SUM 1 IF isParent(class child, parent) AND isSubstring(name(child), filter###property###object()); 
-    inIFilterName = GROUP BY class parent SUM 1 IF isParent(class child, parent) AND isISubstring(name(child), filter###property###object()); 
+    inFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isSubstring(name(child), filter###property###object()); 
+    inIFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isISubstring(name(child), filter###property###object()); 
 END
 
 META defineHierarchyPlain(object)

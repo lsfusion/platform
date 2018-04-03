@@ -137,11 +137,11 @@ threadOwnerProcess (VARSTRING[10] i) = processThread(lockOwnerIdProcess(i));
 blockingProcess 'Уровень' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
                                                         STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                       
 isBlockingProcess 'Блокируется' (VARSTRING[10] child, VARSTRING[10] parent) = TRUE IF blockingProcess(child, parent);
-sumPlusOneBlocked  (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(VARSTRING[10] child, parent);
+sumPlusOneBlocked  (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] child, parent);
 sumBlocked 'Кол-во заблокированных процессов' (VARSTRING[10] process) = sumPlusOneBlocked(process) - 1;
-deadlock (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
+deadlock (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
 isDeadlock 'Deadlock' (VARSTRING[10] process) = NOT deadlock(process) AND process IS VARSTRING[10];
-sumPlusOneBlocking 'Кол-во блокирующих процессов' (process) = GROUP BY VARSTRING[10] parent SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
+sumPlusOneBlocking 'Кол-во блокирующих процессов' (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
 sumBlocking 'Глубина блокировки' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
 
 activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
