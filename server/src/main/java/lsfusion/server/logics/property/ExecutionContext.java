@@ -34,7 +34,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.session.*;
 
@@ -98,8 +98,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return result.addExcl(super.getAllParamsWithValuesInStack());
         }
 
-        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+        public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+            ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
 
             if(locals != null)
                 result = result.addExcl(locals);
@@ -149,7 +149,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // debug info 
     private ImRevMap<String, P> paramsToInterfaces;
     private ImMap<String, String> paramsToFQN;
-    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
+    private ImSet<Pair<LCP, List<ResolveClassSet>>> locals;
     private boolean newDebugStack;
     private Processor<ImMap<String, ObjectValue>> watcher;
     
@@ -187,7 +187,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.paramsToInterfaces = paramsToInterfaces;
     }
 
-    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
+    public void setLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> locals) {
         this.locals = locals;
     }
     
@@ -241,8 +241,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return result;
     }
 
-    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
-        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+        ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
         
         if(locals != null)
             result = result.addExcl(locals);

@@ -30,7 +30,7 @@ import lsfusion.server.logics.PropertyCanonicalNameParser;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -66,12 +66,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
-    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
+    private ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
         return debugLocals != null && !debugLocals.isEmpty();
     }
-    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
+    public void setDebugLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals) {
         this.debugLocals = debugLocals;
     }
 

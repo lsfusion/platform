@@ -25,7 +25,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -343,9 +343,9 @@ public class ActionPropertyDebugger implements DebuggerService {
         ImOrderMap<String, String> paramsWithClasses = stack.getAllParamsWithClassesInStack().toOrderMap();
         ImMap<String, ObjectValue> paramsWithValues = stack.getAllParamsWithValuesInStack();
 
-        ImSet<Pair<LP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
+        ImSet<Pair<LCP, List<ResolveClassSet>>> locals = stack.getAllLocalsInStack();
 
-        ExecutionContext<PropertyInterface> watchContext = ((ExecutionContext<PropertyInterface>)context).override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
+        ExecutionContext<PropertyInterface> watchContext = context.override(MapFact.<PropertyInterface, ObjectValue>EMPTY(), (FormEnvironment<PropertyInterface>) null);
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
@@ -382,7 +382,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {

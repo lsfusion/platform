@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.Event;
 import org.antlr.runtime.RecognitionException;
@@ -32,7 +32,7 @@ public class EvalUtils {
         return evaluate(BL, null, null, null, null, false, script);
     }
     
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
         String name = getUniqueName();
 
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, namespace, require, priorities, script, name));
@@ -47,7 +47,7 @@ public class EvalUtils {
             module.initAliases();
             
             if(locals != null) {
-                for(Pair<LP, List<ResolveClassSet>> local : locals) {
+                for(Pair<LCP, List<ResolveClassSet>> local : locals) {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }                
             }

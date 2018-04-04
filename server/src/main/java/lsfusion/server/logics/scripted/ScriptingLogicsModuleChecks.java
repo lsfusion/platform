@@ -23,7 +23,7 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule.GroupingType;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule.LCPWithParams;
 import lsfusion.server.logics.table.ImplementTable;
 
 import java.util.HashSet;
@@ -194,13 +194,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPropertyTypes(List<LPWithParams> properties, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
-        LP lp1 = properties.get(0).property;
+    public void checkPropertyTypes(List<LCPWithParams> properties, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
+        LCP lp1 = properties.get(0).getLP();
         if(lp1 == null)
             return;
         Property prop1 = lp1.property;
         for (int i = 1; i < properties.size(); i++) {
-            LP lp2 = properties.get(i).property;
+            LCP lp2 = properties.get(i).getLP();
             if(lp2 == null)
                 return;
             Property prop2 = lp2.property;
@@ -294,8 +294,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkDistinctParametersList(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        for (LPWithParams lp : lps) {
+    public void checkDistinctParametersList(List<LCPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        for (LCPWithParams lp : lps) {
             checkDistinctParameters(lp.usedParams);
         }
     }
@@ -321,31 +321,25 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkGPropSumConstraints(GroupingType type, LPWithParams mainProp) throws ScriptingErrorLog.SemanticErrorException {
-        if (type == GroupingType.SUM && mainProp.property != null) {
-            if (!(mainProp.property.property.getValueClass(ClassType.valuePolicy).getType() instanceof IntegralClass)) {
+    public void checkGPropSumConstraints(GroupingType type, LCPWithParams mainProp) throws ScriptingErrorLog.SemanticErrorException {
+        if (type == GroupingType.SUM && mainProp.getLP() != null) {
+            if (!(mainProp.getLP().property.getValueClass(ClassType.valuePolicy).getType() instanceof IntegralClass)) {
                 errLog.emitNonIntegralSumArgumentError(parser);
             }
         }
     }
 
-    public void checkGPropAggrConstraints(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkGPropAggrConstraints(GroupingType type, List<LCPWithParams> mainProps, List<LCPWithParams> groupProps) throws ScriptingErrorLog.SemanticErrorException {
         if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
-            if (mainProps.get(0).property != null) {
+            if (mainProps.get(0).getLP() != null) {
                 errLog.emitNonObjectAggrGPropError(parser);
             }
         }
     }
 
-    public void checkGPropWhereConsistence(GroupingType type, LPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkGPropWhereConsistence(GroupingType type, LCPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
         if (type != GroupingType.AGGR && type != GroupingType.NAGGR && type != GroupingType.LAST && where != null) {
             errLog.emitWhereGPropError(parser, type);
-        }
-    }
-
-    public void checkActionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property instanceof LAP<?>)) {
-            errLog.emitNotActionPropertyError(parser);
         }
     }
 
@@ -364,12 +358,6 @@ public class ScriptingLogicsModuleChecks {
     public void checkCustomClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
             errLog.emitCustomClassExpectedError(parser);
-        }
-    }
-
-    void checkCalculationProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(property instanceof LCP<?>)) {
-            errLog.emitNotCalculationPropertyError(parser);
         }
     }
 
@@ -399,16 +387,16 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNecessaryProperty(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property == null) {
+    public void checkNecessaryProperty(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.getLP() == null) {
             errLog.emitNecessaryPropertyError(parser);
         }
     }
 
-    public void checkIndexNecessaryProperty(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkIndexNecessaryProperty(List<LCPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         boolean hasProperty = false;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
+        for (LCPWithParams lp : lps) {
+            if (lp.getLP() != null) {
                 hasProperty = true;
                 break;
             }
@@ -418,13 +406,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkStoredProperties(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkStoredProperties(List<LCPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         ImplementTable table = null;
         String firstPropertyName = null;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
-                checkCalculationProperty(lp.property);
-                CalcProperty<?> calcProperty = (CalcProperty<?>) lp.property.property;
+        for (LCPWithParams lp : lps) {
+            if (lp.getLP() != null) {
+                CalcProperty<?> calcProperty = lp.getLP().property;
                 String name = calcProperty.getName();
                 if (!calcProperty.isStored()) {
                     errLog.emitShouldBeStoredError(parser, name);
@@ -439,10 +426,10 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkIndexNumberOfParameters(int paramsCount, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkIndexNumberOfParameters(int paramsCount, List<LCPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         int paramsInProp = -1;
-        for (LPWithParams lp : lps) {
-            if (lp.property != null) {
+        for (LCPWithParams lp : lps) {
+            if (lp.getLP() != null) {
                 if (paramsInProp == -1) {
                     paramsInProp = lp.usedParams.size();
                 } else if (lp.usedParams.size() != paramsInProp){
@@ -455,8 +442,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkDeconcatenateIndex(LPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
-        Type propType = property.property.property.getType();
+    public void checkDeconcatenateIndex(LCPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
+        Type propType = property.getLP().property.getType();
         if (propType instanceof ConcatenateType) {
             int concatParts = ((ConcatenateType) propType).getPartsCount();
             if (index <= 0 || index > concatParts) {
@@ -519,15 +506,15 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkChangeClassWhere(boolean contextExtended, LPWithParams param, LPWithParams where, List<ScriptingLogicsModule.TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkChangeClassWhere(boolean contextExtended, LCPWithParams param, LCPWithParams where, List<ScriptingLogicsModule.TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (contextExtended && (where == null || !where.usedParams.contains(param.usedParams.get(0)))) {
             errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1).paramName);
         }
     }
 
-    public void checkAddObjTOParams(int contextSize, List<LPWithParams> toPropMapping) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAddObjTOParams(int contextSize, List<LCPWithParams> toPropMapping) throws ScriptingErrorLog.SemanticErrorException {
         if (toPropMapping != null) {
-            for (LPWithParams param : toPropMapping) {
+            for (LCPWithParams param : toPropMapping) {
                 if (param.usedParams.get(0) < contextSize) {
                     errLog.emitAddObjToPropertyError(parser);
                 }
@@ -582,20 +569,20 @@ public class ScriptingLogicsModuleChecks {
         }
     } 
     
-    public void checkAssignProperty(LPWithParams fromProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
-        LCP<?> toLCP = (LCP<?>)toProperty.property;
+    public void checkAssignProperty(LCPWithParams fromProperty, LCPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> toLCP = toProperty.getLP();
         if (!(toLCP.property instanceof DataProperty || toLCP.property instanceof CaseUnionProperty || toLCP.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами
             errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toLCP.property.getName());
         }
 
-        if (fromProperty.property != null && fromProperty.property.property.getType() != null &&
-                toLCP.property.getType().getCompatible(fromProperty.property.property.getType()) == null) {
+        if (fromProperty.getLP() != null && fromProperty.getLP().property.getType() != null &&
+                toLCP.property.getType().getCompatible(fromProperty.getLP().property.getType()) == null) {
             errLog.emitIncompatibleTypes(parser, "ASSIGN");
         }
     }
 
-    public void checkImportFromFileExpression(LPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
-        if (params.property != null && !(params.property.property.getValueClass(ClassType.valuePolicy).getType() instanceof FileClass)) {
+    public void checkImportFromFileExpression(LCPWithParams params) throws ScriptingErrorLog.SemanticErrorException {
+        if (params.getLP() != null && !(params.getLP().property.getValueClass(ClassType.valuePolicy).getType() instanceof FileClass)) {
             errLog.emitImportFromWrongClassError(parser);    
         }
     }

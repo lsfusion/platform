@@ -56,7 +56,6 @@ import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.resolving.ResolveManager;
 import lsfusion.server.logics.resolving.ResolvingErrors;
 import lsfusion.server.logics.scripted.EvalActionProperty;
@@ -832,7 +831,7 @@ public abstract class LogicsModule {
 
     // ------------------- Request action ----------------- //
 
-    protected LP addRequestAProp(AbstractGroup group, LocalizedString caption, Object... params) {
+    protected LAP addRequestAProp(AbstractGroup group, LocalizedString caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
         assert readImplements.size() >= 2;

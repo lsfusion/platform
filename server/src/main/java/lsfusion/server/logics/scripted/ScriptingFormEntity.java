@@ -126,9 +126,8 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LP property = findLCPByPropertyUsage(pUsage, groupObj);
-                        LM.getChecks().checkCalculationProperty(property);
-                        propertyObjects.add(form.addPropertyObject((LCP) property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                        LCP property = findLCPByPropertyUsage(pUsage, groupObj);
+                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                     }
                 }
 
@@ -472,10 +471,10 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LP> properties, List<List<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LCP> properties, List<List<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            LCP property = (LCP) properties.get(i);
+            LCP property = properties.get(i);
             checkPropertyParameters(property, getMappingObjectsArray(mappings.get(i)));
 
             form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true), version);
@@ -532,7 +531,7 @@ public class ScriptingFormEntity {
 
             checkPropertyParameters(property, getMappingObjectsArray(mapping));
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject((LCP) property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {
@@ -541,8 +540,8 @@ public class ScriptingFormEntity {
         }
     }
 
-    public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        return form.addPropertyObject((LAP) action.property, getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
+    public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LAPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+        return form.addPropertyObject(action.getLP(), getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
     }
 
     public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
