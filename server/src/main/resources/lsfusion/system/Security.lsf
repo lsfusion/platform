@@ -249,7 +249,7 @@ overDefaultNumber 'Номер по умолчанию' (User user, NavigatorElem
 overPermit 'Разрешить элемент навигатора' (User user, NavigatorElement navigatorElement) = 
     GROUP MAX permit(UserRole userRole, navigatorElement) IF has(user, userRole);
 overForbid 'Запретить элемент навигатора' (User user, navigatorElement) = 
-    TRUE IF hasUserRoleCustom(user) AND NOT [=GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(user, userRole)] ();
+    TRUE IF hasUserRoleCustom(user) AND NOT (GROUP SUM 1 IF NOT forbid(UserRole userRole, navigatorElement) AND has(user, userRole));
 
 level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
                                                               STEP 2l IF parent == parent($parent) MATERIALIZED;
