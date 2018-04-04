@@ -1813,11 +1813,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getGroupClassView();
-            if (curClassView.isHidden()) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
             assert forceViewType != null; // сейчас ACTION по умолчанию получает PANEL, а PROPERTY - GRID
-            if (forceViewType != null && forceViewType.isHidden()) continue;
 
             ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();
             ImSet<GroupObjectInstance> propRowGrids;

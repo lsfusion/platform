@@ -11,10 +11,6 @@ public class GridViewProxy extends ComponentViewProxy<GridView> {
         target.tabVertical = tabVertical;
     }
 
-    public void setAutoHide(boolean autoHide) {
-        target.autoHide = autoHide;
-    }
-
     public void setQuickSearch(boolean quickSearch) {
         target.setQuickSearch(quickSearch);
     }

@@ -113,7 +113,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
 
     public Map<String, JasperDesign> getAutoReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) throws JRException {
         ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId),
-                getHiddenGroups(groupId), userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? formInterface.getFormInstance() : null);
+                userPreferences, toExcel, columnGroupObjects, groupId, groupId != null ? formInterface.getFormInstance() : null);
         return generator.generate();
     }
 
@@ -137,7 +137,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<>();
         ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator =
-                new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences);
+                new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, groupId, userPreferences);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType, selectTop);
         byte[] reportDesignsByteArray = reportType.isExport() ? null :
                 reportType.isPrintMessage() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
@@ -160,17 +160,6 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
 
     public FormEntity getFormEntity() {
         return formInterface.getEntity();
-    }
-
-    private Set<Integer> getGridGroups(Integer groupId) {
-        Set<Integer> gridGroupsId = new HashSet<>();
-        for (GroupObject group : formInterface.getGroups()) {
-            int groupObjectID = formInterface.getGroupID(group);
-            if (formInterface.getGroupViewType(group).isGrid() && (groupId == null || groupId == groupObjectID)) {
-                gridGroupsId.add(groupObjectID);
-            }
-        }
-        return gridGroupsId;
     }
 
     private byte[] getReportHierarchyByteArray(Map<String, List<String>> dependencies) {
@@ -276,17 +265,6 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             if(custom && !recreateCustom) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
                 Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));                        
         }
-    }
-
-    private Set<Integer> getHiddenGroups(Integer groupId) {
-        Set<Integer> hidedGroupsId = new HashSet<>();
-        for (GroupObject group : formInterface.getGroups()) {
-            int groupObjectID = formInterface.getGroupID(group);
-            if (formInterface.getGroupViewType(group).isHidden() || groupId != null && groupId != groupObjectID) {
-                hidedGroupsId.add(groupObjectID);
-            }
-        }
-        return hidedGroupsId;
     }
 
     private String getCustomReportPropFileName(CalcPropertyObjectEntity reportPathProp, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {

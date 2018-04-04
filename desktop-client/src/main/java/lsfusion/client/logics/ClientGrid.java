@@ -10,7 +10,6 @@ import java.io.IOException;
 public class ClientGrid extends ClientComponent {
 
     public boolean tabVertical = false;
-    public boolean autoHide;
     public boolean quickSearch;
     public int headerHeight;
 
@@ -24,7 +23,6 @@ public class ClientGrid extends ClientComponent {
         super.customSerialize(pool, outStream, serializationType);
 
         outStream.writeBoolean(tabVertical);
-        outStream.writeBoolean(autoHide);
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
@@ -36,7 +34,6 @@ public class ClientGrid extends ClientComponent {
         super.customDeserialize(pool, inStream);
 
         tabVertical = inStream.readBoolean();
-        autoHide = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
 
@@ -59,15 +56,6 @@ public class ClientGrid extends ClientComponent {
 
     public boolean getTabVertical() {
         return tabVertical;
-    }
-
-    public void setAutoHide(boolean autoHide) {
-        this.autoHide = autoHide;
-        updateDependency(this, "autoHide");
-    }
-
-    public boolean getAutoHide() {
-        return autoHide;
     }
 
     public int getHeaderHeight() {

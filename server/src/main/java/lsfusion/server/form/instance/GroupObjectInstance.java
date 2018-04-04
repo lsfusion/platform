@@ -700,7 +700,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable("upktable-" + System.identityHashCode(execEnv));
 
-        if (curClassView.isHidden()) return null;
         boolean isGrid = curClassView.isGrid();
 
         // если изменились класс грида или представление

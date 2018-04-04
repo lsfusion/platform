@@ -102,7 +102,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
-    public boolean autoHide;
     public boolean panelCaptionAfter;
     public boolean clearText;
     public String tableName;

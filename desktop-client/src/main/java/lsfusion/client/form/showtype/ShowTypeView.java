@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 public class ShowTypeView extends JComponentPanel {
-    private final ClassViewType[] types = new ClassViewType[] {ClassViewType.GRID, ClassViewType.PANEL, ClassViewType.HIDE};
+    private final ClassViewType[] types = new ClassViewType[] {ClassViewType.GRID, ClassViewType.PANEL};
     private final ImageIcon[] icons = new ImageIcon[] {new ImageIcon(ShowTypeView.class.getResource("/images/view_grid.png")),
                                                  new ImageIcon(ShowTypeView.class.getResource("/images/view_panel.png")),
                                                  new ImageIcon(ShowTypeView.class.getResource("/images/view_hide.png"))};

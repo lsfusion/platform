@@ -247,11 +247,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> gridObjects, ClientGroupObjectValue newCurrentObject) {
         grid.setRowKeysAndCurrentObject(gridObjects, newCurrentObject);
-
-        if (groupObject.grid.autoHide) {
-            setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
-            update();
-        }
     }
 
     public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
@@ -259,7 +254,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         grid.modifyGridObject(gridObject, add, position); // assert что grid!=null
 
-        assert !groupObject.grid.autoHide;
         grid.update();
     }
 
@@ -516,6 +510,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         panel.update();
-        panel.setVisible(!classView.isHidden());
+        panel.setVisible(true);
     }
 }
