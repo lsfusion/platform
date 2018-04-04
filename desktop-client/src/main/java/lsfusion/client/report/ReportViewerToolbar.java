@@ -6,6 +6,11 @@ import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperPrintManager;
+import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.print.JRPrinterAWT;
 import net.sf.jasperreports.swing.JRViewerController;
 import net.sf.jasperreports.swing.JRViewerToolbar;
 
@@ -15,8 +20,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
+import java.awt.print.*;
 import java.rmi.RemoteException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -72,14 +76,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
                             break;
                         }
                     }
-                    try {
-                        PrinterJob pj = PrinterJob.getPrinterJob();
-                        pj.setPrintService(printer != null ? printer : PrintServiceLookup.lookupDefaultPrintService());
-                        pj.printDialog();
-                    } catch (PrinterException e1) {
-                        e1.printStackTrace();
-                    }
-
+                    printPages(printer);
                 }
             });
         }
@@ -100,6 +97,50 @@ public class ReportViewerToolbar extends JRViewerToolbar {
             add(editReportButton);
             add(addReportButton);
             add(deleteReportButton);
+        }
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    private void printPages(PrintService printer) {
+        try {
+            JasperPrint jasperPrint = viewerContext.getJasperPrint();
+            JasperReportsContext jasperReportsContext = viewerContext.getJasperReportsContext();
+            if (printer == null) { // хоть в else и почти полный копипаст, всё равно вызовем стандартный метод при отсутствии принтера
+                JasperPrintManager.getInstance(jasperReportsContext).print(jasperPrint, true);
+            } else {
+                PrinterJob pj = PrinterJob.getPrinterJob();
+                pj.setPrintService(printer);
+
+                // c/p from JRPrinterAWT.printPages()
+                PageFormat pageFormat = pj.defaultPage();
+                Paper paper = pageFormat.getPaper();
+                int pageWidth = jasperPrint.getPageWidth();
+                int pageHeight = jasperPrint.getPageHeight();
+                switch (jasperPrint.getOrientationValue()) {
+                    case LANDSCAPE:
+                        pageFormat.setOrientation(PageFormat.LANDSCAPE);
+                        paper.setSize(pageHeight, pageWidth);
+                        paper.setImageableArea(0, 0, pageHeight, pageWidth);
+                        break;
+                    case PORTRAIT:
+                    default:
+                        pageFormat.setOrientation(PageFormat.PORTRAIT);
+                        paper.setSize(pageWidth, pageHeight);
+                        paper.setImageableArea(0, 0, pageWidth, pageHeight);
+                }
+                pageFormat.setPaper(paper);
+
+                Book book = new Book();
+                
+                book.append(new JRPrinterAWT(jasperReportsContext, jasperPrint), pageFormat, jasperPrint.getPages().size());
+                pj.setPageable(book);
+
+                if (pj.printDialog()) {
+                    pj.print();
+                }
+            }
+        } catch (PrinterException | JRException e1) {
+            Throwables.propagate(e1);
         }
     }
 
