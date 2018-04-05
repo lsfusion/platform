@@ -197,7 +197,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    public final static String reportsDir = "reports/"; 
+    public final static String reportsDir = "reports"; 
     
     private String findCustomReportFileName(String fileName) {
 
