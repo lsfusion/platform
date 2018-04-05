@@ -157,7 +157,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return 0;
     }
 
-    public DataChanges mapDataChanges(PropertyChange<P> pPropertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
+    public DataChanges mapJoinDataChanges(PropertyChange<P> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
     }
 

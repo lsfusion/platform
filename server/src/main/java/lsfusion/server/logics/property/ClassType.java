@@ -53,7 +53,9 @@ public enum ClassType {
     public static final ClassType storedPolicy = iteratePolicy; // PREV'ов нет
     
     public static final ClassType editPolicy = iteratePolicy; // редактируемые свойства, соотвественно без prev'ов 
+    public static final ClassType editValuePolicy = signaturePolicy; // редактируемые свойства, соотвественно без prev'ов 
     public static final ClassType filePolicy = editPolicy;
+    public static final ClassType parsePolicy = signaturePolicy;
     public static final ClassType autoSetPolicy = editPolicy;
     
     public static final ClassType tryEditPolicy = signaturePolicy; // попытка редактирования свойства 

@@ -847,7 +847,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // получает базовый класс по сути нужен для определения класса фильтра
     public CustomClass getDialogClass(ImMap<T, DataObject> mapValues, ImMap<T, ConcreteClass> mapClasses) {
-        return (CustomClass)getValueClass(ClassType.editPolicy);
+        return (CustomClass)getValueClass(ClassType.editValuePolicy);
 /*        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for (Map.Entry<T, DataObject> keyField : mapColValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object, mapClasses.get(keyField.getKey())));

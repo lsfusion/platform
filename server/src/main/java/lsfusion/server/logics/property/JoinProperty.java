@@ -283,7 +283,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 if(changeActionImplement==null)
                     return null;
 
-                ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editPolicy);
+                ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editValuePolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 DefaultChangeAggActionProperty<T> aggChangeActionProperty =

@@ -48,7 +48,7 @@ public class DefaultChangeAggActionProperty<P extends PropertyInterface> extends
             readValue = context.requestUserData((DataClass) type, null);
         } else {
             context.requestUserObject(
-                    context.getFormFlowInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editPolicy), context.stack)
+                    context.getFormFlowInstance().createObjectDialogRequest((CustomClass) aggProp.getValueClass(ClassType.editValuePolicy), context.stack)
             );
         }
 

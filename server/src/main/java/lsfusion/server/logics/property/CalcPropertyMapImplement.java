@@ -43,8 +43,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         super(property, mapping);
     }
 
-    public DataChanges mapDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        return property.getDataChanges(change.mapChange(mapping), propChanges, changedWhere);
+    public DataChanges mapJoinDataChanges(PropertyChange<T> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
+        PropertyChange<P> mappedChange = change.mapChange(mapping);
+        if(change.getMapKeys().size() == mappedChange.getMapKeys().size() && change.getMapValues().size() == mappedChange.getMapValues().size()) // оптимизация
+            return property.getDataChanges(mappedChange, propChanges, changedWhere);
+        return property.getJoinDataChanges(mappedChange.getMapExprs(), mappedChange.expr, mappedChange.where, type, propChanges, changedWhere);
     }
 
     public CalcPropertyMapImplement<P, T> mapOld(PrevScope event) {
@@ -68,7 +71,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
-        change(keys, env, env.getSession().getObjectValue(property.getValueClass(ClassType.editPolicy), value));
+        change(keys, env, env.getSession().getObjectValue(property.getValueClass(ClassType.editValuePolicy), value));
     }
 
     public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {

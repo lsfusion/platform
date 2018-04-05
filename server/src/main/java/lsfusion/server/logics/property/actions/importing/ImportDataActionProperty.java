@@ -174,7 +174,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                                             parsedObject = value == null ? null : type.parseString(value);
                                         } catch (lsfusion.server.data.type.ParseException ignored) {
                                         }
-                                        return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
+                                        return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editValuePolicy));
                                     }
 
                                     return NullValue.instance;
@@ -206,7 +206,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                                                 parsedObject = value == null ? null : type.parseString(value);
                                             } catch (lsfusion.server.data.type.ParseException ignored) {
                                             }
-                                            return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
+                                            return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editValuePolicy));
                                         }
 
                                         return NullValue.instance;

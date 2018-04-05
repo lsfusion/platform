@@ -87,7 +87,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
     public static ObjectValue[] getParams(DataSession session, LP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {
         ImOrderSet<PropertyInterface> interfaces = (ImOrderSet<PropertyInterface>) property.listInterfaces;
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.parsePolicy);
         ObjectValue[] objectValues = new ObjectValue[interfaces.size()];
         for (int i = 0; i < interfaces.size(); i++) {
             ValueClass valueClass = interfaceClasses.get(interfaces.get(i));

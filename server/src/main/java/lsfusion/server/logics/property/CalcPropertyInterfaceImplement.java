@@ -52,8 +52,7 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     boolean mapIsComplex();
     long mapComplexity();
     DataChanges mapJoinDataChanges(ImMap<P, ? extends Expr> mapKeys, Expr expr, Where where, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
-
-    DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, PropertyChanges propChanges);
+    DataChanges mapJoinDataChanges(PropertyChange<P> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges);
 
     void fill(MSet<P> interfaces, MSet<CalcPropertyMapImplement<?, P>> properties);
     ImCol<P> getInterfaces();
