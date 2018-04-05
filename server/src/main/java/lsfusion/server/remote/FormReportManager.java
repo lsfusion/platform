@@ -226,8 +226,11 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
             return customDesigns;
         }
 
-        // сохраняем пока в reports/auto (в принципе смысла уже нет, так как есть пользовательский интерфейс)
-        return getAndSaveAutoReportDesigns(false, false, toExcel, groupId, userPreferences, columnGroupObjects);
+        try {
+            return getAutoReportDesigns(toExcel, groupId, userPreferences, columnGroupObjects);
+        } catch (JRException e) {
+            throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
+        }
     }
 
     private Map<String, JasperDesign> getAndSaveAutoReportDesigns(boolean custom, boolean recreateCustom, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
