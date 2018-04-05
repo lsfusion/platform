@@ -36,7 +36,6 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -103,7 +102,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getCustomReportPath(fileName, projDir, target);
     }
     public ReportPath getCustomReportPath(String fileName, String projDir, String target) {
-        return new ReportPath(Paths.get(projDir,"src/main/resources/", fileName).toString(), Paths.get(target, fileName).toString());
+        return new ReportPath(Paths.get(projDir,"src/main/lsfusion/", fileName).toString(), Paths.get(target, fileName).toString());
     }
 
     public List<ReportPath> saveAndGetCustomReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences, boolean recreate) throws SQLException, SQLHandledException {
@@ -198,7 +197,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    public final static String reportsDir = "reports/custom/"; 
+    public final static String reportsDir = "reports/"; 
     
     private String findCustomReportFileName(String fileName) {
 
