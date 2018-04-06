@@ -514,12 +514,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(algType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
         }
 
+        @IdentityLazy
         public TableStatKeys getTableStatKeys() {
             return getStatKeys(this, 100);
         }
 
+        @IdentityLazy
         public ImMap<PropertyField,PropStat> getStatProps() {
-            return getStatProps(this, 100);
+            return getStatProps(this);
         }
     }
 

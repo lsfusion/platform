@@ -1445,6 +1445,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         explainUserMode.put(user, mode != null && mode);
     }
 
+    public void setExplainAnalyzeMode(Boolean mode) {
+        Long user = userProvider.getCurrentUser();
+        setExplainAnalyzeMode(user, mode);
+    }
+
     public static void setExplainNoAnalyze(boolean explainNoAnalyze) {
         SQLSession.explainNoAnalyze = explainNoAnalyze;
     }

@@ -77,64 +77,71 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public abstract ImMap<PropertyField, PropStat> getStatProps();
 
     // важно чтобы статистика таблицы была адекватна статистике классов, так как иначе infinite push down'ы могут пойти
-    private static int getObjectFieldStat(int defStat, AndClassSet classSet) {
+    private static int getObjectKeyFieldStat(AndClassSet classSet) {
         OrClassSet orClassSet = classSet.getOr();
         if(orClassSet instanceof OrObjectClassSet) {
             ObjectValueClassSet valueClassSet = ((OrObjectClassSet) orClassSet).getValueClassSet();
             if(BaseUtils.hashEquals(orClassSet, valueClassSet)) { // если есть unknown то их может быть сколько угодно
-                return BaseUtils.min(defStat, valueClassSet.getCount());
+                return valueClassSet.getCount();
             }
-        }
-        return defStat;
+        } else
+            assert orClassSet instanceof OrConcatenateClass;
+        return -1;
     }
-    private static Stat getObjectFieldStat(Stat defStat, AndClassSet classSet) {
+    private static Stat getObjectPropFieldStat(AndClassSet classSet) {
         OrClassSet orClassSet = classSet.getOr();
         if(orClassSet instanceof OrObjectClassSet) {
             ObjectValueClassSet valueClassSet = ((OrObjectClassSet) orClassSet).getValueClassSet();
-            if(BaseUtils.hashEquals(orClassSet, valueClassSet)) { // если есть unknown то их может быть сколько угодно
-                return defStat.min(new Stat(valueClassSet.getCount()));
+            if(BaseUtils.hashEquals(orClassSet, valueClassSet)) {
+                return new Stat(valueClassSet.getCount());
             }
-        }
-        return defStat;
+        } else
+            assert orClassSet instanceof OrConcatenateClass;
+        return null; // если есть unknown то их может быть сколько угодно
     }
 
-    private static int getKeyFieldStat(KeyField field, int defStat, Table table) {
+    private static int getKeyFieldStat(KeyField field, Table table) {
+        int resultStat = -1;
         if (field.type instanceof ObjectType) {
             AndClassSet commonClass = table.getClasses().getCommonClass(field);
             if (commonClass != null)
-                return getObjectFieldStat(defStat, commonClass);
-            assert table.getClasses().isFalse();
+                resultStat = getObjectKeyFieldStat(commonClass);
+            else
+                assert table.getClasses().isFalse();
         }            
-        return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
+        if(resultStat < 0)
+            resultStat = field.type.getTypeStat(false).getCount();
+        return resultStat;
     }
 
-    private static Stat getPropFieldStat(PropertyField field, Stat defStat, Table table) {
+    private static Stat getPropFieldStat(PropertyField field, Table table) {
+        Stat resultStat = null;
         if (field.type instanceof ObjectType) {
             AndClassSet commonClass = table.propertyClasses.get(field).getCommonClass(field);
             if(commonClass != null)
-                return getObjectFieldStat(defStat, commonClass);
-            assert table.propertyClasses.get(field).isFalse();
+                resultStat = getObjectPropFieldStat(commonClass);
+            else
+                assert table.propertyClasses.get(field).isFalse();
         }
-        return defStat.min(field.type.getTypeStat(false));
+        if(resultStat == null)
+            resultStat = field.type.getTypeStat(false);
+        return resultStat;
     }
 
     protected static TableStatKeys getStatKeys(final Table table, final int count) { // для мн-го наследования
         ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues(new GetValue<Integer, KeyField>() {
             public Integer getMapValue(KeyField value) {
-                return getKeyFieldStat(value, count, table);
+                return BaseUtils.min(count, getKeyFieldStat(value, table));
             }});
         return TableStatKeys.createForTable(count, statMap);
     }
 
-    protected static ImMap<PropertyField, PropStat> getStatProps(final Table table, final Stat stat) { // для мн-го наследования
+    protected static ImMap<PropertyField, PropStat> getStatProps(final Table table) { // для мн-го наследования
+        final Stat rows = table.getTableStatKeys().getRows();
         return table.properties.mapValues(new GetValue<PropStat, PropertyField>() {
             public PropStat getMapValue(PropertyField prop) {
-                return new PropStat(getPropFieldStat(prop, stat, table)); // , table.propertyClasses.get(prop).getCommonClass(prop)
+                return new PropStat(InnerExpr.getAdjustStatValue(rows, getPropFieldStat(prop, table))); 
             }});
-    }
-    
-    protected static ImMap<PropertyField, PropStat> getStatProps(Table table, int count) { // для мн-го наследования
-        return getStatProps(table, new Stat(count));
     }
 
     public boolean isSingle() {

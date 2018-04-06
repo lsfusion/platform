@@ -58,18 +58,18 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     // nullable, иногда известно, иногда нет
     // assert что statKeys и statProps или одновременно null или одновременно нет
-    private final TableStatKeys statKeys;  
-    private final ImMap<PropertyField, PropStat> statProps;    
+    private TableStatKeys statKeys;  
+    private ImMap<PropertyField, PropStat> statProps;    
 
     public TableStatKeys getTableStatKeys() {
         if(statKeys == null)
-            return getStatKeys(this, count);
+            statKeys = getStatKeys(this, count);
         return statKeys;
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
         if(statProps == null)
-            return getStatProps(this, count);
+            statProps = getStatProps(this);
         return statProps;
     }
 
@@ -546,7 +546,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, int updated, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
-        assert statKeys == null && statProps == null;
+//        assert statKeys == null && statProps == null;
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
             return session.createTemporaryTable(keys, properties, count, null, null, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
@@ -590,7 +590,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public SessionTable updateKeyPropStats(ImMap<KeyField, Integer> updatedKeyStats, ImMap<PropertyField, PropStat> updatedPropStats) {
-        assert statKeys == null && statProps == null;
+//        assert statKeys == null && statProps == null;
         return new SessionTable(name, keys, properties, classes, propertyClasses, count, updatedKeyStats, updatedPropStats);
     }
 
