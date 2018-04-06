@@ -22,7 +22,6 @@ import java.util.Map;
 
 public class GBusyDialog extends WindowBox {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
-    private static boolean devMode = MainFrame.configurationAccessAllowed;
     public Boolean needInterrupt = null;
 
     VerticalPanel mainPanel;
@@ -52,7 +51,7 @@ public class GBusyDialog extends WindowBox {
     }
 
     public GBusyDialog() {
-        super(false, true, false, false, devMode);
+        super(false, true, false, false, inDevMode());
         setModal(true);
         setGlassEnabled(true);
 
@@ -105,7 +104,7 @@ public class GBusyDialog extends WindowBox {
         buttonPanel.setSpacing(5);
 
         Button btnCopy = new Button(messages.busyDialogCopyToClipboard());
-        if (devMode) {
+        if (inDevMode()) {
             btnCopy.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent clickEvent) {
@@ -161,6 +160,10 @@ public class GBusyDialog extends WindowBox {
 
         setWidget(mainPanel);
     }
+    
+    private static boolean inDevMode() {
+        return MainFrame.configurationAccessAllowed;
+    }
 
     public void makeMaskVisible(boolean visible) {
         getElement().getStyle().setOpacity(visible ? 1 : 0);
@@ -177,7 +180,7 @@ public class GBusyDialog extends WindowBox {
                 longAction = true;
             }
         };
-        longActionTimer.schedule(devMode ? 5000 : 60000);
+        longActionTimer.schedule(inDevMode() ? 5000 : 60000);
     }
 
     public void hideBusyDialog() {
@@ -212,7 +215,7 @@ public class GBusyDialog extends WindowBox {
             if (message instanceof GProgressBar) {
                 if (progressBarCount == 0 && stackLines.isEmpty())
                     showTopProgressBar = false;
-                if (!stackLines.isEmpty() && devMode) {
+                if (!stackLines.isEmpty() && inDevMode()) {
                     widgetList.add(createStackPanel(stackLines));
                 }
 
@@ -221,14 +224,14 @@ public class GBusyDialog extends WindowBox {
                 progressBarCount++;
             } else if (message instanceof Boolean) {
                 visibleCancelBtn = true;
-            } else if (devMode)
+            } else if (inDevMode())
                 stackLines.put((String) message, changed);
 
         }
 
         prevMessageList = messageList;
 
-        if (!stackLines.isEmpty() && devMode) {
+        if (!stackLines.isEmpty() && inDevMode()) {
             widgetList.add(createStackPanel(stackLines));
         }
         if(pauseTopProgressBar)
@@ -246,14 +249,13 @@ public class GBusyDialog extends WindowBox {
 
         boolean showMessage = !messageList.isEmpty();
         if (showMessage) {
-
             boolean resized = windowResized();
 
             latestWindowWidth = Window.getClientWidth();
             latestWindowHeight = Window.getClientHeight();
 
-            int minWidth = (int) (latestWindowWidth * (devMode ? 0.5 : 0.3));
-            int minHeight = (int) (latestWindowHeight * (devMode ? 0.5 : 0.1));
+            int minWidth = (int) (latestWindowWidth * (inDevMode() ? 0.5 : 0.3));
+            int minHeight = (int) (latestWindowHeight * (inDevMode() ? 0.5 : 0.1));
 
             int width = topPanel.getOffsetWidth() != 0 ? topPanel.getOffsetWidth() : minWidth;
             int topProgressBarHeight = pauseTopProgressBar ?
@@ -272,16 +274,15 @@ public class GBusyDialog extends WindowBox {
                 mainPanel.getElement().getStyle().setProperty("minHeight", minHeight + "px");
                 getElement().getStyle().setProperty("minHeight", minHeight + "px");
 
-                if (!devMode) {
+                if (!inDevMode()) {
                     int maxWidth = (int) (latestWindowWidth * 0.5);
                     mainPanel.getElement().getStyle().setProperty("maxWidth", maxWidth + "px");
                     getElement().getStyle().setProperty("maxWidth", maxWidth + "px");
                 }
             }
-            if(!isShowing())
-                center();
         }
-        setVisible(showMessage);
+        if(!isShowing())
+            center();
     }
 
     private boolean windowResized() {

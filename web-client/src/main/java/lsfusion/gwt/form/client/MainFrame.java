@@ -189,7 +189,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public void success(BooleanResult result) {
                 isBusyDialog = result.value;
-                loadingManager = MainFrame.isBusyDialog && false ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
+                loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
             }
         });
 
