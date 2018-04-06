@@ -956,7 +956,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             recalculateProperties.addAll(recalculateStatProperties);
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) { // temporary for migration
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) { // temporary for migration
                 recalculateProperties = SetFact.fromJavaOrderSet(recalculateProperties).filterOrder(new SFunctionSet<CalcProperty>() {
                     public boolean contains(CalcProperty element) {
                         return !element.toString().contains("SystemEvents.Session");
@@ -968,7 +968,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(oldDBStructure.version < NavElementDBVersion)
                 DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
 
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) {
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) {
                 startLogger.info("Migrating properties to actions data started");
                 if (!synchronizePropertyEntities(sql))
                     throw new RuntimeException("Error while migrating properties to actions");
