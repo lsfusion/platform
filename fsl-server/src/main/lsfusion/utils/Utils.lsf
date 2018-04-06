@@ -138,6 +138,8 @@ round0 (number) = round(number, 0);
 round1 (number) = round(number, 1);
 round2 (number) = round(number, 2);
 round3 (number) = round(number, 3);
+round4 (number) = round(number, 4);
+round5 (number) = round(number, 5);
 round6 (number) = round(number, 6);
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
