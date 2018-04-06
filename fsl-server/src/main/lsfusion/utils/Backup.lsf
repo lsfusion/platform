@@ -67,11 +67,12 @@ FORM backup 'Резервное копирование'
     FILTERGROUP succeeded FILTER 'Только завершённые' log(b) DEFAULT 
     
     OBJECTS t1 = Table
-    PROPERTIES(t1) sid, exclude
+    PROPERTIES(t1) READONLY sid, rows
+    PROPERTIES(t1) exclude
     
     OBJECTS t2 = Table
-        PROPERTIES(t2) sid
-        PROPERTIES(b,t2) exclude
+    PROPERTIES(t2) READONLY sid
+    PROPERTIES(b, t2) READONLY exclude
 ;
 
 DESIGN backup {
