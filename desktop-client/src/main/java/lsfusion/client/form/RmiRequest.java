@@ -3,14 +3,10 @@ package lsfusion.client.form;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
-import lsfusion.client.form.dispatch.SwingClientActionDispatcher;
 import lsfusion.interop.form.ServerResponse;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public abstract class RmiRequest<T> {
     private static final Logger logger = ClientLoggers.invocationLogger;
@@ -95,22 +91,7 @@ public abstract class RmiRequest<T> {
 
     final void onResponse(T result) throws Exception {
         if (logger.isDebugEnabled()) {
-            String message = "OnResponse: " + this;
-            logger.debug(message);
-            if(message.contains("postCash")) {
-                final Timer timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    private int count = 0;
-                    public void run() {
-                        logger.debug(SwingClientActionDispatcher.dumpStackTraces());
-                        count++;
-                        if(count > 8) {
-                            timer.cancel();
-                            timer.purge();
-                        }
-                    }
-                }, 1000, 1000);
-            }
+            logger.debug("OnResponse: " + this);
         }
         onResponse(requestIndex, result);
     }
