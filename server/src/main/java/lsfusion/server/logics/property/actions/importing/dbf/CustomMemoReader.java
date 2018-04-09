@@ -64,7 +64,7 @@ public class CustomMemoReader implements Closeable {
         byte[] recordHeader = new byte[8];
         memoInputStream.read(recordHeader);
         int memoRecordLength = BitUtils.makeInt(recordHeader[7], recordHeader[6], recordHeader[5], recordHeader[4]);
-        if(memoRecordLength < 0) {
+        if(memoRecordLength < 0 || memoRecordLength > 100000000) {
             memoRecordLength = 0;
         }
         byte[] recordBody = new byte[memoRecordLength];
