@@ -68,67 +68,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         try {
             if (fileBytes != null) {
                 if (clientAction) {
-                    if (path == null || path.isEmpty())
-                        path = "new file";
-                    if (path.contains("/") || path.contains("\\")) { //absolute path
-                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
+                    path = path == null || path.isEmpty() ? "new file" : appendExtension(path, extension);
+                    if (path.contains("/") || path.contains("\\")) {
+                        processClientAbsolutePath(context, fileBytes, path);
                     } else {
-                        String filePath = !dialog ? (System.getProperty("user.home") + "/Downloads/" + path + "." + extension) : (path + "." + extension);
-                        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog, append));
+                        processClientRelativePath(context, fileBytes, path);
                     }
                 } else {
-                    if (path != null && !path.isEmpty()) {
-                        if (extension != null && !extension.isEmpty()) {
-                            path += "." + extension;
-                        }
-                        Pattern p = Pattern.compile("(file|ftp|sftp):\\/\\/(.*)");
-                        Matcher m = p.matcher(path);
-                        if (m.matches()) {
-                            String type = m.group(1).toLowerCase();
-                            String url = m.group(2);
-
-                            switch (type) {
-                                case "file": {
-                                    File file = new File(url);
-                                    if (!file.getParentFile().exists())
-                                        throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
-                                    else
-                                        writeFile(file.getAbsolutePath(), fileBytes, append);
-                                    break;
-                                }
-                                case "ftp": {
-                                    if(append)
-                                        throw new RuntimeException("APPEND is not supported in WRITE to FTP");
-                                    File file = null;
-                                    try {
-                                        file = File.createTempFile("downloaded", ".tmp");
-                                        IOUtils.putFileBytes(file, fileBytes);
-                                        storeFileToFTP(path, file);
-                                    } finally {
-                                        if (file != null && !file.delete())
-                                            file.deleteOnExit();
-                                    }
-                                    break;
-                                }
-                                case "sftp": {
-                                    if(append)
-                                        throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
-                                    File file = null;
-                                    try {
-                                        file = File.createTempFile("downloaded", ".tmp");
-                                        IOUtils.putFileBytes(file, fileBytes);
-                                        storeFileToSFTP(path, file);
-                                    } finally {
-                                        if (file != null && !file.delete())
-                                            file.deleteOnExit();
-                                    }
-                                    break;
-                                }
-                            }
-                        } else {
-                            throw new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file");
-                        }
-                    }
+                    processServerAbsolutePath(fileBytes, path, extension);
                 }
             } else {
                 throw new RuntimeException("File bytes not specified");
@@ -136,6 +83,77 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private void processClientAbsolutePath(ExecutionContext context, byte[] fileBytes, String path) {
+        Pattern p = Pattern.compile("(file://)?(.*)");
+        Matcher m = p.matcher(path);
+        if (m.matches()) {
+            path = m.group(2);
+        }
+        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
+    }
+
+    private void processClientRelativePath(ExecutionContext context, byte[] fileBytes, String path) {
+        String filePath = dialog ? path : (System.getProperty("user.home") + "/Downloads/" + path);
+        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog, append));
+    }
+
+    private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
+        if (path != null && !path.isEmpty()) {
+            path = appendExtension(path, extension);
+            Pattern p = Pattern.compile("(?:(file|ftp|sftp)://)?(.*)");
+            Matcher m = p.matcher(path);
+            if (m.matches()) {
+                String type = m.group(1) == null ? "file" : m.group(1).toLowerCase();
+                String url = m.group(2);
+
+                switch (type) {
+                    case "file": {
+                        File file = new File(url);
+                        if (!file.getParentFile().exists())
+                            throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
+                        else
+                            writeFile(file.getAbsolutePath(), fileBytes, append);
+                        break;
+                    }
+                    case "ftp": {
+                        if(append)
+                            throw new RuntimeException("APPEND is not supported in WRITE to FTP");
+                        File file = null;
+                        try {
+                            file = File.createTempFile("downloaded", ".tmp");
+                            IOUtils.putFileBytes(file, fileBytes);
+                            storeFileToFTP(path, file);
+                        } finally {
+                            if (file != null && !file.delete())
+                                file.deleteOnExit();
+                        }
+                        break;
+                    }
+                    case "sftp": {
+                        if(append)
+                            throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
+                        File file = null;
+                        try {
+                            file = File.createTempFile("downloaded", ".tmp");
+                            IOUtils.putFileBytes(file, fileBytes);
+                            storeFileToSFTP(path, file);
+                        } finally {
+                            if (file != null && !file.delete())
+                                file.deleteOnExit();
+                        }
+                        break;
+                    }
+                }
+            } else {
+                throw new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password;charset@host:port/path_to_file");
+            }
+        }
+    }
+
+    private String appendExtension(String path, String extension) {
+        return BaseUtils.getFileExtension(path).isEmpty() && extension != null && !extension.isEmpty() ? (path + "." + extension) : path;
     }
 
     private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
