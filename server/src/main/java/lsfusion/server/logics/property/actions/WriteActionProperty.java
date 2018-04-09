@@ -68,7 +68,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         try {
             if (fileBytes != null) {
                 if (clientAction) {
-                    path = path == null || path.isEmpty() ? "new file" : appendExtension(path, extension);
+                    path = path == null || path.isEmpty() ? "file" : appendExtension(path, extension);
                     if (path.contains("/") || path.contains("\\")) {
                         processClientAbsolutePath(context, fileBytes, path);
                     } else {
