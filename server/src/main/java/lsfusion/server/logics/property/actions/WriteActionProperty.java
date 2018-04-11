@@ -109,7 +109,11 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
                 switch (type) {
                     case "file": {
-                        url = appendExtension(url, extension);
+                        //надо учесть, что путь может быть с точкой
+                        if (extension != null && !extension.isEmpty()) {
+                            url += "." + extension;
+                        }
+                        //url = appendExtension(url, extension);
                         File file = new File(url);
                         if (!file.getParentFile().exists())
                             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
