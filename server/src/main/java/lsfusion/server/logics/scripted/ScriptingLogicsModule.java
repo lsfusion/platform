@@ -3057,11 +3057,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
     
-    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, boolean clientAction, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, boolean clientAction, boolean dialog, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
         LCP<?> targetProp = findLCPNoParamsByPropertyUsage(propUsage);
         ValueClass moveProp = movePathProp == null ? null : movePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
-        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, delete)),
+        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, dialog, delete)),
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
     }
 

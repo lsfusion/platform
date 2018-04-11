@@ -16,12 +16,14 @@ import java.sql.SQLException;
 public class ReadActionProperty extends SystemExplicitActionProperty {
     private final LCP<?> targetProp;
     private final boolean clientAction;
+    private final boolean dialog;
     private final boolean delete;
 
-    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean clientAction, boolean delete) {
+    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean clientAction, boolean dialog, boolean delete) {
         super(moveProp == null ? new ValueClass[]{sourceProp} : new ValueClass[]{sourceProp, moveProp});
         this.targetProp = targetProp;
         this.clientAction = clientAction;
+        this.dialog = dialog;
         this.delete = delete;
 
         try {
@@ -56,13 +58,13 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
             ReadUtils.ReadResult readResult;
             if (clientAction) {
-                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead));
+                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     context.requestUserInteraction(new PostReadClientAction(sourcePath, readResult.type, readResult.filePath, movePath, delete));
                 }
             } else {
-                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead);
+                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false);
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     ReadUtils.postProcessFile(sourcePath, readResult.type, readResult.filePath, movePath, delete);
