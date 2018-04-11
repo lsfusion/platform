@@ -101,7 +101,6 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
     private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
         if (path != null && !path.isEmpty()) {
-            path = appendExtension(path, extension);
             Pattern p = Pattern.compile("(?:(file|ftp|sftp)://)?(.*)");
             Matcher m = p.matcher(path);
             if (m.matches()) {
@@ -110,6 +109,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
                 switch (type) {
                     case "file": {
+                        url = appendExtension(url, extension);
                         File file = new File(url);
                         if (!file.getParentFile().exists())
                             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
@@ -122,6 +122,10 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                             throw new RuntimeException("APPEND is not supported in WRITE to FTP");
                         File file = null;
                         try {
+                            //для ftp и sftp пока оставляем старую схему - добавляем расширение всегда
+                            if (extension != null && !extension.isEmpty()) {
+                                path += "." + extension;
+                            }
                             file = File.createTempFile("downloaded", ".tmp");
                             IOUtils.putFileBytes(file, fileBytes);
                             storeFileToFTP(path, file);
@@ -136,6 +140,9 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                             throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
                         File file = null;
                         try {
+                            if (extension != null && !extension.isEmpty()) {
+                                path += "." + extension;
+                            }
                             file = File.createTempFile("downloaded", ".tmp");
                             IOUtils.putFileBytes(file, fileBytes);
                             storeFileToSFTP(path, file);
