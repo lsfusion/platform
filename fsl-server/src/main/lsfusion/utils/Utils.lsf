@@ -27,7 +27,7 @@ fileExistsClient 'Проверка существования файла (на �
 // --------------------------------- STRING -> CUSTOMFILE -> STRING --------------------------------- //
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
 //value, charset, extension
-stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
+stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
 
 resultString = DATA LOCAL TEXT ();
 //customFile, charset
