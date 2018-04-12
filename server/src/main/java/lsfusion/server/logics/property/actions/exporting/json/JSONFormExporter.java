@@ -58,7 +58,8 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                         } else {
                             JSONObject object = new JSONOrderObject();
                             exportNode(object, child.getKey(), childNode);
-                            array.put(object);
+                            if(object.length() > 0)
+                                array.put(object);
                         }
                     }
                 }
