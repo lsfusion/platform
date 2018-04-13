@@ -2433,10 +2433,16 @@ eventIdSetting [LP property]
 
 // "multiple inheritance" of topContextDependentActionDefinitionBody
 listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAPWithParams property]
-@after{
+@init {
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+}
+@after {
     if (inPropParseState()) {
         $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, context, new ArrayList<TypedParameter>(), needFullContext);
-
+        
+		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
+		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, true, null);
+		
         self.topContextActionPropertyDefinitionBodyCreated($property);
     }
 }
