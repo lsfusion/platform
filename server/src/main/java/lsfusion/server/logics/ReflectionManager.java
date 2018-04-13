@@ -12,7 +12,6 @@ import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
@@ -466,7 +465,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getOrCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
+                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
@@ -524,7 +523,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (needsToBeSynchronized(property)) {
                 if((property instanceof ActionProperty) != actions)
                     continue;
-                dataParent.add(asList(property.getOrCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+                dataParent.add(asList(property.getCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
             }
         }
 

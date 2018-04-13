@@ -173,6 +173,10 @@ public abstract class LogicsModule {
     public Iterable<LAP<?>> getNamedActions(String name) {
         return createEmptyIfNull(namedActions.get(name));
     }
+
+    public Collection<CustomClass> getClasses() {
+        return classes.values();
+    }
     
     private <T extends LP<?, ?>> Iterable<T> createEmptyIfNull(Collection<T> col) {
         if (col == null) {
@@ -184,6 +188,7 @@ public abstract class LogicsModule {
     
     protected void addModuleLP(LP<?, ?> lp) {
         String name = null;
+        assert getNamespace().equals(lp.property.getNamespace());
         if (lp instanceof LAP) {
             name = ((LAP<?>)lp).property.getName();
             putLPToMap(namedActions, (LAP) lp, name);
@@ -223,9 +228,11 @@ public abstract class LogicsModule {
     protected <T extends LP> void makeActionOrPropertyPublic(T lp, String name, ResolveClassSet... signature) {
         makeActionOrPropertyPublic(lp, name, Arrays.asList(signature));
     }
+    
     protected void makePropertyPublic(LCP<?> lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
+    
     protected void makeActionPublic(LAP<?> lp, String name, ResolveClassSet... signature) {
         makeActionPublic(lp, name, Arrays.asList(signature));
     }
@@ -233,6 +240,7 @@ public abstract class LogicsModule {
     protected <P extends PropertyInterface> void makePropertyPublic(LCP<P> lp, String name, List<ResolveClassSet> signature) {
         makeActionOrPropertyPublic(lp, name, signature);
     }
+    
     protected <P extends PropertyInterface> void makeActionPublic(LAP<P> lp, String name, List<ResolveClassSet> signature) {
         makeActionOrPropertyPublic(lp, name, signature);
     }
@@ -883,7 +891,7 @@ public abstract class LogicsModule {
     }
 
     protected LCP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
-        return addSFProp(formula, (DataClass) null, paramCount, hasNotNull);
+        return addSFProp(formula, null, paramCount, hasNotNull);
     }
 
     protected LCP addSFProp(String formula, DataClass value, int paramCount) {
@@ -975,7 +983,7 @@ public abstract class LogicsModule {
     // ------------------- JOIN (продолжение) ----------------- //
 
     public LCP addJProp(LCP mainProp, Object... params) {
-        return addJProp((AbstractGroup) null, LocalizedString.NONAME, mainProp, params);
+        return addJProp(null, LocalizedString.NONAME, mainProp, params);
     }
 
     protected LCP addJProp(boolean user, LocalizedString caption, LCP mainProp, Object... params) {
@@ -2082,9 +2090,13 @@ public abstract class LogicsModule {
         return navigatorElements.values();
     }
 
-    public Collection<FormEntity> getModuleForms() {
+    public Collection<FormEntity> getNamedForms() {
         return namedForms.values();
     } 
+    
+    public Collection<ImplementTable> getTables() {
+        return tables.values();    
+    }
     
     // в том числе и приватные 
     public Collection<FormEntity> getAllModuleForms() {

@@ -3,7 +3,7 @@ package lsfusion.server.logics.scripted;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.resolving.NamespaceElementFinder;
+import lsfusion.server.logics.resolving.NamespaceElementFinder.FoundItem;
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
@@ -264,8 +264,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s '%s' was already defined", type, name));
     }
 
-    public void emitAlreadyDefinedInModuleError(ScriptParser parser, String type, String name, String moduleName) throws SemanticErrorException {
-        emitSimpleError(parser, format("%s '%s' was already defined in module '%s'", type, name, moduleName));
+    public <T> void emitAlreadyDefinedError(ScriptParser parser, String type, String name, List<FoundItem<T>> items) throws SemanticErrorException {
+        assert !items.isEmpty();
+        StringBuilder formatStringBuilder = new StringBuilder(format("%s '%s' was already defined in modules:", type, name));
+        for (FoundItem<T> item : items) {
+            formatStringBuilder.append("\n\t\t");
+            formatStringBuilder.append(item.toString());
+        }
+        emitSimpleError(parser, formatStringBuilder.toString());
     }
 
     public void emitAlreadyDefinedPropertyDraw(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
@@ -443,9 +449,9 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, msg);
     }
 
-    public void emitAmbiguousPropertyNameError(ScriptParser parser, List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
+    public void emitAmbiguousPropertyNameError(ScriptParser parser, List<FoundItem<LP<?, ?>>> foundItems, String name) throws SemanticErrorException {
         StringBuilder msg = new StringBuilder(String.format("ambiguous name '%s', was found in modules:", name));
-        for (NamespaceElementFinder.FoundItem<LP<?, ?>> item : foundItems) {
+        for (FoundItem<LP<?, ?>> item : foundItems) {
             msg.append("\n\t").append(item.toString());                
         }
         emitSimpleError(parser, msg.toString());

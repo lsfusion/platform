@@ -20,7 +20,7 @@ public class CanonicalNameProperty extends FormulaProperty<CanonicalNameProperty
 
     @Override
     protected Expr calculateExpr(ImMap joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return property == null ? null : valueClass.getStaticExpr(LocalizedString.create(property.property.getOrCanonicalName(), false));
+        return property == null ? null : valueClass.getStaticExpr(LocalizedString.create(property.property.getCanonicalName(), false));
     }
 
     public static class Interface extends PropertyInterface {

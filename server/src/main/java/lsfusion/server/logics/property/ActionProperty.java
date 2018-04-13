@@ -26,7 +26,6 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.PropertyCanonicalNameParser;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -51,17 +50,6 @@ import java.util.concurrent.Callable;
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
     //просто для быстрого доступа
     private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
-
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public String getName() {
-        if (isNamed()) {
-            return PropertyCanonicalNameParser.getName(canonicalName);
-        }
-        return null;
-    }
 
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
@@ -101,6 +89,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.debugInfo = debugInfo;
     }
     
+    @Override
     public ActionDebugInfo getDebugInfo() {
         return (ActionDebugInfo) debugInfo;
     }

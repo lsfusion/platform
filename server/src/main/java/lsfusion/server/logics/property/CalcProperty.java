@@ -74,17 +74,6 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
-    public String getCanonicalName() {
-        return canonicalName;
-    }
-
-    public String getName() {
-        if (isNamed()) {
-            return PropertyCanonicalNameParser.getName(canonicalName);
-        }
-        return null;
-    }
-
     public String getTableDebugInfo(String operation) {
         return getClass() + "," + debugInfo + "-" + operation;
     }
@@ -1907,6 +1896,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.debugInfo = debugInfo;
     }
 
+    @Override
     public CalcPropertyDebugInfo getDebugInfo() {
         return (CalcPropertyDebugInfo) debugInfo;
     }

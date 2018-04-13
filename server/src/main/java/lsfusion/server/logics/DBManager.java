@@ -1557,14 +1557,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
         
-        if (property instanceof AggregateProperty && ((AggregateProperty) property).isStored()) {
+        if (property instanceof AggregateProperty && property.isStored()) {
             runAggregationRecalculation(dataSession, session, (AggregateProperty) property, isolatedTransaction);
-            calculated.add((AggregateProperty) property);
+            calculated.add(property);
         }
 
         if (dependents) {
             for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
-                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
+                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);

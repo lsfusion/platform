@@ -76,19 +76,23 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     } 
     
     public String toString() {
-        String result = "'" + ThreadLocalContext.localize(caption) + "'";
         if (canonicalName == null && debugInfo == null) {
-            result += "-" + System.identityHashCode(this);
+            return getSID() + " - " + System.identityHashCode(this);
         } else { 
-            if (canonicalName != null)
-                result = result + " (" + canonicalName + ")";
-            if (debugInfo != null)
-                result += ":" + debugInfo;
+            String result = getSID();
+            if (caption != null) {
+                result += " '" + ThreadLocalContext.localize(caption) + "'";
+            }
+            if (debugInfo != null) {
+                result += " [" + debugInfo + "]";
+            }
+            return result;
         }
-        return result;
     }
 
     protected DebugInfo debugInfo;
+    
+    public abstract DebugInfo getDebugInfo();
 
     public boolean isField() {
         return false;
@@ -170,8 +174,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return dbName;
     }
 
-    // временно, чтобы понять где используется вместе и action и property
-    public String getOrName() {
+    public String getName() {
         if (isNamed()) {
             return PropertyCanonicalNameParser.getName(canonicalName);
         }
@@ -185,8 +188,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
 
-    // временно, чтобы понять где используется вместе и action и property
-    public String getOrCanonicalName() {
+    public String getCanonicalName() {
         return canonicalName;
     }
 

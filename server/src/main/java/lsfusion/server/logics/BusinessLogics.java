@@ -696,7 +696,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     CustomClass customClass = (CustomClass) valueClass;
                     MSet<CalcProperty> mAggrProps = classAggrProps.get(customClass);
                     if(mAggrProps == null) {
-                        mAggrProps = SetFact.<CalcProperty>mSet();
+                        mAggrProps = SetFact.mSet();
                         classAggrProps.exclAdd(customClass, mAggrProps);
                     }
                     mAggrProps.add(property);
@@ -1050,7 +1050,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     @NFLazy
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property, boolean actions) {
         if (property.isNamed()) {
-            String propertyCN = property.getOrCanonicalName();
+            String propertyCN = property.getCanonicalName();
             
             // issue #1725 Потенциальное совпадение канонических имен различных свойств 
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
@@ -1153,7 +1153,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
                 for (LP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
-                    String propertyName = property.property.getOrName();
+                    String propertyName = property.property.getName();
                     
                     if (result.get(propertyName) == null) {
                         result.put(propertyName, new ArrayList<NamedDecl>());
@@ -1292,8 +1292,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         public int compare(Property o1, Property o2) {
 
-            String c1 = o1.getOrCanonicalName();
-            String c2 = o2.getOrCanonicalName();
+            String c1 = o1.getCanonicalName();
+            String c2 = o2.getCanonicalName();
             if(c1 == null && c2 == null) {
                 return ActionProperty.compareChangeExtProps(o1, o2, strictCompare);
             }
@@ -1462,7 +1462,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (int i = 0; i < order.size(); i++) { // тут нужн
             Property orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                HMap<Property, LinkType> innerComponentOutTypes = new HMap<Property, LinkType>(LinkType.<Property>minLinkAdd());                
+                HMap<Property, LinkType> innerComponentOutTypes = new HMap<>(LinkType.<Property>minLinkAdd());                
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
                 Property minProperty = findMinProperty(innerComponentOutTypes);
@@ -1647,7 +1647,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public Graph<ActionProperty> getRecalculateFollowsGraph() {
-        return BaseUtils.<Graph<ActionProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
             public boolean contains(Property element) {
                 return element instanceof ActionProperty && ((ActionProperty) element).hasResolve();
             }
@@ -1656,7 +1656,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public Graph<AggregateProperty> getAggregateStoredGraph() {
-        return BaseUtils.<Graph<AggregateProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
             public boolean contains(Property element) {
                 return element instanceof AggregateProperty && ((AggregateProperty) element).isStored();
             }
@@ -1767,7 +1767,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public AggregateProperty getAggregateStoredProperty(String propertyCanonicalName) {
         for (Property property : getStoredProperties()) {
-            if (property instanceof AggregateProperty && propertyCanonicalName.equals(((AggregateProperty)property).getCanonicalName()))
+            if (property instanceof AggregateProperty && propertyCanonicalName.equals(property.getCanonicalName()))
                 return (AggregateProperty) property;
         }
         return null;
@@ -2245,15 +2245,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             property = findAction(canonicalName);
         return property;
     }
+    
     public LCP<?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder());
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder(false));
     }
+    
     public LAP<?> findAction(String canonicalName) {
         return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAPFinder());
     }
+    
     public LAP<?> findActionByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAPFinder());
     }
+    
     public LCP<?> findPropertyByCompoundName(String compoundName) {
         return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLCPFinder());
     }
@@ -2325,7 +2329,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(FormEntity entry : logicsModule.getModuleForms())
+            for(FormEntity entry : logicsModule.getNamedForms())
                 mResult.exclAdd(entry);
         }
         return mResult.immutable();
@@ -2353,7 +2357,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // todo [dale]: Может быть можно заменить на поиск по каноническому имени
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
-            for (FormEntity element : logicsModule.getModuleForms()) {
+            for (FormEntity element : logicsModule.getNamedForms()) {
                 if (formSID.equals(element.getSID())) {
                     return element;
                 }
@@ -2362,18 +2366,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public <C, P> LogicsModule getModuleContainingElement(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
-        List<LogicsModule> modules = namespaceToModules.get(namespaceName);
-        if (modules != null) {
-            for (LogicsModule module : modules) {
-                if (!finder.resolveInModule(module, name, param).isEmpty()) {
-                    return module;
-                }
-            }
-        }
-        return null;
+    public void checkForDuplicateElements() {
+        new DuplicateSystemElementsChecker(logicModules).check();
     }
-
+    
     public DBManager getDbManager() {
         return ThreadLocalContext.getDbManager();
     }

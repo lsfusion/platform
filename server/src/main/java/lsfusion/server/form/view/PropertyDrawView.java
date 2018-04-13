@@ -257,7 +257,7 @@ public class PropertyDrawView extends ComponentView {
 
         pool.writeString(outStream, entity.getNamespace());
         pool.writeString(outStream, getSID());
-        pool.writeString(outStream, entity.propertyObject.property.getOrCanonicalName());
+        pool.writeString(outStream, entity.propertyObject.property.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(

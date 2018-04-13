@@ -308,11 +308,20 @@
         </property>
         <property name="BL" ref="businessLogics"/>
     </bean>
-
-    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.tasks.impl.simple.FillImplicitCasesTask">
+    
+    <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.tasks.impl.simple.CheckDuplicateSystemElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initPropertiesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+    
+    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.tasks.impl.simple.FillImplicitCasesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="checkDuplicateSystemElements"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

@@ -89,7 +89,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String toString() {
-        return "'" + ThreadLocalContext.localize(caption) + "'" + " (" + getCanonicalName() + ")";
+        String result = getCanonicalName();
+        if (caption != null) {
+            result += " '" + ThreadLocalContext.localize(caption) + "'";
+        }
+        if (debugInfo != null) {
+            result += " [" + debugInfo + "]";
+        }
+        return result;
     }
 
     public Long ID;

@@ -4,19 +4,15 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LCP;
 
 public class ModuleEqualLCPFinder extends ModuleEqualLPFinder<LCP<?>> {
+    protected final boolean findLocals;
 
-    public ModuleEqualLCPFinder() {
-        super(false);
-    }
-    private ModuleEqualLCPFinder(boolean findLocals) {
-        super(true);
-        assert findLocals;
+    public ModuleEqualLCPFinder(boolean findLocals) {
+        this.findLocals = findLocals;
     }
 
     @Override
-    public ModuleEqualLPFinder<LCP<?>> findLocals() {
-        assert !findLocals;
-        return new ModuleEqualLCPFinder(true);
+    public boolean isFiltered(LCP<?> property) {
+        return (findLocals || !property.property.isLocal());
     }
 
     @Override

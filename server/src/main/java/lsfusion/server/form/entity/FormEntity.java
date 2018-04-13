@@ -29,6 +29,7 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -76,7 +77,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     private String canonicalName;
     private LocalizedString caption;
-    private String creationPath;
+    private DebugInfo.DebugPoint debugPoint; 
 
     private String defaultImagePath;
     
@@ -170,11 +171,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this(canonicalName, null, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String imagePath, Version version) {
+    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.canonicalName = canonicalName;
-        this.creationPath = creationPath;
+        this.debugPoint = debugPoint;
         
         this.defaultImagePath = imagePath;
         
@@ -969,13 +970,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public String getCreationPath() {
-        return creationPath;
+        if (debugPoint == null) {
+            return null;
+        } else {
+            return debugPoint.toString();
+        }
     }
 
-    public void setCreationPath(String creationPath) {
-        this.creationPath = creationPath;
-    }
-    
     public int getID() {
         return ID;
     }
@@ -998,6 +999,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getDefaultImagePath() {
         return defaultImagePath;
+    }
+
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint;
+    }
+
+    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
     }
 
     // сохраняет нижние компоненты
@@ -1289,7 +1298,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @Override
     public String toString() {
-        return getSID() + "'" + ThreadLocalContext.localize(caption) + "'";
+        String result = getSID();
+        if (caption != null) {
+            result += " '" + ThreadLocalContext.localize(caption) + "'";
+        }
+        if (debugPoint != null) {
+            result += " [" + debugPoint + "]";
+        }
+        return result;
     }
 
     @Override

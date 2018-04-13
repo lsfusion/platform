@@ -432,7 +432,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             assert obj instanceof ObjectEntity;
             mapping.add(((ObjectEntity) obj).getSID());
         }
-        return createSID(property.property.getOrName(), mapping);
+        return createSID(property.property.getName(), mapping);
     }
 
     public String getFormPath() {

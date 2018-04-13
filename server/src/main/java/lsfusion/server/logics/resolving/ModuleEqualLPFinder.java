@@ -8,17 +8,11 @@ import java.util.List;
 
 // Находит идентичные по имени и сигнатуре свойства.   
 public abstract class ModuleEqualLPFinder<L extends LP<?, ?>> extends ModulePropertyOrActionFinder<L> {
-    protected final boolean findLocals;
-
-    protected ModuleEqualLPFinder(boolean findLocals) {
-        this.findLocals = findLocals;
-    }
+    public abstract boolean isFiltered(L property);
     
-    public abstract ModuleEqualLPFinder<L> findLocals();
-
     @Override
     protected boolean accepted(LogicsModule module, L property, List<ResolveClassSet> signature) {
-        if (findLocals || !property.property.isLocal()) {
+        if (!isFiltered(property)) {
             List<ResolveClassSet> paramClasses = module.getParamClasses(property);
             boolean equals = SignatureMatcher.isEqualsCompatible(paramClasses, signature); // чтобы не вызывать ветку в ResolveOrObjectClassSet.containsAll
             assert equals == (SignatureMatcher.isCompatible(paramClasses, signature, false, false) &&

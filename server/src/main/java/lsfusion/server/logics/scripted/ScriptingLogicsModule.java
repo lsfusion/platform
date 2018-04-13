@@ -397,7 +397,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedClass(String className, LocalizedString captionStr, boolean isAbstract,
                                  List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateClass(className, BL);
+        checks.checkDuplicateClass(className);
         checks.checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checks.checkClassParents(parentNames);
 
@@ -662,7 +662,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedGroup(String groupName, LocalizedString captionStr, String parentName) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateGroup(groupName, BL);
+        checks.checkDuplicateGroup(groupName);
         LocalizedString caption = (captionStr == null ? LocalizedString.create(groupName) : captionStr);
         AbstractGroup parentGroup = (parentName == null ? null : findGroup(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
@@ -670,12 +670,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
                                                   ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateForm(formName, BL);
+        checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
         String canonicalName = elementCanonicalName(formName);
 
-        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, point.toString(), caption, icon, getVersion()));
+        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, point, caption, icon, getVersion()));
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
 
@@ -703,7 +703,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public void addScriptedForm(ScriptingFormEntity form, DebugInfo.DebugPoint point) {
         FormEntity formEntity = addFormEntity(form.getForm());
-        formEntity.setCreationPath(point.toString());
+        formEntity.setDebugPoint(point);
     }
 
     public void finalizeScriptedForm(ScriptingFormEntity form) {
@@ -960,16 +960,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.caption = (caption == null ? LocalizedString.create(name) : caption);
         addPropertyToGroup(property.property, group);
     }
+    
     public void addSettingsToAction(LAP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, ActionSettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateAction(name, signature, BL);
+        checks.checkDuplicateAction(name, signature);
 
         addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
 
         makeActionPublic(property, name, signature);
     }
+    
     public LCP addSettingsToProperty(LCP<?> baseProperty, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
                                       PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateProperty(name, signature, BL);
+        checks.checkDuplicateProperty(name, signature);
 
         LCP<?> property = baseProperty;
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
@@ -1839,7 +1841,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
-        checks.checkDuplicateProperty(name, signature, BL);
+        checks.checkDuplicateProperty(name, signature);
 
         LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
         makePropertyPublic(res, name, signature);
@@ -2974,7 +2976,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateMetaCodeFragment(name, params.size(), BL);
+        checks.checkDuplicateMetaCodeFragment(name, params.size());
         checks.checkDistinctParameters(params);
 
         MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, code, getName(), lineNumber);
@@ -3391,7 +3393,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedTable(String name, List<String> classIds, boolean isFull) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateTable(name, BL);
+        checks.checkDuplicateTable(name);
 
         ValueClass[] classes = new ValueClass[classIds.size()];
         for (int i = 0; i < classIds.size(); i++) {
@@ -3431,7 +3433,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedWindow(WindowType type, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
-        checks.checkDuplicateWindow(name, BL);
+        checks.checkDuplicateWindow(name);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
         NavigatorWindow window = null;
@@ -3567,7 +3569,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         checks.checkNavigatorElementName(name);
-        checks.checkDuplicateNavigatorElement(name, BL);
+        checks.checkDuplicateNavigatorElement(name);
         
         if (caption == null) {
             caption = createDefaultNavigatorElementCaption(action, form);
@@ -3606,7 +3608,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             newElement = addNavigatorFolder(canonicalName, caption);
         }
-        newElement.setCreationPath(point.toString());
+        newElement.setDebugPoint(point);
         return newElement;   
     }
     
