@@ -240,7 +240,7 @@ public abstract class NavigatorElement {
     }
 
     public String getCreationPath() {
-        return getDebugPoint().toString();
+        return debugPoint.toString();
     }
     
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -259,10 +259,6 @@ public abstract class NavigatorElement {
 
         IOUtils.writeImageIcon(outStream, getImage());
         outStream.writeUTF(getImage().getDescription());
-    }
-
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
     }
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {

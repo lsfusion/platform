@@ -1001,10 +1001,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return defaultImagePath;
     }
 
-    public DebugInfo.DebugPoint getDebugPoint() {
-        return debugPoint;
-    }
-
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
         this.debugPoint = debugPoint;
     }
