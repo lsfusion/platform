@@ -974,8 +974,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateProperty(name, signature);
 
         LCP<?> property = baseProperty;
-        // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
-        if (property.property.getSID().equals(lastOptimizedJPropSID)) {
+        if (propertyNeedsToBeWrapped(property)) {
             property = addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
 
@@ -1029,6 +1028,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
 
+    /** Проверяет нужно ли обернуть свойство в join.
+     *  Свойства нужно обернуть, если это не только что созданное свойство, а свойство, созданное ранее с уже установленными 
+     *  параметрами (например, с установленным каноническим именем или debug point'ом). Такая ситуация возникает, если 
+     *  была произведена какая-то оптимизация: кэширование (например, с помощью IdentityLazy) либо логика с lastOptimizedJPropSID.
+     *  todo [dale]: Сейчас проверяются только основные частные случаи.
+     */
+    private boolean propertyNeedsToBeWrapped(LCP<?> property) {
+        // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
+        return property.property.getSID().equals(lastOptimizedJPropSID) 
+                || property.property instanceof ValueProperty
+                || property.property instanceof IsClassProperty;
+    }
+    
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
         StringBuilder errorMessage = new StringBuilder();
         for (CalcProperty property : alwaysNullProperties.keySet()) {

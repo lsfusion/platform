@@ -2367,7 +2367,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void checkForDuplicateElements() {
-//        new DuplicateSystemElementsChecker(logicModules).check();
+        new DuplicateSystemElementsChecker(logicModules).check();
     }
     
     public DBManager getDbManager() {
