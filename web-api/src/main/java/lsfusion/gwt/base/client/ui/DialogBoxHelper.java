@@ -3,6 +3,7 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -94,6 +95,7 @@ public class DialogBoxHelper {
     @SuppressWarnings("GWTStyleCheck")
     public static final class MessageBox extends DialogBox {
         private Widget contents;
+        private CloseCallback closeCallback;
         private HorizontalPanel buttonPane;
         private Button activeButton;
 
@@ -103,6 +105,7 @@ public class DialogBoxHelper {
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
             this.contents = contents;
+            this.closeCallback = closeCallback;
 
             ResizableSimplePanel contentsContainer = new ResizableSimplePanel(this.contents);
             contentsContainer.addStyleName("messageBox-messageContainer");
@@ -110,16 +113,13 @@ public class DialogBoxHelper {
             contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
             contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
 
-            createButtonsPanel(activeOption, options, closeCallback);
+            createButtonsPanel(activeOption, options);
 
             if (timeout != 0) {
                 final Timer timer = new Timer() {
                     @Override
                     public void run() {
-                        hide();
-                        if (closeCallback != null) {
-                            closeCallback.closed(activeOption);
-                        }
+                        hide(activeOption);
                     }
                 };
                 timer.schedule(timeout);
@@ -145,15 +145,21 @@ public class DialogBoxHelper {
             if (!GwtClientUtils.isIEUserAgent() && GKeyStroke.isCopyToClipboardEvent(event.getNativeEvent())) {
                 CopyPasteUtils.putSelectionIntoClipboard();
             }
+
+            if (Event.ONKEYDOWN == event.getTypeInt()) {
+                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+                    hide(OptionType.CANCEL); // что-нибудь, преобразуемое в 1
+                }
+            }
             
             super.onPreviewNativeEvent(event);
         }
 
-        private void createButtonsPanel(OptionType activeOption, OptionType[] options, CloseCallback closeCallback) {
+        private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
             buttonPane = new HorizontalPanel();
             buttonPane.setSpacing(3);
             for (OptionType option : options) {
-                Button optionButton = createOptionButton(option, closeCallback);
+                Button optionButton = createOptionButton(option);
                 if (option == activeOption) {
                     activeButton = optionButton;
                 }
@@ -161,19 +167,23 @@ public class DialogBoxHelper {
             }
         }
 
-        private Button createOptionButton(final OptionType option, final CloseCallback closeCallback) {
+        private Button createOptionButton(final OptionType option) {
             Button optionButton = new Button(option.getCaption(), new ClickHandler() {
                 @Override
                 public void onClick(final ClickEvent event) {
-                    hide();
-                    if (closeCallback != null) {
-                        closeCallback.closed(option);
-                    }
+                    hide(option);
                 }
             });
             optionButton.addStyleName("messageBox-button");
 
             return optionButton;
+        }
+        
+        private void hide(final OptionType option) {
+            hide();
+            if (closeCallback != null) {
+                closeCallback.closed(option);
+            }
         }
 
         public void showCenter() {
