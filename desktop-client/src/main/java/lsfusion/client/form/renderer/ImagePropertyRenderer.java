@@ -1,13 +1,18 @@
 package lsfusion.client.form.renderer;
 
+import com.google.common.base.Throwables;
 import lsfusion.client.Main;
 import lsfusion.client.logics.ClientPropertyDraw;
 
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 public class ImagePropertyRenderer extends FilePropertyRenderer {
     private ImageIcon icon;
@@ -19,11 +24,23 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
     public void setValue(Object value) {
         super.setValue(value);
         
+        icon = null; // сбрасываем
         if (value != null) {
-            icon = new ImageIcon((byte[]) value);
-        } else {
-            icon = null;
+            Image image = convertValue((byte[]) value);
+            if (image != null) {
+                icon = new ImageIcon(image);
+            }
         }
+    }
+    
+    public static Image convertValue(byte[] value) {
+        try {
+            ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(value));
+            return ImageIO.read(iis);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @Override
@@ -79,7 +96,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
 
     public static void expandImage(final byte[] value) {
         if (value != null) {
-            Image image = Toolkit.getDefaultToolkit().createImage(value);
+            Image image = convertValue(value); 
             if (image != null) {
                 final JDialog dialog = new JDialog(Main.frame, true);
 
