@@ -414,15 +414,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
-    @Override
-    public LocalizedString localizedToString() {
-        LocalizedString result = super.localizedToString();
-        if (debugInfo != null)
-            result = LocalizedString.concat(result, ":" + debugInfo);
-        return result;
-        
-    } 
-
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
 //        context.actionName = toString();
         if(newDebugStack) { // самым первым, так как paramInfo

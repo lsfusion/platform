@@ -68,26 +68,25 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public LocalizedString caption;
 
     public LocalizedString localizedToString() {
-        LocalizedString result = LocalizedString.concatList("'", caption, "'");
-        if (canonicalName != null) {
-            result = LocalizedString.concat(result, " (" + canonicalName + ")");
+        LocalizedString result = LocalizedString.create(getSID());
+        if (caption != null) {
+            result = LocalizedString.concatList(result, " '", caption, "'");    
+        }
+        if (debugInfo != null) {
+            result = LocalizedString.concat(result, " [" + debugInfo + "]");
         }
         return result;
     } 
     
     public String toString() {
-        if (canonicalName == null && debugInfo == null) {
-            return getSID() + " - " + System.identityHashCode(this);
-        } else { 
-            String result = getSID();
-            if (caption != null) {
-                result += " '" + ThreadLocalContext.localize(caption) + "'";
-            }
-            if (debugInfo != null) {
-                result += " [" + debugInfo + "]";
-            }
-            return result;
+        String result = getSID();
+        if (caption != null) {
+            result += " '" + ThreadLocalContext.localize(caption) + "'";
         }
+        if (debugInfo != null) {
+            result += " [" + debugInfo + "]";
+        }
+        return result;
     }
 
     protected DebugInfo debugInfo;

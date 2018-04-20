@@ -1901,17 +1901,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return (CalcPropertyDebugInfo) debugInfo;
     }
 
-    @Override 
-    public LocalizedString localizedToString() {
-        LocalizedString string = super.localizedToString();
-        
-        if (debugInfo != null) {
-            string = LocalizedString.concat(string, ":" + debugInfo);
-        }
-        return string;
-        
-    }
-    
     public void printDepends(boolean events, String tab) {
         System.out.println(tab + this);
         for(CalcProperty prop : getDepends(events)) {
