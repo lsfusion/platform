@@ -942,9 +942,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
     
-    public void makeActionOrPropertyPublic(FormEntity form, String alias, LPUsage<?> lpUsage) {
+    public LP makeActionOrPropertyPublic(FormEntity form, String alias, LPUsage<?> lpUsage) {
         String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
-        makeActionOrPropertyPublic(lpUsage.lp, name, lpUsage.signature);
+        LP property = lpUsage.lp;
+        if (property != null && property instanceof LCP && propertyNeedsToBeWrapped((LCP)property)) {
+            property = wrappedProperty((LCP)lpUsage.lp);
+        }
+        makeActionOrPropertyPublic(property, name, lpUsage.signature);
+        return property;
     }
     
     public void addSettingsToActionOrProperty(LP property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature, 
@@ -975,7 +980,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP<?> property = baseProperty;
         if (propertyNeedsToBeWrapped(property)) {
-            property = addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+            property = wrappedProperty(property);
         }
 
         addSettingsToActionOrProperty(property, name, caption, params, signature, ps);
@@ -1039,6 +1044,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property.property.getSID().equals(lastOptimizedJPropSID) 
                 || property.property instanceof ValueProperty
                 || property.property instanceof IsClassProperty;
+    }
+    
+    private LCP<?> wrappedProperty(LCP<?> property) {
+        return addJProp(false, LocalizedString.NONAME, property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
     }
     
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {

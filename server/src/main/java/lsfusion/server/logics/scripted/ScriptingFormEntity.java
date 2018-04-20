@@ -284,11 +284,13 @@ public class ScriptingFormEntity {
             }            
             if(property == null) {
                 MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, mapping);
-                if(alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage)
-                    LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage)pDrawUsage));
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;
+
+                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage) {
+                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage) pDrawUsage));
+                }
             }
 
             String formPath = points.get(i).toString();
