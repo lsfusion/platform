@@ -46,7 +46,7 @@ public class ImportXLSXIterator extends ImportIterator {
                     try {
                         listRow.add(getXLSXFieldValue(xssfRow, column, null));
                     } catch (Exception e) {
-                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column), e);
+                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column+1), e);
                     }
                 }
             }
