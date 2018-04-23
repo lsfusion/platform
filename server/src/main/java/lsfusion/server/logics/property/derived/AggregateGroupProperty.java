@@ -31,7 +31,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
         if(caption.isEmpty()) {
             ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
             for(CalcPropertyMapImplement<?, T> groupProp : groupMapProps)
-                caption = LocalizedString.concat(caption, "," + groupProp.property.toString());
+                caption = LocalizedString.concat(caption, (caption.isEmpty() ? "" : ", ") + groupProp.property.toString());
             if(groupMapProps.size() > 1)
                 caption = LocalizedString.concatList("(", caption, ")"); 
         } else
