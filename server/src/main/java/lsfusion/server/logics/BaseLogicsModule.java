@@ -343,7 +343,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     public void initProperties() throws RecognitionException {
-        Version version = getVersion();
 
         objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
@@ -374,10 +373,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0.0);
-        vnull = addProperty((AbstractGroup) null, new LCP<>(NullValueProperty.instance));
+        vnull = addProperty(null, new LCP<>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
-            watch = addProperty((AbstractGroup) null, new LAP<>(WatchActionProperty.instance));
+            watch = addProperty(null, new LAP<>(WatchActionProperty.instance));
             makeActionPublic(watch, "watch");
         }
 
@@ -531,14 +530,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+    protected <P extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+        CalcPropertyRevImplement<P, Integer> implement = (CalcPropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
-    protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
+    protected LCP addCastProp(DataClass castClass) {
         return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
@@ -602,20 +601,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {
+    public <P extends PropertyInterface> LCP<P> addOldProp(LCP<P> lp, PrevScope scope) {
         return addProperty(null, new LCP<>(lp.property.getOld(scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type, PrevScope scope) {
+    public <P extends PropertyInterface> LCP<P> addCHProp(LCP<P> lp, IncrementType type, PrevScope scope) {
         addOldProp(lp, scope); // регистрируем старое значение в списке свойств
         return addProperty(null, new LCP<>(lp.property.getChanged(type, scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
+    public <P extends PropertyInterface> LCP addClassProp(LCP<P> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
     }
 

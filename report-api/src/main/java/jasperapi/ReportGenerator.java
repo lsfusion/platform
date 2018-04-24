@@ -41,7 +41,6 @@ public class ReportGenerator {
     private Map<String, JasperDesign> designs;
     private Map<String, ClientReportData> data;
     private Map<String, List<List<Object>>> compositeColumnValues;
-    private boolean toExcel;
 
     // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
     // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий,

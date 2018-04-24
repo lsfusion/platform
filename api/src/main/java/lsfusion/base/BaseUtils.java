@@ -286,7 +286,7 @@ public class BaseUtils {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
                 return new HashMap<>();
-        return (Map<K, CV>) (Map<K, ? extends V>) map;
+        return (Map<K, CV>) map;
     }
 
     public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, Collection<? extends K> keys) {
@@ -916,7 +916,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
+    public static <B, K1 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
         Map<K1, V> result = new HashMap<>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
             V value2 = map2.get(entry.getValue());
@@ -973,7 +973,7 @@ public class BaseUtils {
     }
 
     public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
-        List<B> result = new ArrayList<B>(list1);
+        List<B> result = new ArrayList<>(list1);
         result.addAll(list2);
         return result;
     }
@@ -1599,11 +1599,11 @@ public class BaseUtils {
     }
 
     public static <I, E extends I> List<E> immutableCast(List<I> list) {
-        return (List<E>) (List<? extends I>) list;
+        return (List<E>) list;
     }
 
     public static <K, I, E extends I> Map<K, E> immutableCast(Map<K, I> map) {
-        return (Map<K, E>) (Map<K, ? extends I>) map;
+        return (Map<K, E>) map;
     }
 
     public static <I> I immutableCast(Object object) {
@@ -2290,10 +2290,10 @@ public class BaseUtils {
         return a > b ? b : a;
     }
 
-    public static List<Integer> consecutiveList(int i, int is) {
+    public static List<Integer> consecutiveList(int length, int start) {
         List<Integer> result = new ArrayList<>();
-        for (int j = 0; j < i; j++)
-            result.add(j + is);
+        for (int j = 0; j < length; j++)
+            result.add(j + start);
         return result;
     }
 
@@ -2326,7 +2326,7 @@ public class BaseUtils {
 
     public static <K> FunctionSet<K> remove(FunctionSet<K> set1, FunctionSet<K> set2) {
         if (set1.isEmpty() || set2.isFull())
-            return SetFact.<K>EMPTY();
+            return SetFact.EMPTY();
         if (set2.isEmpty() || set1.isFull())
             return set1;
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
@@ -2431,10 +2431,7 @@ public class BaseUtils {
     }
 
     public static int compareInts(int a, int b) {
-        return a < b
-                ? -1
-                : a > b
-                ? 1 : 0;
+        return Integer.compare(a, b);
     }
 
     public static void runLater(final int delay, final Runnable runnable) {
