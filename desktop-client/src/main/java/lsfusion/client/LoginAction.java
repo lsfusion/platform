@@ -22,8 +22,10 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -54,7 +56,7 @@ public final class LoginAction {
     private boolean autoLogin;
     public LoginInfo loginInfo;
     private LoginDialog loginDialog;
-    private List<String> userNames = new ArrayList<>();
+    private List<UserInfo> userInfos = new ArrayList<>();
 
     private RemoteLogicsInterface remoteLogics;
     private long computerId;
@@ -73,7 +75,7 @@ public final class LoginAction {
     }
 
     public void initLoginDialog() {
-        loginDialog = new LoginDialog(loginInfo, userNames);
+        loginDialog = new LoginDialog(loginInfo, userInfos);
     }
 
     private void storeServerData() {
@@ -81,14 +83,21 @@ public final class LoginAction {
             FileWriter fileWr = new FileWriter(SystemUtils.getUserFile(CONFIG_FILE_NAME));
             fileWr.write(loginInfo.getServerHost() + '\n');
             fileWr.write(loginInfo.getServerPort() + '\n');
-            userNames.remove(loginInfo.getUserName());
-            userNames.add(0, loginInfo.getUserName());
-            fileWr.write(BaseUtils.toString(userNames, "\t") + '\n');
-            fileWr.write(loginInfo.getServerDB() + '\n');
-            fileWr.write(String.valueOf(loginInfo.getSavePwd()) + '\n');
-            if (loginInfo.getSavePwd()) {
-                fileWr.write(Base64.encodeBase64String(loginInfo.getPassword().getBytes()) + '\n');
+            // всё в одной строке для упрощения поддержки обратной совместимости при добавлении функционала по сохранению всех паролей  
+            // вообще здесь уже просится что-то типа XML
+            List<UserInfo> newUserList = new ArrayList<>();
+            UserInfo currentUserInfo = new UserInfo(loginInfo.getUserName(), loginInfo.getSavePwd(), loginInfo.getPassword());
+            newUserList.add(currentUserInfo);
+            StringBuilder usersString = new StringBuilder(currentUserInfo.toString());
+            for (UserInfo userInfo : userInfos) {
+                if (!userInfo.name.equals(loginInfo.getUserName())) {
+                    usersString.append("\t").append(userInfo);
+                    newUserList.add(userInfo);
+                }
             }
+            userInfos = newUserList;
+            fileWr.write(usersString + "\n");
+            fileWr.write(loginInfo.getServerDB() + '\n');
             fileWr.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,15 +118,42 @@ public final class LoginAction {
                 if (loginInfo.getServerPort() != null) {
                     serverPort = loginInfo.getServerPort();
                 }
+                boolean newScheme = true; // для поддержки обратной совместимости. делалось на скорую руку. через некоторое время следует как минимум удалить ветку с !newScheme
+                userInfos = new ArrayList<>();
                 if (scanner.hasNextLine()) {
                     String users = scanner.nextLine();
                     if (!users.isEmpty()) {
-                        userNames = new ArrayList<>(Arrays.asList(users.split("\t")));
+                        Scanner usersScanner = new Scanner(users);
+                        while (usersScanner.hasNext()) {
+                            String name = usersScanner.next();
+                            boolean save = false;
+                            String pass = null;
+                            if (usersScanner.hasNext()) {
+                                String saveString = usersScanner.next();
+                                if ("true".equals(saveString) || "false".equals(saveString)) {
+                                    save = Boolean.parseBoolean(saveString);
+                                } else {
+                                    newScheme = false;
+                                    break;
+                                }
+                            }
+                            if (save && usersScanner.hasNext()) {
+                                pass = new String(Base64.decodeBase64(usersScanner.next()));
+                            }
+                            userInfos.add(new UserInfo(name, save, pass));
+                        }
+                        
+                        if (!newScheme) {
+                            String[] userStrings = users.split("\t");
+                            for (String userString : userStrings) {
+                                userInfos.add(new UserInfo(userString, false, null));
+                            }
+                        }
                     }
                 }
                 String userName = loginInfo.getUserName();
-                if (userName == null && !userNames.isEmpty()){
-                    userName = userNames.get(0);
+                if (userName == null && !userInfos.isEmpty()){
+                    userName = userInfos.get(0).name;
                 }
                 String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
                 if (loginInfo.getServerDB() != null) {
@@ -126,14 +162,24 @@ public final class LoginAction {
                 if (serverDB.isEmpty()) {
                     serverDB = "default";
                 }
-                Boolean savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
+                boolean savePwd = false;
+                if (newScheme) {
+                    if (!userInfos.isEmpty()) {
+                        savePwd = userInfos.get(0).savePassword;
+                    }
+                } else {
+                    savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
+                }
                 String password = "";
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
-                } else if (scanner.hasNextLine()) {
+                } else if (newScheme) {
+                    if (!userInfos.isEmpty()) {
+                        password = userInfos.get(0).password;
+                    }
+                } else {
                     password = new String(Base64.decodeBase64(scanner.nextLine()));
                 }
-
                 return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
             }
         } catch (IOException e) {
@@ -305,6 +351,29 @@ public final class LoginAction {
             return !oldApiVersion.equals(newApiVersion);
         } catch (RemoteException e) {
             return false;
+        }
+    }
+    
+    public class UserInfo {
+        String name;
+        boolean savePassword;
+        String password;
+        
+        public UserInfo (String name, boolean savePassword, String password) {
+            this.name = name;
+            this.savePassword = savePassword;
+            if (savePassword) {
+                this.password = password;
+            }
+        }
+
+        @Override
+        public String toString() {
+            String string = this.name + "\t" + savePassword;
+            if (savePassword) {
+                string += "\t" + Base64.encodeBase64URLSafeString(password.getBytes()) ;
+            }
+            return string;
         }
     }
 }

@@ -34,9 +34,11 @@ public class LoginDialog extends JDialog {
     private LoginInfo loginInfo;
     private boolean autoLogin = false;
     private JLabel imageLabel;
+    private List<LoginAction.UserInfo> userInfos;
 
-    public LoginDialog(LoginInfo defaultLoginInfo, List<String> userNames) {
+    public LoginDialog(LoginInfo defaultLoginInfo, List<LoginAction.UserInfo> userInfos) {
         super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
+        this.userInfos = userInfos;
         imageLabel.setIcon(Main.getLogo());
 
         loginInfo = defaultLoginInfo;
@@ -69,8 +71,8 @@ public class LoginDialog extends JDialog {
             serverDB.setSelectedItem(db);
         }
 
-        for (String userName : userNames) {
-            ((MutableComboBoxModel)loginBox.getModel()).addElement(userName);
+        for (LoginAction.UserInfo userInfo : userInfos) {
+            ((MutableComboBoxModel)loginBox.getModel()).addElement(userInfo.name);
         }
         if (loginInfo.getUserName() != null) {
             loginBox.setSelectedItem(loginInfo.getUserName());
@@ -139,7 +141,14 @@ public class LoginDialog extends JDialog {
 
         loginBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                update();
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    LoginAction.UserInfo info = getUserInfo((String) loginBox.getModel().getSelectedItem());
+                    if (info != null) {
+                        savePassword.setSelected(info.savePassword);
+                        passwordField.setText(info.password);
+                    }
+                    update();
+                }
             }
         });
 
@@ -184,6 +193,15 @@ public class LoginDialog extends JDialog {
             @Override
             public void popupMenuCanceled(PopupMenuEvent e) { }
         });
+    }
+    
+    private LoginAction.UserInfo getUserInfo(String userName) {
+        for (LoginAction.UserInfo userInfo : userInfos) {
+            if (userInfo.name.equals(userName)) {
+                return userInfo;
+            }
+        }
+        return null;
     }
 
     private void propagateServerAgents() {
