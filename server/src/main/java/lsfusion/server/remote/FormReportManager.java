@@ -139,7 +139,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
                 new ReportSourceGenerator<>(formInterface, groupReportHierarchy, fullReportHierarchy, groupId, userPreferences);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(sourceGenerator, columnGroupObjects, reportType, selectTop);
         byte[] reportDesignsByteArray = reportType.isExport() ? null :
-                reportType.isPrintMessage() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType) :
+                reportType.isPrintMessage() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType, selectTop) :
                         getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
@@ -387,10 +387,10 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         }
     }
 
-    private byte[] getPropertyCaptionsMapByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, ReportGenerationDataType reportType) {
+    private byte[] getPropertyCaptionsMapByteArray(ReportSourceGenerator<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> sourceGenerator, ReportGenerationDataType reportType, int selectTop) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            Map<String, ReportData> sources = sourceGenerator.generate(reportType);
+            Map<String, ReportData> sources = sourceGenerator.generate(reportType, selectTop);
             Map<String, Map<String, String>> propertyCaptionsMap = new HashMap<>();
             for (Map.Entry<String, ReportData> source : sources.entrySet()) {
                 propertyCaptionsMap.put(source.getKey(), source.getValue().getPropertyCaptionsMap(getFormEntity().getRichDesign(), reportType, sourceGenerator.getFormInterface()));

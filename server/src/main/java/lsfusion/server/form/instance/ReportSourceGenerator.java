@@ -74,9 +74,6 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         }
     }
 
-    public Map<String, ReportData> generate(ReportGenerationDataType reportType) throws SQLException, SQLHandledException {
-        return generate(reportType, 0);
-    }
     public Map<String, ReportData> generate(ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObject>EMPTYORDER(), null, reportType, selectTop);
         return sources;
