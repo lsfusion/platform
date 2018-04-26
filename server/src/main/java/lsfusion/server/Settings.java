@@ -2301,6 +2301,16 @@ public class Settings implements Cloneable {
         this.enableCloseThreadLocalSqlInNativeThreads = enableCloseThreadLocalSqlInNativeThreads;
     }
     
+    private boolean useHeurCanBeChanged = true;
+
+    public boolean isUseHeurCanBeChanged() {
+        return useHeurCanBeChanged;
+    }
+
+    public void setUseHeurCanBeChanged(boolean useHeurCanBeChanged) {
+        this.useHeurCanBeChanged = useHeurCanBeChanged;
+    }
+
     private boolean enableInteractiveAssertLog = false; // temporary
 
     public boolean isEnableInteractiveAssertLog() {

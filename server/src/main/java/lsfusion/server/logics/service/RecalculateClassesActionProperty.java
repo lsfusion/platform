@@ -33,9 +33,4 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}"), true));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

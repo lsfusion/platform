@@ -5,11 +5,9 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
-import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
@@ -46,7 +44,7 @@ public class MessageActionProperty extends SystemActionProperty {
     @Override
     public boolean hasFlow(ChangeFlowType type) {
         // потому как важен порядок, в котором выдаются MESSAGE'и, иначе компилятор начнет их переставлять
-        if(type == ChangeFlowType.VOLATILE)
+        if(type == ChangeFlowType.SYNC)
             return true;
         return super.hasFlow(type);
     }

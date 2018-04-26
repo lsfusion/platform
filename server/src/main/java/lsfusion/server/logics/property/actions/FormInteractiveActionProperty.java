@@ -111,7 +111,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         return false;
     }
 
-    protected boolean isVolatile() {
+    protected boolean isSync() {
         return true;
     }
 
@@ -163,13 +163,8 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     }
 
     @Override
-    public boolean ignoreReadOnlyPolicy() {
-        return !(noCancel != null && noCancel);
-    }
-
-    @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type == ChangeFlowType.CHANGE) {
+        if(type == ChangeFlowType.FORMCHANGE) {
             if(!readOnly) { // если не read only
                 FormEntity staticForm = form.getStaticForm();
                 if(staticForm == null || !staticForm.hasNoChange()) // и форма не известна и может что-то изменять

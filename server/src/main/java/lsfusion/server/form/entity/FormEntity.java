@@ -379,7 +379,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
             ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
-            if (editAction != null && editAction.property.hasFlow(ChangeFlowType.CHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
+            if (editAction != null && editAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }
 

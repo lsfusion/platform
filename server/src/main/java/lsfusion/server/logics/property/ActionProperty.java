@@ -591,12 +591,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @Override
-    public boolean ignoreReadOnlyPolicy() {
-        return true;
-    }
-
-    @Override
     public boolean isSetNotNull() {
         return false;
+    }
+
+    public boolean ignoreReadOnlyPolicy() {
+        return hasFlow(ChangeFlowType.READONLYCHANGE);
     }
 }

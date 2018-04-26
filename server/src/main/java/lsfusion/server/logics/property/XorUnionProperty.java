@@ -85,6 +85,14 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
+    protected boolean canBeHeurChanged(boolean global) {
+        for(CalcPropertyInterfaceImplement<Interface> operand : operands) // считаем where сиблингов и потом ими xor'им change
+            if(operand instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) operand).property.canBeHeurChanged(global))
+                return true;
+        return false;
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         DataChanges result = DataChanges.EMPTY;
         for(CalcPropertyInterfaceImplement<Interface> operand : operands.reverseList()) {

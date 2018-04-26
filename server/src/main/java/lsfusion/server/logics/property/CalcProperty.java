@@ -1419,7 +1419,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean canBeGlobalChanged() { // есть не Local'ы changed
         return canBeChanged(true);
     }
+    protected boolean canBeHeurChanged(boolean global) {
+        return false;
+    }
     private boolean canBeChanged(boolean global) {
+        
+        if(Settings.get().isUseHeurCanBeChanged())
+            return canBeHeurChanged(global); // в ОЧЕНЬ не большом количестве случаев отличается (а разница в производительности огромная), можно было бы для SecurityManager сделать отдельную ветку (там критична скорость), но пока особого смысла нет, так как разница не большая 
+        
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Modifier modifier = Property.defaultModifier;
         try {

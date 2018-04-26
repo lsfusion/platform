@@ -227,6 +227,28 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
+    protected boolean canBeHeurChanged(boolean global) {
+        if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
+            assert implement.mapping.size()==2;
+            Iterator<T> i = implement.property.interfaces.iterator();
+            CalcPropertyInterfaceImplement<Interface> op1 = implement.mapping.get(i.next());
+            CalcPropertyInterfaceImplement<Interface> op2 = implement.mapping.get(i.next());
+
+            // сначала первый на второй пытаемся изменить, затем для оставшихся второй на первый второй
+            return (op1 instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) op1).property.canBeHeurChanged(global)) || 
+                    (op2 instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) op2).property.canBeHeurChanged(global));
+        }
+        T andInterface = getObjectAndInterface(implement.property);
+        if(andInterface!=null) {
+            CalcPropertyInterfaceImplement<Interface> andImplement = implement.mapping.get(andInterface);
+            return andImplement instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) andImplement).property.canBeHeurChanged(global);
+        }
+        if(implementChange) // groupBy'им выбирая max
+            return implement.property.canBeHeurChanged(global); // пока implementChange = identity
+        return false;
+    }
+
+    @Override
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
@@ -297,10 +319,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return super.getDefaultEditAction(editActionSID, filterProperty);
     }
     
-    public boolean ignoreReadOnlyPolicy() {
-        return implement.mapping.size() == 1 && !implementChange && implement.mapping.singleValue().ignoreReadOnlyPolicy();
-    } 
-
     public boolean checkEquals() {
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;

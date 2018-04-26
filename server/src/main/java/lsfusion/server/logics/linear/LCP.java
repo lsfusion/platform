@@ -257,10 +257,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public ValueClass[] getInterfaceClasses(ClassType classType) {
         return property.getInterfaceClasses(listInterfaces, classType);
     }
-    
-    public LAP getEditAction(String editActionSID) {
-        return property.getEditAction(editActionSID).createLP(listInterfaces);
-    }
 
     public LCP<T> getOld() {
         return new LCP<>(property.getOld(PrevScope.DB), listInterfaces);

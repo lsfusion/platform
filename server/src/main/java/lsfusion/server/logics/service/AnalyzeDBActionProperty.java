@@ -25,9 +25,4 @@ public class AnalyzeDBActionProperty extends ScriptingActionProperty {
         }
         context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.vacuum.analyze.was.completed}"), ThreadLocalContext.localize("{logics.vacuum.analyze}")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

@@ -1,12 +1,17 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.RequestResult;
@@ -17,7 +22,7 @@ import java.sql.SQLException;
 public class InputActionProperty extends SystemExplicitActionProperty {
 
     private final DataClass dataClass;
-    private final LCP targetProp;
+    private final LCP<?> targetProp;
             
     //  используется только для событий поэтому по идее не надо, так как в событиях user activity быть не может
 //    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
@@ -43,5 +48,12 @@ public class InputActionProperty extends SystemExplicitActionProperty {
             return dataClass;
         return null;
     }
-    
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        if(targetProp != null)
+            return BaseUtils.<ImSet<CalcProperty>>immutableCast(targetProp.property.getChangeProps()).toMap(false);
+        // тут по хорошему надо getRequestedValue возвращать но для этого BL нужен
+        return MapFact.EMPTY();
+    }
 }

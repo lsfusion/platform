@@ -119,14 +119,4 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             }
         }).toOrderSet().getSet();
     }
-
-    @Override
-    public boolean ignoreReadOnlyPolicy() {
-        for (ActionPropertyMapImplement<?, PropertyInterface> propertyMapImplement : getListActions()) {
-            if (!propertyMapImplement.property.ignoreReadOnlyPolicy()) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

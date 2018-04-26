@@ -183,7 +183,7 @@ public class ListActionProperty extends ListCaseActionProperty {
                 lookingForChangeFlow = true;
             }
             
-            if(lookingForChange && listAction.hasFlow(ChangeFlowType.CHANGE))
+            if(lookingForChange && listAction.hasFlow(ChangeFlowType.FORMCHANGE))
                 return false;
         }
         

@@ -127,9 +127,4 @@ public class IfActionProperty extends KeepContextActionProperty {
             }
         });
     }
-
-    @Override
-    public boolean ignoreReadOnlyPolicy() {
-        return trueAction.property.ignoreReadOnlyPolicy() && falseAction.property.ignoreReadOnlyPolicy();
-    }
 }

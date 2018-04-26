@@ -31,9 +31,4 @@ public class CheckClassesActionProperty extends ScriptingActionProperty {
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", 
                 localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

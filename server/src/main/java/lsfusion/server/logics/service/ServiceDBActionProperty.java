@@ -57,11 +57,6 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
     
     public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
         return context.getBL().serviceLM.singleTransaction.read(context)!=null;

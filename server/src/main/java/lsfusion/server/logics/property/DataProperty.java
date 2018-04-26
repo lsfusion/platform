@@ -120,7 +120,14 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
             return ModifyResult.DATA_SOURCE; // формально в этом случае (если deleted - NO) мог только source изменится, но оптимизировать это особого смысла нет 
         return deleted; 
     }
-    
+
+    @Override
+    protected boolean canBeHeurChanged(boolean global) {
+        if(global)
+            return !(this instanceof SessionDataProperty);
+        return true;
+    }
+
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         if(!noClasses()) // нижнее условие по аналогии с canBeChanged

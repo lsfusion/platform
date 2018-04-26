@@ -78,7 +78,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    protected boolean isVolatile() { // формы используются, не определишь getUsedProps
+    protected boolean isSync() { // формы используются, не определишь getUsedProps
         return true;
     }
 

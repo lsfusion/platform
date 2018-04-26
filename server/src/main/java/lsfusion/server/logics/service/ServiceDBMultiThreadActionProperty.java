@@ -60,11 +60,6 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
     }
 
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
-
     public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {
         // транзакция в Service Action'ах не особо нужна, так как действия атомарные
         final boolean singleTransaction = singleTransaction(context); 

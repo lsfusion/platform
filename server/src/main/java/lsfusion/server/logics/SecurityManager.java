@@ -12,6 +12,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.Compare;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
@@ -118,11 +119,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
             
             for (Property property : businessLogics.getProperties()) {
-                if (property.ignoreReadOnlyPolicy()) {
+                ActionPropertyMapImplement<?, ?> editAction = property.getEditAction(ServerResponse.CHANGE);
+                if(editAction == null || editAction.property.ignoreReadOnlyPolicy()) {
                     readOnlyPolicy.property.change.permit(property);
-                    ActionPropertyMapImplement changeAction = property.getEditAction("change");
-                    if (changeAction != null) {
-                        readOnlyPolicy.property.change.permit(changeAction.property);
+                    if (editAction != null) {
+                        readOnlyPolicy.property.change.permit(editAction.property);
                     }
                 } else {
                     readOnlyPolicy.property.change.deny(property);

@@ -136,6 +136,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return abs.type;
     }
 
+    @Override
+    protected boolean canBeHeurChanged(boolean global) {
+        for(CalcCase<Interface> operand : getCases()) // считаем where сиблингов и потом ими xor'им change
+            if(operand.implement instanceof CalcPropertyMapImplement && ((CalcPropertyMapImplement) operand.implement).property.canBeHeurChanged(global))
+                return true;
+        return false;
+    }
+
     protected DataChanges calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
         DataChanges result = DataChanges.EMPTY;
         for(CalcCase<Interface> operand : getCases()) {
@@ -456,17 +464,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return new CaseUnionDrillDownFormEntity(
                 canonicalName, LocalizedString.create("{logics.property.drilldown.form.case.union}"), this, LM
         );
-    }
-
-    @Override
-    public boolean ignoreReadOnlyPolicy() {
-        for (CalcCase<UnionProperty.Interface> calcCase : getCases()) {
-            for (DataProperty change : calcCase.implement.mapChangeProps()) {
-                if (change instanceof SessionDataProperty)
-                   return true;
-            }
-        }
-        return false;
     }
 
     @Override

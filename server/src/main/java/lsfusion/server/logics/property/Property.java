@@ -289,10 +289,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return getDefaultEditAction(editActionSID, filterProperty);
     }
     
-    public boolean ignoreReadOnlyPolicy() {
-        return false;    
-    }
-
     public boolean isChangeWYSOverriden() {
         return getEditActions().containsKey(CHANGE_WYS);
     }

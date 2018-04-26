@@ -134,14 +134,6 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @Override
-    public boolean ignoreReadOnlyPolicy() {
-        if(isRecursive) // recursion guard
-            return super.ignoreReadOnlyPolicy();
-        
-        return action.property.ignoreReadOnlyPolicy();
-    }
-
-    @Override
     protected ImSet<Pair<String, Integer>> getRecInnerDebugActions() {
         if(isRecursive) // recursion guard
             return SetFact.EMPTY();

@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
@@ -20,6 +22,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
@@ -37,7 +40,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
 
     protected final T staticType;
     
-    private final LCP exportFile;
+    private final LCP<?> exportFile;
 
     private Integer selectTop;
 
@@ -100,5 +103,12 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
             List<ReportPath> customReportPathList = SystemProperties.inDevMode && staticType != FormPrintType.MESSAGE ? newFormManager.getCustomReportPathList(staticType instanceof FormPrintType && ((FormPrintType) staticType).isExcel(), null, null) : new ArrayList<ReportPath>();
             exportClient(context, form.getCaption(), reportData, customReportPathList, form.getSID());
         }
+    }
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        if(exportFile != null)
+            return BaseUtils.<ImSet<CalcProperty>>immutableCast(exportFile.property.getChangeProps()).toMap(false);
+        return MapFact.EMPTY();
     }
 }
