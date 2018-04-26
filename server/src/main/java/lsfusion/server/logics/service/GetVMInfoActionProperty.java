@@ -22,9 +22,4 @@ public class GetVMInfoActionProperty extends ScriptingActionProperty {
         String message = SystemUtils.getVMInfo();
         context.delayUserInterfaction(new MessageClientAction(message, ThreadLocalContext.localize("{vm.data}")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

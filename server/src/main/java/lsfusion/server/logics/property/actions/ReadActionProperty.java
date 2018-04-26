@@ -1,6 +1,9 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
@@ -8,7 +11,9 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -83,5 +88,10 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        return BaseUtils.<ImSet<CalcProperty>>immutableCast(targetProp.property.getChangeProps()).toMap(false);
     }
 }

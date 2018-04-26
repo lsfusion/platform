@@ -290,7 +290,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
     
     public boolean ignoreReadOnlyPolicy() {
-        return false;    
+        return getEditAction(ServerResponse.CHANGE).property.ignoreReadOnlyPolicy();
     }
 
     public boolean isChangeWYSOverriden() {

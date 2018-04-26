@@ -25,7 +25,7 @@ public class DefaultChangeObjectActionProperty extends SystemExplicitActionPrope
     }
 
     @Override
-    protected boolean isVolatile() {
+    protected boolean isSync() {
         return true;
     }
 

@@ -165,7 +165,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type == ChangeFlowType.CHANGE)
+        if(type.isChange())
             return true;
         return super.hasFlow(type);
     }

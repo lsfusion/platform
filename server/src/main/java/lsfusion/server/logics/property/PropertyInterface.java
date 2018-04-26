@@ -121,11 +121,6 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
-    @Override
-    public boolean ignoreReadOnlyPolicy() {
-        return false;
-    }
-
     public Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return new Inferred<>((P) this, commonValue);
     }

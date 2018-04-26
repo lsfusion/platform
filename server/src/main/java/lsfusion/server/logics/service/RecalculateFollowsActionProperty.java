@@ -29,9 +29,4 @@ public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.follows}"))), localize("{logics.recalculation.follows}")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

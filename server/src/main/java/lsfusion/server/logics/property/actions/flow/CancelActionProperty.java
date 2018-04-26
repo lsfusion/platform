@@ -19,8 +19,15 @@ public class CancelActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
+    protected boolean isSync() {
+        return true;
+    }
+
+    @Override
     public boolean hasFlow(ChangeFlowType type) {
         if(type == ChangeFlowType.CANCEL)
+            return true;
+        if (type == ChangeFlowType.READONLYCHANGE)
             return true;
         return super.hasFlow(type);
     }

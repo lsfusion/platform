@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
@@ -68,7 +69,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     }
 
     @Override
-    protected boolean isVolatile() {
+    protected boolean isSync() {
         return true;
     }
 
@@ -162,4 +163,11 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
         changeWhere = changeWhere.and(groupObject.getWhere(groupKeys, modifier));
         return new PropertyChange<ClassPropertyInterface>(restKeys, mapKeys, objectValue.getExpr(), changeWhere);
     }*/
+
+    
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        return BaseUtils.<ImSet<CalcProperty>>immutableCast(implement.property.getChangeProps()).toMap(false);
+    }
 }

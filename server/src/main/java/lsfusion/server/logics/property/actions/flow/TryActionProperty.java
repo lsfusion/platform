@@ -107,9 +107,4 @@ public class TryActionProperty extends KeepContextActionProperty {
 
         return result;
     }
-
-    @Override
-    public boolean ignoreReadOnlyPolicy() {
-        return tryAction.property.ignoreReadOnlyPolicy() && (finallyAction == null || finallyAction.property.ignoreReadOnlyPolicy());
-    }
 }

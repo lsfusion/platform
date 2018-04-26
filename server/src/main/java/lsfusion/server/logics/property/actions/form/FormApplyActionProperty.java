@@ -11,6 +11,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataSession;
 
@@ -52,5 +53,12 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
     @Override
     protected LCP getShowIf() {
         return showIf;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if (type == ChangeFlowType.READONLYCHANGE)  
+            return true;
+        return super.hasFlow(type);
     }
 }

@@ -27,9 +27,4 @@ public class PackActionProperty extends ScriptingActionProperty {
         });
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.tables.packing.completed}"), localize("{logics.tables.packing}")));
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }

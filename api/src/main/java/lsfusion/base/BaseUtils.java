@@ -1602,6 +1602,10 @@ public class BaseUtils {
         return (List<E>) list;
     }
 
+    public static <I, E extends I> ImSet<E> immutableCast(ImSet<I> list) {
+        return (ImSet<E>) list;
+    }
+
     public static <K, I, E extends I> Map<K, E> immutableCast(Map<K, I> map) {
         return (Map<K, E>) map;
     }

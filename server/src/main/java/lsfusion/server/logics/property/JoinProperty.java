@@ -297,10 +297,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return super.getDefaultEditAction(editActionSID, filterProperty);
     }
     
-    public boolean ignoreReadOnlyPolicy() {
-        return implement.mapping.size() == 1 && !implementChange && implement.mapping.singleValue().ignoreReadOnlyPolicy();
-    } 
-
     public boolean checkEquals() {
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
