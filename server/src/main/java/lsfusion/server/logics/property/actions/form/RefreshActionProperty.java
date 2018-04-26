@@ -29,4 +29,9 @@ public class RefreshActionProperty extends FormFlowActionProperty {
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         form.refreshData();
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

@@ -63,4 +63,9 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return getInterface().mapInferValueClass(inferred, inferType);
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

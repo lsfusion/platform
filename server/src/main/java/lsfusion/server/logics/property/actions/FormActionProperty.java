@@ -106,7 +106,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
     }
 
     @Override
-    protected boolean isSync() {
+    protected boolean isVolatile() {
         return true;
     }
 }

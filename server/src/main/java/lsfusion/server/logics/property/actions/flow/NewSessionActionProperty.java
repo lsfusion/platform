@@ -90,7 +90,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             return false;
         if (type == ChangeFlowType.CANCEL)
             return false;
-        if (type == ChangeFlowType.FORMCHANGE && !isNested)
+        if (type == ChangeFlowType.CHANGE && !isNested)
             return false;
         return super.hasFlow(type);
     }

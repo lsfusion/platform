@@ -9,7 +9,6 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -20,6 +19,11 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createTrue
 
 public abstract class FormToolbarActionProperty extends ScriptingActionProperty {
     public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
+
+    @Override
+    protected boolean isVolatile() { // проще чем разбираться, что используется
+        return true;
+    }
 
     public FormToolbarActionProperty(ScriptingLogicsModule lm) {
         this(lm, true);
@@ -73,9 +77,7 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if (type.isChange())
-            return false;
-        return super.hasFlow(type);
+    protected boolean isGlobalChange() {
+        return false;
     }
 }

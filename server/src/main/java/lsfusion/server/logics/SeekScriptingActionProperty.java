@@ -12,7 +12,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
@@ -24,10 +23,8 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if(type.isChange())
-            return true;
-        return super.hasFlow(type);
+    protected boolean isGlobalChange() {
+        return false;
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

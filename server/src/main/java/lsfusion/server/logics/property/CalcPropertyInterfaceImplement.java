@@ -43,6 +43,8 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
 
+    boolean ignoreReadOnlyPolicy();
+
     boolean mapHasAlotKeys();
     int mapEstComplexity();
     

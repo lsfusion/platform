@@ -85,19 +85,23 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
     }
 
     @Override
-    protected boolean isSync() {
+    protected boolean isVolatile() {
         return true;
+    }
+
+    protected boolean isGlobalChange() {
+        return true;
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.CHANGE && isGlobalChange())
+            return true;
+        return super.hasFlow(type);
     }
 
     @Override
     protected boolean allowNulls() { // does not allow by default
         return false;
-    }
-
-    @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if(type.isChange()) // неизвестно что поэтому считаем что изменяет
-            return true;
-        return super.hasFlow(type);
     }
 }

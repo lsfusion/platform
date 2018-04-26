@@ -92,5 +92,11 @@ public class RequestActionProperty extends KeepContextActionProperty {
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         return requestAction.property.getSimpleRequestInputType(optimistic, true);
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return requestAction.property.ignoreReadOnlyPolicy() && doAction.property.ignoreReadOnlyPolicy() && (elseAction == null || elseAction.property.ignoreReadOnlyPolicy());
+    }
+
 }
 

@@ -290,10 +290,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
     
     public boolean ignoreReadOnlyPolicy() {
-        ActionPropertyMapImplement<?, T> editAction = getEditAction(ServerResponse.CHANGE);
-        if(editAction == null)
-            return true;
-        return editAction.property.ignoreReadOnlyPolicy();
+        return false;    
     }
 
     public boolean isChangeWYSOverriden() {

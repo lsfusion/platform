@@ -343,7 +343,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         }
 
         // проталкиваем for'ы
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
             return null;
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
@@ -485,5 +485,10 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         return pushFor.push(mapPushInterfaces.result.filterRev(context).valuesSet(), mapPush,
                 DerivedProperty.mapImplements(orders, mapPushInterfaces.result), ordersNotNull, mapInnerInterfaces.result).map(mapPushInterfaces.result.reverse());
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return action != null && action.property.ignoreReadOnlyPolicy() && (elseAction == null || elseAction.property.ignoreReadOnlyPolicy());
     }
 }

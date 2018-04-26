@@ -26,4 +26,9 @@ public class OkActionProperty extends FormFlowActionProperty {
     protected LCP getShowIf() {
         return showIf;
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

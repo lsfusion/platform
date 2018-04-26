@@ -50,6 +50,11 @@ public class SessionDataProperty extends DataProperty {
     }
 
     @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
+
+    @Override
     public String getChangeExtSID() {
         return "sys" + hashCode(); // тут можно было бы сигнатуру вставить
     }

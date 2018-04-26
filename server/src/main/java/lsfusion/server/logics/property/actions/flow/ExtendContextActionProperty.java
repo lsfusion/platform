@@ -76,4 +76,9 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     public ActionPropertyMapImplement<?, I> compileExtend() {
         return null;
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return false;
+    }
 }

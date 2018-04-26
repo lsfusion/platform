@@ -194,7 +194,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type.isChange())
+        if(type == ChangeFlowType.CHANGE)
             return true;
         return super.hasFlow(type);
     }

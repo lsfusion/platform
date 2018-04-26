@@ -190,6 +190,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
+
+    @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация см. CaseUnionProperty
         return getInterfaceClass() instanceof DataClass;
     }

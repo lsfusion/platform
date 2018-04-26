@@ -25,4 +25,9 @@ public class CheckIndicesActionProperty extends ScriptingActionProperty {
         }
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.indices}"))), localize("{logics.checking.indices}")));
     }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
+    }
 }

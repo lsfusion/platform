@@ -27,4 +27,9 @@ public class VacuumDBActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.vacuum.db.was.completed}"), localize("{logics.vacuum.db}")));
     }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
+    }
 }

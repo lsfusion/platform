@@ -31,4 +31,9 @@ public class CheckAggregationsActionProperty extends ScriptingActionProperty {
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
     }
+
+    @Override
+    protected boolean isVolatile() {
+        return true;
+    }
 }

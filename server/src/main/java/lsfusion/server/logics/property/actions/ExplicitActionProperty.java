@@ -64,15 +64,20 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         return IsClassProperty.getProperty(interfaces);
     }
 
-    protected boolean isSync() {
+    protected boolean isVolatile() {
         return false;
     }
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
-        if(type == ChangeFlowType.SYNC && isSync())
+        if(type == ChangeFlowType.VOLATILE && isVolatile())
             return true;
         return super.hasFlow(type);
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return false;
     }
 
     protected boolean ignoreFitClassesCheck() { return false; }

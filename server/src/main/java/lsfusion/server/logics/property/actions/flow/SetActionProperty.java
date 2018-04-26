@@ -29,7 +29,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected final CalcPropertyMapImplement<?, I> where;
     
     public static boolean hasFlow(CalcPropertyMapImplement<?,?> writeTo, ChangeFlowType type) {
-        if(type.isChange() && writeTo.property.canBeGlobalChanged())
+        if(type == ChangeFlowType.CHANGE && writeTo.property.canBeGlobalChanged())
             return true;             
         return false;
     }

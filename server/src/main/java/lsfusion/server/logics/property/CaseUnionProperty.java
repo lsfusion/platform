@@ -459,6 +459,17 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
+    public boolean ignoreReadOnlyPolicy() {
+        for (CalcCase<UnionProperty.Interface> calcCase : getCases()) {
+            for (DataProperty change : calcCase.implement.mapChangeProps()) {
+                if (change instanceof SessionDataProperty)
+                   return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean aspectDebugHasAlotKeys() { // оптимизация, так как hasAlotKeys единственный кто в debug вызывает getExpr и на очень сложных свойствах это сжирает время (процентов 10 от времени старта)
         ImList<CalcCase<Interface>> simpleCases = getSimpleCases();
         for (CalcCase<Interface> aCase : simpleCases.getCol().sort(new Comparator<CalcCase<Interface>>() {

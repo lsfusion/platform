@@ -192,6 +192,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return editAction == null ? null : editAction.map(mapping);
     }
 
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return property.ignoreReadOnlyPolicy();
+    }
+
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return property.inferInterfaceClasses(commonValue, inferType).map(mapping);
     }
