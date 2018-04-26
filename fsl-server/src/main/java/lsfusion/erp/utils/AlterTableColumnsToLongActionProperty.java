@@ -77,9 +77,4 @@ public class AlterTableColumnsToLongActionProperty extends ScriptingActionProper
         }
 
     }
-
-    @Override
-    protected boolean isVolatile() {
-        return true;
-    }
 }
