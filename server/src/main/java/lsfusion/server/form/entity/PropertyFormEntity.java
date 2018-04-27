@@ -35,7 +35,7 @@ public class PropertyFormEntity extends FormEntity {
                 return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false));
             }});
         
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), true); // так как эвристика может быть неправильной, а классы не нужны (точне они мешают, когда DROPPED, тогда не выводится и текст сообщения)
         addGroupObject(groupObject, version);
 
         // добавляем все свойства
