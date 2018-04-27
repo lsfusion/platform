@@ -1,16 +1,12 @@
 package lsfusion.client.form.grid;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.JComponentPanel;
-import lsfusion.client.logics.ClientComponent;
 import lsfusion.client.logics.ClientGrid;
 
 import javax.swing.*;
 import java.awt.*;
-
-import static lsfusion.client.SwingUtils.overrideSize;
 
 public class GridView extends JComponentPanel {
     final JScrollPane pane;
@@ -46,6 +42,31 @@ public class GridView extends JComponentPanel {
             @Override
             public boolean isValidateRoot() {
                 return false;
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension preferredSize = super.getPreferredSize();
+                Dimension viewSize = gridTable.getPreferredSize();
+                Dimension extentSize = viewport.getPreferredSize();
+
+                // компенсируем добавление к preferredSize размеров скроллбаров, чтобы избежать прыжков размеров таблицы на форме
+                // см. ScrollPaneLayout.preferredLayoutSize()
+                if (verticalScrollBar != null && verticalScrollBarPolicy == VERTICAL_SCROLLBAR_AS_NEEDED) {
+                    boolean canScrollV = !gridTable.getScrollableTracksViewportHeight();
+                    if (canScrollV && viewSize.height > extentSize.height) {
+                        preferredSize.width -= getVerticalScrollBar().getPreferredSize().width;
+                    }
+                }
+
+                if (horizontalScrollBar != null && horizontalScrollBarPolicy == HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+                    boolean canScrollH = !gridTable.getScrollableTracksViewportWidth();
+                    if (canScrollH && viewSize.width > extentSize.width) {
+                        preferredSize.height -= getHorizontalScrollBar().getPreferredSize().height;
+                    }
+                }
+
+                return preferredSize;
             }
         };
         pane.setVerticalScrollBarPolicy(verticalScroll ? ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
