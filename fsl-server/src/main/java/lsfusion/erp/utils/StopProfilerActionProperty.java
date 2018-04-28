@@ -93,7 +93,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
 
     private void updateProfileData(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         final ImOrderSet<KeyField> keys = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(new KeyField("po1", StringClass.text),
-                new KeyField("po2", StringClass.text), new KeyField("user", IntegerClass.instance), new KeyField("form", StringClass.getv(100)))));
+                new KeyField("po2", StringClass.text), new KeyField("user", LongClass.instance), new KeyField("form", StringClass.getv(100)))));
 
         ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(totalTime, totalSQLTime, 
                 totalUserInteractionTime, callCount, minTime, maxTime, squaresSum)));
