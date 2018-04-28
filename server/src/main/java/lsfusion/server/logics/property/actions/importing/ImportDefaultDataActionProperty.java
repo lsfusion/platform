@@ -58,10 +58,10 @@ public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
                 return new ImportCSVIterator(file, getSourceColumns(XLSColumnsMapping), properties, null, null, false);
             case "dbf":
                 CustomDbfReader reader = new CustomDbfReader(new ByteArrayInputStream(file), null);
-                return new ImportDBFIterator(reader, getSourceColumns(ImportDBFDataActionProperty.getFieldMapping(reader)), new ArrayList<List<String>>(), properties, null, null);
+                return new ImportDBFIterator(reader, getSourceColumns(ImportDBFDataActionProperty.getFieldMapping(reader), 1), new ArrayList<List<String>>(), properties, null, null);
             case "jdbc":
                 JDBCTable rs = JDBCTable.deserializeJDBC(file);
-                return new ImportTableIterator(rs, getSourceColumns(ImportTableDataActionProperty.getFieldMapping(rs)), properties);
+                return new ImportTableIterator(rs, getSourceColumns(ImportTableDataActionProperty.getFieldMapping(rs), 1), properties);
             case "mdb":
                 List<Map<String, Object>> rows = (List<Map<String, Object>>) BaseUtils.deserializeCustomObject(file);
                 return new ImportMDBIterator(ImportMDBDataActionProperty.getRowsList(rows), getSourceColumns(ImportMDBDataActionProperty.getFieldMapping(rows)));

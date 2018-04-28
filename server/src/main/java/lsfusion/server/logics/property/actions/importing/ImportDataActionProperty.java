@@ -246,8 +246,12 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     public final static IntegerClass type = IntegerClass.instance;
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
+        return getSourceColumns(mapping, columnsNumberBase());
+    }
+
+    protected List<Integer> getSourceColumns(Map<String, Integer> mapping, int columnsNumberBase) {
         List<Integer> columns = new ArrayList<>();
-        int previousIndex = columnsNumberBase() - 1;
+        int previousIndex = columnsNumberBase - 1;
         for (String id : ids) {
 
             int currentIndex;
