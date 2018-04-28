@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;

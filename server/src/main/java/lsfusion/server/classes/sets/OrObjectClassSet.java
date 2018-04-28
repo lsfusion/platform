@@ -36,6 +36,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         this.unknown = unknown;
     }
 
+    public OrObjectClassSet(ImSet<ConcreteCustomClass> set) {
+        this(UpClassSet.FALSE, set);
+    }
     public OrObjectClassSet(UpClassSet up, ImSet<ConcreteCustomClass> set) {
         this(up, set, false); 
     } 
@@ -107,7 +110,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         for(int i=0,size=set.size();i<size;i++) {
             ConcreteCustomClass element = set.get(i);
             if(element.upInSet(upSet, set))
-                upSet = upSet.or(new UpClassSet(element));
+                upSet = upSet.or(element.getUpSet());
             else
                 mRestSet.keep(element);
         }

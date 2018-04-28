@@ -78,16 +78,24 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        ImMap<CalcProperty, Boolean> result = getChangeExtProps(valueClass);
+        ImMap<CalcProperty, Boolean> result = getChangeExtProps(valueClass, needDialog());
         if(this.result!=null)
             result = result.merge(this.result.property.getChangeProps().toMap(false), addValue);
         return result;
     }
     
-    public static ImMap<CalcProperty, Boolean> getChangeExtProps(CustomClass valueClass) {
+    public static ImMap<CalcProperty, Boolean> getChangeExtProps(CustomClass valueClass, boolean needDialog) {
+        if(valueClass == null) // добавление unknown, используется в агрегациях
+            return MapFact.EMPTY();
+        
         MExclMap<CalcProperty, Boolean> mResult = MapFact.mExclMap();
         mResult.exclAddAll(valueClass.getParentSetProps().toMap(false));
-        mResult.exclAddAll(valueClass.getDataProps().toMap(false));
+        
+        if(needDialog)
+            mResult.exclAddAll(valueClass.getUpDataProps().toMap(false)); // set
+        else
+            mResult.exclAdd(((ConcreteCustomClass)valueClass).dataProperty, false); // set
+        
         mResult.exclAdd(valueClass.getBaseClass().getObjectClassProperty(), false);
         return mResult.immutable();
     }

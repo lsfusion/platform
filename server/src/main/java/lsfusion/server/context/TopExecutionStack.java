@@ -10,7 +10,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -49,11 +49,11 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+    public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
     }
 
     @Override
-    public boolean sameSession(DataSession session) {
+    public boolean sameSession(UpdateCurrentClassesSession session) {
         return true; // особо не принципиально можно и false
     }
 

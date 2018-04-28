@@ -8,7 +8,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -25,7 +25,7 @@ public interface ExecutionStack {
 
     boolean hasNewDebugStack();
 
-    void updateOnApply(DataSession session) throws SQLException, SQLHandledException;
+    void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException;
 
-    boolean sameSession(DataSession session);
+    boolean sameSession(UpdateCurrentClassesSession session);
 }

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.SFunctionSet;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -9,13 +8,10 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
-import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;

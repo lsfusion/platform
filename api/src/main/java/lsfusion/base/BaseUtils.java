@@ -2324,6 +2324,13 @@ public class BaseUtils {
         return new MergeFunctionSet<>(set1, set2);
     }
 
+    public static <K> FunctionSet<K> mergeElement(FunctionSet<K> set1, K element) {
+        if(set1.contains(element))
+            return set1;
+        
+        return merge(set1, SetFact.singleton(element));        
+    }
+
     public static <K> FunctionSet<K> remove(FunctionSet<K> set1, FunctionSet<K> set2) {
         if (set1.isEmpty() || set2.isFull())
             return SetFact.EMPTY();

@@ -12,6 +12,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -55,16 +56,16 @@ public abstract class UpExecutionStack implements ExecutionStack {
         return null;
     }
 
-    public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+    public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
         if(upStack != null && upStack.sameSession(session))
-            upStack.updateOnApply(session);
+            upStack.updateCurrentClasses(session);
     }
 
     // nullable
     protected abstract DataSession getSession();
 
-    public boolean sameSession(DataSession session) {
+    public boolean sameSession(UpdateCurrentClassesSession session) {
         DataSession thisSession = getSession();
-        return thisSession == null || thisSession == session;
+        return thisSession == null || session.sameSession(thisSession);
     }
 }

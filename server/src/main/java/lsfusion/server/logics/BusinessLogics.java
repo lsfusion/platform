@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
@@ -1070,9 +1069,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void prereadCaches() {
-        getAppliedProperties(ApplyFilter.ONLYCHECK);
-        getAppliedProperties(ApplyFilter.NO);
-        getOrderMapSingleApplyDepends(ApplyFilter.NO);
+        getApplyEvents(ApplyFilter.ONLYCHECK);
+        getApplyEvents(ApplyFilter.NO);
+        if(Settings.get().isEnableApplySingleStored())
+            getOrderMapSingleApplyDepends(ApplyFilter.NO);
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
@@ -1855,102 +1855,98 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public ImOrderMap<Object, SessionEnvEvent> getAppliedProperties(ApplyFilter increment) {
+    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter increment) {
         // здесь нужно вернуть список stored или тех кто
         ImOrderSet<Property> list = getPropertyListWithGraph(increment).first;
-        MOrderExclMap<Object, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
+        MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (Property property : list) {
-            if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
-                mResult.exclAdd(property, SessionEnvEvent.ALWAYS);
-            SessionEnvEvent sessionEnv;
-            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
-                mResult.exclAdd(property, sessionEnv);
+            ApplyGlobalEvent applyEvent = property.getApplyEvent();
+            if(applyEvent != null)
+                mResult.exclAdd(applyEvent, applyEvent.getSessionEnv());
         }
         return mResult.immutableOrder();
     }
 
-    public ImOrderSet<Object> getAppliedProperties(DataSession session) {
-        return session.filterOrderEnv(getAppliedProperties(session.applyFilter));
+    public ImOrderSet<ApplyGlobalEvent> getApplyEvents(DataSession session) {
+        return session.filterOrderEnv(getApplyEvents(session.applyFilter));
+    }
+    
+    private static ImSet<CalcProperty> getSingleApplyDepends(CalcProperty<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
+        ImSet<CalcProperty> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
+
+        if (fill instanceof DataProperty) { // отдельно обрабатывается так как в getDepends передается false (так как в локальных событиях удаление это скорее вычисляемое событие, а в глобальных - императивное, приходится делать такой хак)
+             assert depends.isEmpty();
+             canBeOutOfDepends.set(true); // могут не быть в propertyList
+             return ((DataProperty) fill).getSingleApplyDroppedIsClassProps();
+        }
+        if (fill instanceof IsClassProperty) {
+             assert depends.isEmpty();
+             canBeOutOfDepends.set(true); // могут не быть в propertyList
+             return ((IsClassProperty) fill).getSingleApplyDroppedIsClassProps();
+        }
+        if (fill instanceof ObjectClassProperty) {
+             assert depends.isEmpty();
+             canBeOutOfDepends.set(true); // могут не быть в propertyList
+             return ((ObjectClassProperty) fill).getSingleApplyDroppedIsClassProps();
+        }
+        return depends;
     }
 
-    private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
-        if (!fill.equals(applied) && fill.isSingleApplyStored()) {
-            MMap<CalcProperty, SessionEnvEvent> fillDepends = mapDepends.get(fill);
-            if(!canBeOutOfDepends || fillDepends!=null)
+    private static void fillSingleApplyDependFrom(CalcProperty<?> prop, ApplySingleEvent applied, SessionEnvEvent appliedSet, MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
+        ApplyCalcEvent applyEvent = prop.getApplyEvent();
+        if (applyEvent != null && !applyEvent.equals(applied)) {
+            MOrderMap<ApplySingleEvent, SessionEnvEvent> fillDepends = mapDepends.get(applyEvent);
+            
+            boolean propCanBeOutOfDepends = canBeOutOfDepends;
+            if(prop instanceof ChangedProperty && (applied instanceof ApplyStoredEvent)) // applied может идти до DROPPED(класс), но в этом и смысл, так как если он идет до то удаление уже прошло и это удаление "фейковое" (не влияет на этот applied)
+                propCanBeOutOfDepends = true;
+            
+            if(!(propCanBeOutOfDepends && fillDepends==null))
                 fillDepends.add(applied, appliedSet);
-        } else
-            for (CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
-                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, canBeOutOfDepends);
-    }
-
-    private ImMap<CalcProperty, ImMap<CalcProperty, SessionEnvEvent>> getMapSingleApplyDepends(ApplyFilter increment) {
-
-        ImOrderMap<Object, SessionEnvEvent> appliedProps = getAppliedProperties(increment);
-
-        // нам нужны будут сами persistent свойства + prev'ы у action'ов
-        MOrderExclSet<CalcProperty> mSingleAppliedStored = SetFact.mOrderExclSet();
-        MMap<OldProperty, SessionEnvEvent> mSingleAppliedOld = MapFact.mMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
-        for(int i=0,size=appliedProps.size();i<size;i++) {
-            Object property = appliedProps.getKey(i);
-            if(property instanceof ActionPropertyValueImplement || property instanceof ActionProperty) {
-                ActionProperty actionProperty = property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty)property;
-                SessionEnvEvent sessionEnv;
-                if ((sessionEnv = actionProperty.getSessionEnv(SystemEvent.APPLY))!=null)
-                    mSingleAppliedOld.addAll(actionProperty.getOldDepends().toMap(sessionEnv));
-            } else {
-                if (property instanceof DataProperty && ((DataProperty) property).event != null)
-                    mSingleAppliedOld.addAll(((DataProperty) property).event.getOldDepends().toMap(SessionEnvEvent.ALWAYS));
-                if(((CalcProperty)property).isEnabledSingleApply())
-                    mSingleAppliedStored.exclAdd((CalcProperty) property);
-            }
-        }
-        ImOrderSet<CalcProperty> singleAppliedStored = mSingleAppliedStored.immutableOrder();
-        ImMap<OldProperty, SessionEnvEvent> singleAppliedOld = mSingleAppliedOld.immutable();
-
-        MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
-        for (CalcProperty property : singleAppliedStored) {
-            mMapDepends.exclAdd(property, MapFact.mMap(SessionEnvEvent.<CalcProperty>mergeSessionEnv()));
-            fillSingleApplyDependFrom(property, property, SessionEnvEvent.ALWAYS, mMapDepends, false);
-        }
-
-        for (int i=0,size= singleAppliedOld.size();i<size;i++) {
-            OldProperty old = singleAppliedOld.getKey(i);
-            fillSingleApplyDependFrom(old.property, old, singleAppliedOld.getValue(i), mMapDepends, increment != ApplyFilter.NO);
-        }
-
-        return mMapDepends.immutable().mapValues(new GetValue<ImMap<CalcProperty, SessionEnvEvent>, MMap<CalcProperty, SessionEnvEvent>>() {
-            public ImMap<CalcProperty, SessionEnvEvent> getMapValue(MMap<CalcProperty, SessionEnvEvent> value) {
-                return value.immutable();
-            }});
-    }
-
-    private void fillSingleApplyDependFrom(ImMap<CalcProperty, SessionEnvEvent> singleApplied, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends) {
-        for (int i=0,size=singleApplied.size();i<size;i++) {
-            CalcProperty property = singleApplied.getKey(i);
-            fillSingleApplyDependFrom(property, property, singleApplied.getValue(i), mMapDepends, false);
+        } else {
+            Result<Boolean> rCanBeOutOfDepends = new Result<>(canBeOutOfDepends);
+            for (CalcProperty depend : getSingleApplyDepends(prop, rCanBeOutOfDepends, applied))
+                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, rCanBeOutOfDepends.result);
         }
     }
 
     @IdentityLazy
-    private ImMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter filter) {
-        final ImRevMap<Property, Integer> indexMap = getPropertyList().mapOrderRevValues(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i;
+    private ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter increment) {
+        assert Settings.get().isEnableApplySingleStored();
+
+        ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(increment);
+
+        // нам нужны будут сами persistent свойства + prev'ы у action'ов
+        boolean canBeOutOfDepends = increment != ApplyFilter.NO;
+        MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
+        MAddMap<OldProperty, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
+        for(int i = 0, size = applyEvents.size(); i<size; i++) {
+            ApplyGlobalEvent applyEvent = applyEvents.getKey(i);
+            SessionEnvEvent sessionEnv = applyEvents.getValue(i);
+            singleAppliedOld.addAll(applyEvent.getEventOldDepends().toMap(sessionEnv));
+            
+            if(applyEvent instanceof ApplyCalcEvent) { // сначала классы и stored обрабатываем
+                mMapDepends.exclAdd((ApplyCalcEvent) applyEvent, MapFact.mOrderMap(SessionEnvEvent.<ApplySingleEvent>mergeSessionEnv()));
+                if(applyEvent instanceof ApplyStoredEvent) { // так как бежим в нужном порядке, то и stored будут заполняться в нужном порядке (так как он соответствует порядку depends)
+                    ApplyStoredEvent applyStoredEvent = (ApplyStoredEvent) applyEvent;
+                    fillSingleApplyDependFrom(applyStoredEvent.property, applyStoredEvent, sessionEnv, mMapDepends, canBeOutOfDepends);
+                }
             }
-        });
-        return getMapSingleApplyDepends(filter).mapValues(new GetValue<ImOrderMap<CalcProperty, SessionEnvEvent>, ImMap<CalcProperty, SessionEnvEvent>>() {
-            public ImOrderMap<CalcProperty, SessionEnvEvent> getMapValue(ImMap<CalcProperty, SessionEnvEvent> depends) {
-                ImOrderSet<CalcProperty> dependList = indexMap.filterInclRev(depends.keys()).reverse().sort().valuesList().toOrderExclSet();
-                assert dependList.size() == depends.size();
-                return dependList.mapOrderMap(depends);
-            }
-        });
+        }
+        for (int i=0,size= singleAppliedOld.size();i<size;i++) { // old'ы по идее не важно в каком порядке будут (главное что stored до)
+            OldProperty old = singleAppliedOld.getKey(i);
+            fillSingleApplyDependFrom(old.property, new ApplyUpdatePrevEvent(old), singleAppliedOld.getValue(i), mMapDepends, canBeOutOfDepends);
+        }
+
+        return mMapDepends.immutable().mapValues(new GetValue<ImOrderMap<ApplySingleEvent, SessionEnvEvent>, MOrderMap<ApplySingleEvent, SessionEnvEvent>>() {
+            public ImOrderMap<ApplySingleEvent, SessionEnvEvent> getMapValue(MOrderMap<ApplySingleEvent, SessionEnvEvent> value) {
+                return value.immutableOrder();
+            }});
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<CalcProperty> getSingleApplyDependFrom(CalcProperty property, DataSession session) {
-        assert property.isSingleApplyStored();
-        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter).get(property));
+    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session) {
+        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter).get(event));
     }
 
     @IdentityLazy

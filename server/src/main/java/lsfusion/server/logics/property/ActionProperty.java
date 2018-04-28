@@ -24,9 +24,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -126,7 +124,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result;
     }
 
-    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
+    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
@@ -597,5 +595,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public boolean ignoreReadOnlyPolicy() {
         return hasFlow(ChangeFlowType.READONLYCHANGE);
+    }
+
+    @Override
+    public ApplyGlobalEvent getApplyEvent() {
+        if (getSessionEnv(SystemEvent.APPLY)!=null) {
+            if(event == null)
+                event = new ApplyGlobalActionEvent(this);
+            return event;
+        }
+        return null;
     }
 }

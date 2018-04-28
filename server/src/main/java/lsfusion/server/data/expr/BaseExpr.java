@@ -34,6 +34,15 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 
 public abstract class BaseExpr extends Expr {
 
+    // так как getNotNullclassWhere раньше упадет в getInnerJoinExpr по ClassCast
+    public static Expr create(IsClassExpr expr) {
+        Expr joinExpr = expr.getJoinExpr();
+        if(!(joinExpr instanceof InnerExpr)) { 
+            assert joinExpr.getWhere().isFalse();
+            return NULL;
+        }
+        return create((BaseExpr) expr);                
+    }
     public static Expr create(BaseExpr expr) {
         if(!expr.getOrWhere().isFalse() && expr.getNotNullClassWhere().isFalse()) // (первая проверка - оптимизация) проблема, что при вычислении getWhere, если есть OrWhere вызывается calculateFollows, где assert'ся что Join.this.getWhere - DataWhere и падает ClassCast
             return NULL;

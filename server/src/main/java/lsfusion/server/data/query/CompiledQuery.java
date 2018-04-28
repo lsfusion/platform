@@ -647,7 +647,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             return getAlias(where.getJoin()) + "." + where.getFirstKey(syntax) + " IS NOT NULL";
         }
         public String getSource(IsClassExpr classExpr, boolean needValue) {
-            InnerExpr joinExpr = classExpr.getJoinExpr();
+            InnerExpr joinExpr = classExpr.getInnerJoinExpr();
             if(joinExpr instanceof Table.Join.Expr)
                 return getSource((Table.Join.Expr)joinExpr);
             else
@@ -1996,11 +1996,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        sql.outSelect(session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+        sql.outSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return sql.readSelect(session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+        return sql.readSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
     }
 }
 

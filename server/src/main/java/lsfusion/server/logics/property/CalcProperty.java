@@ -163,14 +163,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public abstract boolean isStored();
 
-    public boolean isEnabledSingleApply() {
-        assert isStored();
-        return Settings.get().isEnableApplySingleStored();
-    }
-    public boolean isSingleApplyStored() { // нужен для ClassDataProperty, для которого отдельный принцип обработки
-        return isStored() && isEnabledSingleApply();
-    }
-
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
         return localize(LocalizedString.concatList((this instanceof DataProperty ? "{logics.property.primary}" : "{logics.property.calculated}"), 
@@ -354,7 +346,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public Pair<PropertyChangeTableUsage<T>, PropertyChangeTableUsage<T>> splitSingleApplyClasses(String debugInfo, PropertyChangeTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        assert isSingleApplyStored();
+        assert isStored();
 
         if(DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
             return new Pair<>(createChangeTable(debugInfo+"-ssas:notfit"), changeTable);
@@ -602,6 +594,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         private final CustomClass customClass;
 
         public PropCorrelation(CalcProperty<K> property, T mapInterface, ClassType classType) {
+//            assert property.isAggr(); // могут быть еще getImplements
             this.property = property;
             this.mapInterface = mapInterface;
             this.customClass = (CustomClass) property.getInterfaceClasses(classType).singleValue(); // тут логично читать класс aggr свойства, а не изменяемого (так как по идее класс может менять внутри класса aggr свойства и это разрешено, правда с точки зрения consistency (checkClasses, а пока customClass используется только там) не факт, но пока не принципиально) 
@@ -675,6 +668,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         readTable.checkClasses(session, null, SessionTable.nonead, env.getOpOwner()); // нужен как раз для проверки fixKeyClasses
 
         return readTable;
+    }
+    
+    public PropertyChange<T> getPrevChange(PropertyChangeTableUsage<T> table) {
+        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
+        return new PropertyChange<T>(mapKeys, getExpr(mapKeys), table.join(mapKeys).getWhere());
     }
 
     public PropertyChangeTableUsage<T> readChangeTable(String debugInfo, SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -1607,7 +1605,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return calcInferInterfaceClasses(commonValue, inferType);
     }
     protected Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) { // эвристично определяет классы, для входных значений
-        assert this instanceof ChangeProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
+        assert this instanceof ChangeProperty || this instanceof IsClassProperty || this instanceof ObjectClassProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
         return new Inferred<>(calcClassValueWhere(CalcClassType.PREVBASE).getCommonExClasses(interfaces));
     }
     @IdentityStartLazy
@@ -1615,7 +1613,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return calcInferValueClass(inferred, inferType);
     }
     public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) { // эвристично определяет класс выходного значения
-        assert this instanceof ChangeProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
+        assert this instanceof ChangeProperty || this instanceof IsClassProperty || this instanceof ObjectClassProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
         return calcClassValueWhere(CalcClassType.PREVBASE).getCommonExClasses(SetFact.singleton("value")).get("value");
     }
     public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends CalcPropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
@@ -1961,5 +1959,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     
     public ImSet<CalcProperty> getImplements() {
         return SetFact.EMPTY();
+    }
+
+    @Override
+    public ApplyCalcEvent getApplyEvent() {
+        if(isStored()) {
+            if(event == null)
+                event = new ApplyStoredEvent(this);
+            return (ApplyStoredEvent)event;
+        }
+        return null;
     }
 }

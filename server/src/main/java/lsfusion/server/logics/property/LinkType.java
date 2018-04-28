@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 
 public enum LinkType  {
-    DEPEND, GOAFTERREC, EVENTACTION, USEDACTION, RECCHANGE, RECEVENT, RECUSED;
+    DEPEND, GOAFTERREC, EVENTACTION, USEDACTION, RECCHANGE, RECEVENT, RECUSED, REMOVEDCLASSES;
     
     public int getNum() {
         for(int i=0;i<order.length;i++)
@@ -29,6 +29,6 @@ public enum LinkType  {
         return (AddValue<T, LinkType>) minLinkAdd;
     }
 
-    public final static LinkType[] order = new LinkType[] {DEPEND, GOAFTERREC, EVENTACTION, USEDACTION, RECCHANGE, RECEVENT, RECUSED};
+    public final static LinkType[] order = new LinkType[] {DEPEND, GOAFTERREC, EVENTACTION, USEDACTION, RECCHANGE, RECEVENT, RECUSED, REMOVEDCLASSES};
     public final static LinkType MAX = order[order.length - 1];    
 }

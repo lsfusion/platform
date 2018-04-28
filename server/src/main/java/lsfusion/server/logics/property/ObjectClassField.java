@@ -7,9 +7,9 @@ import lsfusion.server.logics.table.ImplementTable;
 
 public interface ObjectClassField extends IsClassField {
 
-    Table.Join.Expr getInconsistentExpr(Expr expr);
+    Expr getInconsistentExpr(Expr expr);
 
-    Table.Join.Expr getStoredExpr(Expr expr);
+    Expr getStoredExpr(Expr expr);
 
     ObjectValueClassSet getObjectSet();
 

@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -57,14 +56,19 @@ public abstract class SessionModifier implements Modifier {
         views.remove(modifier);
     }
 
-    protected void eventDataChanges(ImSet<? extends CalcProperty> properties, FunctionSet<? extends CalcProperty> sourceChanged) throws SQLException, SQLHandledException {
-        assert sourceChanged.isFull() || (((ImSet<CalcProperty>)properties).containsAll((ImSet<CalcProperty>)sourceChanged));
-        for(CalcProperty property : properties)
-            eventChange(property, true, ((FunctionSet<CalcProperty>) sourceChanged).contains(property)); // как правило этот метод используется для сброса изменений, поэтому пометим что все изменилось
+    protected <P extends CalcProperty> boolean eventChanges(ImSet<P> properties, GetValue<? extends UpdateResult, P> modifyResults) throws SQLException, SQLHandledException {
+        boolean dataChanged = false;
+        for(P property : properties) {
+            UpdateResult result = modifyResults.getMapValue(property);
+            if(result.dataChanged())
+                dataChanged = true;
+            eventChange(property, result.dataChanged(), result.sourceChanged());
+        }
+        return dataChanged;
     }
 
-    protected void eventDataChanges(ImSet<? extends CalcProperty> properties) throws SQLException, SQLHandledException {
-        eventDataChanges(properties, FullFunctionSet.<CalcProperty>instance());
+    protected <P extends CalcProperty> void eventDataChanges(ImSet<P> properties) throws SQLException, SQLHandledException {
+        eventChanges(properties, ModifyResult.DATA_SOURCE.<P>fnGetValue());
     }
 
     protected void eventChange(CalcProperty property, boolean data, boolean source) throws SQLException, SQLHandledException {
@@ -130,6 +134,8 @@ public abstract class SessionModifier implements Modifier {
     public PropertyChanges getPropertyChanges() throws SQLException, SQLHandledException {
         return getPropertyChanges(false);
     }
+    
+    private static boolean enableCheckChanges = false; 
 
     private ImSet<CalcProperty> propertyChangesRecursionGuard = SetFact.EMPTY();
     // по сути protected
@@ -146,8 +152,8 @@ public abstract class SessionModifier implements Modifier {
                     return getModifyChange(value);
                 }});
 
-//            if(!calculatePropertyChanges().equals(propertyChanges.replace(replace)))
-//                mChanged = mChanged;
+            if(enableCheckChanges && !forceUpdate && !calculatePropertyChanges().equals(propertyChanges.replace(replace))) // может нарушаться если в calculatePropertyChanges кто-то empty возвращает (а в replace есть filter not empty)
+                assert false;
 
             propertyChanges = propertyChanges.replace(replace);
         

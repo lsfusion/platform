@@ -53,8 +53,11 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     public static final int subqueryThreshold = 6;
+    public InnerExpr getInnerJoinExpr() {
+        return (InnerExpr) getJoinExpr();
+    }
     @TwinLazy
-    public InnerExpr getJoinExpr() {
+    public Expr getJoinExpr() {
         if(classTables.size()==1) {
             ObjectClassField classTable = classTables.single();
             if(type.isInconsistent())
@@ -74,7 +77,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         classes = packTables(Where.TRUE, expr, classes, type);
 
         if(classes.size()> inlineThreshold || classes.size()==1)
-            return getExpr(type, new IsClassExpr(expr, classes, type));
+            return getExpr(type, BaseExpr.create(new IsClassExpr(expr, classes, type)));
         else
             return getTableExpr(expr, classes, inlineThreshold, type);
     }
@@ -239,10 +242,10 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return new PropStat(getStatValue(type));
     }
     public InnerJoin<?, ?> getInnerJoin() {
-        return getJoinExpr().getInnerJoin();
+        return getInnerJoinExpr().getInnerJoin();
     }
     public ImSet<OuterContext> calculateOuterDepends() {
-        return SetFact.<OuterContext>singleton(getJoinExpr());
+        return SetFact.<OuterContext>singleton(getInnerJoinExpr());
     }
 
     // множественное наследование StaticClassExpr

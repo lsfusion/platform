@@ -810,4 +810,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     public DrawOptions drawOptions = new DrawOptions();
+    
+    protected ApplyGlobalEvent event;
+    // важно кэшировать так как equals'ов пока нет, а они важны (в общем то только для Stored, и для RemoveClasses )
+    public ApplyGlobalEvent getApplyEvent() {
+        return null;        
+    }
 }

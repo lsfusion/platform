@@ -30,8 +30,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
+import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 
@@ -64,7 +64,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);
     
     public abstract SessionData fixKeyClasses(ClassWhere<KeyField> fixClasses, PropertyField valueField);
-    public abstract SessionData updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException;
+    public abstract boolean hasClassChanges(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException;
+    public abstract SessionData updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException;
 
     public abstract boolean isEmpty();
     
@@ -252,8 +253,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             }
         }));
         SessionData result = rewrite(session, modifyQuery.getQuery(), baseClass, env, owner, updateClasses);
-        if(!(((SessionData)this) instanceof SessionRows && result instanceof SessionRows && BaseUtils.hashEquals(this, result))) // оптимизация
-            changed.set(true);
+        if(!(this instanceof SessionRows && result instanceof SessionRows && BaseUtils.hashEquals(this, result))) // оптимизация
+            changed.set(true); // тут по идее не надо, так как source все равно изменится
         return result;
     }
     public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Long, Long>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException;

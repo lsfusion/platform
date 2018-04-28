@@ -48,6 +48,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.remote.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.session.ModifyResult;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -198,7 +199,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         for (DataSession session : sessions) {
             ImSet<CalcProperty> updateChanges = SetFact.singleton(property);
             session.updateSessionEvents(updateChanges);
-            session.updateProperties(updateChanges, true); // редко используется поэтому все равно
+            
+            session.updateProperties(property, updateChanges); // редко используется поэтому все равно
         }
     }
 

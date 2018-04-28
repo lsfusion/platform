@@ -12,13 +12,12 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.LogTime;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLRunnable;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -29,10 +28,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.AddObjectActionProperty;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertyOrderSet;
-import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.session.*;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
@@ -114,7 +110,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return this;
         }
 
-        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
             session.addRollbackInfo(new SQLRunnable() {
                 public void run() {
@@ -253,8 +249,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return ifProp == null || ifProp.mapIsFull(getExtendInterfaces());
     }
 
+    private boolean needDialog() {
+        assert addObject != null;
+        return addClass instanceof AbstractCustomClass; 
+    }
+    
     private boolean isHackAdd() { // хак который используется только для реализации агрегаций, когда генерится FOR NEW t, затем CHANGE CLASS t TO X, который компиляция сворачивать в FOR NEW t=X (непонятно какой конкретный класс по умолчанию подставлять)
-        return addObject != null && !(addClass instanceof ConcreteCustomClass);
+        return addObject != null && needDialog();
     }
     
     @Override
@@ -267,7 +268,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         ImMap<CalcProperty, Boolean> result = super.aspectChangeExtProps();
         if(addObject != null) // может быть, из-за break, noinline и т.п.
-            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass), addValue);
+            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass, needDialog()), addValue);
         return result;
     }
 

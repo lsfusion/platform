@@ -1344,10 +1344,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         @Override
-        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             for (GroupObjectInstance group : getGroups())
                 group.updateExpandClasses(session);
-            super.updateOnApply(session);
+            super.updateCurrentClasses(session);
         }
     }
 

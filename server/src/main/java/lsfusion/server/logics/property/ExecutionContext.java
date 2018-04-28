@@ -11,18 +11,12 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SameThreadExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLCallable;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLRunnable;
+import lsfusion.server.data.*;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -122,7 +116,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return super.getWatcher();
         }
 
-        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
+        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
             final ImMap<P, ? extends ObjectValue> prevKeys = keys;
             keys = session.updateCurrentClasses(keys);
             session.addRollbackInfo(new SQLRunnable() {
@@ -132,9 +126,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
             if(updateClasses!=null) {
                 for(UpdateCurrentClasses update : updateClasses)
-                    update.updateOnApply(session);
+                    update.updateCurrentClasses(session);
             }
-            super.updateOnApply(session);
+            super.updateCurrentClasses(session);
         }
     }
 

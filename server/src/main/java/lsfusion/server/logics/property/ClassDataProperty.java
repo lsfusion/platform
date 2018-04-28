@@ -5,6 +5,9 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -40,11 +43,6 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     }
 
     @Override
-    public boolean isEnabledSingleApply() {  // нельзя single Apply'ить потому что в DataObject'ах и таблицах зависают конкретные классы
-        return false;
-    }
-
-    @Override
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         throw new RuntimeException("should not be");
     }
@@ -53,7 +51,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return new ClassWhere<>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
     }
 
-    public Table.Join.Expr getInconsistentExpr(Expr expr) {
+    public Expr getInconsistentExpr(Expr expr) {
         return getInconsistentExpr(MapFact.singleton(interfaces.single(), expr), set.getBaseClass());
     }
     
@@ -62,8 +60,8 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         session.modifyRecords(new ModifyQuery(table, new Query<>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL), where), owner, TableOwner.global));
     }
 
-    public Table.Join.Expr getStoredExpr(Expr expr) {
-        return (Table.Join.Expr) getStoredExpr(MapFact.singleton(interfaces.single(), expr));
+    public Expr getStoredExpr(Expr expr) {
+        return getStoredExpr(MapFact.singleton(interfaces.single(), expr));
     }
 
     @Override

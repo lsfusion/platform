@@ -1,6 +1,7 @@
 package lsfusion.server.logics.table;
 
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -195,14 +196,12 @@ public class TableFactory implements FullTablesInterface {
     }
 
     @IdentityLazy
-    public List<ImplementTable> getImplementTables(ImSet<CustomClass> cls) {
-        List<ImplementTable> result = new ArrayList<>();
-        for (ImplementTable table : getImplementTables()) {
-            if (!table.getMapFields().values().toSet().disjoint(cls)) {
-                result.add(table);
+    public ImSet<ImplementTable> getImplementTables(final ImSet<CustomClass> cls) {
+        return getImplementTables().filterFn(new SFunctionSet<ImplementTable>() {
+            public boolean contains(ImplementTable element) {
+                return !element.getMapFields().values().toSet().disjoint(cls);
             }
-        }
-        return result;
+        });
     }
 
 }

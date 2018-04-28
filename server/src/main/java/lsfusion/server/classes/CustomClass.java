@@ -17,6 +17,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.interop.Data;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -155,8 +156,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return !getChildren().isEmpty();
     }
 
+    private UpClassSet up = null;
+    @ManualLazy
     public UpClassSet getUpSet() {
-        return new UpClassSet(this);
+        if(up == null)
+            up = new UpClassSet(this);
+        return up;
     }
 
     @Override
@@ -231,6 +236,17 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             allParents = mParents.immutable();
         }
         return allParents;
+    }
+
+    @IdentityStartLazy
+    public ImSet<CustomClass> getAllChildrenParents() {
+        ImSet<CustomClass> children = getChildren();
+        if(children.isEmpty())
+            return getAllParents();
+        MSet<CustomClass> mResult = SetFact.mSet();
+        for(CustomClass child : children)
+            mResult.addAll(child.getAllChildrenParents());
+        return mResult.immutable();            
     }
 
     // заполняет список классов
@@ -326,6 +342,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ObjectInstance newInstance(ObjectEntity entity) {
         return new CustomObjectInstance(entity, this);
+    }
+
+    public boolean disableSingleApply() {
+        return this instanceof BaseClass; // тут возможно стоило бы еще другие абстрактные классы с большим количеством children'ов исключить, но кроме Object'а пока таких нет 
     }
 
     private abstract class ClassFormHolder {
@@ -546,28 +566,14 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
         getProperty().fillChangedProps(mSet, type);
     }
-    public ImSet<CalcProperty> getDataProps() { // используется не везде, так как в явную ClassDataProperty не используется, только чтобы readStored был после всех изменений
-        return getUpObjectClassFields().keys().mapSetValues(new GetValue<CalcProperty, ObjectClassField>() {
-            public CalcProperty getMapValue(ObjectClassField value) {
+    public ImSet<ClassDataProperty> getUpDataProps() {
+        return getUpObjectClassFields().keys().mapSetValues(new GetValue<ClassDataProperty, ObjectClassField>() {
+            public ClassDataProperty getMapValue(ObjectClassField value) {
                 return value.getProperty();
             }});
     }
 
-    public static ImSet<IsClassProperty> getProperties(ImSet<? extends ValueClass> classes) {
-        return ((ImSet<ValueClass>)classes).mapSetValues(new GetValue<IsClassProperty, ValueClass>() {
-            public IsClassProperty getMapValue(ValueClass value) {
-                return value.getProperty();
-            }});
-    }
-
-    public static ImSet<ClassDataProperty> getDataProperties(ImSet<ConcreteCustomClass> classes) {
-        return classes.mapMergeSetValues(new GetValue<ClassDataProperty, ConcreteCustomClass>() {
-            public ClassDataProperty getMapValue(ConcreteCustomClass value) {
-                return value.dataProperty;
-            }});
-    }
-
-    public ImSet<CalcProperty> getChildProps() {
+    public ImSet<CalcProperty> getUpAllChangedProps() {
         ImSet<CustomClass> childs = getAllChildren();
         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
         for(CustomClass customClass : childs) {
@@ -599,14 +605,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         for(CustomClass removeClass : removeClasses)
             removeClass.fillChangedProps(mResult, IncrementType.DROP);
         return mResult.immutable();
-    }
-
-    public static ImSet<CalcProperty<ClassPropertyInterface>> getProperties(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
-        return SetFact.addExclSet(getProperties(addClasses.merge(removeClasses)), getDataProperties(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(oldClasses.merge(newClasses).filterFn(new SFunctionSet<ConcreteObjectClass>() {
-            public boolean contains(ConcreteObjectClass element) {
-                return element instanceof ConcreteCustomClass;
-            }
-        }))));
     }
 
     public static ActionProperty getChangeClassAction(ObjectClass cls) {

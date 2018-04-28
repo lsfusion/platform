@@ -301,7 +301,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
-    public static boolean checkClasses(ObjectClassSet classSet, ValueClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
+    public static boolean checkClasses(ObjectClassSet classSet, CustomClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
         if(!classRemove.removedAfterChecked(inconsistentTableClass, timestamp)) {
             mRereadChange.set(false);
             return false;
@@ -330,7 +330,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 ValueClass inconsistentTableClass;
                 if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
                     Result<Boolean> rereadChange = new Result<Boolean>();
-                    checkClasses = checkClasses(classSet, inconsistentTableClass, rereadChange, classRemove, timestamp);
+                    checkClasses = checkClasses(classSet, (CustomClass)inconsistentTableClass, rereadChange, classRemove, timestamp);
                     if(rereadChange.result)
                         mInconsistentCheckChanges.exclAdd(field);
                 } else {
@@ -609,7 +609,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             ImRevMap<PropertyField, BaseExpr> mapProps = pushProps.keys().mapRevKeys(new GetValue<PropertyField, BaseExpr>() {
                 public PropertyField getMapValue(BaseExpr value) {
                     if(value instanceof IsClassExpr)
-                        value = ((IsClassExpr)value).getJoinExpr();
+                        value = ((IsClassExpr)value).getInnerJoinExpr();
                     return ((Expr) value).property;
                 }
             });
@@ -769,6 +769,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
         public lsfusion.server.data.query.Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
             return translateOuter(translate.mapKeys());
+        }
+        
+        public boolean isSession() {
+            return Table.this instanceof SessionTable;
         }
 
         protected boolean isComplex() {

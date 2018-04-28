@@ -28,7 +28,7 @@ import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.logics.property.IsClassField;
-import lsfusion.server.session.DataSession;
+import lsfusion.server.session.ClassChanges;
 
 public class IsClassWhere extends DataWhere {
 
@@ -118,7 +118,7 @@ public class IsClassWhere extends DataWhere {
         if(classes instanceof ObjectValueClassSet && translator instanceof JoinExprTranslator) {
             Expr translatedClassExpr = classExpr.translateExpr(translator);
             if(translatedClassExpr instanceof KeyExpr) // если подставился ключ при проталкивании
-                return DataSession.isValueClass(translatedClassExpr, (ObjectValueClassSet)classes); // подставляем compare на конкретные классы N (IN ARRAY ???)
+                return ClassChanges.isStaticValueClass(translatedClassExpr, (ObjectValueClassSet)classes); // подставляем compare на конкретные классы N (IN ARRAY ???)
         }
         
         return expr.translateExpr(translator).isClass(classes, inconsistent);

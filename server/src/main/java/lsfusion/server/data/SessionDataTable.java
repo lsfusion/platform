@@ -21,8 +21,8 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
+import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 
@@ -213,7 +213,12 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             return this;
     }
 
-    public SessionData updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
+    @Override
+    public boolean hasClassChanges(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        return table.hasClassChanges(session.changes) || session.hasClassChanges(keyValues) || session.hasClassChanges(propertyValues);
+    }
+
+    public SessionData updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
         return new SessionDataTable(table.updateCurrentClasses(session), keys, session.updateCurrentClasses(keyValues), session.updateCurrentClasses(propertyValues));
     }
 

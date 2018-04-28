@@ -77,6 +77,7 @@ public class Settings implements Cloneable {
 
     // использовать применение изменений "по одному"
     private boolean enableApplySingleStored = true;
+    private boolean enableApplySingleRemoveClasses = true;
 
     private boolean editLogicalOnSingleClick = false;
 
@@ -374,6 +375,14 @@ public class Settings implements Cloneable {
 
     public void setMapInnerMaxIterations(int mapInnerMaxIterations) {
         this.mapInnerMaxIterations = mapInnerMaxIterations;
+    }
+
+    public boolean isEnableApplySingleRemoveClasses() {
+        return enableApplySingleRemoveClasses;
+    }
+
+    public void setEnableApplySingleRemoveClasses(boolean enableApplySingleRemoveClasses) {
+        this.enableApplySingleRemoveClasses = enableApplySingleRemoveClasses;
     }
 
     public boolean isEnableApplySingleStored() {
@@ -1561,16 +1570,6 @@ public class Settings implements Cloneable {
         this.disableSetDroppedOptimization = disableSetDroppedOptimization;
     }
 
-    private boolean disableGlobalEventOptimization = false;
-
-    public boolean isDisableGlobalEventOptimization() {
-        return disableGlobalEventOptimization;
-    }
-
-    public void setDisableGlobalEventOptimization(boolean disableGlobalEventOptimization) {
-        this.disableGlobalEventOptimization = disableGlobalEventOptimization;
-    }
-
     private boolean disableFirstChangesOptimization = false;
 
     public boolean isDisableFirstChangesOptimization() {
@@ -2279,7 +2278,7 @@ public class Settings implements Cloneable {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
     
-    private boolean disableCorrelations = true;
+    private boolean disableCorrelations = true; // enable'ить только при включенном sinpleApplyRemoveClasses (если включен singleApply) иначе при включенном singleApply изменения корреляции применятся, а в изменениях где корреляция используется ее никто не обновит
 
     public boolean isDisableCorrelations() {
         if(SystemProperties.inTestMode)

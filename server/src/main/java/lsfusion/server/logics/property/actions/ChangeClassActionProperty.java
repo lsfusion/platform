@@ -5,7 +5,9 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.SQLHandledException;
@@ -41,9 +43,9 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      public final CalcPropertyMapImplement<T, I> where;
      private final I changeInterface;
 
-     // когда класс с которого меняется не известен
+     // когда класс с которого или на который меняется не известен
      public static ImMap<CalcProperty, Boolean> aspectChangeBaseExtProps(BaseClass baseClass) {
-         return baseClass.getChildProps().addExcl(baseClass.getDataProps()).toMap(false);
+         return baseClass.getUpAllChangedProps().addExcl(baseClass.getUpDataProps()).toMap(false);
      }
 
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
@@ -53,13 +55,18 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
          if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.wherePolicy).getOrSet(changeInterface))==null)
              return aspectChangeBaseExtProps(baseClass);
 
+         assert valueClass instanceof ConcreteObjectClass;
          MSet<CalcProperty> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично
-         if(valueClass instanceof CustomClass) // не удаление
-             mResult.addAll(((CustomClass) valueClass).getDataProps());
+         
+         MSet<ClassDataProperty> mChangedDataProps = SetFact.mSet();
+         if(valueClass instanceof CustomClass)
+             mChangedDataProps.add(((ConcreteCustomClass) valueClass).dataProperty);
          for(ConcreteCustomClass cls : orSet.getSetConcreteChildren()) {
              mResult.addAll(cls.getChangeProps((ConcreteObjectClass) valueClass));
-             mResult.addAll(cls.getDataProps());
+             mChangedDataProps.add(cls.dataProperty);
          }
+         mResult.add(valueClass.getBaseClass().getObjectClassProperty());
+
 /*         for(CustomClass cls : orSet.up.wheres) {
              cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
              mResult.exclAddAll(cls.getChildDropProps((ConcreteObjectClass) valueClass));
