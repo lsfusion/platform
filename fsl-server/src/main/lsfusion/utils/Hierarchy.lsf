@@ -34,7 +34,7 @@ META defineHierarchyCustom (object, class)
     levelRoot 'Уровень' (class child, class parent) = PARTITION
                                                                       BY child SUM 1 IF level(child, parent)
                                                                       ORDER DESC level(child, parent) MATERIALIZED;
-    object##Root (child, level) = GROUP BY class child, levelRoot(child, class parent) NAGGR parent;  
+    object##Root (class child, level) = GROUP BY levelRoot(child, class parent) NAGGR parent;  
 
     isParent 'Является потомком' (class child, class parent) = TRUE IF level(child, parent);
 
