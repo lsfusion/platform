@@ -286,6 +286,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "formula return class must be a built-in class");
     }
 
+    public void emitCIInExpr(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "BY clause in GROUP operator cannot be used in expressions");
+    }
+
     public void emitFormDataClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "form class must be a built-in class");
     }

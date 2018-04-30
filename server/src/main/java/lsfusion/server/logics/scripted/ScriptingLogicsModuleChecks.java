@@ -221,6 +221,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+
+    public void checkCIInExpr(ScriptingLogicsModule.LCPContextIndependent lcp) throws ScriptingErrorLog.SemanticErrorException {
+        if (lcp != null) {
+            errLog.emitCIInExpr(parser);
+        }
+    }
+
     public void checkFormulaClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
             errLog.emitFormulaReturnClassError(parser);

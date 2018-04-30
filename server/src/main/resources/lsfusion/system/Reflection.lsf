@@ -158,7 +158,7 @@ columnAscendingSort 'Восходящая сортировка для польз
 columnAscendingSort 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
 
 hasUserPreferences 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-countShowPropertyDraw(g, u) = GROUP BY groupObject(PropertyDraw property), CustomUser user SUM 1 IF show(property, user) == PropertyDrawShowStatus.Show;
+countShowPropertyDraw(g, CustomUser u) = GROUP BY groupObject(PropertyDraw property) SUM 1 IF show(property, u) == PropertyDrawShowStatus.Show;
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
 hasUserPreferences 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
 countShowPropertyDraw(g) = GROUP BY groupObject(PropertyDraw property) SUM 1 IF show(property) == PropertyDrawShowStatus.Show;

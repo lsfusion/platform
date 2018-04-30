@@ -37,6 +37,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LCPContextIndependent;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.GroupingType;
@@ -1120,7 +1121,8 @@ propertyStatement
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[Collections.<TypedParameter>emptyList(), false] { $property = $ciPD.property; $signature = $ciPD.signature; }
-	|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $signature = self.getClassesFromTypedParams(context); $property = $expr.property.getLP(); } }
+	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
+                                                    else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
@@ -1132,19 +1134,24 @@ propertyDeclaration returns [String name, LocalizedString caption, List<TypedPar
 
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+    :   exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { $property = $exprOrCIPD.property; }
+        { if(inPropParseState()) { self.checkCIInExpr($exprOrCIPD.ci); } }
+;
+
+propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
     if (inPropParseState()) {
-        self.propertyDefinitionCreated($property.getLP(), point);
+        self.propertyDefinitionCreated($ci != null ? $ci.property : $property.getLP(), point);
     }
 }
-	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
+	:	pe=ifPE[context, dynamic] { $property = $pe.property; $ci = $pe.ci; }
 	;
 
 
-ifPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+ifPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 }
@@ -1153,11 +1160,13 @@ ifPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prope
 		$property = self.addScriptedIfProp(props);
 	}
 } 
-	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); }
-		('IF' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+        ( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+        'IF' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); }
+        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
-orPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+orPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 }
@@ -1166,11 +1175,13 @@ orPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prope
 		$property = self.addScriptedOrProp(props);
 	}
 } 
-	:	firstExpr=xorPE[context, dynamic] { props.add($firstExpr.property); }
-		('OR' nextExpr=xorPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=xorPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		'OR' nextExpr=xorPE[context, dynamic] { props.add($nextExpr.property); }
+		 { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
-xorPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+xorPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 }
@@ -1179,11 +1190,13 @@ xorPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 		$property = self.addScriptedXorProp(props);
 	}
 } 
-	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); }
-		('XOR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		'XOR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); }
+		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
-andPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+andPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 }
@@ -1192,11 +1205,13 @@ andPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 		$property = self.addScriptedAndProp(props);				
 	}
 }
-	:	firstExpr=notPE[context, dynamic] { props.add($firstExpr.property); }
-		('AND' nextExpr=notPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=notPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		'AND' nextExpr=notPE[context, dynamic] { props.add($nextExpr.property); }
+        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
-notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	boolean notWas = false;
 }
@@ -1205,11 +1220,11 @@ notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 		$property = self.addScriptedNotProp($notExpr.property);  
 	}
 }
-	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } 
-	|	expr=equalityPE[context, dynamic] { $property = $expr.property; } 
+	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inPropParseState()) { self.checkCIInExpr($notExpr.ci); } } 
+	|	expr=equalityPE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
-equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	LCPWithParams leftProp = null, rightProp = null;
 	String op = null;
@@ -1221,13 +1236,15 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 		$property = leftProp;
 	}
 }
-	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; }
-		((operand=EQ_OPERAND { op = $operand.text; } | operand=EQ { op = $operand.text; })
-		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; })?
+	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		(operand=EQ_OPERAND { op = $operand.text; } | operand=EQ { op = $operand.text; })
+		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; }
+		{ if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } })?
 	;
 
 
-relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	LCPWithParams leftProp = null, rightProp = null;
 	LCP mainProp = null;
@@ -1245,17 +1262,19 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 		}
 	}	
 }
-	:	lhs=likePE[context, dynamic] { leftProp = $lhs.property; }
+	:	lhs=likePE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
 		(
-			(   operand=relOperand { op = $operand.text; }
+			(   { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+			    operand=relOperand { op = $operand.text; }
 			    rhs=likePE[context, dynamic] { rightProp = $rhs.property; }
+			    { if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } }
 			)
 		|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
 
-likePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+likePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	LCPWithParams leftProp = null, rightProp = null;
 }
@@ -1267,12 +1286,14 @@ likePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams pro
 		    $property = leftProp;
 	}
 }
-	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; }
-		('LIKE'
-		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; })?
+	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		'LIKE'
+		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
+        { if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } })?
 	;
 
-additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1282,12 +1303,14 @@ additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 		$property = self.addScriptedAdditiveOrProp(ops, props);
 	}
 }
-	:	firstExpr=additivePE[context, dynamic] { props.add($firstExpr.property); }
-		(operand=ADDOR_OPERAND nextExpr=additivePE[context, dynamic] { ops.add($operand.text); props.add($nextExpr.property); })*
+	:	firstExpr=additivePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		(operand=ADDOR_OPERAND nextExpr=additivePE[context, dynamic] { ops.add($operand.text); props.add($nextExpr.property); }
+        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } }))*
 	;
 	
 	
-additivePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+additivePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1297,13 +1320,15 @@ additivePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 		$property = self.addScriptedAdditiveProp(ops, props);				
 	}
 }
-	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); }
-		( (operand=PLUS | operand=MINUS) { ops.add($operand.text); }
-		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } } 
+		(operand=PLUS | operand=MINUS) { ops.add($operand.text); }
+		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); }
+		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 		
 	
-multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<LCPWithParams> props = new ArrayList<>();
 	List<String> ops = new ArrayList<>();
@@ -1313,12 +1338,14 @@ multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LCPWith
 		$property = self.addScriptedMultiplicativeProp(ops, props);				
 	}
 }
-	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); }
-		(operand=multOperand { ops.add($operand.text); }
-		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); })*
+	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
+		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		operand=multOperand { ops.add($operand.text); }
+		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); }
+		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
-unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property] 
+unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci] 
 @init {
 	boolean minusWas = false;
 }
@@ -1327,12 +1354,12 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } 
-	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; }
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inPropParseState()) { self.checkCIInExpr($expr.ci); } } 
+	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
 		 
-postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property] 
+postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci] 
 @init {	
 	boolean hasPostfix = false;
 }
@@ -1341,22 +1368,23 @@ postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPa
 		$property = self.addScriptedDCCProp($expr.property, $index.val);
 	} 
 }
-	:	expr=simplePE[context, dynamic] { $property = $expr.property; }
+	:	expr=simplePE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 		(
+		    { if(inPropParseState()) { self.checkCIInExpr($expr.ci); } }
 			'[' index=uintLiteral ']' { hasPostfix = true; }
 		)?
 	;		 
 
 		 
-simplePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+simplePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 	:	'(' expr=propertyExpression[context, dynamic] ')' { $property = $expr.property; } 
-	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; } 
+	|	primitive=expressionPrimitive[context, dynamic] { $property = $primitive.property; $ci = $primitive.ci; } 
 	;
 
 	
-expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+expressionPrimitive[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 	:	param=singleParameter[context, dynamic] { $property = $param.property; }
-	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; }
+	|	expr=expressionFriendlyPD[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
 singleParameter[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
@@ -1371,9 +1399,9 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LCPWithP
 	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
 	;
 	
-expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @after {
-	if (inPropParseState()) {
+	if (inPropParseState() && $ci == null) {
 		self.checkPropertyValue($property.getLP());
 	}
 }
@@ -1384,7 +1412,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LCP
 	|	maxDef=maxPropertyDefinition[context, dynamic] { $property = $maxDef.property; }
 	|	caseDef=casePropertyDefinition[context, dynamic] { $property = $caseDef.property; }
 	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; }
-	|	groupDef=groupCDPropertyDefinition[context, dynamic] { $property = $groupDef.property; }
+	|	groupDef=groupCDPropertyDefinition[context, dynamic] { $property = $groupDef.property; $ci = $groupDef.ci; }
 	|	recDef=recursivePropertyDefinition[context, dynamic] { $property = $recDef.property; } 
 	|	structDef=structCreationPropertyDefinition[context, dynamic] { $property = $structDef.property; }
 	|	concatDef=concatPropertyDefinition[context, dynamic] { $property = $concatDef.property; }
@@ -1407,7 +1435,7 @@ contextIndependentPD[List<TypedParameter> context, boolean innerPD] returns [LCP
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
-	|	groupDef=groupCIPropertyDefinition[context] { $property = $groupDef.property; $signature = $groupDef.signature; $usedContext = $groupDef.usedContext; }
+//	|	groupDef=groupCIPropertyDefinition[context] { $property = $groupDef.property; $signature = $groupDef.signature; $usedContext = $groupDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
@@ -1442,10 +1470,10 @@ groupCIPropertyDefinition[List<TypedParameter> context] returns [LCP property, L
 }
 @after {
 	if (inPropParseState()) {
-		Pair<LCP, List<Integer>> lcpAndUsedOldContext = self.addScriptedCIGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext); 
-		$property = lcpAndUsedOldContext.first;
-		$usedContext = lcpAndUsedOldContext.second;		
-		$signature = self.getSignatureForGProp($usedContext, $exprList.props, groupContext);
+		LCPContextIndependent ci = self.addScriptedCIGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext); 
+		$property = ci.property;
+		$usedContext = ci.usedContext;		
+		$signature = ci.signature;
 	}
 }
 	:	'GROUP'
@@ -1453,16 +1481,19 @@ groupCIPropertyDefinition[List<TypedParameter> context] returns [LCP property, L
 	    gp=groupPropertyBodyDefinition[groupContext]
 	;
 	
-groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @init {
 	List<TypedParameter> groupContext = new ArrayList<>(context);
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCDGProp(context.size(), $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
+		Pair<LCPWithParams, LCPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
+		$property = peOrCI.first;
+		$ci = peOrCI.second;
 	}
 }
 	:	'GROUP'
+	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
 	    gp=groupPropertyBodyDefinition[groupContext]
 	;
 	
@@ -2114,8 +2145,9 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 		$property.setExplicitClasses(signature);	
 	}
 }
-	:	'[' EQ	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $expr.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext); } }
-				|	ciPD=contextIndependentPD[context, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; }
+	:	'[' EQ	(	ciPD=contextIndependentPD[context, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; }
+				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; }
+                                                                    else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
 //                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(newContext); }}
 //                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
 				)
