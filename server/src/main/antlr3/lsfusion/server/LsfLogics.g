@@ -1477,8 +1477,8 @@ groupCIPropertyDefinition[List<TypedParameter> context] returns [LCP property, L
 	}
 }
 	:	'GROUP'
-	    'BY' exprList=nonEmptyPropertyExpressionList[groupContext, true]
 	    gp=groupPropertyBodyDefinition[groupContext]
+	    'BY' exprList=nonEmptyPropertyExpressionList[groupContext, true]
 	;
 	
 groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1493,8 +1493,8 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	}
 }
 	:	'GROUP'
-	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
 	    gp=groupPropertyBodyDefinition[groupContext]
+	    ('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true])?
 	;
 	
 groupPropertyBodyDefinition[List<TypedParameter> context] returns [GroupingType type, List<LCPWithParams> mainProps = new ArrayList<>(), List<LCPWithParams> orderProps = new ArrayList<>(), boolean ascending = true, LCPWithParams whereProp = null]

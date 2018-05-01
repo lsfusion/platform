@@ -84,7 +84,7 @@ javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
 is64Java '64-битная java' = DATA BOOLEAN (Connection);
 screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
-countConnection 'Кол-во подключений' = GROUP BY user(Connection connection) SUM 1 MATERIALIZED; 
+countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
@@ -201,7 +201,7 @@ maxTotalMemoryFromTo 'Максимум памяти' = DATA INTEGER (Computer, D
 minUsedMemoryFromTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 maxUsedMemoryFromTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
-lastConnection(computer) = GROUP BY computer(Connection connection) LAST connection ORDER connection;
+lastConnection(computer) = GROUP LAST Connection connection ORDER connection BY computer(connection);
 remoteAddress 'IP пользователя' (Computer computer) = remoteAddress(lastConnection(computer));
 osVersion 'Операционная система' (Computer computer) = osVersion(lastConnection(computer));
 processor 'Процессор' (Computer computer) = processor(lastConnection(computer));
@@ -339,25 +339,25 @@ DESIGN changes {
 }
 
 limitPing 'Пороговый пинг (мс)' = DATA INTEGER ();
-limitPingSum 'Суммарное время выше порога, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP BY DATETIME dlimitDTo
-    IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitPing() AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo);
+limitPingSum 'Суммарное время выше порога, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+    IF pingFromTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averagePingDateFrom 'Средний пинг (мс)' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM pingFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
-    [=GROUP BY DATETIME dlimitDTo IF pingFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);
+    [=GROUP SUM pingFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);
     
 limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
-limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP BY DATETIME dlimitDTo
-    IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo);
+limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+    IF maxTotalMemoryFromTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averageMaxTotalMemoryDateFrom 'Средняя память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM maxTotalMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
-    [=GROUP BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);        
+    [=GROUP SUM maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
 limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
-limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP BY DATETIME dlimitDTo
-    IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo);
+limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+    IF maxUsedMemoryFromTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
 averageMaxUsedMemoryDateFrom 'Средняя использованная память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
-    [=GROUP BY DATETIME dlimitDTo IF limitDFrom < DATETIME dFrom AND dlimitDTo > DATETIME dTo SUM maxUsedMemoryFromTo(computer, dFrom, dTo) * subtractSeconds(dFrom, dTo)] (limitDTo) / 
-    [=GROUP BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo SUM subtractSeconds(dFrom, dTo)] (limitDTo);        
+    [=GROUP SUM maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
+    [=GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
 FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)

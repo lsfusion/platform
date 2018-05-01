@@ -9,7 +9,7 @@ TABLE script(Script);
 
 name 'Наименование' = DATA VARSTRING[100] (Script);
 text 'Текст' = DATA TEXT (Script);
-textScript = GROUP BY text(Script script) MAX script;
+textScript = GROUP MAX Script script BY text(script);
  
 dateTime 'Время запуска' = DATA DATETIME (Script);
 

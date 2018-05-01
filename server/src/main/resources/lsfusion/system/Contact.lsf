@@ -14,4 +14,4 @@ postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWI
 birthday 'День рождения' = DATA DATE (Contact);
 
 email 'E-mail'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>Неверный формат e-mail</html>';
-contact (email) = GROUP BY email(Contact contact) MAX contact;
+contact (email) = GROUP MAX Contact contact BY email(contact);

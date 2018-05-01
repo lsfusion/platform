@@ -44,7 +44,7 @@ TABLE account (Account);
 name 'Имя аккаунта' = DATA VARSTRING[50](Account);
 password 'Пароль' = DATA VARSTRING[50](Account) ECHO;
 fromAddress 'Адрес отправителя' = DATA VARSTRING[50] (Account);
-accountFromAddress = GROUP BY fromAddress (Account account) AGGR account WHERE account IS Account; 
+accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
 
 isDefaultNotification 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
 defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX Account account IF isDefaultNotification(account);
@@ -74,7 +74,7 @@ CLASS Email 'Письмо';
 TABLE email(Email);
 
 id = DATA VARSTRING[100] (Email);  
-emailId = GROUP BY id (Email email) AGGR email WHERE email IS Email; 
+emailId = GROUP AGGR Email email WHERE email IS Email BY id (email); 
 account = DATA Account (Email);
 
 subject 'Тема' = DATA VARSTRING[100] (Email);
@@ -125,13 +125,13 @@ showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR 
 notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
                                                             AND attachmentEmail IS AttachmentEmail;
 email = DATA Email (AttachmentEmail) NONULL DELETE;
-attachmentEmail (id, email) = GROUP BY id (AttachmentEmail attachment), id(email(attachment)) AGGR attachment WHERE attachment IS AttachmentEmail; 
+attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
 openFile 'Открыть' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
 saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
-importErrors 'Ошибки при импорте' (Email e) = GROUP BY email(AttachmentEmail ae) MAX importError(ae);
+importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 
 FORM remindUserPass 'Напоминание пароля'
 

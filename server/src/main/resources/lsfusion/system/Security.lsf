@@ -19,7 +19,7 @@ name 'Наименование' = DATA VARISTRING[100](UserRole);
 
 sid 'Идентификатор' = DATA VARSTRING[30] (UserRole);
 overSID (UserRole ur) = OVERRIDE sid(ur), name(ur);
-userRoleSID (sid) = GROUP BY sid (UserRole userRole) AGGR userRole WHERE userRole IS UserRole;
+userRoleSID (sid) = GROUP AGGR UserRole userRole WHERE userRole IS UserRole BY sid (userRole);
 
 mainRole = DATA UserRole (User);
 mainRole (CustomUser user) = mainRole[User] (user) IF user IS CustomUser;
@@ -204,7 +204,7 @@ fullForbidChange (User user, ActionOrProperty property) =
 
 cachePropertyPolicy 'Кэшировать политику безопасности для свойств' = DATA BOOLEAN (User);
 updatePropertyPolicyCaches = CUSTOM 'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
-WHEN [=GROUP BY User user SUM 1 IF (CHANGED(fullForbidView(user, ActionOrProperty actionOrProperty)) OR CHANGED(fullForbidChange(user, actionOrProperty))) AND cachePropertyPolicy(user)](User user) DO
+WHEN [=GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty)) OR CHANGED(fullForbidChange(user, actionOrProperty))) AND cachePropertyPolicy(user) BY user](User user) DO
     updatePropertyPolicyCaches(user);
 onStarted() += {
     FOR cachePropertyPolicy(User user) DO 
@@ -267,7 +267,7 @@ TABLE userRolePolicy (UserRole, Policy);
 
 name 'Наименование' = DATA VARISTRING[100](Policy);
 
-policy 'Политика' (name) = GROUP BY name(Policy policy) AGGR policy WHERE policy IS Policy;
+policy 'Политика' (name) = GROUP AGGR Policy policy WHERE policy IS Policy BY name(policy);
 description 'Описание' = DATA VARSTRING[100] (Policy);
 order 'Порядок политики' = DATA INTEGER (UserRole, Policy);
 order 'Порядок политики' (User user, Policy policy) = order (mainRole(user), policy);

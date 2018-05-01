@@ -94,7 +94,7 @@ onStarted() += {
     number(Month d) <- 12 WHERE d == Month.december; 
 }
 
-month 'Месяц (ИД)' (number) = GROUP BY number(Month month) AGGR month;
+month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
 
 extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
 extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
@@ -151,7 +151,7 @@ FORM DOWs 'Дни недели'
     LIST DOW OBJECT d
 ;
 
-DOW 'День недели (ИД)' (number) = GROUP BY number(DOW dow) AGGR dow;
+DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
 
 extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
 extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));

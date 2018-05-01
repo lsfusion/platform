@@ -26,7 +26,7 @@ CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 
 name 'Имя' = DATA VARSTRING[100] (ScheduledTask);
-scheduledTask (name) = GROUP BY name(ScheduledTask task) AGGR task WHERE task IS ScheduledTask;
+scheduledTask (name) = GROUP AGGR ScheduledTask task WHERE task IS ScheduledTask BY name(task);
 
 runAtStart 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
 timeFrom 'Время с' = DATA TIME (ScheduledTask);
@@ -89,7 +89,7 @@ message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
-isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP BY scheduledTaskLog(ScheduledClientTaskLog stcl) SUM 1 IF message(stcl)](stl) AND NOT exceptionOccurred(stl);
+isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler 'Остановить планировщик' = CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
 stopSchedulerApply 'Остановить планировщик' = {
