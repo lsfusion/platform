@@ -1524,7 +1524,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	List<LCPWithParams> paramProps = new ArrayList<>();
 	PropertyUsage pUsage = null;
 	PartitionType type = null;
-	int groupExprCnt;
+	int groupExprCnt = 0;
 	boolean strict = false;
 	int precision = 0;
 	boolean ascending = true;
@@ -1536,9 +1536,6 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	}
 }
 	:	'PARTITION' 
-		(	'BY'
-			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); }
-		)?
 		(
 			(	'SUM'	{ type = PartitionType.SUM; } 
 			|	'PREV'	{ type = PartitionType.PREVIOUS; }
@@ -1553,11 +1550,14 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 			)
 		)
 		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); }
-		{ groupExprCnt = paramProps.size() - 1; }
-		(	'ORDER' ('DESC' { ascending = false; } )?				
+		(	'ORDER' ('DESC' { ascending = false; } )?
 			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); }
 		)? 
 		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
+		(	'BY'
+			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll(0, $exprList.props); }
+    		{ groupExprCnt = $exprList.props.size(); }
+		)?
 	;
 
 
