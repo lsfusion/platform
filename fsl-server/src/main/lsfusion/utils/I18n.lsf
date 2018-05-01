@@ -19,10 +19,10 @@ term 'Термин' = DATA VARSTRING[50] (DictionaryEntry);
 insensitiveTerm(DictionaryEntry dictionaryEntry) = upper (term(dictionaryEntry));
 translation 'Перевод' = DATA VARSTRING[50] (DictionaryEntry);
 
-dictionaryEntryTerm = GROUP BY dictionary(DictionaryEntry dictionaryEntry), term(dictionaryEntry) AGGR dictionaryEntry WHERE dictionaryEntry IS DictionaryEntry;
+dictionaryEntryTerm = GROUP AGGR DictionaryEntry dictionaryEntry WHERE dictionaryEntry IS DictionaryEntry BY dictionary(dictionaryEntry), term(dictionaryEntry);
 translationDictionaryEntry 'Перевод' (Dictionary dictionary, VARSTRING[50] term) = translation(dictionaryEntryTerm(dictionary, term));
 nameDictionary 'Словарь' (DictionaryEntry dictionaryEntry) = name(dictionary(dictionaryEntry));
-insensitiveDictionaryEntryTerm = GROUP BY dictionary(DictionaryEntry dictionaryEntry), insensitiveTerm(dictionaryEntry) MAX dictionaryEntry;
+insensitiveDictionaryEntryTerm = GROUP MAX DictionaryEntry dictionaryEntry BY dictionary(dictionaryEntry), insensitiveTerm(dictionaryEntry);
 insensitiveTranslationDictionaryEntry 'Нечувствительный к регистру перевод' = translation (dictionaryEntryTerm(Dictionary dictionary, VARSTRING[50] term));
 
 CLASS Language 'Язык';

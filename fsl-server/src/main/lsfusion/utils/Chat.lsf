@@ -74,10 +74,10 @@ status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF 
  
 countMessages 'Кол-во сообщений' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
-lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP BY chat(Message m) LAST dateTime(m) ORDER dateTime(m), m;
+lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP LAST dateTime(Message m) ORDER dateTime(m), m BY chat(m);
 lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
 
-unreadMessages 'Непрочитанных' (chat, CustomUser user) = GROUP BY chat(Message message) SUM 1 IF (status(message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user);
+unreadMessages 'Непрочитанных' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
 unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) FIXEDCHARWIDTH 10;
 unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) FIXEDCHARWIDTH 10;
 sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);

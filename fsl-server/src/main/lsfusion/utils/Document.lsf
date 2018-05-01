@@ -72,7 +72,7 @@ END
 // Итоги
 META defineDocumentHeaderCount (object, detailClass, caption)
     count##detailClass 'Кол-во строк'###caption (o) =
-        GROUP BY object(detailClass d) SUM 1 MATERIALIZED IN documentSum;
+        GROUP SUM 1 BY object(detailClass d) MATERIALIZED IN documentSum;
 END
 
 META defineDocumentHeaderCount (object, detailClass)
@@ -466,7 +466,7 @@ END
 
 META defineDocumentDetailSortOrder (object, detailClass)
     sortOrder 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
-    sortOrder##detailClass = GROUP BY object(detailClass d) SUM 1 IF sortOrder(d);
+    sortOrder##detailClass = GROUP SUM 1 IF sortOrder(detailClass d) BY object(d);
     
     updateSortOrder 'Сортировать'(detailClass detail) = {
         IF sortOrder##detailClass(object(detail)) THEN {    
@@ -750,7 +750,7 @@ END
 // Итоги
 
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP BY object(###detail idetail) SUM prefix###quantity(idetail) IN documentSum MATERIALIZED;
+    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
@@ -911,7 +911,7 @@ END
 
 // Итоги
 META defineDocumentHeaderSumCustom (object, detail, caption)
-    sum###detail 'Сумма'###caption (object) = GROUP BY object(###detail idetail) SUM sum(idetail) IN documentSum;
+    sum###detail 'Сумма'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
     @defineDocumentHeaderSumCustom (object, detail, caption);
@@ -935,7 +935,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix###sum###detail 'Сумма'###caption (object) = GROUP BY object(###detail idetail) SUM prefix###sum(idetail) IN documentSum;
+    prefix###sum###detail 'Сумма'###caption (object) = GROUP SUM prefix###sum(###detail idetail) BY object(idetail) IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);

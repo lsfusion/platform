@@ -13,7 +13,7 @@ text 'Действие' = DATA STRING[1000] (ProfileObject) IN recognize CHARWID
 onStarted() += {
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
-profileObject = GROUP BY text(ProfileObject profileObject) AGGR profileObject;
+profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
 
 totalTime 'Суммарное время выполнения' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);
 totalSQLTime 'Суммарное время выполнения SQL' = DATA LOCAL LONG (TEXT, TEXT, INTEGER, VARSTRING[100]);  
@@ -63,11 +63,11 @@ stopProfiler 'Остановить профилировщик' () = {
 id(User user) = INTEGER(user AS User) MATERIALIZED INDEXED; 
 
 writeProfilerBatch () = {
-    FOR [= GROUP BY TEXT t1 SUM 1 IF callCount(t1, TEXT t2, INTEGER u, VARSTRING[100] f)](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
+    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
         text(p) <- t1;    
     }     
 
-    FOR [= GROUP BY TEXT t2 SUM 1 IF callCount(TEXT t1, t2, INTEGER u, VARSTRING[100] f)](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
+    FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t2](TEXT t2) AND NOT profileObject(t2) INLINE NEW p = ProfileObject DO {
         text(p) <- t2;    
     }     
     

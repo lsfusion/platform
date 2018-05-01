@@ -89,14 +89,14 @@ threadStackTraceSQLProcess 'След java-потока (SQL)' = DATA LOCAL TEXT 
 nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 computerProcess 'Компьютер (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (Computer i) = INTEGER(i AS Computer);
-computerObject (value) = GROUP BY objValue(Computer computer) AGGR computer;
+computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
 nameComputerSQL 'Компьютер (SQL)' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
 nameComputer 'Компьютер' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
 nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 userProcess 'Пользователь (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (User i) = INTEGER(i AS User);
-userObject (value) = GROUP BY objValue(User user) AGGR user;
+userObject (value) = GROUP AGGR User user BY objValue(user);
 nameUserSQL 'Пользователь (SQL)' (VARSTRING[10] process) = name(userObject(userProcess(process)));
 nameUser 'Пользователь' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
 dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME (VARSTRING[10]);
@@ -131,7 +131,7 @@ lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[
 isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (VARSTRING[10]);
    
-processThread (id) = GROUP BY idThreadProcess(VARSTRING[10] process) AGGR process WHERE process IS VARSTRING[10];
+processThread (id) = GROUP AGGR VARSTRING[10] process WHERE process IS VARSTRING[10] BY idThreadProcess(process);
 threadOwnerProcess (VARSTRING[10] i) = processThread(lockOwnerIdProcess(i));
                                                                                                                                                                                                                                                           
 blockingProcess 'Уровень' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
