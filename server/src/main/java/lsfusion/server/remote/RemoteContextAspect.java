@@ -14,6 +14,7 @@ public class RemoteContextAspect {
             "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)) ||" +
+            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.interrupt(..)) ||" +
             "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessageList(..)))" +
             " && !execution(public * lsfusion.interop.RemoteLogicsInterface.ping(..))" +
             " && target(ro)")

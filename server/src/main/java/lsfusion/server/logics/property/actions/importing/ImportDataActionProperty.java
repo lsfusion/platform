@@ -28,6 +28,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
+import lsfusion.server.logics.property.actions.external.ExternalActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
@@ -283,5 +284,10 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
 
     protected boolean ignoreIncorrectColumns() {
         return true;
+    }
+
+    @Override
+    public ImMap<CalcProperty, Boolean> getChangeExtProps() {
+        return ExternalActionProperty.getChangeExtProps(properties.mergeOrder(importedProperty));
     }
 }

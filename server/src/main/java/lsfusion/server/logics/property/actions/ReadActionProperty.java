@@ -92,6 +92,6 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
 
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return BaseUtils.<ImSet<CalcProperty>>immutableCast(targetProp.property.getChangeProps()).toMap(false);
+        return getChangeProps(targetProp.property);
     }
 }

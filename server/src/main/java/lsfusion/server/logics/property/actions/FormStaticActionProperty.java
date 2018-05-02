@@ -108,7 +108,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         if(exportFile != null)
-            return BaseUtils.<ImSet<CalcProperty>>immutableCast(exportFile.property.getChangeProps()).toMap(false);
+            return getChangeProps(exportFile.property);
         return MapFact.EMPTY();
     }
 }
