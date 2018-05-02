@@ -277,6 +277,9 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface> DataChanges getDataChanges(CalcProperty<K> property, PropertyChange<K> change, WhereBuilder changedWheres, PropertyChanges propChanges, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
+        if(disableCaches)
+            return (DataChanges) thisJoinPoint.proceed();
+
         DataChangesInterfaceImplement<K> implement = new DataChangesInterfaceImplement<>(property, change, propChanges, changedWheres != null);
 
         MAddCol<CacheResult<DataChangesInterfaceImplement, DataChangesResult>> hashCaches = getCachedCol(property, implement.getInnerComponents(true).hash, MapCacheAspect.Type.DATACHANGES);

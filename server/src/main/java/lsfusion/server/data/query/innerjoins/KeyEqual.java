@@ -111,7 +111,7 @@ public class KeyEqual extends AbstractOuterContext<KeyEqual> implements DNFWhere
             ExprEqualsJoin join = new ExprEqualsJoin(keyExprs.getKey(i), keyExprs.getValue(i));
             wheres[iw++] = join;
             if(mUpWheres != null)
-                mUpWheres.exclAdd(join, new DataUpWhere((DataWhere) EqualsWhere.create(keyExprs.getKey(i),keyExprs.getValue(i))));
+                mUpWheres.exclAdd(join, new DataUpWhere(new EqualsWhere(keyExprs.getKey(i),keyExprs.getValue(i)))); // orWhere не надо, так как они подтягиваются в WhereJoins.getUpWhere (да и вообще KeyEqual создает EqualsWhere создает , а его базовое поведение создавать UpWhere без or'ов) 
         }
         if(mUpWheres != null)
             upWheres.set(new UpWheres<>(mUpWheres.immutable()));
