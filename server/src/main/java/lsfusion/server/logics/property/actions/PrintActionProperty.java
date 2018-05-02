@@ -31,6 +31,7 @@ import java.util.*;
 public class PrintActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormPrintType> {
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> printerProperty;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> passwordProperty;
 
     private final LCP formPageCount;
 
@@ -45,10 +46,11 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                FormPrintType staticType,
                                boolean syncType,
                                Integer top,
+                               CalcProperty password,
                                LCP exportFile,
                                CalcProperty printer,
                                LCP formPageCount, boolean removeNulls) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, top, printer);
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, top, password, printer);
 
         this.formPageCount = formPageCount;
 
@@ -58,6 +60,11 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
 
         if (printer != null) {
             this.printerProperty = printer.getImplement(
+                    getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
+            );
+        }
+        if (password != null) {
+            this.passwordProperty = password.getImplement(
                     getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
             );
         }
@@ -79,7 +86,8 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode));
+            String pwd = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
+            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode, pwd));
             formPageCount.change(pageCount, context);
         }
     }

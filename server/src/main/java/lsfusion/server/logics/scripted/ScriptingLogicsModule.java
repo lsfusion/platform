@@ -2926,7 +2926,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAPWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                            LCPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
-                                               Boolean syncType, Integer selectTop) throws ScriptingErrorLog.SemanticErrorException {
+                                               Boolean syncType, Integer selectTop, LCPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
         List<O> objects = new ArrayList<>();
         List<LCPWithParams> mapping = new ArrayList<>();
@@ -2946,9 +2946,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(syncType == null)
             syncType = false;
 
+        //использования printerProperty и passwordProperty не пересекаются, поэтому параметры не разделяем
         List<LCPWithParams> propParams = new ArrayList<>();
         if(printerProperty != null) {
             propParams.add(printerProperty);
+        }
+        if(passwordProperty != null) {
+            propParams.add(passwordProperty);
         }
         List<Integer> allParams = mergeAllParams(propParams);
 
@@ -2957,11 +2961,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                printerProperty != null ? printerProperty.getLP().property : null, printType, syncType, selectTop, targetProp, false);
+                printerProperty != null ? printerProperty.getLP().property : null, printType, syncType, selectTop,
+                passwordProperty != null ? passwordProperty.getLP().property : null, targetProp, false);
 
         if (mapping.size() > 0)  { // тут надо printerProperty просто в mapping закинуть по идее сразу
             if(printerProperty != null) {
                 for (int usedParam : printerProperty.usedParams) {
+                    mapping.add(new LCPWithParams(null, singletonList(usedParam)));
+                }
+            }
+            if(passwordProperty != null) {
+                for (int usedParam : passwordProperty.usedParams) {
                     mapping.add(new LCPWithParams(null, singletonList(usedParam)));
                 }
             }

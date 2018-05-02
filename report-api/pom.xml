@@ -43,6 +43,10 @@
             <artifactId>poi</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.olap4j</groupId>
             <artifactId>olap4j</artifactId>
         </dependency>

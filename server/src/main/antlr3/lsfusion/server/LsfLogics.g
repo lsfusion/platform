@@ -2758,16 +2758,17 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	FormPrintType printType = null;
     Boolean syncType = null;
     Integer selectTop = null;
+    LCPWithParams passwordProperty = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop);
+		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, passwordProperty);
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
 		(   ( // static - jasper
-            (   'XLS'  { printType = FormPrintType.XLS; }
-            |	'XLSX' { printType = FormPrintType.XLSX; }
+            (   'XLS'  { printType = FormPrintType.XLS; } ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
+            |	'XLSX' { printType = FormPrintType.XLSX; } ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
             |	'PDF' { printType = FormPrintType.PDF; }
             |	'DOC'  { printType = FormPrintType.DOC; }
             |	'DOCX' { printType = FormPrintType.DOCX; }
