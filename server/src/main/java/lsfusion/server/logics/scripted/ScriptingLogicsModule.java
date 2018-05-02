@@ -7,7 +7,6 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -972,6 +971,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checks.checkDistinctParameters(paramNames);
         checks.checkNamedParams(property, paramNames);
+        checks.checkParamsClasses(params, signature);
 
         String groupName = ps.groupName;
         AbstractGroup group = (groupName == null ? null : findGroup(groupName));

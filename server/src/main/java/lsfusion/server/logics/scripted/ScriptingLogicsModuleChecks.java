@@ -275,6 +275,19 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkParamsClasses(List<ScriptingLogicsModule.TypedParameter> params, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+        if (!params.isEmpty()) {
+            assert params.size() == signature.size();
+            for (int i = 0; i < params.size(); ++i) {
+                ValueClass paramClass = params.get(i).cls;
+                String paramName = params.get(i).paramName;
+                if (paramClass != null && !SignatureMatcher.isClassesSoftCompatible(paramClass.getResolveSet(), signature.get(i))) {
+                    errLog.emitWrongPropertyParameterError(parser, paramName, paramClass.toString(), signature.get(i).toString());
+                }
+            }
+        }
+    }
+    
     public <T> void checkDistinctParameters(List<T> params) throws ScriptingErrorLog.SemanticErrorException {
         Set<T> paramsSet = new HashSet<>(params);
         if (paramsSet.size() < params.size()) {

@@ -493,6 +493,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("wrong parameters are passed to the property '%s'", propertyName));
     }
 
+    public void emitWrongPropertyParameterError(ScriptParser parser, String paramName, String paramClass, String actualParamClass) throws SemanticErrorException {
+        emitSimpleError(parser, format("parameter '%s' of class %s has actual class %s", paramName, paramClass, actualParamClass));
+    }
+    
     public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("'%s' is only allowed to be DATA/MULTI/CASE property", propertyName));
     }
