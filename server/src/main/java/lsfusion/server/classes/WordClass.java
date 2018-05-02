@@ -1,7 +1,6 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.ByteArrayInputStream;
@@ -30,10 +29,6 @@ public class WordClass extends StaticFormatFileClass {
 
     private WordClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
-    }
-
-    public String toString() {
-        return ThreadLocalContext.localize("{classes.word.file}");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

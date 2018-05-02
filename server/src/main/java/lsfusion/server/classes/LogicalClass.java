@@ -2,7 +2,6 @@ package lsfusion.server.classes;
 
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -150,9 +149,5 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public boolean calculateStat() {
         return false;
-    }
-
-    public String toString() {
-        return ThreadLocalContext.localize("{classes.boolean}");
     }
 }

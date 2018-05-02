@@ -1,7 +1,6 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
@@ -117,10 +116,5 @@ public class ColorClass extends DataClass<Color> {
         if(set.wasNull())
             return null;
         return read(anInt);
-    }
-
-    @Override
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(("{classes.color}")));
     }
 }

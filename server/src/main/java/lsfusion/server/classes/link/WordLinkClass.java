@@ -2,7 +2,6 @@ package lsfusion.server.classes.link;
 
 import lsfusion.interop.Data;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +27,6 @@ public class WordLinkClass extends StaticFormatLinkClass {
 
     private WordLinkClass(boolean multiple) {
         super(multiple);
-    }
-
-    public String toString() {
-        return ThreadLocalContext.localize("{classes.word.link}");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

@@ -10,6 +10,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
@@ -325,5 +326,10 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public abstract String getString(Object value, SQLSyntax syntax);
+    
+    @Override
+    public String toString() {
+        return getCanonicalName() + " '" + ThreadLocalContext.localize(caption) + "'";
+    }
 
 }

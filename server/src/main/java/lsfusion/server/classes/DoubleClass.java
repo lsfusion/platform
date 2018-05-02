@@ -1,7 +1,6 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
@@ -105,10 +104,5 @@ public class DoubleClass extends IntegralClass<Double> {
     @Override
     public Number getInfiniteValue(boolean min) {
         return min ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
-    }
-
-    @Override
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(("{classes.real.number}")));
     }
 }

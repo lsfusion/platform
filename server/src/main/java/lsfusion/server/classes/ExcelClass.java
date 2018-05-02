@@ -1,8 +1,6 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.logics.i18n.LocalizedString;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.ByteArrayInputStream;
@@ -31,10 +29,6 @@ public class ExcelClass extends StaticFormatFileClass {
 
     private ExcelClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
-    }
-
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create("{classes.excel.file}"));
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

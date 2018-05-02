@@ -2,7 +2,6 @@ package lsfusion.server.classes;
 
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -135,10 +134,5 @@ public class TimeClass extends DataClass<Time> {
     @Override
     public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
-    }
-
-    @Override
-    public String toString() {
-        return ThreadLocalContext.localize(LocalizedString.create(("{classes.time}")));
     }
 }
