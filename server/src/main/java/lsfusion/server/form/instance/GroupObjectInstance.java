@@ -1089,15 +1089,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         // оптимизация, так как при Limit 1 некоторые СУБД начинают чудить
-        private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeSingleOrders(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        private ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeSingleOrders(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged, Result<ImMap<OrderInstance, ObjectValue>> fullOrderValues) throws SQLException, SQLHandledException {
             assert !isInTree();
 
             ImMap<ObjectInstance, ObjectValue> objectValues;
             ImMap<ObjectInstance, DataObject> dataObjects;
             if(!(Settings.get().isEnableSingleReadObjectsOptimization() && // работает, только, если в поиске есть все объекты и все DataObject
                     (objectValues = values.filter(objects)).size() == objects.size() &&
-                    (dataObjects = DataObject.onlyDataObjects(objectValues)) != null))
+                    (dataObjects = DataObject.onlyDataObjects(objectValues)) != null)) {
+                fullOrderValues.set(values);
                 return MapFact.EMPTYORDER();
+            }
 
             final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
@@ -1109,8 +1111,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 }
             });
 
-            return new Query<>(mapKeys, orderExprs, getWhere(mapKeys, modifier, reallyChanged).and(CompareWhere.compareInclValues(orderExprs, dataObjects))).
-                    executeClasses(session, env, baseClass);
+            String filterKey = "filter";
+            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> orderFilterValues = 
+                    new Query<>(mapKeys, MapFact.addExcl(orderExprs, filterKey, ValueExpr.get(getWhere(mapKeys, modifier, reallyChanged))), CompareWhere.compareInclValues(orderExprs, dataObjects)).
+                        executeClasses(session, env, baseClass);
+
+            ObjectValue filterValue = orderFilterValues.singleValue().get(filterKey);
+            ImMap<OrderInstance, ObjectValue> orderValues = BaseUtils.immutableCast(orderFilterValues.singleValue().removeIncl(filterKey));
+            if(filterValue.isNull()) { // не попал в фильтр
+                fullOrderValues.set(orderValues);
+                return MapFact.EMPTYORDER();
+            } else {
+                return MapFact.singletonOrder(orderFilterValues.singleKey(), orderValues);
+            }
         }
 
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
@@ -1161,11 +1174,12 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         // считывает одну запись
         private Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readObjects(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeSingleOrders(session, env, modifier, baseClass, reallyChanged);
+            Result<ImMap<OrderInstance, ObjectValue>> fullOrderValues = new Result<>();
+            ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeSingleOrders(session, env, modifier, baseClass, reallyChanged, fullOrderValues);
             if(result.size() == 0)
-                result = executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
+                result = new SeekObjects(fullOrderValues.result, end).executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
             if (result.size() == 0)
-                result = new SeekObjects(values, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
+                result = new SeekObjects(fullOrderValues.result, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
             if (result.size() > 0)
                 return new Pair<>(result.singleKey(), result.singleValue());
             else
