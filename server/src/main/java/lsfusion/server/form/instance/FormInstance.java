@@ -1356,7 +1356,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         stack = new FormStack(stack);
 
-        fireOnBeforeApply(stack);
+        BL.LM.dropRequestCanceled(this);        
+        fireOnBeforeApply(stack);        
+        if(BL.LM.isRequestCanceled(this))
+            return false;
 
         boolean succeeded = session.apply(BL, this, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties);
 
@@ -2475,7 +2478,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
+        BL.LM.dropRequestCanceled(this);
         fireOnBeforeOk(context.stack);
+        if(BL.LM.isRequestCanceled(this))
+            return;
 
         if (manageSession) {
             if (!apply(BL, context, getEventsOnOk())) {

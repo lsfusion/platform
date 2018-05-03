@@ -524,6 +524,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         getBL().LM.writeRequested(requestResults, getEnv());
     }
 
+    public void dropRequestCanceled() throws SQLException, SQLHandledException {
+        getBL().LM.dropRequestCanceled(getEnv());
+    }
+
     public <R> R pushRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {
         return getBL().LM.pushRequest(getEnv(), callable);
     }

@@ -698,8 +698,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     // REQUEST / INPUT BLOCK
     
-    public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+    public void dropRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         getRequestCanceledProperty().change((Object)null, env);
+    }
+    
+    public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
+        dropRequestCanceled(env);
         return pushPopRequestValue(true, env, callable);
     }
 
