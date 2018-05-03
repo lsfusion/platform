@@ -94,8 +94,6 @@ public class GridTable extends ClientPropertyTable {
 
     private boolean isInternalNavigating = false;
 
-    private boolean isLayouting;
-
     private final GridController gridController;
     private final GroupObjectController groupController;
 
@@ -1315,7 +1313,7 @@ public class GridTable extends ClientPropertyTable {
                             return;
                         }
 
-                        if (isLayouting) {
+                        if (isLayouting > 0) {
                             selectColumn(currCol);
                         } else {
                             if (currCol > lastCol) {
@@ -1344,7 +1342,7 @@ public class GridTable extends ClientPropertyTable {
                             return;
                         }
 
-                        if (isLayouting) {
+                        if (isLayouting > 0) {
                             selectRow(currRow);
                         } else {
                             if (currRow > lastRow) {
@@ -1664,8 +1662,13 @@ public class GridTable extends ClientPropertyTable {
         return getCurrentPreferences().getUserSortComparator();
     }
 
+    private int isLayouting; // int потому что может вызываться рекурсивно
+
     public void setLayouting(boolean isLayouting) {
-        this.isLayouting = isLayouting;
+        if(isLayouting)
+            this.isLayouting++;
+        else
+            this.isLayouting--;
     }
 
     private class GoToNextCellAction extends AbstractAction {
