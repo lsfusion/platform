@@ -291,6 +291,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
     private final SimplePanel tableHeaderContainer;
     private final Element tableHeaderScroller;
 
+    private final FlexTable emptyTableWidgetContainer;
+
     private int renderedRowCount = 0;
 
     //focused cell indices local to table (aka real indices in rendered portion of the data)
@@ -343,6 +345,13 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         tableDataScroller = new DataGridScrollPanel(tableData);
         tableDataScroller.setHeight("100%");
         tableDataScroller.getElement().getStyle().setOutlineStyle(OutlineStyle.NONE);
+
+        emptyTableWidgetContainer = new FlexTable();
+        // вообще в оригинальном DataGrid в этот контейнер предполагается класть виджеты, информирующие о том, что таблица пуста.
+        // но мы пока ограничимся просто наличием самого этого контейнера. 
+        // нам нужно, чтобы в пустой таблице у него была какая-нибудь минимальная высота (а значит и ненулевая ширина) 
+        // и чтобы при необходимости он вылезал за viewport скролл-панели, тем самым вызывая горизонтальный скроллбар
+        emptyTableWidgetContainer.setHeight("1px");
 
         setTableFocusable(true);
 
@@ -1882,6 +1891,12 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (pendingState.needRedraw() || columnsChanged || renderedRowCount != pendingNewRowCnt) {
             tableBuilder.update(tableData.getSection(), pendingState.rowData, 0, pendingNewRowCnt, columnsChanged);
             renderedRowCount = pendingNewRowCnt;
+            
+            if (renderedRowCount == 0) {
+                tableDataScroller.setWidget(emptyTableWidgetContainer);
+            } else {
+                tableDataScroller.setWidget(tableData);
+            }
         }
     }
 
