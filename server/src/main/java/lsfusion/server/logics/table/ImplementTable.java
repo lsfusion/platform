@@ -438,10 +438,10 @@ public class ImplementTable extends GlobalTable { // последний инте
         return new MapKeysTable<>(this, mapCompare.result);
     }
 
-    void fillSet(MSet<ImplementTable> tableImplements) {
-        if(tableImplements.add(this)) return;
-        for(ImplementTable parent : getParentsIt()) 
-            parent.fillSet(tableImplements);
+    void fillSet(MSet<ImplementTable> tableImplements, Set<String> notRecalculateStatsTableSet) {
+        if ((notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(this.getName())) && tableImplements.add(this)) return;
+        for (ImplementTable parent : getParentsIt())
+            parent.fillSet(tableImplements, notRecalculateStatsTableSet);
     }
 
     public TableStatKeys getTableStatKeys() {

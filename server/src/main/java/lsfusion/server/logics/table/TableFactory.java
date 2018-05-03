@@ -58,8 +58,7 @@ public class TableFactory implements FullTablesInterface {
         for (NFOrderSet<ImplementTable> implementTableEntry : implementTablesMap.values()) {
             MSet<ImplementTable> mIntTables = SetFact.mSet();
             for (ImplementTable implementTable : implementTableEntry.getIt()) {
-                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
-                    implementTable.fillSet(mIntTables);
+                implementTable.fillSet(mIntTables, notRecalculateStatsTableSet);
             }
             result.exclAddAll(mIntTables.immutable());
         }
