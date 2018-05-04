@@ -15,6 +15,11 @@ public class ApplyStoredEvent extends ApplyCalcEvent implements ApplySingleEvent
     }
 
     @Override
+    public CalcProperty getProperty() {
+        return property;
+    }
+
+    @Override
     public ImSet<OldProperty> getEventOldDepends() {
         if (property instanceof DataProperty && ((DataProperty) property).event != null)
             return ((DataProperty) property).event.getOldDepends();
