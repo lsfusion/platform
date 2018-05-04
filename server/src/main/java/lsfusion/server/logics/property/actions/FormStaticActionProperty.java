@@ -22,10 +22,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.StaticFormReportManager;
 import net.sf.jasperreports.engine.JRException;
@@ -70,7 +67,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
     }
     
     protected abstract Map<String, byte[]> exportPlain(ReportGenerationData reportData) throws IOException; // multiple files
-    protected abstract byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException; // single file    
+    protected abstract byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws SQLException, SQLHandledException, JRException, IOException, ClassNotFoundException; // single file
 
     protected abstract void exportClient(ExecutionContext<ClassPropertyInterface> context, LocalizedString caption, ReportGenerationData reportData, List<ReportPath> reportPathList, String formSID) throws SQLException, SQLHandledException;
 
@@ -93,7 +90,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
                         exportFile.change(BaseUtils.mergeFileAndExtension(entry.getValue(), extension.getBytes()), context, new DataObject(entry.getKey()));
                     }
                 } else { // hierarchical - single file
-                    byte[] singleFile = exportHierarchical(reportData);
+                    byte[] singleFile = exportHierarchical(context, reportData);
                     exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, extension.getBytes()), context);
                 }
             } catch (JRException | IOException | ClassNotFoundException e) {

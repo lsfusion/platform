@@ -654,12 +654,8 @@ public class ReportGenerator {
         throw new UnsupportedOperationException();
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, type, false);
-    }
-
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, getExporter(type), type.getExtension(), type.isExcel(), fixBoolean);
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String password) throws ClassNotFoundException, IOException, JRException {
+        return exportToFile(generationData, type, password, false);
     }
 
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String password, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
@@ -667,11 +663,7 @@ public class ReportGenerator {
     }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, ignorePagination, false);
-    }
-
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, null, ignorePagination, fixBoolean);
+        return exportToFile(generationData, exporter, extension, null, ignorePagination, false);
     }
 
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, String password, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
