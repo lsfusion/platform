@@ -1118,8 +1118,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(false, mainProp, paramProps);
     }
     
-    public LPWithParams addScriptedJProp(boolean user, LP mainProp, List<LPWithParams> paramProps, List<Integer> usedContext) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(user, mainProp, getAllGroupProps(usedContext, paramProps));
+    public LPWithParams addScriptedJProp(boolean user, LP mainProp, List<LPWithParams> paramProps, List<Integer> usedContext, boolean ci) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(user, mainProp, getAllGroupProps(usedContext, paramProps, ci));
     }
     public LPWithParams addScriptedJProp(boolean user, LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkCalculationProperty(mainProp);
@@ -2225,11 +2225,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                                   boolean ascending, LPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
     }
-
-    public List<LPWithParams> getAllGroupProps(List<Integer> resultInterfaces, List<LPWithParams> groupProps) {
+    
+    // ci - надо в дырки вставлять, от использованных, если не ci то в конце
+    public List<LPWithParams> getAllGroupProps(List<Integer> resultInterfaces, List<LPWithParams> groupProps, boolean ci) {
         List<LPWithParams> allGroupProps = new ArrayList<>();
 
-        Set<Integer> usedInterfaces = new HashSet<>(resultInterfaces);
+        if(ci) {
+            Set<Integer> usedInterfaces = new HashSet<>(resultInterfaces);
 //        нужно groupProps в дырки вставить для context independent группировки
         int ra = 0, ga = 0;
         int groupSize = groupProps.size();
@@ -2239,7 +2241,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 add = new LPWithParams(null, Collections.singletonList(resultInterfaces.get(ra++)));
             else
                 add = groupProps.get(ga++);
-            allGroupProps.add(add);
+            allGroupProps.add(add);}
+        } else {
+            for (int resI : resultInterfaces) {
+                allGroupProps.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            }
+            allGroupProps.addAll(groupProps);
         }
         
         return allGroupProps;
@@ -2251,7 +2258,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Arrays.asList(whereProp));
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LPWithParams[lpWithParams.size()]));
 
-        List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps);
+        List<LPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
 
         List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
 
