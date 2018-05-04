@@ -140,6 +140,10 @@ public final class Log {
 
         provideErrorFeedback();
 
+        if (Main.frame == null) {
+            return;
+        }
+        
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
         JLabel titlePanel = new JLabel(toHtml(message));
