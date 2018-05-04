@@ -1495,8 +1495,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         if (neededProps != null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for (ApplySingleEvent dependEvent : dependEvents)
-                if (dependEvent instanceof ApplyStoredEvent && !neededProps.contains(((ApplyStoredEvent) dependEvent).property)) {
-                    updatePendingApplyStart((ApplyStoredEvent) dependEvent, change);
+                if (!neededProps.contains(dependEvent.getProperty())) {
+                    updatePendingApplyStart((ApplyStoredEvent) singleEvent, change); // с neededProps не бывает singleRemoveClasses
                     break;
                 }
         }
@@ -1508,14 +1508,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
             for (ApplySingleEvent dependEvent : dependEvents) {
 
-                if (neededProps != null && dependEvent instanceof ApplyStoredEvent) { // управление pending'ом
+                if (neededProps != null) { // управление pending'ом
                     assert !flush || !pendingSingleTables.containsKey(dependEvent); // assert что если flush то уже обработано (так как в обратном лексикографике идет)
-                    if (!neededProps.contains(((ApplyStoredEvent) dependEvent).property)) { // если не нужная связь не обновляем
+                    if (!neededProps.contains(dependEvent.getProperty())) { // если не нужная связь не обновляем
                         if (!flush)
                             continue;
                     } else { // если нужная то уже обновили
                         if (flush) {
-                            noUpdate.addNoChange(((ApplyStoredEvent) dependEvent).property);
+                            if(dependEvent instanceof ApplyStoredEvent)
+                                noUpdate.addNoChange(((ApplyStoredEvent) dependEvent).property);
                             continue;
                         }
                     }
