@@ -76,8 +76,9 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     }
 
     @Override
-    protected byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException {
-        return IOUtils.getFileBytes(ReportGenerator.exportToFile(reportData, (FormPrintType) staticType));
+    protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws SQLException, SQLHandledException, JRException, IOException, ClassNotFoundException {
+        String password = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
+        return IOUtils.getFileBytes(ReportGenerator.exportToFile(reportData, staticType, password));
     }
 
     @Override
@@ -86,8 +87,9 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
             printMessage(caption, context, reportData);
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-            String pwd = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
-            Integer pageCount = (Integer)context.requestUserInteraction(new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode, pwd));
+            String password = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
+            Integer pageCount = (Integer)context.requestUserInteraction(
+                    new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode, password));
             formPageCount.change(pageCount, context);
         }
     }

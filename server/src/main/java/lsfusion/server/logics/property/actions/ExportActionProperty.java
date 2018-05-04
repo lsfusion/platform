@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.ReportGenerationData;
@@ -9,7 +8,6 @@ import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.exporting.HierarchicalFormExporter;
@@ -18,7 +16,6 @@ import lsfusion.server.logics.property.actions.exporting.csv.CSVFormExporter;
 import lsfusion.server.logics.property.actions.exporting.dbf.DBFFormExporter;
 import lsfusion.server.logics.property.actions.exporting.json.JSONFormExporter;
 import lsfusion.server.logics.property.actions.exporting.xml.XMLFormExporter;
-import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -62,7 +59,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     }
 
     @Override
-    protected byte[] exportHierarchical(ReportGenerationData reportData) throws JRException, IOException, ClassNotFoundException {
+    protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws IOException {
         HierarchicalFormExporter exporter;
         if (staticType == FormExportType.XML) {
             exporter = new XMLFormExporter(reportData);
