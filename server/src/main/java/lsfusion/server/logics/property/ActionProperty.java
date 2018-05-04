@@ -24,10 +24,12 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -52,12 +54,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private boolean newDebugStack; // только для "top-level" action
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
-    private ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals;// только для list action
+    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
     
     public boolean hasDebugLocals() {
         return debugLocals != null && !debugLocals.isEmpty();
     }
-    public void setDebugLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> debugLocals) {
+    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
         this.debugLocals = debugLocals;
     }
 
@@ -87,7 +89,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.debugInfo = debugInfo;
     }
     
-    @Override
     public ActionDebugInfo getDebugInfo() {
         return (ActionDebugInfo) debugInfo;
     }
@@ -124,7 +125,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result;
     }
 
-    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), Drop(ClassDataProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
+    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
@@ -412,6 +413,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
+    @Override
+    public LocalizedString localizedToString() {
+        LocalizedString result = super.localizedToString();
+        if (debugInfo != null)
+            result = LocalizedString.concat(result, ":" + debugInfo);
+        return result;
+        
+    } 
+
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
 //        context.actionName = toString();
         if(newDebugStack) { // самым первым, так как paramInfo
@@ -595,15 +605,5 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public boolean ignoreReadOnlyPolicy() {
         return hasFlow(ChangeFlowType.READONLYCHANGE);
-    }
-
-    @Override
-    public ApplyGlobalEvent getApplyEvent() {
-        if (getSessionEnv(SystemEvent.APPLY)!=null) {
-            if(event == null)
-                event = new ApplyGlobalActionEvent(this);
-            return event;
-        }
-        return null;
     }
 }

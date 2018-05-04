@@ -10,9 +10,8 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -38,7 +37,7 @@ public abstract class UpExecutionStack implements ExecutionStack {
         return MapFact.EMPTY();
     }
 
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
         if(upStack != null)
             return upStack.getAllLocalsInStack();
         return SetFact.EMPTY();
@@ -56,16 +55,16 @@ public abstract class UpExecutionStack implements ExecutionStack {
         return null;
     }
 
-    public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
         if(upStack != null && upStack.sameSession(session))
-            upStack.updateCurrentClasses(session);
+            upStack.updateOnApply(session);
     }
 
     // nullable
     protected abstract DataSession getSession();
 
-    public boolean sameSession(UpdateCurrentClassesSession session) {
+    public boolean sameSession(DataSession session) {
         DataSession thisSession = getSession();
-        return thisSession == null || session.sameSession(thisSession);
+        return thisSession == null || thisSession == session;
     }
 }

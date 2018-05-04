@@ -21,14 +21,12 @@ import java.sql.SQLException;
 public class ReadActionProperty extends SystemExplicitActionProperty {
     private final LCP<?> targetProp;
     private final boolean clientAction;
-    private final boolean dialog;
     private final boolean delete;
 
-    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean clientAction, boolean dialog, boolean delete) {
+    public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, ValueClass moveProp, boolean clientAction, boolean delete) {
         super(moveProp == null ? new ValueClass[]{sourceProp} : new ValueClass[]{sourceProp, moveProp});
         this.targetProp = targetProp;
         this.clientAction = clientAction;
-        this.dialog = dialog;
         this.delete = delete;
 
         try {
@@ -63,13 +61,13 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             boolean isBlockingFileRead = Settings.get().isBlockingFileRead();
             ReadUtils.ReadResult readResult;
             if (clientAction) {
-                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
+                readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead));
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     context.requestUserInteraction(new PostReadClientAction(sourcePath, readResult.type, readResult.filePath, movePath, delete));
                 }
             } else {
-                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false);
+                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead);
                 if (readResult.errorCode == 0) {
                     targetProp.change(readResult.fileBytes, context);
                     ReadUtils.postProcessFile(sourcePath, readResult.type, readResult.filePath, movePath, delete);
@@ -92,6 +90,6 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
 
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps(targetProp.property);
+        return BaseUtils.<ImSet<CalcProperty>>immutableCast(targetProp.property.getChangeProps()).toMap(false);
     }
 }

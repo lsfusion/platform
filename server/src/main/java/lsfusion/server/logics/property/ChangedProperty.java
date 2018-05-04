@@ -2,20 +2,15 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.LogicalClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -25,11 +20,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
-import lsfusion.server.logics.ApplyCalcEvent;
-import lsfusion.server.logics.ApplyRemoveClassesEvent;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -134,39 +126,11 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
         if(property instanceof IsClassProperty) {
-            assert events;  // так как при ONLY_DATA IsClassProperty вообще не может попасть в список
-            // специально не вызываем super чтобы развернуть связь и смотреть на реальные DROPPED / SET
-            ImCol<Pair<Property<?>, LinkType>> result = getActionChangeProps(); // только у Data и IsClassProperty
-
-            ValueClass interfaceClass = ((IsClassProperty) property).getInterfaceClass();
-            if(interfaceClass instanceof CustomClass) {
-                CustomClass customClass = (CustomClass) interfaceClass;
-                MCol<Pair<Property<?>, LinkType>> mParentLinks = ListFact.mCol();
-                for(CustomClass parent : customClass.getParentsIt()) // добавляем очень слабую связь чтобы удаления классов по возможности группами шли
-                    if(!parent.disableSingleApply())
-                        mParentLinks.add(new Pair<Property<?>, LinkType>(parent.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope), LinkType.REMOVEDCLASSES));
-                result = result.mergeCol(mParentLinks.immutableCol());
-            }
-            return result;
+            assert events;
+            return getActionChangeProps(); // только у Data и IsClassProperty
         } else
             return super.calculateLinks(events);
     }
-    
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
-        assert type == IncrementType.DROP && property instanceof IsClassProperty;
-        return ((IsClassProperty) property).getSingleApplyDroppedIsClassProps();
-    }
-
-    @Override
-    public ApplyCalcEvent getApplyEvent() {
-        if (type == IncrementType.DROP && property instanceof IsClassProperty && ((IsClassProperty) property).getInterfaceClass() instanceof CustomClass) {
-            if(event == null)
-                event = new ApplyRemoveClassesEvent(this);
-            return (ApplyRemoveClassesEvent)event;
-        }
-        return null;
-    }
-
 
     @Override
     public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {

@@ -34,7 +34,7 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
                                        String separator, boolean noHeader, String charset) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
 
-        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
+        this.separator = separator == null ? ";" : separator;
         this.noHeader = noHeader;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }

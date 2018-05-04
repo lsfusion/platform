@@ -10,15 +10,12 @@ import lsfusion.client.logics.classes.ClientStringClass;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.form.ClientFormController.PasteData;
 
 public abstract class SingleCellTable extends ClientPropertyTable {
@@ -117,41 +114,18 @@ public abstract class SingleCellTable extends ClientPropertyTable {
             try {
                 ClientPropertyDraw property = model.getProperty();
                 String value = table.get(0).get(0);
-
-                boolean matches = true;
-                if (property.regexp != null && value != null && !value.isEmpty()) {
-                    if (!value.matches(property.regexp)) {
-                        matches = false;
-                        showErrorTooltip(property, value);
-                    }
+                Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
+                if (property.canUsePasteValueForRendering()) {
+                    setValue(newValue);
                 }
-                if(matches) {
-                    Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
-                    if (property.canUsePasteValueForRendering()) {
-                        setValue(newValue);
-                    }
 
-                    getForm().pasteMulticellValue(
-                            singletonMap(property, new PasteData(newValue, singletonList(model.getColumnKey()), singletonList(model.getValue())))
-                    );
-                }
+                getForm().pasteMulticellValue(
+                        singletonMap(property, new PasteData(newValue, singletonList(model.getColumnKey()), singletonList(model.getValue())))
+                );
             } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
-    }
-
-    private void showErrorTooltip(ClientPropertyDraw property, String value) {
-        String currentError = (property.regexpMessage == null ? getString("form.editor.incorrect.value") : property.regexpMessage) + ": " + value;
-
-        setToolTipText(currentError);
-
-        //имитируем ctrl+F1 http://qaru.site/questions/368838/force-a-java-tooltip-to-appear
-        this.dispatchEvent(new KeyEvent(this, KeyEvent.KEY_PRESSED,
-                System.currentTimeMillis(), InputEvent.CTRL_MASK,
-                KeyEvent.VK_F1, KeyEvent.CHAR_UNDEFINED));
-
-        setToolTipText(null);
     }
 
     public boolean isSelected(int row, int column) {

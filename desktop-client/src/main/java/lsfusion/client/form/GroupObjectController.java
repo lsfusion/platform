@@ -247,6 +247,11 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void setRowKeysAndCurrentObject(List<ClientGroupObjectValue> gridObjects, ClientGroupObjectValue newCurrentObject) {
         grid.setRowKeysAndCurrentObject(gridObjects, newCurrentObject);
+
+        if (groupObject.grid.autoHide) {
+            setClassView(gridObjects.size() != 0 ? ClassViewType.GRID : ClassViewType.HIDE);
+            update();
+        }
     }
 
     public void modifyGroupObject(ClientGroupObjectValue gridObject, boolean add, int position) {
@@ -254,6 +259,7 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
         grid.modifyGridObject(gridObject, add, position); // assert что grid!=null
 
+        assert !groupObject.grid.autoHide;
         grid.update();
     }
 
@@ -450,17 +456,14 @@ public class GroupObjectController extends AbstractGroupObjectController {
     public ClientPropertyDraw getSelectedProperty() {
         return grid.getCurrentProperty();
     }
-    public ClientGroupObjectValue getSelectedColumn() {
-        return grid.getCurrentColumn();
-    }
 
     public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
         return grid.getSelectedValue(cell, columnKey);
     }
 
-    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
         if (filter != null) {
-            filter.quickEditFilter(initFilterKeyEvent, propertyDraw, columnKey);
+            filter.quickEditFilter(initFilterKeyEvent, propertyDraw);
         }
     }
 
@@ -510,6 +513,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
         }
 
         panel.update();
-        panel.setVisible(true);
+        panel.setVisible(!classView.isHidden());
     }
 }

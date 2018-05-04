@@ -18,7 +18,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
     boolean hasMask = false;
     public DoublePropertyEditor(Object value, Long maxValue, NumberFormat format, ComponentDesign design, Class formatterValueClass, final boolean hasMask) {
         super(design);
-        df = format != null ? (DecimalFormat) format : new DecimalFormat();
+        df = (DecimalFormat) format;
         this.hasMask = hasMask;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
         final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
@@ -35,10 +35,10 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     lastTextEndsWithSeparator = false;
                 }
                 if (minusZeroText == null) {
-                    int maxFractionDigits = df.getMaximumFractionDigits();
+                    int minFractionDigits = df.getMinimumFractionDigits();
                     int currentFractionDigits = countFractionDigits(result, false);
                     if(hasMask && result != null) {
-                        while (maxFractionDigits < currentFractionDigits) {
+                        while (minFractionDigits < currentFractionDigits) {
                             result = result.substring(0, result.length() - 1);
                             currentFractionDigits--;
                         }

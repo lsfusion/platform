@@ -104,10 +104,10 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
             Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys.result, propChanges)).and(groupProperty.mapExpr(mapValueKeys.result, propChanges).getWhere()); // where чтобы за null'ить
             GroupType type = GroupType.ASSERTSINGLE_CHANGE();
             if(!nullWhere.isFalse())
-                mapChanges = groupProperty.mapJoinDataChanges(new PropertyChange<>(mapKeys.result, CaseExpr.NULL, nullWhere.and(valueWhere)), type, null, propChanges).add(mapChanges); // все одинаковые
+                mapChanges = groupProperty.mapJoinDataChanges(mapKeys.result, CaseExpr.NULL, nullWhere.and(valueWhere), type, null, propChanges).add(mapChanges); // все одинаковые
 
             Expr distributeExpr = distribute.mapExpr(mapValueKeys.result, mapChanges.add(propChanges));
-            DataChanges dataChanges = groupProperty.mapJoinDataChanges(new PropertyChange<I>(mapKeys.result, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere)), type, null, propChanges);
+            DataChanges dataChanges = groupProperty.mapJoinDataChanges(mapKeys.result, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere), type, null, propChanges);
             if(changedWhere!=null) {
                 if (Settings.get().isCalculateGroupDataChanged())
                     getExpr(propertyChange.getMapExprs(), dataChanges.add(propChanges), changedWhere);

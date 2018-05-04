@@ -135,9 +135,9 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         return getIDProps().get(id);
     }
 
-    public ClientPropertyDraw getProperty(String propertyFormName) {
+    public ClientPropertyDraw getProperty(String sid) {
         for (ClientPropertyDraw property : propertyDraws) {
-            if (property.getPropertyFormName().equals(propertyFormName)) {
+            if (property.getSID().equals(sid)) {
                 return property;
             }
         }
@@ -228,6 +228,17 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
         //drop caches
         idProps = null;
+
+        return true;
+    }
+
+    public boolean removeGroupObject(ClientGroupObject groupObject) {
+        groupObjects.remove(groupObject);
+
+        ClientContainer groupContainer = groupObject.getClientComponent(mainContainer);
+        if (groupContainer != null) {
+            groupContainer.container.removeFromChildren(groupContainer);
+        }
 
         return true;
     }

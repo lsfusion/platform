@@ -86,11 +86,6 @@ public class PropertyDrawView extends ComponentView {
         super(entity.ID);
         this.entity = entity;
         setMargin(2);
-        setSID("PROPERTY(" + entity.getSID() + ")");
-    }
-    
-    public String getPropertyFormName() {
-        return entity.getSID();
     }
 
     public Type getType() {
@@ -125,6 +120,10 @@ public class PropertyDrawView extends ComponentView {
         return entity.getAddRemove(form);        
     }
 
+    public String getSID() {
+        return entity.getSID();
+    }
+
     public LocalizedString getDefaultCaption() {
         return entity.propertyObject.property.caption;
     }
@@ -143,7 +142,7 @@ public class PropertyDrawView extends ComponentView {
 
     public ReportDrawField getReportDrawField(int charWidth, int scale) {
 
-        ReportDrawField reportField = new ReportDrawField(getPropertyFormName(), getReportCaption(), charWidth);
+        ReportDrawField reportField = new ReportDrawField(getSID(), getReportCaption(), charWidth);
 
         Type type = getType();
 
@@ -164,7 +163,7 @@ public class PropertyDrawView extends ComponentView {
 
         // определяем класс заголовка
         if (reportField.hasCaptionProperty) {
-            ReportDrawField captionField = new ReportDrawField(getPropertyFormName() + ReportConstants.headerSuffix, "", charWidth);
+            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.headerSuffix, "", charWidth);
             entity.propertyCaption.property.getType().fillReportDrawField(captionField);
             reportField.captionClass = captionField.valueClass;
         } else {
@@ -173,7 +172,7 @@ public class PropertyDrawView extends ComponentView {
 
         // определяем класс футера
         if (reportField.hasFooterProperty) {
-            ReportDrawField footerField = new ReportDrawField(getPropertyFormName() + ReportConstants.footerSuffix, "", charWidth);
+            ReportDrawField footerField = new ReportDrawField(getSID() + ReportConstants.footerSuffix, "", charWidth);
             entity.propertyFooter.property.getType().fillReportDrawField(footerField);
             reportField.footerClass = footerField.valueClass;
         } else {
@@ -256,9 +255,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(hasChangeAction(pool.context));
 
         pool.writeString(outStream, entity.getNamespace());
-        pool.writeString(outStream, getSID());
-        pool.writeString(outStream, entity.propertyObject.property.getCanonicalName());
-        pool.writeString(outStream, getPropertyFormName());
+        pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
                 SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));

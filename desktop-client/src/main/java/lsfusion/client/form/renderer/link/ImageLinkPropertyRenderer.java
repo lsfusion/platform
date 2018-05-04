@@ -25,13 +25,10 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
 
     public void setValue(Object value) {
         byte[] iconBytes = readImage(property, (String) value);
-        
-        icon = null; // сбрасываем
         if (iconBytes != null) {
-            Image image = ImagePropertyRenderer.convertValue(iconBytes);
-            if (image != null) {
-                icon = new ImageIcon(image);
-            }
+            icon = new ImageIcon(iconBytes);
+        } else {
+            icon = null;
         }
         super.setValue(value);
     }

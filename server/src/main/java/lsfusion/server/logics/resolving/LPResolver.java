@@ -9,24 +9,24 @@ import lsfusion.server.logics.resolving.NamespaceElementFinder.FoundItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LPResolver<L extends LP<?, ?>> extends ElementResolver<L, List<ResolveClassSet>> {
+public class LPResolver extends ElementResolver<LP<?, ?>, List<ResolveClassSet>> {
     private final boolean filter;
     private final boolean prioritizeNotEquals;
 
-    public LPResolver(LogicsModule startModule, ModuleFinder<L, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
+    public LPResolver(LogicsModule startModule, ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
         super(startModule, finder);
         this.filter = filter;
         this.prioritizeNotEquals = prioritizeNotEquals;
     }
 
     @Override
-    protected List<FoundItem<L>> finalizeNamespaceResult(List<FoundItem<L>> result, String name, List<ResolveClassSet> param) {
+    protected List<FoundItem<LP<?, ?>>> finalizeNamespaceResult(List<FoundItem<LP<?, ?>>> result, String name, List<ResolveClassSet> param) {
         return result;
     }
 
     @Override
-    protected FoundItem<L> finalizeResult(List<FoundItem<L>> result, String name, List<ResolveClassSet> param) throws ResolvingErrors.ResolvingError {
-        FoundItem<L> finalItem = new FoundItem<>(null, null);
+    protected FoundItem<LP<?, ?>> finalizeResult(List<FoundItem<LP<?, ?>>> result, String name, List<ResolveClassSet> param) throws ResolvingErrors.ResolvingError {
+        FoundItem<LP<?, ?>> finalItem = new FoundItem<>(null, null);
         if (!result.isEmpty()) {
             if (filter) {
                 if (prioritizeNotEquals) {
@@ -43,11 +43,11 @@ public class LPResolver<L extends LP<?, ?>> extends ElementResolver<L, List<Reso
         return finalItem;
     }
 
-    private List<FoundItem<L>> prioritizeNotEquals(List<FoundItem<L>> result, List<ResolveClassSet> param) {
+    private List<FoundItem<LP<?, ?>>> prioritizeNotEquals(List<FoundItem<LP<?, ?>>> result, List<ResolveClassSet> param) {
         assert !result.isEmpty();
-        List<FoundItem<L>> equals = new ArrayList<>();
-        List<FoundItem<L>> notEquals = new ArrayList<>();
-        for (FoundItem<L> item : result) {
+        List<FoundItem<LP<?, ?>>> equals = new ArrayList<>();
+        List<FoundItem<LP<?, ?>>> notEquals = new ArrayList<>();
+        for (FoundItem<LP<?, ?>> item : result) {
             if (!BaseUtils.nullHashEquals(item.module.getParamClasses(item.value), param))
                 notEquals.add(item);
             else

@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.Settings;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -21,6 +22,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class NumericClass extends IntegralClass<BigDecimal> {
+
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create("{classes.number}"))+" "+length+","+precision;
+    }
+
     final byte length;
     final byte precision;
 

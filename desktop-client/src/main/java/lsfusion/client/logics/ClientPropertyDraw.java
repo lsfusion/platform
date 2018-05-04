@@ -27,8 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.nullTrim;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -93,8 +92,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean checkEquals;
 
     protected String namespace;
-    protected String canonicalName;
-    protected String propertyFormName; // PropertyDrawEntity.sID
+    protected String sID;
 
     public String toolTip;
 
@@ -102,6 +100,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<>();
 
+    public boolean autoHide;
     public boolean panelCaptionAfter;
     public boolean clearText;
     public String tableName;
@@ -213,18 +212,16 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Format getFormat() {
         ClientType formatType = this.baseType;
         if(formatType instanceof ClientObjectType)
-            formatType = ClientLongClass.instance;
-
+            formatType = ClientLongClass.instance; 
+            
         Format result = format;
-        if(formatType instanceof ClientFormatClass) {
-            Format defaultFormat = ((ClientFormatClass) formatType).getDefaultFormat();
-            if (result == null)
-                return defaultFormat;
-            if (formatType instanceof ClientIntegralClass) {
-                ((NumberFormat) result).setParseIntegerOnly(((NumberFormat) defaultFormat).isParseIntegerOnly());
-                ((NumberFormat) result).setMaximumIntegerDigits(((NumberFormat) defaultFormat).getMaximumIntegerDigits());
-                ((NumberFormat) result).setGroupingUsed(((NumberFormat) defaultFormat).isGroupingUsed());
-            }
+        Format defaultFormat = ((ClientFormatClass) formatType).getDefaultFormat();
+        if (result == null)
+            return defaultFormat;
+        if(formatType instanceof ClientIntegralClass) {
+            ((NumberFormat) result).setParseIntegerOnly(((NumberFormat) defaultFormat).isParseIntegerOnly());
+            ((NumberFormat) result).setMaximumIntegerDigits(((NumberFormat) defaultFormat).getMaximumIntegerDigits());
+            ((NumberFormat) result).setGroupingUsed(((NumberFormat) defaultFormat).isGroupingUsed());
         }
         return result;
     }
@@ -278,12 +275,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return namespace;
     }
 
-    public String getCanonicalName() {
-        return canonicalName;
-    } 
-    
-    public String getPropertyFormName() {
-        return propertyFormName;
+    public String getSID() {
+        return sID;
     }
 
     public Object parseChangeValueOrNull(String s) {
@@ -421,8 +414,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         namespace = pool.readString(inStream);
         sID = pool.readString(inStream);
-        canonicalName = pool.readString(inStream);
-        propertyFormName = pool.readString(inStream);
 
         toolTip = pool.readString(inStream);
 
@@ -520,55 +511,50 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "%2$s";
 
     public static final String DETAILED_TOOL_TIP_FORMAT =
-            "<hr>" +
-                    "<b>" + getString("logics.property.canonical.name") + ":</b> %3$s<br>" +
+            "<hr><b>sID:</b> %3$s<br>" +
                     "<b>" + getString("logics.grid") + ":</b> %4$s<br>" +
                     "<b>" + getString("logics.objects") + ":</b> %5$s<br>" +
-                    "<b>" + getString("logics.signature") + ":</b> %7$s (%6$s)<br>" +
+                    "<b>" + getString("logics.signature") + ":</b> %7$s <i>%3$s</i> (%6$s)<br>" +
                     "<b>" + getString("logics.script") + ":</b> %8$s<br>" +
                     "<b>" + getString("logics.scriptpath") + ":</b> %9$s<br>" +
-                    "<hr>" + 
-                    "<b>" + getString("logics.form.property.name") + ":</b> %10$s<br>" +
-                    "<b>" + getString("logics.formpath") + ":</b> %11$s" +
+                    "<b>" + getString("logics.formpath") + ":</b> %10$s" +
                     "</html>";
 
     public static final String DETAILED_ACTION_TOOL_TIP_FORMAT =
-            "<hr>" +
-                    "<b>" + getString("logics.property.canonical.name") + ":</b> %3$s<br>" +
+            "<hr><b>sID:</b> %3$s<br>" +
                     "<b>" + getString("logics.objects") + ":</b> %4$s<br>" +
                     "<b>" + getString("logics.scriptpath") + ":</b> %5$s<br>" +
-                    "<hr>" + 
-                    "<b>" + getString("logics.form.property.name") + ":</b> %6$s<br>" +
-                    "<b>" + getString("logics.formpath") + ":</b> %7$s" +
+                    "<b>" + getString("logics.formpath") + ":</b> %6$s" +
                     "</html>";
 
     public static final String EDIT_KEY_TOOL_TIP_FORMAT =
             "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
+        return getTooltipText(caption, false);
+    }
+
+    public String getTooltipText(String caption, boolean action) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
 
         if (!Main.configurationAccessAllowed) {
             return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
+            String sid = getNamespace() + "." + getSID();
+            String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
+            String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
+            String returnClass = this.returnClass.toString();
+
+            String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
-            
-            if (baseType instanceof ClientActionClass) {
-                return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
-            } else {
-                String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-                String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
-                String returnClass = this.returnClass.toString();
-                String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
-                
-                return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, tableName, ifaceObjects, ifaceClasses, returnClass, 
-                        script, scriptPath, propertyFormName, scriptFormPath);
-            }
+            return action ?
+                    String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
+                    propCaption, editKeyText, sid, ifaceObjects, scriptPath, scriptFormPath) :
+                    String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                    propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath, scriptFormPath);
         }
     }
 

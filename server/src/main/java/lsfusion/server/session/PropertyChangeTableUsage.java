@@ -207,13 +207,27 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
         return result;
     }
 
-    // тут полагаемся на проверку hasClassChanges, так как изменение корреляций напрямую связано с изменением классов 
-    public SessionData updateCorrelations(SessionData<?> table, UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<>(mapKeys.join(getMapKeys()));
-        Join<PropertyField> join = table.join(modifyQuery.getMapExprs());
-        modifyQuery.addProperty(mapProps.singleKey(), join.getExpr(mapProps.singleKey()));
-        modifyQuery.and(join.getWhere());
+    // AFTER TRANSACTION
+    // тут конечно сейчас странно получается sessionTable - перечитывает классы даже для не изменившихся, а sessionRows нет, можно было бы еще or вставить в readDiffClasses каким-то образом, но пока не будем 
+    public void updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
+        // здесь тоде можно было не update'ить correlations, так как предполагается что есть CONSTRAINT на изменение, но пока не будем
+//        assert aspectNoCorrelations(); // !!! ТЕОРЕТИЧЕСКИ LOCAL'Ы МОГУТ ИМЕТЬ CORRELATIONS, НУЖНО ОБНОВИТЬ ПОЛЯ, ТАК КАК ИНАЧЕ LOCAL'Ы СБРОСЯТСЯ
+        if(hasCorrelations()) { // тут делаем по аналогии с updateCurrentClasses (то есть берем expr с учетом modifier предполагая что посли применения у коррелирующего свойства будет такое значение), хотя по идее можно было бы просто после сохранения вызывать ??? (но тут как и сверху неплохо бы проверять только измененные !!!)
+            QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<>(mapKeys.join(getMapKeys()));
+            Join<PropertyField> join = table.join(modifyQuery.getMapExprs());
+            modifyQuery.addProperty(mapProps.singleKey(), join.getExpr(mapProps.singleKey()));
+            modifyQuery.and(join.getWhere());
 
-        return table.modifyRows(session.sql, correlations.fullMap(modifyQuery.getQuery(), session.modifier), session.baseClass, Modify.UPDATE, session.env, this, new Result<Boolean>(), false); // тут будет избыточная запись UPDATE значений, но строго говоря она же будет избыточной в MODIFY для correlations, когда идет UPDATE (явный UPDATE пока не используется), собственно мы этим и пользуемся
+            QueryEnvironment env = session.getQueryEnv();
+            SQLSession sql = session.sql;
+            try {
+                table = table.modifyRows(sql, correlations.fullMap(modifyQuery.getQuery(), session.getModifier()), session.baseClass, Modify.UPDATE, env, this, new Result<Boolean>(), false); // тут будет избыточная запись UPDATE значений, но строго говоря она же будет избыточной в MODIFY для correlations, когда идет UPDATE (явный UPDATE пока не используется), собственно мы этим и пользуемся
+            } catch (Throwable t) {
+                aspectException(sql, env.getOpOwner());
+                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+            }
+        }
+
+        table = table.updateCurrentClasses(session);
     }
 }

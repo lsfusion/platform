@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.importing.json;
 
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.apache.commons.collections.iterators.SingletonIterator;
@@ -13,11 +12,11 @@ import java.text.DateFormat;
 import java.util.*;
 
 public abstract class ImportJSONIterator extends ImportIterator {
-    private final ImOrderSet<LCP> properties;
+    private final List<LCP> properties;
 
     private Iterator<JSONObject> childrenIterator;
 
-    public ImportJSONIterator(byte[] file, ImOrderSet<LCP> properties, String root, boolean hasListOption) throws IOException, JSONException {
+    public ImportJSONIterator(byte[] file, List<LCP> properties, String root, boolean hasListOption) throws IOException, JSONException {
         this.properties = properties;
         Object json = JSONReader.readObject(file);
         if (root != null) {
@@ -95,7 +94,7 @@ public abstract class ImportJSONIterator extends ImportIterator {
 
     public abstract List<Integer> getColumns(Map<String, Integer> mapping);
 
-    private String formatValue(ImOrderSet<LCP> properties, List<Integer> columns, Integer column, String value) {
+    private String formatValue(List<LCP> properties, List<Integer> columns, Integer column, String value) {
         DateFormat dateFormat = getDateFormat(properties, columns, column);
         if (dateFormat != null && value != null) {
             value = parseFormatDate(dateFormat, value);

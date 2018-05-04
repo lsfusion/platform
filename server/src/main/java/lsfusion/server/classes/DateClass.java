@@ -4,10 +4,12 @@ import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
@@ -143,7 +145,17 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
+    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
+        return syntax.fixDate((Date) object);
+    }
+
+    @Override
     public boolean useIndexedJoin() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create(("{classes.date}")));
     }
 }

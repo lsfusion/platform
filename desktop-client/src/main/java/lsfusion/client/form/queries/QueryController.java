@@ -2,7 +2,6 @@ package lsfusion.client.form.queries;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
-import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 
@@ -106,22 +105,22 @@ abstract class QueryController {
     }
 
     public void replaceConditionPressed() {
-        replaceConditionPressed(null, null);
+        replaceConditionPressed(null);
     }
 
-    public void replaceConditionPressed(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        if (addNewCondition(true, propertyDraw, columnKey)) {
+    public void replaceConditionPressed(ClientPropertyDraw propertyDraw) {
+        if (addNewCondition(true, propertyDraw)) {
             setState(State.EXPANDED);
             view.startEditing(null, null);
         }
     }
 
     public void addConditionPressed() {
-       addConditionPressed(null, null);
+       addConditionPressed(null);
     }
 
-    public void addConditionPressed(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        if (addNewCondition(false, propertyDraw, columnKey)) {
+    public void addConditionPressed(ClientPropertyDraw propertyDraw) {
+        if (addNewCondition(false, propertyDraw)) {
             setState(State.EXPANDED);
         }
     }
@@ -146,14 +145,8 @@ abstract class QueryController {
         }
     }
 
-    private boolean addNewCondition(boolean replace, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        ClientPropertyDraw filterProperty = propertyDraw;
-        ClientGroupObjectValue filterColumnKey = columnKey;
-        
-        if(filterProperty == null) {
-            filterProperty = logicsSupplier.getSelectedProperty();
-            filterColumnKey = logicsSupplier.getSelectedColumn();
-        }       
+    private boolean addNewCondition(boolean replace, ClientPropertyDraw propertyDraw) {
+        ClientPropertyDraw filterProperty = propertyDraw != null ? propertyDraw : logicsSupplier.getSelectedProperty();
         if (filterProperty == null) {
             //не добавляем, если нет ни одного свойства
             return false;
@@ -166,7 +159,6 @@ abstract class QueryController {
 
         ClientPropertyFilter filter = new ClientPropertyFilter();
         filter.property = filterProperty;
-        filter.columnKey = filterColumnKey;
         filter.groupObject = logicsSupplier.getSelectedGroupObject();
 
         conditions.add(filter);
@@ -191,8 +183,8 @@ abstract class QueryController {
         view.queryApplied();
     }
 
-    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey) {
-        if (addNewCondition(true, propertyDraw, columnKey)) {
+    public void quickEditFilter(KeyEvent initFilterKeyEvent, ClientPropertyDraw propertyDraw) {
+        if (addNewCondition(true, propertyDraw)) {
             setState(State.EXPANDED);
             view.startEditing(initFilterKeyEvent, propertyDraw);
         }

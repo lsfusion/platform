@@ -218,18 +218,4 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
         businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false, false);
     }
-
-    public void interrupt(boolean cancelable) throws RemoteException {
-        try {
-            Thread thread = ThreadLocalContext.getLastThread();
-            if (thread != null) {
-                Context context = getContext();
-                if (cancelable)
-                    ThreadUtils.cancelThread(context, thread);
-                else
-                    ThreadUtils.interruptThread(context, thread);
-            }
-        } catch (SQLException | SQLHandledException ignored) {
-        }
-    }
 }

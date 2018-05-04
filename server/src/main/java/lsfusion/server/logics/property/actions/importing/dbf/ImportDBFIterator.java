@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.dbf;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.LogicalClass;
@@ -28,11 +27,11 @@ public class ImportDBFIterator extends ImportIterator {
     private CustomDbfReader reader;
     private List<Integer> sourceColumns;
     private List<List<String>> wheresList;
-    private final ImOrderSet<LCP> properties;
+    private final List<LCP> properties;
     private File tempMemoFile;
     private String charset;
     
-    public ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, ImOrderSet<LCP> properties, File tempMemoFile, String charset) {
+    public ImportDBFIterator(CustomDbfReader reader, List<Integer> sourceColumns, List<List<String>> wheresList, List<LCP> properties, File tempMemoFile, String charset) {
         this.reader = reader;
         this.sourceColumns = sourceColumns;
         this.wheresList = wheresList;

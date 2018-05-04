@@ -25,6 +25,6 @@ public class ContinueNavigatorActionHandler extends ServerResponseActionHandler<
             actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
         }
 
-        return getServerResponseResult(action.tabSID, servlet.getNavigator().continueNavigatorAction(actionResults));
+        return getServerResponseResult(servlet.getNavigator().continueNavigatorAction(actionResults));
     }
 }

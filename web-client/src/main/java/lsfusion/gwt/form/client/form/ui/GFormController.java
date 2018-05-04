@@ -922,7 +922,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GPropertyDraw propertyDraw = getProperty(initialFilterPropertyID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
             selectProperty(initialFilterPropertyID);
-            controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw, null);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(event, propertyDraw);
         }
     }
 

@@ -107,10 +107,6 @@ public class DataPanelView extends JPanel implements PanelView {
         return property;
     }
 
-    public ClientGroupObjectValue getColumnKey() {
-        return columnKey;
-    }
-
     protected void forceChangeValue(Object value) {
         if (form.commitCurrentEditing()) {
             simpleDispatcher.changeProperty(value, table.getProperty(), columnKey);

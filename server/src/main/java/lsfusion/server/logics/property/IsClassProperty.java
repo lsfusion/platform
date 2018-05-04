@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -34,7 +33,7 @@ import lsfusion.server.session.StructChanges;
 
 import java.sql.SQLException;
 
-public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterface> {
+public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public IsClassProperty(LocalizedString caption, ValueClass valueClass) {
         super(caption, getInterfaces(new ValueClass[]{valueClass}));
@@ -123,48 +122,8 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return !(value != null && !fitClass(value, valueClass)) && fitInterfaceClasses(mapValues);
     }
 
-    public Where getDroppedWhere(Expr expr, Modifier modifier) throws SQLException, SQLHandledException {
-        return getDroppedWhere(expr, modifier.getPropertyChanges());
-    }
-
-//    @Override
-//    protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
-//        if(events)
-//            depends.addAll(getClassDataProps());
-//    }
-
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
-        ValueClass interfaceClass = getInterfaceClass();
-        if(interfaceClass instanceof CustomClass) { // возвращаем и parent'ы и children'ов (так как при удалении надо и конкретные и абстрактные свойства смотреть)
-            CustomClass customClass = (CustomClass) interfaceClass;
-            MSet<CustomClass> mDependClasses = SetFact.mSet();
-            for(CalcProperty upAggrProp : customClass.getUpAggrProps()) {
-                ValueClass valueClass = upAggrProp.getValueClass(ClassType.materializeChangePolicy);
-                if(valueClass instanceof CustomClass) { // нас также интересует класс значения корреляций (так как они тоже могут single apply'ся, а значения корреляций никто не обновит) 
-                    CustomClass customAggrClass = (CustomClass) valueClass;
-                    mDependClasses.addAll(customAggrClass.getAllChildrenParents());
-                }
-            }
-            mDependClasses.addAll(customClass.getAllChildrenParents());
-            return mDependClasses.immutable().mapSetValues(new GetValue<CalcProperty, CustomClass>() {
-                public CalcProperty getMapValue(CustomClass value) {
-                    return value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope);
-                }});
-        }
-        return SetFact.EMPTY();
-    }
-    
-    public ImSet<ClassDataProperty> getClassDataProps() {
-        ValueClass interfaceClass = getInterfaceClass();
-        if(interfaceClass instanceof CustomClass)
-            return BaseUtils.immutableCast(((CustomClass) interfaceClass).getUpObjectClassFields().keys());
-        return SetFact.EMPTY();
-    }
-    
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
-        assert events; // так как при ONLY_DATA IsClassProperty вообще не может попасть в список
-
         ImCol<Pair<Property<?>, LinkType>> actionChangeProps = getActionChangeProps(); // чтобы обnull'ить использование
         assert actionChangeProps.isEmpty();
         assert getDepends().isEmpty();
@@ -184,26 +143,15 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
             mSet.exclAdd(getChanged(type, scope));
     }
 
+    protected boolean useSimpleIncrement() {
+        return true;
+    }
+
     @Override
     public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
         return new ClassWhere<>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
     }
 
-//    public static boolean checkSession(OuterContext context) {
-//        final Result<Boolean> found = new Result<>(false);
-//        context.enumerate(new ExprEnumerator() {
-//            @Override
-//            public Boolean enumerate(OuterContext join) {
-//                if(join instanceof Table.Join && !((Table.Join) join).isSession()) {
-//                    found.set(true);
-//                    return null;
-//                }
-//                return true;
-//            }
-//        });    
-//        return !found.result;
-//    }
-    
     public ValueClass getInterfaceClass() {
         return interfaces.single().interfaceClass;
     }
@@ -212,38 +160,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         if(calcType instanceof CalcClassType && (((CalcClassType)calcType).replaceIs() || interfaceClass instanceof BaseClass)) // жесткий хак
             return getVirtualTableExpr(joinImplement, ((CalcClassType) calcType));
 
-        Where hadClass = joinImplement.singleValue().isUpClass(interfaceClass, calcType.isRecalc());
-//        if(!hasChanges(propChanges))
-        return ValueExpr.get(hadClass);
-
-        // реализовано на уровне getPropertyChange (так как здесь не хватает части информации, depends от classdata слишком грубая) 
-//        // has : (W1E1 OR .. WnEn)
-//        // changed : (W1 OR .. Wn)  
-//        // new is : has OR !changed*had  
-//        // changed is : !had*has OR changed*had*!has
-//
-//        ImMap<ClassDataProperty, ObjectValueClassSet> upClassDataProps = getUpClassDataProps();
-//        Where hasClass = Where.FALSE;
-//        Where dataChangedWhere = Where.FALSE;
-//        for(int i=0,size=upClassDataProps.size();i<size;i++) {
-//            ClassDataProperty dataProperty = upClassDataProps.getKey(i);
-//            ObjectValueClassSet classSet = upClassDataProps.getValue(i);
-//
-//            if(!dataProperty.hasChanges(propChanges)) // оптимизация
-//                continue;
-//            
-//            WhereBuilder dataChangedOpWhere = new WhereBuilder();
-//            Expr dataExpr = dataProperty.getExpr(MapFact.singleton(dataProperty.interfaces.single(), joinImplement.singleValue()), calcType, propChanges, dataChangedOpWhere);
-//            Expr changedDataExpr = dataExpr.and(dataChangedOpWhere.toWhere());
-//            assert checkSession(changedDataExpr) && checkSession(dataChangedOpWhere.toWhere());
-//            
-//            hasClass = hasClass.or(ClassChanges.isStaticValueClass(changedDataExpr, classSet, dataProperty.set));
-//            dataChangedWhere = dataChangedWhere.or(dataChangedOpWhere.toWhere());
-//        }
-//        
-//        if(changedWhere != null)
-//            changedWhere.add(hasClass.and(hadClass.not()).or(dataChangedWhere.and(hadClass).and(hasClass.not())));        
-//        return ValueExpr.get(hasClass.or(hadClass.and(dataChangedWhere.not())));
+        return ValueExpr.get(joinImplement.singleValue().isUpClass(interfaceClass, calcType.isRecalc()));
     }
 
     @Override
@@ -260,7 +177,7 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         return getChanged(IncrementType.DROP, ChangeEvent.scope).getUsedChanges(newChanges);
     }
 
-    public Where getDroppedWhere(Expr joinExpr, PropertyChanges newChanges) {
+    public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
         return getChanged(IncrementType.DROP, ChangeEvent.scope).getExpr(MapFact.singleton(interfaces.single(), joinExpr), newChanges).getWhere();
     }
 

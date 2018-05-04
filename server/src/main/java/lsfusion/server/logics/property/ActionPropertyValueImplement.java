@@ -2,24 +2,18 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
-import lsfusion.server.logics.ApplyActionEvent;
-import lsfusion.server.logics.ApplyEvent;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 
-public class ActionPropertyValueImplement<T extends PropertyInterface> extends ActionPropertyImplement<T, ObjectValue> implements ApplyActionEvent {
+public class ActionPropertyValueImplement<T extends PropertyInterface> extends ActionPropertyImplement<T, ObjectValue> {
 
     // кривовато, но иначе там нужно небольшой рефакторинг проводить
     private final ImMap<T, PropertyObjectInterfaceInstance> mapObjects;
@@ -35,7 +29,7 @@ public class ActionPropertyValueImplement<T extends PropertyInterface> extends A
         property.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<>(mapObjects, null, formInstance));
     }
     
-    public ActionPropertyValueImplement<T> updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public ActionPropertyValueImplement<T> updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
         ImMap<T, PropertyObjectInterfaceInstance> updatedMapObjects = null;
         if(mapObjects != null) {
             ImValueMap<T, PropertyObjectInterfaceInstance> mUpdateMapObjects = mapObjects.mapItValues(); // exception кидается

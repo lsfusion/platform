@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
@@ -101,7 +100,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
                 if(siblingOperand!=operand)
                     siblingWhere = siblingWhere.xor(siblingOperand.mapExpr(change.getMapExprs(), propChanges).getWhere());
             WhereBuilder operandWhere = new WhereBuilder();
-            result = result.add(operand.mapJoinDataChanges(new PropertyChange<>(change, ValueExpr.get(change.expr.getWhere().xor(siblingWhere))), GroupType.ASSERTSINGLE_CHANGE(), operandWhere, propChanges));
+            result = result.add(operand.mapDataChanges(new PropertyChange<>(change, ValueExpr.get(change.expr.getWhere().xor(siblingWhere))), operandWhere, propChanges));
             change = change.and(operandWhere.toWhere().not());
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }

@@ -2,7 +2,6 @@ package lsfusion.server.remote;
 
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -47,6 +46,11 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             @Override
             public int getObjectID(ObjectInstance o) {
                 return o.getID();
+            }
+
+            @Override
+            public ClassViewType getGroupViewType(GroupObjectInstance groupObjectInstance) {
+                return groupObjectInstance.curClassView;
             }
 
             @Override
@@ -211,19 +215,8 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             }
 
             @Override
-            public Where getWhere(GroupObjectInstance group, ImMap<ObjectInstance, Expr> mapExprs) throws SQLException, SQLHandledException {
-                return group.getWhere(mapExprs, form.getModifier());
-            }
-
-            @Override
-            public Where getFixedObjectsWhere(GroupObjectInstance group, Integer groupId, ImMap<ObjectInstance, Expr> mapExprs) throws SQLException, SQLHandledException {
-                Where where = Where.TRUE;
-                if (!(group.curClassView.isGrid() && (groupId == null || groupId == getGroupID(group)))) {
-                    for (ObjectInstance object : group.objects) {
-                        where = where.and(getExpr(object, mapExprs).compare(getObjectValue(object).getExpr(), Compare.EQUALS));
-                    }
-                }
-                return where;
+            public Where getWhere(GroupObjectInstance groupObjectInstance, ImMap<ObjectInstance, Expr> mapExprs) throws SQLException, SQLHandledException {
+                return groupObjectInstance.getWhere(mapExprs, form.getModifier());
             }
 
             @Override

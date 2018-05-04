@@ -29,7 +29,6 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -77,7 +76,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     private String canonicalName;
     private LocalizedString caption;
-    private DebugInfo.DebugPoint debugPoint; 
+    private String creationPath;
 
     private String defaultImagePath;
     
@@ -171,11 +170,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this(canonicalName, null, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, Version version) {
+    public FormEntity(String canonicalName, String creationPath, LocalizedString caption, String imagePath, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.canonicalName = canonicalName;
-        this.debugPoint = debugPoint;
+        this.creationPath = creationPath;
         
         this.defaultImagePath = imagePath;
         
@@ -183,7 +182,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
+//        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEditReport(), version);
+//        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
         refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
         applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
         cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
@@ -638,6 +639,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return addPropertyObject(property, property.getMap(objects));
     }
 
+    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
+        if (property instanceof LCP) {
+            return addPropertyObject((LCP) property, objects);
+        } else {
+            return addPropertyObject((LAP) property, objects);
+        }
+    }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
         return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
@@ -970,13 +978,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public String getCreationPath() {
-        if (debugPoint == null) {
-            return null;
-        } else {
-            return debugPoint.toString();
-        }
+        return creationPath;
     }
 
+    public void setCreationPath(String creationPath) {
+        this.creationPath = creationPath;
+    }
+    
     public int getID() {
         return ID;
     }
@@ -999,10 +1007,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public String getDefaultImagePath() {
         return defaultImagePath;
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
     }
 
     // сохраняет нижние компоненты
@@ -1294,14 +1298,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     @Override
     public String toString() {
-        String result = getSID();
-        if (caption != null) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
-        }
-        if (debugPoint != null) {
-            result += " [" + debugPoint + "]";
-        }
-        return result;
+        return getSID() + "'" + ThreadLocalContext.localize(caption) + "'";
     }
 
     @Override

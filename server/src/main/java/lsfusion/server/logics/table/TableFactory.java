@@ -1,7 +1,6 @@
 package lsfusion.server.logics.table;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -58,7 +57,8 @@ public class TableFactory implements FullTablesInterface {
         for (NFOrderSet<ImplementTable> implementTableEntry : implementTablesMap.values()) {
             MSet<ImplementTable> mIntTables = SetFact.mSet();
             for (ImplementTable implementTable : implementTableEntry.getIt()) {
-                implementTable.fillSet(mIntTables, notRecalculateStatsTableSet);
+                if(notRecalculateStatsTableSet == null || !notRecalculateStatsTableSet.contains(implementTable.getName()))
+                    implementTable.fillSet(mIntTables);
             }
             result.exclAddAll(mIntTables.immutable());
         }
@@ -195,12 +195,14 @@ public class TableFactory implements FullTablesInterface {
     }
 
     @IdentityLazy
-    public ImSet<ImplementTable> getImplementTables(final ImSet<CustomClass> cls) {
-        return getImplementTables().filterFn(new SFunctionSet<ImplementTable>() {
-            public boolean contains(ImplementTable element) {
-                return !element.getMapFields().values().toSet().disjoint(cls);
+    public List<ImplementTable> getImplementTables(ImSet<CustomClass> cls) {
+        List<ImplementTable> result = new ArrayList<>();
+        for (ImplementTable table : getImplementTables()) {
+            if (!table.getMapFields().values().toSet().disjoint(cls)) {
+                result.add(table);
             }
-        });
+        }
+        return result;
     }
 
 }

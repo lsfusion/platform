@@ -15,10 +15,9 @@ public class ReportClientAction implements ClientAction {
     public boolean inDevMode;
     public FormPrintType printType;
     public String printerName;
-    public String password;
 
     public ReportClientAction(List<ReportPath> reportPathList, String formSID, boolean isModal, ReportGenerationData generationData,
-                              FormPrintType printType, String printerName, boolean inDevMode, String password) {
+                              FormPrintType printType, String printerName, boolean inDevMode) {
         this.reportPathList = reportPathList;
         this.formSID = formSID;
         this.isModal = isModal;
@@ -26,7 +25,6 @@ public class ReportClientAction implements ClientAction {
         this.printType = printType;
         this.printerName = printerName;
         this.inDevMode = inDevMode;
-        this.password = password;
     }
 
     @Override

@@ -71,10 +71,6 @@ public class ClientFormController implements AsyncListener {
         }
         @Override
         public void interrupt(boolean cancelable) {
-            try {
-                remoteForm.interrupt(cancelable);
-            } catch (Exception ignored) {
-            }
         }
     };
 
@@ -471,7 +467,7 @@ public class ClientFormController implements AsyncListener {
     public void quickEditFilter(KeyEvent initFilterKeyEvent, int initialFilterPropertyDrawID) {
         ClientPropertyDraw propertyDraw = form.getProperty(initialFilterPropertyDrawID);
         if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
-            controllers.get(propertyDraw.groupObject).quickEditFilter(initFilterKeyEvent, propertyDraw, null);
+            controllers.get(propertyDraw.groupObject).quickEditFilter(initFilterKeyEvent, propertyDraw);
         }
     }
 
@@ -985,8 +981,7 @@ public class ClientFormController implements AsyncListener {
 
                     @Override
                     protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                        if(remoteForm != null)
-                            rmiQueue.postponeDispatchingEnded();                       
+                        rmiQueue.postponeDispatchingEnded();                       
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;

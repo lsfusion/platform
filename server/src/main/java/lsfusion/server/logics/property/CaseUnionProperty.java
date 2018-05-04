@@ -8,13 +8,13 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -149,11 +149,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             Where caseWhere;
             if(operand.isSimple()) {
                 WhereBuilder operandWhere = new WhereBuilder();
-                result = result.add(operand.implement.mapJoinDataChanges(change, GroupType.ASSERTSINGLE_CHANGE(), operandWhere, propChanges));
+                result = result.add(operand.implement.mapDataChanges(change, operandWhere, propChanges));
                 caseWhere = operandWhere.toWhere();
             } else {
                 caseWhere = operand.where.mapExpr(change.getMapExprs(), propChanges).getWhere();
-                result = result.add(operand.implement.mapJoinDataChanges(change.and(caseWhere), GroupType.ASSERTSINGLE_CHANGE(), null, propChanges));
+                result = result.add(operand.implement.mapDataChanges(change.and(caseWhere), null, propChanges));
             }
             if(changedWhere!=null) changedWhere.add(caseWhere);
 

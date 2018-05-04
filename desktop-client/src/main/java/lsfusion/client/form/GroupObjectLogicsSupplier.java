@@ -17,7 +17,6 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
     // пока зафигачим в этот интерфейс, хотя может быть в дальнейшем выделим в отдельный
     // данный интерфейс отвечает за получение текущих выбранных значений
     ClientPropertyDraw getSelectedProperty();
-    ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
     
     ClientFormController getForm();

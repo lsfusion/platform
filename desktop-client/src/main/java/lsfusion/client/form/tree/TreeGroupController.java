@@ -178,10 +178,6 @@ public class TreeGroupController extends AbstractGroupObjectController {
     public ClientPropertyDraw getSelectedProperty() {
         return tree.getCurrentProperty();
     }
-    @Override
-    public ClientGroupObjectValue getSelectedColumn() {
-        return null; // пока не поддерживаются группы в колонки
-    }
 
     @Override
     public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {

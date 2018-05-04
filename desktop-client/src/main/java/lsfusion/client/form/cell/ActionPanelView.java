@@ -181,7 +181,7 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     }
 
     public void setToolTip(String caption) {
-        setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption));
+        setToolTipText(property.getTooltipText(!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption, true));
     }
 
     @Override
@@ -197,17 +197,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
 
         propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(ActionPanelView.this), getBounds(), null);
 
-        //для всего, кроме диалогов выдаём ошибку.
+        //для всего, кроме диалогов ничего не записываем..
         //для диалогов - сначала спрашиваем, изменилось ли значение
-        if (propertyEditor instanceof DialogBasedPropertyEditor) {
-            if (((DialogBasedPropertyEditor) propertyEditor).valueChanged()) {
-                editDispatcher.commitValue(propertyEditor.getCellEditorValue());
-            } else {
-                editDispatcher.cancelEdit();
-            }
+        if (propertyEditor instanceof DialogBasedPropertyEditor && ((DialogBasedPropertyEditor) propertyEditor).valueChanged()) {
+            editDispatcher.commitValue(propertyEditor.getCellEditorValue());
         } else {
             editDispatcher.cancelEdit();
-            throw new RuntimeException("INPUT in action is allowed only for dialog based types (file, color, etc.)");
         }
 
         return true;

@@ -107,17 +107,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 if (useQuickSearchInsteadOfQuickFilter()) {
                     quickSearch(event);
                 } else {
-                    GPropertyDraw filterProperty = null;
-                    GGroupObjectValue filterColumnKey = null;
-
-                    if(currentProperty != null && currentProperty.quickFilterProperty != null) {
-                        filterProperty = currentProperty.quickFilterProperty;
-                        if(currentProperty.columnGroupObjects != null && filterProperty.columnGroupObjects != null && currentProperty.columnGroupObjects.equals(filterProperty.columnGroupObjects)) {
-                            filterColumnKey = getSelectedColumn();
-                        }
-                    }
-
-                    quickFilter(new NativeEditEvent(event), filterProperty, filterColumnKey);
+                    GPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                   ? currentProperty.quickFilterProperty
+                                                   : null;
+                    quickFilter(new NativeEditEvent(event), filterProperty);
                 }
             }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
@@ -214,7 +207,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public abstract GGroupObjectValue getCurrentKey();
     public abstract GridPropertyTableKeyboardSelectionHandler getKeyboardSelectionHandler();
-    public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey);
+    public abstract void quickFilter(EditEvent event, GPropertyDraw filterProperty);
     public abstract GAbstractGroupObjectController getGroupController();
     abstract String getCellBackground(GridDataRecord rowValue, int row, int column);
     abstract String getCellForeground(GridDataRecord rowValue, int row, int column);

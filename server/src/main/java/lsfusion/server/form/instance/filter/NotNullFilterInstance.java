@@ -40,7 +40,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         this.checkChange = checkChange;
     }
 
-    public NotNullFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
+    public NotNullFilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
         super(inStream, form);
         checkChange = false;
     }

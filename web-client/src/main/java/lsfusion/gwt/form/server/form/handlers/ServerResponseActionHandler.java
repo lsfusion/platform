@@ -18,8 +18,8 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
         super(servlet);
     }
 
-    protected ServerResponseResult getServerResponseResult(String tabSID, ServerResponse serverResponse) throws IOException {
-        return getServerResponseResult(new FormSessionObject(null, null, tabSID), serverResponse);
+    protected ServerResponseResult getServerResponseResult(ServerResponse serverResponse) throws IOException {
+        return getServerResponseResult(null, serverResponse);
     }
 
     protected ServerResponseResult getServerResponseResult(FormSessionObject form, ServerResponse serverResponse) throws IOException {

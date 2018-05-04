@@ -12,12 +12,13 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.*;
+import lsfusion.server.data.LogTime;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -28,7 +29,10 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.AddObjectActionProperty;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.session.*;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.PropertyOrderSet;
+import lsfusion.server.session.UpdateCurrentClasses;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ProgressStackItem;
@@ -110,7 +114,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return this;
         }
 
-        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
             final ImOrderSet<ImMap<I, DataObject>> prevRows = rows;
             session.addRollbackInfo(new SQLRunnable() {
                 public void run() {
@@ -249,26 +253,21 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return ifProp == null || ifProp.mapIsFull(getExtendInterfaces());
     }
 
-    private boolean needDialog() {
-        assert addObject != null;
-        return addClass instanceof AbstractCustomClass; 
-    }
-    
     private boolean isHackAdd() { // хак который используется только для реализации агрегаций, когда генерится FOR NEW t, затем CHANGE CLASS t TO X, который компиляция сворачивать в FOR NEW t=X (непонятно какой конкретный класс по умолчанию подставлять)
-        return addObject != null && needDialog();
+        return addObject != null && !(addClass instanceof ConcreteCustomClass);
     }
     
     @Override
     @IdentityLazy
     protected boolean forceCompile() {
-        return isHackAdd() || !forIsFull(); // очень тормозит
+        return isHackAdd() | !forIsFull(); // очень тормозит
     }
 
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         ImMap<CalcProperty, Boolean> result = super.aspectChangeExtProps();
         if(addObject != null) // может быть, из-за break, noinline и т.п.
-            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass, needDialog()), addValue);
+            result = result.merge(AddObjectActionProperty.getChangeExtProps(addClass), addValue);
         return result;
     }
 
@@ -278,7 +277,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         if(recursive)
             return null;
 
-        if(addObject != null && ifProp != null && autoSet)
+        if(addObject != null && autoSet)
             return null;
 
         ImSet<I> context = mapInterfaces.valuesSet();
@@ -334,7 +333,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
         }
 
+        // проталкиваем for'ы
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
+            return null;
+
         if(addObject != null) {
+            assert !hackAdd; // должен отработать сверху
+
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
             CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass, mLocals);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
@@ -342,10 +347,6 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
                             addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)), mLocals.immutable());
         }
-
-        // проталкиваем for'ы
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
-            return null;
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 

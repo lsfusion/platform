@@ -99,9 +99,9 @@ public class GForm implements Serializable, GWidthStringProcessor {
         return prop;
     }
 
-    public GPropertyDraw getProperty(String propertyFormName) {
+    public GPropertyDraw getProperty(String sid) {
         for (GPropertyDraw property : propertyDraws) {
-            if (property.propertyFormName.equals(propertyFormName)) {
+            if (property.sID.equals(sid)) {
                 return property;
             }
         }

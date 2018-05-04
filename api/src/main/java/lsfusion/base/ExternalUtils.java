@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 public class ExternalUtils {
 
-    public static final String defaultCSVSeparator = ";";
     public static final String defaultCSVCharset = "UTF-8";
     public static final String defaultXMLJSONCharset = "UTF-8";
 
@@ -43,8 +42,7 @@ public class ExternalUtils {
     private static final String PROPERTY_PARAM = "property";
 
     public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
-        Charset charset = getCharsetFromContentType(requestContentType);
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(query, getCharsetFromContentType(requestContentType));
 
         List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
         List<String> returns = getParameterValues(queryParams, RETURNS_PARAM);
@@ -54,7 +52,7 @@ public class ExternalUtils {
 
         if (uri.startsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
+            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/eval")) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
             if (script == null && !paramsList.isEmpty()) {
@@ -62,12 +60,12 @@ public class ExternalUtils {
                 script = paramsList.get(0);
                 paramsList = paramsList.subList(1, paramsList.size());
             }
-            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
+            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray());
         } else if (uri.startsWith("/read")) {
             String property = getParameterValue(queryParams, PROPERTY_PARAM);
             if (property != null) {
                 filename = property;
-                paramList.addAll(remoteLogics.read(property, paramsList.toArray(), charset));
+                paramList.addAll(remoteLogics.read(property, paramsList.toArray()));
             }
         }
 
@@ -113,7 +111,7 @@ public class ExternalUtils {
             return m.group(2);
         }
 
-        p = Pattern.compile("\\btext/(xml|json|csv|html)\\b");
+        p = Pattern.compile("\\btext/(xml|json|csv)\\b");
         m = p.matcher(mimeType);
         if(m.find()) {
             humanReadable.set(true);
@@ -156,7 +154,7 @@ public class ExternalUtils {
         }
     }
 
-    public static Charset getCharsetFromContentType(ContentType contentType) {
+    private static Charset getCharsetFromContentType(ContentType contentType) {
         Charset charset = contentType.getCharset();
         if(charset == null)
             charset = Consts.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка         

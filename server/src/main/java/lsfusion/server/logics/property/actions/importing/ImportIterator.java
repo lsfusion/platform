@@ -1,7 +1,5 @@
 package lsfusion.server.logics.property.actions.importing;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.TimeClass;
@@ -19,7 +17,7 @@ public abstract class ImportIterator {
     protected abstract Object nextRow();
     protected abstract void release();
 
-    protected DateFormat getDateFormat(ImOrderSet<LCP> properties, List<Integer> columns, Integer column) {
+    protected DateFormat getDateFormat(List<LCP> properties, List<Integer> columns, Integer column) {
         ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
         DateFormat dateFormat = null;
         if (valueClass instanceof DateClass) {

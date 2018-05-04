@@ -271,11 +271,6 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
     }
 
     @Override
-    protected boolean isSync() {
-        return true; // тут сложно посчитать что изменяется, поэтому пока просто считаем синхронным, чтобы не компилировался FOR
-    }
-
-    @Override
     protected boolean allowNulls() {
         return false;
     }

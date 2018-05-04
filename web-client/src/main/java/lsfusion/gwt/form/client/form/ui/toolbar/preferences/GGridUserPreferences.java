@@ -162,7 +162,7 @@ public class GGridUserPreferences {
     public GGroupObjectUserPreferences convertPreferences() {
         Map<String, GColumnUserPreferences> columns = new HashMap<>();
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
-            columns.put(entry.getKey().propertyFormName, entry.getValue());
+            columns.put(entry.getKey().sID, entry.getValue());
         }
         return new GGroupObjectUserPreferences(columns, groupObject.getSID(), font, pageSize, headerHeight, hasUserPreferences());
     }

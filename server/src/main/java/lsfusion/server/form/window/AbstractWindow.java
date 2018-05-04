@@ -2,6 +2,7 @@ package lsfusion.server.form.window;
 
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 
@@ -9,6 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class AbstractWindow {
+    private int ID;
     private String canonicalName;
     
     public LocalizedString caption = LocalizedString.NONAME;
@@ -40,12 +42,14 @@ public class AbstractWindow {
 
     public AbstractWindow(String canonicalName, LocalizedString caption) {
         this.canonicalName = canonicalName;
+        setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeUTF(getCanonicalName());
+        outStream.writeInt(getID());
         outStream.writeUTF(ThreadLocalContext.localize(caption));
+        outStream.writeUTF(getSID());
 
         outStream.writeInt(position);
         if (position == AbstractWindowType.DOCKING_POSITION) {
@@ -75,12 +79,24 @@ public class AbstractWindow {
         this.borderConstraint = borderConstraint;
     }
 
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
     public String getCanonicalName() {
         return canonicalName;
     }
     
     public String getName() {
         return CanonicalNameUtils.getName(canonicalName);
+    }
+    
+    public String getSID() {
+        return CanonicalNameUtils.toSID(canonicalName);
     }
     
     public boolean isNamed() {

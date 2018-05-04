@@ -290,7 +290,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     orderProperty = defaultOrder;
                     defaultOrder++;
                 }
-                LAP lap = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
+                LAP lap = script == null ? (LAP) BL.findProperty(canonicalName.trim()) : BL.schedulerLM.evalScript;
                 if(lap != null)
                     propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, params));
             }

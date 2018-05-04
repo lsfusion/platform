@@ -74,7 +74,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                         if (unsynced == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
                         }
-                        navigator = unsynced; // ReflectionUtils.makeSynchronized(RemoteNavigatorInterface.class, unsynced) - в десктопе не синхронизировалось, непонятно зачем здесь синхронизировать
+                        navigator = ReflectionUtils.makeSynchronized(RemoteNavigatorInterface.class, unsynced);
                     } catch (RemoteException e) {
                         blProvider.invalidate();
                         throw new RuntimeException("Не могу создать навигатор.", e);

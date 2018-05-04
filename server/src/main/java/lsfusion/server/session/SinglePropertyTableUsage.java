@@ -1,7 +1,6 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;

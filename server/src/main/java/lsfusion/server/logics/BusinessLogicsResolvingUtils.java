@@ -1,8 +1,6 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.resolving.NamespaceElementFinder.FoundItem;
@@ -84,28 +82,32 @@ public class BusinessLogicsResolvingUtils {
         }
     }
 
-    public static <L extends LP<?,?>> L findPropertyByCanonicalName(BusinessLogics<?> BL, String canonicalName, ModuleEqualLPFinder<L> finder) {
+    public static LP<?, ?> findPropertyByCanonicalName(BusinessLogics<?> BL, String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(BL, canonicalName);
-        List<FoundItem<L>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(),
-                parser.getSignature(), finder);
+        List<FoundItem<LP<?, ?>>> foundElements = findProperties(BL, parser.getNamespace(), parser.getName(), 
+                                                                 parser.getSignature(), new ModuleEqualLPFinder(false));
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
-    
-    public static <L extends LP<?,?>> L findLPByCompoundName(BusinessLogics<?> BL, String compoundName, ModuleLPFinder<L> moduleLPFinder) {
+
+    public static LP<?, ?> findPropertyByCompoundName(BusinessLogics<?> BL, String compoundName) {
         PropertyCompoundNameParser parser = new PropertyCompoundNameParser(BL, compoundName);
-        return findLP(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName, moduleLPFinder);
+        return findProperty(BL, parser.getNamespace(), parser.getName(), parser.getSignature(), compoundName);
     }
-    
-    private static <L extends LP<?, ?>> L findLP(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName, ModuleLPFinder<L> moduleLPFinder) {
+
+    public static LP<?, ?> findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature) {
+        return findProperty(BL, namespace, name, signature, CompoundNameUtils.createCompoundName(namespace, name));
+    }
+
+    private static LP<?, ?> findProperty(BusinessLogics<?> BL, String namespace, String name, List<ResolveClassSet> signature, String sourceName) {
         Collection<String> namespaces = getPropertyConsideredNamespaces(BL, namespace);
 
-        List<FoundItem<L>> foundItems = new ArrayList<>();
+        List<FoundItem<LP<?, ?>>> foundItems = new ArrayList<>();
         for (String namespaceName : namespaces) {
-            foundItems.addAll(findProperties(BL, namespaceName, name, signature, moduleLPFinder));
+            foundItems.addAll(findProperties(BL, namespaceName, name, signature, new ModuleLPFinder()));
         }
 
-        List<FoundItem<L>> filteredResult = NamespaceLPFinder.filterFoundProperties(foundItems);
+        List<FoundItem<LP<?, ?>>> filteredResult = NamespaceLPFinder.filterFoundProperties(foundItems);
         return findElementResult(sourceName, filteredResult);
     }
     
@@ -117,10 +119,10 @@ public class BusinessLogicsResolvingUtils {
         }
     }
     
-    private static <L extends LP<?, ?>> List<FoundItem<L>> findProperties(BusinessLogics<?> BL, String namespace, String name, 
+    private static List<FoundItem<LP<?, ?>>> findProperties(BusinessLogics<?> BL, String namespace, String name, 
                                                             List<ResolveClassSet> classes, 
-                                                            ModulePropertyOrActionFinder<L> finder) {
-        NamespaceLPFinder<L> nsFinder = new NamespaceLPFinder<L>(finder, BL.getNamespaceModules(namespace));
+                                                            ModulePropertyOrActionFinder<LP<?, ?>> finder) {
+        NamespaceLPFinder nsFinder = new NamespaceLPFinder(finder, BL.getNamespaceModules(namespace));
         return nsFinder.findInNamespace(namespace, name, classes);
     }
 }

@@ -17,8 +17,12 @@ public interface FormReportInterface<PD extends PRI, GO, PO, CPO extends OI, OI,
     BusinessLogics getBL();
     FormEntity getEntity();
 
+    ImSet<GO> getGroups();
+
+    int getGroupID(GO go); // interface
     int getObjectID(O o); // interface
     String getObjectSID(O o); // interface
+    ClassViewType getGroupViewType(GO go); // interface
 
     byte getTypeID(PRI pri);
     PropertyType getPropertyType(PRI pri);

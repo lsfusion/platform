@@ -1,5 +1,6 @@
 package lsfusion.client.navigator;
 
+import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.AbstractWindowType;
 
 import javax.swing.*;
@@ -7,8 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-public class ClientAbstractWindow<C extends JComponent> implements Serializable {
-    public String canonicalName;
+public class ClientAbstractWindow<C extends JComponent> extends IdentityObject implements Serializable {
     public String caption;
     public int position;
 
@@ -23,8 +23,9 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
     public boolean visible;
 
     public ClientAbstractWindow(DataInputStream inStream) throws IOException {
-        canonicalName = inStream.readUTF();
+        super(inStream.readInt());
         caption = inStream.readUTF();
+        sID = inStream.readUTF();
 
         position = inStream.readInt();
         if (position == AbstractWindowType.DOCKING_POSITION) {
@@ -43,11 +44,11 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
 
     @Override
     public int hashCode() {
-        return canonicalName.hashCode();
+        return sID.hashCode();
     }
 
     @Override
     public String toString() {
-        return "Window[canonicalName:" + canonicalName + ", caption: " + caption + "]";
+        return "Window[sID:" + sID + ", caption: " + caption + "]";
     }
 }

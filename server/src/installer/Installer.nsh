@@ -6,7 +6,7 @@ RequestExecutionLevel user
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 1.3.4
+!define VERSION 1.3.3
 !define COMPANY luxsoft
 !define URL lsfusion.ru
 

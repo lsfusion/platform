@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
@@ -22,12 +21,12 @@ import java.util.List;
 
 public class ImportXLSIterator extends ImportIterator {
     private final List<Integer> columns;
-    private final ImOrderSet<LCP> properties;
+    private final List<LCP> properties;
     private int current;
     private HSSFSheet sheet;
     private int lastRow;
     
-    public ImportXLSIterator(byte[] file, List<Integer> columns, ImOrderSet<LCP> properties, Integer sheetIndex) throws IOException, IncorrectFileException {
+    public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException, IncorrectFileException {
         this.columns = columns;
         this.properties = properties;
 
@@ -52,7 +51,7 @@ public class ImportXLSIterator extends ImportIterator {
                     try {
                         listRow.add(getXLSFieldValue(hssfRow, column, null));
                     } catch (Exception e) {
-                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column+1), e);
+                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column), e);
                     }
                 }
             }

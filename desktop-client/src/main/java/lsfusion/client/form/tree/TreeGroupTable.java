@@ -613,12 +613,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public ClientGroupObjectValue getColumnKey(int row, int col) {
-//        TreePath pathForRow = getPathForRow(row);
-//        if (pathForRow != null) {
-//            Object node = pathForRow.getLastPathComponent();
-//            if (node instanceof TreeGroupNode)
-//                return ((TreeGroupNode) node).key;
-//        }
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow != null) {
+            Object node = pathForRow.getLastPathComponent();
+            if (node instanceof TreeGroupNode)
+                return ((TreeGroupNode) node).key;
+        }
         return ClientGroupObjectValue.EMPTY;
     }
 

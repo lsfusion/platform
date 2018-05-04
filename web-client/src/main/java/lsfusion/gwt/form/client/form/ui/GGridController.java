@@ -55,16 +55,13 @@ public class GGridController {
     public GPropertyDraw getCurrentProperty() {
         return table.getCurrentProperty();
     }
-    public GGroupObjectValue getCurrentColumn() {
-        return table.getCurrentColumn();
-    }
-
+    
     public boolean containsProperty(GPropertyDraw property) {
         return table.containsProperty(property);
     }
 
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return table.getSelectedValue(property, columnKey);
+    public Object getSelectedValue(GPropertyDraw property) {
+        return table.getSelectedValue(property);
     }
 
     public void setForceHidden(boolean hidden) {

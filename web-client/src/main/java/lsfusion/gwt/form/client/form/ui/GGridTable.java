@@ -655,7 +655,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public GGroupObject getGroupObject() {
         return groupObject;
     }
-    
+
     public GPropertyDraw getCurrentProperty() {
         GPropertyDraw property = getSelectedProperty();
         if (property == null && getColumnCount() > 0) {
@@ -664,19 +664,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return property;
     }
 
-    public GGroupObjectValue getCurrentColumn() {
-        GGroupObjectValue property = getSelectedColumn();
-        if (property == null && getColumnCount() > 0) {
-            property = getColumnKey(0);
-        }
-        return property;
-    }
-
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public Object getSelectedValue(GPropertyDraw property) {
         GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
-        int column = getPropertyIndex(property, columnKey);
-        if (selectedRecord != null && column != -1 && column < getColumnCount()) {
-            return getColumn(column).getValue(selectedRecord);
+        if (selectedRecord != null && getMinPropertyIndex(property) != -1) {
+            return getColumn(getMinPropertyIndex(property)).getValue(selectedRecord);
         }
 
         return null;
@@ -821,15 +812,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return rowValue.getForeground(((GridColumn) getColumn(column)).columnID);
     }
 
-    public int getPropertyIndex(GPropertyDraw property, GGroupObjectValue columnKey) {
-        for (int i = 0; i < columnProperties.size(); ++i) {
-            if (property == columnProperties.get(i) && (columnKey == null || columnKey.equals(columnKeysList.get(i)))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private int getMinPropertyIndex(GPropertyDraw property) {
         for (int i = 0; i < columnProperties.size(); ++i) {
             if (property == columnProperties.get(i)) {
@@ -869,10 +851,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         HashMap<GPropertyDraw, GGroupObjectValue> key = new HashMap<>();
         key.put(property, ind == -1 ? GGroupObjectValue.EMPTY : columnKeysList.get(ind));
         sortableHeaderManager.changeOrder(key, modiType);
-    }
-
-    public GGroupObjectValue getSelectedColumn() {
-        return getColumnKey(getCurrentCellContext());
     }
 
     @Override
@@ -983,8 +961,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
-        groupObjectController.quickEditFilter(event, filterProperty, columnKey);
+    public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
+        groupObjectController.quickEditFilter(event, filterProperty);
     }
 
     @Override
@@ -1164,7 +1142,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             for (GPropertyDraw propertyDraw : preferences.getColumnUserPreferences().keySet()) {
                 Boolean userHide = preferences.getColumnPreferences(propertyDraw).userHide;
                 if (userHide != null && userHide) {
-                    result.add(propertyDraw.propertyFormName);
+                    result.add(propertyDraw.sID);
                 }
             }
         }

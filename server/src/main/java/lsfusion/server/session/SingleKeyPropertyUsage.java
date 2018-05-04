@@ -6,8 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -70,11 +68,8 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }), opOwner);
     }
 
-    public ImCol<ImMap<String, Object>> read(SQLSession session, QueryEnvironment env, DataObject object) throws SQLException, SQLHandledException {
-        return read(session, env, MapFact.singleton("key", object));
-    }
 
-    public ObjectClassSet getClasses() {
-        return (ObjectClassSet)getClassWhere(MapFact.singletonRev("key", "key")).getCommonClass("key");
+    public ImCol<ImMap<String, Object>> read(DataSession session, DataObject object) throws SQLException, SQLHandledException {
+        return read(session, MapFact.singleton("key", object));
     }
 }

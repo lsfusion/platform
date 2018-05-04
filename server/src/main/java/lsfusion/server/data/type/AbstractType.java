@@ -7,7 +7,6 @@ import lsfusion.server.data.sql.SQLSyntax;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -35,6 +34,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     
     public boolean hasSafeCast() {
         return false;
+    }
+
+    @Override
+    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
+        return object;
     }
 
     protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
@@ -69,20 +73,28 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return false;
     }
 
-    protected static boolean isParseNullValue(String value) {
+    private static boolean isParseNullValue(String value) {
         return value.equals("");
     }
 
-    protected static String getParseNullValue() {
+    private static String getParseNullValue() {
         return "";
     }
 
     public static Type getUnknownTypeNull() { // хак для общения нетипизированными параметрами
         return IntegerClass.instance;
     }
+    protected boolean checkParseUnknownTypeNull(Object o) {
+        if(o instanceof String) {
+            if(!isParseNullValue((String)o))
+                throw new RuntimeException("passed not null string parameter instead of byte array");
+            return true;
+        }
+        return false;
+    }
 
     @Override
-    public T parseHTTP(Object o, Charset charset) throws ParseException {
+    public T parse(Object o) throws ParseException {
         String s = (String) o;
         if(isParseNullValue(s))
             return null;
@@ -90,7 +102,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatHTTP(T value, Charset charset) {
+    public Object format(T value) {
         if(value == null)
             return getParseNullValue();
         return formatString(value);

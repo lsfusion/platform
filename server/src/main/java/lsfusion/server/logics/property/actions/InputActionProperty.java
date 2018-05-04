@@ -52,7 +52,7 @@ public class InputActionProperty extends SystemExplicitActionProperty {
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         if(targetProp != null)
-            return getChangeProps(targetProp.property);
+            return BaseUtils.<ImSet<CalcProperty>>immutableCast(targetProp.property.getChangeProps()).toMap(false);
         // тут по хорошему надо getRequestedValue возвращать но для этого BL нужен
         return MapFact.EMPTY();
     }

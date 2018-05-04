@@ -11,7 +11,6 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
@@ -20,7 +19,7 @@ import java.sql.SQLException;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
-    public final CalcPropertyObjectInstance<P> property;
+    public CalcPropertyObjectInstance<P> property;
     public final boolean resolveAdd;
 
     public PropertyFilterInstance(CalcPropertyObjectInstance<P> property, boolean resolveAdd) {
@@ -28,13 +27,9 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         this.resolveAdd = resolveAdd;
     }
 
-    public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
+    public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
         super(inStream,form);
-        PropertyDrawInstance<P> propertyDraw = form.getPropertyDraw(inStream.readInt());
-        CalcPropertyObjectInstance<P> propertyObject = (CalcPropertyObjectInstance<P>) propertyDraw.propertyObject;
-        if(inStream.readBoolean())
-            propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializePropertyKeys(propertyDraw, inStream, form)); 
-        property = propertyObject;
+        property = (CalcPropertyObjectInstance<P>) ((PropertyDrawInstance<P>)form.getPropertyDraw(inStream.readInt())).propertyObject;
         resolveAdd = false;
     }
 

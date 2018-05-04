@@ -1344,10 +1344,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         @Override
-        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
             for (GroupObjectInstance group : getGroups())
                 group.updateExpandClasses(session);
-            super.updateCurrentClasses(session);
+            super.updateOnApply(session);
         }
     }
 
@@ -1356,10 +1356,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         stack = new FormStack(stack);
 
-        BL.LM.dropRequestCanceled(this);        
-        fireOnBeforeApply(stack);        
-        if(BL.LM.isRequestCanceled(this))
-            return false;
+        fireOnBeforeApply(stack);
 
         boolean succeeded = session.apply(BL, this, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties);
 
@@ -1816,9 +1813,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getGroupClassView();
+            if (curClassView.isHidden()) continue;
 
             ClassViewType forceViewType = drawProperty.getForceViewType();
             assert forceViewType != null; // сейчас ACTION по умолчанию получает PANEL, а PROPERTY - GRID
+            if (forceViewType != null && forceViewType.isHidden()) continue;
 
             ImSet<GroupObjectInstance> propRowColumnGrids = drawProperty.getColumnGroupObjectsInGridView();
             ImSet<GroupObjectInstance> propRowGrids;
@@ -2478,10 +2477,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         }
 
-        BL.LM.dropRequestCanceled(this);
         fireOnBeforeOk(context.stack);
-        if(BL.LM.isRequestCanceled(this))
-            return;
 
         if (manageSession) {
             if (!apply(BL, context, getEventsOnOk())) {

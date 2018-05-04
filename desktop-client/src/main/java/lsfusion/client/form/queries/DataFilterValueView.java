@@ -4,7 +4,6 @@ import lsfusion.client.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientDataFilterValue;
-import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 
@@ -45,9 +44,9 @@ public abstract class DataFilterValueView extends FilterValueView {
         return getPreferredSize();
     }
 
-    public void propertyChanged(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public void propertyChanged(ClientPropertyDraw property) {
         valueTable.setProperty(property);
-        setValue(logicsSupplier.getSelectedValue(property, columnKey));
+        setValue(logicsSupplier.getSelectedValue(property, null));
     }
 
     public void valueChanged(Object newValue) {

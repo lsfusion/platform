@@ -28,7 +28,7 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
         this.isClass = isClass;
     }
 
-    public IsClassFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
+    public IsClassFilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
         super(inStream, form);
         isClass = form.getCustomClass(inStream.readLong());
     }

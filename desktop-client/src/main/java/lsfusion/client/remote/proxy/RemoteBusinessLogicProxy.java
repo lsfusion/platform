@@ -10,7 +10,6 @@ import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -113,26 +112,55 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) throws RemoteException {
         logRemoteMethodStartCall("exec");
-        List<Object> result = target.exec(action, returnCanonicalNames, params, charset);
+        List<Object> result = target.exec(action, returnCanonicalNames, params);
         logRemoteMethodEndVoidCall("exec");
         return result;
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) throws RemoteException {
         logRemoteMethodStartCall("eval");
-        List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params, charset);
+        List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params);
         logRemoteMethodEndVoidCall("eval");
         return result;
     }
 
     @Override
-    public List<Object> read(String property, Object[] params, Charset charset) throws RemoteException {
+    public List<Object> read(String property, Object[] params) throws RemoteException {
         logRemoteMethodStartCall("read");
-        List<Object> result = target.read(property, params, charset);
+        List<Object> result = target.read(property, params);
         logRemoteMethodEndVoidCall("read");
+        return result;
+    }
+
+    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
+        logRemoteMethodStartCall("checkDefaultViewPermission");
+        boolean result = target.checkDefaultViewPermission(propertySid);
+        logRemoteMethodEndVoidCall("checkDefaultViewPermission");
+        return result;
+    }
+
+    public boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException {
+        logRemoteMethodStartCall("checkPropertyViewPermission");
+        boolean result = target.checkPropertyViewPermission(userName, propertySID);
+        logRemoteMethodEndVoidCall("checkPropertyViewPermission");
+        return result;
+    }
+
+    @Override
+    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
+        logRemoteMethodStartCall("checkPropertyChangePermission");
+        boolean result = target.checkPropertyChangePermission(userName, propertySID);
+        logRemoteMethodEndVoidCall("checkPropertyChangePermission");
+        return result;
+    }
+
+    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
+        logRemoteMethodStartCall("checkFormExportPermission");
+        boolean result = target.checkFormExportPermission(canonicalName);
+        logRemoteMethodEndVoidCall("checkFormExportPermission");
         return result;
     }
 

@@ -59,7 +59,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
 
     private int ID = 0;
     private String dbName;
-    protected String canonicalName;
+    private String canonicalName;
     public String annotation;
 
     private boolean local = false;
@@ -68,30 +68,27 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public LocalizedString caption;
 
     public LocalizedString localizedToString() {
-        LocalizedString result = LocalizedString.create(getSID());
-        if (caption != null) {
-            result = LocalizedString.concatList(result, " '", caption, "'");    
-        }
-        if (debugInfo != null) {
-            result = LocalizedString.concat(result, " [" + debugInfo + "]");
+        LocalizedString result = LocalizedString.concatList("'", caption, "'");
+        if (canonicalName != null) {
+            result = LocalizedString.concat(result, " (" + canonicalName + ")");
         }
         return result;
     } 
     
     public String toString() {
-        String result = getSID();
-        if (caption != null) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
-        }
-        if (debugInfo != null) {
-            result += " [" + debugInfo + "]";
+        String result = "'" + ThreadLocalContext.localize(caption) + "'";
+        if (canonicalName == null && debugInfo == null) {
+            result += "-" + System.identityHashCode(this);
+        } else { 
+            if (canonicalName != null)
+                result = result + " (" + canonicalName + ")";
+            if (debugInfo != null)
+                result += ":" + debugInfo;
         }
         return result;
     }
 
     protected DebugInfo debugInfo;
-    
-    public abstract DebugInfo getDebugInfo();
 
     public boolean isField() {
         return false;
@@ -810,10 +807,4 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     }
 
     public DrawOptions drawOptions = new DrawOptions();
-    
-    protected ApplyGlobalEvent event;
-    // важно кэшировать так как equals'ов пока нет, а они важны (в общем то только для Stored, и для RemoveClasses )
-    public ApplyGlobalEvent getApplyEvent() {
-        return null;        
-    }
 }

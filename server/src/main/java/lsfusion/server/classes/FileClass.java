@@ -12,7 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -214,32 +213,25 @@ public abstract class FileClass extends DataClass<byte[]> {
     }
 
     @Override
-    public byte[] parseHTTP(Object o, Charset charset) throws ParseException {
-        if(o instanceof String) {
-            if(isParseNullValue((String)o))
-                return null;
-            o = BaseUtils.mergeFileAndExtension(((String)o).getBytes(charset), "unknown".getBytes());
-        }
-
-        if (BaseUtils.getExtension((byte[]) o).equals("null"))
+    public byte[] parse(Object o) throws ParseException {
+        if(checkParseUnknownTypeNull(o))
             return null;
-        return parseHTTPNotNull((byte[])o);
+
+        if(BaseUtils.getExtension((byte[])o).equals("null"))
+            return null;
+
+        return parseNotNull((byte[])o);
     }
 
     @Override
-    public Object formatHTTP(byte[] value, Charset charset) {
-        if(charset != null) {
-            if (value == null)
-                return getParseNullValue();
-            return new String(BaseUtils.getFile(formatHTTPNotNull(value)), charset);
-        }
-
+    public Object format(byte[] value) {
         if(value == null)
             return BaseUtils.mergeFileAndExtension(new byte[]{}, "null".getBytes());
-        return formatHTTPNotNull(value);
+
+        return formatNotNull(value);
     }
 
-    protected abstract byte[] parseHTTPNotNull(byte[] b);
+    protected abstract byte[] parseNotNull(byte[] b);
 
-    protected abstract byte[] formatHTTPNotNull(byte[] b);
+    protected abstract byte[] formatNotNull(byte[] b);
 }

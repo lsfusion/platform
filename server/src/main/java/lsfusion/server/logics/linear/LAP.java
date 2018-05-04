@@ -74,10 +74,6 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         return listInterfaces.mapOrder(property.getInterfaceClasses(ClassType.obsolete)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
     }
 
-    public ValueClass[] getInterfaceClasses(ClassType classType) {
-        return property.getInterfaceClasses(listInterfaces, classType);
-    }
-
     public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {
         return new ActionPropertyMapImplement<>(property, getRevMap(mapping));
     }

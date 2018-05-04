@@ -169,7 +169,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            ClientFormDockable blockingForm = Main.frame.runForm(action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
+            ClientFormDockable blockingForm = Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
                     afterModalActionInSameEDT(true);
@@ -188,7 +188,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 }
             }.showDialog(modality.isFullScreen());
         } else {
-            Main.frame.runForm(action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, null);
         }
     }
 

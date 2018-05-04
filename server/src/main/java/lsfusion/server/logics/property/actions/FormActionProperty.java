@@ -107,6 +107,6 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
 
     @Override
     protected boolean isSync() {
-        return true; // тут сложно посчитать что изменяется, поэтому пока просто считаем синхронным, чтобы не компилировался FOR
+        return true;
     }
 }

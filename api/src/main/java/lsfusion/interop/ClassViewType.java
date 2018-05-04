@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ClassViewType {
-    PANEL, TOOLBAR, GRID;
+    PANEL, TOOLBAR, GRID, HIDE;
 
     public static ClassViewType[] getAllTypes() {
         return ClassViewType.values();        
@@ -29,5 +29,9 @@ public enum ClassViewType {
 
     public boolean isGrid() {
         return this == GRID;
+    }
+
+    public boolean isHidden() {
+        return this == HIDE;
     }
 }

@@ -9,7 +9,9 @@ import bibliothek.gui.dock.common.event.CDockableLocationListener;
 import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
+import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
@@ -99,18 +101,9 @@ public class DockableManager {
         return page;
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page;
-        if (MainFrame.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
-            page = (ClientFormDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if(page != null) {
-                page.toFront();
-                page.requestFocusInWindow();
-            }
-        } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
-            openForm(page);
-        }
+    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
+        openForm(page);
         return page;
     }
 

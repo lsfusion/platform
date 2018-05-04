@@ -26,14 +26,19 @@ public class ReadFileRequestHandler implements HttpRequestHandler {
         String propertyCN = request.getParameter(CN_PARAM);
 
         try {
-            byte[] file = blProvider.getLogics().readFile(propertyCN, request.getParameterValues(PARAMS_PARAM));
-            if (file != null) {
-                String extension = BaseUtils.getExtension(file);
-                response.setContentType("application/" + extension);
-                response.addHeader("Content-Disposition", "attachment; filename=" + propertyCN.replace(',', '_') + "." + extension);
-                response.getOutputStream().write(BaseUtils.getFile(file));
+            boolean permitView = blProvider.getLogics().checkPropertyViewPermission(user, propertyCN);
+            if (!permitView) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to load the file");
             } else {
-                response.getWriter().print("null");
+                byte[] file = blProvider.getLogics().readFile(propertyCN, request.getParameterValues(PARAMS_PARAM));
+                if (file != null) {
+                    String extension = BaseUtils.getExtension(file);
+                    response.setContentType("application/" + extension);
+                    response.addHeader("Content-Disposition", "attachment; filename=" + propertyCN.replace(',', '_') + "." + extension);
+                    response.getOutputStream().write(BaseUtils.getFile(file));
+                } else {
+                    response.getWriter().print("null");
+                }
             }
         } catch(RemoteException e) {
             blProvider.invalidate();

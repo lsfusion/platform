@@ -86,8 +86,8 @@ public abstract class GAbstractGroupObjectController implements GGroupObjectLogi
         return true;
     }
 
-    public void quickEditFilter(EditEvent editEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        filter.quickEditFilter(editEvent, propertyDraw, columnKey);
+    public void quickEditFilter(EditEvent editEvent, GPropertyDraw propertyDraw) {
+        filter.quickEditFilter(editEvent, propertyDraw);
     }
 
     public void replaceFilter() {

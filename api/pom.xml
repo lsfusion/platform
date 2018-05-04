@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.3.5-SNAPSHOT</version>
+        <version>1.3.4</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
@@ -55,14 +55,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
-import lsfusion.interop.WindowFormType;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -16,7 +15,10 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.ClassFormEntity;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -64,7 +66,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP greater2, less2;
     public LCP object1, and1, andNot1;
     public LCP equals2, diff2;
-    public LCP like2;
     public LCP sum;
     public LCP subtract;
     public LCP multiply;
@@ -343,6 +344,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     public void initProperties() throws RecognitionException {
+        Version version = getVersion();
 
         objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
         makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
@@ -360,7 +362,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
-        like2 = addCFProp(Compare.LIKE);
 
         // Математические операции
         sum = addSumProp();
@@ -373,11 +374,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0.0);
-        vnull = addProperty(null, new LCP<>(NullValueProperty.instance));
+        vnull = addProperty((AbstractGroup) null, new LCP<>(NullValueProperty.instance));
 
         if(ActionPropertyDebugger.getInstance().isEnabled()) {
-            watch = addProperty(null, new LAP<>(WatchActionProperty.instance));
-            makeActionPublic(watch, "watch");
+            watch = addProperty((AbstractGroup) null, new LAP<>(WatchActionProperty.instance));
+            makePropertyPublic(watch, "watch");
         }
 
         super.initProperties();
@@ -530,14 +531,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     @IdentityStrongLazy
-    protected <P extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<P, Integer> implement = (CalcPropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+    protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
-    protected LCP addCastProp(DataClass castClass) {
+    protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
         return addProperty(null, new LCP<>(new FormulaImplProperty(LocalizedString.create("castTo" + castClass.toString()), 1, new CastFormulaImpl(castClass))));
     }
 
@@ -599,22 +600,31 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return isActiveForm;
     }
 
+    @IdentityLazy
+    public LCP<?> getConfirmedProperty() {
+        try {
+            return findProperty("confirmed[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP<P> addOldProp(LCP<P> lp, PrevScope scope) {
+    public <T extends PropertyInterface> LCP<T> addOldProp(LCP<T> lp, PrevScope scope) {
         return addProperty(null, new LCP<>(lp.property.getOld(scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP<P> addCHProp(LCP<P> lp, IncrementType type, PrevScope scope) {
+    public <T extends PropertyInterface> LCP<T> addCHProp(LCP<T> lp, IncrementType type, PrevScope scope) {
         addOldProp(lp, scope); // регистрируем старое значение в списке свойств
         return addProperty(null, new LCP<>(lp.property.getChanged(type, scope), lp.listInterfaces));
     }
 
     @Override
     @IdentityStrongLazy
-    public <P extends PropertyInterface> LCP addClassProp(LCP<P> lp) {
+    public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
     }
 
@@ -643,34 +653,29 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         
         if (formEntity.getCanonicalName() != null) {
             String name = "_NEW_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID() + (explicitClass != null ? getClassPrefix(cls) : "");
-            makeActionPublic(result, name, cls.getResolveSet());
+            makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;
     }
 
     @IdentityStrongLazy
-    public LAP getFormNavigatorAction(FormEntity form) {
-        return addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
-    }
-
-    @IdentityStrongLazy
     public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
-        LAP<?> result = addAddFormAction(cls, contextObject, scope);
+        LAP result = addAddFormAction(cls, contextObject, scope);
         // issue #1725 Потенциальное совпадение канонических имен различных свойств
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
         String name = "_ADDFORM" + scope + contextPrefix + getClassPrefix(cls);
 
-        makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
+        makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
 
         return result;
     }
 
     @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
-        LAP<?> result = addEditFormAction(scope, cls);
+        LAP result = addEditFormAction(scope, cls);
         // issue #1725 Потенциальное совпадение канонических имен различных свойств
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
-        makeActionPublic(result, name, form.object.getResolveClassSet());
+        makePropertyPublic(result, name, form.object.getResolveClassSet());
 
         return result;
     }
@@ -680,7 +685,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         LAP res = addDeleteAction(cls, scope);
 
         String name = "_DELETE" + (scope == FormSessionScope.OLDSESSION ? "SESSION" : (scope == FormSessionScope.NESTEDSESSION ? scope : ""));
-        makeActionPublic(res, name, cls.getResolveSet());
+        makePropertyPublic(res, name, cls.getResolveSet());
         return res;
     }
 
@@ -698,12 +703,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     // REQUEST / INPUT BLOCK
     
-    public void dropRequestCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
-        getRequestCanceledProperty().change((Object)null, env);
-    }
-    
     public <R> R pushRequest(ExecutionEnvironment env, SQLCallable<R> callable) throws SQLException, SQLHandledException {
-        dropRequestCanceled(env);
+        getRequestCanceledProperty().change((Object)null, env);
         return pushPopRequestValue(true, env, callable);
     }
 

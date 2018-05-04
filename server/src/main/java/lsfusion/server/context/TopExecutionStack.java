@@ -9,8 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.session.UpdateCurrentClassesSession;
+import lsfusion.server.logics.linear.LP;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -34,7 +34,7 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
         return SetFact.EMPTY();
     }
 
@@ -49,11 +49,11 @@ public class TopExecutionStack implements NewThreadExecutionStack {
     }
 
     @Override
-    public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
     }
 
     @Override
-    public boolean sameSession(UpdateCurrentClassesSession session) {
+    public boolean sameSession(DataSession session) {
         return true; // особо не принципиально можно и false
     }
 

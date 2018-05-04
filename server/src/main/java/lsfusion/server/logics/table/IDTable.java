@@ -15,6 +15,7 @@ import lsfusion.server.classes.SystemClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.TableStatKeys;
@@ -165,6 +166,6 @@ public class IDTable extends GlobalTable {
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
-        return getStatProps(this);
+        return getStatProps(this, getCounters().size());
     }
 }

@@ -6,9 +6,14 @@ import lsfusion.server.logics.linear.LP;
 
 import java.util.List;
 
-public abstract class ModuleLPFinder<L extends LP<?, ?>> extends ModulePropertyOrActionFinder<L> {
+public class ModuleLPFinder extends ModulePropertyOrActionFinder<LP<?, ?>> {
     @Override
-    protected boolean accepted(LogicsModule module, L property, List<ResolveClassSet> signature) {
+    protected Iterable<LP<?, ?>> getSourceList(LogicsModule module, String name) {
+        return module.getNamedPropertiesAndActions(name);
+    }
+
+    @Override
+    protected boolean accepted(LogicsModule module, LP<?, ?> property, List<ResolveClassSet> signature) {
         return SignatureMatcher.isCompatible(module.getParamClasses(property), signature, false, false);
     }
 }

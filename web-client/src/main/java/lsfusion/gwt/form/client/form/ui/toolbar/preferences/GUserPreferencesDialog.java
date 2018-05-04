@@ -251,7 +251,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
             grid.setColumnSettings(property.property, property.getUserCaption(true), property.getUserPattern(true),
                     columnsDualListBox.getVisibleCount() + i, true);
             if (property.inGrid == null || property.inGrid) {
-                hiddenPropSids[i] = property.property.propertyFormName;
+                hiddenPropSids[i] = property.property.sID;
             }
         }
 

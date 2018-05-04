@@ -2,6 +2,7 @@ package lsfusion.server.classes.link;
 
 import lsfusion.interop.Data;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.context.ThreadLocalContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +28,10 @@ public class DynamicFormatLinkClass extends LinkClass {
 
     private DynamicFormatLinkClass(boolean multiple) {
         super(multiple);
+    }
+
+    public String toString() {
+        return ThreadLocalContext.localize("{classes.link}");
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

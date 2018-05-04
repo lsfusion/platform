@@ -176,11 +176,11 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
     }
 
-    public <K, V> void outSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
-        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(keys, props, session, queryExecEnv, outerEnv, queryParams, transactTimeout, owner));
+    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, outerEnv, queryParams, transactTimeout, owner));
     }
 
-    public <K, V> String readSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
         // выведем на экран
         ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<>();
         session.executeSelect(this, queryExecEnv, outerEnv, owner, queryParams, transactTimeout, handler);
@@ -191,21 +191,21 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             return resultString;
 
         String name = "";
-        for(int i=0,size=keys.size();i<size;i++)
-            name += StringUtils.rightPad(keys.getKey(i).toString(), keyReaders.get(keys.getValue(i)).getCharLength().getAprValue()) + " ";
-        for(int i=0,size=props.size();i<size;i++)
-            name += StringUtils.rightPad(props.getKey(i).toString(), propertyReaders.get(props.getValue(i)).getCharLength().getAprValue()) + " ";
+        for(int i=0,size=keyReaders.size();i<size;i++)
+            name += StringUtils.rightPad(keyReaders.getKey(i), keyReaders.getValue(i).getCharLength().getAprValue()) + " ";
+        for(int i=0,size=propertyReaders.size();i<size;i++)
+            name += StringUtils.rightPad(propertyReaders.getKey(i), propertyReaders.getValue(i).getCharLength().getAprValue()) + " ";
         resultString += name + '\n';
 
         for(int i=0,size=result.size();i<size;i++) {
             String rowName = "";
 
             ImMap<String, Object> keyMap = result.getKey(i);
-            for(int j=0,sizeJ=keys.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.get(keys.getValue(j))), keyReaders.get(keys.getValue(j)).getCharLength().getAprValue()) + " ";
+            for(int j=0,sizeJ=keyMap.size();j<sizeJ;j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.getValue(j)), keyReaders.get(keyMap.getKey(j)).getCharLength().getAprValue()) + " ";
             ImMap<String, Object> rowMap = result.getValue(i);
-            for(int j=0,sizeJ=props.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.get(props.getValue(j))), propertyReaders.get(props.getValue(j)).getCharLength().getAprValue()) + " ";
+            for(int j=0,sizeJ=rowMap.size();j<sizeJ;j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue()) + " ";
 
             resultString += rowName + '\n';
 
@@ -310,7 +310,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, new ERunnable() {
                     public void run() throws Exception {
-                        outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, owner);
+                        outSelect(session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, owner);
                     }
                 });
             }

@@ -10,8 +10,10 @@ import lsfusion.gwt.form.shared.view.classes.*;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.FormatGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
 import lsfusion.gwt.form.shared.view.reader.*;
@@ -27,8 +29,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public String sID;
     public String namespace;
     public String caption;
-    public String canonicalName;
-    public String propertyFormName;
 
     public String toolTip;
     public String tableName;
@@ -196,25 +196,19 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             "<html><b>%s</b><br>%s";
 
     public static final String DETAILED_TOOL_TIP_FORMAT =
-            "<hr>" + 
-            "<b>Каноническое имя:</b> %s<br>" +
+            "<hr><b>sID:</b> %s<br>" +
             "<b>Таблица:</b> %s<br>" +
             "<b>Объекты:</b> %s<br>" +
-            "<b>Сигнатура:</b> %s (%s)<br>" +
+            "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
             "<b>Скрипт:</b> %s<br>" +
             "<b>Путь:</b> %s<br>" +
-            "<hr>" +
-            "<b>Имя на форме:</b> %s<br>" +
             "<b>Объявление на форме:</b> %s" +
             "</html>";
 
     public static final String DETAILED_ACTION_TOOL_TIP_FORMAT =
-            "<hr>" +
-            "<b>sID:</b> %s<br>" +
+            "<hr><b>sID:</b> %s<br>" +
             "<b>Объекты:</b> %s<br>" +
             "<b>Путь:</b> %s<br>" +
-            "<hr>" +
-            "<b>Имя на форме:</b> %s<br>" +
             "<b>Объявление на форме:</b> %s" +
             "</html>";
 
@@ -222,29 +216,30 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             "<hr><b>Горячая клавиша:</b> %s<br>";
 
     public String getTooltipText(String caption) {
+        return getTooltipText(caption, false);
+    }
+
+    public String getTooltipText(String caption, boolean action) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(EDIT_KEY_TOOL_TIP_FORMAT, editKey.toString());
 
         if (!MainFrame.configurationAccessAllowed) {
             return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
+            String sid = namespace + "." + sID;
+            String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
+            String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
+            String returnClass = this.returnClass.toString();
+
+            String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
-            
-            if (baseType instanceof GActionType) {
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
-            } else {
-                String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-                String returnClass = this.returnClass.toString();
-                String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
-                String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
-                
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
-                        propCaption, editKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses, 
-                        script, scriptPath, propertyFormName, scriptFormPath);
-            }
+            return action ?
+                    GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
+                            propCaption, editKeyText, sid, ifaceObjects, scriptPath, scriptFormPath) :
+                    GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                            propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath, scriptFormPath);
         }
     }
 

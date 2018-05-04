@@ -45,7 +45,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 60;
+        return 56;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
@@ -286,7 +286,7 @@ public class BaseUtils {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
                 return new HashMap<>();
-        return (Map<K, CV>) map;
+        return (Map<K, CV>) (Map<K, ? extends V>) map;
     }
 
     public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, Collection<? extends K> keys) {
@@ -916,7 +916,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
+    public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
         Map<K1, V> result = new HashMap<>(map1);
         for (Map.Entry<K1, V> entry : result.entrySet()) {
             V value2 = map2.get(entry.getValue());
@@ -973,7 +973,7 @@ public class BaseUtils {
     }
 
     public static <B> List<B> mergeList(List<? extends B> list1, List<? extends B> list2) {
-        List<B> result = new ArrayList<>(list1);
+        List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);
         return result;
     }
@@ -1153,6 +1153,14 @@ public class BaseUtils {
         return replaced;
     }
 
+    public static ArrayList<Integer> toListFromArray(int[] ints) {
+        ArrayList<Integer> list = new ArrayList();
+        for (int i : ints) {
+            list.add(i);
+        }
+        return list;
+    }
+    
     public static Long nullToZero(Long value) {
         return value == null ? 0 : value;
     }
@@ -1599,11 +1607,11 @@ public class BaseUtils {
     }
 
     public static <I, E extends I> List<E> immutableCast(List<I> list) {
-        return (List<E>) list;
+        return (List<E>) (List<? extends I>) list;
     }
 
     public static <K, I, E extends I> Map<K, E> immutableCast(Map<K, I> map) {
-        return (Map<K, E>) map;
+        return (Map<K, E>) (Map<K, ? extends I>) map;
     }
 
     public static <I> I immutableCast(Object object) {
@@ -1718,10 +1726,16 @@ public class BaseUtils {
         return result;
     }
 
-    @SafeVarargs
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<>();
         Collections.addAll(list, elements);
+        return list;
+    }
+
+    public static <K> List<Boolean> toBooleanList(boolean... elements) {
+        List<Boolean> list = new ArrayList<>();
+        for (boolean element : elements)
+            list.add(element);
         return list;
     }
 
@@ -2290,10 +2304,10 @@ public class BaseUtils {
         return a > b ? b : a;
     }
 
-    public static List<Integer> consecutiveList(int length, int start) {
+    public static List<Integer> consecutiveList(int i, int is) {
         List<Integer> result = new ArrayList<>();
-        for (int j = 0; j < length; j++)
-            result.add(j + start);
+        for (int j = 0; j < i; j++)
+            result.add(j + is);
         return result;
     }
 
@@ -2324,16 +2338,9 @@ public class BaseUtils {
         return new MergeFunctionSet<>(set1, set2);
     }
 
-    public static <K> FunctionSet<K> mergeElement(FunctionSet<K> set1, K element) {
-        if(set1.contains(element))
-            return set1;
-        
-        return merge(set1, SetFact.singleton(element));        
-    }
-
     public static <K> FunctionSet<K> remove(FunctionSet<K> set1, FunctionSet<K> set2) {
         if (set1.isEmpty() || set2.isFull())
-            return SetFact.EMPTY();
+            return SetFact.<K>EMPTY();
         if (set2.isEmpty() || set1.isFull())
             return set1;
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
@@ -2438,7 +2445,10 @@ public class BaseUtils {
     }
 
     public static int compareInts(int a, int b) {
-        return Integer.compare(a, b);
+        return a < b
+                ? -1
+                : a > b
+                ? 1 : 0;
     }
 
     public static void runLater(final int delay, final Runnable runnable) {

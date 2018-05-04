@@ -1,6 +1,8 @@
 package lsfusion.server.classes;
 
 import lsfusion.interop.Data;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,10 @@ public class ImageClass extends StaticFormatFileClass {
 
     private ImageClass(boolean multiple, boolean storeName) {
         super(multiple, storeName);
+    }
+
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create("{classes.image}"));
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

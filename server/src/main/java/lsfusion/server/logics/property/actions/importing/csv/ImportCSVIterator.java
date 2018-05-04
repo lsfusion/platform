@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.csv;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 
@@ -13,18 +12,18 @@ import java.util.Scanner;
 
 public class ImportCSVIterator extends ImportIterator {
     private final List<Integer> columns;
-    private final ImOrderSet<LCP> properties;
+    private final List<LCP> properties;
     private final String charset;
     private final String separator;
     private Scanner scanner;
     private int row;
     private final int lastRow;
 
-    public ImportCSVIterator(byte[] file, List<Integer> columns, ImOrderSet<LCP> properties, String charset, String separator, boolean noHeader) {
+    public ImportCSVIterator(byte[] file, List<Integer> columns, List<LCP> properties, String charset, String separator, boolean noHeader) {
         this.columns = columns;
         this.properties = properties;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
-        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
+        this.separator = separator == null ? ";" : separator;
 
         this.row = 0;
         this.lastRow = getLastRow(file, noHeader);
@@ -85,7 +84,7 @@ public class ImportCSVIterator extends ImportIterator {
         return lastNonEmptyRow;
     }
 
-    private String formatValue(ImOrderSet<LCP> properties, List<Integer> columns, Integer column, String value) {
+    private String formatValue(List<LCP> properties, List<Integer> columns, Integer column, String value) {
         DateFormat dateFormat = getDateFormat(properties, columns, column);
         if (dateFormat != null && value != null) {
             value = parseFormatDate(dateFormat, value);

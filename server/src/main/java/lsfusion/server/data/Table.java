@@ -77,71 +77,64 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public abstract ImMap<PropertyField, PropStat> getStatProps();
 
     // важно чтобы статистика таблицы была адекватна статистике классов, так как иначе infinite push down'ы могут пойти
-    private static int getObjectKeyFieldStat(AndClassSet classSet) {
+    private static int getObjectFieldStat(int defStat, AndClassSet classSet) {
         OrClassSet orClassSet = classSet.getOr();
         if(orClassSet instanceof OrObjectClassSet) {
             ObjectValueClassSet valueClassSet = ((OrObjectClassSet) orClassSet).getValueClassSet();
             if(BaseUtils.hashEquals(orClassSet, valueClassSet)) { // если есть unknown то их может быть сколько угодно
-                return valueClassSet.getCount();
+                return BaseUtils.min(defStat, valueClassSet.getCount());
             }
-        } else
-            assert orClassSet instanceof OrConcatenateClass;
-        return -1;
+        }
+        return defStat;
     }
-    private static Stat getObjectPropFieldStat(AndClassSet classSet) {
+    private static Stat getObjectFieldStat(Stat defStat, AndClassSet classSet) {
         OrClassSet orClassSet = classSet.getOr();
         if(orClassSet instanceof OrObjectClassSet) {
             ObjectValueClassSet valueClassSet = ((OrObjectClassSet) orClassSet).getValueClassSet();
-            if(BaseUtils.hashEquals(orClassSet, valueClassSet)) {
-                return new Stat(valueClassSet.getCount());
+            if(BaseUtils.hashEquals(orClassSet, valueClassSet)) { // если есть unknown то их может быть сколько угодно
+                return defStat.min(new Stat(valueClassSet.getCount()));
             }
-        } else
-            assert orClassSet instanceof OrConcatenateClass;
-        return null; // если есть unknown то их может быть сколько угодно
+        }
+        return defStat;
     }
 
-    private static int getKeyFieldStat(KeyField field, Table table) {
-        int resultStat = -1;
+    private static int getKeyFieldStat(KeyField field, int defStat, Table table) {
         if (field.type instanceof ObjectType) {
             AndClassSet commonClass = table.getClasses().getCommonClass(field);
             if (commonClass != null)
-                resultStat = getObjectKeyFieldStat(commonClass);
-            else
-                assert table.getClasses().isFalse();
+                return getObjectFieldStat(defStat, commonClass);
+            assert table.getClasses().isFalse();
         }            
-        if(resultStat < 0)
-            resultStat = field.type.getTypeStat(false).getCount();
-        return resultStat;
+        return BaseUtils.min(defStat, field.type.getTypeStat(false).getCount());
     }
 
-    private static Stat getPropFieldStat(PropertyField field, Table table) {
-        Stat resultStat = null;
+    private static Stat getPropFieldStat(PropertyField field, Stat defStat, Table table) {
         if (field.type instanceof ObjectType) {
             AndClassSet commonClass = table.propertyClasses.get(field).getCommonClass(field);
             if(commonClass != null)
-                resultStat = getObjectPropFieldStat(commonClass);
-            else
-                assert table.propertyClasses.get(field).isFalse();
+                return getObjectFieldStat(defStat, commonClass);
+            assert table.propertyClasses.get(field).isFalse();
         }
-        if(resultStat == null)
-            resultStat = field.type.getTypeStat(false);
-        return resultStat;
+        return defStat.min(field.type.getTypeStat(false));
     }
 
     protected static TableStatKeys getStatKeys(final Table table, final int count) { // для мн-го наследования
         ImMap<KeyField, Integer> statMap = table.getTableKeys().mapValues(new GetValue<Integer, KeyField>() {
             public Integer getMapValue(KeyField value) {
-                return BaseUtils.min(count, getKeyFieldStat(value, table));
+                return getKeyFieldStat(value, count, table);
             }});
         return TableStatKeys.createForTable(count, statMap);
     }
 
-    protected static ImMap<PropertyField, PropStat> getStatProps(final Table table) { // для мн-го наследования
-        final Stat rows = table.getTableStatKeys().getRows();
+    protected static ImMap<PropertyField, PropStat> getStatProps(final Table table, final Stat stat) { // для мн-го наследования
         return table.properties.mapValues(new GetValue<PropStat, PropertyField>() {
             public PropStat getMapValue(PropertyField prop) {
-                return new PropStat(InnerExpr.getAdjustStatValue(rows, getPropFieldStat(prop, table))); 
+                return new PropStat(getPropFieldStat(prop, stat, table)); // , table.propertyClasses.get(prop).getCommonClass(prop)
             }});
+    }
+    
+    protected static ImMap<PropertyField, PropStat> getStatProps(Table table, int count) { // для мн-го наследования
+        return getStatProps(table, new Stat(count));
     }
 
     public boolean isSingle() {
@@ -242,7 +235,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(name);
-        outStream.writeInt(keys.size());
+            outStream.writeInt(keys.size());
         for(KeyField key : keys)
             key.serialize(outStream);
         outStream.writeInt(properties.size());
@@ -301,7 +294,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
-    public static boolean checkClasses(ObjectClassSet classSet, CustomClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
+    public static boolean checkClasses(ObjectClassSet classSet, ValueClass inconsistentTableClass, Result<Boolean> mRereadChange, RegisterClassRemove classRemove, long timestamp) {
         if(!classRemove.removedAfterChecked(inconsistentTableClass, timestamp)) {
             mRereadChange.set(false);
             return false;
@@ -330,7 +323,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 ValueClass inconsistentTableClass;
                 if(inconsistent && (inconsistentTableClass = inconsistentTableClasses.get(field)) != null) { // проверка для correlations
                     Result<Boolean> rereadChange = new Result<Boolean>();
-                    checkClasses = checkClasses(classSet, (CustomClass)inconsistentTableClass, rereadChange, classRemove, timestamp);
+                    checkClasses = checkClasses(classSet, inconsistentTableClass, rereadChange, classRemove, timestamp);
                     if(rereadChange.result)
                         mInconsistentCheckChanges.exclAdd(field);
                 } else {
@@ -609,7 +602,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             ImRevMap<PropertyField, BaseExpr> mapProps = pushProps.keys().mapRevKeys(new GetValue<PropertyField, BaseExpr>() {
                 public PropertyField getMapValue(BaseExpr value) {
                     if(value instanceof IsClassExpr)
-                        value = ((IsClassExpr)value).getInnerJoinExpr();
+                        value = ((IsClassExpr)value).getJoinExpr();
                     return ((Expr) value).property;
                 }
             });
@@ -769,10 +762,6 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }
         public lsfusion.server.data.query.Join<PropertyField> translateRemoveValues(MapValuesTranslate translate) {
             return translateOuter(translate.mapKeys());
-        }
-        
-        public boolean isSession() {
-            return Table.this instanceof SessionTable;
         }
 
         protected boolean isComplex() {

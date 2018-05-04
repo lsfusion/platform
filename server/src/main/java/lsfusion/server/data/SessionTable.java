@@ -41,10 +41,8 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.session.ClassChanges;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
-import lsfusion.server.session.UpdateCurrentClassesSession;
 import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
@@ -60,18 +58,18 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     // nullable, иногда известно, иногда нет
     // assert что statKeys и statProps или одновременно null или одновременно нет
-    private TableStatKeys statKeys;  
-    private ImMap<PropertyField, PropStat> statProps;    
+    private final TableStatKeys statKeys;  
+    private final ImMap<PropertyField, PropStat> statProps;    
 
     public TableStatKeys getTableStatKeys() {
         if(statKeys == null)
-            statKeys = getStatKeys(this, count);
+            return getStatKeys(this, count);
         return statKeys;
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {
         if(statProps == null)
-            statProps = getStatProps(this);
+            return getStatProps(this, count);
         return statProps;
     }
 
@@ -513,24 +511,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         session.updateRecords(new ModifyQuery(this, query.getQuery(), owner, tableOwner));
     }
 
-    public boolean hasClassChanges(ClassChanges classChanges) {
-        for(KeyField key : keys)
-            if(classChanges.hasChanges(classes.getCommonClass(key)))
-                return true;
-
-        for(int i=0,size=propertyClasses.size();i<size;i++) {
-            PropertyField property = propertyClasses.getKey(i);
-            if (classChanges.hasChanges(propertyClasses.getValue(i).getCommonClass(property)))
-                return true;
-        }
-
-        return false;
-    }
-    
-    public SessionTable updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
-        if(!hasClassChanges(session.changes)) // повторная проверка - оптимизация 
-            return this;
-
+    public SessionTable updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
         final ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
         lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
 
@@ -552,9 +533,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         ImMap<PropertyField, ClassWhere<Field>> updatedPropertyClasses = properties.toMap(ClassWhere.<Field>FALSE());
 
         // пока исходим из assertion'а что не null, потом надо будет разные делать
-        SQLSession sql = session.sql;
-        QueryEnvironment env = session.env;
-        for(ImMap<Field, ConcreteObjectClass> diffClasses : ClassChanges.readChangedCurrentObjectClasses(join.getWhere(), MapFact.<Field, Expr>EMPTY(), mapExprs, sql, session.modifier, env, session.baseClass)) {
+        for(ImMap<Field, ConcreteObjectClass> diffClasses : session.readDiffClasses(join.getWhere(), MapFact.<Field, Expr>EMPTY(), mapExprs)) {
             final ImMap<Field, ConcreteClass> result = MapFact.addExcl(diffClasses, mapData);
             updatedClasses = updatedClasses.or(new ClassWhere<>(result.filterIncl(getTableKeys())));
             
@@ -563,11 +542,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return value.or(new ClassWhere<>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
                 }});
         }
-        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, statKeys, statProps).checkClasses(sql, null, nonead, env.getOpOwner());
+        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, statKeys, statProps).checkClasses(session.sql, null, nonead, session.getOwner());
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, int updated, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
-//        assert statKeys == null && statProps == null;
+        assert statKeys == null && statProps == null;
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
             return session.createTemporaryTable(keys, properties, count, null, null, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
@@ -611,7 +590,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public SessionTable updateKeyPropStats(ImMap<KeyField, Integer> updatedKeyStats, ImMap<PropertyField, PropStat> updatedPropStats) {
-//        assert statKeys == null && statProps == null;
+        assert statKeys == null && statProps == null;
         return new SessionTable(name, keys, properties, classes, propertyClasses, count, updatedKeyStats, updatedPropStats);
     }
 
@@ -709,7 +688,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 //        return true;
 //    }
 
-    public final static boolean matGlobalQuery = true; // global expr usage
+    public final static boolean matGlobalQuery = true; // local expr usage
     public final static boolean matLocalQuery = false; // local usage разбить на совсем local + сохр. в change'и
     public final static boolean matGlobalQueryFromTable = false; // global query, но таблицу уже читалась readChangeTable
     public final static boolean matExprLocalQuery = true; // local expr usage, но потом может использоваться для property.getExpr и в сложных запросах

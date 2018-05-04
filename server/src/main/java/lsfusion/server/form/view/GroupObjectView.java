@@ -19,8 +19,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public GridView grid;
     public ShowTypeView showType;
-    public ToolbarView toolbarSystem;
-    public FilterView userFilter;
+    public ToolbarView toolbar;
+    public FilterView filter;
     public CalculationsView calculations;
 
     public Boolean needVerticalScroll = true;
@@ -47,8 +47,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = new GridView(idGen.idShift(), this);
         showType = new ShowTypeView(idGen.idShift(), this);
-        toolbarSystem = new ToolbarView(idGen.idShift());
-        userFilter = new FilterView(idGen.idShift());
+        toolbar = new ToolbarView(idGen.idShift());
+        filter = new FilterView(idGen.idShift());
         calculations = new CalculationsView(idGen.idShift()); 
     }
 
@@ -72,13 +72,13 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     @Override
-    public ComponentView getToolbarSystem() {
-        return toolbarSystem;
+    public ComponentView getToolbar() {
+        return toolbar;
     }
 
     @Override
-    public ComponentView getUserFilter() {
-        return userFilter;
+    public ComponentView getFilter() {
+        return filter;
     }
 
     @Override
@@ -106,8 +106,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         pool.serializeObject(outStream, grid, serializationType);
         pool.serializeObject(outStream, showType, serializationType);
-        pool.serializeObject(outStream, toolbarSystem, serializationType);
-        pool.serializeObject(outStream, userFilter, serializationType);
+        pool.serializeObject(outStream, toolbar, serializationType);
+        pool.serializeObject(outStream, filter, serializationType);
         pool.serializeObject(outStream, calculations, serializationType);
 
         outStream.writeBoolean(entity.isParent != null);
@@ -130,8 +130,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         grid = pool.deserializeObject(inStream);
         showType = pool.deserializeObject(inStream);
-        toolbarSystem = pool.deserializeObject(inStream);
-        userFilter = pool.deserializeObject(inStream);
+        toolbar = pool.deserializeObject(inStream);
+        filter = pool.deserializeObject(inStream);
         calculations = pool.deserializeObject(inStream);
 
         needVerticalScroll = inStream.readBoolean();
@@ -140,8 +140,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public void finalizeAroundInit() {
         grid.finalizeAroundInit();
         showType.finalizeAroundInit();
-        toolbarSystem.finalizeAroundInit();
-        userFilter.finalizeAroundInit();
+        toolbar.finalizeAroundInit();
+        filter.finalizeAroundInit();
         calculations.finalizeAroundInit();
         
         for(ObjectView object : this) 

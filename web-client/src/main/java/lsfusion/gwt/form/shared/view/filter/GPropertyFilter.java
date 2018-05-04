@@ -2,15 +2,12 @@ package lsfusion.gwt.form.shared.view.filter;
 
 import lsfusion.gwt.form.shared.view.GGroupObject;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
 
 public class GPropertyFilter {
     public GGroupObject groupObject;
     public GPropertyDraw property;
     public GFilterValue value;
-    
-    public GGroupObjectValue columnKey;
 
     public boolean negation;
     public GCompare compare;
@@ -20,7 +17,6 @@ public class GPropertyFilter {
         GPropertyFilterDTO filterDTO = new GPropertyFilterDTO();
 
         filterDTO.propertyID = property.ID;
-        filterDTO.columnKey = columnKey;
         filterDTO.filterValue = value.getDTO();
         filterDTO.negation = negation;
         filterDTO.compareByte = compare.serialize();

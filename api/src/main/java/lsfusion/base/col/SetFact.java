@@ -404,12 +404,4 @@ public class SetFact {
         for(T element : add)
             set.remove(element);
     }
-
-    public static <T> boolean intersectJava(Set<T> set, ImSet<T> add) {
-        for(T element : set)
-            if(set.contains(element))
-                return true;
-        return false;
-    }
-    
 }

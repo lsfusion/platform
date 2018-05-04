@@ -278,12 +278,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     }
 
     @Override
-    public GGroupObjectValue getSelectedColumn() {
-        return null; // пока не поддерживаются группы в колонки
-    }
-
-    @Override
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public Object getSelectedValue(GPropertyDraw property) {
         return tree.getSelectedValue(property);
     }
 

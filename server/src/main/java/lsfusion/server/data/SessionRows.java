@@ -28,8 +28,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.RegisterClassRemove;
-import lsfusion.server.session.UpdateCurrentClassesSession;
 
 import java.sql.SQLException;
 
@@ -192,15 +192,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return this;
     }
 
-    @Override
-    public boolean hasClassChanges(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
-        for(int i=0,size=rows.size();i<size;i++)
-            if(session.hasClassChanges(rows.getKey(i)) || session.hasClassChanges(rows.getValue(i)))
-                return true;
-        return false;
-    }
-
-    public SessionRows updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public SessionRows updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
         MExclMap<ImMap<KeyField, DataObject>,ImMap<PropertyField, ObjectValue>> mUpdatedRows = MapFact.mExclMap(rows.size());// exception кидается
         for(int i=0,size=rows.size();i<size;i++)
             mUpdatedRows.exclAdd(session.updateCurrentClasses(rows.getKey(i)), session.updateCurrentClasses(rows.getValue(i)));
@@ -256,7 +248,7 @@ public class SessionRows extends SessionData<SessionRows> {
             ConcreteClass objectClass = dataValue.objectClass;
             if(objectClass instanceof ConcreteObjectClass) {
                 ConcreteObjectClass concreteObjectClass = (ConcreteObjectClass) objectClass;
-                if(Table.checkClasses(concreteObjectClass, (CustomClass)inconsistentTableClass, rereadChange, classRemove, timestamp)) {
+                if(Table.checkClasses(concreteObjectClass, inconsistentTableClass, rereadChange, classRemove, timestamp)) {
                     assert concreteObjectClass instanceof ConcreteCustomClass; // иначе checkClasses не прошел бы
                     result = true;
                 }

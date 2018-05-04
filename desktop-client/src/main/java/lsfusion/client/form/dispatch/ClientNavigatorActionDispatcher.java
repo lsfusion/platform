@@ -10,8 +10,14 @@ import java.rmi.RemoteException;
 public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher {
     private final ClientNavigator clientNavigator;
 
-    public ClientNavigatorActionDispatcher(DispatcherListener dispatcherListener, ClientNavigator clientNavigator) {
-        super(dispatcherListener);
+    public ClientNavigatorActionDispatcher(ClientNavigator clientNavigator) {
+        super(new DispatcherListener() {
+            @Override
+            public void dispatchingEnded() {}
+
+            @Override
+            public void dispatchingPostponedEnded(DispatcherInterface realDispatcher) {}
+        });
         this.clientNavigator = clientNavigator;
     }
 

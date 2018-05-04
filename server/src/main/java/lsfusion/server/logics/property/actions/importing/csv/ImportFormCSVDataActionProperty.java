@@ -23,7 +23,7 @@ public class ImportFormCSVDataActionProperty extends ImportFormPlainDataActionPr
         super(new ValueClass[]{}, formEntity);
         this.noHeader = noHeader;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
-        this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
+        this.separator = separator == null ? ";" : separator;
     }
 
     @Override

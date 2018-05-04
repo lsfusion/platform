@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -28,7 +27,7 @@ import java.util.Map;
 
 public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
 
-    public ImportDefaultDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportDefaultDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
     }
 
@@ -58,10 +57,10 @@ public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
                 return new ImportCSVIterator(file, getSourceColumns(XLSColumnsMapping), properties, null, null, false);
             case "dbf":
                 CustomDbfReader reader = new CustomDbfReader(new ByteArrayInputStream(file), null);
-                return new ImportDBFIterator(reader, getSourceColumns(ImportDBFDataActionProperty.getFieldMapping(reader), 1), new ArrayList<List<String>>(), properties, null, null);
+                return new ImportDBFIterator(reader, getSourceColumns(ImportDBFDataActionProperty.getFieldMapping(reader)), new ArrayList<List<String>>(), properties, null, null);
             case "jdbc":
                 JDBCTable rs = JDBCTable.deserializeJDBC(file);
-                return new ImportTableIterator(rs, getSourceColumns(ImportTableDataActionProperty.getFieldMapping(rs), 1), properties);
+                return new ImportTableIterator(rs, getSourceColumns(ImportTableDataActionProperty.getFieldMapping(rs)), properties);
             case "mdb":
                 List<Map<String, Object>> rows = (List<Map<String, Object>>) BaseUtils.deserializeCustomObject(file);
                 return new ImportMDBIterator(ImportMDBDataActionProperty.getRowsList(rows), getSourceColumns(ImportMDBDataActionProperty.getFieldMapping(rows)));

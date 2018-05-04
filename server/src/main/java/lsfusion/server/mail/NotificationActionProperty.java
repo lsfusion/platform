@@ -97,7 +97,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
                     int interfacesCount = m.group(2).split(",").length;
                     LCP replaceProperty = null;
                     try {
-                        replaceProperty = context.getBL().findProperty(propertyCanonicalName.trim());
+                        replaceProperty = (LCP) context.getBL().findProperty(propertyCanonicalName.trim());
                     } catch (Exception ignored) {
                     }
                     if (replaceProperty != null) {

@@ -14,7 +14,6 @@ import lsfusion.server.classes.ColorClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
@@ -105,7 +104,7 @@ public class ScriptingFormEntity {
         for (int i = 0; i < groupObjects.size(); i++) {
             if (groupObjects.get(i).reportPathPropUsage != null) {
                 // todo [dale]: перейти на formPropertyObject?
-                groups.get(i).reportPathProp = addCalcPropertyObject(new ScriptingLogicsModule.CalcPropertyUsage(groupObjects.get(i).reportPathPropUsage), groupObjects.get(i).reportPathMapping);
+                groups.get(i).reportPathProp = addCalcPropertyObject(groupObjects.get(i).reportPathPropUsage, groupObjects.get(i).reportPathMapping);
             }
         }
         return groups;
@@ -126,8 +125,9 @@ public class ScriptingFormEntity {
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
-                        LCP property = findLCPByPropertyUsage(pUsage, groupObj);
-                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                        LP property = findLP(pUsage, groupObj);
+                        LM.getChecks().checkCalculationProperty(property);
+                        propertyObjects.add(form.addPropertyObject((LCP) property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
                     }
                 }
 
@@ -138,15 +138,17 @@ public class ScriptingFormEntity {
         form.addTreeGroupObject(treeGroup, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
-    private LCP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+    private LP findLP(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
         if (property.classNames != null) {
-            return LM.findLCPByPropertyUsage(property);
+            return LM.findLPByPropertyUsage(property);
         } else {
-            List<ResolveClassSet> classSets = new ArrayList<>();
+            ValueClass[] signature = new ValueClass[group.getOrderObjects().size()];
+            int index = 0;
             for (ObjectEntity obj : group.getOrderObjects()) {
-                classSets.add(obj.baseClass.getResolveSet());
+                signature[index] = obj.baseClass;
+                ++index;
             }
-            return LM.findLCPByNameAndClasses(property.name, property.getSourceName(), classSets);
+            return LM.findLPByNameAndClasses(property.name, property.getSourceName(), signature);
         }
     }
     
@@ -189,6 +191,10 @@ public class ScriptingFormEntity {
         return LM.getNFObjectEntityByName(form, name);
     }
 
+    public MappedProperty getPropertyWithMapping(ScriptingLogicsModule.AbstractPropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.getPropertyWithMapping(form, pUsage, mapping);
+    }
+
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groupObjects = new ArrayList<>();
         for (String groupName : mapping) {
@@ -211,11 +217,11 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    public void setReportPath(GroupObjectEntity groupObject, ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         if (groupObject != null) {
-            groupObject.reportPathProp = property;
+            groupObject.reportPathProp = addCalcPropertyObject(propUsage, mapping);
         } else {
-            form.reportPathProp = property;
+            form.reportPathProp = addCalcPropertyObject(propUsage, mapping);
         }
     }
     
@@ -238,14 +244,14 @@ public class ScriptingFormEntity {
         return scope;
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             List<String> mapping = mappings.get(i);
-            ScriptingLogicsModule.AbstractFormPropertyUsage pDrawUsage = properties.get(i);
+            ScriptingLogicsModule.AbstractPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
             LocalizedString caption = captions.get(i);
 
@@ -254,8 +260,8 @@ public class ScriptingFormEntity {
             
             LP property = null;
             PropertyObjectInterfaceEntity[] objects = null;
-            if(pDrawUsage instanceof ScriptingLogicsModule.PredefinedUsage) {
-                ScriptingLogicsModule.PropertyUsage pUsage = ((ScriptingLogicsModule.PredefinedUsage) pDrawUsage).property;
+            if(pDrawUsage instanceof ScriptingLogicsModule.PropertyUsage) {
+                ScriptingLogicsModule.PropertyUsage pUsage = (ScriptingLogicsModule.PropertyUsage) pDrawUsage;
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
                     ObjectEntity obj = getSingleMappingObject(mapping);
@@ -282,15 +288,13 @@ public class ScriptingFormEntity {
                     objects = new PropertyObjectInterfaceEntity[]{obj};
                 }
             }            
-            if(property == null) {
-                MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, mapping);
+            if(property == null) { 
+                MappedProperty prop = getPropertyWithMapping(pDrawUsage, mapping);
+                if(alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage)
+                    LM.makePropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage)pDrawUsage));
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;
-
-                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage) {
-                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage) pDrawUsage));
-                }
             }
 
             String formPath = points.get(i).toString();
@@ -335,8 +339,8 @@ public class ScriptingFormEntity {
         }
     }
 
-    private <P extends PropertyInterface> void checkPropertyParameters(LP<P, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
+    private void checkPropertyParameters(LP<PropertyInterface, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ImMap<PropertyInterface, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
             @Override
             public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
                 return value.getAndClassSet();
@@ -466,6 +470,20 @@ public class ScriptingFormEntity {
         return checkPropertyDraw(LM, form.getPropertyDraw(name, mapping, version), name);    
     }
 
+    public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        return getPropertyDraw(LM, form, propUsage, mapping, version);
+    }
+
+    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty mappedProp = LM.getPropertyWithMapping(form, pUsage, mapping);
+        PropertyDrawEntity property = form.getNFPropertyDraw(mappedProp.property, version, mappedProp.mapping);
+
+        if (property == null) {
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), PropertyDrawEntity.createSID(pUsage.name, mapping));
+        }
+        return property;
+    }
+
     private static PropertyDrawEntity checkPropertyDraw(ScriptingLogicsModule LM, PropertyDrawEntity property, String sid) throws ScriptingErrorLog.SemanticErrorException {
         if (property == null) {
             LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
@@ -473,10 +491,10 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LCP> properties, List<List<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LP> properties, List<List<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            LCP property = properties.get(i);
+            LCP property = (LCP) properties.get(i);
             checkPropertyParameters(property, getMappingObjectsArray(mappings.get(i)));
 
             form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true), version);
@@ -529,11 +547,11 @@ public class ScriptingFormEntity {
             }
 
             List<String> mapping = info.mapping;
-            LCP<?> property = info.property;
+            LP property = info.property;
 
             checkPropertyParameters(property, getMappingObjectsArray(mapping));
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject((LCP) property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {
@@ -542,8 +560,8 @@ public class ScriptingFormEntity {
         }
     }
 
-    public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LAPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        return form.addPropertyObject(action.getLP(), getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
+    public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+        return form.addPropertyObject((LAP) action.property, getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
     }
 
     public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -559,18 +577,30 @@ public class ScriptingFormEntity {
         }
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return addCalcPropertyObject(LM, form, property, mapping);
     }
 
-    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
-        return form.addPropertyObject((LCP)prop.property, prop.mapping);
+        PropertyObjectEntity propObject = form.addPropertyObject(prop.property, prop.mapping);
+        if (!(propObject instanceof CalcPropertyObjectEntity)) {
+            LM.getErrLog().emitNotCalculationPropertyError(LM.getParser());
+        }
+        return (CalcPropertyObjectEntity) propObject;
     }
 
-    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractActionPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
-        return form.addPropertyObject((LAP)prop.property, prop.mapping);
+    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyObjectEntity propObject = addPropertyObject(property, mapping);
+        if (!(propObject instanceof ActionPropertyObjectEntity)) {
+            LM.getErrLog().emitNotActionPropertyError(LM.getParser());
+        }
+        return (ActionPropertyObjectEntity) propObject;
+    }
+
+    public PropertyObjectEntity addPropertyObject(ScriptingLogicsModule.AbstractPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty prop = getPropertyWithMapping(property, mapping);
+        return form.addPropertyObject(prop.property, prop.mapping);
     }
 
     public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -620,11 +650,11 @@ public class ScriptingFormEntity {
     public static class RegularFilterInfo {
         LocalizedString caption;
         String keystroke;
-        LCP property;
+        LP property;
         List<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LCP property, List<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

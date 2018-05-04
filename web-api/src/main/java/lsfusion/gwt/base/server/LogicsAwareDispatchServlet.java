@@ -34,9 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface> extends AbstractStandardDispatchServlet implements HttpRequestHandler, InitializingBean, BeanNameAware {
     protected final static Logger logger = Logger.getLogger(LogicsAwareDispatchServlet.class);
@@ -59,8 +56,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
     protected Dispatch dispatch;
 
     private ClientCallBackInterface clientCallBack = null;
-    
-    protected Set<String> openTabs = Collections.synchronizedSet(new HashSet<String>());
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
         this.useGETForGwtRPC = useGETForGwtRPC;
@@ -197,18 +192,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return clientCallBack;
     }
 
-    public void tabOpened(String tabSID) {
-        openTabs.add(tabSID);
-    }
-
-    public void tabClosed(String tabSID) throws RemoteException {
-        openTabs.remove(tabSID);
-        if (openTabs.isEmpty()) {
-            invalidate();
-        }
-    }
-
-    public void invalidate() {
+    public void invalidate() throws RemoteException {
         try {
             blProvider.invalidate();
         } catch (Exception ignored) {}

@@ -10,9 +10,7 @@ import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
-import lsfusion.utils.WriteUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.commons.lang.ArrayUtils;
 import org.jdesktop.swingx.SwingXUtilities;
 import org.jfree.ui.ExtensionFileFilter;
 import sun.swing.SwingUtilities2;
@@ -23,7 +21,8 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -647,47 +646,13 @@ public class SwingUtils {
     private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
         if (append) {
             String extension = BaseUtils.getFileExtension(filePath);
-            switch (extension) {
-                case "csv":
-                    if (new File(filePath).exists()) {
-                        Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
-                    } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
-                    }
-                    break;
-                case "xls": {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        HSSFWorkbook sourceWB = new HSSFWorkbook(new ByteArrayInputStream(fileBytes));
-                        HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
-                        WriteUtils.copyHSSFSheets(sourceWB, destinationWB);
-
-                        try (FileOutputStream fos = new FileOutputStream(new File(filePath))) {
-                            destinationWB.write(fos);
-                        }
-
-                    } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
-                    }
-                    break;
-                }
-                case "xlsx":
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        XSSFWorkbook sourceWB = new XSSFWorkbook(new ByteArrayInputStream(fileBytes));
-                        XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
-                        WriteUtils.copyXSSFSheets(sourceWB, destinationWB);
-
-                        try (FileOutputStream fos = new FileOutputStream(new File(filePath))) {
-                            destinationWB.write(fos);
-                        }
-
-                    } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
-                    }
-                    break;
-                default:
-                    throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
+            if (extension.equals("csv")) {
+                if (new File(filePath).exists())
+                    Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
+                else
+                    IOUtils.putFileBytes(new File(filePath), fileBytes);
+            } else {
+                throw new RuntimeException("APPEND is supported only for csv files");
             }
         } else {
             IOUtils.putFileBytes(new File(filePath), fileBytes);

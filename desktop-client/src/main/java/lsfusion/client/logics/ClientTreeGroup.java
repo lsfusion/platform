@@ -26,12 +26,12 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     }
 
     @Override
-    public ClientComponent getToolbarSystem() {
+    public ClientComponent getToolbar() {
         return toolbar;
     }
 
     @Override
-    public ClientComponent getUserFilter() {
+    public ClientComponent getFilter() {
         return filter;
     }
 

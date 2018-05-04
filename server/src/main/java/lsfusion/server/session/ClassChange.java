@@ -35,9 +35,6 @@ public class ClassChange extends ImmutableObject {
         return "W : " + where + ", E : " + expr + ", K : " + key;
     }
 
-    public static ClassChange EMPTY = new ClassChange(new KeyExpr("no"), Where.FALSE, Expr.NULL);    
-    public static ClassChange EMPTY_DELETE = new ClassChange(new KeyExpr("no"), Where.FALSE);    
-    
     public ClassChange(DataObject keyValue, ConcreteObjectClass cls) {
         this.keyValue = keyValue;
         this.propValue = cls.getClassObject();
@@ -51,10 +48,6 @@ public class ClassChange extends ImmutableObject {
         this(key, where, cls.getClassObject().getExpr());
     }
     
-    // delete constructor
-    public ClassChange(KeyExpr key, Where where) {
-        this(key, where, Expr.NULL);
-    }
     public ClassChange(KeyExpr key, Where where, Expr expr) {
         this.key = key;
         this.where = where;
@@ -68,7 +61,7 @@ public class ClassChange extends ImmutableObject {
         if(keyValue !=null)
             return table.modifyRecord(session, keyValue, propValue, type, owner);
         else
-            return table.modifyRows(session, type == Modify.DELETE ? getDeleteQuery() : getQuery(), baseClass, type, queryEnv, updateClasses);
+            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
     }
     
     public boolean containsObject(SQLSession sql, DataObject object, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
@@ -85,11 +78,6 @@ public class ClassChange extends ImmutableObject {
             return new Query<>(MapFact.singletonRev("key", new KeyExpr("key")), Where.TRUE, MapFact.singleton("key", keyValue), MapFact.singleton("value", propValue.getExpr()));
         else
             return new Query<>(MapFact.singletonRev("key", key), expr, "value", where);
-    }
-    @IdentityLazy
-    public Query<String, String> getDeleteQuery() {
-        assert keyValue == null && expr == Expr.NULL;
-        return new Query<>(MapFact.singletonRev("key", key), where);
     }
 
     public Join<String> join(Expr expr) {

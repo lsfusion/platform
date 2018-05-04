@@ -125,12 +125,21 @@ public class ScriptingFormView {
         return view.get(drawEntity);
     }
 
+    public PropertyDrawView getPropertyView(PropertyDrawEntity propertyDraw, Version version) {
+        return view.get(propertyDraw);
+    }
+
     public PropertyDrawView getPropertyView(String name, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, PropertyDrawEntity.createSID(name, mapping), version);
         return view.get(drawEntity);
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public PropertyDrawView getPropertyView(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, pUsage, mapping, version);
+        return view.get(drawEntity);
+    }
+
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return ScriptingFormEntity.addCalcPropertyObject(LM, view.entity, property, mapping);
     }
 

@@ -2,7 +2,6 @@ package jasperapi;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
-import lsfusion.base.IOUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
@@ -17,9 +16,6 @@ import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
 import net.sf.jasperreports.engine.util.JRSwapFile;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
@@ -45,6 +41,7 @@ public class ReportGenerator {
     private Map<String, JasperDesign> designs;
     private Map<String, ClientReportData> data;
     private Map<String, List<List<Object>>> compositeColumnValues;
+    private boolean toExcel;
 
     // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
     // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий,
@@ -599,12 +596,8 @@ public class ReportGenerator {
     }
 
     public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) {
-        exportAndOpen(generationData, type, null, fixBoolean);
-    }
-
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String password, boolean fixBoolean) {
         try {
-            File tempFile = exportToFile(generationData, type, password, fixBoolean);
+            File tempFile = exportToFile(generationData, type, fixBoolean);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -661,20 +654,12 @@ public class ReportGenerator {
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
         return exportToFile(generationData, getExporter(type), type.getExtension(), type.isExcel(), fixBoolean);
     }
-
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String password, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, getExporter(type), type.getExtension(), password, type.isExcel(), fixBoolean);
-    }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
         return exportToFile(generationData, exporter, extension, ignorePagination, false);
     }
 
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, null, ignorePagination, fixBoolean);
-    }
-
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, String password, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
@@ -686,35 +671,7 @@ public class ReportGenerator {
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         exporter.exportReport();
 
-        return protectFile(tempFile, extension, password);
-    }
-
-    private static File protectFile(File tempFile, String extension, String password) throws IOException {
-        if(password != null) {
-            switch (extension) {
-                case "xls": {
-                    HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(IOUtils.getFileBytes(tempFile)));
-                    for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
-                        it.next().protectSheet(password);
-                    }
-                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                        wb.write(fos);
-                    }
-                    break;
-                }
-                case "xlsx": {
-                    XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(IOUtils.getFileBytes(tempFile)));
-                    for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
-                        it.next().protectSheet(password);
-                    }
-                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                        wb.write(fos);
-                    }
-                    break;
-                }
-            }
-        }
-        return tempFile;
+        return tempFile;    
     }
 
     public static byte[] exportToExcelByteArray(ReportGenerationData generationData, FormPrintType type) {

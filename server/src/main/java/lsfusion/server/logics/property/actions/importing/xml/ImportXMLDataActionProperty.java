@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.importing.xml;
 
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -20,7 +19,7 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     String root;
     boolean attr;
 
-    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, boolean attr, BaseLogicsModule baseLM) {
+    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, List<LCP> properties, boolean hasListOption, boolean attr, BaseLogicsModule baseLM) {
         super(paramsCount, ids, properties, hasListOption, baseLM);
         this.attr = attr;
     }

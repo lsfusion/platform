@@ -136,7 +136,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return join(mapExprs).getWhere();
     }
 
-    protected ModifyResult aspectModify(SessionData<?> newTable, Boolean dataChanged) {
+    private ModifyResult aspectModify(SessionData<?> newTable, Boolean dataChanged) {
         boolean sourceChanged = !BaseUtils.hashEquals(table, newTable);
         table = newTable;
         if(sourceChanged) // теоретический при этом может быть не dataChanged (что часто баг но не всегда, например при добавлении полей)
@@ -231,9 +231,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     // добавляет ряды которых не было в таблице, или modify'ит
     public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
-        if(query.isEmpty()) // оптимизация
-            return ModifyResult.NO;
-
         Result<Boolean> changed = new Result<>();
         try {
             return aspectModify(table.modifyRows(session, type == Modify.DELETE ? query.map(mapKeys,  MapFact.<PropertyField, V>EMPTYREV()) : fullMap(query), baseClass, type, env, this, changed, updateClasses), changed.result);
@@ -262,10 +259,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     public ImCol<ImMap<V, Object>> read(DataSession session, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
         return read(mapValues, session.sql, session.env, MapFact.<V, Boolean>EMPTYORDER(), 0).values();
-    }
-
-    public ImCol<ImMap<V, Object>> read(SQLSession sql, QueryEnvironment env, ImMap<K, DataObject> mapValues) throws SQLException, SQLHandledException {
-        return read(mapValues, sql, env, MapFact.<V, Boolean>EMPTYORDER(), 0).values();
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> read(DataSession session) throws SQLException, SQLHandledException {
@@ -338,23 +331,5 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     @Override
     public String toString() {
         return "SU@" + System.identityHashCode(this) + " " + table.toString() + " " + getCount() + " " + debugInfo;
-    }
-
-    // modifier параметр избыточен (его можно получать из classChanges, но для оптимизации не будем его пересоздавать)
-    public ModifyResult updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
-        try {
-            if(!table.hasClassChanges(session)) // оптимизация, проверка что хоть один session.changes есть 
-                return ModifyResult.NO;
-
-            SessionData<?> newTable = table;
-            if (this instanceof PropertyChangeTableUsage && hasCorrelations()) // тут делаем по аналогии с updateCurrentClasses (то есть берем expr с учетом modifier предполагая что посли применения у коррелирующего свойства будет такое значение), хотя по идее можно было бы просто после сохранения вызывать ??? (но тут как и сверху неплохо бы проверять только измененные !!!)
-                newTable = ((PropertyChangeTableUsage)this).updateCorrelations(newTable, session);
-
-            newTable = newTable.updateCurrentClasses(session);
-            return aspectModify(newTable, false); // changed не нужен так как при изменении классов изменится и source
-        } catch (Throwable t) {
-            aspectException(session.sql, session.env.getOpOwner());
-            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
-        }
     }
 }

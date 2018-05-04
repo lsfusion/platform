@@ -11,6 +11,7 @@ import java.io.IOException;
 public class GridView extends ComponentView {
 
     public boolean tabVertical = false;
+    public boolean autoHide = false;
     private boolean quickSearch = false;
     public int headerHeight = -1;
 
@@ -47,6 +48,7 @@ public class GridView extends ComponentView {
         super.customSerialize(pool, outStream, serializationType);
 
         outStream.writeBoolean(tabVertical);
+        outStream.writeBoolean(autoHide);
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
@@ -58,6 +60,7 @@ public class GridView extends ComponentView {
         super.customDeserialize(pool, inStream);
 
         tabVertical = inStream.readBoolean();
+        autoHide = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
 

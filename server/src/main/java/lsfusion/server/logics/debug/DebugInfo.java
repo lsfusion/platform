@@ -3,7 +3,7 @@ package lsfusion.server.logics.debug;
 import lsfusion.base.Pair;
 
 public class DebugInfo {
-
+    
     public static class DebugPoint {
         public final String moduleName;
         public final int line;
@@ -29,7 +29,7 @@ public class DebugInfo {
         }
     }
 
-    private DebugPoint point;
+    protected DebugPoint point;
     
     private boolean needToCreateDelegate = true;
     private Integer debuggerLine = null;
@@ -77,9 +77,4 @@ public class DebugInfo {
     public String getModuleName() {
         return point.moduleName;
     }
-
-    public DebugPoint getPoint() {
-        return point;
-    }
-    
 }

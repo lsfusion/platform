@@ -53,7 +53,6 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -271,6 +270,25 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
+    public boolean checkPropertyViewPermission(String userName, String propertySID) {
+        return securityManager.checkPropertyViewPermission(userName, propertySID);
+    }
+
+    @Override
+    public boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException {
+        return securityManager.checkPropertyChangePermission(userName, propertySID);
+    }
+
+    @Override
+    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
+        return securityManager.checkDefaultViewPermission(propertySid);
+    }
+
+    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
+        return securityManager.checkNavigatorElementExportPermission(canonicalName);
+    }
+
+    @Override
     public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
         NavigatorElement element = businessLogics.findNavigatorElement(navigatorElementCanonicalName);
         if (element != null && element instanceof NavigatorForm) {
@@ -290,7 +308,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public byte[] readFile(String canonicalName, String... params) throws RemoteException {
-        LCP<PropertyInterface> property = businessLogics.findProperty(canonicalName);
+        LCP<PropertyInterface> property = (LCP) businessLogics.findProperty(canonicalName);
         if (property != null) {
             if (!(property.property.getType() instanceof FileClass)) {
                 throw new RuntimeException("Property type is distinct from FileClass");
@@ -320,12 +338,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList;
         try {
-            LAP property = businessLogics.findActionByCompoundName(action);
+            LAP property = (LAP) businessLogics.findPropertyByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, charset);
+                returnList = executeExternal(property, returnCanonicalNames, params);
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -336,11 +354,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
-                String script = StringClass.text.parseHTTP(paramScript, charset);
+                String script = StringClass.text.parse(paramScript);
                 if (action) {
                     //оборачиваем в run без параметров
                     script = "run() = {" + script + ";\n};";
@@ -350,7 +368,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 String runName = module.getName() + ".run";
                 LAP<?> runAction = module.findAction(runName);
                 if (runAction != null) {
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
+                    returnList = executeExternal(runAction, returnCanonicalNames, params);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -362,12 +380,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> read(String property, Object[] params, Charset charset) {
+    public List<Object> read(String property, Object[] params) {
         try {
-            LCP lcp = businessLogics.findPropertyByCompoundName(property);
+            LCP lcp = (LCP) businessLogics.findPropertyByCompoundName(property);
             if (lcp != null) {
                 try (DataSession session = createSession()) {
-                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params, charset));
+                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params));
                 }
             } else
                 throw new RuntimeException(String.format("Property %s was not found", property));
@@ -377,16 +395,16 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
     }
 
-    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
+    private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params) throws SQLException, ParseException, SQLHandledException, IOException {
         List<Object> returnList = new ArrayList<>();
         try (DataSession session = createSession()) {
             ExecutionStack stack = getStack();
 
-            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params, charset));
+            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params));
 
             if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
                 for (String returnCanonicalName : returnCanonicalNames) {
-                    LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
+                    LCP returnProperty = (LCP) businessLogics.findProperty(returnCanonicalName);
                     if (returnProperty != null) {
                         returnList.addAll(readReturnProperty(session, returnProperty));
                     } else
@@ -427,7 +445,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         }
         if (!jdbcSingleRow)
-            returnList.add(returnType.formatHTTP(returnValue, null));
+            returnList.add(returnType.format(returnValue));
         return returnList;
     }
 

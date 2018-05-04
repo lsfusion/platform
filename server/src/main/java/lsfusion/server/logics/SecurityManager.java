@@ -493,7 +493,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             for (ImMap<String, Object> valueMap : propValues) {
                 String cn = ((String) valueMap.get("cn")).trim();
                 try {
-                    LP<?, ?> prop = businessLogics.findPropertyElseAction(cn);
+                    LP<?, ?> prop = businessLogics.findProperty(cn);
                     if (prop != null) {
                         if (valueMap.get("fullForbidView") != null)
                             policy.property.view.deny(prop);
@@ -685,6 +685,61 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-    }    
+    }
+
+    public boolean checkPropertyViewPermission(String userName, String propertySID) {
+        boolean permitView = false;
+        try {
+            User user = readUserWithSecurityPolicy(userName, createSession());
+            if (user != null) {
+                SecurityPolicy policy = user.getSecurityPolicy();
+                permitView = policy.property.view.checkPermission(businessLogics.findProperty(propertySID).property);
+            }
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+        return permitView;
+    }
+
+    public boolean checkPropertyChangePermission(String userName, String propertySID) {
+        boolean permitChange = false;
+        try {
+            User user = readUserWithSecurityPolicy(userName, createSession());
+            if (user != null) {
+                SecurityPolicy policy = user.getSecurityPolicy();
+                permitChange = policy.property.change.checkPermission(businessLogics.findProperty(propertySID).property);
+            }
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+        return permitChange;
+    }
+
+    public boolean checkDefaultViewPermission(String propertySid) {
+        Property property = businessLogics.findProperty(propertySid).property;
+        if (defaultPolicy.property.view.checkPermission(property)) {
+            try {
+                DataSession session = createSession();
+                ObjectValue propertyObject = reflectionLM.propertyCanonicalName.readClasses(session, new DataObject(propertySid));
+                return securityLM.permitViewProperty.read(session, propertyObject) != null;
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return false;
+    }
+
+    public boolean checkNavigatorElementExportPermission(String canonicalName) {
+        try {
+            DataSession session = createSession();
+            ObjectValue ne = reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(canonicalName));
+            if (!(ne instanceof DataObject)) {
+                throw new RuntimeException(localize("{form.navigator.form.with.id.not.found}"));
+            }
+            return securityLM.permitExportNavigatorElement.read(session, ne) != null;
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
 }
 

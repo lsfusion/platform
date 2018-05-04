@@ -17,8 +17,14 @@ import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
+import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
+import lsfusion.gwt.form.client.form.ui.layout.TabbedContainerView;
 import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
+import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.form.shared.view.GContainer;
+import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
@@ -33,10 +39,8 @@ public abstract class DefaultFormsController implements FormsController {
     private List<String> formsList = new ArrayList<>();
     private List<GFormController> gFormControllersList = new ArrayList<>();
     private Map<String, GFormController> gFormControllersMap = new HashMap<>();
-    private final String tabSID;
 
-    public DefaultFormsController(String tabSID) {
-        this.tabSID = tabSID;
+    public DefaultFormsController() {
         tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
         tabsPanel.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -92,7 +96,7 @@ public abstract class DefaultFormsController implements FormsController {
 
             final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable(), formSID);
 
-            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null, tabSID), new ErrorHandlingCallback<GetFormResult>() {
+            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
                 @Override
                 public void failure(Throwable caught) {
                     if (dockable != null) {

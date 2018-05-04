@@ -1,15 +1,15 @@
 package lsfusion.server.session;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.ValueClass;
 
 public interface RegisterClassRemove {
 
     // должен быть после записи изменений
-    void removed(ImSet<CustomClass> classes, long timestamp);
+    void removed(ImSet<ValueClass> classes, long timestamp);
 
     // должен быть до чтения изменений
     void checked(long timestamp);
     
-    boolean removedAfterChecked(CustomClass checkClass, long timestamp); // timestamp - текущий, особо не используется
+    boolean removedAfterChecked(ValueClass checkClass, long timestamp); // timestamp - текущий, особо не используется
 }

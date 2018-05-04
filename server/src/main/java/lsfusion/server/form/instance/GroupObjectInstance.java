@@ -14,6 +14,7 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.PropertyReadType;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;
@@ -518,13 +519,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public NoPropertyTableUsage<ObjectInstance> expandTable = null;
 
     // так как в updateKeys мы не drop'аем таблицу (чтобы не collapse'илось дерево) надо обновлять классы
-    public void updateExpandClasses(final UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+    public void updateExpandClasses(final DataSession session) throws SQLException, SQLHandledException {
         if(expandTable != null) {
             final SessionData sessionData = expandTable.saveData();
             expandTable.updateCurrentClasses(session);
             session.addRollbackInfo(new SQLRunnable() {
                 public void run() throws SQLException, SQLHandledException {
-                    OperationOwner owner = session.env.getOpOwner();
+                    OperationOwner owner = session.getOwner();
                     expandTable.drop(session.sql, owner);
                     expandTable.rollData(session.sql, sessionData, owner);
                 }
@@ -699,6 +700,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if (keyTable == null) // в общем то только для hidden'а но может и потом понадобиться
             keyTable = createKeyTable("upktable-" + System.identityHashCode(execEnv));
 
+        if (curClassView.isHidden()) return null;
         boolean isGrid = curClassView.isGrid();
 
         // если изменились класс грида или представление

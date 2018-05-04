@@ -3,6 +3,8 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -45,6 +47,17 @@ public class StringClass extends DataClass<String> {
         return "'" + value + "'";
     }
 
+    @Override
+    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
+        if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded) { // по идее не актуально, так как SessionData.castTypes должен быть сделан, везде по синтаксису  
+            String string = (String) object;
+            String result = BaseUtils.rtrim(string);
+            ServerLoggers.assertLog(result.length() == string.length(), "SHOULD BE TRIMMED BY CASTTYPES");
+            return result;
+        }
+        return super.castValue(object, typeFrom, syntax);
+    }
+    
     public String getRTrim(String value) {
         assert blankPadded;
         return "RTRIM(" + value + ")";
@@ -86,7 +99,7 @@ public class StringClass extends DataClass<String> {
     }
 
     protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
-        this(LocalizedString.create(caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}" + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "")), blankPadded, length, caseInsensitive, rich);
+        this(LocalizedString.create(caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}" + (blankPadded ? " (bp)" : "") + (blankPadded ? " (rich)" : "")), blankPadded, length, caseInsensitive, rich);
     }
 
     protected StringClass(LocalizedString caption, boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
@@ -249,6 +262,10 @@ public class StringClass extends DataClass<String> {
         if(!blankPadded) // оптимизация
             return this;
         return get(true, caseInsensitive, rich, length);
+    }
+
+    public String toString() {
+        return ThreadLocalContext.localize(LocalizedString.create((caseInsensitive ? "{classes.insensitive.string}" : "{classes.string}") + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "") + " " + length));
     }
 
     public static StringClass[] getArray(int... lengths) {

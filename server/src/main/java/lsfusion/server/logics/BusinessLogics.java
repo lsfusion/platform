@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
@@ -695,7 +696,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     CustomClass customClass = (CustomClass) valueClass;
                     MSet<CalcProperty> mAggrProps = classAggrProps.get(customClass);
                     if(mAggrProps == null) {
-                        mAggrProps = SetFact.mSet();
+                        mAggrProps = SetFact.<CalcProperty>mSet();
                         classAggrProps.exclAdd(customClass, mAggrProps);
                     }
                     mAggrProps.add(property);
@@ -790,12 +791,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (changes.containsKey(canonicalName)) {
                 canonicalName = changes.get(canonicalName);
             }
-            LCP<?> lcp = findProperty(canonicalName);
-            if(lcp != null) { // temporary for migration, так как могут на действиях стоять
+            LP lcp = findProperty(canonicalName);
+            if(lcp instanceof LCP) { // temporary for migration, так как могут на действиях стоять
                 Integer statsProperty = (Integer) values.get("overStatsProperty");
                 statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
                 if (statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) {
-                    LM.makeUserLoggable(systemEventsLM, lcp);
+                    LM.makeUserLoggable(systemEventsLM, (LCP)lcp);
                 }
             }            
         }
@@ -822,7 +823,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP<?> prop = findProperty(values.get("CNProperty").toString().trim());
+            LCP<?> prop = (LCP) findProperty(values.get("CNProperty").toString().trim());
             if(prop != null) {
                 prop.property.reflectionNotNull = true;
                 LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
@@ -855,7 +856,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             String cnProperty = trim((String) entry.get("CNProperty"));
             if(cnProperty != null) {
-                LCP prop = findProperty(cnProperty);
+                LCP prop = (LCP) findProperty(cnProperty);
 
                 boolean isDerivedChange = entry.get("isDerivedChange") != null;
                 String subject = trim((String) entry.get("subject"));
@@ -1061,7 +1062,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), LocalizedString.create(propertyCN, false)));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
-            LM.makeActionPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
+            LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             setupPolicyAction.checkReadOnly = false;
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
@@ -1069,10 +1070,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void prereadCaches() {
-        getApplyEvents(ApplyFilter.ONLYCHECK);
-        getApplyEvents(ApplyFilter.NO);
-        if(Settings.get().isEnableApplySingleStored())
-            getOrderMapSingleApplyDepends(ApplyFilter.NO);
+        getAppliedProperties(ApplyFilter.ONLYCHECK);
+        getAppliedProperties(ApplyFilter.NO);
+        getOrderMapSingleApplyDepends(ApplyFilter.NO);
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
@@ -1115,7 +1115,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Collection<String> calculateAllCustomReports() {
-        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+".*\\.jrxml)");
+        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+"/.*\\.jrxml)");
         return ResourceUtils.getResources(pattern);
     }
     
@@ -1154,7 +1154,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
             for (LogicsModule module : namespaceToModule.getValue()) {
-                for (LP<?, ?> property : Iterables.concat(module.getNamedProperties(), module.getNamedActions())) {
+                for (LP<?, ?> property : module.getNamedPropertiesAndActions()) {
                     String propertyName = property.property.getName();
                     
                     if (result.get(propertyName) == null) {
@@ -1464,7 +1464,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (int i = 0; i < order.size(); i++) { // тут нужн
             Property orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
-                HMap<Property, LinkType> innerComponentOutTypes = new HMap<>(LinkType.<Property>minLinkAdd());                
+                HMap<Property, LinkType> innerComponentOutTypes = new HMap<Property, LinkType>(LinkType.<Property>minLinkAdd());                
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
                 Property minProperty = findMinProperty(innerComponentOutTypes);
@@ -1649,7 +1649,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public Graph<ActionProperty> getRecalculateFollowsGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+        return BaseUtils.<Graph<ActionProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
             public boolean contains(Property element) {
                 return element instanceof ActionProperty && ((ActionProperty) element).hasResolve();
             }
@@ -1658,7 +1658,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public Graph<AggregateProperty> getAggregateStoredGraph() {
-        return BaseUtils.immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
+        return BaseUtils.<Graph<AggregateProperty>>immutableCast(getPropertyGraph().filterGraph(new SFunctionSet<Property>() {
             public boolean contains(Property element) {
                 return element instanceof AggregateProperty && ((AggregateProperty) element).isStored();
             }
@@ -1855,98 +1855,102 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter increment) {
+    public ImOrderMap<Object, SessionEnvEvent> getAppliedProperties(ApplyFilter increment) {
         // здесь нужно вернуть список stored или тех кто
         ImOrderSet<Property> list = getPropertyListWithGraph(increment).first;
-        MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
+        MOrderExclMap<Object, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (Property property : list) {
-            ApplyGlobalEvent applyEvent = property.getApplyEvent();
-            if(applyEvent != null)
-                mResult.exclAdd(applyEvent, applyEvent.getSessionEnv());
+            if (property instanceof CalcProperty && ((CalcProperty) property).isStored())
+                mResult.exclAdd(property, SessionEnvEvent.ALWAYS);
+            SessionEnvEvent sessionEnv;
+            if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
+                mResult.exclAdd(property, sessionEnv);
         }
         return mResult.immutableOrder();
     }
 
-    public ImOrderSet<ApplyGlobalEvent> getApplyEvents(DataSession session) {
-        return session.filterOrderEnv(getApplyEvents(session.applyFilter));
-    }
-    
-    private static ImSet<CalcProperty> getSingleApplyDepends(CalcProperty<?> fill, Result<Boolean> canBeOutOfDepends, ApplySingleEvent event) {
-        ImSet<CalcProperty> depends = fill.getDepends(false);// вычисляемые события отдельно отрабатываются (собственно обрабатываются как обычные события)
-
-        if (fill instanceof DataProperty) { // отдельно обрабатывается так как в getDepends передается false (так как в локальных событиях удаление это скорее вычисляемое событие, а в глобальных - императивное, приходится делать такой хак)
-             assert depends.isEmpty();
-             canBeOutOfDepends.set(true); // могут не быть в propertyList
-             return ((DataProperty) fill).getSingleApplyDroppedIsClassProps();
-        }
-        if (fill instanceof IsClassProperty) {
-             assert depends.isEmpty();
-             canBeOutOfDepends.set(true); // могут не быть в propertyList
-             return ((IsClassProperty) fill).getSingleApplyDroppedIsClassProps();
-        }
-        if (fill instanceof ObjectClassProperty) {
-             assert depends.isEmpty();
-             canBeOutOfDepends.set(true); // могут не быть в propertyList
-             return ((ObjectClassProperty) fill).getSingleApplyDroppedIsClassProps();
-        }
-        return depends;
+    public ImOrderSet<Object> getAppliedProperties(DataSession session) {
+        return session.filterOrderEnv(getAppliedProperties(session.applyFilter));
     }
 
-    private static void fillSingleApplyDependFrom(CalcProperty<?> prop, ApplySingleEvent applied, SessionEnvEvent appliedSet, MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
-        ApplyCalcEvent applyEvent = prop.getApplyEvent();
-        if (applyEvent != null && !applyEvent.equals(applied)) {
-            MOrderMap<ApplySingleEvent, SessionEnvEvent> fillDepends = mapDepends.get(applyEvent);
-            
-            boolean propCanBeOutOfDepends = canBeOutOfDepends;
-            if(prop instanceof ChangedProperty && (applied instanceof ApplyStoredEvent)) // applied может идти до DROPPED(класс), но в этом и смысл, так как если он идет до то удаление уже прошло и это удаление "фейковое" (не влияет на этот applied)
-                propCanBeOutOfDepends = true;
-            
-            if(!(propCanBeOutOfDepends && fillDepends==null))
+    private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
+        if (!fill.equals(applied) && fill.isSingleApplyStored()) {
+            MMap<CalcProperty, SessionEnvEvent> fillDepends = mapDepends.get(fill);
+            if(!canBeOutOfDepends || fillDepends!=null)
                 fillDepends.add(applied, appliedSet);
-        } else {
-            Result<Boolean> rCanBeOutOfDepends = new Result<>(canBeOutOfDepends);
-            for (CalcProperty depend : getSingleApplyDepends(prop, rCanBeOutOfDepends, applied))
-                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, rCanBeOutOfDepends.result);
+        } else
+            for (CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
+                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, canBeOutOfDepends);
+    }
+
+    private ImMap<CalcProperty, ImMap<CalcProperty, SessionEnvEvent>> getMapSingleApplyDepends(ApplyFilter increment) {
+
+        ImOrderMap<Object, SessionEnvEvent> appliedProps = getAppliedProperties(increment);
+
+        // нам нужны будут сами persistent свойства + prev'ы у action'ов
+        MOrderExclSet<CalcProperty> mSingleAppliedStored = SetFact.mOrderExclSet();
+        MMap<OldProperty, SessionEnvEvent> mSingleAppliedOld = MapFact.mMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
+        for(int i=0,size=appliedProps.size();i<size;i++) {
+            Object property = appliedProps.getKey(i);
+            if(property instanceof ActionPropertyValueImplement || property instanceof ActionProperty) {
+                ActionProperty actionProperty = property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty)property;
+                SessionEnvEvent sessionEnv;
+                if ((sessionEnv = actionProperty.getSessionEnv(SystemEvent.APPLY))!=null)
+                    mSingleAppliedOld.addAll(actionProperty.getOldDepends().toMap(sessionEnv));
+            } else {
+                if (property instanceof DataProperty && ((DataProperty) property).event != null)
+                    mSingleAppliedOld.addAll(((DataProperty) property).event.getOldDepends().toMap(SessionEnvEvent.ALWAYS));
+                if(((CalcProperty)property).isEnabledSingleApply())
+                    mSingleAppliedStored.exclAdd((CalcProperty) property);
+            }
+        }
+        ImOrderSet<CalcProperty> singleAppliedStored = mSingleAppliedStored.immutableOrder();
+        ImMap<OldProperty, SessionEnvEvent> singleAppliedOld = mSingleAppliedOld.immutable();
+
+        MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
+        for (CalcProperty property : singleAppliedStored) {
+            mMapDepends.exclAdd(property, MapFact.mMap(SessionEnvEvent.<CalcProperty>mergeSessionEnv()));
+            fillSingleApplyDependFrom(property, property, SessionEnvEvent.ALWAYS, mMapDepends, false);
+        }
+
+        for (int i=0,size= singleAppliedOld.size();i<size;i++) {
+            OldProperty old = singleAppliedOld.getKey(i);
+            fillSingleApplyDependFrom(old.property, old, singleAppliedOld.getValue(i), mMapDepends, increment != ApplyFilter.NO);
+        }
+
+        return mMapDepends.immutable().mapValues(new GetValue<ImMap<CalcProperty, SessionEnvEvent>, MMap<CalcProperty, SessionEnvEvent>>() {
+            public ImMap<CalcProperty, SessionEnvEvent> getMapValue(MMap<CalcProperty, SessionEnvEvent> value) {
+                return value.immutable();
+            }});
+    }
+
+    private void fillSingleApplyDependFrom(ImMap<CalcProperty, SessionEnvEvent> singleApplied, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends) {
+        for (int i=0,size=singleApplied.size();i<size;i++) {
+            CalcProperty property = singleApplied.getKey(i);
+            fillSingleApplyDependFrom(property, property, singleApplied.getValue(i), mMapDepends, false);
         }
     }
 
     @IdentityLazy
-    private ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter increment) {
-        assert Settings.get().isEnableApplySingleStored();
-
-        ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(increment);
-
-        // нам нужны будут сами persistent свойства + prev'ы у action'ов
-        boolean canBeOutOfDepends = increment != ApplyFilter.NO;
-        MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
-        MAddMap<OldProperty, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
-        for(int i = 0, size = applyEvents.size(); i<size; i++) {
-            ApplyGlobalEvent applyEvent = applyEvents.getKey(i);
-            SessionEnvEvent sessionEnv = applyEvents.getValue(i);
-            singleAppliedOld.addAll(applyEvent.getEventOldDepends().toMap(sessionEnv));
-            
-            if(applyEvent instanceof ApplyCalcEvent) { // сначала классы и stored обрабатываем
-                mMapDepends.exclAdd((ApplyCalcEvent) applyEvent, MapFact.mOrderMap(SessionEnvEvent.<ApplySingleEvent>mergeSessionEnv()));
-                if(applyEvent instanceof ApplyStoredEvent) { // так как бежим в нужном порядке, то и stored будут заполняться в нужном порядке (так как он соответствует порядку depends)
-                    ApplyStoredEvent applyStoredEvent = (ApplyStoredEvent) applyEvent;
-                    fillSingleApplyDependFrom(applyStoredEvent.property, applyStoredEvent, sessionEnv, mMapDepends, canBeOutOfDepends);
-                }
+    private ImMap<CalcProperty, ImOrderMap<CalcProperty, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter filter) {
+        final ImRevMap<Property, Integer> indexMap = getPropertyList().mapOrderRevValues(new GetIndex<Integer>() {
+            public Integer getMapValue(int i) {
+                return i;
             }
-        }
-        for (int i=0,size= singleAppliedOld.size();i<size;i++) { // old'ы по идее не важно в каком порядке будут (главное что stored до)
-            OldProperty old = singleAppliedOld.getKey(i);
-            fillSingleApplyDependFrom(old.property, new ApplyUpdatePrevEvent(old), singleAppliedOld.getValue(i), mMapDepends, canBeOutOfDepends);
-        }
-
-        return mMapDepends.immutable().mapValues(new GetValue<ImOrderMap<ApplySingleEvent, SessionEnvEvent>, MOrderMap<ApplySingleEvent, SessionEnvEvent>>() {
-            public ImOrderMap<ApplySingleEvent, SessionEnvEvent> getMapValue(MOrderMap<ApplySingleEvent, SessionEnvEvent> value) {
-                return value.immutableOrder();
-            }});
+        });
+        return getMapSingleApplyDepends(filter).mapValues(new GetValue<ImOrderMap<CalcProperty, SessionEnvEvent>, ImMap<CalcProperty, SessionEnvEvent>>() {
+            public ImOrderMap<CalcProperty, SessionEnvEvent> getMapValue(ImMap<CalcProperty, SessionEnvEvent> depends) {
+                ImOrderSet<CalcProperty> dependList = indexMap.filterInclRev(depends.keys()).reverse().sort().valuesList().toOrderExclSet();
+                assert dependList.size() == depends.size();
+                return dependList.mapOrderMap(depends);
+            }
+        });
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session) {
-        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter).get(event));
+    public ImOrderSet<CalcProperty> getSingleApplyDependFrom(CalcProperty property, DataSession session) {
+        assert property.isSingleApplyStored();
+        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter).get(property));
     }
 
     @IdentityLazy
@@ -2228,8 +2232,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return formatMessageList(messageList);
     }
 
-    public LCP findSafeProperty(String canonicalName) {
-        LCP lp = null;
+    public LP findSafeProperty(String canonicalName) {
+        LP lp = null;
         try {
             lp = findProperty(canonicalName);
         } catch (Exception e) {
@@ -2237,27 +2241,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return lp;
     }
 
-    public LP<?,?> findPropertyElseAction(String canonicalName) {
-        LP<?,?> property = findProperty(canonicalName);
-        if(property == null)
-            property = findAction(canonicalName);
-        return property;
+    public LP[] findProperties(String... canonicalNames) {
+        LP[] result = new LP[canonicalNames.length];
+        for (int i = 0; i < canonicalNames.length; i++) {
+            result[i] = findProperty(canonicalNames[i]);
+        }
+        return result;
     }
-    
-    public LCP<?> findProperty(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLCPFinder(false));
+
+    public LP<?, ?> findProperty(String canonicalName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName);
     }
-    
-    public LAP<?> findAction(String canonicalName) {
-        return BusinessLogicsResolvingUtils.findPropertyByCanonicalName(this, canonicalName, new ModuleEqualLAPFinder());
+
+    public LP<?, ?> findProperty(String namespace, String name, ValueClass... classes) {
+        return BusinessLogicsResolvingUtils.findProperty(this, namespace, name, ClassCanonicalNameUtils.getResolveList(classes));
     }
-    
-    public LAP<?> findActionByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLAPFinder());
-    }
-    
-    public LCP<?> findPropertyByCompoundName(String compoundName) {
-        return BusinessLogicsResolvingUtils.findLPByCompoundName(this, compoundName, new ModuleLCPFinder());
+
+    public LP<?, ?> findPropertyByCompoundName(String compoundName) {
+        return BusinessLogicsResolvingUtils.findPropertyByCompoundName(this, compoundName);
     }
 
     public CustomClass findClassByCompoundName(String compoundName) {
@@ -2327,7 +2328,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(FormEntity entry : logicsModule.getNamedForms())
+            for(FormEntity entry : logicsModule.getModuleForms())
                 mResult.exclAdd(entry);
         }
         return mResult.immutable();
@@ -2355,7 +2356,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // todo [dale]: Может быть можно заменить на поиск по каноническому имени
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
-            for (FormEntity element : logicsModule.getNamedForms()) {
+            for (FormEntity element : logicsModule.getModuleForms()) {
                 if (formSID.equals(element.getSID())) {
                     return element;
                 }
@@ -2364,10 +2365,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public void checkForDuplicateElements() {
-        new DuplicateSystemElementsChecker(logicModules).check();
+    public <C, P> LogicsModule getModuleContainingElement(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
+        List<LogicsModule> modules = namespaceToModules.get(namespaceName);
+        if (modules != null) {
+            for (LogicsModule module : modules) {
+                if (!finder.resolveInModule(module, name, param).isEmpty()) {
+                    return module;
+                }
+            }
+        }
+        return null;
     }
-    
+
     public DBManager getDbManager() {
         return ThreadLocalContext.getDbManager();
     }

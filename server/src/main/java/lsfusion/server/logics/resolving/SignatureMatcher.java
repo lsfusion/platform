@@ -50,7 +50,7 @@ public class SignatureMatcher {
         return true;
     }
  
-    public static boolean isClassesSoftCompatible(ResolveClassSet interfaceClass, ResolveClassSet paramClass) {
+    private static boolean isClassesSoftCompatible(ResolveClassSet interfaceClass, ResolveClassSet paramClass) {
         return interfaceClass == null || paramClass == null || !(interfaceClass.and(paramClass)).isEmpty(); 
     }
 

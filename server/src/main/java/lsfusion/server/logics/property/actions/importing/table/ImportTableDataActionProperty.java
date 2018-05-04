@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.importing.table;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ImportTableDataActionProperty extends ImportDataActionProperty {
-    public ImportTableDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportTableDataActionProperty(List<String> ids, List<LCP> properties, BaseLogicsModule baseLM) {
         super(1, ids, properties, baseLM);
     }
 

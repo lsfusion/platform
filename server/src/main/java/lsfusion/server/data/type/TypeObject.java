@@ -22,7 +22,7 @@ public class TypeObject extends AbstractParseInterface {
     }
 
     public TypeObject(Object object, Type type, SQLSyntax syntax, boolean cast) {
-        this(object,type);
+        this(type.castValue(object, type, syntax),type);
         assert cast;
     }
 
@@ -30,7 +30,7 @@ public class TypeObject extends AbstractParseInterface {
         this(dataObject, fieldTo.type, syntax);
     }
     public TypeObject(DataObject dataObject, Type typeTo, SQLSyntax syntax) {
-        this(dataObject.object,typeTo);
+        this(typeTo.castValue(dataObject.object, dataObject.getType(), syntax),typeTo);
     }
 
     public boolean isSafeString() {

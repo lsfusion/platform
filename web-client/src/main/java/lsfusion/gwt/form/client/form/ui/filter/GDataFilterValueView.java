@@ -2,7 +2,6 @@ package lsfusion.gwt.form.client.form.ui.filter;
 
 import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GDataFilterValue;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
@@ -44,10 +43,10 @@ public class GDataFilterValueView extends GFilterValueView {
     }
 
     @Override
-    public void propertyChanged(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public void propertyChanged(GPropertyDraw property) {
         tablePanel.setPixelSize(property.getValueWidth(null), property.getValueHeight(null));
         valueTable.setProperty(property);
-        setValue(logicsSupplier.getSelectedValue(property, columnKey));
+        setValue(logicsSupplier.getSelectedValue(property));
     }
 
     public void valueChanged(Object value) {

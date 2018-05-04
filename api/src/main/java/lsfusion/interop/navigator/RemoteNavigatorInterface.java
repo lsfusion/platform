@@ -30,6 +30,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     void close() throws RemoteException;
 
+    // ???
     DefaultFormsType showDefaultForms() throws RemoteException;
 
     List<String> getDefaultForms() throws RemoteException;

@@ -2,14 +2,10 @@ package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
 import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.ClientPropertyTable;
-import lsfusion.client.form.GroupObjectController;
-import lsfusion.client.form.RmiQueue;
+import lsfusion.client.form.*;
 import lsfusion.client.form.grid.preferences.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
@@ -93,6 +89,8 @@ public class GridTable extends ClientPropertyTable {
     private boolean hasFocusableCells;
 
     private boolean isInternalNavigating = false;
+
+    private boolean isLayouting;
 
     private final GridController gridController;
     private final GroupObjectController groupController;
@@ -784,15 +782,6 @@ public class GridTable extends ClientPropertyTable {
                 : null;
     }
 
-    public ClientGroupObjectValue getCurrentColumn() {
-        ClientGroupObjectValue selectedColumn = getSelectedColumnKey();
-        return selectedColumn != null
-                ? selectedColumn
-                : model.getColumnCount() > 0
-                ? model.getColumnKey(0)
-                : null;
-    }
-
     @Override
     public boolean richTextSelected() {
         ClientPropertyDraw property = getCurrentProperty();
@@ -818,86 +807,65 @@ public class GridTable extends ClientPropertyTable {
         }
 
         try {
+            if (singleV && !singleC) {
+                //т.е. вставляем в одну ячейку, но не одно значение
+                int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-            boolean matches = true;
-            for (List<String> row : table) {
-                if(matches) {
-                    for (int j = 0; j < row.size(); j++) {
-                        String cell = row.get(j);
-                        ClientPropertyDraw property = model.getColumnProperty(selectedColumn + j);
-                        if (property.regexp != null && cell != null && !cell.isEmpty()) {
-                            if (!cell.matches(property.regexp)) {
-                                //показываем только первую ошибку
-                                JOptionPane.showMessageDialog(form.getLayout(), (property.regexpMessage == null ? getString("form.editor.incorrect.value") : property.regexpMessage) + ": " + cell,
-                                        getString("form.editor.error"), JOptionPane.WARNING_MESSAGE);
-                                matches = false;
+                List<ClientPropertyDraw> propertyList = new ArrayList<>();
+                List<ClientGroupObjectValue> columnKeys = new ArrayList<>();
+                for (int i = 0; i < columnsToInsert; i++) {
+                    ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
+                    propertyList.add(propertyDraw);
+                    columnKeys.add(model.getColumnKey(selectedColumn + i));
+                }
+
+                form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
+            } else {
+                //вставляем в несколько ячеек, используем только 1е значение
+                String sPasteValue = table.get(0).get(0);
+
+                Map<ClientPropertyDraw, PasteData> paste = new HashMap<>();
+
+                for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
+                    Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
+                    List<ClientGroupObjectValue> rowKeys = e.getValue().first;
+                    List<Object> oldValues = e.getValue().second;
+
+                    ClientPropertyDraw property = propertyColumn.first;
+                    ClientGroupObjectValue columnKey = propertyColumn.second;
+
+                    List<ClientGroupObjectValue> keys;
+                    if (columnKey.isEmpty()) {
+                        keys = rowKeys;
+                    } else {
+                        keys = new ArrayList<>();
+                        for (ClientGroupObjectValue rowKey : rowKeys) {
+                            keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
+                        }
+                    }
+
+                    Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
+                    if (property.canUsePasteValueForRendering()) {
+                        for (ClientGroupObjectValue key : keys) {
+                            Map<ClientGroupObjectValue, Object> propValues = values.get(property);
+                            if (propValues.containsKey(key)) {
+                                propValues.put(key, newValue);
                             }
                         }
+                    }
+
+                    PasteData pasteData = paste.get(property);
+                    if (pasteData == null) {
+                        pasteData = new PasteData(newValue, keys, oldValues);
+                        paste.put(property, pasteData);
+                    } else {
+                        pasteData.keys.addAll(keys);
+                        pasteData.oldValues.addAll(oldValues);
                     }
                 }
-            }
 
-            if(matches) {
-                if (singleV && !singleC) {
-                    //т.е. вставляем в одну ячейку, но не одно значение
-                    int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
-
-                    List<ClientPropertyDraw> propertyList = new ArrayList<>();
-                    List<ClientGroupObjectValue> columnKeys = new ArrayList<>();
-                    for (int i = 0; i < columnsToInsert; i++) {
-                        ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
-                        propertyList.add(propertyDraw);
-                        columnKeys.add(model.getColumnKey(selectedColumn + i));
-                    }
-
-                    form.pasteExternalTable(propertyList, columnKeys, table, columnsToInsert);
-                } else {
-                    //вставляем в несколько ячеек, используем только 1е значение
-                    String sPasteValue = table.get(0).get(0);
-
-                    Map<ClientPropertyDraw, PasteData> paste = new HashMap<>();
-
-                    for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Pair<List<ClientGroupObjectValue>, List<Object>>> e : selectionController.getSelectedCells().entrySet()) {
-                        Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = e.getKey();
-                        List<ClientGroupObjectValue> rowKeys = e.getValue().first;
-                        List<Object> oldValues = e.getValue().second;
-
-                        ClientPropertyDraw property = propertyColumn.first;
-                        ClientGroupObjectValue columnKey = propertyColumn.second;
-
-                        List<ClientGroupObjectValue> keys;
-                        if (columnKey.isEmpty()) {
-                            keys = rowKeys;
-                        } else {
-                            keys = new ArrayList<>();
-                            for (ClientGroupObjectValue rowKey : rowKeys) {
-                                keys.add(rowKey.isEmpty() ? columnKey : new ClientGroupObjectValue(rowKey, columnKey));
-                            }
-                        }
-
-                        Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
-                        if (property.canUsePasteValueForRendering()) {
-                            for (ClientGroupObjectValue key : keys) {
-                                Map<ClientGroupObjectValue, Object> propValues = values.get(property);
-                                if (propValues.containsKey(key)) {
-                                    propValues.put(key, newValue);
-                                }
-                            }
-                        }
-
-                        PasteData pasteData = paste.get(property);
-                        if (pasteData == null) {
-                            pasteData = new PasteData(newValue, keys, oldValues);
-                            paste.put(property, pasteData);
-                        } else {
-                            pasteData.keys.addAll(keys);
-                            pasteData.oldValues.addAll(oldValues);
-                        }
-                    }
-
-                    form.pasteMulticellValue(paste);
-                    selectionController.resetSelection();
-                }
+                form.pasteMulticellValue(paste);
+                selectionController.resetSelection();
             }
             updateTable();
         } catch (IOException e) {
@@ -1055,18 +1023,11 @@ public class GridTable extends ClientPropertyTable {
 
     private void quickFilter(EventObject editEvent) {
         if (KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
-            ClientPropertyDraw filterProperty = null;
-            ClientGroupObjectValue filterColumnKey = null;
-
             ClientPropertyDraw currentProperty = getCurrentProperty();
-            if(currentProperty != null && currentProperty.quickFilterProperty != null) {
-                filterProperty = currentProperty.quickFilterProperty;
-                if(BaseUtils.nullHashEquals(currentProperty.columnGroupObjects, filterProperty.columnGroupObjects)) {
-                    filterColumnKey = getCurrentColumn();                    
-                }                    
-            }
-             
-            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty, filterColumnKey);
+            ClientPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                ? currentProperty.quickFilterProperty
+                                                : null;
+            groupController.quickEditFilter((KeyEvent) editEvent, filterProperty);
         }
     }
 
@@ -1201,20 +1162,6 @@ public class GridTable extends ClientPropertyTable {
         return model.getColumnProperty(colModel);
     }
 
-    public ClientGroupObjectValue getSelectedColumnKey() {
-        int colView = getSelectedColumn();
-        if (colView < 0 || colView >= getColumnCount()) {
-            return null;
-        }
-
-        int colModel = convertColumnIndexToModel(colView);
-        if (colModel < 0) {
-            return null;
-        }
-
-        return model.getColumnKey(colModel);
-    }
-
     public boolean isPressed(int row, int column) {
         return pressedCellRow == row && pressedCellColumn == column;
     }
@@ -1313,7 +1260,7 @@ public class GridTable extends ClientPropertyTable {
                             return;
                         }
 
-                        if (isLayouting > 0) {
+                        if (isLayouting) {
                             selectColumn(currCol);
                         } else {
                             if (currCol > lastCol) {
@@ -1342,7 +1289,7 @@ public class GridTable extends ClientPropertyTable {
                             return;
                         }
 
-                        if (isLayouting > 0) {
+                        if (isLayouting) {
                             selectRow(currRow);
                         } else {
                             if (currRow > lastRow) {
@@ -1557,7 +1504,7 @@ public class GridTable extends ClientPropertyTable {
             for (ClientPropertyDraw propertyDraw : preferences.columnUserPreferences.keySet()) {
                 Boolean userHide = preferences.columnUserPreferences.get(propertyDraw).userHide;
                 if (userHide != null && userHide) {
-                    result.add(propertyDraw.getPropertyFormName());
+                    result.add(propertyDraw.getSID());
                 }
             }
         }
@@ -1662,13 +1609,8 @@ public class GridTable extends ClientPropertyTable {
         return getCurrentPreferences().getUserSortComparator();
     }
 
-    private int isLayouting; // int потому что может вызываться рекурсивно
-
     public void setLayouting(boolean isLayouting) {
-        if(isLayouting)
-            this.isLayouting++;
-        else
-            this.isLayouting--;
+        this.isLayouting = isLayouting;
     }
 
     private class GoToNextCellAction extends AbstractAction {

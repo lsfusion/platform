@@ -5,13 +5,13 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.query.NotMaterializable;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
@@ -46,8 +46,7 @@ public class RecursiveTable extends Table implements NotMaterializable {
         return 31 * super.immutableHashCode() + statKeys.hashCode();
     }
 
-    @IdentityLazy
     public ImMap<PropertyField, PropStat> getStatProps() { // assert что пустой если Logical рекурсия
-        return getStatProps(this);
+        return getStatProps(this, Stat.MAX);
     }
 }

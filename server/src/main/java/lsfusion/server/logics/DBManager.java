@@ -956,7 +956,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             recalculateProperties.addAll(recalculateStatProperties);
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) { // temporary for migration
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) { // temporary for migration
                 recalculateProperties = SetFact.fromJavaOrderSet(recalculateProperties).filterOrder(new SFunctionSet<CalcProperty>() {
                     public boolean contains(CalcProperty element) {
                         return !element.toString().contains("SystemEvents.Session");
@@ -968,7 +968,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if(oldDBStructure.version < NavElementDBVersion)
                 DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
 
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) {
+            if(newDBStructure.version >= 28 && oldDBStructure.version < 28) {
                 startLogger.info("Migrating properties to actions data started");
                 if (!synchronizePropertyEntities(sql))
                     throw new RuntimeException("Error while migrating properties to actions");
@@ -1548,23 +1548,23 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, CalcProperty<?> property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
+    private void recalculateAggregationWithDependenciesTableColumn(DataSession dataSession, SQLSession session, Property property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
         if (!dependents) {
-            for (CalcProperty prop : property.getDepends()) {
+            for (CalcProperty prop : (Iterable<CalcProperty>) ((CalcProperty) property).getDepends()) {
                 if (prop != property && !calculated.contains(prop)) {
                     recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, false);
                 }
             }
         }
         
-        if (property instanceof AggregateProperty && property.isStored()) {
+        if (property instanceof AggregateProperty && ((AggregateProperty) property).isStored()) {
             runAggregationRecalculation(dataSession, session, (AggregateProperty) property, isolatedTransaction);
-            calculated.add(property);
+            calculated.add((AggregateProperty) property);
         }
 
         if (dependents) {
             for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
-                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, property)) {
+                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
                     boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);

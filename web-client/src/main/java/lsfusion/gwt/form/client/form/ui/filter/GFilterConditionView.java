@@ -53,7 +53,6 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             @Override
             public void onChange(ChangeEvent event) {
                 condition.property = (GPropertyDraw) propertyView.getSelectedItem();
-                condition.columnKey = null;
                 filterChanged();
             }
         });
@@ -162,7 +161,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         valueView = valueViews.get(condition.value);
         if (valueView != null) {
             insert(valueView, getWidgetIndex(junctionView));
-            valueView.propertyChanged(condition.property, condition.columnKey);
+            valueView.propertyChanged(condition.property);
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.getDefaultCompare());

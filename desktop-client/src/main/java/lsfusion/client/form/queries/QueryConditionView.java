@@ -78,7 +78,6 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         propertyView.addItemListener(new ItemAdapter() {
             public void itemSelected(ItemEvent e) {
                 filter.property = (ClientPropertyDraw) e.getItem();
-                filter.columnKey = null;
                 filterChanged();
             }
         });
@@ -180,7 +179,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         if (valueView != null) {
             centerPanel.add(valueView, Arrays.asList(centerPanel.getComponents()).indexOf(junctionView));
-            valueView.propertyChanged(filter.property, filter.columnKey);
+            valueView.propertyChanged(filter.property);
         }
         compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilterCompares()));
         compareView.setSelectedItem(null); //чтобы сработал itemStateChanged при автоматическом выборе '='

@@ -12,6 +12,7 @@ import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;

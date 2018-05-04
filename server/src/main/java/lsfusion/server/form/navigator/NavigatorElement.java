@@ -12,7 +12,6 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.CanonicalNameUtils;
-import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
@@ -37,7 +36,7 @@ public abstract class NavigatorElement {
     private final int ID;
     public LocalizedString caption;
     private final String canonicalName;
-    private DebugInfo.DebugPoint debugPoint;
+    private String creationPath = null;
 
     private NFProperty<NavigatorElement> parent = NFFact.property();
     private NFOrderSet<NavigatorElement> children = NFFact.orderSet();
@@ -222,6 +221,10 @@ public abstract class NavigatorElement {
         return image;
     }
 
+    public void setCreationPath(String creationPath) {
+        this.creationPath = creationPath;
+    }
+   
     public void finalizeAroundInit() {
         parent.finalizeChanges();
         children.finalizeChanges();
@@ -229,25 +232,15 @@ public abstract class NavigatorElement {
 
     @Override
     public String toString() {
-        String result = getCanonicalName();
-        if (caption != null) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
-        }
-        if (debugPoint != null) {
-            result += " [" + debugPoint + "]"; 
-        }
-        return result;
+        return getCanonicalName() + ": " + (caption != null ? ThreadLocalContext.localize(caption) : "");
     }
 
-    public String getCreationPath() {
-        return debugPoint.toString();
-    }
-    
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
+        outStream.writeInt(getID());
         SerializationUtil.writeString(outStream, canonicalName);
-        SerializationUtil.writeString(outStream, getCreationPath());
+        SerializationUtil.writeString(outStream, creationPath);
 
         outStream.writeUTF(ThreadLocalContext.localize(caption));
         outStream.writeBoolean(hasChildren());
@@ -259,9 +252,5 @@ public abstract class NavigatorElement {
 
         IOUtils.writeImageIcon(outStream, getImage());
         outStream.writeUTF(getImage().getDescription());
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        this.debugPoint = debugPoint;
     }
 }

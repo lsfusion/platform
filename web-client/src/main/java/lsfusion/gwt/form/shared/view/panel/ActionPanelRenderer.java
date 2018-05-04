@@ -66,7 +66,7 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         TooltipManager.registerWidget(button, new TooltipManager.TooltipHelper() {
             @Override
             public String getTooltip() {
-                return property.getTooltipText(tooltip);
+                return property.getTooltipText(tooltip, true);
             }
 
             @Override

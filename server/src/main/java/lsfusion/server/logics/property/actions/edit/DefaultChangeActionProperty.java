@@ -168,6 +168,6 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps(implement.property);
+        return BaseUtils.<ImSet<CalcProperty>>immutableCast(implement.property.getChangeProps()).toMap(false);
     }
 }

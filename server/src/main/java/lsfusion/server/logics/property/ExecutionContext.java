@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.Processor;
@@ -10,13 +11,20 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.ConcreteObjectClass;
+import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.SameThreadExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.*;
+import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLCallable;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLRunnable;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -28,11 +36,20 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
+import lsfusion.server.remote.InteractiveFormReportManager;
 import lsfusion.server.session.*;
+import net.sf.jasperreports.engine.JRAbstractExporter;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
@@ -92,8 +109,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return result.addExcl(super.getAllParamsWithValuesInStack());
         }
 
-        public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
-            ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+        public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+            ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
 
             if(locals != null)
                 result = result.addExcl(locals);
@@ -116,7 +133,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             return super.getWatcher();
         }
 
-        public void updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        public void updateOnApply(DataSession session) throws SQLException, SQLHandledException {
             final ImMap<P, ? extends ObjectValue> prevKeys = keys;
             keys = session.updateCurrentClasses(keys);
             session.addRollbackInfo(new SQLRunnable() {
@@ -126,9 +143,9 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
             if(updateClasses!=null) {
                 for(UpdateCurrentClasses update : updateClasses)
-                    update.updateCurrentClasses(session);
+                    update.updateOnApply(session);
             }
-            super.updateCurrentClasses(session);
+            super.updateOnApply(session);
         }
     }
 
@@ -143,7 +160,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     // debug info 
     private ImRevMap<String, P> paramsToInterfaces;
     private ImMap<String, String> paramsToFQN;
-    private ImSet<Pair<LCP, List<ResolveClassSet>>> locals;
+    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
     private boolean newDebugStack;
     private Processor<ImMap<String, ObjectValue>> watcher;
     
@@ -181,7 +198,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         this.paramsToInterfaces = paramsToInterfaces;
     }
 
-    public void setLocals(ImSet<Pair<LCP, List<ResolveClassSet>>> locals) {
+    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
         this.locals = locals;
     }
     
@@ -235,8 +252,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return result;
     }
 
-    public ImSet<Pair<LCP, List<ResolveClassSet>>> getAllLocalsInStack() {
-        ImSet<Pair<LCP, List<ResolveClassSet>>> result = SetFact.EMPTY();
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
         
         if(locals != null)
             result = result.addExcl(locals);
@@ -515,17 +532,13 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
-    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, ExecutionStack stack) throws SQLException, SQLHandledException {
         assertNotUserInteractionInTransaction();
-        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+        ThreadLocalContext.requestFormUserInteraction(remoteForm, modalityType, stack);
     }
 
     public void writeRequested(ImList<RequestResult> requestResults) throws SQLException, SQLHandledException {
         getBL().LM.writeRequested(requestResults, getEnv());
-    }
-
-    public void dropRequestCanceled() throws SQLException, SQLHandledException {
-        getBL().LM.dropRequestCanceled(getEnv());
     }
 
     public <R> R pushRequest(SQLCallable<R> callable) throws SQLException, SQLHandledException {

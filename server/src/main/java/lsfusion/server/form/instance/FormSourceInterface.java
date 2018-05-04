@@ -27,13 +27,11 @@ public interface FormSourceInterface<PropertyDraw extends PropertyReader, GroupO
     ImList<PropertyDraw> getProperties();
 
     Where getWhere(GroupObject groupObject, ImMap<Obj, Expr> mapExprs) throws SQLException, SQLHandledException;
-    Where getFixedObjectsWhere(GroupObject groupObject, Integer groupId, ImMap<Obj, Expr> mapExprs) throws SQLException, SQLHandledException;
     Expr getExpr(Order o, ImMap<Obj, Expr> mapExprs) throws SQLException, SQLHandledException;
 
     boolean isPropertyShown(PropertyDraw propertyDraw);
 
     // interfaces
-    ImSet<GroupObject> getGroups();
     int getGroupID(GroupObject groupObject);
     PropertyObject getPropertyObject(PropertyDraw propertyDraw);
     ImCol<Obj> getPObjects(PropertyObject propertyObject);
@@ -55,11 +53,12 @@ public interface FormSourceInterface<PropertyDraw extends PropertyReader, GroupO
     String getGroupSID(GroupObject cpo);
     String getPSID(PropertyDraw cpo);
 
+    ClassViewType getGroupViewType(GroupObject groupObject); // interface
     ClassViewType getPViewType(PropertyDraw propertyDraw);
 
     ImOrderMap<Order, Boolean> getOrders(GroupObject groupObject);
 
-    ObjectValue getObjectValue(Obj obj);
+    ObjectValue getObjectValue(Obj obj); // вызывается если не GRID
 
     CalcPropertyObject getDrawInstance(PropertyDraw propertyDraw);
     CalcPropertyObject getPropertyCaption(PropertyDraw propertyDraw);

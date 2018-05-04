@@ -14,14 +14,10 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
-import lsfusion.gwt.base.shared.actions.ListResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.DefaultFormsController;
-import lsfusion.gwt.form.client.form.ServerMessageProvider;
 import lsfusion.gwt.form.client.form.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
@@ -36,7 +32,6 @@ import lsfusion.gwt.form.shared.view.actions.GFormAction;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
-import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
@@ -45,7 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainFrame implements EntryPoint, ServerMessageProvider {
+public class MainFrame implements EntryPoint {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
     public static boolean configurationAccessAllowed;
@@ -64,44 +59,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     private static Boolean shouldRepeatPingRequest = true;
     
-    private final String tabSID = GwtSharedUtils.randomString(25);
-
-    private LoadingManager loadingManager;
-
-    @Override
-    public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
-        dispatcher.execute(new GetRemoteNavigatorActionMessage(), callback);
-    }
-
-    @Override
-    public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
-        dispatcher.execute(new GetRemoteNavigatorActionMessageList(), callback);
-    }
-
-    @Override
-    public void interrupt(boolean cancelable) {
-        dispatcher.execute(new InterruptNavigator(cancelable), new ErrorHandlingCallback<VoidResult>());
-    }
-
-    public <T extends Result> void syncDispatch(final ExecuteNavigatorAction action, AsyncCallback<ServerResponseResult> callback) {
-        //todo: возможно понадобится сделать чтото более сложное как в
-        //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-        loadingManager.start();
-        dispatcher.execute(action, new WrapperAsyncCallbackEx<ServerResponseResult>(callback) {
-            @Override
-            public void preProcess() {
-                loadingManager.stop();
-            }
-        });
-    }
-
     public void onModuleLoad() {
-        dispatcher.execute(new RegisterTabAction(tabSID), new ErrorHandlingCallback<VoidResult>());
 
         dispatcher.execute(new GetLocaleAction(), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
                 setLocale(result.get());
+
             }
         });
 
@@ -117,10 +81,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
         hackForGwtDnd();
 
-        formsController = new DefaultFormsController(tabSID) {
+        formsController = new DefaultFormsController() {
             @Override
             public void executeNavigatorAction(GNavigatorAction action) {
-                syncDispatch(new ExecuteNavigatorAction(tabSID, action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);
@@ -130,7 +94,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
             @Override
             public void executeNotificationAction(String actionSID, int type) {
-                syncDispatch(new ExecuteNavigatorAction(tabSID, actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
+                dispatcher.execute(new ExecuteNavigatorAction(actionSID, type), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
                         actionDispatcher.dispatchResponse(result);
@@ -189,7 +153,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             @Override
             public void success(BooleanResult result) {
                 isBusyDialog = result.value;
-                loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
             }
         });
 
@@ -330,19 +293,19 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
     public void clean() {
         GConnectionLostManager.invalidate();
-        dispatcher.execute(new CleanAction(tabSID), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.execute(new CleanAction(), new ErrorHandlingCallback<VoidResult>());
         System.gc();
     }
 
     private class GNavigatorActionDispatcher extends GwtActionDispatcher {
         @Override
         protected void throwInServerInvocation(Throwable t, AsyncCallback<ServerResponseResult> callback) {
-            dispatcher.execute(new ThrowInNavigatorAction(tabSID, t), callback);
+            dispatcher.execute(new ThrowInNavigatorAction(t), callback);
         }
 
         @Override
         protected void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
-            dispatcher.execute(new ContinueNavigatorAction(tabSID, actionResults), callback);
+            dispatcher.execute(new ContinueNavigatorAction(actionResults), callback);
         }
 
         @Override

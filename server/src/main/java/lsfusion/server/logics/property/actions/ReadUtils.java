@@ -8,8 +8,8 @@ import com.healthmarketscience.jackcess.Table;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.data.JDBCTable;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
@@ -17,10 +17,8 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
-import org.jfree.ui.ExtensionFileFilter;
 import org.springframework.util.FileCopyUtils;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -42,19 +40,16 @@ public class ReadUtils {
     private static final String LT = "<";
     private static final String IN = " IN ";
 
-    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) throws IOException, SftpException, JSchException, SQLException {
+    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead) throws IOException, SftpException, JSchException, SQLException {
         String type = null;
         File file = null;
         byte[] fileBytes = null;
         int errorCode = 0;
-        if (isDialog) {
-            sourcePath = showReadFileDialog(sourcePath);
-        }
         if (sourcePath != null) {
-            Pattern p = Pattern.compile("(?:(file|ftp|sftp|http|https|jdbc|mdb):(?://)?)?(.*)");
+            Pattern p = Pattern.compile("(file|ftp||sftp|http|https|jdbc|mdb):(?:\\/\\/)?(.*)");
             Matcher m = p.matcher(sourcePath);
             if (m.matches()) {
-                type = m.group(1) == null ? "file" : m.group(1).toLowerCase();
+                type = m.group(1).toLowerCase();
                 String url = m.group(2);
 
                 String extension = null;
@@ -90,36 +85,32 @@ public class ReadUtils {
                         extension = "mdb";
                         break;
                 }
-                if (file != null) {
-                    if (file.exists()) {
-                        if (isBlockingFileRead) {
-                            try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
-                                try (java.nio.channels.FileLock lock = channel.lock()) {
-                                    if (isDynamicFormatFileClass) {
-                                        fileBytes = BaseUtils.mergeFileAndExtension(readBytesFromChannel(channel), extension.getBytes());
-                                    } else {
-                                        fileBytes = readBytesFromChannel(channel);
-                                    }
+                if (file != null && file.exists()) {
+                    if (isBlockingFileRead) {
+                        try(FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
+                            try (java.nio.channels.FileLock lock = channel.lock()) {
+                                if (isDynamicFormatFileClass) {
+                                    fileBytes = BaseUtils.mergeFileAndExtension(readBytesFromChannel(channel), extension.getBytes());
+                                } else {
+                                    fileBytes = readBytesFromChannel(channel);
                                 }
-                            }
-                        } else {
-                            if (isDynamicFormatFileClass) {
-                                fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
-                            } else {
-                                fileBytes = IOUtils.getFileBytes(file);
                             }
                         }
                     } else {
-                        errorCode = 3;
+                        if (isDynamicFormatFileClass) {
+                            fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
+                        } else {
+                            fileBytes = IOUtils.getFileBytes(file);
+                        }
                     }
                 } else {
-                    errorCode = 2;
+                    errorCode = 3;
                 }
             } else {
                 errorCode = 2;
             }
         } else {
-            errorCode = isDialog ? -1 : 1;
+            errorCode = 1;
         }
         return new ReadResult(fileBytes, type, file != null ? file.getAbsolutePath() : null, errorCode);
     }
@@ -148,31 +139,6 @@ public class ReadUtils {
                 deleteSFTPFile(sourcePath);
             }
         }
-    }
-
-    public static String showReadFileDialog(String path) {
-        String result = null;
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setAcceptAllFileFilterUsed(false);
-
-        File parentDir = null;
-        if (path != null) {
-            File file = new File(path.startsWith("file://") ? path.substring(7) : path);
-            fileChooser.setSelectedFile(file);
-            parentDir = file.getParentFile();
-            String extension = BaseUtils.getFileExtension(file);
-            if (!BaseUtils.isRedundantString(extension)) {
-                ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                fileChooser.addChoosableFileFilter(filter);
-            }
-        }
-        fileChooser.setCurrentDirectory(parentDir != null ? parentDir : SystemUtils.loadCurrentDirectory());
-
-        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            result = fileChooser.getSelectedFile().getAbsolutePath();
-            SystemUtils.saveCurrentDirectory(new File(result.substring(0, result.lastIndexOf("\\"))));
-        }
-        return result;
     }
 
     private static void copyHTTPToFile(String path, File file) throws IOException {

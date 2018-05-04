@@ -130,11 +130,8 @@ public abstract class InnerExpr extends NullableExpr implements JoinData {
         return getInnerJoin().getInnerStatKeys(type).getRows();
     }
     // корректирует statValue со statKeys
-    public static Stat getAdjustStatValue(Stat rows, Stat valueStat) {
-        return rows.min(valueStat);
-    }
     public Stat getAdjustStatValue(StatType type, Stat valueStat) {
-        return getAdjustStatValue(getInnerStatRows(type), valueStat);
+        return getInnerStatRows(type).min(valueStat);
     }
     public abstract InnerJoin<?, ?> getInnerJoin();
     public InnerJoin<?, ?> getBaseJoin() {

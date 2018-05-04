@@ -5,6 +5,6 @@ public interface AbstractTreeGroup<T extends AbstractComponent> extends Abstract
     int getID();
     String getSID();
 
-    T getToolbarSystem();
-    T getUserFilter();
+    T getToolbar();
+    T getFilter();
 }

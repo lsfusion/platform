@@ -32,7 +32,7 @@ public class SimpleChangePropertyDispatcher extends ClientFormActionDispatcher {
             try {
                 dispatchResponse(serverResponse);
             } finally {
-                if (dispatcherListener != null && serverResponse != ServerResponse.EMPTY)  // проверка нужна, если запрос заблокируется то и postponeDispatchingEnded не будет, а значит "скобки" нарушатся и упадет assertion
+                if (dispatcherListener != null)
                     dispatcherListener.dispatchingPostponedEnded(this);
             }
             return true;

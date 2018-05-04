@@ -40,15 +40,12 @@ import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.remote.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.ModifyResult;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -199,8 +196,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         for (DataSession session : sessions) {
             ImSet<CalcProperty> updateChanges = SetFact.singleton(property);
             session.updateSessionEvents(updateChanges);
-            
-            session.updateProperties(property, updateChanges); // редко используется поэтому все равно
+            session.updateProperties(updateChanges, true); // редко используется поэтому все равно
         }
     }
 
@@ -857,6 +853,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 } else {
                     try (DataSession session = createSession()) {
                         runAction(session, actionSID, type == 1, stack);
+                        session.apply(businessLogics, stack);
                     }
                 }
                 assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
@@ -892,7 +889,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     private void runAction(DataSession session, String canonicalName, boolean isNavigatorAction, ExecutionStack stack) throws SQLException, SQLHandledException {
-        final LAP<?> action;
+        final ActionProperty action;
         if (isNavigatorAction) {
             final NavigatorElement element = businessLogics.findNavigatorElement(canonicalName);
 
@@ -904,11 +901,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 throw new RuntimeException(ThreadLocalContext.localize("{form.navigator.not.enough.permissions}"));
             }
 
-            action = new LAP(((NavigatorAction) element).getAction());
+            action = ((NavigatorAction) element).getAction();
         } else {
-            action = businessLogics.findAction(canonicalName);
+            action = (ActionProperty) businessLogics.findProperty(canonicalName).property;
         }
-        action.execute(session, stack);
+        action.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, stack, null);
     }
 
     @Override

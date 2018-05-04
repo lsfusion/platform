@@ -7,8 +7,6 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
@@ -19,14 +17,10 @@ import java.util.List;
 public class ResolveManager {
     public LogicsModule LM;
     
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> directLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractNotEqualLCPResolver;
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLCPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> directLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractNotEqualLAPResolver;
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> indirectLAPResolver;
+    private ElementResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver;
+    private ElementResolver<LP<?, ?>, List<ResolveClassSet>> abstractLPResolver;
+    private ElementResolver<LP<?, ?>, List<ResolveClassSet>> abstractNotEqualLPResolver;
+    private ElementResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver;
     private ElementResolver<AbstractGroup, ?> groupResolver;
     private ElementResolver<NavigatorElement, ?> navigatorResolver;
     private ElementResolver<FormEntity, ?> formResolver;
@@ -42,16 +36,10 @@ public class ResolveManager {
     }
 
     private void initializeResolvers() {
-        directLCPResolver = new LPResolver<>(LM, new ModuleLCPFinder(), true, false);
-        abstractLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, false);
-        abstractNotEqualLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, true);
-        indirectLCPResolver = new LPResolver<>(LM, new ModuleSoftLCPFinder(), false, false);
-
-        directLAPResolver = new LPResolver<>(LM, new ModuleLAPFinder(), true, false);
-        abstractLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, false);
-        abstractNotEqualLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, true);
-        indirectLAPResolver = new LPResolver<>(LM, new ModuleSoftLAPFinder(), false, false);
-        
+        directLPResolver = new LPResolver(LM, new ModuleLPFinder(), true, false);
+        abstractLPResolver = new LPResolver(LM, new ModuleAbstractLPFinder(), true, false);
+        abstractNotEqualLPResolver = new LPResolver(LM, new ModuleAbstractLPFinder(), true, true);
+        indirectLPResolver = new LPResolver(LM, new ModuleSoftLPFinder(), false, false);
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
         navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
         formResolver = new ElementResolver<>(LM, new ModuleFormFinder());
@@ -61,28 +49,16 @@ public class ResolveManager {
         metaCodeFragmentResolver = new ElementResolver<>(LM, new ModuleMetaCodeFragmentFinder());
     }
     
-    public LCP<?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LCP<?> property = directLCPResolver.resolve(compoundName, params);
+    public LP<?, ?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LP<?, ?> property = directLPResolver.resolve(compoundName, params);
         if (property == null) {
-            property = indirectLCPResolver.resolve(compoundName, params);
+            property = indirectLPResolver.resolve(compoundName, params);
         }
         return property;
     }
     
-    public LCP<?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return getAbstractLCPResolver(prioritizeNotEquals).resolve(compoundName, params);    
-    } 
-
-    public LAP<?> findAction(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
-        LAP<?> property = directLAPResolver.resolve(compoundName, params);
-        if (property == null) {
-            property = indirectLAPResolver.resolve(compoundName, params);
-        }
-        return property;
-    }
-    
-    public LAP<?> findAbstractAction(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
-        return getAbstractLAPResolver(prioritizeNotEquals).resolve(compoundName, params);    
+    public LP<?, ?> findAbstractProperty(String compoundName, List<ResolveClassSet> params, boolean prioritizeNotEquals) throws ResolvingErrors.ResolvingError {
+        return getAbstractLPResolver(prioritizeNotEquals).resolve(compoundName, params);    
     } 
     
     public ValueClass findClass(String compoundName) throws ResolvingErrors.ResolvingError {
@@ -113,19 +89,11 @@ public class ResolveManager {
         return tableResolver.resolve(compoundName);
     }
 
-    private ElementResolver<LCP<?>, List<ResolveClassSet>> getAbstractLCPResolver(boolean prioritizeNotEquals) {
+    private ElementResolver<LP<?, ?>, List<ResolveClassSet>> getAbstractLPResolver(boolean prioritizeNotEquals) {
         if (prioritizeNotEquals) {
-            return abstractNotEqualLCPResolver;
+            return abstractNotEqualLPResolver;
         } else {
-            return abstractLCPResolver;
-        }
-    }
-
-    private ElementResolver<LAP<?>, List<ResolveClassSet>> getAbstractLAPResolver(boolean prioritizeNotEquals) {
-        if (prioritizeNotEquals) {
-            return abstractNotEqualLAPResolver;
-        } else {
-            return abstractLAPResolver;
+            return abstractLPResolver;
         }
     }
 }

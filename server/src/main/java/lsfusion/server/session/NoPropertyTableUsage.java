@@ -1,10 +1,14 @@
 package lsfusion.server.session;
 
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.*;
+import lsfusion.server.data.query.Join;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -23,5 +27,10 @@ public class NoPropertyTableUsage<K> extends SessionTableUsage<K,String> {
 
     public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
         modifyRecord(session, keyFields, MapFact.<String, ObjectValue>EMPTY(), type, owner);
+    }
+
+    // тут конечно сейчас странно получается sessionTable - перечитывает классы даже для не изменившихся, а sessionRows нет, можно было бы еще or вставить в readDiffClasses каким-то образом, но пока не будем
+    public void updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
+        table = table.updateCurrentClasses(session);
     }
 }

@@ -193,14 +193,14 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
                 if (classProperty.hasChanges(changes)) {
                     if (prevExpr == null) // оптимизация
                         prevExpr = getExpr(mapExprs);
-                    removeWhere = removeWhere.or(classProperty.getDroppedWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
+                    removeWhere = removeWhere.or(classProperty.getRemoveWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
                 }
             }
             IsClassProperty classProperty = value.getProperty();
             if (classProperty.hasChanges(changes)) {
                 if (prevExpr == null) // оптимизация
                     prevExpr = getExpr(mapExprs);
-                removeWhere = removeWhere.or(classProperty.getDroppedWhere(prevExpr, changes));
+                removeWhere = removeWhere.or(classProperty.getRemoveWhere(prevExpr, changes));
             }
             if (!removeWhere.isFalse())
                 result = PropertyChange.addNull(result, new PropertyChange<>(mapKeys, removeWhere, joinValues));
@@ -217,28 +217,14 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         if(events) {
             if (event != null)
                 depends.addAll(event.getDepends());
-            depends.addAll(getDroppedDepends());;
+            if (!noClasses()) {
+                for (ClassPropertyInterface remove : interfaces)
+                    if (remove.interfaceClass instanceof CustomClass)
+                        depends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+                if (value instanceof CustomClass)
+                    depends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+            }
         }
-    }
-
-    public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
-        MSet<CalcProperty> mResult = SetFact.mSet();
-        for(ChangedProperty<?> removeDepend : getDroppedDepends())
-            mResult.addAll(removeDepend.getSingleApplyDroppedIsClassProps());
-        return mResult.immutable();
-    }
-
-    public ImSet<ChangedProperty> getDroppedDepends() {
-        if (!noClasses()) {
-            MSet<ChangedProperty> mResult = SetFact.mSet(); 
-            for (ClassPropertyInterface remove : interfaces)
-                if (remove.interfaceClass instanceof CustomClass)
-                    mResult.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-            if (value instanceof CustomClass)
-                mResult.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-            return mResult.immutable();
-        }
-        return SetFact.EMPTY();
     }
 
     @Override

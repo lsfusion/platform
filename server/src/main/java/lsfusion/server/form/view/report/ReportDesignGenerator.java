@@ -38,6 +38,7 @@ import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 public class ReportDesignGenerator {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;
+    private Set<Integer> hiddenGroupsId;
     private FormUserPreferences userPreferences;
     private Integer groupId;
     
@@ -60,11 +61,12 @@ public class ReportDesignGenerator {
     
     private Map<String, JasperDesign> designs = new HashMap<>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy,
-                                 FormUserPreferences userPreferences, boolean toExcel,
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId,
+                                 FormUserPreferences userPreferences, boolean toExcel, 
                                  Map<String, LinkedHashSet<List<Object>>> columnGroupObjects, Integer groupId, FormInstance form) {
         this.formView = formView;
         this.hierarchy = hierarchy;
+        this.hiddenGroupsId = hiddenGroupsId;
         this.groupId = groupId;
         this.userPreferences = userPreferences;
         
@@ -84,7 +86,9 @@ public class ReportDesignGenerator {
             int maxGroupWidth = defaultPageWidth;
             for (ReportNode reportNode : hierarchy.getAllNodes()) {
                 for (GroupObjectEntity group : reportNode.getGroupList()) {
-                    maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(group));
+                    if (!hiddenGroupsId.contains(group.getID())) {
+                        maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(group));
+                    }
                 }
             }
             return maxGroupWidth;
@@ -163,8 +167,8 @@ public class ReportDesignGenerator {
         
         for (PropertyDrawView property : formView.getPropertiesList()) {
             ColumnUserPreferences columnUserPreferences = null;
-            if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getPropertyFormName())) {
-                columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getPropertyFormName());
+            if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID())) {
+                columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
             }
             
             properties.add(new Pair<>(property, columnUserPreferences));
@@ -185,7 +189,7 @@ public class ReportDesignGenerator {
             if (isValidProperty(group, prop.first, prop.second, groupId)) {
                 int scale = 1;
                 LinkedHashSet<List<Object>> objects;
-                if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getPropertyFormName())) != null) // на не null на всякий случай проверка
+                if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getSID())) != null) // на не null на всякий случай проверка
                     scale = objects.size();
                 
                 ReportDrawField reportField = prop.first.getReportDrawField(charWidth, scale);
@@ -213,6 +217,7 @@ public class ReportDesignGenerator {
     private void createDesignGroups(JasperDesign design, ReportNode node, ReportNode parent, int treeGroupLevel) throws JRException {
         List<GroupObjectEntity> groups = node.getGroupList();
         for (GroupObjectEntity group : groups) {
+            boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
 
             boolean hasColumnGroupProperty = false;
@@ -235,52 +240,54 @@ public class ReportDesignGenerator {
                 font = formView.get(group).getGrid().design.getFont();
             }
 
-            boolean detail = hierarchy.isLeaf(node) && (group == groups.get(groups.size()-1));
-            ReportLayout reportLayout;
-            
-            if (detail) {
-                reportLayout = new ReportDetailLayout(design, rowHeight);
-            } else {
-
-                int captionWidth = 0, preferredWidth = 0;
-                for (ReportDrawField reportField : drawFields) {
-                    captionWidth += reportField.getCaptionWidth();
-                    preferredWidth += reportField.getPreferredWidth();
-                }
-
-                if (captionWidth + preferredWidth <= pageUsableWidth && !hasColumnGroupProperty) {
-                    JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
-                    reportLayout = new ReportGroupRowLayout(designGroup, rowHeight);
+            if (!hiddenGroup) {
+                boolean detail = hierarchy.isLeaf(node) && (group == groups.get(groups.size()-1));
+                ReportLayout reportLayout;
+                
+                if (detail) {
+                    reportLayout = new ReportDetailLayout(design, rowHeight);
                 } else {
-                    JRDesignGroup captionGroup = addDesignGroup(design, groupView, "captionGroup" + group.getID());
-                    JRDesignGroup textGroup = addDesignGroup(design, groupView, "textGroup" + group.getID());
-                    reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup, rowHeight);
+
+                    int captionWidth = 0, preferredWidth = 0;
+                    for (ReportDrawField reportField : drawFields) {
+                        captionWidth += reportField.getCaptionWidth();
+                        preferredWidth += reportField.getPreferredWidth();
+                    }
+
+                    if (captionWidth + preferredWidth <= pageUsableWidth && !hasColumnGroupProperty) {
+                        JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
+                        reportLayout = new ReportGroupRowLayout(designGroup, rowHeight);
+                    } else {
+                        JRDesignGroup captionGroup = addDesignGroup(design, groupView, "captionGroup" + group.getID());
+                        JRDesignGroup textGroup = addDesignGroup(design, groupView, "textGroup" + group.getID());
+                        reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup, rowHeight);
+                    }
                 }
-            }
 
-            int groupsCnt = groups.size();
-            int minGroupLevel = node.getGroupLevel() - groupsCnt;
+                int groupsCnt = groups.size();
+                int minGroupLevel = node.getGroupLevel() - groupsCnt;
 
-            JRDesignStyle groupCellStyle;
-            if (parent != null) {
-                int minParentGroupLevel = parent.getGroupLevel()-parent.getGroupList().size();
-                groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, minParentGroupLevel, treeGroupLevel);
-            } else {
-                groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
+                JRDesignStyle groupCellStyle;
+                if (parent != null) {
+                    int minParentGroupLevel = parent.getGroupLevel()-parent.getGroupList().size();
+                    groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, minParentGroupLevel, treeGroupLevel);
+                } else {
+                    groupCellStyle = DesignStyles.getGroupStyle(groups.indexOf(group), groupsCnt, minGroupLevel, treeGroupLevel, treeGroupLevel);
+                }
+                
+                if (font != null) {
+                    groupCellStyle.setFontSize((float) font.fontSize);
+                    groupCellStyle.setBold(font.isBold());
+                    groupCellStyle.setItalic(font.isItalic());
+                }
+                
+                design.addStyle(groupCellStyle);
+                JRDesignStyle groupCaptionStyle = groupCellStyle;
+                for(ReportDrawField reportField : drawFields) {
+                    addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
+                }
+                reportLayout.doLayout(pageUsableWidth);
             }
-            
-            if (font != null) {
-                groupCellStyle.setFontSize((float) font.fontSize);
-                groupCellStyle.setBold(font.isBold());
-                groupCellStyle.setItalic(font.isItalic());
-            }
-            
-            design.addStyle(groupCellStyle);
-            JRDesignStyle groupCaptionStyle = groupCellStyle;
-            for(ReportDrawField reportField : drawFields) {
-                addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
-            }
-            reportLayout.doLayout(pageUsableWidth);
 
             for (ObjectView view : groupView) {
                 ReportDrawField objField = new ReportDrawField(view.entity.getSID() + objectSuffix, "", charWidth);

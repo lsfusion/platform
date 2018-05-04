@@ -34,7 +34,7 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
     private ImMap<String, Type> types;
     private final CalcPropertyInterfaceImplement<I> where;
 
-    private final LCP<?> targetProp;
+    private final LCP targetProp;
 
     protected abstract byte[] getFile(final Query<I, String> query, ImList<ImMap<String, Object>> rows, Type.Getter<String> fieldTypes) throws IOException;
 
@@ -123,17 +123,5 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
 
     protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
         return getFullProperty();
-    }
-
-    @Override
-    public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        if(where!=null)
-            return getUsedProps(exprs.values(), where);
-        return getUsedProps(exprs.values());
-    }
-
-    @Override
-    public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getChangeProps(targetProp.property);
     }
 }

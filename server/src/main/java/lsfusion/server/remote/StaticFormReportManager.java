@@ -6,7 +6,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
@@ -17,7 +16,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyType;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.NullValue;
@@ -87,6 +85,11 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             @Override
             public String getObjectSID(ObjectEntity o) {
                 return o.getSID();
+            }
+
+            @Override
+            public ClassViewType getGroupViewType(GroupObjectEntity groupObjectEntity) {
+                return groupObjectEntity.initClassView;
             }
 
             @Override
@@ -199,7 +202,7 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
 
             @Override
             public ClassViewType getPViewType(PropertyDrawEntity propertyDrawEntity) {
-                throw new UnsupportedOperationException();
+                return propertyDrawEntity.forceViewType;
             }
 
             @Override
@@ -284,17 +287,6 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
                 if(filters == null)
                     filters = SetFact.EMPTY();
                 return groupObjectEntity.getWhere(mapExprs, context.getModifier(), mapObjects, filters);
-            }
-
-            @Override
-            public Where getFixedObjectsWhere(GroupObjectEntity groupObjectEntity, Integer groupId, ImMap<ObjectEntity, Expr> mapExprs) throws SQLException, SQLHandledException {
-                assert groupId == null;
-                Where where = Where.TRUE;
-                ImMap<ObjectEntity, ObjectValue> fixedObjects = mapObjects.filter(groupObjectEntity.getObjects());
-                for (int i=0,size=fixedObjects.size();i<size;i++) {
-                    where = where.and(getExpr(fixedObjects.getKey(i), mapExprs).compare(fixedObjects.getValue(i).getExpr(), Compare.EQUALS));
-                }
-                return where;
             }
 
             @Override

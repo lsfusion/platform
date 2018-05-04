@@ -205,31 +205,22 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    private static DataInputStream getDeserializeKeysValuesInputStream(byte[] keysArray) {
-        assert keysArray != null;
-        return keysArray != null ? new DataInputStream(new ByteArrayInputStream(keysArray)) : null;
-    }
     private ImMap<ObjectInstance, Object> deserializeKeysValues(byte[] keysArray) throws IOException {
-        return deserializeKeysValues(getDeserializeKeysValuesInputStream(keysArray), form);
-    }
-    private static ImMap<ObjectInstance, Object> deserializeKeysValues(DataInputStream inStream, FormInstance form) throws IOException {
         MExclMap<ObjectInstance, Object> mMapValues = MapFact.mExclMap();
-        if (inStream != null) {
+        if (keysArray != null) {
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(keysArray));
+
             int cnt = inStream.readInt();
             for (int i = 0 ; i < cnt; ++i) {
                 mMapValues.exclAdd(form.getObjectInstance(inStream.readInt()), deserializeObject(inStream));
             }
-        } else 
-            assert false;
+        }
 
         return mMapValues.immutable();
     }
 
     private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] remapKeys) throws IOException, SQLException, SQLHandledException {
-        return deserializePropertyKeys(propertyDraw, getDeserializeKeysValuesInputStream(remapKeys), form);
-    }
-    public static ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, DataInputStream remapKeys, FormInstance form) throws IOException, SQLException, SQLHandledException {
-        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(remapKeys, form);
+        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(remapKeys);
 
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
         for (int i=0,size=dataKeys.size();i<size;i++) {
@@ -990,6 +981,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         Object recentResult = recentResults.get(requestIndex).get();
         assert recentResult instanceof ServerResponse && isInServerInvocation == ((ServerResponse) recentResult).resumeInvocation;
         return isInServerInvocation;
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) throws RemoteException {
+        try {
+            Thread thread = ThreadLocalContext.getLastThread();
+            if (thread != null) {
+                if (cancelable)
+                    ThreadUtils.cancelThread(context, thread);
+                else
+                    ThreadUtils.interruptThread(context, thread);
+            }
+        } catch (SQLException | SQLHandledException ignored) {
+        }
     }
 
     private ServerResponse continueInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Callable<ServerResponse> continueRequest) throws RemoteException {

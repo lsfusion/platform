@@ -493,13 +493,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public GGroupObjectValue getSelectedColumn() {
-        return null;
-    }
-    @Override
     public GGroupObjectValue getColumnKey(Cell.Context context) {
-        return GGroupObjectValue.EMPTY;
-//        return currentRecords.get(context.getIndex()).getKey();
+        return currentRecords.get(context.getIndex()).getKey();
     }
 
     @Override
@@ -545,8 +540,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void quickFilter(EditEvent event, GPropertyDraw filterProperty, GGroupObjectValue columnKey) {
-        treeGroupController.quickEditFilter(event, filterProperty, columnKey);
+    public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
+        treeGroupController.quickEditFilter(event, filterProperty);
     }
 
     @Override

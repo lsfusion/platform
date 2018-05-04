@@ -32,9 +32,6 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
             DataOutputStream outStream = new DataOutputStream(byteStream);
             outStream.writeByte(FilterType.COMPARE);
             outStream.writeInt(filter.propertyID);
-            outStream.writeBoolean(filter.columnKey != null);
-            if(filter.columnKey != null)
-                GwtToClientConverter.serializeGroupObjectValue(outStream, filter.columnKey);
             outStream.writeBoolean(filter.negation);
             outStream.writeByte(filter.compareByte);
             outStream.writeByte(filter.filterValue.typeID);

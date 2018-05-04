@@ -16,12 +16,10 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.property.CalcProperty;
@@ -48,6 +46,8 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     // ID группы при отчете для одной таблицы
     private final Integer groupId;
     private FormUserPreferences userPreferences;
+    // ID тех групп, которые идут в отчет таблицей значений.
+    private final Set<Integer> gridGroupsId;
     private Map<Integer, GroupObject> idToInstance = new HashMap<>();
 
     public static class ColumnGroupCaptionsData<Obj> {
@@ -62,10 +62,11 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     }
     
     public ReportSourceGenerator(FormSourceInterface<PropertyDraw, GroupObject, PropertyObject, CalcPropertyObject, Order, Obj, PropertyReaderInstance> formInterface, GroupObjectHierarchy.ReportHierarchy hierarchy,
-                                 GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Integer groupId, FormUserPreferences userPreferences) {
+                                 GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Set<Integer> gridGroupsId, Integer groupId, FormUserPreferences userPreferences) {
         this.hierarchy = hierarchy;
         this.fullFormHierarchy = fullFormHierarchy;
         this.formInterface = formInterface;
+        this.gridGroupsId = gridGroupsId;
         this.groupId = groupId;
         this.userPreferences = userPreferences;
 
@@ -74,6 +75,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         }
     }
 
+    public Map<String, ReportData> generate(ReportGenerationDataType reportType) throws SQLException, SQLHandledException {
+        return generate(reportType, 0);
+    }
     public Map<String, ReportData> generate(ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
         iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObject>EMPTYORDER(), null, reportType, selectTop);
         return sources;
@@ -116,7 +120,13 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
             if (groupId == null || groupId.equals(groupObjectID)) {
                 boolean inParent = parentGroups.contains(group);
                 if(!(subReportTableOptimization && inParent)) {
-                    newQuery.and(getGroupWhere(group, newQuery.getMapExprs()));
+                    newQuery.and(formInterface.getWhere(group, newQuery.getMapExprs()));
+
+                    if (!gridGroupsId.contains(groupObjectID)) {
+                        for (Obj object : formInterface.getObjects(group)) {
+                            newQuery.and(formInterface.getExpr(object, newQuery.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
+                        }
+                    }
                 }
 
                 ImOrderMap<Order,Boolean> mergeOrders = formInterface.getOrders(group).mergeOrder(formInterface.getOrderObjects(group).toOrderMap(false));
@@ -149,10 +159,6 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         types.set(mTypes.immutable());
         orders.set(mOrders.immutableOrder());
         return newQuery.getQuery();
-    }
-
-    private Where getGroupWhere(GroupObject group, ImMap<Obj, Expr> mapExprs) throws SQLException, SQLHandledException {
-        return formInterface.getWhere(group, mapExprs).and(formInterface.getFixedObjectsWhere(group, groupId, mapExprs));
     }
 
     private Pair<Object, PropertyType> addProperty(Object property, Order pObject, PropertyType type, boolean inParent, Join<Pair<Object, PropertyType>> parentJoin, QueryBuilder<Obj, Pair<Object, PropertyType>> newQuery, MExclMap<Pair<Object, PropertyType>, Type> mTypes) throws SQLException, SQLHandledException {
@@ -379,13 +385,19 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
         for (GroupObject group : keyGroupObjects) {
-            query.and(getGroupWhere(group, query.getMapExprs()));
+            query.and(formInterface.getWhere(group, query.getMapExprs()));
 
             ImOrderMap<Order, Boolean> groupOrders = formInterface.getOrders(group).mergeOrder(formInterface.getOrderObjects(group).toOrderMap(false));
             for (int i=0,size=groupOrders.size();i<size;i++) {
                 Order order = groupOrders.getKey(i);
                 query.addProperty(order, formInterface.getExpr(order, query.getMapExprs()));
                 mQueryOrders.add(order, groupOrders.getValue(i));
+            }
+
+            if (formInterface.getGroupViewType(group).isPanel()) {
+                for (Obj object : formInterface.getObjects(group)) {
+                    query.and(formInterface.getExpr(object, query.getMapExprs()).compare(formInterface.getObjectValue(object).getExpr(), Compare.EQUALS));
+                }
             }
         }
 

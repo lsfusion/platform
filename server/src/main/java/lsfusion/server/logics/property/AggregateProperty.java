@@ -3,11 +3,8 @@ package lsfusion.server.logics.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ProgressBar;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
@@ -19,7 +16,6 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NullableKeyExpr;
-import lsfusion.server.data.expr.query.AggrType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.query.StatType;
 import lsfusion.server.data.query.Query;
@@ -32,12 +28,9 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
-import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
-import lsfusion.server.session.StructChanges;
 import lsfusion.server.stack.StackMessage;
 import lsfusion.server.stack.StackProgress;
 import lsfusion.server.stack.ThisMessage;
@@ -46,41 +39,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
-
-    protected static void fillDepends(MSet<CalcProperty> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {
-        for(CalcPropertyInterfaceImplement propImplement : propImplements)
-            propImplement.mapFillDepends(depends);
-    }
-
-
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<CalcPropertyInterfaceImplement<I>> used, final boolean isSelect, final ExClassSet commonValue, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, InferType inferType) {
-        ImList<ExClassSet> valueClasses = ListFact.toList(used.size(), new GetIndex<ExClassSet>() {
-            public ExClassSet getMapValue(int i) {
-                return isSelect && i == 0 ? commonValue : ExClassSet.notNull(commonValue);
-            }});
-        return inferInnerInterfaceClasses(used, orders, ordersNotNull, skipNotNull, valueClasses, inferType);
-    }
-
-    protected <I extends PropertyInterface> Inferred<I> inferInnerInterfaceClasses(ImList<CalcPropertyInterfaceImplement<I>> used, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull, int skipNotNull, ImList<ExClassSet> valueClasses, InferType inferType) {
-        return op(used.addList(orders.keyOrderSet()), valueClasses.addList(ListFact.toList(ExClassSet.NULL, orders.size())),
-                used.size() + (ordersNotNull ? orders.size() : 0), skipNotNull, inferType, false);
-    }
-
-    protected <I extends PropertyInterface> ExClassSet inferInnerValueClass(ImList<CalcPropertyInterfaceImplement<I>> used, ImMap<I, ExClassSet> inferred, AggrType aggrType, InferType inferType) {
-        ExClassSet valueClass = used.get(aggrType.getMainIndex()).mapInferValueClass(inferred, inferType);
-        if(aggrType.isSelect())
-            return valueClass;
-
-        if(valueClass == null) {
-            assert inferType == InferType.RESOLVE;
-            return null;
-        }
-        return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
-    }
-
-    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
-        return propChanges.getUsedChanges(getDepends());
-    }
 
     public boolean isStored() {
         assert (field!=null) == (mapTable!=null);
