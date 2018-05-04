@@ -12,7 +12,7 @@ public class ModuleEqualLCPFinder extends ModuleEqualLPFinder<LCP<?>> {
 
     @Override
     public boolean isFiltered(LCP<?> property) {
-        return (findLocals || !property.property.isLocal());
+        return (!findLocals && property.property.isLocal());
     }
 
     @Override
