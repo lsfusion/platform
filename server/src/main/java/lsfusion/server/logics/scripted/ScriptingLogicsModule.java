@@ -1081,7 +1081,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public List<ResolveClassSet> getSignatureForGProp(List<Integer> resultInterfaces, List<LPWithParams> paramProps, List<TypedParameter> params) {
-        return getParamClassesByParamProperties(getAllGroupProps(resultInterfaces, paramProps), params);
+        return getParamClassesByParamProperties(getAllGroupProps(resultInterfaces, paramProps, true), params);
     }
 
     private LP findJoinMainProp(String mainPropName, String sourceName, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
@@ -2244,7 +2244,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             allGroupProps.add(add);}
         } else {
             for (int resI : resultInterfaces) {
-                allGroupProps.add(new LCPWithParams(null, Collections.singletonList(resI)));
+                allGroupProps.add(new LPWithParams(null, Collections.singletonList(resI)));
             }
             allGroupProps.addAll(groupProps);
         }
