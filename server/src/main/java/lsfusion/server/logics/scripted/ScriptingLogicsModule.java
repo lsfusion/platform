@@ -46,7 +46,6 @@ import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.external.ExternalDBActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalDBFActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
-import lsfusion.server.logics.property.actions.file.FileActionType;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
@@ -1441,24 +1440,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAPWithParams addScriptedFileAProp(FileActionType actionType, LCPWithParams property, LCPWithParams pathProp, boolean isAbsolutPath, boolean noDialog, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedFileAProp(LCPWithParams property, LCPWithParams nameProp, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = new ArrayList<>();
         params.add(property);
-        if(pathProp != null)
-            params.add(pathProp);
+        if(nameProp != null)
+            params.add(nameProp);
 
-        LAP<?> res;
-        switch (actionType) {
-            case OPEN:
-                res = addOFAProp(property.getLP().property.getValueClass(ClassType.valuePolicy),
-                        pathProp == null ? null : pathProp.getLP().property.getValueClass(ClassType.valuePolicy),
+        LAP<?> res = addOFAProp(property.getLP().property.getValueClass(ClassType.valuePolicy),
+                        nameProp == null ? null : nameProp.getLP().property.getValueClass(ClassType.valuePolicy),
                         syncType != null && syncType);
-                break;
-            default: // SAVE
-                res = addSFAProp(property.getLP().property.getValueClass(ClassType.valuePolicy),
-                        pathProp == null ? null : pathProp.getLP().property.getValueClass(ClassType.valuePolicy),
-                        isAbsolutPath, noDialog);
-        }
         return addScriptedJoinAProp(res, params);
     }
 

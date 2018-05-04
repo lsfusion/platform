@@ -82,7 +82,7 @@ class LSFLexer(RegexLexer):
                     'PREFCHARWIDTH', 'PREV', 'PRINT', 'PRIORITY', 'PROPERTIES', 'PROPERTY',
                     'PROPORTION', 'QUERYOK', 'QUERYCLOSE', 'QUICKFILTER', 'READ', 'READONLY', 'READONLYIF', 'RECURSION', 'REFLECTION', 'REGEXP', 'REMOVE',
                     'REPORTFILES', 'REQUEST', 'REQUIRE', 'RESOLVE', 'RETURN', 'RGB', 'RIGHT', 'ROOT',
-                    'ROUND', 'RTF', 'SAVE', 'SCHEDULE', 'SCROLL', 'SEEK', 'SELECTOR', 'SESSION', 'SET', 'SETCHANGED', 'SHORTCUT', 'SHOW', 'SHOWDROP',
+                    'ROUND', 'RTF', 'SCHEDULE', 'SCROLL', 'SEEK', 'SELECTOR', 'SESSION', 'SET', 'SETCHANGED', 'SHORTCUT', 'SHOW', 'SHOWDROP',
                     'SHOWIF', 'SINGLE', 'SHEET', 'SPLITH', 'SPLITV', 'SQL', 'STEP', 'STRETCH', 'STRICT', 'STRUCT', 'SUBJECT',
                     'SUM', 'TAB', 'TABBED', 'TABLE', 'TEXTHALIGN', 'TEXTVALIGN', 'THEN', 'THREADS', 'TIME', 'TO', 'TODRAW',
                     'TOOLBAR', 'TOP', 'TRAILING', 'TREE', 'TRUE', 'TRY', 'UNGROUP', 'UPDATE', 'VALIGN', 'VALUE',

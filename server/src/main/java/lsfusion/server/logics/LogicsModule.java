@@ -50,7 +50,6 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.file.OpenActionProperty;
-import lsfusion.server.logics.property.actions.file.SaveActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -1529,17 +1528,6 @@ public abstract class LogicsModule {
         if(nameProp != null)
             valueClasses.add(nameProp);
         return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), syncType, valueClasses.toArray(new ValueClass[valueClasses.size()]))));
-    }
-
-    // ------------------- SAVE FILE ----------------- //
-
-    protected LAP addSFAProp(ValueClass prop, ValueClass pathProp, boolean isAbsolutPath, boolean noDialog) {
-        List<ValueClass> valueClasses = new ArrayList<>();
-        valueClasses.add(prop);
-        if (pathProp != null)
-            valueClasses.add(pathProp);
-        return addProperty(null, new LAP(new SaveActionProperty(LocalizedString.create("sfa"), isAbsolutPath, noDialog,
-                valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- EVAL ----------------- //
