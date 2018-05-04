@@ -1267,8 +1267,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(false, mainProp, paramProps);
     }
     
-    public LCPWithParams addScriptedJProp(boolean user, LCP mainProp, List<LCPWithParams> paramProps, List<Integer> usedContext) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(user, mainProp, getAllGroupProps(usedContext, paramProps));
+    public LCPWithParams addScriptedJProp(boolean user, LCP mainProp, List<LCPWithParams> paramProps, List<Integer> usedContext, boolean ci) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(user, mainProp, getAllGroupProps(usedContext, paramProps, ci));
     }
     
     public LCPWithParams addScriptedJProp(boolean user, LCP mainProp, List<LCPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
@@ -2358,21 +2358,29 @@ public class ScriptingLogicsModule extends LogicsModule {
                                   boolean ascending, LCPWithParams whereProp, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedCDIGProp(oldContextSize, groupProps, type, mainProps, orderProps, ascending, whereProp, newContext);
     }
-
-    public List<LCPWithParams> getAllGroupProps(List<Integer> resultInterfaces, List<LCPWithParams> groupProps) {
+    
+    // ci - надо в дырки вставлять, от использованных, если не ci то в конце
+    public List<LCPWithParams> getAllGroupProps(List<Integer> resultInterfaces, List<LCPWithParams> groupProps, boolean ci) {
         List<LCPWithParams> allGroupProps = new ArrayList<>();
 
-        Set<Integer> usedInterfaces = new HashSet<>(resultInterfaces);
+        if(ci) {
+            Set<Integer> usedInterfaces = new HashSet<>(resultInterfaces);
 //        нужно groupProps в дырки вставить для context independent группировки
-        int ra = 0, ga = 0;
-        int groupSize = groupProps.size();
-        for(int i = 0, size = resultInterfaces.size()+ groupSize; i<size; i++) {
-            LCPWithParams add;
-            if(ga >= groupSize || usedInterfaces.contains(i))
-                add = new LCPWithParams(null, Collections.singletonList(resultInterfaces.get(ra++)));
-            else
-                add = groupProps.get(ga++);
-            allGroupProps.add(add);
+            int ra = 0, ga = 0;
+            int groupSize = groupProps.size();
+            for (int i = 0, size = resultInterfaces.size() + groupSize; i < size; i++) {
+                LCPWithParams add;
+                if (ga >= groupSize || usedInterfaces.contains(i))
+                    add = new LCPWithParams(null, Collections.singletonList(resultInterfaces.get(ra++)));
+                else
+                    add = groupProps.get(ga++);
+                allGroupProps.add(add);
+            }
+        } else {
+            for (int resI : resultInterfaces) {
+                allGroupProps.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            }
+            allGroupProps.addAll(groupProps);
         }
         
         return allGroupProps;
@@ -2384,7 +2392,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LCPWithParams> lpWithParams = mergeLists(groupProps, mainProps, orderProps, Collections.singletonList(whereProp));
         List<Integer> resultInterfaces = getResultInterfaces(oldContextSize, lpWithParams.toArray(new LPWithParams[lpWithParams.size()]));
 
-        List<LCPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps);
+        List<LCPWithParams> allGroupProps = getAllGroupProps(resultInterfaces, groupProps, true);
 
         List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(oldContextSize, resultInterfaces, newContext);
 
