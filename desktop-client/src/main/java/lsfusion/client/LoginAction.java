@@ -177,7 +177,7 @@ public final class LoginAction {
                     if (!userInfos.isEmpty()) {
                         password = userInfos.get(0).password;
                     }
-                } else {
+                } else if (scanner.hasNextLine()) {
                     password = new String(Base64.decodeBase64(scanner.nextLine()));
                 }
                 return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
