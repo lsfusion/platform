@@ -45,12 +45,12 @@ public class FileExistsActionProperty extends ScriptingActionProperty {
                     Matcher m = p.matcher(path);
                     if (m.matches()) {
                         String url = m.group(1);
-                        boolean exists = (boolean) context.requestUserInteraction(new FileExistsClientAction(url));
+                        boolean exists = (boolean) context.requestUserInteraction(new FileClientAction(0, url));
                         findProperty("fileExists[]").change(exists ? true : null, context);
                     } else
                         throw new RuntimeException("ListFiles Error. Incorrect path: " + path);
                 } else {
-                    Pattern p = Pattern.compile("(file|ftp):(?:\\/\\/)?(.*)");
+                    Pattern p = Pattern.compile("(file|ftp):(?://)?(.*)");
                     Matcher m = p.matcher(path);
                     if (m.matches()) {
                         String type = m.group(1).toLowerCase();
@@ -78,7 +78,7 @@ public class FileExistsActionProperty extends ScriptingActionProperty {
 
     private boolean checkFileExistsFTP(String path, String charset) throws IOException {
         //*ftp://username:password@host:port/path*//*
-        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
+        Pattern connectionStringPattern = Pattern.compile("ftp://(.*):(.*)@([^/:]*)(?::([^/]*))?(?:/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1);
