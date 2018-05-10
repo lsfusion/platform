@@ -137,17 +137,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // счетчик идентификаторов
     private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private PropertyDBNamePolicy propertyDBNamePolicy;
+    private DBNamingPolicy DBNamingPolicy;
     
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final T BL;
 
-    public BaseLogicsModule(T BL, PropertyDBNamePolicy propertyDBNamePolicy) throws IOException {
+    public BaseLogicsModule(T BL, DBNamingPolicy DBNamingPolicy) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), "/lsfusion/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.propertyDBNamePolicy = propertyDBNamePolicy;
+        this.DBNamingPolicy = DBNamingPolicy;
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
@@ -286,8 +286,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
 
-    public PropertyDBNamePolicy getDBNamePolicy() {
-        return propertyDBNamePolicy;
+    public DBNamingPolicy getDBNamingPolicy() {
+        return DBNamingPolicy;
     }
     
     public AbstractPropertyNameParser.ClassFinder getClassFinder() {
@@ -335,7 +335,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     public void initTables() throws RecognitionException {
-        tableFactory = new TableFactory(baseClass);
+        tableFactory = new TableFactory(getDBNamingPolicy());
         baseClass.initFullTables(tableFactory);
         
         super.initTables();

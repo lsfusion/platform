@@ -219,7 +219,7 @@ public abstract class LogicsModule {
 
     @NFLazy
     protected <P extends PropertyInterface, T extends LP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
-        lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamePolicy());
+        lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
         propClasses.put(lp, signature);
         addModuleLP(lp);
     }
