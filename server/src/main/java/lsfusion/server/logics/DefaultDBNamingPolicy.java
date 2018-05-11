@@ -1,8 +1,8 @@
 package lsfusion.server.logics;
 
 public class DefaultDBNamingPolicy extends FixedSizeUnderscoreDBNamingPolicy {
-    public DefaultDBNamingPolicy(int maxIDLength, String autoTablesPrefix) {
-        super(maxIDLength, autoTablesPrefix);
+    public DefaultDBNamingPolicy(int maxIDLength) {
+        super(maxIDLength, "_auto");
     }
     
     @Override

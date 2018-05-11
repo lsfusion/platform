@@ -307,13 +307,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (policyName != null && !policyName.isEmpty()) {
                 Integer maxIdLength = getDbManager().getDbMaxIdLength();
                 Class cls = Class.forName(policyName);
-                // todo [dale]: нужно либо добавить property для префикса автотаблиц, либо отказаться от параметризации
-                dbNamingPolicy = (DBNamingPolicy) cls.getConstructors()[0].newInstance(maxIdLength, "_auto");
+                dbNamingPolicy = (DBNamingPolicy) cls.getConstructors()[0].newInstance(maxIdLength);
             }
         } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             logger.error("Failed to get DBNamingPolicy, used default", e);
         }
-        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(63, "_auto") : dbNamingPolicy;
+        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(63) : dbNamingPolicy;
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {

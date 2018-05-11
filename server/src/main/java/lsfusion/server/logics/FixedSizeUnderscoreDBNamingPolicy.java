@@ -27,9 +27,6 @@ public class FixedSizeUnderscoreDBNamingPolicy implements DBNamingPolicy {
             builder.append('_');
             builder.append(valueClass.getSID());
         }
-        if (classes.isEmpty()) {
-            builder.append("_0");
-        }
         return cutToMaxLength(builder.toString());
     }
 
