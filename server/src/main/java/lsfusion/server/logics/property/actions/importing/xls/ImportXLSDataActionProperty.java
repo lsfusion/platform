@@ -19,9 +19,11 @@ import java.util.List;
 
 public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     protected Integer sheetIndex;
+    private boolean sheetAll;
     
-    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
+    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean sheetAll, BaseLogicsModule baseLM) {
         super(paramsCount, ids, properties, baseLM);
+        this.sheetAll = sheetAll;
     }
 
     @Override
@@ -40,8 +42,18 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
 
     @Override
     public ImportIterator getIterator(byte[] file, String extension) throws IOException, IncorrectFileException {
-        return file[0] == 80 ?  //50 hex
-                new ImportXLSXIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex) :
-                new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+        if (file[0] == 80) {  //50 hex
+            if (sheetAll) {
+                return new ImportXLSXWorkbookIterator(file, getSourceColumns(XLSColumnsMapping), properties);
+            } else {
+                return new ImportXLSXSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+            }
+        } else {
+            if (sheetAll) {
+                return new ImportXLSWorkbookIterator(file, getSourceColumns(XLSColumnsMapping), properties);
+            } else {
+                return new ImportXLSSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+            }
+        }
     }
 }

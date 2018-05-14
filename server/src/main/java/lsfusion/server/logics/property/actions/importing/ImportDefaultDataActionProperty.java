@@ -9,13 +9,13 @@ import lsfusion.server.logics.property.actions.importing.csv.ImportCSVIterator;
 import lsfusion.server.logics.property.actions.importing.dbf.CustomDbfReader;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFIterator;
-import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.table.ImportTableIterator;
 import lsfusion.server.logics.property.actions.importing.json.ImportJSONIterator;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBIterator;
-import lsfusion.server.logics.property.actions.importing.xls.ImportXLSIterator;
-import lsfusion.server.logics.property.actions.importing.xls.ImportXLSXIterator;
+import lsfusion.server.logics.property.actions.importing.table.ImportTableDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.table.ImportTableIterator;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSSheetIterator;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSXSheetIterator;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLIterator;
 import org.jdom.JDOMException;
 import org.json.JSONException;
@@ -37,9 +37,9 @@ public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
         switch (extension) {
 
             case "xls":
-                return new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, null);
+                return new ImportXLSSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, null);
             case "xlsx":
-                return new ImportXLSXIterator(file, getSourceColumns(XLSColumnsMapping), properties, null);
+                return new ImportXLSXSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, null);
             case "xml":
                 return new ImportXMLIterator(file, properties, ids, null, hasListOption, false) {
                     @Override
