@@ -2924,7 +2924,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAPWithParams addScriptedPrintFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                            LCPWithParams printerProperty, FormPrintType printType, PropertyUsage propUsage,
-                                               Boolean syncType, Integer selectTop, LCPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
+                                               Boolean syncType, Integer selectTop, String sheetName, LCPWithParams passwordProperty) throws ScriptingErrorLog.SemanticErrorException {
         assert printType != null;
         List<O> objects = new ArrayList<>();
         List<LCPWithParams> mapping = new ArrayList<>();
@@ -2959,7 +2959,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
         LAP property = addPFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                printerProperty != null ? printerProperty.getLP().property : null, printType, syncType, selectTop,
+                printerProperty != null ? printerProperty.getLP().property : null, sheetName, printType, syncType, selectTop,
                 passwordProperty != null ? passwordProperty.getLP().property : null, targetProp, false);
 
         if (mapping.size() > 0)  { // тут надо printerProperty просто в mapping закинуть по идее сразу

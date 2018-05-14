@@ -599,12 +599,12 @@ public class ReportGenerator {
     }
 
     public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) {
-        exportAndOpen(generationData, type, null, fixBoolean);
+        exportAndOpen(generationData, type, null, null, fixBoolean);
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String password, boolean fixBoolean) {
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean fixBoolean) {
         try {
-            File tempFile = exportToFile(generationData, type, password, fixBoolean);
+            File tempFile = exportToFile(generationData, type, sheetName, password, fixBoolean);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -654,19 +654,19 @@ public class ReportGenerator {
         throw new UnsupportedOperationException();
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String password) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, type, password, false);
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) throws ClassNotFoundException, IOException, JRException {
+        return exportToFile(generationData, type, sheetName, password, false);
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String password, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, getExporter(type), type.getExtension(), password, type.isExcel(), fixBoolean);
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
+        return exportToFile(generationData, getExporter(type), type.getExtension(), sheetName, password, type.isExcel(), fixBoolean);
     }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, null, ignorePagination, false);
+        return exportToFile(generationData, exporter, extension, null, null, ignorePagination, false);
     }
 
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, String password, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
+    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, String sheetName, String password, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
@@ -678,16 +678,22 @@ public class ReportGenerator {
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         exporter.exportReport();
 
-        return protectFile(tempFile, extension, password);
+        return processFile(tempFile, extension, sheetName, password);
     }
 
-    private static File protectFile(File tempFile, String extension, String password) throws IOException {
-        if(password != null) {
+    private static File processFile(File tempFile, String extension, String sheetName, String password) throws IOException {
+        if(sheetName != null || password != null) {
             switch (extension) {
                 case "xls": {
                     HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(IOUtils.getFileBytes(tempFile)));
                     for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
-                        it.next().protectSheet(password);
+                        Sheet sheet = it.next();
+                        if(password != null) {
+                            sheet.protectSheet(password);
+                        }
+                        if(sheetName != null) {
+                            wb.setSheetName(wb.getSheetIndex(sheet), sheetName);
+                        }
                     }
                     try (FileOutputStream fos = new FileOutputStream(tempFile)) {
                         wb.write(fos);
@@ -697,7 +703,13 @@ public class ReportGenerator {
                 case "xlsx": {
                     XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(IOUtils.getFileBytes(tempFile)));
                     for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
-                        it.next().protectSheet(password);
+                        Sheet sheet = it.next();
+                        if(password != null) {
+                            sheet.protectSheet(password);
+                        }
+                        if(sheetName != null) {
+                            wb.setSheetName(wb.getSheetIndex(sheet), sheetName);
+                        }
                     }
                     try (FileOutputStream fos = new FileOutputStream(tempFile)) {
                         wb.write(fos);
