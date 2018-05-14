@@ -29,10 +29,7 @@ public class FileClientAction implements ClientAction {
             }
             case 1: {//DeleteFile
                 File sourceFile = new File(source);
-                if (!sourceFile.delete()) {
-                    sourceFile.deleteOnExit();
-                }
-                return null;
+                return sourceFile.exists() && sourceFile.delete();
             }
             case 2: {//MoveFile
                 return new File(source).renameTo(new File(destination));
