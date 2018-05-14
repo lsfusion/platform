@@ -1,13 +1,14 @@
 package lsfusion.erp.utils.utils;
 
 import com.google.common.base.Throwables;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.ReadUtils;
 import lsfusion.server.logics.property.actions.WriteActionProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
@@ -75,6 +76,132 @@ public class FileUtils {
         } else if (path.type.equals("sftp")) {
             //todo: parseFTPPath может принимать путь без ftp://
             ReadUtils.deleteSFTPFile(sourcePath);
+        }
+    }
+
+    public static void mkdir(String directory) throws SftpException, JSchException, IOException {
+        Path path = parsePath(directory, false);
+
+        String result = null;
+        switch (path.type) {
+            case "file":
+                if (!new File(path.path).exists() && !new File(path.path).mkdirs())
+                    result = "Failed to create directory '" + directory + "'";
+                break;
+            case "ftp":
+                result = mkdirFTP(path.path);
+                break;
+            case "sftp":
+                if (!mkdirSFTP(path.path))
+                    result = "Failed to create directory '" + directory + "'";
+                break;
+        }
+        if (result != null)
+            throw new RuntimeException(result);
+    }
+
+    private static String mkdirFTP(String path) throws IOException {
+        String result = null;
+        /*username:password;charset@host:port/directory*/
+        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4);
+            boolean noPort = connectionStringMatcher.group(5) == null;
+            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(5));
+            String directory = connectionStringMatcher.group(6);
+
+            FTPClient ftpClient = new FTPClient();
+            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+            if (charset != null)
+                ftpClient.setControlEncoding(charset);
+            try {
+
+                ftpClient.connect(server, port);
+                if (ftpClient.login(username, password)) {
+                    ftpClient.enterLocalPassiveMode();
+                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+                    boolean dirExists = true;
+                    String[] directories = directory.split("/");
+                    for (String dir : directories) {
+                        if (result == null && !dir.isEmpty()) {
+                            if (dirExists)
+                                dirExists = ftpClient.changeWorkingDirectory(dir);
+                            if (!dirExists) {
+                                if (!ftpClient.makeDirectory(dir))
+                                    result = ftpClient.getReplyString();
+                                if (!ftpClient.changeWorkingDirectory(dir))
+                                    result = ftpClient.getReplyString();
+
+                            }
+                        }
+                    }
+
+                    return result;
+                } else {
+                    result = "Incorrect login or password. Writing file from ftp failed";
+                }
+            } finally {
+                try {
+                    if (ftpClient.isConnected()) {
+                        ftpClient.logout();
+                        ftpClient.disconnect();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            result = "Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/directory";
+        }
+        return result;
+    }
+
+    private static boolean mkdirSFTP(String path) throws JSchException, SftpException {
+        /*username:password;charset@host:port/directory*/
+        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1); //username
+            String password = connectionStringMatcher.group(2); //password
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4); //host:IP
+            boolean noPort = connectionStringMatcher.group(5) == null;
+            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(5));
+            String directory = connectionStringMatcher.group(6);
+
+            Session session = null;
+            Channel channel = null;
+            ChannelSftp channelSftp = null;
+            try {
+                JSch jsch = new JSch();
+                session = jsch.getSession(username, server, port);
+                session.setPassword(password);
+                java.util.Properties config = new java.util.Properties();
+                config.put("StrictHostKeyChecking", "no");
+                session.setConfig(config);
+                session.connect();
+                channel = session.openChannel("sftp");
+                channel.connect();
+                channelSftp = (ChannelSftp) channel;
+                if (charset != null)
+                    channelSftp.setFilenameEncoding(charset);
+                channelSftp.mkdir(directory.replace("\\", "/"));
+                return true;
+            } finally {
+                if (channelSftp != null)
+                    channelSftp.exit();
+                if (channel != null)
+                    channel.disconnect();
+                if (session != null)
+                    session.disconnect();
+            }
+        } else {
+            throw new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/directory");
         }
     }
 
