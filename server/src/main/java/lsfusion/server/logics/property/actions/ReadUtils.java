@@ -292,7 +292,8 @@ public class ReadUtils {
         }
     }
 
-    private static void deleteFTPFile(String path) throws IOException {
+    //после перехода на 1.3.5 переедет в fsl
+    public static void deleteFTPFile(String path) throws IOException {
         FTPPath properties = parseFTPPath(path, 21);
         if (properties != null) {
             FTPClient ftpClient = new FTPClient();
@@ -318,7 +319,8 @@ public class ReadUtils {
         }
     }
 
-    private static void deleteSFTPFile(String path) throws JSchException, SftpException {
+    //после перехода на 1.3.5 переедет в fsl
+    public static void deleteSFTPFile(String path) throws JSchException, SftpException {
         FTPPath properties = parseFTPPath(path, 22);
         if (properties != null) {
             String remoteFile = properties.remoteFile;
