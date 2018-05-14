@@ -707,7 +707,7 @@ public class ReadUtils {
                 error = String.format("Read Error. Incorrect path: %s, use syntax (file|ftp|http|https|jdbc|mdb)://path", path);
                 break;
             case 3:
-                error = "ReadActionProperty Error. File not found: " + path;
+                error = "Read Error. File not found: " + path;
                 break;
         }
         return error;
