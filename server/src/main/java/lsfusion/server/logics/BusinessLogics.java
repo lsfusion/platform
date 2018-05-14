@@ -2228,7 +2228,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return formatMessageList(messageList);
     }
 
-    public LCP findSafeProperty(String canonicalName) {
+    public LP findSafeProperty(String canonicalName) {
         LCP lp = null;
         try {
             lp = findProperty(canonicalName);
