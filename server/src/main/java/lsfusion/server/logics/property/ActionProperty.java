@@ -594,7 +594,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public boolean ignoreReadOnlyPolicy() {
-        return hasFlow(ChangeFlowType.READONLYCHANGE);
+        return !hasFlow(ChangeFlowType.READONLYCHANGE);
     }
 
     @Override
