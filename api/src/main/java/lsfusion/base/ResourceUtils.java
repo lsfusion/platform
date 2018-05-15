@@ -21,6 +21,7 @@ public class ResourceUtils {
         final ArrayList<String> retval = new ArrayList<>();
         for (final String element : getClassPathElements()) {
             if (!isRedundantString(element)) {
+                assert !element.endsWith("/"); // нужен для другого использования getClassPathElements
                 retval.addAll(getResources(element, pattern));
             }
         }
@@ -46,7 +47,7 @@ public class ResourceUtils {
         } else {
             final File file = new File(element);
             if (file.isDirectory()) {
-                retval.addAll(getResourcesFromDirectory(file, "", pattern));
+                retval.addAll(getResourcesFromDirectory(file, "/", pattern));
             } else {
                 retval.addAll(getResourcesFromJarFile(file, pattern));
             }
@@ -66,7 +67,8 @@ public class ResourceUtils {
         while (e.hasMoreElements()) {
             final ZipEntry ze = (ZipEntry) e.nextElement();
             final String fileName = ze.getName();
-            fillResourcesResult(fileName, pattern, retval);
+            assert !fileName.startsWith("/");
+            fillResourcesResult("/" + fileName, pattern, retval);
         }
         try {
             zf.close();
@@ -83,9 +85,9 @@ public class ResourceUtils {
         if (fileList != null) {
             for (final File file : fileList) {
                 if (file.isDirectory()) {
-                    result.addAll(getResourcesFromDirectory(file, relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(), pattern));
+                    result.addAll(getResourcesFromDirectory(file, relativePath + file.getName() +"/", pattern));
                 } else {
-                    final String fileName = relativePath + (relativePath.isEmpty() ? "" : "/") + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
+                    final String fileName = relativePath + file.getName(); // SystemUtils.convertPath(file.getCanonicalPath(), true);
                     fillResourcesResult(fileName, pattern, result);
                 }
             }
@@ -94,6 +96,7 @@ public class ResourceUtils {
     }
 
     private static void fillResourcesResult(String fileName, Pattern pattern, List<String> result) {
+        assert fileName.startsWith("/");
         Matcher matcher = pattern.matcher(fileName);
         if (matcher.matches())
             result.add(matcher.groupCount() > 0 ? matcher.group(1) : fileName);

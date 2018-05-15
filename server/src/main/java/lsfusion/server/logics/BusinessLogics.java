@@ -121,7 +121,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
-    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("lsfusion/system");
+    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/lsfusion/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
     public static final String[] systemModulesNames = {"System", "Authentication", "Email", "EvalScript", "Reflection", "Contact", 
@@ -326,6 +326,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         List<String> excludedLSF = new ArrayList<>();
 
         for (String filePath : excludedPaths) {
+            if(!filePath.startsWith("/"))
+                filePath = "/" + filePath;
+            
             if (filePath.contains("*")) {
                 filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
                 Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
@@ -345,6 +348,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
 
         for (String filePath : paths) {
+            if(!filePath.startsWith("/"))
+                filePath = "/" + filePath;
+
             if (filePath.contains("*")) {
                 filePath += filePath.endsWith(".lsf") ? "" : ".lsf";
                 Pattern pattern = Pattern.compile(filePath.replace("*", ".*"));
@@ -377,7 +383,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     protected ScriptingLogicsModule addModuleFromResource(String path) throws IOException {
-        InputStream is = getClass().getResourceAsStream("/" + path);
+        InputStream is = getClass().getResourceAsStream(path);
         if (is == null)
             throw new RuntimeException(String.format("[error]:\tmodule '%s' cannot be found", path));
         return addModule(new ScriptingLogicsModule(is, path, LM, this));
@@ -1115,7 +1121,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Collection<String> calculateAllCustomReports() {
-        Pattern pattern = Pattern.compile("(?:.*/|^)("+ FormReportManager.reportsDir+".*\\.jrxml)");
+        Pattern pattern = Pattern.compile("/"+FormReportManager.reportsDir+".*\\.jrxml");
         return ResourceUtils.getResources(pattern);
     }
     
@@ -2641,7 +2647,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
-                final Path path = Paths.get(element).resolve(FormReportManager.reportsDir);
+                final Path path = Paths.get(BaseUtils.removeTrailingSlash(element + "/" + FormReportManager.reportsDir));
 //                logger.info("Reset reports cache: processing path : " + path);
                 if (Files.isDirectory(path)) {
 //                    logger.info("Reset reports cache: path is directory: " + path);
