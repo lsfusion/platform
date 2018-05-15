@@ -27,11 +27,4 @@ public class OkActionProperty extends FormFlowActionProperty {
     protected LCP getShowIf() {
         return showIf;
     }
-
-    @Override
-    public boolean hasFlow(ChangeFlowType type) {
-        if (type == ChangeFlowType.READONLYCHANGE)
-            return true;
-        return super.hasFlow(type);
-    }    
 }
