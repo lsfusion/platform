@@ -18,10 +18,10 @@ listFilesClient 'Получить список файлов (на клиенте
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();
-//path, charset, isClient
-fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
-fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, 'UTF-8', NULL); }
-fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, NULL, TRUE); } 
+//path, isClient
+fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], BOOLEAN); 
+fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, NULL); }
+fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, TRUE); } 
 
 // --------------------------------- STRING -> CUSTOMFILE -> STRING --------------------------------- //
 resultCustomFile = DATA LOCAL CUSTOMFILE ();

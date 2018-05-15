@@ -37,6 +37,7 @@ public class FileUtils {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false);
             if (readResult.errorCode == 0) {
                 File sourceFile = new File(readResult.filePath);
+                String error = null;
                 try {
                     switch (destPath.type) {
                         case "ftp":
@@ -51,9 +52,22 @@ public class FileUtils {
                             break;
                     }
                 } finally {
-                    deleteFile(srcPath, sourcePath);
+                    if (!sourceFile.delete()) {
+                        error = String.format("Failed to delete file '%s'", readResult.filePath);
+                    }
+                    switch (srcPath.type) {
+                        case "ftp":
+                            //todo: parseFTPPath сможет принимать путь без ftp://
+                            ReadUtils.deleteFTPFile(sourcePath);
+                            break;
+                        case "sftp":
+                            //todo: parseFTPPath сможет принимать путь без ftp://
+                            ReadUtils.deleteSFTPFile(sourcePath);
+                            break;
+                    }
                 }
-
+                if(error != null)
+                    throw new RuntimeException(error);
             } else if (readResult.error != null) {
                 throw new RuntimeException(readResult.error);
             }
@@ -67,21 +81,21 @@ public class FileUtils {
             if (!result)
                 throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
         } else {
-            deleteFile(path, sourcePath);
-        }
-    }
-
-    private static void deleteFile(Path path, String sourcePath) throws IOException, SftpException, JSchException {
-        File sourceFile = new File(path.path);
-        if (!sourceFile.delete()) {
-            throw new RuntimeException(String.format("Failed to delete file '%s'", sourceFile));
-        }
-        if (path.type.equals("ftp")) {
-            //todo: parseFTPPath может принимать путь без ftp://
-            ReadUtils.deleteFTPFile(sourcePath);
-        } else if (path.type.equals("sftp")) {
-            //todo: parseFTPPath может принимать путь без ftp://
-            ReadUtils.deleteSFTPFile(sourcePath);
+            switch (path.type) {
+                case "ftp":
+                    //todo: parseFTPPath сможет принимать путь без ftp://
+                    ReadUtils.deleteFTPFile(path.getPath());
+                    break;
+                case "sftp":
+                    //todo: parseFTPPath сможет принимать путь без ftp://
+                    ReadUtils.deleteSFTPFile(path.getPath());
+                    break;
+                case "file":
+                    if (!new File(sourcePath).delete()) {
+                        throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
+                    }
+                    break;
+            }
         }
     }
 
@@ -108,118 +122,89 @@ public class FileUtils {
 
     private static String mkdirFTP(String path) throws IOException {
         String result = null;
-        /*username:password;charset@host:port/directory*/
-        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1);
-            String password = connectionStringMatcher.group(2);
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4);
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(5));
-            String directory = connectionStringMatcher.group(6);
+        FTPPath ftpPath = parseFTPPath(path, 21);
 
-            FTPClient ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if (charset != null)
-                ftpClient.setControlEncoding(charset);
-            try {
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        if (ftpPath.charset != null)
+            ftpClient.setControlEncoding(ftpPath.charset);
+        try {
 
-                ftpClient.connect(server, port);
-                if (ftpClient.login(username, password)) {
-                    ftpClient.enterLocalPassiveMode();
-                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+            ftpClient.connect(ftpPath.server, ftpPath.port);
+            if (ftpClient.login(ftpPath.username, ftpPath.password)) {
+                ftpClient.enterLocalPassiveMode();
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
-                    boolean dirExists = true;
-                    String[] directories = directory.split("/");
-                    for (String dir : directories) {
-                        if (result == null && !dir.isEmpty()) {
-                            if (dirExists)
-                                dirExists = ftpClient.changeWorkingDirectory(dir);
-                            if (!dirExists) {
-                                if (!ftpClient.makeDirectory(dir))
-                                    result = ftpClient.getReplyString();
-                                if (!ftpClient.changeWorkingDirectory(dir))
-                                    result = ftpClient.getReplyString();
+                boolean dirExists = true;
+                String[] directories = ftpPath.remoteFile.split("/");
+                for (String dir : directories) {
+                    if (result == null && !dir.isEmpty()) {
+                        if (dirExists) dirExists = ftpClient.changeWorkingDirectory(dir);
+                        if (!dirExists) {
+                            if (!ftpClient.makeDirectory(dir)) result = ftpClient.getReplyString();
+                            if (!ftpClient.changeWorkingDirectory(dir)) result = ftpClient.getReplyString();
 
-                            }
                         }
                     }
+                }
 
-                    return result;
-                } else {
-                    result = "Incorrect login or password. Writing file from ftp failed";
-                }
-            } finally {
-                try {
-                    if (ftpClient.isConnected()) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                return result;
+            } else {
+                result = "Incorrect login or password. Writing file from ftp failed";
             }
-        } else {
-            result = "Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/directory";
+        } finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return result;
     }
 
     private static boolean mkdirSFTP(String path) throws JSchException, SftpException {
-        /*username:password;charset@host:port/directory*/
-        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //username
-            String password = connectionStringMatcher.group(2); //password
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //host:IP
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(5));
-            String directory = connectionStringMatcher.group(6);
+        FTPPath ftpPath = parseFTPPath(path, 22);
 
-            Session session = null;
-            Channel channel = null;
-            ChannelSftp channelSftp = null;
-            try {
-                JSch jsch = new JSch();
-                session = jsch.getSession(username, server, port);
-                session.setPassword(password);
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-                session.connect();
-                channel = session.openChannel("sftp");
-                channel.connect();
-                channelSftp = (ChannelSftp) channel;
-                if (charset != null)
-                    channelSftp.setFilenameEncoding(charset);
-                channelSftp.mkdir(directory.replace("\\", "/"));
-                return true;
-            } finally {
-                if (channelSftp != null)
-                    channelSftp.exit();
-                if (channel != null)
-                    channel.disconnect();
-                if (session != null)
-                    session.disconnect();
-            }
-        } else {
-            throw new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/directory");
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(ftpPath.username, ftpPath.server, ftpPath.port);
+            session.setPassword(ftpPath.password);
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            if (ftpPath.charset != null)
+                channelSftp.setFilenameEncoding(ftpPath.charset);
+            channelSftp.mkdir(ftpPath.remoteFile.replace("\\", "/"));
+            return true;
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 
-    public static boolean checkFileExists(ExecutionContext context, String sourcePath, String charset, boolean isClient) throws IOException {
-        FileUtils.Path path = FileUtils.parsePath(sourcePath, isClient);
+    public static boolean checkFileExists(ExecutionContext context, String sourcePath, boolean isClient) throws IOException {
+        Path path = parsePath(sourcePath, isClient);
         boolean exists;
         if (isClient) {
             exists = (boolean) context.requestUserInteraction(new FileClientAction(0, path.path));
         } else {
             switch (path.type) {
                 case "ftp":
-                    exists = checkFileExistsFTP(path.path, charset);
+                    exists = checkFileExistsFTP(path.path);
                     break;
                 case "sftp":
                     throw new RuntimeException("FileExists for SFTP is not supported");
@@ -232,43 +217,32 @@ public class FileUtils {
         return exists;
     }
 
-    private static boolean checkFileExistsFTP(String path, String charset) throws IOException {
-        //*username:password@host:port/path*//*
-        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@([^/:]*)(?::([^/]*))?(?:/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1);
-            String password = connectionStringMatcher.group(2);
-            String server = connectionStringMatcher.group(3);
-            boolean noPort = connectionStringMatcher.groupCount() == 4;
-            Integer port = noPort || connectionStringMatcher.group(4) == null ? 21 : Integer.parseInt(connectionStringMatcher.group(4));
-            String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
-            FTPClient ftpClient = new FTPClient();
-            try {
-                ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-                ftpClient.setControlEncoding(charset);
-                ftpClient.connect(server, port);
-                ftpClient.login(username, password);
-                ftpClient.enterLocalPassiveMode();
+    private static boolean checkFileExistsFTP(String path) throws IOException {
+        FTPPath ftpPath = parseFTPPath(path, 21);
+        FTPClient ftpClient = new FTPClient();
+        try {
+            ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+            if(ftpPath.charset != null)
+                ftpClient.setControlEncoding(ftpPath.charset);
+            ftpClient.connect(ftpPath.server, ftpPath.port);
+            ftpClient.login(ftpPath.username, ftpPath.password);
+            ftpClient.enterLocalPassiveMode();
 
-                InputStream inputStream = ftpClient.retrieveFileStream(remotePath);
-                int returnCode = ftpClient.getReplyCode();
-                return inputStream != null && returnCode != 550;
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
+            InputStream inputStream = ftpClient.retrieveFileStream(ftpPath.remoteFile);
+            int returnCode = ftpClient.getReplyCode();
+            return inputStream != null && returnCode != 550;
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
             }
-        } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path"));
         }
     }
 
     public static Map<String, Boolean> listFiles(ExecutionContext context, String sourcePath, String charset, boolean isClient) throws IOException {
-        FileUtils.Path path = FileUtils.parsePath(sourcePath, isClient);
+        Path path = parsePath(sourcePath, isClient);
         Map<String, Boolean> filesList;
         if (isClient) {
             filesList = (Map<String, Boolean>) context.requestUserInteraction(new FileClientAction(3, path.path));
@@ -301,45 +275,33 @@ public class FileUtils {
     }
 
     private static Map<String, Boolean> getFilesListFTP(ExecutionContext context, String path, String charset) throws IOException {
-        //*username:password@host:port/path*//*
-        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@([^/:]*)(?::([^/]*))?(?:/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //lstradeby
-            String password = connectionStringMatcher.group(2); //12345
-            String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.groupCount() == 4;
-            Integer port = noPort || connectionStringMatcher.group(4) == null ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
-            String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
-            FTPClient ftpClient = new FTPClient();
-            try {
-                ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-                ftpClient.setControlEncoding(charset);
-                ftpClient.connect(server, port);
-                ftpClient.login(username, password);
-                ftpClient.enterLocalPassiveMode();
+        FTPPath ftpPath = parseFTPPath(path, 21);
+        FTPClient ftpClient = new FTPClient();
+        try {
+            ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+            ftpClient.setControlEncoding(charset);
+            ftpClient.connect(ftpPath.server, ftpPath.port);
+            ftpClient.login(ftpPath.username, ftpPath.password);
+            ftpClient.enterLocalPassiveMode();
 
-                Map<String, Boolean> result = new HashMap<>();
-                if (ftpClient.changeWorkingDirectory(remotePath)) {
-                    FTPFile[] ftpFileList = ftpClient.listFiles();
-                    for (FTPFile file : ftpFileList) {
-                        result.put(file.getName(), file.isDirectory());
-                    }
-                } else {
-                    context.delayUserInteraction(new MessageClientAction(String.format("Path '%s' not found for %s", remotePath, path), "Path not found"));
+            Map<String, Boolean> result = new HashMap<>();
+            if (ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
+                FTPFile[] ftpFileList = ftpClient.listFiles();
+                for (FTPFile file : ftpFileList) {
+                    result.put(file.getName(), file.isDirectory());
                 }
-                return result;
-
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
+            } else {
+                context.delayUserInteraction(new MessageClientAction(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), "Path not found"));
             }
-        } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path"));
+            return result;
+
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+            }
         }
     }
 
@@ -354,7 +316,7 @@ public class FileUtils {
         if (m.matches()) {
             return new Path(m.group(1).toLowerCase(), m.group(2));
         } else {
-            throw Throwables.propagate(new RuntimeException("Unsupported path: " + sourcePath));
+            throw new RuntimeException("Unsupported path: " + sourcePath);
         }
     }
 
@@ -365,6 +327,46 @@ public class FileUtils {
         public Path(String type, String path) {
             this.type = type;
             this.path = path;
+        }
+
+        public String getPath() {
+            return type + "://" + path;
+        }
+    }
+
+    private static FTPPath parseFTPPath(String path, Integer defaultPort) {
+        /*username:password;charset@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
+            String charset = connectionStringMatcher.group(3);
+            String server = connectionStringMatcher.group(4);
+            boolean noPort = connectionStringMatcher.groupCount() == 5;
+            Integer port = noPort || connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
+            String remoteFile = connectionStringMatcher.group(noPort ? 5 : 6);
+            return new FTPPath(username, password, charset, server, port, remoteFile);
+        } else {
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file");
+        }
+    }
+
+    private static class FTPPath {
+        String username;
+        String password;
+        String charset;
+        String server;
+        Integer port;
+        String remoteFile;
+
+        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile) {
+            this.username = username;
+            this.password = password;
+            this.charset = charset;
+            this.server = server;
+            this.port = port;
+            this.remoteFile = remoteFile;
         }
     }
 }
