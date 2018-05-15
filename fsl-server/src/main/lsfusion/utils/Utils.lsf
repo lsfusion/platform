@@ -11,11 +11,10 @@ GROUP print 'Печатные формы' : public;
 // ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
 fileName 'Список файлов' = DATA LOCAL VARISTRING[255] (INTEGER);
 fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
-//ftp://username:password@host:port/path or file://path
-listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
-listFiles 'Получить список файлов'(VARISTRING[255] path) = { listFiles(path, 'UTF-8'); }
-//file://path
-listFilesClient 'Получить список файлов (на клиенте)' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesClientActionProperty' (VARISTRING[255]); 
+//path, charset, isClient
+listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
+listFiles 'Получить список файлов' (VARISTRING[255] path) = { listFiles(path, 'UTF-8', NULL); }
+listFilesClient 'Получить список файлов (на клиенте)' (VARISTRING[255] path) = { listFiles(path, NULL, TRUE); }
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();

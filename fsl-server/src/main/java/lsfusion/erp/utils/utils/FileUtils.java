@@ -2,6 +2,7 @@ package lsfusion.erp.utils.utils;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.ReadUtils;
@@ -9,11 +10,16 @@ import lsfusion.server.logics.property.actions.WriteActionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -205,6 +211,138 @@ public class FileUtils {
         }
     }
 
+    public static boolean checkFileExists(ExecutionContext context, String sourcePath, String charset, boolean isClient) throws IOException {
+        FileUtils.Path path = FileUtils.parsePath(sourcePath, isClient);
+        boolean exists;
+        if (isClient) {
+            exists = (boolean) context.requestUserInteraction(new FileClientAction(0, path.path));
+        } else {
+            switch (path.type) {
+                case "ftp":
+                    exists = checkFileExistsFTP(path.path, charset);
+                    break;
+                case "sftp":
+                    throw new RuntimeException("FileExists for SFTP is not supported");
+                case "file":
+                default:
+                    exists = new File(path.path).exists();
+                    break;
+            }
+        }
+        return exists;
+    }
+
+    private static boolean checkFileExistsFTP(String path, String charset) throws IOException {
+        //*username:password@host:port/path*//*
+        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
+            String server = connectionStringMatcher.group(3);
+            boolean noPort = connectionStringMatcher.groupCount() == 4;
+            Integer port = noPort || connectionStringMatcher.group(4) == null ? 21 : Integer.parseInt(connectionStringMatcher.group(4));
+            String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
+            FTPClient ftpClient = new FTPClient();
+            try {
+                ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+                ftpClient.setControlEncoding(charset);
+                ftpClient.connect(server, port);
+                ftpClient.login(username, password);
+                ftpClient.enterLocalPassiveMode();
+
+                InputStream inputStream = ftpClient.retrieveFileStream(remotePath);
+                int returnCode = ftpClient.getReplyCode();
+                return inputStream != null && returnCode != 550;
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            }
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path"));
+        }
+    }
+
+    public static Map<String, Boolean> listFiles(ExecutionContext context, String sourcePath, String charset, boolean isClient) throws IOException {
+        FileUtils.Path path = FileUtils.parsePath(sourcePath, isClient);
+        Map<String, Boolean> filesList;
+        if (isClient) {
+            filesList = (Map<String, Boolean>) context.requestUserInteraction(new FileClientAction(3, path.path));
+        } else {
+            switch (path.type) {
+                case "ftp":
+                    filesList = getFilesListFTP(context, path.path, charset);
+                    break;
+                case "sftp":
+                    throw new RuntimeException("ListFiles for SFTP is not supported");
+                case "file":
+                default:
+                    filesList = getFilesList(path.path);
+                    break;
+            }
+        }
+        return filesList;
+    }
+
+    private static Map<String, Boolean> getFilesList(String url) {
+        TreeMap<String, Boolean> result = new TreeMap<>();
+
+        File[] filesList = new File(url).listFiles();
+        if (filesList != null) {
+            for (File file : filesList) {
+                result.put(file.getName(), file.isDirectory());
+            }
+        }
+        return result;
+    }
+
+    private static Map<String, Boolean> getFilesListFTP(ExecutionContext context, String path, String charset) throws IOException {
+        //*username:password@host:port/path*//*
+        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1); //lstradeby
+            String password = connectionStringMatcher.group(2); //12345
+            String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
+            boolean noPort = connectionStringMatcher.groupCount() == 4;
+            Integer port = noPort || connectionStringMatcher.group(4) == null ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
+            String remotePath = connectionStringMatcher.group(noPort ? 4 : 5);
+            FTPClient ftpClient = new FTPClient();
+            try {
+                ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
+                ftpClient.setControlEncoding(charset);
+                ftpClient.connect(server, port);
+                ftpClient.login(username, password);
+                ftpClient.enterLocalPassiveMode();
+
+                Map<String, Boolean> result = new HashMap<>();
+                if (ftpClient.changeWorkingDirectory(remotePath)) {
+                    FTPFile[] ftpFileList = ftpClient.listFiles();
+                    for (FTPFile file : ftpFileList) {
+                        result.put(file.getName(), file.isDirectory());
+                    }
+                } else {
+                    context.delayUserInteraction(new MessageClientAction(String.format("Path '%s' not found for %s", remotePath, path), "Path not found"));
+                }
+                return result;
+
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            }
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path"));
+        }
+    }
+
     private static Path parsePath(String sourcePath,  boolean isClient) {
         String pattern = isClient ? "(file):(?://)?(.*)" : "(file|ftp|sftp):(?://)?(.*)";
         String[] types = isClient ? new String[]{"file:"} : new String[]{"file:", "ftp:", "sftp:"};
@@ -220,7 +358,7 @@ public class FileUtils {
         }
     }
 
-    public static class Path {
+    private static class Path {
         public String type;
         public String path;
 

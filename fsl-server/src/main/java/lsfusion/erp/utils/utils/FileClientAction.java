@@ -5,6 +5,7 @@ import lsfusion.interop.action.ClientActionDispatcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.TreeMap;
 
 public class FileClientAction implements ClientAction {
     private String source;
@@ -33,6 +34,18 @@ public class FileClientAction implements ClientAction {
             }
             case 2: {//MoveFile
                 return new File(source).renameTo(new File(destination));
+            }
+            case 3: { //ListFiles
+                TreeMap<String, Boolean> result = new TreeMap<>();
+                if (source != null) {
+                    File[] filesList = new File(source).listFiles();
+                    if (filesList != null) {
+                        for (File file : filesList) {
+                            result.put(file.getName(), file.isDirectory());
+                        }
+                    }
+                }
+                return result;
             }
             default:
                 return null;
