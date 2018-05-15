@@ -10,7 +10,7 @@ public class DefaultLocalizer extends AbstractLocalizer {
     
     public DefaultLocalizer() {
         resourceBundleNames = new ArrayList<>();
-        Pattern pattern = Pattern.compile("[^/]*ResourceBundle\\.properties"); // возможно нужен другой regexp
+        Pattern pattern = Pattern.compile("/([^/]*ResourceBundle\\.properties)"); // возможно нужен другой regexp
         Collection<String> filenames = ResourceUtils.getResources(pattern);
         for (String filename : filenames) {
             resourceBundleNames.add(filename.substring(0, filename.lastIndexOf('.')));

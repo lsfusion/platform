@@ -106,7 +106,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     public List<ReportPath> saveAndGetCustomReportPathList(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences, boolean recreate) throws SQLException, SQLHandledException {
-        getAndSaveAutoReportDesigns(true, recreate, toExcel, groupId, userPreferences, null);
+        getAndSaveAutoReportDesigns(recreate, toExcel, groupId, userPreferences, null);
         return getCustomReportPathList(toExcel, groupId, userPreferences); // обновляем пути
     }
 
@@ -197,7 +197,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         return getReportPrefix(toExcel, groupId) + formSID;
     }
 
-    public final static String reportsDir = "reports"; 
+    public final static String reportsDir = ""; // "reports/" 
     
     private String findCustomReportFileName(String fileName) {
 
@@ -205,7 +205,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         
         for(String entry : result){
             if(entry.endsWith("/" + fileName))
-                return "/" + entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
+                return entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
         }
         
         return null; // не нашли "/" + reportsDir + filePath;
@@ -233,10 +233,10 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
         }
     }
 
-    private Map<String, JasperDesign> getAndSaveAutoReportDesigns(boolean custom, boolean recreateCustom, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
+    private Map<String, JasperDesign> getAndSaveAutoReportDesigns(boolean recreateCustom, boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         try {
             Map<String, JasperDesign> designs = getAutoReportDesigns(toExcel, groupId, userPreferences, columnGroupObjects);
-            saveAutoReportDesigns(designs, custom, recreateCustom, toExcel, groupId);
+            saveAutoReportDesigns(designs, recreateCustom, toExcel, groupId);
             return designs;
         } catch (JRException | IOException | SQLException | SQLHandledException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
@@ -244,27 +244,24 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
     }
 
     // актуально только для разработки
-    private void saveAutoReportDesigns(Map<String, JasperDesign> designs, boolean custom, boolean recreateCustom, boolean toExcel, Integer groupId) throws JRException, IOException, SQLException, SQLHandledException {
+    private void saveAutoReportDesigns(Map<String, JasperDesign> designs, boolean recreateCustom, boolean toExcel, Integer groupId) throws JRException, IOException, SQLException, SQLHandledException {
 
         ImOrderMap<String, String> customReportFileNames = null;
-        if(custom && recreateCustom) {
+        if(recreateCustom) {
             customReportFileNames = getCustomReportFileNames(toExcel, groupId);
         }
             
         for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
             String id = entry.getKey();
 
-            String reportName = (custom ? reportsDir : "reports/auto/") + getReportName(id, toExcel, groupId);
-            ReportPath defaultCustomReportPath = null;
-            if(custom) {
-                defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(entry.getKey())) : getDefaultCustomReportPath(reportName);
-                reportName = defaultCustomReportPath.customPath;
-            }                
+            ReportPath defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(entry.getKey())) : 
+                                                                    getDefaultCustomReportPath("/" + reportsDir + getReportName(id, toExcel, groupId));
+            String reportName = defaultCustomReportPath.customPath;
             
             new File(reportName).getParentFile().mkdirs();
             JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
             
-            if(custom && !recreateCustom) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
+            if(!recreateCustom) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
                 Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));                        
         }
     }

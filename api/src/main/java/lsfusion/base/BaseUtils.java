@@ -20,6 +20,7 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -2697,5 +2698,12 @@ public class BaseUtils {
     
     public static String defaultToString(Object o) {
         return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
+    }
+    
+    public static String removeTrailingSlash(String s) {
+        assert s.isEmpty() || s.endsWith("/");
+        if(!s.isEmpty())
+            return s.substring(0, s.length() - 1);
+        return s;
     }
 }
