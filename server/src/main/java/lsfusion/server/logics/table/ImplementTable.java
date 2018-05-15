@@ -312,6 +312,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         boolean skipParents(ImplementTable table);
         boolean skipResult(ImplementTable table);
         boolean onlyFirstParent(ImplementTable table);
+        boolean skipCompareUp();
     }
 
     // поиск таблицы для классов
@@ -327,6 +328,8 @@ public class ImplementTable extends GlobalTable { // последний инте
         public boolean onlyFirstParent(ImplementTable table) {
             return true;
         }
+
+        public boolean skipCompareUp() { return false; }
     };
 
     private final static MapTableType findClassTable = new MapTableType() {
@@ -341,10 +344,12 @@ public class ImplementTable extends GlobalTable { // последний инте
         public boolean onlyFirstParent(ImplementTable table) {
             return true;
         }
+        
+        public boolean skipCompareUp() { return false; }
     };
 
     // поиск сгенерированной таблицы
-    private final static MapTableType findIncludedTable = new MapTableType() {
+    private final static MapTableType findAutoTable = new MapTableType() {
         public boolean skipParents(ImplementTable table) {
             return true;
         }
@@ -356,6 +361,8 @@ public class ImplementTable extends GlobalTable { // последний инте
         public boolean onlyFirstParent(ImplementTable table) {
             throw new UnsupportedOperationException();
         }
+
+        public boolean skipCompareUp() { return true; }
     };
 
     // поиск full таблиц
@@ -382,10 +389,12 @@ public class ImplementTable extends GlobalTable { // последний инте
         public boolean onlyFirstParent(ImplementTable table) {
             return false;
         }
+
+        public boolean skipCompareUp() { return false; }
     }
 
-    public <T> MapKeysTable<T> getSingleMapTable(ImOrderMap<T, ValueClass> findItem, boolean included) {
-        ImSet<MapKeysTable<T>> tables = getMapTables(findItem, included ? findIncludedTable : findTable);
+    public <T> MapKeysTable<T> getSingleMapTable(ImOrderMap<T, ValueClass> findItem, boolean auto) {
+        ImSet<MapKeysTable<T>> tables = getMapTables(findItem, auto ? findAutoTable : findTable);
         if(tables.isEmpty())
             return null;
         return tables.single();
@@ -408,7 +417,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         Result<ImRevMap<T,KeyField>> mapCompare = new Result<>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
-        if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return SetFact.EMPTY();
+        if(relation==COMPARE_DOWN || relation==COMPARE_DIFF || relation==COMPARE_UP && type.skipCompareUp()) return SetFact.EMPTY();
 
         if(!type.skipParents(this)) {
             MSet<MapKeysTable<T>> mResult = SetFact.mSet();
