@@ -438,13 +438,8 @@ public abstract class LogicsModule {
     // ------------------- DATA ----------------- //
 
     protected LCP addDProp(LocalizedString caption, ValueClass value, ValueClass... params) {
-        return addDProp(null, false, caption, value, params);
-    }
-
-    protected LCP addDProp(AbstractGroup group, boolean persistent, LocalizedString caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(caption, params, value);
-        LCP lp = addProperty(group, persistent, new LCP<>(dataProperty));
-        dataProperty.markStored(baseLM.tableFactory);
+        LCP lp = addProperty(null, new LCP<>(dataProperty));
         return lp;
     }
 
@@ -455,7 +450,7 @@ public abstract class LogicsModule {
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        LCP derDataProp = addProperty(group, false, new LCP<>(dataProperty));
+        LCP derDataProp = addProperty(group, new LCP<>(dataProperty));
 
         derDataProp.setEventChange(derivedProp, whereNum, params);
         return derDataProp;
@@ -466,7 +461,7 @@ public abstract class LogicsModule {
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(group, false, new LCP<>(dataProperty));
+        return addProperty(group, new LCP<>(dataProperty));
     }
 
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
@@ -509,7 +504,7 @@ public abstract class LogicsModule {
             prop.setLocal(true);
         }
         prop.nestedType = nestedType;
-        return addProperty(group, persistent, new LCP<>(prop));
+        return addProperty(group, new LCP<>(prop));
     }
 
     // ------------------- Form actions ----------------- //
@@ -1011,13 +1006,13 @@ public abstract class LogicsModule {
         for(CalcProperty andProp : mainProp.property.getAndProperties())
             property.drawOptions.inheritDrawOptions(andProp.drawOptions);
 
-        return addProperty(group, persistent, new LCP<>(property, listInterfaces));
+        return addProperty(group, new LCP<>(property, listInterfaces));
     }
 
     // ------------------- mapLProp ----------------- //
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, ImOrderSet<P> listInterfaces) {
-        return addProperty(group, persistent, new LCP<>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
+        return addProperty(group, new LCP<>(implement.property, listInterfaces.mapOrder(implement.mapping.reverse())));
     }
 
     protected <P extends PropertyInterface, L extends PropertyInterface> LCP mapLProp(AbstractGroup group, boolean persistent, CalcPropertyMapImplement<L, P> implement, LCP<P> property) {
@@ -1029,7 +1024,7 @@ public abstract class LogicsModule {
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LCP mapLGProp(AbstractGroup group, boolean persistent, CalcPropertyImplement<L, CalcPropertyInterfaceImplement<P>> implement, ImList<CalcPropertyInterfaceImplement<P>> listImplements) {
-        return addProperty(group, persistent, new LCP<>(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
+        return addProperty(group, new LCP<>(implement.property, listImplements.toOrderExclSet().mapOrder(implement.mapping.toRevExclMap().reverse())));
     }
 
     private <P extends PropertyInterface> LCP mapLGProp(AbstractGroup group, boolean persistent, GroupProperty property, ImList<CalcPropertyInterfaceImplement<P>> listImplements) {
@@ -1088,7 +1083,7 @@ public abstract class LogicsModule {
 //        if (convertToLogical)
 //            return addJProp(group, name, false, caption, baseLM.notZero, directLI(addProperty(null, persistent, result)));
 //        else
-            return addProperty(group, persistent, result);
+            return addProperty(group, result);
     }
 
     // ------------------- Ungroup property ----------------- //
@@ -1247,7 +1242,7 @@ public abstract class LogicsModule {
         if (persist) {
             if (overridePersist.size() > 0) {
                 for (CalcProperty property : overridePersist)
-                    addProperty(null, true, new LCP(property));
+                    addProperty(null, new LCP(property));
             } else
                 for (LCP lcp : result) addPersistent(lcp);
         }
@@ -1347,12 +1342,12 @@ public abstract class LogicsModule {
                 break;
         }
 
-        return addProperty(group, persistent, new LCP<>(property, listInterfaces));
+        return addProperty(group, new LCP<>(property, listInterfaces));
     }
 
     protected LCP addAUProp(AbstractGroup group, boolean persistent, boolean isExclusive, boolean isChecked, boolean isLast, CaseUnionProperty.Type type, LocalizedString caption, ValueClass valueClass, ValueClass... interfaces) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(interfaces.length);
-        return addProperty(group, persistent, new LCP<>(
+        return addProperty(group, new LCP<>(
                 new CaseUnionProperty(isExclusive, isChecked, isLast, type, caption, listInterfaces, valueClass, listInterfaces.mapList(ListFact.toList(interfaces))), listInterfaces));
     }
 
@@ -1365,7 +1360,7 @@ public abstract class LogicsModule {
         if (mapImplements.size() % 2 != 0)
             mListCases.add(new CalcCase<>(new CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface>((CalcProperty<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
 
-        return addProperty(group, persistent, new LCP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
+        return addProperty(group, new LCP<>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }
 
     public static List<ResolveClassSet> getSignatureForLogProperty(List<ResolveClassSet> basePropSignature, SystemEventsLogicsModule systemEventsLM) {
@@ -1418,6 +1413,7 @@ public abstract class LogicsModule {
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
         LCP result = addDCProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+
         makePropertyPublic(result, name, signature);
         ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
         return result;
@@ -1751,10 +1747,6 @@ public abstract class LogicsModule {
         return addProperty(group, new LCP(prop));
     }
 
-    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, T lp) {
-        return addProperty(group, false, lp);
-    }
-
     protected void addPropertyToGroup(Property<?> property, AbstractGroup group) {
         Version version = getVersion();
         if (group != null) {
@@ -1764,7 +1756,7 @@ public abstract class LogicsModule {
         }
     }
 
-    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
+    protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, T lp) {
         addPropertyToGroup(lp.property, group);
         return lp;
     }

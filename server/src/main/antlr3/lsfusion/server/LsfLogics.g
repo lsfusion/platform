@@ -1119,7 +1119,7 @@ propertyStatement
 	;
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
-	:	ciPD=contextIndependentPD[Collections.<TypedParameter>emptyList(), false] { $property = $ciPD.property; $signature = $ciPD.signature; }
+	:	ciPD=contextIndependentPD[context, dynamic, false] { $property = $ciPD.property; $signature = $ciPD.signature; }
 	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
                                                     else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
 	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
@@ -1255,7 +1255,7 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 		if (op != null) {
 			$property = self.addScriptedRelationalProp(op, leftProp, rightProp);
 		} else if (mainProp != null) {
-			$property = new LCPWithParams(self.addScriptedTypeExprProp(mainProp, leftProp), leftProp.usedParams);
+			$property = new LCPWithParams(self.addScriptedTypeExprProp(mainProp, leftProp), leftProp);
 		} else {
 			$property = leftProp;
 		}
@@ -1392,7 +1392,7 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LCPWithP
 }
 @after {
 	if (inPropParseState()) {
-		$property = new LCPWithParams(null, Collections.singletonList(self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion)));
+		$property = new LCPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
 	}
 }
 	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
@@ -1419,10 +1419,10 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LCP
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
-	|	constDef=constantProperty { $property = new LCPWithParams($constDef.property, new ArrayList<Integer>()); }
+	|	constDef=constantProperty { $property = new LCPWithParams($constDef.property); }
 	;
 
-contextIndependentPD[List<TypedParameter> context, boolean innerPD] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
+contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
 @init {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
@@ -1434,7 +1434,7 @@ contextIndependentPD[List<TypedParameter> context, boolean innerPD] returns [LCP
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
-//	|	groupDef=groupCIPropertyDefinition[context] { $property = $groupDef.property; $signature = $groupDef.signature; $usedContext = $groupDef.usedContext; }
+	|	aggrDef=aggrPropertyDefinition[context, dynamic] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
@@ -1464,21 +1464,22 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-groupCIPropertyDefinition[List<TypedParameter> context] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
+aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
 @init {
     List<TypedParameter> groupContext = new ArrayList<>(context);
 }
 @after {
 	if (inPropParseState()) {
-		LCPContextIndependent ci = self.addScriptedCIGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext); 
+		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property); 
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;
 	}
 }
-	:	'GROUP'
-	    gp=groupPropertyBodyDefinition[groupContext]
-	    'BY' exprList=nonEmptyPropertyExpressionList[groupContext, true]
+	:	'AGGR'
+	    aggrClass=classId
+	    'WHERE' 
+	    whereExpr=propertyExpression[context, dynamic]
 	;
 	
 groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -2145,7 +2146,7 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 		$property.setExplicitClasses(signature);	
 	}
 }
-	:	'[' EQ	(	ciPD=contextIndependentPD[context, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
+	:	'[' EQ	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
 				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
                                                                     else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
 //                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(newContext); }}
@@ -3783,7 +3784,7 @@ singleParameterIndex[List<TypedParameter> context, boolean dynamic] returns [LCP
 }
 @after {
 	if (inIndexParseState()) {
-		$property = new LCPWithParams(null, Collections.singletonList(self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion)));
+		$property = new LCPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
 	}
 }
 	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
