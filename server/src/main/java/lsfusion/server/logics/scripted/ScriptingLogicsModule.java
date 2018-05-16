@@ -58,6 +58,7 @@ import lsfusion.server.logics.property.actions.importing.json.ImportJSONDataActi
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportFormXMLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
+import lsfusion.server.logics.property.derived.AggregateGroupProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.ResolvingErrors;
@@ -2457,6 +2458,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
         LCP lcp = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LCPWithParams(0)), Collections.<LCPWithParams>emptyList(), false,
                 new LCPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
+        ((AggregateGroupProperty) lcp.property).isFullAggr = true;
 
 //        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // добавление
         addScriptedFollows(whereExpr.getLP(), new LCPWithParams(lcp, whereExpr), Collections.singletonList(new PropertyFollowsDebug(true, null)), Event.APPLY, null);
@@ -3506,8 +3508,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public List<LCP> indexedProperties = new ArrayList<>();
     
-    public void addScriptedIndex(LCP property) throws ScriptingErrorLog.SemanticErrorException {
-        indexedProperties.add(property);        
+    public void addScriptedIndex(LCP lp) throws ScriptingErrorLog.SemanticErrorException {
+        indexedProperties.add(lp);
+        
+        ImSet<StoredDataProperty> fullAggrProps;
+        if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
+            for(StoredDataProperty fullAggrProp : fullAggrProps)
+                indexedProperties.add(new LCP<>(fullAggrProp));
+        }
     }
 
     public LCPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LCPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {

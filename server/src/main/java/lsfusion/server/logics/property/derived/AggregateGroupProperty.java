@@ -9,13 +9,11 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.PropertyChanges;
 
 // связь один к одному
@@ -95,6 +93,17 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             return super.getSetNotNullAction(notNull);
     }
 
+    public boolean isFullAggr;
+    public ImSet<StoredDataProperty> getFullAggrProps() {
+        if(isFullAggr)
+            return interfaces.mapSetValues(new GetValue<StoredDataProperty, Interface<T>>() {
+                @Override
+                public StoredDataProperty getMapValue(Interface<T> value) {
+                    return (StoredDataProperty) ((CalcPropertyMapImplement<?, T>)value.implement).property;
+                }
+            });
+        return null;
+    } 
 }
 
 
