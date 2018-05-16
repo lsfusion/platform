@@ -899,7 +899,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public LCPWithParams(LCP<?> property, List<Integer> usedParams) {
             super(property, usedParams);
         }
-        
+
         public LCPWithParams(LCP<?> property, LPWithParams mapLP) {
             this(property, mapLP.usedParams);
         }
@@ -1809,7 +1809,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mDebugLocals.exclAdd(new Pair<LCP, List<ResolveClassSet>>(localProp, localSignature));
             }
             mLocals.add((SessionDataProperty) localProp.property);
-            
+
             removeLocal(localProp);
         }
 
@@ -1883,14 +1883,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.NONAME, form, component)), new ArrayList<Integer>());
     }
 
-    public List<LCP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames, 
+    public List<LCP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames,
                                              LocalNestedType nestedType, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
-        
+
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
-        
+
         List<LCP<?>> res = new ArrayList<>();
         for (String name : names) {
             LCP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
@@ -2473,7 +2473,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             groupProps.add(new LCPWithParams(lp, 0));
             resultSignature.add(param.cls.getResolveSet());
-        }        
+        }
 
 //        aggrObject (prim1Object, prim2Object) =
 //                GROUP AGGR aggrClass aggrObject
@@ -2487,7 +2487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
 //        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // удаление
         addScriptedFollows(is(aggClass), addScriptedJProp(whereExpr.getLP(), groupProps), Collections.singletonList(new PropertyFollowsDebug(false, exprDebugPoint)), Event.APPLY, null);
-        
+
         return new LCPContextIndependent(lcp, resultSignature, Collections.<Integer>emptyList());
     }
 
@@ -2945,7 +2945,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 doAction = addScriptedForAProp(oldContext, new LCPWithParams(baseLM.imported, oldContext.size()), Collections.singletonList(new LCPWithParams(oldContext.size())), doAction,
                         elseAction, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
             }
-            // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах 
+            // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах
             return addScriptedIfAProp(new LCPWithParams(baseLM.vtrue), addScriptedListAProp(BaseUtils.toList(proceedAction, doAction), Collections.<LCP>emptyList()), null);
 //            return addScriptedListAProp(BaseUtils.toList(proceedAction, doAction), Collections.<LCP>emptyList());
         }
@@ -3002,12 +3002,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 
                 doAction = addScriptedListAProp(Arrays.asList(assignAction, doAction), new ArrayList<LCP>());
             }
-            
+
             boolean paramNoNull = nulls != null && !nulls.get(paramNum - paramOld);
             LAPWithParams nullExec = paramNoNull ? null : nullExec(doAction, paramNum); // передает NULL в качестве параметра
             if(paramNoNull || nullExec != null) { // нет параметра нет проблемы
                 modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, currentContext, removedContext, false);
-                
+
                 LCP resultProp = resultProps.get(paramNum - paramOld);
                 LCPWithParams resultLP = isLastParamRow ? new LCPWithParams(resultProp, paramOld - 1) : new LCPWithParams(resultProp);
 
@@ -3082,8 +3082,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                               FormExportType exportType, boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormExportType exportType,
+                                                                            boolean noHeader, String separator, String charset, List<String> headerKeys, List<String> headerValues,
+                                                                            PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         List<O> objects = new ArrayList<>();
         List<LCPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();
@@ -3110,8 +3111,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
+        Map<String, String> headers = new HashMap<>();
+        for(int i = 0; i < headerKeys.size(); i++) {
+            headers.put(headerKeys.get(i), headerValues.get(i));
+        }
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
+                exportType, noHeader, separator, charset, headers, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -3376,7 +3381,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 mResult.exclAdd(new LCP<>(DerivedProperty.createImportDataProp(newContext.get(newContext.size() - 1 - i).cls, hasListOption ? new ValueClass[]{} : new ValueClass[] {IntegerClass.instance})));
             return mResult.immutableOrder();
         }
-        
+
         if(hasListOption)
             return findLCPsNoParamsByPropertyUsage(propUsages).toOrderExclSet();
         return findLCPsIntegerParamByPropertyUsage(propUsages);
@@ -3627,7 +3632,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public void addScriptedIndex(LCP lp) throws ScriptingErrorLog.SemanticErrorException {
         indexedProperties.add(lp);
-        
+
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
             for(StoredDataProperty fullAggrProp : fullAggrProps)
