@@ -2620,20 +2620,19 @@ contextIndependentActionDB returns [LAP property, List<ResolveClassSet> signatur
     |	abstractActionDef=abstractActionDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; needToCreateDelegate = false; } // to debug into implementation immediately, without stepping on abstract declaration
 	;
 
-mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>()]
+mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [MappedForm mapped, List<FormActionProps> props = new ArrayList<>(), FormEntity form]
 @init {
-    FormEntity form = null;
 
     CustomClass mappedCls = null;
     boolean edit = false;
 }
 	:
 	(   
-		(	formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } } 
-			('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $props = $list.props; })?
+		(	formName=compoundID { if(inPropParseState()) { $form = self.findForm($formName.sid); } }
+			('OBJECTS' list=formActionObjectList[$form, context, newContext, dynamic] { $props = $list.props; })?
 			{
 				if(inPropParseState())
-					$mapped = MappedForm.create(form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
+					$mapped = MappedForm.create($form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
 			}
 		)
 	    |
@@ -2799,14 +2798,16 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
     String separator = null;
 	String charset = null;
+	List<String> headerKeys = new ArrayList<>();
+	List<String> headerValues = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, headerKeys, headerValues, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormExportType.XML; }
+		(	'XML' { exportType = FormExportType.XML; }  ('HEADERS' list=headersList[$mf.form] { headerKeys = $list.headerKeys; headerValues = $list.headerValues; })?
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
@@ -2820,6 +2821,15 @@ initFilterDefinition returns [String propName, List<String> mapping]
 	    |	mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
 		)
 	;
+
+headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(), List<String> headerValues = new ArrayList<>()]
+@init {
+    ObjectEntity object = null;
+}
+	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); }
+		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); })*
+	;
+
 
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {

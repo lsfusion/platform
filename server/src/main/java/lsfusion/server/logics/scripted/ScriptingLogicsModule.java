@@ -2979,8 +2979,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                               FormExportType exportType, boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormExportType exportType,
+                                                                            boolean noHeader, String separator, String charset, List<String> headerKeys, List<String> headerValues,
+                                                                            PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         List<O> objects = new ArrayList<>();
         List<LCPWithParams> mapping = new ArrayList<>();
         List<Boolean> nulls = new ArrayList<>();
@@ -3007,8 +3008,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
+        Map<String, String> headers = new HashMap<>();
+        for(int i = 0; i < headerKeys.size(); i++) {
+            headers.put(headerKeys.get(i), headerValues.get(i));
+        }
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
+                exportType, noHeader, separator, charset, headers, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);

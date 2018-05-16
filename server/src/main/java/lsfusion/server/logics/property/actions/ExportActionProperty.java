@@ -29,20 +29,25 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     private final String separator;
     private final String charset;
 
+    //xml
+    Map<String, String> headers;
+
     public ExportActionProperty(LocalizedString caption,
-                                    FormSelector<O> form,
-                                    List<O> objectsToSet,
-                                    List<Boolean> nulls, 
-                                    FormExportType staticType,
-                                    LCP exportFile,
-                                    boolean noHeader,
-                                    String separator,
-                                    String charset) {
+                                FormSelector<O> form,
+                                List<O> objectsToSet,
+                                List<Boolean> nulls,
+                                FormExportType staticType,
+                                LCP exportFile,
+                                boolean noHeader,
+                                String separator,
+                                String charset,
+                                Map<String, String> headers) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile);
         
         this.noHeader = noHeader;
         this.separator = separator;
         this.charset = charset;
+        this.headers = headers;
     }
 
 
@@ -62,7 +67,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws IOException {
         HierarchicalFormExporter exporter;
         if (staticType == FormExportType.XML) {
-            exporter = new XMLFormExporter(reportData);
+            exporter = new XMLFormExporter(reportData, headers);
         } else {
             assert staticType == FormExportType.JSON;
             exporter = new JSONFormExporter(reportData);

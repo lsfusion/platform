@@ -17,9 +17,11 @@ import java.util.Map;
 
 public class XMLFormExporter extends HierarchicalFormExporter {
     private String charset = "utf-8";
+    private Map<String, String> headers;
 
-    public XMLFormExporter(ReportGenerationData reportData) {
+    public XMLFormExporter(ReportGenerationData reportData, Map<String, String> headers) {
         super(reportData);
+        this.headers = headers;
     }
 
     @Override
@@ -54,12 +56,25 @@ public class XMLFormExporter extends HierarchicalFormExporter {
                 parentElement.addContent(String.valueOf(value));
         } else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
+
+                Element headerElement = null;
+                String headerValue = headers.get(child.getKey());
+                if (headerValue != null) {
+                    headerElement = new Element(headerValue);
+                    parentElement.addContent(headerElement);
+                }
+
                 for (AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
                         Element element = new Element(child.getKey());
                         exportNode(element, childNode);
-                        if(!element.getValue().isEmpty())
-                            parentElement.addContent(element);
+                        if (!element.getValue().isEmpty()) {
+                            if (headerElement != null) {
+                                headerElement.addContent(element);
+                            } else {
+                                parentElement.addContent(element);
+                            }
+                        }
                     }
                 }
             }
