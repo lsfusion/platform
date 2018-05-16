@@ -147,17 +147,25 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
             ObjectValue object = innerValues.get(changeInterface);
             if(object instanceof DataObject) {
                 DataObject dataObject = (DataObject)object;
+                
+                boolean seekOther = false;
                 DataObject nearObject = null; // после удаления выбираем соседний объект
                 if (objectInstance != null && objectInstance instanceof ObjectInstance) {
                     CustomObjectInstance customObjectInstance = (CustomObjectInstance) objectInstance;
-                    if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) // если удаляется
-                        nearObject = BaseUtils.getNearValue((ObjectInstance)objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
+                    if(readClass instanceof UnknownClass || !((CustomClass) readClass).isChild(customObjectInstance.gridClass)) { // если удаляется
+                        nearObject = BaseUtils.getNearValue((ObjectInstance) objectInstance, dataObject, ListFact.toJavaMapList(customObjectInstance.groupTo.keys.keyOrderSet()));
+                        seekOther = true;
+                    }
                 }
 
                 context.changeClass(objectInstance, dataObject, (ConcreteObjectClass) readClass);
 
-                if (nearObject != null)
-                    ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
+                if(seekOther) {
+                    if (nearObject != null)
+                        ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
+                    else
+                        ((CustomObjectInstance) objectInstance).groupTo.addSeek(false);
+                }
             } else
                 proceedNullException();
         } else

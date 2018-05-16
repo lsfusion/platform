@@ -1423,7 +1423,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     };
 
-    @StackMessage("logics.remove.objects.classes")
+    @StackMessage("{logics.remove.objects.classes}")
     private void executeRemoveClassesEventWithChanges(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction;
 
