@@ -263,9 +263,12 @@ META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty
 END
 
 META defineAggregationClass (primObject, primClass, aggrObject, aggrClass, aggrProperty)
-    primObject = DATA primClass (aggrClass) INDEXED;
+//    primObject = DATA primClass (aggrClass) INDEXED;
+    
+    aggrObject = AGGR aggrClass WHERE aggrProperty(primClass primObject) MATERIALIZED INDEXED;
+    INDEX primObject(aggrClass aggrObject); 
 
-    @defineAggregationCustom1(primObject###aggrObject, primObject, primClass, aggrObject, aggrClass, aggrProperty);
+//    @defineAggregationCustom1(primObject###aggrObject, primObject, primClass, aggrObject, aggrClass, aggrProperty);
 END
 
 META defineAggregation (primObject, aggrObject, aggrProperty)
@@ -290,10 +293,14 @@ META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Ob
 END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
-    prim1Object = DATA prim1Class (aggrClass) INDEXED;
-    prim2Object = DATA prim2Class (aggrClass) INDEXED;
+//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
+//    prim2Object = DATA prim2Class (aggrClass) INDEXED;
 
-    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty);
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object) MATERIALIZED INDEXED;
+    INDEX prim1Object(aggrClass aggrObject); 
+    INDEX prim2Object(aggrClass aggrObject); 
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty);
 END
 
 META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
@@ -318,11 +325,16 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1
 END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
-    prim1Object = DATA prim1Class (aggrClass);
-    prim2Object = DATA prim2Class (aggrClass);
-    prim3Object = DATA prim3Class (aggrClass);
+//    prim1Object = DATA prim1Class (aggrClass);
+//    prim2Object = DATA prim2Class (aggrClass);
+//    prim3Object = DATA prim3Class (aggrClass);
 
-    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty);
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) MATERIALIZED INDEXED;
+    INDEX prim1Object(aggrClass aggrObject); 
+    INDEX prim2Object(aggrClass aggrObject); 
+    INDEX prim3Object(aggrClass aggrObject); 
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty);
 END
 
 META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
@@ -346,12 +358,18 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4
 END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
-    prim1Object = DATA prim1Class (aggrClass) INDEXED;
-    prim2Object = DATA prim2Class (aggrClass);
-    prim3Object = DATA prim3Class (aggrClass);
-    prim4Object = DATA prim4Class (aggrClass);
+//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
+//    prim2Object = DATA prim2Class (aggrClass);
+//    prim3Object = DATA prim3Class (aggrClass);
+//    prim4Object = DATA prim4Class (aggrClass);
 
-    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) MATERIALIZED INDEXED;
+    INDEX prim1Object(aggrClass aggrObject); 
+    INDEX prim2Object(aggrClass aggrObject); 
+    INDEX prim3Object(aggrClass aggrObject); 
+    INDEX prim4Object(aggrClass aggrObject); 
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
 END
 
 META defineAggregation (prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
