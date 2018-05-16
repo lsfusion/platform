@@ -715,7 +715,7 @@ public class ClassChanges {
         return splitSingleApplyRemoveWithChanges(classDataProps, customClass, sql, queryEnv, baseClass);
     }
 
-    @StackMessage("logics.split.objects.remove.classes")
+    @StackMessage("{logics.split.objects.remove.classes}")
     public Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<CalcProperty, UpdateResult>> splitSingleApplyRemoveWithChanges(ImMap<ClassDataProperty, ObjectValueClassSet> classDataProps, @ParamMessage CustomClass customClass, SQLSession sql, QueryEnvironment queryEnv, BaseClass baseClass) throws SQLException, SQLHandledException {
         KeyExpr keyExpr = new KeyExpr("split");
         Where had = keyExpr.isUpClass(customClass);
