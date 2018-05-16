@@ -532,7 +532,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
         CalcPropertyRevImplement<P, Integer> implement = (CalcPropertyRevImplement<P, Integer>) DerivedProperty.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
-        return addProperty(null, false, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+        return addProperty(null, new LCP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override

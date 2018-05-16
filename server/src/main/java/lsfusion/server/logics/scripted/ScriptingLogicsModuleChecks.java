@@ -356,6 +356,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkAggrClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(cls instanceof CustomClass)) {
+            errLog.emitAggrClassError(parser);
+        }
+    }
+
     public void checkCustomClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
             errLog.emitCustomClassExpectedError(parser);

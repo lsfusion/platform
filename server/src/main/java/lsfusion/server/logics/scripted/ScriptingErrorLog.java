@@ -382,6 +382,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "built-in class cannot be used in NEW/ADDFORM/EDITFORM actions");
     }
 
+    public void emitAggrClassError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "built-in class cannot be used in AGGR operator");
+    }
+
     public void emitNecessaryPropertyError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "single parameter is forbidden in this context");
     }

@@ -725,12 +725,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             return addSDProp(LocalizedString.NONAME, isLocalScope, value, nestedType, params);
         } else {
             assert nestedType == null;
-            if (innerProp) {
-                return addDProp(LocalizedString.NONAME, value, params);
-            } else {
-                StoredDataProperty storedProperty = new StoredDataProperty(LocalizedString.NONAME, params, value);
-                return addProperty(null, new LCP<>(storedProperty));
-            }
+            assert !innerProp;
+            return addDProp(LocalizedString.NONAME, value, params);
         }
     }
 
@@ -869,7 +865,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public static abstract class LPWithParams {
         private final LP<?, ?> property; // nullable
-        public final List<Integer> usedParams; // immutable
+        public final List<Integer> usedParams; // immutable order set zero-based
 
         public LPWithParams(LP<?, ?> property, List<Integer> usedParams) {
             this.property = property;
@@ -899,6 +895,22 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static class LCPWithParams extends LPWithParams {
         public LCPWithParams(LCP<?> property, List<Integer> usedParams) {
             super(property, usedParams);
+        }
+        
+        public LCPWithParams(LCP<?> property, LPWithParams mapLP) {
+            this(property, mapLP.usedParams);
+        }
+
+        public LCPWithParams(LCP<?> property, Integer usedParam) {
+            this(property, Collections.singletonList(usedParam));
+        }
+
+        public LCPWithParams(Integer usedParam) {
+            this(null, usedParam);
+        }
+
+        public LCPWithParams(LCP<?> property) {
+            this(property, Collections.<Integer>emptyList());
         }
 
         public LCP<?> getLP() {
@@ -1376,7 +1388,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             LCPWithParams firstArgument = properties.get(0);
             if (!isLogical(firstArgument.getLP())) {
-                properties.set(0, new LCPWithParams(toLogical(firstArgument).getLP(), firstArgument.usedParams));
+                properties.set(0, new LCPWithParams(toLogical(firstArgument).getLP(), firstArgument));
             }
             curLP = addScriptedJProp(and(notsArray), properties);
         }
@@ -1388,7 +1400,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LCPWithParams prop : properties) {
             LCPWithParams logicalProp = prop;
             if (!isLogical(prop.getLP())) {
-                logicalProp = new LCPWithParams(toLogical(prop).getLP(), prop.usedParams);
+                logicalProp = new LCPWithParams(toLogical(prop).getLP(), prop);
             }
             logicalProperties.add(logicalProp);
         }
@@ -1404,7 +1416,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCPWithParams toLogical(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(and(false), Arrays.asList(new LCPWithParams(baseLM.vtrue, new ArrayList<Integer>()), property));
+        return addScriptedJProp(and(false), Arrays.asList(new LCPWithParams(baseLM.vtrue), property));
     }
 
     public LCPWithParams addScriptedIfElseUProp(LCPWithParams ifProp, LCPWithParams thenProp, LCPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
@@ -1568,7 +1580,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams action, boolean eval, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false)), new ArrayList<Integer>()))),
+        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false))))),
                 BaseUtils.add(params, action), context, toPropertyUsageList);
     }
 
@@ -1824,7 +1836,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP property = addInputAProp(requestDataClass, tprop != null ? tprop.property : null);
 
         if(oldValue == null)
-            oldValue = new LCPWithParams(baseLM.vnull, new ArrayList<Integer>());
+            oldValue = new LCPWithParams(baseLM.vnull);
         LAPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
         
         if(changeProp == null)
@@ -2016,7 +2028,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            paramsList.add(new LCPWithParams(resI));
         }
         paramsList.add(toProperty);
         paramsList.add(fromProperty);
@@ -2042,12 +2054,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LCPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            paramsList.add(new LCPWithParams(resI));
         }
         if (toProperty != null) {
             paramsList.add(toProperty);
         } else if (whereProperty == null) {
-            paramsList.add(new LCPWithParams(new LCP<>(baseLM.getAddedObjectProperty()), new ArrayList<Integer>()));
+            paramsList.add(new LCPWithParams(new LCP<>(baseLM.getAddedObjectProperty())));
         }
         if (whereProperty != null) {
             paramsList.add(whereProperty);
@@ -2091,7 +2103,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            paramsList.add(new LCPWithParams(resI));
         }
         if (whereProperty != null) {
             paramsList.add(whereProperty);
@@ -2216,7 +2228,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         creationParams.addAll(orders);
         if(addNum != null) {
-            creationParams.add(new LCPWithParams(null, Collections.singletonList(addNum)));
+            creationParams.add(new LCPWithParams(addNum));
         }
         if (elseAction != null) {
             creationParams.add(elseAction);
@@ -2242,14 +2254,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> allCreationParams = new ArrayList<>();
         for (int usedParam : usedParams) {
-            allCreationParams.add(new LCPWithParams(null, Collections.singletonList(usedParam)));
+            allCreationParams.add(new LCPWithParams(usedParam));
         }
         allCreationParams.addAll(creationParams);
         if(noInline==null) { // предполагается надо включить все кроме addNum
             noInline = new ArrayList<>();
             for (int extParam : extParams)
                 if(addNum==null || !addNum.equals(extParam)) {
-                    noInline.add(new LCPWithParams(null, Collections.singletonList(extParam)));
+                    noInline.add(new LCPWithParams(extParam));
                 }
         }
         allCreationParams.addAll(noInline);
@@ -2320,7 +2332,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
-                whereProps.add(new LCPWithParams(null, Collections.singletonList(mainProps.get(0).usedParams.get(0))));
+                whereProps.add(new LCPWithParams(mainProps.get(0).usedParams.get(0)));
             }
         }
         if (type == GroupingType.LAST) {
@@ -2371,14 +2383,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int i = 0, size = resultInterfaces.size() + groupSize; i < size; i++) {
                 LCPWithParams add;
                 if (ga >= groupSize || usedInterfaces.contains(i))
-                    add = new LCPWithParams(null, Collections.singletonList(resultInterfaces.get(ra++)));
+                    add = new LCPWithParams(resultInterfaces.get(ra++));
                 else
                     add = groupProps.get(ga++);
                 allGroupProps.add(add);
             }
         } else {
             for (int resI : resultInterfaces) {
-                allGroupProps.add(new LCPWithParams(null, Collections.singletonList(resI)));
+                allGroupProps.add(new LCPWithParams(resI));
             }
             allGroupProps.addAll(groupProps);
         }
@@ -2417,6 +2429,41 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new Pair<>(null, ci);
         else
             return new Pair<>(new LCPWithParams(ci.property, ci.usedContext), null);
+    }
+
+    public LCPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LCPWithParams whereExpr) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass aggClass = findClass(aggClassName);
+        checks.checkAggrClass(aggClass);
+
+//        prim1Object = DATA prim1Class (aggrClass) INDEXED;
+//        prim2Object = DATA prim2Class (aggrClass) INDEXED;
+
+        List<LCPWithParams> groupProps = new ArrayList<>();
+        List<ResolveClassSet> resultSignature = new ArrayList<>();
+        ResolveClassSet aggSignature = aggClass.getResolveSet();
+        for (TypedParameter param : context) {
+            LCP lp = addDProp(LocalizedString.NONAME, param.cls, aggClass);
+
+            makePropertyPublic(lp, param.paramName, aggSignature);
+            ((StoredDataProperty) lp.property).markStored(baseLM.tableFactory);
+
+            groupProps.add(new LCPWithParams(lp, 0));
+            resultSignature.add(param.cls.getResolveSet());
+        }        
+
+//        aggrObject (prim1Object, prim2Object) =
+//                GROUP AGGR aggrClass aggrObject
+//        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
+        LCP lcp = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LCPWithParams(0)), Collections.<LCPWithParams>emptyList(), false,
+                new LCPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
+
+//        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // добавление
+        addScriptedFollows(whereExpr.getLP(), new LCPWithParams(lcp, whereExpr), Collections.singletonList(new PropertyFollowsDebug(true, null)), Event.APPLY, null);
+
+//        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // удаление
+        addScriptedFollows(is(aggClass), addScriptedJProp(whereExpr.getLP(), groupProps), Collections.singletonList(new PropertyFollowsDebug(false, null)), Event.APPLY, null);
+        
+        return new LCPContextIndependent(lcp, resultSignature, Collections.<Integer>emptyList());
     }
 
     public LCPWithParams addScriptedMaxProp(List<LCPWithParams> paramProps, boolean isMin) throws ScriptingErrorLog.SemanticErrorException {
@@ -2835,7 +2882,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (mapping.size() > 0) { // тут надо contextLPs просто в mapping закинуть по идее сразу
             for(LCPWithParams contextLP : contextLPs)
                 for (int usedParam : contextLP.usedParams) {
-                    mapping.add(new LCPWithParams(null, singletonList(usedParam)));
+                    mapping.add(new LCPWithParams(usedParam));
                 }
             formAction = addScriptedJoinAProp(property, mapping);
         } else {
@@ -2877,9 +2924,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         for(int usedParam : doAction.usedParams) 
             if(usedParam == param){
                 found = true;
-                params.add(new LCPWithParams(baseLM.vnull, new ArrayList<Integer>()));
+                params.add(new LCPWithParams(baseLM.vnull));
             } else
-                params.add(new LCPWithParams(null, Collections.singletonList(usedParam)));
+                params.add(new LCPWithParams(usedParam));
             
         if(!found) // не было использований
             return null;
@@ -2896,7 +2943,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             List<TypedParameter> removedContext = new ArrayList<>(currentContext);
             removedContext.remove(paramNum);
 
-            LCPWithParams paramLP = new LCPWithParams(null, Collections.singletonList(paramNum));
+            LCPWithParams paramLP = new LCPWithParams(paramNum);
             Pair<LCPWithParams, DebugInfo.DebugPoint> assignLP = assignProps.get(paramNum - paramOld);
             if(assignLP != null) {
                 LAPWithParams assignAction = addScriptedAssignAProp(currentContext, paramLP, null, assignLP.first);
@@ -2910,7 +2957,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(nullExec != null) { // нет параметра нет проблемы
                 modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, currentContext, removedContext, false);
 
-                LCPWithParams resultLP = new LCPWithParams(resultProps.get(paramNum - paramOld), new ArrayList<Integer>());
+                LCPWithParams resultLP = new LCPWithParams(resultProps.get(paramNum - paramOld));
 
                 doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP), new ArrayList<LCPWithParams>(), doAction,
                         nullExec, null, null, false, false, false, null, false);
@@ -2965,12 +3012,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (mapping.size() > 0)  { // тут надо printerProperty просто в mapping закинуть по идее сразу
             if(printerProperty != null) {
                 for (int usedParam : printerProperty.usedParams) {
-                    mapping.add(new LCPWithParams(null, singletonList(usedParam)));
+                    mapping.add(new LCPWithParams(usedParam));
                 }
             }
             if(passwordProperty != null) {
                 for (int usedParam : passwordProperty.usedParams) {
-                    mapping.add(new LCPWithParams(null, singletonList(usedParam)));
+                    mapping.add(new LCPWithParams(usedParam));
                 }
             }
             return addScriptedJoinAProp(property, mapping);
@@ -3172,7 +3219,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LCPWithParams(null, Collections.singletonList(resI)));
+            paramsList.add(new LCPWithParams(resI));
         }
         paramsList.addAll(exprs);
         if (whereProperty != null) {
@@ -3365,16 +3412,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             newProp = addCHProp(property.getLP(), type, scope);
         }
-        return new LCPWithParams(newProp, property.usedParams);
+        return new LCPWithParams(newProp, property);
     }
 
     public LCPWithParams addScriptedSignatureProp(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         LCP newProp = addClassProp(property.getLP());
-        return new LCPWithParams(newProp, property.usedParams);
+        return new LCPWithParams(newProp, property);
     }
 
     public LCPWithParams addScriptedActiveTabProp(ComponentView component) throws ScriptingErrorLog.SemanticErrorException {
-        return new LCPWithParams(new LCP<>(component.getActiveTab().property), new ArrayList<Integer>());
+        return new LCPWithParams(new LCP<>(component.getActiveTab().property));
     }
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LCPWithParams rightProp, Event event, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
@@ -3382,6 +3429,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
+        addScriptedFollows(mainProp, rightProp, resolveOptions, event, debugPoint);
+    }
+
+    private void addScriptedFollows(LCP mainProp, LCPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, DebugInfo.DebugPoint debugPoint) {
         Integer[] params = new Integer[rightProp.usedParams.size()];
         for (int j = 0; j < params.length; j++) {
             params[j] = rightProp.usedParams.get(j) + 1;
@@ -3417,7 +3468,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(noInline==null) {
             noInline = new ArrayList<>();
             for(Integer usedParam : whenProp.usedParams)
-                noInline.add(new LCPWithParams(null, Collections.singletonList(usedParam)));
+                noInline.add(new LCPWithParams(usedParam));
         }
         List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
         addEventAction(baseEvent, descending, false, noInline.size(), forceInline, debugPoint, params.toArray());
@@ -3849,7 +3900,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> allCreationParams = new ArrayList<>();
         allCreationParams.add(lpWithParams);        
         for (int i = oldContext.size(); i < newContext.size(); i++) { // докидываем 
-            allCreationParams.add(new LCPWithParams(null, Collections.singletonList(i)));
+            allCreationParams.add(new LCPWithParams(i));
         }
 
         List<Object> resultParams = getParamsPlainList(allCreationParams);
