@@ -2434,6 +2434,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LCPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LCPWithParams whereExpr) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass aggClass = findClass(aggClassName);
         checks.checkAggrClass(aggClass);
+        checks.checkParamCount(whereExpr.getLP(), context.size());
 
 //        prim1Object = DATA prim1Class (aggrClass) INDEXED;
 //        prim2Object = DATA prim2Class (aggrClass) INDEXED;
