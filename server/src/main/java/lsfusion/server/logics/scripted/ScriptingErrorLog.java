@@ -415,7 +415,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNoInline(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "operators DATA/ABSTRACT/AGGR cannot be used in [= ]");
+        emitSimpleError(parser, "operators DATA/AGGR cannot be used in [= ]");
     }
 
     public void emitWrongClassesForTable(ScriptParser parser, String property, String table) throws SemanticErrorException {
