@@ -507,6 +507,12 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
+    public void checkNoInline(boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+        if (innerPD) {
+            errLog.emitNoInline(parser);
+        }
+    }
+
     public void checkEventNoParameters(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.property.interfaces.size() > 0) {
             errLog.emitEventNoParametersError(parser);
