@@ -1467,18 +1467,21 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
 @init {
     List<TypedParameter> groupContext = new ArrayList<>(context);
+    DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
 }
 @after {
 	if (inPropParseState()) {
-		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property); 
+		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint); 
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;
 	}
 }
 	:	'AGGR'
+	    { classDebugPoint = getEventDebugPoint(); } 
 	    aggrClass=classId
 	    'WHERE' 
+	    { exprDebugPoint = getEventDebugPoint(); } 
 	    whereExpr=propertyExpression[context, dynamic]
 	;
 	

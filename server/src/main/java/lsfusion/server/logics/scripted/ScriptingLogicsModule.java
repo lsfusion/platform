@@ -2432,7 +2432,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new Pair<>(new LCPWithParams(ci.property, ci.usedContext), null);
     }
 
-    public LCPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LCPWithParams whereExpr) throws ScriptingErrorLog.SemanticErrorException {
+    public LCPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LCPWithParams whereExpr, DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass aggClass = findClass(aggClassName);
         checks.checkAggrClass(aggClass);
         checks.checkParamCount(whereExpr.getLP(), context.size());
@@ -2461,10 +2461,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         ((AggregateGroupProperty) lcp.property).isFullAggr = true;
 
 //        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // добавление
-        addScriptedFollows(whereExpr.getLP(), new LCPWithParams(lcp, whereExpr), Collections.singletonList(new PropertyFollowsDebug(true, null)), Event.APPLY, null);
+        addScriptedFollows(whereExpr.getLP(), new LCPWithParams(lcp, whereExpr), Collections.singletonList(new PropertyFollowsDebug(true, classDebugPoint)), Event.APPLY, null);
 
 //        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // удаление
-        addScriptedFollows(is(aggClass), addScriptedJProp(whereExpr.getLP(), groupProps), Collections.singletonList(new PropertyFollowsDebug(false, null)), Event.APPLY, null);
+        addScriptedFollows(is(aggClass), addScriptedJProp(whereExpr.getLP(), groupProps), Collections.singletonList(new PropertyFollowsDebug(false, exprDebugPoint)), Event.APPLY, null);
         
         return new LCPContextIndependent(lcp, resultSignature, Collections.<Integer>emptyList());
     }
