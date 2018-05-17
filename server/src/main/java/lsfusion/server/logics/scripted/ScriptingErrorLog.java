@@ -414,6 +414,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "class cannot be built-in or abstract");
     }
 
+    public void emitNoInline(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "operators DATA/ABSTRACT/AGGR cannot be used in [= ]");
+    }
+
     public void emitWrongClassesForTable(ScriptParser parser, String property, String table) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' can't be included into '%s' table: wrong classes", property, table));
     }

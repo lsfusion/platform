@@ -1432,9 +1432,9 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 	}
 }
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
-	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
+	|	abstractDef=abstractPropertyDefinition[innerPD] { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $signature = $formulaProp.signature; }
-	|	aggrDef=aggrPropertyDefinition[context, dynamic] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
+	|	aggrDef=aggrPropertyDefinition[context, dynamic, innerPD] { $property = $aggrDef.property; $signature = $aggrDef.signature; $usedContext = $aggrDef.usedContext; }
 	|	goProp=groupObjectPropertyDefinition { $property = $goProp.property; $signature = $goProp.signature; }
 	|	reflectionDef=reflectionPropertyDefinition { $property = $reflectionDef.property; $signature = $reflectionDef.signature;  }
 	;
@@ -1464,21 +1464,24 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
+aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LCP property, List<ResolveClassSet> signature, List<Integer> usedContext]
 @init {
     List<TypedParameter> groupContext = new ArrayList<>(context);
+    DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
 }
 @after {
 	if (inPropParseState()) {
-		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property); 
+		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint, innerPD);
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;
 	}
 }
 	:	'AGGR'
+	    { classDebugPoint = getEventDebugPoint(); } 
 	    aggrClass=classId
 	    'WHERE' 
+	    { exprDebugPoint = getEventDebugPoint(); } 
 	    whereExpr=propertyExpression[context, dynamic]
 	;
 	
@@ -1589,7 +1592,7 @@ nestedLocalModifier returns[LocalNestedType nestedType = null]
         )?
 	;
 
-abstractPropertyDefinition returns [LCP property, List<ResolveClassSet> signature]
+abstractPropertyDefinition[boolean innerPD] returns [LCP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isLast = false;
@@ -1599,7 +1602,7 @@ abstractPropertyDefinition returns [LCP property, List<ResolveClassSet> signatur
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast);
+		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast, innerPD);
 	}
 }
 	:	'ABSTRACT'
