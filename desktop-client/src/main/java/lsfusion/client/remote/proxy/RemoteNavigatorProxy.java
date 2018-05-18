@@ -1,7 +1,6 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.DefaultFormsType;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -85,34 +84,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
 
     public void setUpdateTime(int updateTime) throws RemoteException {
         target.setUpdateTime(updateTime);
-    }
-
-    @ImmutableMethod
-    public DefaultFormsType showDefaultForms() throws RemoteException {
-        try {
-            return callImmutableMethod("showDefaultForms", new Callable<DefaultFormsType>() {
-                @Override
-                public DefaultFormsType call() throws Exception {
-                    return target.showDefaultForms();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    @ImmutableMethod
-    public List<String> getDefaultForms() throws RemoteException {
-        try {
-            return callImmutableMethod("getDefaultForms", new Callable<List<String>>() {
-                @Override
-                public List<String> call() throws Exception {
-                    return target.getDefaultForms();
-                }
-            });
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
     }
 
     @Override

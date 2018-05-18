@@ -81,10 +81,6 @@ public abstract class DefaultFormsController implements FormsController {
         openForm(canonicalName, formSID, modalityType, false, nativeEvent);
     }
 
-    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
-        openForm(canonicalName, formSID, modalityType, suppressErrorMessages, null);
-    }
-
     public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages, NativeEvent nativeEvent) {
         if(MainFrame.forbidDuplicateForms && formsList.contains(formSID) && (nativeEvent == null || !nativeEvent.getCtrlKey())) {
             tabsPanel.selectTab(formsList.indexOf(formSID));
@@ -162,6 +158,10 @@ public abstract class DefaultFormsController implements FormsController {
 
     public void selectTab(Widget widget) {
         tabsPanel.selectTab(widget);
+    }
+
+    public void selectTab(String formCanonicalName) {
+        tabsPanel.selectTab(formsList.indexOf(formCanonicalName));
     }
 
     private GResizableModalForm showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {

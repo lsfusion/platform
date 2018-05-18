@@ -61,4 +61,7 @@ public interface ClientActionDispatcher {
 
     void execute(BeepClientAction action);
 
+    void execute(ActivateFormClientAction action);
+
+    void execute(MaximizeFormClientAction action);
 }

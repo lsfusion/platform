@@ -12,6 +12,7 @@ import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
+import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.classes.ClassDialog;
@@ -137,7 +138,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         currentActionResults[currentActionIndex] = currentActionResult;
         try {
             dispatchResponse(currentServerResponse);
-            
+
             dispatcherListener.dispatchingEnded();
         } catch (IOException e) {
             Throwables.propagate(e);
@@ -564,6 +565,16 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             if (file != null && !file.delete())
                 file.deleteOnExit();
         }
+    }
+
+    @Override
+    public void execute(ActivateFormClientAction action) {
+        ((DockableMainFrame) Main.frame).activateForm(action.formCanonicalName);
+    }
+
+    @Override
+    public void execute(MaximizeFormClientAction action) {
+        ((DockableMainFrame) Main.frame).maximizeForm(action.formCanonicalName);
     }
 
     //to prevent java.lang.IllegalStateException: Toolkit not initialized
