@@ -230,7 +230,7 @@ showDefaultForms() = {
             }
         }
         IF firstForm() THEN {
-            maximizeForm(firstForm());
+            maximizeForm();
             EVAL [=CONCAT ' ', 'run() = \{ ACTIVATE FORM', firstForm(), '; \};']();
         }
     }

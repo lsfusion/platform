@@ -574,7 +574,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(MaximizeFormClientAction action) {
-        ((DockableMainFrame) Main.frame).maximizeForm(action.formCanonicalName);
+        ((DockableMainFrame) Main.frame).maximizeForm();
     }
 
     //to prevent java.lang.IllegalStateException: Toolkit not initialized

@@ -1,10 +1,8 @@
 package lsfusion.interop.action;
 
 public class MaximizeFormClientAction extends ExecuteClientAction {
-    public String formCanonicalName;
 
-    public MaximizeFormClientAction(String formCanonicalName) {
-        this.formCanonicalName = formCanonicalName;
+    public MaximizeFormClientAction() {
     }
 
     @Override

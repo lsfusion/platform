@@ -570,12 +570,10 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
-    public void maximizeForm(String formCanonicalName) {
-        for (ClientDockable openedForm : dockableManager.openedForms) {
-            if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(formCanonicalName)) {
-                openedForm.setExtendedMode(ExtendedMode.MAXIMIZED);
-                break;
-            }
+    public void maximizeForm() {
+        //setExtendedMode вызывается для одной формы, но влияет на все
+        if(!dockableManager.openedForms.isEmpty()) {
+            dockableManager.openedForms.get(0).setExtendedMode(ExtendedMode.MAXIMIZED);
         }
     }
 }
