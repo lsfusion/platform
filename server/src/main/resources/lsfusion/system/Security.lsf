@@ -230,7 +230,7 @@ defaultForms 'Отображение форм при запуске' (User user)
 defaultNumber 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = defaultNumber(mainRole(user), navigatorElement);
 
-maximizeForm = CUSTOM 'lsfusion.server.logics.security.MaximizeFormActionProperty' (VARSTRING[100]);
+maximizeForm = CUSTOM 'lsfusion.server.logics.security.MaximizeFormActionProperty' ();
 
 permit 'Разрешить' = DATA BOOLEAN (NavigatorElement);
 forbid 'Запретить' = DATA BOOLEAN (NavigatorElement);
