@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DefaultFormsType;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -24,7 +23,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
@@ -35,7 +33,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
-import lsfusion.server.session.SessionModifier;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -548,73 +545,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     
     public void updatePropertyPolicyCaches(ExecutionContext context, DataObject userObject) throws SQLException, SQLHandledException {
         readPropertyPolicy(context, null, userObject, true, true);
-    }
-
-    public DefaultFormsType showDefaultForms(DataObject user) {
-        try {
-            DataSession session = createSession();
-
-            ObjectValue defaultForms = securityLM.defaultFormsUser.readClasses(session, user);
-            if (defaultForms instanceof NullValue) return DefaultFormsType.NONE;
-            else {
-                String name = (String) LM.findProperty("staticName[Object]").read(session, defaultForms);
-                if (name.contains("default"))
-                    return DefaultFormsType.DEFAULT;
-                else if (name.contains("restore"))
-                    return DefaultFormsType.RESTORE;
-                else return DefaultFormsType.NONE;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<String> getDefaultForms(DataObject user) {
-        try (DataSession session = createSession()) {
-            KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
-            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "navigatorElement", navigatorElementExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("formCanonicalName", securityLM.findProperty("formCanonicalName[NavigatorElement]").getExpr(navigatorElementExpr));
-            query.addProperty("overDefaultNumberUserNavigatorElement", securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr));
-            query.and(securityLM.findProperty("overDefaultNumber[User,NavigatorElement]").getExpr(user.getExpr(), navigatorElementExpr).getWhere());
-            query.and(securityLM.findProperty("formCanonicalName[NavigatorElement]").getExpr(navigatorElementExpr).getWhere());
-
-            Map<String, Integer> defaultFormsMap = new HashMap<>();
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-            for (ImMap<Object, Object> entry : result.values()) {
-                String canonicalName = (String) entry.get("formCanonicalName");
-                if (canonicalName != null) {
-                    Integer number = (Integer) entry.get("overDefaultNumberUserNavigatorElement");
-                    Integer oldNumber = defaultFormsMap.get(canonicalName);
-                    Integer newNumber = oldNumber == null ? number : Math.min(oldNumber, number);
-                    defaultFormsMap.put(canonicalName, newNumber);
-                }
-            }
-
-            final List<Map.Entry<String, Integer>> defaultFormsList = new ArrayList<>(defaultFormsMap.entrySet());
-            Collections.sort(defaultFormsList, new Comparator<Map.Entry<String, Integer>>() {
-                @Override
-                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
-                    Integer i1 = o1.getValue();
-                    Integer i2 = o2.getValue();
-                    if (i1 == null && i2 == null) return 0;
-                    if (i2 == null) return -1;
-                    if (i1 == null) return 1;
-                    return i1.compareTo(i2);
-                }
-            });
-            
-            List<String> defaultForms = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : defaultFormsList) {
-                FormEntity form = businessLogics.findForm(entry.getKey());
-                if (form != null) {
-                    defaultForms.add(form.getCanonicalName());
-                }
-            }
-            return defaultForms;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public Object getUserMainRole(DataObject user) throws SQLException, SQLHandledException {

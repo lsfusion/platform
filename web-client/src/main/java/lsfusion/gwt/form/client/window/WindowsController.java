@@ -14,8 +14,7 @@ public abstract class WindowsController extends SplitLayoutPanel {
     
     private boolean fullScreenMode;
 
-    public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow, boolean fullScreenMode) {
-        this.fullScreenMode = fullScreenMode;
+    public Widget initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
         WindowNode rootNode = new WindowNode(0, 0, 100, 100);
         
@@ -187,6 +186,11 @@ public abstract class WindowsController extends SplitLayoutPanel {
 
     public boolean isFullScreenMode() {
         return fullScreenMode;
+    }
+
+    public void setFullScreenMode(boolean fullScreenMode) {
+        this.fullScreenMode = fullScreenMode;
+        rootElement.redraw();
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);

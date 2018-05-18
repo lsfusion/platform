@@ -34,8 +34,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP fullForbidViewUserProperty;
     public LCP fullForbidChangeUserProperty;
 
-    public LCP defaultNumberUserNavigatorElement;
-    public LCP defaultFormsUser;
     public LCP permitNavigatorElement;
     public LCP forbidNavigatorElement;
     public LCP permitExportNavigatorElement;
@@ -120,10 +118,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         fullForbidChangeUserProperty = findProperty("fullForbidChange[User,ActionOrProperty]");
 
         // ---- Политики для логики представлений
-
-        // Открытие форм по умолчанию
-        defaultNumberUserNavigatorElement = findProperty("defaultNumber[User,NavigatorElement]");
-        defaultFormsUser = findProperty("defaultForms[User]");
 
         // -- Глобальные разрешения для всех ролей
         permitNavigatorElement = findProperty("permit[NavigatorElement]");

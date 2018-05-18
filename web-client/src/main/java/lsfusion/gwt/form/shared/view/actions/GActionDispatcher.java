@@ -38,4 +38,8 @@ public interface GActionDispatcher {
     String execute(GLoadLinkAction action);
 
     void execute(GBeepAction action);
+
+    void execute(GActivateFormAction action);
+
+    void execute(GMaximizeFormAction action);
 }

@@ -41,14 +41,10 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.remote.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
-import lsfusion.server.session.ModifyResult;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -786,16 +782,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return;
 
         client.pushMessage(notificationsMap.putNotification(run));
-    }
-
-    @Override
-    public DefaultFormsType showDefaultForms() throws RemoteException {
-        return securityManager.showDefaultForms(user);
-    }
-
-    @Override
-    public List<String> getDefaultForms() throws RemoteException {
-        return securityManager.getDefaultForms(user);
     }
 
     @Override

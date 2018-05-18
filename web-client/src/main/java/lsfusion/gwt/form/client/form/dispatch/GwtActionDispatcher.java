@@ -229,4 +229,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             beep.play();
         }
     }
+
+    @Override
+    public void execute(GActivateFormAction action) {
+    }
+
+    @Override
+    public void execute(GMaximizeFormAction action) {
+    }
 }

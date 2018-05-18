@@ -18,6 +18,8 @@ import net.sf.jasperreports.engine.JRException;
 import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DockableManager {
     private CControl control;
@@ -30,6 +32,8 @@ public class DockableManager {
     
     private ExtendedMode mode = ExtendedMode.NORMALIZED;
     private boolean internalModeChangeOnSetVisible = false;
+
+    public List<ClientDockable> openedForms = new ArrayList<>();
 
     public DockableManager(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
@@ -78,10 +82,7 @@ public class DockableManager {
         page.requestFocusInWindow();
 
         page.onOpened();
-    }
-
-    public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID) throws IOException, ClassNotFoundException, JRException {
-        return openForm(navigator, canonicalName, formSID, 0);
+        openedForms.add(page);
     }
 
     public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, int modifiers) throws IOException, ClassNotFoundException, JRException {
@@ -177,6 +178,7 @@ public class DockableManager {
                 control.removeDockable(dockable);
 
                 dockable.onClosed();
+                openedForms.remove(dockable);
             }
         }
 

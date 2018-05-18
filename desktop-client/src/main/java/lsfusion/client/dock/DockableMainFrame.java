@@ -15,7 +15,6 @@ import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
-import lsfusion.base.DefaultFormsType;
 import lsfusion.base.EProvider;
 import lsfusion.base.ERunnable;
 import lsfusion.client.*;
@@ -47,7 +46,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,45 +231,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
     }
 
-    public void focusPageIfNeeded() {
-        ClientDockable pageToFocus = null;
-        DefaultFormsType showDefaultForms = null;
-        try {
-            showDefaultForms = remoteNavigator.showDefaultForms();
-            List<String> savedForms;
-            switch (showDefaultForms) {
-                case DEFAULT:
-                    savedForms = remoteNavigator.getDefaultForms();
-                    break;
-                case RESTORE:
-                    savedForms = dockableManager.getForms().getFormsList();
-                    break;
-                case NONE:
-                default:
-                    savedForms = new ArrayList<>();
-            }
-            dockableManager.getForms().clear();
-            ClientDockable page;
-            for (String formCanonicalName : savedForms) {
-                if (formCanonicalName != null) {
-                    page = dockableManager.openForm(mainNavigator, formCanonicalName, formCanonicalName);
-                    if (pageToFocus == null) {
-                        pageToFocus = page;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error loading default layout", e);
-        } finally {
-            if (pageToFocus != null) {
-                if (showDefaultForms == DefaultFormsType.DEFAULT) {
-                    pageToFocus.setExtendedMode(ExtendedMode.MAXIMIZED);
-                }
-                pageToFocus.toFront();
-                pageToFocus.requestFocusInWindow();
-                pageToFocus.onOpened();
-            }
-        }
+    public void clearForms() {
+        dockableManager.getForms().clear();
     }
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
@@ -596,5 +557,25 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         });
         menu.add(about);
         return menu;
+    }
+
+    public void activateForm(String formCanonicalName) {
+        for (ClientDockable openedForm : dockableManager.openedForms) {
+            if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(formCanonicalName)) {
+                openedForm.toFront();
+                openedForm.requestFocusInWindow();
+                openedForm.onOpened();
+                break;
+            }
+        }
+    }
+
+    public void maximizeForm(String formCanonicalName) {
+        for (ClientDockable openedForm : dockableManager.openedForms) {
+            if (openedForm.getCanonicalName() != null && openedForm.getCanonicalName().equals(formCanonicalName)) {
+                openedForm.setExtendedMode(ExtendedMode.MAXIMIZED);
+                break;
+            }
+        }
     }
 }

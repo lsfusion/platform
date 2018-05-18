@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.interop.action.ActivateFormClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.FormInstance;
@@ -25,7 +26,8 @@ public class ActivateActionProperty extends SystemExplicitActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if(requestedForm != null) {
             if (requestedTab == null) {
-                //todo: activate form пока не реализована
+                //activate form
+                context.delayUserInteraction(new ActivateFormClientAction(requestedForm.getCanonicalName()));
             } else {
                 //activate tab
                 FormInstance<?> formInstance = context.getFormInstance(false, true);

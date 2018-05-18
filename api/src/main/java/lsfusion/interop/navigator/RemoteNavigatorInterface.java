@@ -1,6 +1,5 @@
 package lsfusion.interop.navigator;
 
-import lsfusion.base.DefaultFormsType;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -8,7 +7,6 @@ import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemoteInterface {
@@ -29,10 +27,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     void logClientException(String title, String hostname, Throwable t) throws RemoteException;
 
     void close() throws RemoteException;
-
-    DefaultFormsType showDefaultForms() throws RemoteException;
-
-    List<String> getDefaultForms() throws RemoteException;
 
     boolean isForbidDuplicateForms() throws RemoteException;
 

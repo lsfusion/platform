@@ -31,10 +31,10 @@ import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
-import lsfusion.gwt.form.shared.view.GDefaultFormsType;
+import lsfusion.gwt.form.shared.view.actions.GActivateFormAction;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
+import lsfusion.gwt.form.shared.view.actions.GMaximizeFormAction;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
@@ -193,12 +193,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
-        dispatcher.execute(new ShowDefaultFormsAction(), new ErrorHandlingCallback<ShowDefaultFormsResult>() {
-            @Override
-            public void success(final ShowDefaultFormsResult result) {
-                initializeWindows(result.defaultFormsType, result.defaultForms);
-            }
-        });
+        initializeWindows();
 
         Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
             @Override
@@ -290,7 +285,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         bodyStyle.setWidth(Window.getClientWidth(), Style.Unit.PX);
     }
 
-    private void initializeWindows(final GDefaultFormsType defaultFormsType, final ArrayList<String> defaultForms) {
+    private void initializeWindows() {
         dispatcher.execute(new GetNavigatorInfo(), new ErrorHandlingCallback<GetNavigatorInfoResult>() {
             @Override
             public void success(GetNavigatorInfoResult result) {
@@ -310,22 +305,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 allWindows.addAll(result.navigatorWindows);
                 allWindows.addAll(commonWindows.keySet());
 
-                boolean fullScreenMode = defaultFormsType == GDefaultFormsType.DEFAULT && !defaultForms.isEmpty();
-                RootLayoutPanel.get().add(windowsController.initializeWindows(allWindows, formsWindow, fullScreenMode));
+                RootLayoutPanel.get().add(windowsController.initializeWindows(allWindows, formsWindow));
 
                 navigatorController.update();
-
-                openInitialForms(defaultForms);
 
                 formsController.executeNotificationAction("SystemEvents.onWebClientStarted[]", 0);
             }
         });
-    }
-
-    private void openInitialForms(ArrayList<String> formsSIDs) {
-        for (final String formSID : formsSIDs) {
-            formsController.openForm(formSID, formSID, GModalityType.DOCKED, true);
-        }
     }
 
     public void clean() {
@@ -358,6 +344,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                     }
                 }
             });
+        }
+
+        @Override
+        public void execute(final GActivateFormAction action) {
+            formsController.selectTab(action.formCanonicalName);
+        }
+
+        @Override
+        public void execute(final GMaximizeFormAction action) {
+            windowsController.setFullScreenMode(true);
         }
     }
 }

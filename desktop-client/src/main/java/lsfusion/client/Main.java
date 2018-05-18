@@ -260,7 +260,7 @@ public class Main {
 
                     frame.setVisible(true);
 
-                    ((DockableMainFrame) frame).focusPageIfNeeded();
+                    ((DockableMainFrame) frame).clearForms();
 
                     daemonTasks = remoteLogics.getDaemonTasks(Main.computerId);
                     for (IDaemonTask task : daemonTasks) {

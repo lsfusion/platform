@@ -256,7 +256,7 @@ public class SplitWindowElement extends WindowElement {
         }
     }
 
-    private void redraw() {
+    public void redraw() {
         splitPanel.clear();
         
         ArrayList<WindowElement> visibleWindows = new ArrayList<>();

@@ -193,4 +193,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GBeepAction convertAction(BeepClientAction action) {
         return new GBeepAction(FileUtils.saveFile(action.file, "wav"));
     }
+
+    @Converter(from = ActivateFormClientAction.class)
+    public GActivateFormAction convertAction(ActivateFormClientAction action) {
+        return new GActivateFormAction(action.formCanonicalName);
+    }
+
+    @Converter(from = MaximizeFormClientAction.class)
+    public GMaximizeFormAction convertAction(MaximizeFormClientAction action) {
+        return new GMaximizeFormAction();
+    }
 }
