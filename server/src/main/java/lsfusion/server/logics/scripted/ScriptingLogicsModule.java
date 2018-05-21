@@ -1870,15 +1870,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.NONAME, form, component)), new ArrayList<Integer>());
     }
 
-    public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public List<LCP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
-        checks.checkDuplicateProperty(name, signature);
+        
+        List<LCP<?>> res = new ArrayList<>();
+        for (String name : names) {
+            checks.checkDuplicateProperty(name, signature);
 
-        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
-        makePropertyPublic(res, name, signature);
+            LCP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
+            res.add(lcp);
+            makePropertyPublic(lcp, name, signature);
+        }
         return res;
     }
 

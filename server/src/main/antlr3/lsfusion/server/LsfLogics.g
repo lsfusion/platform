@@ -3268,7 +3268,7 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	'{'
 			(	(aDB=keepContextFlowActionDefinitionBody[context, dynamic] { props.add($aDB.property); })
-			|	def=localDataPropertyDefinition ';' { localProps.add($def.property); }
+			|	def=localDataPropertyDefinition ';' { if (inPropParseState()) localProps.addAll($def.properties); }
 			)*
 		'}'
 	;
@@ -3282,15 +3282,15 @@ nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props 
             )
     ;
 	
-localDataPropertyDefinition returns [LCP property]
+localDataPropertyDefinition returns [List<LCP<?>> properties]
 @after {
 	if (inPropParseState()) {
-		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
+		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
 	}
 }
 	:	'LOCAL'
 		nlm = nestedLocalModifier
-		propName=ID
+		propNames=nonEmptyIdList
 		EQ returnClass=classId
 		'('
 			paramClasses=classIdList
