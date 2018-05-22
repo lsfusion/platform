@@ -35,7 +35,8 @@ public class EvalUtils {
     public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
         String name = getUniqueName();
 
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, namespace, require, priorities, script, name));
+        String code = wrapScript(BL, namespace, require, priorities, script, name);
+        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, code);
         module.order = BL.getOrderedModules().size() + 1;
         module.visible = FullFunctionSet.<Version>instance();
         if(prevEventScope)

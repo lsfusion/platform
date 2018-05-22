@@ -705,6 +705,10 @@ public class DerivedProperty {
         return new SessionDataProperty(LocalizedString.NONAME, valueClass);
     }
 
+    public static SessionDataProperty createImportDataProp(ValueClass valueClass, ValueClass... paramClasses) {
+        return new SessionDataProperty(LocalizedString.NONAME, paramClasses, valueClass);
+    }
+
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();

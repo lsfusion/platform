@@ -161,8 +161,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         if(modifyContext || hasDebugLocals())
             return ActionDelegationType.BEFORE_DELEGATE;
-        else
-            return null;
+        return null;
     }
 
     @Override

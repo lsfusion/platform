@@ -28,8 +28,8 @@ import java.util.Map;
 
 public class ImportDefaultDataActionProperty extends ImportDataActionProperty {
 
-    public ImportDefaultDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
-        super(1, ids, properties, baseLM);
+    public ImportDefaultDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
+        super(1, ids, properties, nulls, baseLM);
     }
 
     @Override

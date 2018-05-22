@@ -20,8 +20,8 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
     String root;
     boolean attr;
 
-    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, boolean attr, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, hasListOption, baseLM);
+    public ImportXMLDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, boolean hasListOption, boolean attr, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, nulls, hasListOption, baseLM);
         this.attr = attr;
     }
 

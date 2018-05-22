@@ -21,8 +21,8 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     protected Integer sheetIndex;
     private boolean sheetAll;
     
-    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean sheetAll, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, baseLM);
+    public ImportXLSDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, boolean sheetAll, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, nulls, baseLM);
         this.sheetAll = sheetAll;
     }
 

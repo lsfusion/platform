@@ -52,6 +52,8 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     protected final List<String> ids;
     protected final ImOrderSet<LCP> properties;
 
+    protected final List<Boolean> nulls;
+
     protected final boolean hasListOption;
     private final LCP<?> importedProperty;
 
@@ -85,7 +87,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         }
     }
 
-    public static ImportDataActionProperty createDBFProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, String charset, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createDBFProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, String charset, BaseLogicsModule baseLM) {
         for (int i = 0; i < ids.size(); ++i) { // для DBF делаем case insensitive
             String id = ids.get(i);
             if (id != null)
@@ -93,25 +95,25 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
             else
                 throw new RuntimeException("Import error: field for property " + properties.get(i) + " not specified");
         }
-
-        return new ImportDBFDataActionProperty(paramsCount, hasWheres, hasMemo, ids, properties, charset, baseLM);
+        
+        return new ImportDBFDataActionProperty(paramsCount, hasWheres, hasMemo, ids, properties, nulls, charset, baseLM);
     }
 
-    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
+    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
         if (format == ImportSourceFormat.TABLE) {
-            return new ImportTableDataActionProperty(ids, properties, baseLM);
+            return new ImportTableDataActionProperty(ids, properties, nulls, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
-            return new ImportMDBDataActionProperty(ids, properties, baseLM);
+            return new ImportMDBDataActionProperty(ids, properties, nulls, baseLM);
         } else if(format == null)
-            return new ImportDefaultDataActionProperty(ids, properties, baseLM);
+            return new ImportDefaultDataActionProperty(ids, properties, nulls, baseLM);
         return null;
     }
 
-    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
-        this(paramsCount, ids, properties, false, baseLM);
+    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
+        this(paramsCount, ids, properties, nulls, false, baseLM);
     }
 
-    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
+    public ImportDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, boolean hasListOption, BaseLogicsModule baseLM) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -120,10 +122,17 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         }));
         this.ids = ids;
         this.properties = properties;
+        this.nulls = nulls;
         this.hasListOption = hasListOption;
         this.importedProperty = baseLM.imported;
     }
 
+    private Object parseString(String value, DataClass type, int index) throws lsfusion.server.data.type.ParseException {
+        Object parsedValue = value == null ? null : type.parseString(value);
+        if(parsedValue == null && nulls != null && !nulls.get(index))
+            parsedValue = type.getDefaultValue();
+        return parsedValue;
+    }
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue value = context.getKeys().getValue(0);
@@ -168,11 +177,12 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                             mRows.exclAdd(MapFact.<String, DataObject>EMPTY(), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                                 public ObjectValue getMapValue(LCP prop) {
                                     if (properties.indexOf(prop) < finalRow.size()) {
-                                        Type type = prop.property.getType();
+                                        DataClass type = (DataClass)prop.property.getType();
                                         Object parsedObject = null;
                                         try {
-                                            String value = finalRow.get(properties.indexOf(prop));
-                                            parsedObject = value == null ? null : type.parseString(value);
+                                            int index = properties.indexOf(prop);
+                                            String value = finalRow.get(index);
+                                            parsedObject = parseString(value, type, index);
                                         } catch (lsfusion.server.data.type.ParseException ignored) {
                                         }
                                         return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editValuePolicy));
@@ -200,11 +210,12 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                                         if (prop == importedProperty) {
                                             return ObjectValue.getValue(true, LogicalClass.instance);
                                         } else if (properties.indexOf(prop) < finalRow.size()) {
-                                            Type type = prop.property.getType();
+                                            DataClass type = (DataClass)prop.property.getType();
                                             Object parsedObject = null;
                                             try {
-                                                String value = finalRow.get(properties.indexOf(prop));
-                                                parsedObject = value == null ? null : type.parseString(value);
+                                                int index = properties.indexOf(prop);
+                                                String value = finalRow.get(index);
+                                                parsedObject = parseString(value, type, index);
                                             } catch (lsfusion.server.data.type.ParseException ignored) {
                                             }
                                             return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editValuePolicy));
