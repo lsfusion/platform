@@ -3314,9 +3314,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mProps.immutableOrder();
     }
 
-    public LAPWithParams addScriptedImportExcelActionProperty(LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LCPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportExcelActionProperty(LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LCPWithParams sheetIndex, boolean sheetAll) throws ScriptingErrorLog.SemanticErrorException {
         ImOrderSet<LCP> props = findLPsForImport(propUsages);
-        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, baseLM)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
+        return addScriptedJoinAProp(addAProp(new ImportXLSDataActionProperty(sheetIndex != null ? 2 : 1, ids, props, sheetAll, baseLM)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
     }
 
     public LAPWithParams addScriptedImportCSVActionProperty(LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {

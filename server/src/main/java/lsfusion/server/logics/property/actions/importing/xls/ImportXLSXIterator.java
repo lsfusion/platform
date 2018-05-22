@@ -1,63 +1,27 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ImportXLSXIterator extends ImportIterator {
-    private final List<Integer> columns;
-    private final ImOrderSet<LCP> properties;
-    private int current;
-    private XSSFSheet sheet;
-    private int lastRow;
+public abstract class ImportXLSXIterator extends ImportIterator {
+    protected final List<Integer> columns;
+    protected final ImOrderSet<LCP> properties;
 
-    public ImportXLSXIterator(byte[] file, List<Integer> columns, ImOrderSet<LCP> properties, Integer sheetIndex) throws IOException {
+    public ImportXLSXIterator(List<Integer> columns, ImOrderSet<LCP> properties) {
         this.columns = columns;
         this.properties = properties;
-
-        XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
-        sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
-        lastRow = sheet.getLastRowNum();
-        lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
     }
 
-    @Override
-    public List<String> nextRow() {
-        List<String> listRow = new ArrayList<>();
-        try {
-            XSSFRow xssfRow = sheet.getRow(current);
-            if (xssfRow != null) {
-                for (Integer column : columns) {
-                    try {
-                        listRow.add(getXLSXFieldValue(xssfRow, column, null));
-                    } catch (Exception e) {
-                        throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column+1), e);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-        current++;
-        return current > lastRow ? null : listRow;
-    }
-
-    protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, String defaultValue) throws ParseException {
+    protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, String defaultValue) {
         String result = defaultValue;
         if (cell != null && xssfRow != null) {
             XSSFCell xssfCell = xssfRow.getCell(cell);
