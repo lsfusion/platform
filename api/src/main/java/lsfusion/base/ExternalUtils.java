@@ -157,7 +157,9 @@ public class ExternalUtils {
     }
 
     public static Charset getCharsetFromContentType(ContentType contentType) {
-        Charset charset = contentType.getCharset();
+        Charset charset = null;
+        if(contentType != null)
+            charset = contentType.getCharset();
         if(charset == null)
             charset = Consts.ISO_8859_1; // HTTP spec, хотя тут может быть нюанс что по спецификации некоторых content-type'ов (например application/json) может быть другая default кодировка         
         return charset;
