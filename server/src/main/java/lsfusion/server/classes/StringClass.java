@@ -210,12 +210,11 @@ public class StringClass extends DataClass<String> {
     @Override
     public String getSID() {
         String sid = (length == ExtInt.UNLIMITED
-                      ? (rich ? "RICHTEXT" : ((caseInsensitive ? "I" : "") + "TEXT"))
+                      ? (rich ? "RICHTEXT" : "TEXT")
                       : "STRING");
-        sid = (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + sid;
-        if (length != ExtInt.UNLIMITED) {
-            sid = sid + "_" + length;
-        }
+        sid = (caseInsensitive ? "I" : "") + sid;
+        if (length != ExtInt.UNLIMITED)
+            sid = (!blankPadded ? "VAR" : "") + sid + "_" + length;
         return sid;
     }
 

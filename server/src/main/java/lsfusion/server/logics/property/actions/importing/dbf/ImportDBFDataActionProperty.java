@@ -32,8 +32,8 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     private byte[] memo;
     private File tempMemoFile;
     private String charset;
-    public ImportDBFDataActionProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, String charset, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, baseLM);
+    public ImportDBFDataActionProperty(int paramsCount, boolean hasWheres, boolean hasMemo, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, String charset, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, nulls, baseLM);
         this.hasWheres = hasWheres;
         this.hasMemo = hasMemo;
         this.charset = charset == null ? "cp1251" : charset;

@@ -19,8 +19,8 @@ import java.util.Map;
 public class ImportJSONDataActionProperty extends ImportDataActionProperty {
     String root;
 
-    public ImportJSONDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, boolean hasListOption, BaseLogicsModule baseLM) {
-        super(paramsCount, ids, properties, hasListOption, baseLM);
+    public ImportJSONDataActionProperty(int paramsCount, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, boolean hasListOption, BaseLogicsModule baseLM) {
+        super(paramsCount, ids, properties, nulls, hasListOption, baseLM);
     }
 
     @Override

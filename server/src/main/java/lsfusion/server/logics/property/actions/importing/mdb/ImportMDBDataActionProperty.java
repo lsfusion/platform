@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class ImportMDBDataActionProperty extends ImportDataActionProperty {
-    public ImportMDBDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, BaseLogicsModule baseLM) {
-        super(1, ids, properties, baseLM);
+    public ImportMDBDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
+        super(1, ids, properties, nulls, baseLM);
     }
 
     @Override

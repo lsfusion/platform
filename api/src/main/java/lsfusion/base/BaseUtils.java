@@ -825,6 +825,12 @@ public class BaseUtils {
         Collection<K> result = new ArrayList<>(set);
         result.remove(remove);
         return result;
+
+    }
+    public static <K> List<K> remove(List<? extends K> set, int remove) {
+        List<K> result = new ArrayList<>(set);
+        result.remove(remove);
+        return result;
     }
 
     public static <K> Set<K> removeSet(Set<? extends K> set, Collection<? extends K> remove) {

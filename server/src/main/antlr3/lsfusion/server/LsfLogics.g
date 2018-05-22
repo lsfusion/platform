@@ -1921,6 +1921,8 @@ hasListOptionLiteral returns [boolean val]
 
 importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
+    List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
+    
 	ImportSourceFormat format = null;
 	LCPWithParams sheet = null;
 	boolean sheetAll = false;
@@ -1931,31 +1933,67 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams root = null;
 	Boolean hasListOption = null;
 	boolean attr = false;
-
+	
+	List<String> ids = null;
 }
 @after {
 	if (inPropParseState()) {
 		if($type.format == ImportSourceFormat.XLS)
-			$property = self.addScriptedImportExcelActionProperty($expr.property, $plist.ids, $plist.propUsages, sheet, sheetAll);
+			$property = self.addScriptedImportExcelActionProperty($expr.property, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll);
 		else if($type.format == ImportSourceFormat.CSV)
-        	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
+        	$property = self.addScriptedImportCSVActionProperty($expr.property, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, separator, noHeader, charset);
         else if($type.format == ImportSourceFormat.XML)
-        	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, root, hasListOption, attr);
+        	$property = self.addScriptedImportXMLActionProperty($expr.property, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, root, hasListOption, attr);
         else if($type.format == ImportSourceFormat.JSON)
-            $property = self.addScriptedImportJSONActionProperty($expr.property, $plist.ids, $plist.propUsages, root, hasListOption);
+            $property = self.addScriptedImportJSONActionProperty($expr.property, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, root, hasListOption);
         else if($type.format == ImportSourceFormat.DBF)
-            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, $plist.ids, $plist.propUsages, charset);
+            $property = self.addScriptedImportDBFActionProperty($expr.property, $whereExpr.property, memo, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, charset);
 		else
-			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
+			$property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext);
 	}
 } 
 	:	'IMPORT' 
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; separator = $type.separator;
 		        noHeader = $type.noHeader; root = $type.root; hasListOption = $type.hasListOption; attr = $type.attr; charset = $type.charset; })?
 		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
-		'TO' plist=nonEmptyPropertyUsageListWithIds
+		{
+			if(inPropParseState() && (hasListOption == null || !hasListOption)) // add row num param
+        	    self.getParamIndex(self.new TypedParameter(self.findClass("INTEGER"), "row"), newContext, true, insideRecursion);
+        }
+		(
+            'FIELDS' pflist = nonEmptyImportFieldDefinitions[newContext] { ids = $pflist.ids; }
+            | 
+		    'TO' plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; }
+		)
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
+		dDB=doInputBody[context, newContext]
 	;
+
+nonEmptyImportFieldDefinitions[List<TypedParameter> newContext] returns [List<String> ids, List<Boolean> nulls]
+@init {
+	$ids = new ArrayList<String>();
+	$nulls = new ArrayList<Boolean>();
+}
+	:	field = importFieldDefinition[newContext] { $ids.add($field.id); $nulls.add($field.nulls); }
+		(',' field = importFieldDefinition[newContext] { $ids.add($field.id); $nulls.add($field.nulls); })*
+	;
+	
+importFieldDefinition[List<TypedParameter> newContext] returns [String id, boolean nulls = false]
+@init {
+    DataClass dataClass = null;
+}
+    : 
+        ptype=PRIMITIVE_TYPE { if(inPropParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
+        (varID=ID EQ)?
+        (   pid=ID { $id = $pid.text; }
+        |	sLiteral=stringLiteral { $id = $sLiteral.val; } 
+        )
+        ('NULL' { $nulls = true; } )?
+        { 
+        	if(inPropParseState())
+                self.getParamIndex(self.new TypedParameter(dataClass, $varID.text != null ? $varID.text : $id), newContext, true, insideRecursion); 
+        }
+    ;
 
 exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
@@ -2497,13 +2535,13 @@ topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dy
         self.topContextActionPropertyDefinitionBodyCreated($property);
     }
 }
-    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $aDB.property; }
+    :   aDB=modifyContextFlowActionDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext, false] { $property = $aDB.property; }
 	;
 
 // modifies context + is flow action (uses another actions)
-modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext] returns [LAPWithParams property]
+modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext, boolean explicitCreated] returns [LAPWithParams property]
 @after{
-    if (inPropParseState()) {
+    if (inPropParseState() && !explicitCreated) {
         $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, newContext, $oldContext, needFullContext);
     }
 }
@@ -2551,6 +2589,7 @@ recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] re
 recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 	:	listADB=listActionDefinitionBody[context, dynamic] { $property = $listADB.property; }
 	|	confirmADB=confirmActionDefinitionBody[context] { $property = $confirmADB.property; } // mixed, input
+	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; } // mixed
 	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $property = $newSessionADB.property; }
 	|	requestADB=requestActionDefinitionBody[context, dynamic] { $property = $requestADB.property; }
 	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; } // mixed
@@ -2598,7 +2637,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $property = $drillDownADB.property; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $property = $writeADB.property; }
-	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; }
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $property = $importFormADB.property; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $property = $activeFormADB.property; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $property = $activateADB.property; }
@@ -2741,8 +2779,8 @@ noCancelClause returns [boolean result]
     ;
 
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LAPWithParams property, LAPWithParams elseProperty]
-        // modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false] - used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses
-    :	(('DO' dDB=keepContextFlowActionDefinitionBody[newContext, false] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
+        // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionPropertyDefinitionBody to get right DelegationType
+    :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
 	|	(';' { if(inPropParseState()) { $property = new LAPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
 ;
 
@@ -2977,7 +3015,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams pro
 	:
 	    addObj=forAddObjClause[newContext]
 //        ('TO' pUsage=propertyUsage)?
-   		actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false]
+   		actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false, false]
 	;
 
 emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
@@ -3466,7 +3504,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LAPWithPa
 		)?
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
-		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false]
+		'DO' actDB=modifyContextFlowActionDefinitionBody[context, newContext, false, false, false]
 		( {!recursive}?=> 'ELSE' elseActDB=keepContextFlowActionDefinitionBody[context, false])?
 	;
 
