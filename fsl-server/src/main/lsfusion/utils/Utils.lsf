@@ -11,18 +11,17 @@ GROUP print 'Печатные формы' : public;
 // ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
 fileName 'Список файлов' = DATA LOCAL VARISTRING[255] (INTEGER);
 fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
-//ftp://username:password@host:port/path or file://path
-listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10]); 
-listFiles 'Получить список файлов'(VARISTRING[255] path) = { listFiles(path, 'UTF-8'); }
-//file://path
-listFilesClient 'Получить список файлов (на клиенте)' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesClientActionProperty' (VARISTRING[255]); 
+//path, charset, isClient
+listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
+listFiles 'Получить список файлов' (VARISTRING[255] path) = { listFiles(path, 'UTF-8', NULL); }
+listFilesClient 'Получить список файлов (на клиенте)' (VARISTRING[255] path) = { listFiles(path, NULL, TRUE); }
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();
-//path, charset, isClient
-fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
-fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, 'UTF-8', NULL); }
-fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, NULL, TRUE); } 
+//path, isClient
+fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], BOOLEAN); 
+fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, NULL); }
+fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, TRUE); } 
 
 // --------------------------------- STRING -> CUSTOMFILE -> STRING --------------------------------- //
 resultCustomFile = DATA LOCAL CUSTOMFILE ();
@@ -33,7 +32,16 @@ resultString = DATA LOCAL TEXT ();
 //customFile, charset
 customFileToString 'Запись файла в строку' = CUSTOM 'lsfusion.erp.utils.utils.FileToStringActionProperty' (CUSTOMFILE, VARSTRING[10]);
 
+// ----------------------------------- Работа с файловой системой ----------------------------------- //
 mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
+//path, isClient
+deleteFile 'Удалить файл' = CUSTOM 'lsfusion.erp.utils.utils.DeleteFileActionProperty' (VARISTRING[255], BOOLEAN);
+deleteFile 'Удалить файл' (VARISTRING[255] path) = { deleteFile(path, NULL); }
+deleteFileClient 'Удалить файл (на клиенте)' (VARISTRING[255] path) = { deleteFile(path, TRUE); }
+//sourcePath, destinationPath, isClient
+moveFile 'Переместить файл' = CUSTOM 'lsfusion.erp.utils.utils.MoveFileActionProperty' (VARISTRING[255], VARISTRING[255], BOOLEAN);
+moveFile 'Переместить файл' (VARISTRING[255] source, VARISTRING[255] destination) = { moveFile(source, destination, NULL); }
+moveFileClient 'Переместить файл (на клиенте)' (VARISTRING[255] source, VARISTRING[255] destination) = { moveFile(source, destination, TRUE); }
 
 //zip files
 zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
