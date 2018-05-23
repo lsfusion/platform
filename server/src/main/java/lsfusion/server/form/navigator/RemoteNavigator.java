@@ -17,6 +17,7 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -521,6 +522,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public boolean isUseRequestTimeout() throws RemoteException {
+        if(Settings.get().isUseRequestTimeout())
+            return true;
+        
         boolean useRequestTimeout = false;
         try (DataSession session = createSession()) {
             useRequestTimeout = businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
