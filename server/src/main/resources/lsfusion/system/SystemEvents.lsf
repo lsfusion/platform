@@ -223,16 +223,16 @@ onWebClientStarted = ABSTRACT LIST ();
 showDefaultForms() = {
     IF defaultForms(currentUser()) == DefaultForms.default THEN {
         LOCAL firstForm = VARSTRING[100] ();
-        FOR formCanonicalName(NavigatorElement e) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
-            NEWSESSION EVAL [=CONCAT ' ', 'run() = \{ SHOW', formCanonicalName(e), 'DOCKED NOWAIT; \};']();
-            IF NOT firstForm() THEN {
-                firstForm() <- formCanonicalName(e);
-            }
+        FOR actionCanonicalName(NavigatorAction e) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
+            NEWSESSION EVAL 'run() = \{ ' + actionCanonicalName(e) + '(); \};';
+//            IF NOT firstForm() THEN {
+//                firstForm() <- formCanonicalName(e);
+//            }
         }
-        IF firstForm() THEN {
-            maximizeForm();
-            EVAL [=CONCAT ' ', 'run() = \{ ACTIVATE FORM', firstForm(), '; \};']();
-        }
+//        IF firstForm() THEN {
+        maximizeForm();
+//            EVAL 'run() = \{ ACTIVATE FORM ' + firstForm() +'; \};';
+//        }
     }
 }
 

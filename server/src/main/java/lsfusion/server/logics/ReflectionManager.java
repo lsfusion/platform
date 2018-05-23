@@ -116,25 +116,30 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizeNavigatorElements() {
-        synchronizeNavigatorElements(reflectionLM.navigatorFolder, NavigatorFolder.class, reflectionLM.isNavigatorFolder);
-        synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, reflectionLM.isNavigatorAction);
-        synchronizeNavigatorElements(reflectionLM.navigatorForm, NavigatorForm.class, reflectionLM.isNavigatorForm);
+        synchronizeNavigatorElements(reflectionLM.navigatorFolder, false, reflectionLM.isNavigatorFolder);
+        synchronizeNavigatorElements(reflectionLM.navigatorAction, true, reflectionLM.isNavigatorAction);
     }
 
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, LCP deleteLP) {
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, boolean actions, LCP deleteLP) {
 
         startLogger.info("synchronizeNavigatorElements collecting data started");
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
-        ImportField formCNField = new ImportField(reflectionLM.formCanonicalNameClass);
+        ImportField actionCNField = null;
+        if(actions)
+            actionCNField = new ImportField(reflectionLM.actionCanonicalNameClass);
         
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
 
         List<List<Object>> elementsData = new ArrayList<>();
         for (NavigatorElement e : businessLogics.getNavigatorElements()) {
-            if (filterJavaClass.isInstance(e)){
-                String formCanonicalName = (e instanceof NavigatorForm ? ((NavigatorForm) e).getForm().getCanonicalName() : null);
-                elementsData.add(asList((Object) e.getCanonicalName(), e.caption.getSourceString(), formCanonicalName));
+            if (e instanceof NavigatorAction == actions){
+                List<Object> row = new ArrayList<>();
+                row.add(e.getCanonicalName());
+                row.add(e.caption.getSourceString());
+                if(actions)
+                    row.add(((NavigatorAction)e).getAction().getCanonicalName());
+                elementsData.add(row);
             }
         }
 //        elementsData.add(asList((Object) "noParentGroup", "Без родительской группы"));
@@ -143,12 +148,18 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<>();
         propsNavigatorElement.add(new ImportProperty(nameField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
         propsNavigatorElement.add(new ImportProperty(captionField, reflectionLM.captionNavigatorElement.getMapping(keyNavigatorElement)));
-        propsNavigatorElement.add(new ImportProperty(formCNField, reflectionLM.formCanonicalNameByNavigatorElement.getMapping(keyNavigatorElement)));
+        if(actions)
+            propsNavigatorElement.add(new ImportProperty(actionCNField, reflectionLM.actionCanonicalNameNavigatorAction.getMapping(keyNavigatorElement)));
 
         List<ImportDelete> deletes = Collections.singletonList(
                 new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
         );
-        ImportTable table = new ImportTable(asList(nameField, captionField, formCNField), elementsData);
+        List<ImportField> fields = new ArrayList<>();
+        fields.add(nameField);
+        fields.add(captionField);
+        if(actions)
+            fields.add(actionCNField);
+        ImportTable table = new ImportTable(fields, elementsData);
 
         try {
             try (DataSession session = createSyncSession()) {
