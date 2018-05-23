@@ -144,7 +144,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return orderInterfaces;
     }
     
-    public ImOrderSet<T> getFriendlyPropertyOrderInterfaces() { 
+    public ImOrderSet<T> getFriendlyOrderInterfaces() { 
         return orderInterfaces; 
     }
 

@@ -1820,7 +1820,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return isFull(interfaces, calcType);
     }
 
-    public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров - null значение
+    public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров всегда возвращается null значение
         return isNotNull(interfaces, algType);
     }
         

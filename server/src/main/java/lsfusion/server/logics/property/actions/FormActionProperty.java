@@ -42,7 +42,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
         for(Property extraProp : extraProps) 
             if(extraProp != null) {
                 ImMap<PropertyInterface, ValueClass> interfaceClasses = extraProp.getInterfaceClasses(ClassType.formPolicy);
-                ImOrderSet<PropertyInterface> propInterfaces = extraProp.getFriendlyPropertyOrderInterfaces();
+                ImOrderSet<PropertyInterface> propInterfaces = extraProp.getFriendlyOrderInterfaces();
                 for (int i = 0; i < propInterfaces.size(); ++i) {
                     valueClasses[size + i] = interfaceClasses.get(propInterfaces.get(i));
                 }
