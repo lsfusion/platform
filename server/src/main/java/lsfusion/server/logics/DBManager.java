@@ -47,6 +47,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.session.ClassChange;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 import lsfusion.server.stack.ParamMessage;
@@ -925,6 +926,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (oldDBStructure.version < NavElementDBVersion && !oldDBStructure.isEmpty()) {
                 modifyNavigatorElementsClasses(sql);
             }
+            if (oldDBStructure.version < 29 && !oldDBStructure.isEmpty()) {
+                modifyNavigatorFormClasses();
+            }
             
             if (oldDBStructure.isEmpty()) {
                 startLogger.info("Recalculate class stats");
@@ -1146,6 +1150,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         } catch (SQLException | SQLHandledException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void modifyNavigatorFormClasses() throws SQLException, SQLHandledException {
+        try(DataSession session = createSession(OperationOwner.unknown)) {
+            KeyExpr keyExpr = new KeyExpr("key");
+            session.changeClass(new ClassChange(keyExpr, keyExpr.isClass(businessLogics.reflectionLM.navigatorForm.getUpSet()), businessLogics.reflectionLM.navigatorAction));
+            session.apply(businessLogics, getStack());
         }
     }
 
@@ -2276,7 +2288,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
-            version = 28;
+            version = 29;
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

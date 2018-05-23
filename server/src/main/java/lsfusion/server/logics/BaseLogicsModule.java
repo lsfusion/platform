@@ -650,7 +650,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public LAP getFormNavigatorAction(FormEntity form) {
-        return addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
+        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
+
+        String contextPrefix = getFormPrefix(form);
+        String name = "_NAVIGATORFORM" + contextPrefix;
+
+        makeActionPublic(result, name, new ArrayList<ResolveClassSet>());
+        
+        return result;
     }
 
     @IdentityStrongLazy

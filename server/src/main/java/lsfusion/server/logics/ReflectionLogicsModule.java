@@ -79,7 +79,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP formByCanonicalName;
 
     public LCP parentNavigatorElement;
-    public LCP formCanonicalNameByNavigatorElement; 
+    public LCP actionCanonicalNameNavigatorAction; 
     
     public LCP formCaption;
     public LCP isForm;
@@ -177,6 +177,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass navigatorElementCanonicalNameClass = StringClass.getv(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass formCanonicalNameClass = StringClass.getv(100);
+    public final StringClass actionCanonicalNameClass = StringClass.get(512);
     public final StringClass formCaptionClass = StringClass.getv(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
@@ -280,7 +281,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         formCaption = findProperty("caption[Form]");
         isForm = findProperty("is[Form]");
 
-        formCanonicalNameByNavigatorElement = findProperty("formCanonicalName[NavigatorElement]");
+        actionCanonicalNameNavigatorAction = findProperty("actionCanonicalName[NavigatorAction]");
         
         // Группа объектов
         sidGroupObject = findProperty("sid[GroupObject]");

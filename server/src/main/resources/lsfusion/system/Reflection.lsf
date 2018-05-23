@@ -49,7 +49,7 @@ is (Form form) = form IS Form;
 
 currentForm = NATIVE Form ();
 
-formCanonicalName 'Имя формы' (NavigatorElement e) = DATA VARSTRING[100] (NavigatorElement);
+actionCanonicalName 'Имя действия' = DATA STRING[512] (NavigatorAction);
 
 CLASS ABSTRACT ActionOrProperty 'Свойство или действие';
 
@@ -368,7 +368,7 @@ DESIGN physicalModel {
 
 FORM forms 'Формы'
 
-    TREE treeFormObject tf=NavigatorElement PARENT parent
+    OBJECTS tf=Form
     PROPERTIES(tf) READONLY canonicalName, caption
 
     OBJECTS u=CustomUser PANEL
@@ -401,9 +401,8 @@ FORM forms 'Формы'
     PROPERTIES(fg,p) groupOrder, sum, max, pivot 
 
     FILTERS
-        NOT (tf IS NavigatorAction), 
-        form(g) == form(formCanonicalName(tf)),
-        form(p) == form(formCanonicalName(tf)),
+        form(g) == tf,
+        form(p) == tf,
         groupObject(fg)==g 
 
     FILTERGROUP filtersForm
