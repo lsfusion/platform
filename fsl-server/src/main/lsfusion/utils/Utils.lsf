@@ -32,7 +32,7 @@ resultString = DATA LOCAL TEXT ();
 //customFile, charset
 customFileToString 'Запись файла в строку' = CUSTOM 'lsfusion.erp.utils.utils.FileToStringActionProperty' (CUSTOMFILE, VARSTRING[10]);
 
-setExtension (CUSTOMFILE file, VARSTRING[100] extension) = FORMULA CUSTOMFILE 'casttocustomfile(($1),$2)';
+setExtension = FORMULA CUSTOMFILE 'casttocustomfile(($1),$2)';
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
 mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
