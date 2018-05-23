@@ -76,15 +76,8 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                 }
 
             }
-
-            switch (readResult.errorCode) {
-                case 1:
-                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Path not specified."));
-                case 2:
-                    throw Throwables.propagate(new RuntimeException(String.format("ReadActionProperty Error. Incorrect path: %s, use syntax (file|ftp|http|https|jdbc|mdb)://path", sourcePath)));
-                case 3:
-                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + sourcePath));
-            }
+            if(readResult.error != null)
+                throw Throwables.propagate(new RuntimeException(readResult.error));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

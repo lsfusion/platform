@@ -121,7 +121,8 @@ public class ReadUtils {
         } else {
             errorCode = isDialog ? -1 : 1;
         }
-        return new ReadResult(fileBytes, type, file != null ? file.getAbsolutePath() : null, errorCode);
+        String error = getError(errorCode, sourcePath);
+        return new ReadResult(fileBytes, type, file != null ? file.getAbsolutePath() : null, errorCode, error);
     }
 
     public static void postProcessFile(String sourcePath, String type, String filePath, String movePath, boolean delete) throws IOException, SftpException, JSchException {
@@ -279,7 +280,20 @@ public class ReadUtils {
         }
     }
 
-    private static void deleteFTPFile(String path) throws IOException {
+    public static void deleteFile(String type, String path) throws IOException, SftpException, JSchException {
+        File sourceFile = new File(path);
+        if (!sourceFile.delete()) {
+            sourceFile.deleteOnExit();
+        }
+        if (type.equals("ftp")) {
+            ReadUtils.deleteFTPFile(path);
+        } else if (type.equals("sftp")) {
+            ReadUtils.deleteSFTPFile(path);
+        }
+    }
+
+    //после перехода на 1.3.5 переедет в fsl
+    public static void deleteFTPFile(String path) throws IOException {
         FTPPath properties = parseFTPPath(path, 21);
         if (properties != null) {
             FTPClient ftpClient = new FTPClient();
@@ -305,7 +319,8 @@ public class ReadUtils {
         }
     }
 
-    private static void deleteSFTPFile(String path) throws JSchException, SftpException {
+    //после перехода на 1.3.5 переедет в fsl
+    public static void deleteSFTPFile(String path) throws JSchException, SftpException {
         FTPPath properties = parseFTPPath(path, 22);
         if (properties != null) {
             String remoteFile = properties.remoteFile;
@@ -669,15 +684,33 @@ public class ReadUtils {
     public static class ReadResult implements Serializable {
         byte[] fileBytes;
         String type;
-        String filePath;
-        int errorCode;
+        public String filePath;
+        public int errorCode;
+        public String error;
 
-        public ReadResult(byte[] fileBytes, String type, String filePath, int errorCode) {
+        public ReadResult(byte[] fileBytes, String type, String filePath, int errorCode, String error) {
             this.fileBytes = fileBytes;
             this.type = type;
             this.filePath = filePath;
             this.errorCode = errorCode;
+            this.error = error;
         }
+    }
+
+    private static String getError(int errorCode, String path) {
+        String error = null;
+        switch (errorCode) {
+            case 1:
+                error = "Read Error. Path not specified";
+                break;
+            case 2:
+                error = String.format("Read Error. Incorrect path: %s, use syntax (file|ftp|http|https|jdbc|mdb)://path", path);
+                break;
+            case 3:
+                error = "Read Error. File not found: " + path;
+                break;
+        }
+        return error;
     }
 
     private static class FTPPath {
