@@ -182,7 +182,7 @@ public class GridTableModel extends AbstractTableModel {
             return true;
         }
 
-        return !readOnly[row][col] && !columnProps[col].isReadOnly() && !(columnProps[col].baseType instanceof ClientObjectType);
+        return !readOnly[row][col] && !columnProps[col].isReadOnly();// && !(columnProps[col].baseType instanceof ClientObjectType);
     }
 
     public boolean isCellFocusable(int row, int col) {

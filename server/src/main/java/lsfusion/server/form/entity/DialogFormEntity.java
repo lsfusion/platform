@@ -18,6 +18,9 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
 
         Version version = LM.getVersion();
 
+        if(cls.hasStaticObjects())
+            addPropertyDraw(LM.staticCaption, version, object);
+
         setNFEditType(PropertyEditType.READONLY, version);
 
         if (!cls.dialogReadOnly)
