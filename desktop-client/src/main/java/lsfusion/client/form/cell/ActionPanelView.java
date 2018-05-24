@@ -19,6 +19,7 @@ import java.awt.event.*;
 
 import static javax.swing.SwingUtilities.isRightMouseButton;
 import static lsfusion.client.SwingUtils.overrideSize;
+import static lsfusion.client.form.EditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelView extends JButton implements PanelView, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
@@ -86,6 +87,16 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
                     Rectangle rect = getBounds();
                     Point point = new Point(rect.x, rect.y + rect.height - 1);
                     showContextMenu(point);
+                } else {
+                    final String actionSID = getPropertyKeyPressActionSID(e, property);
+                    if (actionSID != null && form.commitCurrentEditing()) {
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
+                            }
+                        });
+                    }
                 }
             }
         });

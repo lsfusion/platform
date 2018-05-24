@@ -649,6 +649,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionPropertyObject { $options.addEditAction($et.type, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
+		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionPropertyObject { $options.addKeyPressEditAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		)*
 	;
@@ -2256,6 +2257,7 @@ semiActionOption[LAP property, String propertyName, LocalizedString caption, Act
 nonSemiActionOrPropertyOption[LP property, String propertyName, LocalizedString caption, ActionOrPropertySettings ps, List<TypedParameter> context]
     :	onEditEventSetting [property, context]
     |	onContextMenuEventSetting [property, context]
+    |	onKeyPressEventSetting [property, context]
     ;
     
 nonSemiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
@@ -2491,6 +2493,15 @@ onContextMenuEventSetting [LP property, List<TypedParameter> context]
 }
 	:	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)?
 		action=listTopContextDependentActionDefinitionBody[context, false, false]
+	;
+
+onKeyPressEventSetting [LP property, List<TypedParameter> context]
+@after {
+	if (inPropParseState()) {
+		self.setScriptedKeyPressAction(property, $key.val, $action.property);
+	}
+}
+	: 'ON' 'KEYPRESS' key=stringLiteral action=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
 eventIdSetting [LP property]

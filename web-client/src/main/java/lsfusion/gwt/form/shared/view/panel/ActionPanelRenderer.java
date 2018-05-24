@@ -4,10 +4,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-import com.google.gwt.event.dom.client.ContextMenuHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
@@ -23,6 +20,7 @@ import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 import lsfusion.gwt.form.shared.view.grid.editor.DialogBasedGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
@@ -31,6 +29,7 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
+import static lsfusion.gwt.form.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 
@@ -120,6 +119,18 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
                 stopPropagation(event);
             }
         }, ContextMenuEvent.getType());
+        
+        button.addDomHandler(new KeyDownHandler() {
+            @Override
+            public void onKeyDown(KeyDownEvent event) {
+                if (!form.isEditing()) {
+                    final String actionSID = getPropertyKeyPressActionSID(new NativeEditEvent(event.getNativeEvent()), property);
+                    if (actionSID != null) {
+                        editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null);
+                    }
+                }
+            }
+        }, KeyDownEvent.getType());
 
         if (property.editKey != null) {
             iform.addHotkeyBinding(property.groupObject, property.editKey, new Binding() {

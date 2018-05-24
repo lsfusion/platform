@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.server.classes.NumericClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
@@ -14,8 +13,6 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.property.NullValueProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-
-import static lsfusion.interop.ClassViewType.GRID;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -61,6 +58,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     
     public boolean hasContextMenuBinding(String actionSid) {
         return entity.hasContextMenuBinding(actionSid);
+    }
+    
+    public boolean hasKeyBinding(String actionSid) {
+        return entity.hasKeyBinding(actionSid);
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)

@@ -9,6 +9,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 
+import static lsfusion.interop.KeyStrokes.getKeyStrokeForEvent;
+
 public class EditBindingMap {
     private Map<KeyStroke, String> keyBindingMap = new HashMap<>();
     private LinkedHashMap<String, String> contextMenuBindingMap = new LinkedHashMap<>();
@@ -22,14 +24,6 @@ public class EditBindingMap {
 
     public String getAction(EventObject editEvent, EditEventFilter editEventFilter, boolean hasEditAction) {
         if (editEvent instanceof KeyEvent) {
-            KeyEvent keyEvent = (KeyEvent) editEvent;
-
-            KeyStroke ks = KeyStrokes.getKeyStrokeForEvent(keyEvent);
-            String actionSID = keyBindingMap.get(ks);
-            if (actionSID != null) {
-                return actionSID;
-            }
-
             if (hasEditAction && KeyStrokes.isEditObjectEvent(editEvent)) {
                 return ServerResponse.EDIT_OBJECT;
             }
@@ -48,6 +42,17 @@ public class EditBindingMap {
         }
 
         return ServerResponse.CHANGE;
+    }
+
+    public String getKeyPressAction(KeyStroke keyStroke) {
+        return keyBindingMap.get(keyStroke);
+    }
+
+    public String getKeyPressAction(EventObject editEvent) {
+        if (editEvent instanceof KeyEvent) {
+            return getKeyPressAction(getKeyStrokeForEvent((KeyEvent) editEvent));
+        }
+        return null;
     }
 
     public void setKeyAction(KeyStroke keyStroke, String actionSID) {
@@ -93,6 +98,20 @@ public class EditBindingMap {
             actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
         }
         return actionSID;
+    }
+
+    public static String getPropertyKeyPressActionSID(EventObject e, ClientPropertyDraw property) {
+        if (property.editBindingMap != null) {
+            return property.editBindingMap.getKeyPressAction(e);
+        }
+        return null;
+    }
+
+    public static String getPropertyKeyPressActionSID(KeyStroke keyStroke, ClientPropertyDraw property) {
+        if (property.editBindingMap != null) {
+            return property.editBindingMap.getKeyPressAction(keyStroke);
+        }
+        return null;
     }
 
     public interface EditEventFilter {

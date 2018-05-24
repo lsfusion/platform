@@ -187,7 +187,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
         Property<P> property = propertyObject.property;
 
-        if(!hasContextMenuBinding(actionId)) { // распространяется только на редактирование
+        if(!hasContextMenuBinding(actionId) && !hasKeyBinding(actionId)) { // распространяется только на редактирование
             assert CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId) || EDIT_OBJECT.equals(actionId) || GROUP_CHANGE.equals(actionId);
             if (isReadOnly())
                 return null;
@@ -283,17 +283,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             result.put(propertyContextMenuBindings.getKey(i), propertyContextMenuBindings.getValue(i));
         }
 
-        if (contextMenuBindings == null) {
-            return result;
+        if (contextMenuBindings != null) {
+            result.putAll(contextMenuBindings);
         }
 
-        result.putAll(contextMenuBindings);
         return result;
     }
 
     public boolean hasContextMenuBinding(String actionSid) {
         OrderedMap contextMenuBindings = getContextMenuBindings();
         return contextMenuBindings != null && contextMenuBindings.containsKey(actionSid);
+    }
+    
+    public boolean hasKeyBinding(String actionId) {
+        Map keyBindings = getKeyBindings();
+        return keyBindings != null && keyBindings.containsValue(actionId);
     }
 
     public Map<KeyStroke, String> getKeyBindings() {
@@ -302,11 +306,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return keyBindings;
         }
 
-        if (keyBindings == null) {
-            return propertyKeyBindings.toJavaMap();
-        }
         Map<KeyStroke, String> result = propertyKeyBindings.toJavaMap();
-        result.putAll(keyBindings);
+        if (keyBindings != null) {
+            result.putAll(keyBindings);
+        }
         return result;
     }
 

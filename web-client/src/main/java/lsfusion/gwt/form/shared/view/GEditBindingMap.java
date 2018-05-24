@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
+import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.base.client.ui.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
@@ -43,6 +44,14 @@ public class GEditBindingMap implements Serializable {
         this.mouseBinding = mouseBinding;
     }
 
+    public String getKeyPressAction(EditEvent editEvent) {
+        NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
+        if (KEYDOWN.equals(nativeEvent.getType())) {
+            return getKeyAction(getKeyStroke(nativeEvent));
+        }
+        return null;
+    }
+
     public String getAction(EditEvent event, EditEventFilter editEventFilter, boolean hasEditAction) {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
@@ -50,12 +59,6 @@ public class GEditBindingMap implements Serializable {
             if (CLICK.equals(eventType)) {
                 return mouseBinding;
             } else if (isPossibleEditKeyEvent(nativeEvent)) {
-                String actionSID = getKeyAction(getKeyStroke(nativeEvent));
-
-                if (actionSID != null) {
-                    return actionSID;
-                }
-
                 if (editEventFilter != null && !editEventFilter.accept(nativeEvent)) {
                     return null;
                 }
@@ -129,10 +132,17 @@ public class GEditBindingMap implements Serializable {
                 actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
             }
 
-            if (actionSID == null) {
+            if (actionSID == null && overrideMap != null) {
                 actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
             }
         }
         return actionSID;
+    }
+
+    public static String getPropertyKeyPressActionSID(EditEvent e, GPropertyDraw property) {
+        if (property.editBindingMap != null) {
+            return property.editBindingMap.getKeyPressAction(e);
+        }
+        return null;
     }
 }
