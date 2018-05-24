@@ -60,12 +60,8 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
         String extension = null;
         if (fileBytes != null) {
-            if (sourcePropertyType instanceof StaticFormatFileClass) {
-                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(fileBytes);
-            } else if (sourcePropertyType instanceof DynamicFormatFileClass) {
-                extension = BaseUtils.getExtension(fileBytes);
-                fileBytes = BaseUtils.getFile(fileBytes);
-            }
+            extension = BaseUtils.getExtension(fileBytes);
+            fileBytes = BaseUtils.getFile(fileBytes);
         }
         try {
             if (fileBytes != null) {
