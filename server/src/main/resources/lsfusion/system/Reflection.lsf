@@ -49,8 +49,6 @@ is (Form form) = form IS Form;
 
 currentForm = NATIVE Form ();
 
-actionCanonicalName 'Имя действия' = DATA STRING[512] (NavigatorAction);
-
 CLASS ABSTRACT ActionOrProperty 'Свойство или действие';
 
 CLASS Property 'Свойство' : ActionOrProperty;
@@ -84,6 +82,9 @@ CONSTRAINT SET (userLoggable(Property p)) AND maxStatsProperty() AND stats(p) > 
            MESSAGE 'Количество записей логируемого свойства не может превышать ' + maxStatsProperty();
            
 webServerUrl 'Web Server URL' = DATA STRING[100]();
+
+form 'Имя формы' = DATA Form (NavigatorElement);
+action 'Имя действия' = DATA Action (NavigatorAction);
 
 EXTEND FORM options PROPERTIES maxStatsProperty(), webServerUrl();
 DESIGN options { 

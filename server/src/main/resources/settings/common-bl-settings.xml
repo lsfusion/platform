@@ -581,6 +581,8 @@
     <bean id="syncNavigatorElementsTask" class="lsfusion.server.logics.tasks.impl.SyncNavigatorElementsTask">
         <property name="dependencies">
             <set>
+                <ref bean="syncPropertyEntitiesTask"/> <!--> так как ссылка на живой объект, а не varstring, вообще конечно нужны action'ы но они пока вместе синхронизируются <-->
+                <ref bean="syncFormsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
                 <ref bean="executeOnStartedTask"/>
             </set>
         </property>
