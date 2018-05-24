@@ -2,10 +2,14 @@ package lsfusion.client.form.cell;
 
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 
+import javax.swing.*;
 import java.awt.*;
+
+import static lsfusion.interop.KeyStrokes.getEnter;
 
 public class DataPanelViewTable extends SingleCellTable {
     private Color backgroundColor;
@@ -15,6 +19,11 @@ public class DataPanelViewTable extends SingleCellTable {
         super(columnKey, form);
 
         setProperty(property);
+
+        // хак для ON KEYPRESS, чтобы на ENTER можно было что-нибудь повесить, 
+        if (EditBindingMap.getPropertyKeyPressActionSID(getEnter(), property) != null) {
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).remove(getEnter());
+        }
     }
 
     public boolean isPressed(int row, int column) {

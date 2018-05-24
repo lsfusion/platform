@@ -1181,6 +1181,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.setEditAction(actionSID, actionImplement);
     }
 
+    public void setScriptedKeyPressAction(LP property, String key, LAPWithParams action) {
+        List<Object> params = getParamsPlainList(Collections.singletonList(action));
+        ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
+        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = actionImplements.get(0);
+
+        String actionSID = actionImplement.property.getSID();
+        property.property.setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
+        actionImplement.property.checkReadOnly = false;
+
+        property.property.setEditAction(actionSID, actionImplement);
+    }
+
     public void setEventId(LP property, String id) {
         property.property.drawOptions.setEventID(id);
     }

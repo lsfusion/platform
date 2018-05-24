@@ -415,6 +415,13 @@ public class ScriptingFormEntity {
                 property.setContextMenuAction(contextMenuBindings.getKey(i), contextMenuBindings.getValue(i));
             }
         }
+        
+        Map<KeyStroke, String> keyBindings = options.getKeyBindings();
+        if (keyBindings != null) {
+            for (KeyStroke key : keyBindings.keySet()) {
+                property.setKeyAction(key, keyBindings.get(key));
+            }
+        }
 
         String eventID = options.getEventId();
         if (eventID != null)

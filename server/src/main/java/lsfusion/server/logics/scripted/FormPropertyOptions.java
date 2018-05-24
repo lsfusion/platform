@@ -9,8 +9,8 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.Property;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,7 @@ public class FormPropertyOptions {
     private ClassViewType forceViewType;
     private GroupObjectEntity toDraw;
     private OrderedMap<String, LocalizedString> contextMenuBindings;
+    private Map<KeyStroke, String> keyBindings;
     private Map<String, ActionPropertyObjectEntity> editActions;
     private String eventId;
     private PropertyDrawEntity neighbourPropertyDraw;
@@ -211,6 +212,30 @@ public class FormPropertyOptions {
     public void setContextMenuBindings(OrderedMap<String, LocalizedString> contextMenuBindings) {
         this.contextMenuBindings = contextMenuBindings;
     }
+    
+    public void addKeyPressEditAction(String key, ActionPropertyObjectEntity action) {
+        if (action != null) {
+            String propertySID = action.property.getSID();
+            addEditAction(propertySID, action);
+            addKeyBinding(KeyStroke.getKeyStroke(key), propertySID);
+            ((ActionProperty) action.property).checkReadOnly = false;
+        }
+    }
+
+    public void addKeyBinding(KeyStroke key, String actionSID) {
+        if (keyBindings == null) {
+            keyBindings = new HashMap<>();
+        }
+        keyBindings.put(key, actionSID);
+    }
+    
+    public Map<KeyStroke, String> getKeyBindings() {
+        return keyBindings;
+    }
+    
+    public void setKeyBindings(Map<KeyStroke, String> keyBindings) {
+        this.keyBindings = keyBindings;
+    } 
 
     public Map<String, ActionPropertyObjectEntity> getEditActions() {
         return editActions;
@@ -277,6 +302,7 @@ public class FormPropertyOptions {
         merged.setToDraw(nvl(overrides.getToDraw(), toDraw));
         merged.setEditActions(nvl(overrides.getEditActions(), editActions));
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
+        merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));

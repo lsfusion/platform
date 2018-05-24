@@ -27,8 +27,7 @@ import static com.google.gwt.dom.client.BrowserEvents.CONTEXTMENU;
 import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.cellview.client.cell.Cell.Context;
-import static lsfusion.gwt.form.shared.view.GEditBindingMap.getPropertyEditActionSID;
-import static lsfusion.gwt.form.shared.view.GEditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.gwt.form.shared.view.GEditBindingMap.*;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
 
@@ -138,6 +137,13 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         if (form.isEditing()) return;
 
         GPropertyDraw property = getProperty(editContext);
+        GGroupObjectValue columnKey = getColumnKey(editContext);
+        Object oldValue = getValueAt(editContext);
+
+        String keyPressActionSID = getPropertyKeyPressActionSID(editEvent, property);
+        if (keyPressActionSID != null) {
+            editDispatcher.executePropertyEditAction(property, columnKey, keyPressActionSID, oldValue);
+        }
 
         String actionSID = getPropertyEditActionSID(editEvent, property, editBindingMap);
         if (actionSID == null) {
@@ -155,8 +161,6 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
         this.editContext = editContext;
         this.editCellParent = editCellParent;
 
-        GGroupObjectValue columnKey = getColumnKey(editContext);
-        Object oldValue = getValueAt(editContext);
 
         //убираем фокус, чтобы не ловить последующие нажатия
         setFocus(false);

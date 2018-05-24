@@ -884,6 +884,25 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return consumed || editPerformed;
     }
 
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        int row = getSelectedRow();
+        int column = getSelectedColumn();
+        if (row >= 0 && row < getRowCount() && column >= 1 && column < getColumnCount()) {
+            ClientPropertyDraw property = getProperty(row, column);
+            ClientGroupObjectValue columnKey = getColumnKey(row, column);
+
+            if (property != null && columnKey != null) {
+                String keyPressedActionSID = EditBindingMap.getPropertyKeyPressActionSID(e, property);
+                if (keyPressedActionSID != null) {
+                    editDispatcher.executePropertyEditAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+                }
+            }
+        }
+        
+        super.processKeyEvent(e);
+    }
+
     public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int propertyIndex = model.getPropertyColumnIndex(property);
         if (propertyIndex > 0) {

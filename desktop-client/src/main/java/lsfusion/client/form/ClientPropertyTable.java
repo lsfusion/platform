@@ -27,8 +27,7 @@ import java.awt.event.MouseListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
-import static lsfusion.client.form.EditBindingMap.getPropertyEditActionSID;
-import static lsfusion.client.form.EditBindingMap.isEditableAwareEditEvent;
+import static lsfusion.client.form.EditBindingMap.*;
 
 public abstract class ClientPropertyTable extends JTable implements TableTransferHandler.TableInterface, CellTableInterface, EditPropertyHandler {
     private final EditPropertyDispatcher editDispatcher;
@@ -257,6 +256,18 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     @Override
     protected void processKeyEvent(final KeyEvent e) {
+        int row = getCurrentRow();
+        int column = getSelectedColumn();
+        if (row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()) {
+            ClientPropertyDraw property = getProperty(row, column);
+            ClientGroupObjectValue columnKey = getColumnKey(row, column);
+
+            String keyPressedActionSID = getPropertyKeyPressActionSID(e, property);
+            if (keyPressedActionSID != null) {
+                editDispatcher.executePropertyEditAction(property, columnKey, keyPressedActionSID, getValueAt(row, column), editEvent);
+            }
+        }
+        
         SwingUtils.getAroundTooltipListener(this, e, new Runnable() {
             @Override
             public void run() {
