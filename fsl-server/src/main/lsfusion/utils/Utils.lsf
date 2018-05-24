@@ -46,7 +46,7 @@ moveFile 'Переместить файл' (VARISTRING[255] source, VARISTRING[2
 moveFileClient 'Переместить файл (на клиенте)' (VARISTRING[255] source, VARISTRING[255] destination) = { moveFile(source, destination, TRUE); }
 
 //zip files
-zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
+zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[1000]);
 zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
 makeZipFile 'Заархивировать файлы' = CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
 
