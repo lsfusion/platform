@@ -38,8 +38,8 @@ public class MakeZipFileActionProperty extends ScriptingActionProperty {
             KeyExpr iExpr = new KeyExpr("i");
             ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "i", iExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("zipping", findProperty("zipping[VARSTRING[100]]").getExpr(context.getModifier(), iExpr));
-            query.and(findProperty("zipping[VARSTRING[100]]").getExpr(context.getModifier(), iExpr).getWhere());
+            query.addProperty("zipping", findProperty("zipping[VARSTRING[1000]]").getExpr(context.getModifier(), iExpr));
+            query.and(findProperty("zipping[VARSTRING[1000]]").getExpr(context.getModifier(), iExpr).getWhere());
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context);
             if(!result.isEmpty()) {
