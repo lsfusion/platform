@@ -58,6 +58,10 @@ makeUnzipFile 'Разархивировать архив' = CUSTOM 'lsfusion.erp
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
 cmd 'Выполнить cmd' = CUSTOM 'lsfusion.erp.utils.utils.RunCommandActionProperty' (TEXT);
 
+// ---------------------------------- Работа с файлами Excel  ---------------------------------- //
+protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
+protectExcel 'Защитить файл Excel паролем' = CUSTOM 'lsfusion.erp.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';
