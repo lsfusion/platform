@@ -79,7 +79,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP formByCanonicalName;
 
     public LCP parentNavigatorElement;
-    public LCP actionCanonicalNameNavigatorAction; 
+    public LCP formNavigatorAction; 
+    public LCP actionNavigatorAction; 
     
     public LCP formCaption;
     public LCP isForm;
@@ -281,7 +282,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         formCaption = findProperty("caption[Form]");
         isForm = findProperty("is[Form]");
 
-        actionCanonicalNameNavigatorAction = findProperty("actionCanonicalName[NavigatorAction]");
+        formNavigatorAction = findProperty("form[NavigatorAction]");
+        actionNavigatorAction = findProperty("action[NavigatorAction]");
         
         // Группа объектов
         sidGroupObject = findProperty("sid[GroupObject]");

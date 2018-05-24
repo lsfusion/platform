@@ -2048,7 +2048,7 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorAction addNavigatorAction(LAP<?> property, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorAction = new NavigatorAction(property.property, canonicalName, caption);
+        NavigatorAction navigatorAction = new NavigatorAction(property.property, canonicalName, caption, null, "/images/action.png", DefaultIcon.ACTION);
         addNavigatorElement(navigatorAction);
         return navigatorAction;
     }
@@ -2059,8 +2059,7 @@ public abstract class LogicsModule {
 
     protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
 //        NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
-        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).property, canonicalName, caption);
-        navigatorForm.setImage("/images/form.png", DefaultIcon.FORM);
+        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).property, canonicalName, caption, form, "/images/form.png", DefaultIcon.FORM);
 
         addNavigatorElement(navigatorForm);
         return navigatorForm;

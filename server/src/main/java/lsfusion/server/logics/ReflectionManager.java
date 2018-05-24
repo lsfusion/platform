@@ -20,8 +20,6 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.navigator.NavigatorFolder;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
@@ -125,11 +123,16 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         startLogger.info("synchronizeNavigatorElements collecting data started");
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
+        ImportField formCNField = null;
         ImportField actionCNField = null;
-        if(actions)
+        if(actions) {
+            formCNField = new ImportField(reflectionLM.formCanonicalNameClass);;
             actionCNField = new ImportField(reflectionLM.actionCanonicalNameClass);
+        }
         
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
+        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(nameField));
+        ImportKey<?> keyAction = new ImportKey(reflectionLM.action, reflectionLM.actionCanonicalName.getMapping(nameField));
 
         List<List<Object>> elementsData = new ArrayList<>();
         for (NavigatorElement e : businessLogics.getNavigatorElements()) {
@@ -137,8 +140,11 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 List<Object> row = new ArrayList<>();
                 row.add(e.getCanonicalName());
                 row.add(e.caption.getSourceString());
-                if(actions)
-                    row.add(((NavigatorAction)e).getAction().getCanonicalName());
+                if(actions) {
+                    FormEntity form = ((NavigatorAction) e).getForm();
+                    row.add(form != null ? form.getCanonicalName() : null);
+                    row.add(((NavigatorAction) e).getAction().getCanonicalName());
+                }
                 elementsData.add(row);
             }
         }
@@ -148,8 +154,10 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<>();
         propsNavigatorElement.add(new ImportProperty(nameField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
         propsNavigatorElement.add(new ImportProperty(captionField, reflectionLM.captionNavigatorElement.getMapping(keyNavigatorElement)));
-        if(actions)
-            propsNavigatorElement.add(new ImportProperty(actionCNField, reflectionLM.actionCanonicalNameNavigatorAction.getMapping(keyNavigatorElement)));
+        if(actions) {
+            propsNavigatorElement.add(new ImportProperty(formCNField, reflectionLM.formNavigatorAction.getMapping(keyNavigatorElement), LM.object(reflectionLM.form).getMapping(keyForm)));
+            propsNavigatorElement.add(new ImportProperty(actionCNField, reflectionLM.actionNavigatorAction.getMapping(keyNavigatorElement), LM.object(reflectionLM.action).getMapping(keyAction)));
+        }
 
         List<ImportDelete> deletes = Collections.singletonList(
                 new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
@@ -157,14 +165,16 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<ImportField> fields = new ArrayList<>();
         fields.add(nameField);
         fields.add(captionField);
-        if(actions)
+        if(actions) {
+            fields.add(formCNField);
             fields.add(actionCNField);
+        }
         ImportTable table = new ImportTable(fields, elementsData);
 
         try {
             try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_NE");
-                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), propsNavigatorElement, deletes);
+                IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyNavigatorElement, keyForm, keyAction), propsNavigatorElement, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics, getStack());
