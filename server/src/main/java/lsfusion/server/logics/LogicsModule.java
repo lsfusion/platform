@@ -113,8 +113,10 @@ public abstract class LogicsModule {
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
     private final Set<FormEntity> unnamedForms = new HashSet<>();
+    private final Map<LCP<?>, LocalPropertyData> locals = new HashMap<>();
     
-    public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
+    
+    protected final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
@@ -205,18 +207,6 @@ public abstract class LogicsModule {
         moduleMap.get(name).add(lp);
     }
     
-    protected void removeModuleProperty(LCP<?> lp) {
-        String name = lp.property.getName();
-        if (name != null) {
-            if (namedProperties.containsKey(name)) {
-                namedProperties.get(name).remove(lp);
-                if (namedProperties.get(name).isEmpty()) {
-                    namedProperties.remove(name);
-                }
-            }
-        }
-    }
-
     @NFLazy
     protected <P extends PropertyInterface, T extends LP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
@@ -2191,7 +2181,12 @@ public abstract class LogicsModule {
     }
 
     public List<ResolveClassSet> getParamClasses(LP<?, ?> lp) {
-        List<ResolveClassSet> paramClasses = propClasses.get(lp);
+        List<ResolveClassSet> paramClasses;
+        if (lp instanceof LCP && locals.containsKey(lp)) {
+            paramClasses = locals.get(lp).signature;
+        } else {
+            paramClasses = propClasses.get(lp);
+        }
         return paramClasses == null ? Collections.<ResolveClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
     }
 
@@ -2222,6 +2217,35 @@ public abstract class LogicsModule {
     
     public Map<String, List<LogicsModule>> getNamespaceToModules() {
         return namespaceToModules;
+    }
+
+    public static class LocalPropertyData {
+        public String name;
+        public List<ResolveClassSet> signature;
+
+        public LocalPropertyData(String name, List<ResolveClassSet> signature) {
+            this.name = name;
+            this.signature = signature;
+        }
+    }
+
+    protected <P extends PropertyInterface> void addLocal(LCP<P> lcp, LocalPropertyData data) {
+        locals.put(lcp, data);
+        lcp.property.setCanonicalName(getNamespace(), data.name, data.signature, lcp.listInterfaces, baseLM.getDBNamingPolicy());
+    }
+
+    protected void removeLocal(LCP<?> lcp) {
+        assert locals.containsKey(lcp);
+        locals.remove(lcp);
+    }
+
+    public List<ResolveClassSet> getLocalSignature(LCP<?> lcp) {
+        assert locals.containsKey(lcp);
+        return locals.get(lcp).signature;
+    }
+
+    public Map<LCP<?>, LocalPropertyData> getLocals() {
+        return locals;
     }
 
     public LCP<?> resolveProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {

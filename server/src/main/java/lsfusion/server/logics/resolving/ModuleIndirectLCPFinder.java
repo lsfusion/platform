@@ -3,7 +3,7 @@ package lsfusion.server.logics.resolving;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LCP;
 
-public class ModuleSoftLCPFinder extends ModuleSoftLPFinder<LCP<?>> {
+public class ModuleIndirectLCPFinder extends ModuleIndirectLPFinder<LCP<?>> {
 
     @Override
     protected Iterable<LCP<?>> getSourceList(LogicsModule module, String name) {

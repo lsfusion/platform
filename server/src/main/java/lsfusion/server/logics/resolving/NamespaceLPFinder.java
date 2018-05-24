@@ -28,12 +28,12 @@ public class NamespaceLPFinder<L extends LP<?, ?>> extends NamespaceElementFinde
         List<FoundItem<L>> finalResult = new ArrayList<>();
         for (int i = 0; i < cnt; i++) {
             L iProp = result.get(i).value;
-            List<ResolveClassSet> iParams = result.get(i).module.propClasses.get(iProp);
+            List<ResolveClassSet> iParams = result.get(i).module.getParamClasses(iProp);
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
                 L jProp = result.get(j).value;
-                if (i != j && SignatureMatcher.isCompatible(iParams, result.get(j).module.propClasses.get(jProp), false, true) && 
-                              !SignatureMatcher.isCompatible(result.get(j).module.propClasses.get(jProp), iParams, false, true)) {
+                if (i != j && SignatureMatcher.isCompatible(iParams, result.get(j).module.getParamClasses(jProp), false, true) && 
+                              !SignatureMatcher.isCompatible(result.get(j).module.getParamClasses(jProp), iParams, false, true)) {
                     foundMoreSpecialized = true;
                     break;
                 }

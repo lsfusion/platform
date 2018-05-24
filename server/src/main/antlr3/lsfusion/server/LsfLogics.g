@@ -3321,9 +3321,12 @@ nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props 
     ;
 	
 localDataPropertyDefinition returns [List<LCP<?>> properties]
+@init {
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+}
 @after {
 	if (inPropParseState()) {
-		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
+		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType, point);
 	}
 }
 	:	'LOCAL'

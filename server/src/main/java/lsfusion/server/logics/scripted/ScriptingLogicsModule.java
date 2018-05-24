@@ -1791,13 +1791,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         MSet<SessionDataProperty> mLocals = SetFact.mSet();
         for (LCP<?> localProp : localProps) {
-            List<ResolveClassSet> localSignature = propClasses.remove(localProp);
-            removeModuleProperty(localProp);
-            
-            if(mDebugLocals != null)
+            if (mDebugLocals != null) {
+                List<ResolveClassSet> localSignature = getLocalSignature(localProp);
                 mDebugLocals.exclAdd(new Pair<LCP, List<ResolveClassSet>>(localProp, localSignature));
-
+            }
             mLocals.add((SessionDataProperty) localProp.property);
+            
+            removeLocal(localProp);
         }
 
         LAP<?> listLP = addListAProp(mLocals.immutable(), resultParams.toArray());
@@ -1870,7 +1870,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addAProp(null, new ActivateActionProperty(LocalizedString.NONAME, form, component)), new ArrayList<Integer>());
     }
 
-    public List<LCP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames, LocalNestedType nestedType) throws ScriptingErrorLog.SemanticErrorException {
+    public List<LCP<?>> addLocalDataProperty(List<String> names, String returnClassName, List<String> paramClassNames, 
+                                             LocalNestedType nestedType, DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
+        
         List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
@@ -1878,11 +1880,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         List<LCP<?>> res = new ArrayList<>();
         for (String name : names) {
-            checks.checkDuplicateProperty(name, signature);
-
             LCP<?> lcp = addScriptedDProp(returnClassName, paramClassNames, true, false, true, nestedType);
+            addLocal(lcp, new LocalPropertyData(name, signature));
+            lcp.property.setDebugInfo(new CalcPropertyDebugInfo(point, false));
             res.add(lcp);
-            makePropertyPublic(lcp, name, signature);
         }
         return res;
     }
