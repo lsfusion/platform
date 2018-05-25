@@ -88,7 +88,7 @@ public abstract class DefaultFormsController implements FormsController {
 
             final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable(), formSID);
 
-            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null, tabSID), new ErrorHandlingCallback<GetFormResult>() {
+            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), tabSID), new ErrorHandlingCallback<GetFormResult>() {
                 @Override
                 public void failure(Throwable caught) {
                     if (dockable != null) {

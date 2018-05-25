@@ -560,6 +560,7 @@ formGroupObjectUpdate returns [UpdateType updateType]
 	:	'FIRST' { $updateType = UpdateType.FIRST; }
 	|	'LAST' { $updateType = UpdateType.LAST; }
 	|   'PREV' { $updateType = UpdateType.PREV; }
+	|   'NULL' { $updateType = UpdateType.NULL; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
@@ -576,7 +577,7 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 	:	(gname=ID { $groupName = $gname.text; } EQ)?
 		'('
 			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); }
-			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); })+
+			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); })*
 		')'
 	;
 
@@ -3127,17 +3128,17 @@ asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 
 seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	boolean last = false;
+	UpdateType type = UpdateType.FIRST;
 	List<String> objNames = new ArrayList<>();
 	List<LCPWithParams> lps = new ArrayList<>(); 
 }
 @after {
 	if (inPropParseState()) {
-		$property = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, last)
-		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, last);
+		$property = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, type)
+		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' | 'LAST' {last = true; })? 
+	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })? 
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)

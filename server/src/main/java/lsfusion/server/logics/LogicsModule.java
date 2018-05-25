@@ -1666,7 +1666,7 @@ public abstract class LogicsModule {
                 1, //NEW x=X
                 addRequestAProp(null, caption, // REQUEST
                         baseLM.getPolyEdit(), 1, // edit(x);
-                        (contextObject != null ? addOSAProp(contextObject, true, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
+                        (contextObject != null ? addOSAProp(contextObject, UpdateType.LAST, 1) : baseLM.getEmptyObject()), 1, // DO SEEK co = x
                         addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), 1 // ELSE IF seekOwners THEN delete(x)
                 ), 1
         );
@@ -1813,35 +1813,35 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
     
-    protected LAP addOSAProp(ObjectEntity object, boolean last, Object... params) {
-        return addOSAProp(null, LocalizedString.NONAME, object, last, params);
+    protected LAP addOSAProp(ObjectEntity object, UpdateType type, Object... params) {
+        return addOSAProp(null, LocalizedString.NONAME, object, type, params);
     }
 
-    protected LAP addOSAProp(AbstractGroup group, LocalizedString caption, ObjectEntity object, boolean last, Object... params) {
-        return addJoinAProp(group, caption, addOSAProp(object, last), params);
+    protected LAP addOSAProp(AbstractGroup group, LocalizedString caption, ObjectEntity object, UpdateType type, Object... params) {
+        return addJoinAProp(group, caption, addOSAProp(object, type), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addOSAProp(ObjectEntity object, boolean last) {
-        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty(object, last);
+    public LAP addOSAProp(ObjectEntity object, UpdateType type) {
+        SeekObjectActionProperty seekProperty = new SeekObjectActionProperty(object, type);
         return addProperty(null, new LAP<>(seekProperty));
     }
 
-    protected LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
-        return addGOSAProp(null, LocalizedString.NONAME, object, objects, last, params);
+    protected LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, UpdateType type, Object... params) {
+        return addGOSAProp(null, LocalizedString.NONAME, object, objects, type, params);
     }
-
-    protected LAP addGOSAProp(AbstractGroup group, LocalizedString caption, GroupObjectEntity object, List<ObjectEntity> objects, boolean last, Object... params) {
-        return addJoinAProp(group, caption, addGOSAProp(object, objects, last), params);
+    
+    protected LAP addGOSAProp(AbstractGroup group, LocalizedString caption, GroupObjectEntity object, List<ObjectEntity> objects, UpdateType type, Object... params) {
+        return addJoinAProp(group, caption, addGOSAProp(object, objects, type), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, boolean last) {
+    public LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, UpdateType type) {
         List<ValueClass> objectClasses = new ArrayList<>();
         for (ObjectEntity obj : objects) {
             objectClasses.add(obj.baseClass);
         }
-        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty(object, objects, last, objectClasses.toArray(new ValueClass[objectClasses.size()]));
+        SeekGroupObjectActionProperty seekProperty = new SeekGroupObjectActionProperty(object, objects, type, objectClasses.toArray(new ValueClass[objectClasses.size()]));
         return addProperty(null, new LAP<>(seekProperty));
     }
 
@@ -2117,16 +2117,6 @@ public abstract class LogicsModule {
     @NFLazy
     private void addPrivateForm(FormEntity form) {
         unnamedForms.add(form);
-    }
-    
-    public void addObjectActions(FormEntity form, ObjectEntity object) {
-        Version version = getVersion();
-        form.addPropertyDraw(getAddObjectAction(form, object, null), version);
-        form.addPropertyDraw(getDeleteAction(object, FormSessionScope.OLDSESSION), version, object);
-    }
-
-    public void addFormActions(FormEntity form, ObjectEntity object) {
-        addFormActions(form, object, FormSessionScope.NEWSESSION);
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {

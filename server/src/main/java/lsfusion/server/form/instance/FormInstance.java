@@ -259,10 +259,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         for (GroupObjectInstance groupObject : groupObjects) {
             UpdateType updateType = groupObject.getUpdateType();
-            if (updateType == UpdateType.FIRST || updateType == UpdateType.LAST) {
-                groupObject.seek(updateType == UpdateType.LAST);
+            if (updateType != UpdateType.PREV) {
+                groupObject.seek(updateType);
             } else {
-                assert updateType == UpdateType.PREV;
                 for (ObjectInstance object : groupObject.objects) {
                     // ставим на объекты из cache'а
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {
@@ -833,10 +832,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void changeGroupObject(GroupObjectInstance group, Scroll changeType) throws SQLException {
         switch (changeType) {
             case HOME:
-                group.seek(false);
+                group.seek(UpdateType.FIRST);
                 break;
             case END:
-                group.seek(true);
+                group.seek(UpdateType.LAST);
                 break;
         }
     }
@@ -1470,14 +1469,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         object.groupTo.addSeek(object, value, last);
     }
-    
-    public void forceChangeObject(ValueClass cls, ObjectValue value) throws SQLException, SQLHandledException {
-
-        for (ObjectInstance object : getObjects()) {
-            if (object.getBaseClass().isCompatibleParent(cls))
-                forceChangeObject(object, value);
-        }
-    }
 
     private boolean hasEventActions() {
         ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> eventActions = entity.getEventActions();
@@ -1486,14 +1477,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 return true;
         return false;
     }
-    
-    public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
-        seekObject(object, value, false);
-    }
-    
-    // todo : временная затычка
-    public void seekObject(ObjectInstance object, ObjectValue value, boolean last) throws SQLException, SQLHandledException {
 
+    // todo : временная затычка
+    public void seekObject(ObjectInstance object, ObjectValue value, UpdateType updateType) throws SQLException, SQLHandledException {
+        boolean last = updateType == UpdateType.LAST;
         if (hasEventActions()) { // дебилизм конечно но пока так
             forceChangeObject(object, value, last);
         } else {
@@ -1516,8 +1503,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void changeObject(ObjectInstance object, ObjectValue objectValue) throws SQLException, SQLHandledException {
-        seekObject(object, objectValue);
-//        fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
+        UpdateType updateType = object.groupTo.getUpdateType();
+        if(updateType == UpdateType.NULL)
+            object.groupTo.seek(updateType);
+        else
+            seekObject(object, objectValue, updateType);
+        //        fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
     }
 
     // кэш на изменение

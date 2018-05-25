@@ -8,6 +8,7 @@ import lsfusion.server.classes.ConcreteValueClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.UpdateType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -20,20 +21,20 @@ import java.sql.SQLException;
 public class SeekObjectActionProperty extends SeekActionProperty {
     
     private final ObjectEntity object;
-    private boolean last = false;
+    private final UpdateType type;
 
-    public SeekObjectActionProperty(ObjectEntity object, boolean last) {
+    public SeekObjectActionProperty(ObjectEntity object, UpdateType type) {
         super(LocalizedString.concatList("Найти объект (", object.getCaption(), ")"), object.baseClass);
 
         this.object = object;
-        this.last = last;
+        this.type = type;
     }
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue value = context.getSingleKeyValue();
 
         ObjectInstance object = form.instanceFactory.getInstance(this.object);
-        object.groupTo.seek(last);
-        form.seekObject(object, value, last);
+        object.groupTo.seek(type);
+        form.seekObject(object, value, type);
     }
 }

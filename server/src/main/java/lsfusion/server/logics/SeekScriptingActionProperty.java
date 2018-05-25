@@ -8,6 +8,7 @@ import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteValueClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.form.entity.UpdateType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -53,10 +54,10 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
         boolean firstObject = true;
         for (ObjectInstance object : objects) {
             if (firstObject) {
-                object.groupTo.seek(false);
+                object.groupTo.seek(UpdateType.FIRST);
                 firstObject = false;
             }
-            form.seekObject(object, value, false);
+            form.seekObject(object, value, UpdateType.FIRST);
         }
     }
 }
