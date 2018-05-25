@@ -133,7 +133,10 @@ public class GEditBindingMap implements Serializable {
             }
 
             if (actionSID == null && overrideMap != null) {
-                actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+                actionSID = overrideMap.getKeyPressAction(e);
+                if (actionSID == null) {
+                    actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
+                }
             }
         }
         return actionSID;
