@@ -1968,13 +1968,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return formObjectName.substring(pointPos + 1);
     }
 
-    public LAPWithParams addScriptedObjectSeekProp(String name, LCPWithParams seekProp, boolean last) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedObjectSeekProp(String name, LCPWithParams seekProp, UpdateType type) throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(name);
         ObjectEntity object = getSeekObject(form, name);
         
         if (object != null) {
             List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(object, last, resultParams.toArray());
+            LAP lap = addOSAProp(object, type, resultParams.toArray());
             return new LAPWithParams(lap, seekProp.usedParams);
         } else {
             errLog.emitObjectNotFoundError(parser, getSeekObjectName(name));
@@ -1982,7 +1982,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAPWithParams addScriptedGroupObjectSeekProp(String name, List<String> objNames, List<LCPWithParams> values, boolean last) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedGroupObjectSeekProp(String name, List<String> objNames, List<LCPWithParams> values, UpdateType type) throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(name);
         GroupObjectEntity groupObject = getSeekGroupObject(form, name);
         
@@ -2001,7 +2001,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         if (groupObject != null) {
             List<Object> resultParams = getParamsPlainList(values);
-            LAP lap = addGOSAProp(groupObject, objects, last, resultParams.toArray());
+            LAP lap = addGOSAProp(groupObject, objects, type, resultParams.toArray());
             return new LAPWithParams(lap, mergeAllParams(values));
         } else {
             errLog.emitNotFoundError(parser, "group оbject", getSeekObjectName(name));

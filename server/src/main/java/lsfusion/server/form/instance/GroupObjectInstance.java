@@ -58,8 +58,11 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.immutableCast;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, ProfiledObject {
-    public final SeekObjects SEEK_HOME = new SeekObjects(false); 
-    public final SeekObjects SEEK_END = new SeekObjects(true); 
+    public final SeekOrderObjects SEEK_HOME = new SeekOrderObjects(false); 
+    public final SeekOrderObjects SEEK_END = new SeekOrderObjects(true); 
+    public SeekOrderObjects SEEK_PREV() {
+        return new SeekOrderObjects(false, getGroupObjectValue());
+    }
 
     public final CalcPropertyObjectInstance propertyBackground;
     public final CalcPropertyObjectInstance propertyForeground;
@@ -477,27 +480,35 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public SeekObjects userSeeks = null;
 
     public void addSeek(OrderInstance order, ObjectValue value, boolean addSeek) {
-        if(userSeeks==null)
-            userSeeks = new SeekObjects(false, getGroupObjectValue());
-        userSeeks = userSeeks.add(order, value, addSeek);
+        if(userSeeks==null || userSeeks == SEEK_NULL)
+            userSeeks = SEEK_PREV();
+        userSeeks = ((SeekOrderObjects)userSeeks).add(order, value, addSeek);
     }
 
     public void dropSeek(ObjectInstance object) {
-        if(userSeeks==null)
-            userSeeks = new SeekObjects(false, getGroupObjectValue());
-        userSeeks = userSeeks.remove(object);
+        if(userSeeks==null || userSeeks == SEEK_NULL)
+            userSeeks = SEEK_PREV();
+        userSeeks = ((SeekOrderObjects)userSeeks).remove(object);
     }
 
-    public void addSeek(boolean end) {
-        userSeeks = new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
+    public SeekObjects getSeekObjects(UpdateType seek) {
+        switch (seek) {
+            case FIRST:
+                return SEEK_HOME;
+            case LAST:
+                return SEEK_END;
+            case NULL:
+                return SEEK_NULL;
+            case PREV:
+                return SEEK_PREV();
+        }
+        throw new UnsupportedOperationException();
     }
-
+    public void seek(UpdateType seek) {
+        userSeeks = getSeekObjects(seek);
+    }
     public void seek(boolean end) {
-        userSeeks = new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
-    }
-
-    public void seek(ImMap<OrderInstance, ObjectValue> seek, boolean end) {
-        userSeeks = new SeekObjects(seek, end);
+        userSeeks = end ? SEEK_END : SEEK_HOME;
     }
 
     @IdentityLazy
@@ -822,7 +833,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
-        SeekObjects orderSeeks = null;
+        SeekObjects seeks = null;
         int direction = DIRECTION_CENTER;
 
         if(isInTree()) {
@@ -847,21 +858,18 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     }
                 }
             }
-            orderSeeks = SEEK_HOME;
+            seeks = SEEK_HOME;
         } else {
             if (userSeeks!=null) { // пользовательский поиск
-                orderSeeks = userSeeks;
+                seeks = userSeeks;
                 updateKeys = true;
                 currentObject = MapFact.EMPTY();
                 userSeeks = null;
             } else if (updateKeys) {
                 UpdateType updateType = getUpdateType();
-                if (objectsUpdated && (updateType == UpdateType.FIRST || updateType == UpdateType.LAST)) {
-                    orderSeeks = updateType == UpdateType.LAST ? SEEK_END : SEEK_HOME;
-                } else {  // изменились фильтры, порядки, вид, ищем текущий объект
-                    assert !objectsUpdated || updateType == UpdateType.PREV ;
-                    orderSeeks = new SeekObjects(false, currentObject);
-                }
+                if(!objectsUpdated) // не изменились фильтры, порядки, вид, ищем текущий объект
+                    updateType = UpdateType.PREV;
+                seeks = getSeekObjects(updateType);
             }
 
             if (!updateKeys && isGrid && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
@@ -871,10 +879,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                     int lowestInd = getPageSize() * 2 - 1;
                     if (lowestInd >= keys.size()) // по сути END
-                        orderSeeks = SEEK_END;
+                        seeks = SEEK_END;
                     else {
                         direction = DIRECTION_UP;
-                        orderSeeks = new SeekObjects(keys.getValue(lowestInd), false);
+                        seeks = new SeekOrderObjects(keys.getValue(lowestInd), false);
                     }
                 } else // наоборот вниз
                     if (downKeys && keyNum >= keys.size() - getPageSize()) { // assert что pageSize не null
@@ -882,26 +890,31 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
                         int highestInd = keys.size() - getPageSize() * 2;
                         if (highestInd < 0) // по сути HOME
-                            orderSeeks = SEEK_HOME;
+                            seeks = SEEK_HOME;
                         else {
                             direction = DIRECTION_DOWN;
-                            orderSeeks = new SeekObjects(keys.getValue(highestInd), false);
+                            seeks = new SeekOrderObjects(keys.getValue(highestInd), false);
                         }
                     }
             }
         }
 
         if (updateKeys) {
-            assert orderSeeks != null;
+            assert seeks != null;
 
             updated = (updated | UPDATED_KEYS);
 
             if (!isGrid) { // панель
-                ImMap<ObjectInstance, DataObject> readKeys = orderSeeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
+                ImMap<ObjectInstance, DataObject> readKeys = seeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
                 updateViewProperty(execEnv, readKeys);
                 return readKeys;
             } else {
                 int activeRow = -1; // какой ряд выбранным будем считать
+                SeekOrderObjects orderSeeks;
+                if(seeks == SEEK_NULL)
+                    orderSeeks = SEEK_HOME;
+                else
+                    orderSeeks = (SeekOrderObjects)seeks;
 
                 if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
                     assert orderSeeks.values.isEmpty() && !orderSeeks.end;
@@ -998,6 +1011,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 result.gridObjects.exclAdd(this, keys.keyOrderSet());
 
                 updateViewProperty(execEnv, keyTable);
+                
+                if(seeks == SEEK_NULL)
+                    return MapFact.EMPTY();
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
                     if(getUpTreeGroup()==null) // если верхняя группа
@@ -1034,7 +1050,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize) throws SQLException, SQLHandledException {
-        SeekObjects orderSeeks = new SeekObjects(keys.getValue(keys.indexOf(getGroupObjectValue())), false);
+        SeekOrderObjects orderSeeks = new SeekOrderObjects(keys.getValue(keys.indexOf(getGroupObjectValue())), false);
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true, null);
     }
 
@@ -1056,36 +1072,48 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), false).executeOrders(session, env, modifier, baseClass, 0, true, null);
+        return SEEK_HOME.executeOrders(session, env, modifier, baseClass, 0, true, null);
     }
+    
+    public interface SeekObjects {
+        ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException;
+    }
+    
+    public class SeekNullObjects implements SeekObjects {
 
-    public class SeekObjects {
+        private SeekNullObjects() {
+        }
+
+        @Override
+        public ImMap<ObjectInstance, DataObject> readKeys(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+            return MapFact.EMPTY();
+        }
+    }
+    private final SeekNullObjects SEEK_NULL = new SeekNullObjects();
+
+    public class SeekOrderObjects implements SeekObjects {
         public ImMap<OrderInstance, ObjectValue> values;
         public boolean end;
 
-        public SeekObjects(ImMap<OrderInstance, ObjectValue> values, boolean end) {
+        public SeekOrderObjects(ImMap<OrderInstance, ObjectValue> values, boolean end) {
             this.values = values;
             this.end = end;
         }
 
-        public SeekObjects(boolean end, ImMap<ObjectInstance, DataObject> values) {
+        public SeekOrderObjects(boolean end, ImMap<ObjectInstance, DataObject> values) {
             this(BaseUtils.<ImMap<OrderInstance, ObjectValue>>immutableCast(values), end);
         }
 
-        public SeekObjects(boolean end) {
+        public SeekOrderObjects(boolean end) {
             this(MapFact.<OrderInstance, ObjectValue>EMPTY(), end);
         }
 
-        public SeekObjects add(OrderInstance order, ObjectValue value, boolean down) {
-            return new SeekObjects(values.override(order, value), this.end || down);
+        public SeekOrderObjects add(OrderInstance order, ObjectValue value, boolean down) {
+            return new SeekOrderObjects(values.override(order, value), this.end || down);
         }
 
-        public SeekObjects remove(ObjectInstance object) {
-            return new SeekObjects(values.remove(object), end);
-        }
-
-        public SeekObjects reverse() {
-            return new SeekObjects(values, !end);
+        public SeekOrderObjects remove(ObjectInstance object) {
+            return new SeekOrderObjects(values.remove(object), end);
         }
 
         // оптимизация, так как при Limit 1 некоторые СУБД начинают чудить
@@ -1177,9 +1205,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             Result<ImMap<OrderInstance, ObjectValue>> fullOrderValues = new Result<>();
             ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> result = executeSingleOrders(session, env, modifier, baseClass, reallyChanged, fullOrderValues);
             if(result.size() == 0)
-                result = new SeekObjects(fullOrderValues.result, end).executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
+                result = new SeekOrderObjects(fullOrderValues.result, end).executeOrders(session, env, modifier, baseClass, 1, !end, reallyChanged);
             if (result.size() == 0)
-                result = new SeekObjects(fullOrderValues.result, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
+                result = new SeekOrderObjects(fullOrderValues.result, !end).executeOrders(session, env, modifier, baseClass, 1, end, reallyChanged);
             if (result.size() > 0)
                 return new Pair<>(result.singleKey(), result.singleValue());
             else
@@ -1194,10 +1222,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                 return MapFact.EMPTY();
         }
 
-        public SeekObjects readValues(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        public SeekOrderObjects readValues(SQLSession session, QueryEnvironment env, Modifier modifier, BaseClass baseClass, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             Pair<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> objects = readObjects(session, env, modifier, baseClass, reallyChanged);
             if (objects != null)
-                return new SeekObjects(objects.second, end);
+                return new SeekOrderObjects(objects.second, end);
             else
                 return SEEK_HOME;
         }

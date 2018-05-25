@@ -14,6 +14,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.entity.UpdateType;
 import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -164,7 +165,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                     if (nearObject != null)
                         ((CustomObjectInstance) objectInstance).groupTo.addSeek(objectInstance, nearObject, false);
                     else
-                        ((CustomObjectInstance) objectInstance).groupTo.addSeek(false);
+                        ((CustomObjectInstance) objectInstance).groupTo.seek(UpdateType.FIRST);
                 }
             } else
                 proceedNullException();

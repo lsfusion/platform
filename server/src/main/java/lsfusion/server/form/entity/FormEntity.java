@@ -388,7 +388,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
-        ObjectEntity object = new ObjectEntity(genID(), baseClass, null);
+        ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass.getCaption());
         groupObject.add(object);
         addGroupObject(groupObject, version);
 
