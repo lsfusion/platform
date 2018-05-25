@@ -1,7 +1,7 @@
 package lsfusion.erp.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -38,8 +38,8 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
         String password = (String) context.getDataKeyValue(passwordInterface).object;
 
         try {
-            byte[] file = BaseUtils.getFile((byte[]) fileObject.object);
-            String extension = BaseUtils.getExtension((byte[]) fileObject.object);
+            byte[] file = (byte[]) fileObject.object;
+            String extension = ((StaticFormatFileClass)fileObject.objectClass.getType()).getOpenExtension(file);
             byte[] protectedFile = null;
             switch (extension) {
                 case "xls": {
