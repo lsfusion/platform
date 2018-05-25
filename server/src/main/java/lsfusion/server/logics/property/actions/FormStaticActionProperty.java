@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.FormStaticType;
@@ -13,6 +12,7 @@ import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.FormSelector;
@@ -22,7 +22,10 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.remote.FormReportManager;
 import lsfusion.server.remote.StaticFormReportManager;
 import net.sf.jasperreports.engine.JRException;
@@ -84,14 +87,22 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         if (exportFile != null) {
             try {
                 String extension = staticType.getExtension();
-                if(staticType instanceof FormExportType && ((FormExportType) staticType).isPlain()) { // plain = multiple files
+                if (staticType instanceof FormExportType && ((FormExportType) staticType).isPlain()) { // plain = multiple files
                     Map<String, byte[]> files = exportPlain(reportData);
-                    for(Map.Entry<String, byte[]> entry : files.entrySet()) {
-                        exportFile.change(BaseUtils.mergeFileAndExtension(entry.getValue(), extension.getBytes()), context, new DataObject(entry.getKey()));
+                    for (Map.Entry<String, byte[]> entry : files.entrySet()) {
+                        if (exportFile.property.getType() instanceof StaticFormatFileClass) {
+                            exportFile.change(entry.getValue(), context, new DataObject(entry.getKey()));
+                        } else {
+                            exportFile.change(BaseUtils.mergeFileAndExtension(entry.getValue(), extension.getBytes()), context, new DataObject(entry.getKey()));
+                        }
                     }
                 } else { // hierarchical - single file
                     byte[] singleFile = exportHierarchical(context, reportData);
-                    exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, extension.getBytes()), context);
+                    if (exportFile.property.getType() instanceof StaticFormatFileClass) {
+                        exportFile.change(singleFile, context);
+                    } else {
+                        exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, extension.getBytes()), context);
+                    }
                 }
             } catch (JRException | IOException | ClassNotFoundException e) {
                 ServerLoggers.systemLogger.error(e);
