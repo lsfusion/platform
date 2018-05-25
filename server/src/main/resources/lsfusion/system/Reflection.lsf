@@ -50,6 +50,7 @@ is (Form form) = form IS Form;
 currentForm = NATIVE Form ();
 
 CLASS ABSTRACT ActionOrProperty 'Свойство или действие';
+TABLE actionOrProperty(ActionOrProperty);
 
 CLASS Property 'Свойство' : ActionOrProperty;
 TABLE property (Property);

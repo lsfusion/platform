@@ -168,6 +168,7 @@ nameUser 'Пользователь сессии' (Session session) = name(user(s
 nameContact 'Пользователь сессии' (Session session) = name[Contact](user(session));
 user (Session session) <- currentUser() WHEN SET(session IS Session);
 
+TABLE connectionForm (Connection, Form);
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, Form);
 
 CLASS Session 'Сессия';
