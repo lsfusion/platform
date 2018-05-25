@@ -87,8 +87,8 @@ public class FormContainerSet {
         set.toolbarContainer.setType(ContainerType.CONTAINERH);
         set.toolbarContainer.setAlignment(FlexAlignment.CENTER);
 
-        adder.add(set.mainContainer, set.objectsContainer);
         adder.add(set.mainContainer, set.panelContainer);
+        adder.add(set.mainContainer, set.objectsContainer);
         adder.add(set.mainContainer, set.toolbarBoxContainer);
         adder.add(set.panelContainer, set.groupContainer);
 
