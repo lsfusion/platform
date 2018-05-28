@@ -25,10 +25,6 @@ public class NFFact {
         return new NFSimpleOrderSetImpl<>(orderSet);
     }
 
-    public static <K> NFOrderSet<K> simpleOrderSet() {
-        return simpleOrderSet(SetFact.<K>EMPTYORDER());
-    }
-    
     public static <K, V> Map<K, V> simpleMap(Map<K, V> map) {
         return new ConcurrentHashMap<>(map);
     }

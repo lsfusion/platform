@@ -55,8 +55,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     // groups
     public AbstractGroup actionGroup;
-    public AbstractGroup drillDownGroup;
-    public AbstractGroup propertyPolicyGroup;
+    public AbstractGroup drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
+    public AbstractGroup propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
 
     // properties
     public LCP groeq2;
@@ -308,7 +308,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         Version version = getVersion();
 
         rootGroup = findGroup("root");
-        rootGroup.changeChildrenToSimple(version);
+//        rootGroup.changeChildrenToSimple(version);
         rootGroup.createContainer = false;
 
         publicGroup = findGroup("public");

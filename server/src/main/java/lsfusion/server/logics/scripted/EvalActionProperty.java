@@ -51,13 +51,9 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         String script = getScript(context);
 
         try {
-            ScriptingLogicsModule module = EvalUtils.evaluate(context.getBL(), script);
-
-            String runName = module.getName() + ".run";
-            LAP<?> runAction = module.findAction(runName);
-            if (runAction != null) {
+            LAP<?> runAction = context.getBL().evaluateRun(script);
+            if (runAction != null)
                 runAction.execute(context, getParams(context));
-            }
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
             context.delayUserInteraction(new MessageClientAction(getMessage(e), "Parse error"));
             throw new RuntimeException(e);

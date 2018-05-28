@@ -41,9 +41,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
-import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -345,13 +343,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                     //оборачиваем в run без параметров
                     script = "run() = {" + script + ";\n};";
                 }
-                ScriptingLogicsModule module = EvalUtils.evaluate(businessLogics, script);
-
-                String runName = module.getName() + ".run";
-                LAP<?> runAction = module.findAction(runName);
-                if (runAction != null) {
+                LAP<?> runAction = businessLogics.evaluateRun(script);
+                if (runAction != null)
                     returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
-                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -309,6 +309,7 @@ public abstract class LogicsModule {
 
     public FunctionSet<Version> visible;
     public Integer order;
+    public boolean temporary;
     private final Version version = new Version() {
         public boolean canSee(Version version) {
             assert !(version instanceof LastVersion);
@@ -321,6 +322,10 @@ public abstract class LogicsModule {
 
         public int compareTo(Version o) {
             return getOrder().compareTo(o.getOrder());
+        }
+
+        public boolean isTemporary() {
+            return temporary;
         }
     };
     public Version getVersion() {
@@ -337,7 +342,7 @@ public abstract class LogicsModule {
         if (parent != null) {
             parent.add(group, version);
         } else {
-            if (baseLM.privateGroup != null)
+            if (baseLM.privateGroup != null && !temporary)
                 baseLM.privateGroup.add(group, version);
         }
         group.createContainer = toCreateContainer;
@@ -515,8 +520,11 @@ public abstract class LogicsModule {
 
     // loggable, security, drilldown
     public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+        return addMFAProp(null, caption, form, objectsToSet, newSession);
+    }
+    public LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), true, WindowFormType.FLOAT, false);
-        return addSessionScopeAProp(newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
+        return addSessionScopeAProp(group, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
     protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
@@ -775,9 +783,15 @@ public abstract class LogicsModule {
     // ------------------- SESSION SCOPE ----------------- //
 
     protected LAP addSessionScopeAProp(FormSessionScope sessionScope, LAP action) {
-        return addSessionScopeAProp(sessionScope, action, SetFact.<LCP>EMPTY());
+        return addSessionScopeAProp(null, sessionScope, action);
+    }
+    protected LAP addSessionScopeAProp(AbstractGroup group, FormSessionScope sessionScope, LAP action) {
+        return addSessionScopeAProp(group, sessionScope, action, SetFact.<LCP>EMPTY());
     }
     protected LAP addSessionScopeAProp(FormSessionScope sessionScope, LAP action, ImCol<LCP> nestedProps) {
+        return addSessionScopeAProp(null, sessionScope, action, nestedProps);
+    }
+    protected LAP addSessionScopeAProp(AbstractGroup group, FormSessionScope sessionScope, LAP action, ImCol<LCP> nestedProps) {
         if(sessionScope.isNewSession()) {
             action = addNewSessionAProp(null, action, sessionScope.isNestedSession(), false, false, nestedProps.mapMergeSetValues(new GetValue<SessionDataProperty, LCP>() {
                 public SessionDataProperty getMapValue(LCP value) {
@@ -1557,7 +1571,7 @@ public abstract class LogicsModule {
     public LAP<?> addDDAProp(CalcProperty property) {
         List<ResolveClassSet> signature = new ArrayList<>();
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, null);
-        LAP result = addMFAProp(LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
+        LAP result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
             String name = nameForDrillDownAction(property, signature);
             makeActionPublic(result, name, signature);
@@ -1741,7 +1755,7 @@ public abstract class LogicsModule {
         Version version = getVersion();
         if (group != null) {
             group.add(property, version);
-        } else if (!property.isLocal()) {
+        } else if (!property.isLocal() && !temporary) {
             baseLM.privateGroup.add(property, version);
         }
     }
