@@ -7,4 +7,6 @@ public interface IDaemonTask {
     void stop();
 
     void setEventBus(EventBus eventBus);
+
+    boolean writeToComPort(byte[] file, int comPort) throws Exception;
 }

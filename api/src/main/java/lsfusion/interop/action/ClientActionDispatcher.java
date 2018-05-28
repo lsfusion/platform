@@ -64,4 +64,6 @@ public interface ClientActionDispatcher {
     void execute(ActivateFormClientAction action);
 
     void execute(MaximizeFormClientAction action);
+
+    String execute(WriteToComPortClientAction action);
 }

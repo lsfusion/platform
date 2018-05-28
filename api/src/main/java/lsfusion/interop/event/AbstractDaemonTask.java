@@ -17,4 +17,9 @@ public abstract class AbstractDaemonTask implements IDaemonTask {
     public void setEventBus(EventBus eventBus) {
         this.eventBus = eventBus;
     }
+
+    @Override
+    public boolean writeToComPort(byte[] file, int comPort) throws Exception {
+        return true;
+    }
 }
