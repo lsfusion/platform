@@ -9,4 +9,9 @@ public class LastVersion extends Version {
     public boolean canSee(Version version) {
         return true;
     }
+
+    @Override
+    public boolean isTemporary() {
+        return false;
+    }
 }

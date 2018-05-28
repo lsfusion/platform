@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.Event;
@@ -39,6 +40,7 @@ public class EvalUtils {
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, code);
         module.order = BL.getOrderedModules().size() + 1;
         module.visible = FullFunctionSet.<Version>instance();
+        module.temporary = true;
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);
         String errString = "";

@@ -40,7 +40,9 @@ public class AbstractGroup extends AbstractNode {
         this.caption = caption;
     }
 
+    private boolean isSimple;
     public void changeChildrenToSimple(Version version) {
+        isSimple = true;
         children = NFFact.simpleOrderSet(children.getNFOrderSet(version));
     }
 
@@ -65,6 +67,7 @@ public class AbstractGroup extends AbstractNode {
     }
 
     public void add(AbstractNode prop, Version version) {
+        assert !(version.isTemporary() && isSimple); // не добавляем в simple (без финализации) коллекции, так как может привести к утечкам памяти в EVAL
         AbstractGroup prevParent = prop.getNFParent(version);
         if (prevParent != null) {
             if (prevParent == this) // не только оптимизация, но и mutable логика

@@ -10,4 +10,9 @@ public class GlobalVersion extends Version {
     public boolean canSee(Version version) {
         return version == this;
     }
+
+    @Override
+    public boolean isTemporary() {
+        return false;
+    }
 }
