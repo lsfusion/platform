@@ -1,6 +1,8 @@
 package lsfusion.erp.utils.com;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.action.WriteToComPortClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -15,6 +17,7 @@ public class WriteToComPortActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface fileInterface;
     private final ClassPropertyInterface baudRateInterface;
     private final ClassPropertyInterface comPortInterface;
+    private final ClassPropertyInterface daemonInterface;
 
     public WriteToComPortActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
@@ -23,15 +26,25 @@ public class WriteToComPortActionProperty extends ScriptingActionProperty {
         fileInterface = i.next();
         baudRateInterface = i.next();
         comPortInterface = i.next();
+        daemonInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        byte[] file = (byte[]) context.getDataKeyValue(fileInterface).object;
-        Integer baudRate = (Integer) context.getDataKeyValue(baudRateInterface).object;
-        Integer comPort = (Integer) context.getDataKeyValue(comPortInterface).object;
+        byte[] file = (byte[]) context.getKeyValue(fileInterface).getValue();
+        Integer baudRate = (Integer) context.getKeyValue(baudRateInterface).getValue();
+        Integer comPort = (Integer) context.getKeyValue(comPortInterface).getValue();
+        boolean daemon = context.getKeyValue(daemonInterface).getValue() != null;
 
-        String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file, baudRate, comPort));
-        if (result != null)
-            context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+        if(file != null && baudRate != null && comPort != null) {
+            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(BaseUtils.getFile(file), baudRate, comPort, daemon));
+            if (result != null) {
+                context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+            }
+        }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
