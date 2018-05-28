@@ -4,6 +4,8 @@ import com.google.common.base.Throwables;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import jssc.SerialPort;
+import jssc.SerialPortException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.SystemUtils;
@@ -575,6 +577,27 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void execute(MaximizeFormClientAction action) {
         ((DockableMainFrame) Main.frame).maximizeForm();
+    }
+
+    @Override
+    public String execute(WriteToComPortClientAction action) {
+        if(action.daemon) {
+            return Main.writeToComPort(action.file, action.comPort);
+        } else {
+            try {
+                SerialPort serialPort = new SerialPort("COM" + action.comPort);
+                try {
+                    serialPort.openPort();
+                    serialPort.setParams(action.baudRate, 8, 1, 0);
+                    serialPort.writeBytes(action.file);
+                } finally {
+                    serialPort.closePort();
+                }
+            } catch (SerialPortException e) {
+                return e.getMessage();
+            }
+            return null;
+        }
     }
 
     //to prevent java.lang.IllegalStateException: Toolkit not initialized

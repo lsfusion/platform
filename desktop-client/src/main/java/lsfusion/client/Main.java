@@ -638,6 +638,17 @@ public class Main {
         System.gc();
     }
 
+    public static String writeToComPort(byte[] file, int comPort) {
+        for (IDaemonTask daemonTask : daemonTasks) {
+            try {
+                daemonTask.writeToComPort(file, comPort);
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+        return null;
+    }
+
     public static long generateID() throws RemoteException {
         return remoteLogics.generateID();
     }

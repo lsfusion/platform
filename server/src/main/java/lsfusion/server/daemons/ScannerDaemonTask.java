@@ -5,6 +5,7 @@ import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.event.AbstractDaemonTask;
 
 import java.io.Serializable;
@@ -111,5 +112,17 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
             }
         } else
             logger.error("Ignored Event for non existing port " + event.getPortName());
+    }
+
+    //возможно, в общем случае стоит использовать семафоры, чтобы writeToComPort не произошёл во время чтения,
+    //но пока считаем, что такого не произойдёт
+    //также пока пишем только в порт сканнера, хотя с портом работает ещё и WeightDaemonTask
+    public boolean writeToComPort(byte[] file, int port) throws SerialPortException {
+        boolean result = false;
+        SerialPort serialPort = serialPortMap.get("COM" + port);
+        if (serialPort != null) {
+            result = serialPort.writeBytes(BaseUtils.getFile(file));
+        }
+        return result;
     }
 }
