@@ -24,6 +24,8 @@ public interface MainFrameMessages extends Messages {
     String formGridExportToXlsx();
     String formGridPrintGrid();
     String formGridGroupGroupChange();
+    
+    String formTree();
 
     String formQueriesCalculateSum();
     String formQueriesSumResult();

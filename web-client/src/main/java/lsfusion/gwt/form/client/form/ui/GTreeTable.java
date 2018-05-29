@@ -15,6 +15,7 @@ import lsfusion.gwt.cellview.client.HeaderPanel;
 import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
@@ -25,6 +26,8 @@ import java.util.*;
 import static java.util.Collections.singleton;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    
     private boolean dataUpdated;
     private boolean columnsUpdated;
 
@@ -63,7 +66,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 return object.getAttribute("treeColumn");
             }
         };
-        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, "Дерево");
+        GGridPropertyTableHeader header = new GGridPropertyTableHeader(this, messages.formTree());
         header.setHeaderHeight(HeaderPanel.DEFAULT_HEADER_HEIGHT);
         createdFields.add("treeColumn");
         headers.add(header);
