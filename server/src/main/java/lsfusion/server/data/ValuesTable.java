@@ -1,6 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -38,9 +39,10 @@ public class ValuesTable extends Table {
         })));
     }
 
+    @IdentityLazy
     @Override
     public ImMap<PropertyField, PropStat> getStatProps() {
-        throw new UnsupportedOperationException();
+        return properties.toMap(new PropStat(new Stat(rows.getCount())));
     }
 
     @Override
