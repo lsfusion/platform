@@ -218,7 +218,7 @@ FORM customUsersDialog 'Пользователи'
 
 DESIGN customUsersDialog { BOX { size = (1024, 768); }}
 
-FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
+FORM editProfile '{navigator.account.edit.profile}' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) login READONLY
     PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
@@ -399,10 +399,10 @@ NAVIGATOR {
             NEW computers;
         }
     }
-    NEW FOLDER account 'Учётная запись' WINDOW toolbar IMAGE '/images/lock.png' {
-        NEW ACTION reloginLoginUserAction 'Сменить пользователя' = reloginLoginUser[] IMAGE '/images/relogin.png';
+    NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE '/images/lock.png' {
+        NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE '/images/relogin.png';
         NEW editProfile;
-        NEW ACTION changePasswordAction 'Сменить пароль' = changePassword[] IMAGE '/images/change_password.png';
-        NEW ACTION logOutAction 'Выйти' = restart[] IMAGE '/images/logout.png';
+        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/change_password.png';
+        NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE '/images/logout.png';
     }
 }
