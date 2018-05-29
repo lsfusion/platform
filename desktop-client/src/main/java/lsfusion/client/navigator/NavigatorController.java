@@ -67,7 +67,7 @@ public class NavigatorController implements INavigatorController {
                     mainNavigator.openForm(form, modifiers);
                 }
             } else if (element instanceof ClientNavigatorAction) {
-                mainNavigator.openAction((ClientNavigatorAction) element);
+                mainNavigator.openAction((ClientNavigatorAction) element, modifiers);
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);

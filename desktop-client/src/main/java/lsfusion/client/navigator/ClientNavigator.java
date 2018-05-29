@@ -35,5 +35,5 @@ public abstract class ClientNavigator {
     }
 
     public abstract void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException;
-    public abstract void openAction(ClientNavigatorAction action);
+    public abstract void openAction(ClientNavigatorAction action, int modifiers);
 }

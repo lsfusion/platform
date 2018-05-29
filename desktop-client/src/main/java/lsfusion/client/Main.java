@@ -277,7 +277,7 @@ public class Main {
                     
                     useRequestTimeout = remoteNavigator.isUseRequestTimeout();
 
-                    ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null);
+                    ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 
                 } catch (Exception e) {
                     closeSplashScreen();
@@ -562,7 +562,7 @@ public class Main {
                     public void run() {
                         executeNotificationAction(idNotification);
                     }
-                });
+                }, null);
         } catch (IOException e) {
             logger.error("Error executing notification action: ", e);
         }
