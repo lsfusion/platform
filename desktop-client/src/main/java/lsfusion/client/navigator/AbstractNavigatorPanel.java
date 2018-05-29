@@ -29,7 +29,7 @@ public abstract class AbstractNavigatorPanel extends JPanel {
     }
 
     public void openAction(ClientNavigatorAction action) {
-        clientNavigator.openAction(action);
+        clientNavigator.openAction(action, 0);
     }
 
     protected List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {

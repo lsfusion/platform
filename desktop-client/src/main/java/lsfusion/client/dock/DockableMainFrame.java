@@ -27,6 +27,7 @@ import lsfusion.client.report.ReportDialog;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
+import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
@@ -40,10 +41,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
@@ -122,8 +120,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
 
             @Override
-            public void openAction(ClientNavigatorAction action) {
-                executeNavigatorAction(action);
+            public void openAction(ClientNavigatorAction action, int modifiers) {
+                executeNavigatorAction(action, (modifiers & InputEvent.CTRL_MASK) != 0);
             }
         };
 
@@ -152,14 +150,14 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EditorEventQueue());
     }
 
-    private void executeNavigatorAction(ClientNavigatorAction action) {
-        executeNavigatorAction(action.getCanonicalName(), 1, null);
+    private void executeNavigatorAction(ClientNavigatorAction action, boolean suppressForbidDuplicate) {
+        executeNavigatorAction(action.getCanonicalName(), 1, null, suppressForbidDuplicate);
     }
 
-    public void executeNavigatorAction(final String actionSID, final int type, final Runnable action) {
+    public void executeNavigatorAction(final String actionSID, final int type, final Runnable action, Boolean suppressForbidDuplicate) {
         if (action != null) {
             if (lock.tryLock()) {
-                tryExecuteNavigatorAction(actionSID, type);
+                tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate);
             } else {
                 SwingUtils.invokeLater(new ERunnable() {
                     @Override
@@ -177,7 +175,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             }
         } else {
             lock.lock();
-            tryExecuteNavigatorAction(actionSID, type);
+            tryExecuteNavigatorAction(actionSID, type, suppressForbidDuplicate);
         }
     }
 
@@ -188,7 +186,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         }
     }
 
-    private void tryExecuteNavigatorAction(final String actionSID, final int type) {
+    private void tryExecuteNavigatorAction(final String actionSID, final int type, final Boolean suppressForbidDuplicate) {
         try {
             rmiQueue.syncRequest(new RmiRequest<ServerResponse>("executeNavigatorAction") {
                 @Override
@@ -203,6 +201,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
                 @Override
                 protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                    if(suppressForbidDuplicate != null && suppressForbidDuplicate && result != null) {
+                        for(ClientAction action : result.actions) // хак, но весь механизм forbidDuplicate один большой хак
+                            if(action instanceof FormClientAction)
+                                ((FormClientAction) action).forbidDuplicate = false;                            
+                    }
                     processServerResponse(result);
                 }
             });
