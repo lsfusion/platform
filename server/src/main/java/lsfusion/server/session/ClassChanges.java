@@ -91,7 +91,7 @@ public class ClassChanges {
         return false;
     }
 
-    public final static KeyField classField = new KeyField("key", ObjectType.instance);
+    public final static KeyField classField = new KeyField("key0", ObjectType.instance);
     public static Where isStaticValueClass(Expr expr, ObjectValueClassSet classSet) {
         Where result;
         ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();

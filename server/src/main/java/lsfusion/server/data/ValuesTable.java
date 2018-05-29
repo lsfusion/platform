@@ -51,7 +51,7 @@ public class ValuesTable extends Table {
         String values = rows.getQuerySource(source.syntax, fields);
 
         String fieldNames = fields.toString(Field.nameGetter(), ",");
-        return "SELECT " + fieldNames + " FROM (VALUES " + values + ") t (" + fields + ")";
+        return "(SELECT " + fieldNames + " FROM (VALUES " + values + ") t (" + fields + "))";
     }
 
     public String toString() {

@@ -222,16 +222,6 @@ public class SessionRows extends SessionData<SessionRows> {
     public int getCount() {
         return rows.size();
     }
-    
-    public TableStatKeys getTableStatKeys() {
-        final Stat rows = new Stat(getCount());
-        return new TableStatKeys(rows, new DistinctKeys<>(keys.getSet().mapValues(new GetValue<Stat, KeyField>() {
-            @Override
-            public Stat getMapValue(KeyField value) {
-                return rows;
-            }
-        })));
-    }
 
     // assert что содержит
     public static ImMap<PropertyField, ObjectValue> updateAdded(ImMap<PropertyField, ObjectValue> map, PropertyField property, Pair<Long, Long>[] shifts) {
