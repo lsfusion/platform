@@ -11,7 +11,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 // предыдущая таблица в базе
-public class SerializedTable extends Table {
+public class SerializedTable extends NamedTable {
 
     public SerializedTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
         super(inStream, baseClass);

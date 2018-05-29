@@ -7,15 +7,12 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.data.Field;
-import lsfusion.server.data.KeyField;
-import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.Table;
+import lsfusion.server.data.*;
 import lsfusion.server.data.query.NotMaterializable;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
-public class RecursiveTable extends Table implements NotMaterializable {
+public class RecursiveTable extends NamedTable implements NotMaterializable {
 
     private final TableStatKeys statKeys;
     // assert'им что properties IntegralClass'ы

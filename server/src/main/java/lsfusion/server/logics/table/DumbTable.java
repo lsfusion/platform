@@ -4,17 +4,14 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.SystemClass;
-import lsfusion.server.data.GlobalTable;
+import lsfusion.server.data.DBTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
-public class DumbTable extends GlobalTable {
+public class DumbTable extends DBTable {
 
     public static final DumbTable instance = new DumbTable();
 

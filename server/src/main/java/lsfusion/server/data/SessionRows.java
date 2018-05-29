@@ -19,9 +19,13 @@ import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassType;
+import lsfusion.server.data.expr.query.DistinctKeys;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.Join;
+import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
@@ -181,6 +185,10 @@ public class SessionRows extends SessionData<SessionRows> {
         return getClasses().first;
     }
 
+    public ImMap<PropertyField, ClassWhere<Field>> getPropertyClasses() {
+        return getClasses().second;
+    }
+
     public ClassWhere<Field> getClassWhere(PropertyField property) {
         if(rows.size()==0)
             return ClassWhere.FALSE();
@@ -213,6 +221,16 @@ public class SessionRows extends SessionData<SessionRows> {
 
     public int getCount() {
         return rows.size();
+    }
+    
+    public TableStatKeys getTableStatKeys() {
+        final Stat rows = new Stat(getCount());
+        return new TableStatKeys(rows, new DistinctKeys<>(keys.getSet().mapValues(new GetValue<Stat, KeyField>() {
+            @Override
+            public Stat getMapValue(KeyField value) {
+                return rows;
+            }
+        })));
     }
 
     // assert что содержит
@@ -342,5 +360,21 @@ public class SessionRows extends SessionData<SessionRows> {
             return this;
         else
             return new SessionRows(keys, properties, updatedRows);
+    }
+
+    public String getQuerySource(final SQLSyntax syntax, final ImOrderSet<Field> orderedFields) {
+        return rows.toString(new GetKeyValue<String, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
+            public String getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
+                return "(" +
+                        orderedFields.mapOrder(MapFact.addExcl(key, value)).toString(new GetValue<String, ObjectValue>() {
+                            public String getMapValue(ObjectValue value) {
+                                assert value.isSafeString(syntax);
+                                return value.getString(syntax);
+                            }
+                        }, ",")        
+                        +
+                        ")";
+            }
+        }, ",");
     }
 }

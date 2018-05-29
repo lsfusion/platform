@@ -53,7 +53,7 @@ import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.hashEquals;
 
-public class SessionTable extends Table implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
+public class SessionTable extends NamedTable implements ValuesContext<SessionTable>, Value {// в явную хранимые ряды
     private static final Logger sqlLogger = ServerLoggers.sqlLogger;
 
     public final int count; // volatile, same as SubQueryContext.subQuery
@@ -170,7 +170,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     @Override
-    public String getQueryName(CompileSource source) {
+    public String getQuerySource(CompileSource source) {
         assert source.params.containsKey(this);
         return source.params.get(this);
     }

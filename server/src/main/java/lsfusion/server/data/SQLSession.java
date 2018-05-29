@@ -654,7 +654,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     // удостоверивается что таблица есть
-    public void ensureTable(Table table, Logger logger) throws SQLException {
+    public void ensureTable(NamedTable table, Logger logger) throws SQLException {
         lockRead(OperationOwner.unknown);
         ExConnection connection = getConnection();
 
@@ -686,12 +686,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndices(Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void addExtraIndices(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         for(int i=1;i<keys.size();i++)
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
-    public void checkExtraIndices(SQLSession threadLocalSQL, Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
+    public void checkExtraIndices(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             if (!threadLocalSQL.checkIndex(table, fields, false) && !threadLocalSQL.checkIndex(table, fields, true))
@@ -717,7 +717,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }).getSet();
     }
 
-    public void createTable(Table table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void createTable(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
@@ -730,23 +730,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         addExtraIndices(table, keys, null);
     }
 
-    public void renameTable(Table table, String newTableName) throws SQLException {
+    public void renameTable(NamedTable table, String newTableName) throws SQLException {
         executeDDL("ALTER TABLE " + table.getName(syntax) + " RENAME TO " + syntax.getTableName(newTableName));
     }
 
-    public void dropTable(Table table) throws SQLException {
+    public void dropTable(NamedTable table) throws SQLException {
         executeDDL("DROP TABLE " + table.getName(syntax));
     }
 
-    static String getIndexName(Table table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+    static String getIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
         return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
     }
 
-    static String getOldIndexName(Table table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+    static String getOldIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
         return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
     }
 
-    static String getIndexName(Table table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields) {
+    static String getIndexName(NamedTable table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields) {
         return getIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax);
     }
 
@@ -768,15 +768,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return result;
     }
     
-    public void addIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order, Logger logger) throws SQLException {
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order, Logger logger) throws SQLException {
         addIndex(table, getOrderFields(keyFields, order, fields), logger);
     }
 
-    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException, SQLHandledException {
+    public boolean checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException, SQLHandledException {
         return checkIndex(table, getOrderFields(keyFields, order, fields), false);
      }
 
-    public boolean checkIndex(Table table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
+    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old) throws SQLException, SQLHandledException {
         //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
         //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
         String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : getIndexName(table, syntax, fields)) + "')";
@@ -800,7 +800,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return exists;
     }
 
-    public void addConstraint(Table table) throws SQLException {
+    public void addConstraint(NamedTable table) throws SQLException {
         try {
             if (!table.keys.isEmpty())
                 executeDDL("DO $$ BEGIN ALTER TABLE " + table.getName() + " ADD " + getConstraintDeclare(table.getName(), table.keys, syntax) +
@@ -810,7 +810,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addIndex(Table table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
+    public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
             public String getMapValue(Field key, Boolean value) {
                 assert value || !(key instanceof KeyField);
@@ -826,27 +826,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
-    public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {
+    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {
         dropIndex(table, getOrderFields(keyFields, fields, order), ifExists);
     }
 
-    public void dropIndex(Table table, ImOrderMap<String, Boolean> fields, boolean ifExists) throws SQLException {
+    public void dropIndex(NamedTable table, ImOrderMap<String, Boolean> fields, boolean ifExists) throws SQLException {
         executeDDL("DROP INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, fields, syntax) + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
-    public void renameIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
+    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
         renameIndex(table, getOrderFields(keyFields, fields, order));
     }
 
-    public void renameIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, boolean order, boolean ifExists) throws SQLException {
+    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, boolean order, boolean ifExists) throws SQLException {
         renameIndex(table, getOrderFields(keyFields, oldFields, order), getOrderFields(keyFields, newFields, order), ifExists);
     }
 
-    public void renameIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
+    public void renameIndex(NamedTable table, ImOrderMap<String, Boolean> fields) throws SQLException {
         executeDDL("ALTER INDEX " + getOldIndexName(table, fields, syntax) + " RENAME TO " + getIndexName(table, fields, syntax));
     }
 
-    public void renameIndex(Table table, ImOrderMap<String, Boolean> oldFields, ImOrderMap<String, Boolean> newFields, boolean ifExists) throws SQLException {
+    public void renameIndex(NamedTable table, ImOrderMap<String, Boolean> oldFields, ImOrderMap<String, Boolean> newFields, boolean ifExists) throws SQLException {
         executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, oldFields, syntax) + " RENAME TO " + getIndexName(table, newFields, syntax));
     }
 
@@ -876,12 +876,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 //        executeDerived("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
     }*/
 
-    public void addColumn(Table table, PropertyField field) throws SQLException {
+    public void addColumn(NamedTable table, PropertyField field) throws SQLException {
         MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
 
-    public void dropColumn(Table table, Field field) throws SQLException {
+    public void dropColumn(NamedTable table, Field field) throws SQLException {
         innerDropColumn(table.getName(syntax), field.getName(syntax));
     }
 
@@ -913,7 +913,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("ALTER TABLE " + table + " " + ddl);
     }
 
-    public void packTable(Table table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public void packTable(NamedTable table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String dropWhere = table.properties.toString(new GetValue<String, PropertyField>() {
@@ -1797,7 +1797,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     public static RegisterChange register(Table table, TableOwner tableOwner, TableChange tableChange) {
         if(table instanceof SessionTable)
-            return register(table.name, tableOwner, tableChange);
+            return register(((SessionTable)table).getName(), tableOwner, tableChange);
         else
             return RegisterChange.VOID;
     }
@@ -2167,7 +2167,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     };
             
-    public void insertBatchRecords(GlobalTable table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, OperationOwner opOwner) throws SQLException {
+    public void insertBatchRecords(DBTable table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, OperationOwner opOwner) throws SQLException {
         insertBatchRecords(table.getName(syntax), table.keys, rows, dataParser, opOwner, register(table, TableOwner.global, TableChange.INSERT));
     }
 
@@ -2270,7 +2270,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         statement.executeBatch();
     }
 
-    private void insertParamRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    private void insertParamRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String insertString = "";
@@ -2319,7 +2319,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void insertRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public void insertRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner owner, OperationOwner opOwner) throws SQLException {
         checkTableOwner(table, owner);
 
         boolean needParam = false;
@@ -2370,20 +2370,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 table.join(DataObject.getMapExprs(keyFields)).getWhere()).execute(this, owner).size() > 0;
     }
 
-    public void ensureRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
+    public void ensureRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
         if (!isRecord(table, keyFields, owner))
             insertRecord(table, keyFields, propFields, tableOwner, owner);
     }
 
-    public void updateRecords(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public void updateRecords(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         updateRecords(table, false, keyFields, propFields, owner, tableOwner);
     }
 
-    public int updateRecordsCount(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    public int updateRecordsCount(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         return updateRecords(table, true, keyFields, propFields, owner, tableOwner);
     }
 
-    private int updateRecords(Table table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
+    private int updateRecords(NamedTable table, boolean count, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         if(!propFields.isEmpty()) // есть запись нужно Update лупить
             return updateRecords(new ModifyQuery(table, new Query<>(table.getMapKeys(), Where.TRUE, keyFields, ObjectValue.getMapExprs(propFields)), owner, tableOwner));
         if(count)
@@ -2392,7 +2392,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
     }
 
-    public boolean insertRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
+    public boolean insertRecord(NamedTable table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, boolean update, TableOwner tableOwner, OperationOwner owner) throws SQLException, SQLHandledException {
         if(update && isRecord(table, keyFields, owner)) {
             updateRecords(table, keyFields, propFields, owner, tableOwner);
             return false;
@@ -2409,7 +2409,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 execute(this, owner).singleValue().get("result");
     }
 
-    public void truncate(GlobalTable table, OperationOwner owner) throws SQLException {
+    public void truncate(DBTable table, OperationOwner owner) throws SQLException {
         truncate(table.getName(syntax), owner, register(table, TableOwner.global, TableChange.REMOVE));
     }
     
@@ -2432,7 +2432,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return getCount(syntax.getSessionTableName(table), opOwner);
     }
 
-    public int getCount(Table table, OperationOwner opOwner) throws SQLException {
+    public int getCount(NamedTable table, OperationOwner opOwner) throws SQLException {
         return getCount(table.getName(syntax), opOwner);
     }
 
@@ -2445,7 +2445,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public <X> int deleteKeyRecords(Table table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public <X> int deleteKeyRecords(NamedTable table, ImMap<KeyField, X> keys, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
         
         String deleteWhere = keys.toString(new GetKeyValue<String, KeyField, X>() {
@@ -2582,9 +2582,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
     private void checkTableOwner(Table table, TableOwner owner) {
         if(table instanceof SessionTable)
-            checkTableOwner(table.getName(), owner);
+            checkTableOwner(((SessionTable)table).getName(), owner);
         else
-            ServerLoggers.assertLog(owner == TableOwner.global || owner == TableOwner.debug, "THERE SHOULD BE NO OWNER FOR GLOBAL TABLE " + table.getName() + " " + owner);
+            ServerLoggers.assertLog(owner == TableOwner.global || owner == TableOwner.debug, "THERE SHOULD BE NO OWNER FOR GLOBAL TABLE " + table + " " + owner);
     }
     private void checkTableOwner(ModifyQuery modify) {
         checkTableOwner(modify.table, modify.owner);

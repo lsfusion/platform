@@ -1622,7 +1622,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         neededProps = null;
     }
 
-    private void savePropertyChanges(Table implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException, SQLHandledException {
+    private void savePropertyChanges(ImplementTable implementTable, SessionTableUsage<KeyField, CalcProperty> changeTable) throws SQLException, SQLHandledException {
         savePropertyChanges(implementTable, changeTable.getValues().toMap(), changeTable.getKeys().toRevMap(), changeTable, true);
     }
 
@@ -1633,7 +1633,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         savePropertyChanges(property.mapTable.table, MapFact.singleton("value", (CalcProperty) property), property.mapTable.mapKeys, change, false);
     }
 
-    private <K,V> void savePropertyChanges(Table implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable, boolean onlyNotNull) throws SQLException, SQLHandledException {
+    private <K,V> void savePropertyChanges(ImplementTable implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable, boolean onlyNotNull) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<>(implementTable);
         Join<V> join = changeTable.join(mapKeys.join(modifyQuery.getMapExprs()));
         

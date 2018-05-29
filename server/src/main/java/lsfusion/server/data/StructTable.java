@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
-public class StructTable extends GlobalTable {
+public class StructTable extends DBTable {
 
     public final static StructTable instance = new StructTable();
 

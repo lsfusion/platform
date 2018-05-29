@@ -608,8 +608,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         private class TableSelect extends JoinSelect<Table.Join> {
-            private String source;
-
             protected ImMap<String, BaseExpr> initJoins(Table.Join table, final SQLSyntax syntax) {
                 return table.joins.mapKeys(new GetValue<String, KeyField>() {
                     public String getMapValue(KeyField value) {
@@ -619,7 +617,6 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             TableSelect(Table.Join join) {
                 super(join);
-                this.source = join.getQueryName(InnerSelect.this);
             }
 
             public String getSource(DebugInfoWriter debugInfoWriter) {
@@ -627,7 +624,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(recursiveTable != null)
                     env.addNotMaterializable(recursiveTable);
 
-                return innerJoin.getQueryName(InnerSelect.this);
+                return innerJoin.getQuerySource(InnerSelect.this);
             }
 
             protected Where getInnerWhere() {
