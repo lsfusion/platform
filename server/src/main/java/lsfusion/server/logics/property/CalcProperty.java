@@ -473,7 +473,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return ExClassSet.fromExValue(inferred).removeNulls();
     }
 
-    public static class VirtualTable<P extends PropertyInterface> extends Table {
+    public static class VirtualTable<P extends PropertyInterface> extends NamedTable {
 
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;

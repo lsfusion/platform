@@ -424,6 +424,16 @@ public class Settings implements Cloneable {
     public void setGroupStatExprWhereJoins(boolean groupStatExprWhereJoins) {
         this.groupStatExprWhereJoins = groupStatExprWhereJoins;
     }
+    
+    private int sessionRowsToTable = 4;
+
+    public int getSessionRowsToTable() {
+        return sessionRowsToTable;
+    }
+
+    public void setSessionRowsToTable(int sessionRowsToTable) {
+        this.sessionRowsToTable = sessionRowsToTable;
+    }
 
     public boolean isUseFJInsteadOfUnion() {
         return useFJInsteadOfUnion;

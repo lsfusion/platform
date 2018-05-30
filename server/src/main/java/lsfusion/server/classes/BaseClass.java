@@ -11,10 +11,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.Table;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.IsClassType;
@@ -227,7 +224,7 @@ public class BaseClass extends AbstractCustomClass {
         return new Pair<>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
     }
     @IdentityStrongLazy
-    public Table getInconsistentTable(ImplementTable table) {
+    public NamedTable getInconsistentTable(ImplementTable table) {
         return table.getInconsistent(this);
     }
 

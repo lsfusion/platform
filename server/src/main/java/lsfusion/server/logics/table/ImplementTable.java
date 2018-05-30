@@ -50,7 +50,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
+public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
 
     private final ImMap<KeyField, ValueClass> mapFields;
@@ -150,7 +150,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
+    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
         moveColumn.addProperty(field, moveExpr);
@@ -759,7 +759,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         return true;
     }
 
-    public static class InconsistentTable extends GlobalTable {
+    public static class InconsistentTable extends DBTable {
 
         private final TableStatKeys statKeys;
         private final ImMap<PropertyField, PropStat> statProps;
@@ -780,7 +780,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         }
     }
 
-    public Table getInconsistent(BaseClass baseClass) {
+    public NamedTable getInconsistent(BaseClass baseClass) {
         return new InconsistentTable(name, keys, properties, baseClass, statKeys, statProps);
 //        return new SerializedTable(name, keys, properties, baseClass);
     }

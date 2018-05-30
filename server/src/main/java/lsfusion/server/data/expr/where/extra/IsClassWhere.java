@@ -114,7 +114,7 @@ public class IsClassWhere extends DataWhere {
     }
     @ParamLazy
     public Where translate(ExprTranslator translator) {
-        // getAdjustJoin в groupJoinsWheres нарушает инвариант создавая WhereJoin у которого появляется новый Expr (IsClassExpr) не в "пути" этого IsClassWhere и при проталкивании (в частности через Ident получаются проблемы)
+        // getAdjustJoin в groupJoinsWheres нарушает инвариант создавая WhereJoin у которого появляется новый Expr (IsClassExpr) не в "пути" этого IsClassWhere и при проталкивании получаются проблемы
         if(classes instanceof ObjectValueClassSet && translator instanceof JoinExprTranslator) {
             Expr translatedClassExpr = classExpr.translateExpr(translator);
             if(translatedClassExpr instanceof KeyExpr) // если подставился ключ при проталкивании

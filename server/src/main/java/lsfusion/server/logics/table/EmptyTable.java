@@ -3,13 +3,13 @@ package lsfusion.server.logics.table;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.SystemClass;
-import lsfusion.server.data.GlobalTable;
+import lsfusion.server.data.DBTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.stat.TableStatKeys;
 
-public class EmptyTable extends GlobalTable {
+public class EmptyTable extends DBTable {
     public static final EmptyTable instance = new EmptyTable();
 
     public KeyField key;

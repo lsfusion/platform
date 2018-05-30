@@ -91,10 +91,22 @@ public class ClassChanges {
         return false;
     }
 
+    public final static KeyField classField = new KeyField("key0", ObjectType.instance);
     public static Where isStaticValueClass(Expr expr, ObjectValueClassSet classSet) {
-        Where result = Where.FALSE;
-        for(ConcreteCustomClass customUsedClass : classSet.getSetConcreteChildren())
-            result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
+        Where result;
+        ImSet<ConcreteCustomClass> concreteChildren = classSet.getSetConcreteChildren();
+        if(concreteChildren.size() > Settings.get().getSessionRowsToTable()) {
+            SessionRows rows = new SessionRows(SetFact.singletonOrder(classField), SetFact.<PropertyField>EMPTY(), concreteChildren.mapSetValues(new GetValue<ImMap<KeyField, DataObject>, ConcreteCustomClass>() {
+                public ImMap<KeyField, DataObject> getMapValue(ConcreteCustomClass value) {
+                    return MapFact.singleton(classField, value.getClassObject());
+                }
+            }).toMap(MapFact.<PropertyField, ObjectValue>EMPTY()));
+            return new ValuesTable(rows).join(MapFact.singleton(classField, expr)).getWhere();
+        } else {
+            result = Where.FALSE;
+            for (ConcreteCustomClass customUsedClass : concreteChildren)
+                result = result.or(expr.compare(StaticClassExpr.getClassExpr(customUsedClass), Compare.EQUALS));
+        }
         return result;
     }
 

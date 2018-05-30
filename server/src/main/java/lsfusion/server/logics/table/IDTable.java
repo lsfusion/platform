@@ -26,7 +26,7 @@ import lsfusion.server.logics.DataObject;
 import java.sql.SQLException;
 
 // таблица счетчика sID
-public class IDTable extends GlobalTable {
+public class IDTable extends DBTable {
 
     public final static IntegerClass idTypeClass = IntegerClass.instance;
 

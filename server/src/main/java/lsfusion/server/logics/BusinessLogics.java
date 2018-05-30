@@ -2137,9 +2137,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
         try {
-            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, Boolean>> mapIndex : getDbManager().getIndicesMap().entrySet()) {
                 session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
-                Table table = mapIndex.getKey();
+                NamedTable table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     if (!getDbManager().getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))

@@ -18,7 +18,7 @@ import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.session.DataSession;
 
 public class ModifyQuery {
-    public final Table table;
+    public final NamedTable table;
     private final IQuery<KeyField, PropertyField> change;
     public final QueryEnvironment env;
     public final TableOwner owner;
@@ -27,11 +27,11 @@ public class ModifyQuery {
         return env.getOpOwner();
     }
 
-    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
+    public ModifyQuery(NamedTable table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
         this(table, change, DataSession.emptyEnv(owner), tableOwner);
     }
 
-    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, QueryEnvironment env, TableOwner owner) {
+    public ModifyQuery(NamedTable table, IQuery<KeyField, PropertyField> change, QueryEnvironment env, TableOwner owner) {
         this.table = table;
         this.change = change;
         this.env = env;
