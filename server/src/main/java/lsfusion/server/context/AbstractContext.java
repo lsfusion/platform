@@ -1,9 +1,7 @@
 package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.ProgressBar;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -187,32 +185,29 @@ public abstract class AbstractContext implements Context {
     }
 
     public Thread getLastThread() {
-        List<Map.Entry<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
-
-        List<Thread> threadList = new ArrayList<>();
-        for (Map.Entry<Thread, TimedMessageStack> entry : list)
-            threadList.add(entry.getKey());
-        //last one is interrupt thread
-        return threadList.size() < 2 ? null : threadList.get(threadList.size() - 2);
+        List<Pair<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
+        return list.isEmpty() ? null : list.get(list.size() - 1).first;
     }
 
     private List<MessageStack> getMessageStackList() {
-        List<Map.Entry<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
+        List<Pair<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
 
         List<MessageStack> messageStackList = new ArrayList<>();
-        for (Map.Entry<Thread, TimedMessageStack> entry : list)
-            messageStackList.add(entry.getValue().messageStack);
+        for (Pair<Thread, TimedMessageStack> entry : list)
+            messageStackList.add(entry.second.messageStack);
         return messageStackList;
     }
 
-    private List<Map.Entry<Thread, TimedMessageStack>> getSortedActionMessageStackMap() {
+    private List<Pair<Thread, TimedMessageStack>> getSortedActionMessageStackMap() {
         // Convert Map to List
-        List<Map.Entry<Thread, TimedMessageStack>> list = new ArrayList<>(actionMessageStackMap.entrySet());
+        List<Pair<Thread, TimedMessageStack>> list = new ArrayList<>(); 
+        for(Map.Entry<Thread, TimedMessageStack> entry : actionMessageStackMap.entrySet())
+            list.add(new Pair<>(entry.getKey(), entry.getValue()));
         // Sort list with comparator
-        Collections.sort(list, new Comparator<Map.Entry<Thread, TimedMessageStack>>() {
-            public int compare(Map.Entry<Thread, TimedMessageStack> o1,
-                               Map.Entry<Thread, TimedMessageStack> o2) {
-                return (o1.getValue().time).compareTo(o2.getValue().time);
+        Collections.sort(list, new Comparator<Pair<Thread, TimedMessageStack>>() {
+            public int compare(Pair<Thread, TimedMessageStack> o1,
+                               Pair<Thread, TimedMessageStack> o2) {
+                return (o1.second.time).compareTo(o2.second.time);
             }
         });
         return list;

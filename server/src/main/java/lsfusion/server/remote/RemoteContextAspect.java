@@ -10,16 +10,22 @@ import org.aspectj.lang.annotation.Aspect;
 
 @Aspect
 public class RemoteContextAspect {
-    @Around("(execution(public * (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..)) ||" +
-            "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..)) ||" +
-            "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
-            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)) ||" +
-            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.interrupt(..)) ||" +
-            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessageList(..)))" +
-            " && !execution(public * lsfusion.interop.RemoteLogicsInterface.ping(..))" +
-            " && target(ro)")
-    public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object ro) throws Throwable {
-        ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) ro;
+    
+    public static final String allRemoteCalls = "execution(public * (lsfusion.interop.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+            " && !execution(public * *.ping(..))" +
+            " && !execution(public * *.toString())" +
+            " && target(target)";
+
+    // за исключением системных вызовов, так как иначе они будут учавствовать в getLastThread, а значит в interrupt (и в итоге могут interrupt'ся они)
+    public static final String allUserRemoteCalls = "execution(public * (lsfusion.interop.remote.PendingRemoteInterface+ && *..*Interface).*(..))" +
+            " && !execution(public * *.ping(..))" +
+            " && !execution(public * *.toString())" +
+            " && target(target)" + 
+            " && !execution(public * lsfusion.interop.remote.PendingRemoteInterface.*(..))";
+
+    @Around(allRemoteCalls)
+    public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
+        ContextAwarePendingRemoteObject remoteObject = (ContextAwarePendingRemoteObject) target;
 
         ThreadInfo threadInfo = EventThreadInfo.RMI(remoteObject);
         Context prevContext = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // так как может быть explicit remote call

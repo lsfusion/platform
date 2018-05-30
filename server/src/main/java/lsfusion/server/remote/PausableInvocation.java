@@ -1,6 +1,10 @@
 package lsfusion.server.remote;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.Pair;
+import lsfusion.interop.exceptions.RemoteInterruptedException;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -9,6 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class PausableInvocation<T, E extends Exception> implements Callable<T> {
 
@@ -162,13 +167,20 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     private void releaseInvocation() throws InterruptedException {
         releaseSync(syncInvocation);
     }
+    
+    protected abstract boolean isDeactivating();
 
     private void blockSync(SynchronousQueue sync) throws InterruptedException {
         long startTime = 0;
         if (Profiler.PROFILER_ENABLED) {
             startTime = System.nanoTime();
         }
-        sync.take();
+        try {
+            sync.take();
+        } catch (InterruptedException e) {
+            ServerLoggers.assertLog(isDeactivating(), "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
+            throw e;
+        }
         if (Profiler.PROFILER_ENABLED) {
             ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
             if (counter != null) {
@@ -178,6 +190,11 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     }
 
     private void releaseSync(SynchronousQueue sync) throws InterruptedException {
-        sync.put(syncObject);
+        try {
+            sync.put(syncObject); // тут по идее release должен сразу выйти и ничего не ждать (может быть проблема если interrupt'ся take, но непонятно что с этим в принципе делать)
+        } catch (InterruptedException e) {
+            ServerLoggers.assertLog(false, "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
+            throw e;
+        }
     }
 }

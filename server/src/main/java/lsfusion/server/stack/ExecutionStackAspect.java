@@ -11,6 +11,8 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.Profiler;
+import lsfusion.server.remote.RemoteContextAspect;
+import lsfusion.server.remote.RemoteForm;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -45,8 +47,9 @@ public class ExecutionStackAspect {
         return processStackItem(thisJoinPoint, item);
     }
 
-    @Around("execution(public * lsfusion.interop.form.RemoteFormInterface.*(..))")
-    public Object execute(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around(RemoteContextAspect.allUserRemoteCalls)
+    public Object execute(ProceedingJoinPoint joinPoint, RemoteForm target) throws Throwable {
+        assert target == joinPoint.getTarget();
         RMICallStackItem item = new RMICallStackItem(joinPoint);
         return processStackItem(joinPoint, item);
     }
