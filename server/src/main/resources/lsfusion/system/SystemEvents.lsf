@@ -225,7 +225,7 @@ showDefaultForms() = {
     IF defaultForms(currentUser()) == DefaultForms.default THEN {
         LOCAL firstForm = VARSTRING[100] ();
         FOR actionName = canonicalName(action(NavigatorAction e)) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
-            LOCAL action = TEXT ();
+            LOCAL NESTED action = TEXT ();
             FOR formName = canonicalName(form(e)) DO { 
                 IF NOT firstForm() THEN {
                     firstForm() <- formName;
