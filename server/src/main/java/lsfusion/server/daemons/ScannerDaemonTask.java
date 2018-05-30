@@ -121,7 +121,7 @@ public class ScannerDaemonTask extends AbstractDaemonTask implements Serializabl
         boolean result = false;
         SerialPort serialPort = serialPortMap.get("COM" + port);
         if (serialPort != null) {
-            result = serialPort.writeBytes(BaseUtils.getFile(file));
+            result = serialPort.writeBytes(file);
         }
         return result;
     }
