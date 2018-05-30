@@ -18,10 +18,7 @@ public class RemoteExceptionsAspect {
     private final static Logger logger = ServerLoggers.systemLogger;
     
     // аспектами ловим все RuntimeException которые доходят до внешней границы сервера и оборачиваем их
-    @Around("(execution(public * (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..)) ||" +
-            "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
-            "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..)))" +
-            "&& target(target)")
+    @Around(RemoteContextAspect.allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         try {
             return thisJoinPoint.proceed();

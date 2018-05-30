@@ -1,6 +1,5 @@
 package lsfusion.server.remote;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.WeakIdentityHashSet;
@@ -125,8 +124,12 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public boolean isDeactivated() {
         return deactivated;
     }
+    public boolean isDeactivating() {
+        return deactivating;
+    }
 
     private boolean deactivated = false;
+    private boolean deactivating = false;
     // умертвляет объект - отключает его от новых потоков + закрывает все старые потоки
     // ВАЖНО что должно выполняться в потоке, который сам не попадает в cleanThreads
     public synchronized void deactivate() {
@@ -134,6 +137,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
             return;
 
         ServerLoggers.remoteLifeLog("REMOTE OBJECT DEACTIVATE " + this);
+        deactivating = true;
 
         onDeactivate();
 

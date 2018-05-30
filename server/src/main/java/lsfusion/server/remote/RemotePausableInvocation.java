@@ -200,4 +200,9 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     public long getRequestIndex() {
         return requestIndex;
     }
+
+    @Override
+    protected boolean isDeactivating() {
+        return remoteObject.isDeactivating();
+    }
 }

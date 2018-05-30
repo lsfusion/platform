@@ -42,10 +42,7 @@ import org.apache.log4j.MDC;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang3.StringUtils.trimToEmpty;
@@ -234,15 +231,15 @@ public class ThreadLocalContext {
     }
 
     public static String getActionMessage() {
-        return get() != null ? get().getActionMessage() : "";
+        return get().getActionMessage();
     }
 
     public static List<Object> getActionMessageList() {
-        return get() != null ? get().getActionMessageList() : new ArrayList<>();
+        return get().getActionMessageList();
     }
 
     public static Thread getLastThread() {
-        return get() != null ? get().getLastThread() : null;
+        return get().getLastThread();
     }
 
     public static ProgressStackItem pushProgressMessage(String message, Integer progress, Integer total) {

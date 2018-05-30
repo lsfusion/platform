@@ -24,11 +24,7 @@ public class RemoteLoggerAspect {
     private static final Map<Long, Timestamp> dateTimeCallMap = MapFact.getGlobalConcurrentHashMap();
     private static Map<Long, Boolean> remoteLoggerDebugEnabled = MapFact.getGlobalConcurrentHashMap();
 
-    @Around("(execution(* (lsfusion.interop.RemoteLogicsInterface+ && *..*Interface).*(..))" +
-            " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
-            " || execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)))" +
-            " && !execution(* *.ping(..)) " +
-            "&& target(target)")
+    @Around(RemoteContextAspect.allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         //final long id = Thread.currentThread().getId();
         //putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));

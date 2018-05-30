@@ -307,10 +307,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Aspect
-    private static class RemoteNavigatorUsageAspect {
-        @Around("execution(* lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) && target(remoteNavigator)")
-        public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, RemoteNavigator remoteNavigator) throws Throwable {
-            remoteNavigator.updateLastUsedTime();
+    public static class RemoteNavigatorUsageAspect {
+        @Around(RemoteContextAspect.allRemoteCalls)
+        public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, RemoteNavigator target) throws Throwable {
+            target.updateLastUsedTime();
             return thisJoinPoint.proceed();
         }
     }
