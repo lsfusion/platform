@@ -131,8 +131,12 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
         
         ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
-        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(nameField));
-        ImportKey<?> keyAction = new ImportKey(reflectionLM.action, reflectionLM.actionCanonicalName.getMapping(nameField));
+        ImportKey<?> keyForm = null;
+        ImportKey<?> keyAction = null;
+        if(actions) {
+            keyForm = new ImportKey(reflectionLM.form, reflectionLM.formByCanonicalName.getMapping(formCNField));
+            keyAction = new ImportKey(reflectionLM.action, reflectionLM.actionCanonicalName.getMapping(actionCNField));
+        }
 
         List<List<Object>> elementsData = new ArrayList<>();
         for (NavigatorElement e : businessLogics.getNavigatorElements()) {
@@ -163,18 +167,22 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
         );
         List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
         fields.add(nameField);
         fields.add(captionField);
+        keys.add(keyNavigatorElement);
         if(actions) {
             fields.add(formCNField);
             fields.add(actionCNField);
+            keys.add(keyForm);
+            keys.add(keyAction);            
         }
         ImportTable table = new ImportTable(fields, elementsData);
 
         try {
             try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_NE");
-                IntegrationService service = new IntegrationService(session, table, Arrays.asList(keyNavigatorElement, keyForm, keyAction), propsNavigatorElement, deletes);
+                IntegrationService service = new IntegrationService(session, table, keys, propsNavigatorElement, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics, getStack());
