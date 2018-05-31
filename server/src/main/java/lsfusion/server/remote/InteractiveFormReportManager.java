@@ -218,11 +218,10 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             @Override
             public Where getFixedObjectsWhere(GroupObjectInstance group, Integer groupId, ImMap<ObjectInstance, Expr> mapExprs) throws SQLException, SQLHandledException {
                 Where where = Where.TRUE;
-                if (!(group.curClassView.isGrid() && (groupId == null || groupId == getGroupID(group)))) {
+                if (!group.curClassView.isGrid())
                     for (ObjectInstance object : group.objects) {
                         where = where.and(getExpr(object, mapExprs).compare(getObjectValue(object).getExpr(), Compare.EQUALS));
                     }
-                }
                 return where;
             }
 
