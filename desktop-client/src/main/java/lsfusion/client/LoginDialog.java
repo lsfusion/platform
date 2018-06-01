@@ -78,7 +78,7 @@ public class LoginDialog extends JDialog {
             loginBox.setSelectedItem(loginInfo.getUserName());
         }
 
-        if (loginInfo.getPassword() != null) {
+        if (loginInfo.getSavePwd() && loginInfo.getPassword() != null) { // чтобы при повторном показе диалога ("Выход") сбрасывался несохранённый пароль 
             passwordField.setText(loginInfo.getPassword());
         }
 

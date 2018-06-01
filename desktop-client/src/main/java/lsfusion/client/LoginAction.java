@@ -69,7 +69,7 @@ public final class LoginAction {
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
         String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
         String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, false));
+        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, password != null));
 
         //loginDialog = new LoginDialog(loginInfo);
     }
@@ -162,13 +162,15 @@ public final class LoginAction {
                 if (serverDB.isEmpty()) {
                     serverDB = "default";
                 }
-                boolean savePwd = false;
-                if (newScheme) {
-                    if (!userInfos.isEmpty()) {
-                        savePwd = userInfos.get(0).savePassword;
+                boolean savePwd = loginInfo.getSavePwd();
+                if (!savePwd) { // в loginInfo приходят только значения из командной строки. ставим этот флаг, чтобы в диалоге заполнялось поле с паролем 
+                    if (newScheme) {
+                        if (!userInfos.isEmpty()) {
+                            savePwd = userInfos.get(0).savePassword;
+                        }
+                    } else {
+                        savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
                     }
-                } else {
-                    savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
                 }
                 String password = "";
                 if (loginInfo.getPassword() != null) {
