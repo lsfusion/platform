@@ -1,6 +1,10 @@
 package lsfusion.server.data.type;
 
 import lsfusion.base.ExtInt;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Data;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
@@ -79,17 +83,16 @@ public class TypeSerializer {
         if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) {
             String filterDescription = inStream.readUTF();
-            String[] filterExtensions;
+            ImSet<String> filterExtensions;
             int extCount = inStream.readInt();
             if (extCount <= 0) {
-                filterExtensions = new String[1];
-                filterExtensions[0] = "*";
+                filterExtensions = SetFact.singleton("");
             } else {
-                filterExtensions = new String[extCount];
-
+                MExclSet<String> mFilterExpressions = SetFact.mExclSet(extCount);
                 for (int i = 0; i < extCount; ++i) {
-                    filterExtensions[i] = inStream.readUTF();
+                    mFilterExpressions.exclAdd(inStream.readUTF());
                 }
+                filterExtensions = mFilterExpressions.immutable();
             }
             return CustomStaticFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean(), filterDescription, filterExtensions);
         }
@@ -101,17 +104,15 @@ public class TypeSerializer {
         if (type == Data.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) {
             String filterDescription = inStream.readUTF();
-            String[] filterExtensions;
+            ImSet<String> filterExtensions;
             int extCount = inStream.readInt();
             if (extCount <= 0) {
-                filterExtensions = new String[1];
-                filterExtensions[0] = "*";
+                filterExtensions = SetFact.singleton("");
             } else {
-                filterExtensions = new String[extCount];
-
-                for (int i = 0; i < extCount; ++i) {
-                    filterExtensions[i] = inStream.readUTF();
-                }
+                MExclSet<String> mFilterExtensions = SetFact.mExclSet(extCount);
+                for (int i = 0; i < extCount; ++i)
+                    mFilterExtensions.exclAdd(inStream.readUTF());
+                filterExtensions = mFilterExtensions.immutable();
             }
             return CustomStaticFormatLinkClass.get(inStream.readBoolean(), filterDescription, filterExtensions);
         }

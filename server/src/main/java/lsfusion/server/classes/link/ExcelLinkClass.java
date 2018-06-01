@@ -36,4 +36,9 @@ public class ExcelLinkClass extends StaticFormatLinkClass {
     public byte getTypeID() {
         return Data.EXCELLINK;
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "xls";
+    }
 }

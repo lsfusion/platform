@@ -1,6 +1,8 @@
 package lsfusion.server.classes;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -33,5 +35,27 @@ public abstract class StaticFormatFileClass extends FileClass {
     @Override
     protected byte[] formatHTTPNotNull(byte[] b) {
         return BaseUtils.mergeFileAndExtension(b, getOpenExtension(b).getBytes());
+    }
+    
+    protected ImSet<String> getExtensions() {
+        return SetFact.singleton(getDefaultCastExtension());
+    } 
+
+    @Override
+    public DataClass getCompatible(DataClass compClass, boolean or) {
+        if(!(compClass instanceof StaticFormatFileClass))
+            return null;
+
+        StaticFormatFileClass staticFileClass = (StaticFormatFileClass)compClass;
+        if(!(multiple == staticFileClass.multiple && storeName == staticFileClass.storeName))
+            return null;
+        
+        if(getClass() == staticFileClass.getClass()) {
+            assert equals(compClass);
+            return this;
+        }
+
+        ImSet<String> mergedExtensions = getExtensions().merge(staticFileClass.getExtensions());
+        return CustomStaticFormatFileClass.get(multiple, storeName, "", mergedExtensions);
     }
 }

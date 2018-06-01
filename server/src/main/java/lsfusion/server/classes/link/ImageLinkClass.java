@@ -36,4 +36,9 @@ public class ImageLinkClass extends StaticFormatLinkClass {
     public byte getTypeID() {
         return Data.IMAGELINK;
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "jpg";
+    }
 }

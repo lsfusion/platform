@@ -37,4 +37,8 @@ public class PDFLinkClass extends StaticFormatLinkClass {
         return Data.PDFLINK;
     }
 
+    @Override
+    public String getDefaultCastExtension() {
+        return "pdf";
+    }
 }
