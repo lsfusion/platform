@@ -3813,7 +3813,7 @@ tableStatement
 		self.addScriptedTable($name.text, $list.ids, isFull);
 	}
 }
-	:	'TABLE' name=ID '(' list=nonEmptyClassIdList ')' ('FULL' {isFull = true;})? ';';
+	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;})? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// LOGGABLE STATEMENT /////////////////////////////
