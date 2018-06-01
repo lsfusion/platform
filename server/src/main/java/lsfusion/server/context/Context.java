@@ -30,6 +30,7 @@ import lsfusion.server.stack.ExecutionStackItem;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public interface Context {
 
@@ -52,12 +53,6 @@ public interface Context {
     Object requestUserInteraction(ClientAction action);
     boolean canBeProcessed();
     Object[] requestUserInteraction(ClientAction... actions);
-
-    String getActionMessage();
-    List<Object> getActionMessageList();
-    Thread getLastThread();
-    void pushActionMessage(ExecutionStackItem stackItem);
-    void popActionMessage(ExecutionStackItem stackItem);
 
     // для создания форм
     SecurityPolicy getSecurityPolicy();

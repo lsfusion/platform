@@ -16,7 +16,6 @@ import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -159,7 +158,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
             RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<>(rows);
             context.pushUpdate(rowUpdate);
-            ProgressStackItem stackItem = ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), 0, rowUpdate.rows.size());
+            String progressCaption = toString();
+            ProgressStackItem stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, 0, rowUpdate.rows.size());
             try {
                 for (int i = 0; i < rowUpdate.rows.size(); i++) {
                     ImMap<I, DataObject> row = rowUpdate.rows.get(i);
@@ -167,8 +167,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     if(addObject!=null)
                         newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass, autoSet));
 
-                    ThreadLocalContext.popActionMessage(stackItem);
-                    stackItem = ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), i + 1, rowUpdate.rows.size());
+                    ExecutionStackAspect.popProgressStackItem(stackItem);
+                    stackItem = ExecutionStackAspect.pushProgressStackItem(progressCaption, i + 1, rowUpdate.rows.size());
                     FlowResult actionResult = executeFor(context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
@@ -179,7 +179,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 }
             } finally {
                 context.popUpdate();
-                ThreadLocalContext.popActionMessage(stackItem);
+                ExecutionStackAspect.popProgressStackItem(stackItem);
             }
         } while (recursive && !rows.isEmpty());
 

@@ -24,6 +24,7 @@ import lsfusion.server.stack.ExecutionStackItem;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class WrapperContext extends AbstractContext implements Context {
     private Context wrappedContext;
@@ -122,25 +123,5 @@ public class WrapperContext extends AbstractContext implements Context {
 
     public Object[] requestUserInteraction(ClientAction... actions) {
         return wrappedContext.requestUserInteraction(actions);
-    }
-
-    public String getActionMessage() {
-        return wrappedContext.getActionMessage();
-    }
-
-    public List<Object> getActionMessageList() {
-        return wrappedContext.getActionMessageList();
-    }
-
-    public Thread getLastThread() {
-        return wrappedContext.getLastThread();
-    }
-
-    public void pushActionMessage(ExecutionStackItem stackItem) {
-        wrappedContext.pushActionMessage(stackItem);
-    }
-
-    public void popActionMessage(ExecutionStackItem stackItem) {
-        wrappedContext.popActionMessage(stackItem);
     }
 }

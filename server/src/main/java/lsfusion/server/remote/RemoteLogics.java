@@ -495,5 +495,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw Throwables.propagate(e);
         }
     }
+
+    @Override
+    public Object getProfiledObject() {
+        return "l";
+    }
 }
 

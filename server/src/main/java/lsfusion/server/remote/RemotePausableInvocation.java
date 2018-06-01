@@ -9,7 +9,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.rmi.RemoteException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -143,11 +142,11 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         //final long id = Thread.currentThread().getId();
         //RemoteLoggerAspect.putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
-            remoteObject.addLinkedThread(Thread.currentThread());
+            remoteObject.addContextThread(Thread.currentThread());
             try {
                 invocationResult = callInvocation();
             } finally {
-                remoteObject.removeLinkedThread(Thread.currentThread());
+                remoteObject.removeContextThread(Thread.currentThread());
             }
         //} finally {
         //    RemoteLoggerAspect.removeDateTimeCall(id);

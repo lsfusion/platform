@@ -3,7 +3,6 @@ package lsfusion.server.context;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
@@ -35,6 +34,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
@@ -47,7 +47,6 @@ import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class AbstractContext implements Context {
-    public final ConcurrentWeakHashMap<Thread, TimedMessageStack> actionMessageStackMap = MapFact.getGlobalConcurrentWeakHashMap();
 
     public abstract LogicsInstance getLogicsInstance();
 
@@ -166,115 +165,5 @@ public abstract class AbstractContext implements Context {
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
-    }
-
-    public String getActionMessage() {
-        String result = "";
-        for(MessageStack messageStack : getMessageStackList()) {
-            result += messageStack.getMessage();
-        }
-        return result;
-    }
-
-    public List<Object> getActionMessageList() {
-        List<Object> result = new ArrayList<>();
-        for(MessageStack messageStack : getMessageStackList()) {
-            result.addAll(messageStack.getMessageList());
-        }
-        return result;
-    }
-
-    public Thread getLastThread() {
-        List<Pair<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
-        return list.isEmpty() ? null : list.get(list.size() - 1).first;
-    }
-
-    private List<MessageStack> getMessageStackList() {
-        List<Pair<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
-
-        List<MessageStack> messageStackList = new ArrayList<>();
-        for (Pair<Thread, TimedMessageStack> entry : list)
-            messageStackList.add(entry.second.messageStack);
-        return messageStackList;
-    }
-
-    private List<Pair<Thread, TimedMessageStack>> getSortedActionMessageStackMap() {
-        // Convert Map to List
-        List<Pair<Thread, TimedMessageStack>> list = new ArrayList<>(); 
-        for(Map.Entry<Thread, TimedMessageStack> entry : actionMessageStackMap.entrySet())
-            list.add(new Pair<>(entry.getKey(), entry.getValue()));
-        // Sort list with comparator
-        Collections.sort(list, new Comparator<Pair<Thread, TimedMessageStack>>() {
-            public int compare(Pair<Thread, TimedMessageStack> o1,
-                               Pair<Thread, TimedMessageStack> o2) {
-                return (o1.second.time).compareTo(o2.second.time);
-            }
-        });
-        return list;
-    }
-
-    // тут нужно быть аккуратно с утечками
-    public void pushActionMessage(ExecutionStackItem stackItem) {
-        Thread thread = Thread.currentThread();
-        TimedMessageStack timedMessageStack = actionMessageStackMap.get(thread);
-        if (timedMessageStack == null) {
-            timedMessageStack = new TimedMessageStack(new MessageStack());
-            //важно заполнять time до добавления в map из-за многопоточности
-            timedMessageStack.time = System.currentTimeMillis();
-            timedMessageStack.messageStack.push(stackItem);
-            actionMessageStackMap.put(thread, timedMessageStack);
-        } else {
-            timedMessageStack.time = System.currentTimeMillis();
-            timedMessageStack.messageStack.push(stackItem);
-        }
-    }
-
-    public void popActionMessage(ExecutionStackItem stackItem) {
-        Thread thread = Thread.currentThread();
-        TimedMessageStack timedMessageStack = actionMessageStackMap.get(thread);
-        timedMessageStack.messageStack.popOrEmpty();
-        if (timedMessageStack.messageStack.isEmpty()) {
-            actionMessageStackMap.remove(thread);
-        }
-    }
-
-    private static class MessageStack extends Stack<ExecutionStackItem> {
-
-        public synchronized String getMessage() {
-            return BaseUtils.toString(this, "\n");
-        }
-
-        public synchronized Object popOrEmpty() {
-            return isEmpty() ? "" : pop();
-        }
-
-        public synchronized List<Object> getMessageList() {
-            List<Object> result = new ArrayList<>();
-            for (Object entry : this) {
-                if (entry instanceof ExecutionStackItem) {
-                    ExecutionStackItem stackItem = (ExecutionStackItem) entry;
-
-                    if (stackItem.isCancelable())
-                        result.add(true);
-
-                    ImList<ProgressBar> progress = stackItem.getProgress();
-                    if (progress == null || progress.isEmpty())
-                        result.add(String.valueOf(stackItem));
-                    else
-                        result.addAll(progress.toJavaList());
-                } else
-                    result.add(String.valueOf(entry));
-            }
-            return result;
-        }
-    }
-
-    private class TimedMessageStack {
-        private MessageStack messageStack;
-        private Long time;
-
-        public TimedMessageStack(MessageStack messageStack) {
-            this.messageStack = messageStack;
-        }
     }
 }

@@ -1147,4 +1147,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             return syncExecute(form.syncProcessRMIRequestMap, requestIndex, joinPoint);
         }
     }
+
+    @Override
+    public Object getProfiledObject() {
+        return form.entity;
+    }
 }

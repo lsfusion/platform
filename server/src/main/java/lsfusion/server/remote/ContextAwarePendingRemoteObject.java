@@ -10,15 +10,20 @@ import lsfusion.server.context.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.profiler.ProfiledObject;
+import lsfusion.server.profiler.RMICallProfileObject;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject implements Unreferenced {
+public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObject implements Unreferenced, ProfiledObject {
 
     protected final static Logger logger = ServerLoggers.systemLogger;
 
@@ -70,21 +75,27 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         this.context = context;
     }
 
+    private Set<Thread> getContextThreads() {
+        synchronized (threads) {
+            return threads.copy();
+        }
+    }
+    
     public String getRemoteActionMessage() throws RemoteException {
-        return ThreadLocalContext.getActionMessage();
+        return ExecutionStackAspect.getActionMessage(getContextThreads());
     }
 
     public List<Object> getRemoteActionMessageList() throws RemoteException {
-        return ThreadLocalContext.getActionMessageList();
+        return ExecutionStackAspect.getMessageList(getContextThreads());
     }
 
-    public void addLinkedThread(Thread thread) {
+    public void addContextThread(Thread thread) {
         synchronized (threads) {
             threads.add(thread);
         }
     }
 
-    public void removeLinkedThread(Thread thread) {
+    public void removeContextThread(Thread thread) {
         synchronized (threads) {
             threads.remove(thread);
         }
@@ -225,7 +236,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     public void interrupt(boolean cancelable) throws RemoteException {
         try {
-            Thread thread = ThreadLocalContext.getLastThread();
+            Thread thread = ExecutionStackAspect.getLastThread(getContextThreads());
             if (thread != null) {
                 Context context = getContext();
                 if (cancelable)

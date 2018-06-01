@@ -33,6 +33,7 @@ import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RmiServer;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ExecutionStackItem;
 import lsfusion.server.stack.ProgressStackItem;
 import org.apache.commons.beanutils.BeanUtils;
@@ -228,35 +229,6 @@ public class ThreadLocalContext {
 
     public static Object[] requestUserInteraction(ClientAction... actions) {
         return get().requestUserInteraction(actions);
-    }
-
-    public static String getActionMessage() {
-        return get().getActionMessage();
-    }
-
-    public static List<Object> getActionMessageList() {
-        return get().getActionMessageList();
-    }
-
-    public static Thread getLastThread() {
-        return get().getLastThread();
-    }
-
-    public static ProgressStackItem pushProgressMessage(String message, Integer progress, Integer total) {
-        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total);
-        pushActionMessage(progressStackItem);
-        return progressStackItem;
-    }
-
-    public static void pushActionMessage(ExecutionStackItem stackItem) {
-        if (get() != null) {
-            get().pushActionMessage(stackItem);
-        }
-    }
-
-    public static void popActionMessage(ExecutionStackItem stackItem) {
-        if(get() != null && stackItem != null)
-            get().popActionMessage(stackItem);
     }
 
     // есть пока всего одна ветка с assertTop (кроме wrapContext) - rmicontextobject, да и то не до конца понятно в каких стеках

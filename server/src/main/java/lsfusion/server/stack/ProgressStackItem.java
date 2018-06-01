@@ -33,10 +33,9 @@ public class ProgressStackItem extends AspectStackItem {
         if (joinPoint != null) {
             resultMessage = super.toString();
 
-            ImList<ProgressBar> progressList = getProgress();
-            if (!progressList.isEmpty()) {
-                resultMessage += ", " + progressList.toString(",");
-            }
+            ProgressBar progress = getProgress();
+            if (progress != null)
+                resultMessage = (resultMessage.isEmpty() ? "" : resultMessage + ", ") + progress;
         } else {
             resultMessage = message + ", " + progress + "of " + total;
         }
@@ -44,10 +43,9 @@ public class ProgressStackItem extends AspectStackItem {
     }
 
     @Override
-    public ImList<ProgressBar> getProgress() {
+    public ProgressBar getProgress() {
         if (joinPoint != null) {
             Object[] args = joinPoint.getArgs();
-            MList<ProgressBar> progressBarList = ListFact.mList();
 
             Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
             ImList<String> params = getArgs(joinPoint, method);
@@ -65,10 +63,11 @@ public class ProgressStackItem extends AspectStackItem {
                                 else
                                     progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
                             }
-                            progressBarList.add(progressBar);
+                            return progressBar;
                         }
                     }
-            return progressBarList.immutableList();
-        } else return ListFact.singleton(new ProgressBar(message, progress, total));
+            return null;
+        } else 
+            return new ProgressBar(message, progress, total);
     }
 }

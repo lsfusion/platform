@@ -17,9 +17,7 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.padLeft;
 import static lsfusion.base.BaseUtils.replicate;

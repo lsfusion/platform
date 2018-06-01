@@ -1113,4 +1113,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     protected boolean isUnreferencedSyncedClient() { // если ушли все ссылки считаем синхронизированным, так как клиент уже ни к чему обращаться не может
         return true;
     }
+
+    @Override
+    public Object getProfiledObject() {
+        return "n";
+    }
 }

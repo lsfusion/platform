@@ -31,11 +31,11 @@ public class RemoteContextAspect {
         Context prevContext = ThreadLocalContext.aspectBeforeRmi(remoteObject, false, threadInfo); // так как может быть explicit remote call
 
         try {
-            remoteObject.addLinkedThread(Thread.currentThread());
+            remoteObject.addContextThread(Thread.currentThread());
             try {
                 return thisJoinPoint.proceed();
             } finally {
-                remoteObject.removeLinkedThread(Thread.currentThread());
+                remoteObject.removeContextThread(Thread.currentThread());
             }
         } finally {
             ThreadLocalContext.aspectAfterRmi(prevContext, false, threadInfo);
