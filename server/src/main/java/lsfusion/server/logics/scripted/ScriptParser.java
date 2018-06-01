@@ -3,6 +3,7 @@ package lsfusion.server.logics.scripted;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
 import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.logics.i18n.LocalizedString;
 import org.antlr.runtime.*;
 
 import java.util.ArrayList;
@@ -203,7 +204,11 @@ public class ScriptParser {
     }
 
     public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous) {
-        return new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta());
+        return getGlobalDebugPoint(moduleName, previous, null, null);
+    }
+    
+    public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, boolean previous, String topName, LocalizedString topCaption) {
+        return new DebugInfo.DebugPoint(moduleName, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta(), topName, topCaption);
     }
     
     //0-based

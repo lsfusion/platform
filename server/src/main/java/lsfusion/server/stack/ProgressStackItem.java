@@ -1,9 +1,7 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.ProgressBar;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.mutable.MList;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
@@ -37,7 +35,7 @@ public class ProgressStackItem extends AspectStackItem {
             if (progress != null)
                 resultMessage = (resultMessage.isEmpty() ? "" : resultMessage + ", ") + progress;
         } else {
-            resultMessage = message + ", " + progress + "of " + total;
+            resultMessage = message + ", " + progress + " of " + total;
         }
         return resultMessage;
     }

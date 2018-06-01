@@ -12,7 +12,6 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class ExecuteActionStackItem extends ExecutionStackItem {
     private final ActionProperty property;
-    private String propertyName;
 
     public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
         super(joinPoint, Profiler.PROFILER_ENABLED ? new ActionProfileObject((ActionProperty) joinPoint.getTarget()) : null);
@@ -23,10 +22,6 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
         return property;
     }
     
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
-    }
-
     public String getCaption() {
         return BaseUtils.nullEmpty(localize(property.caption));
     }
@@ -49,15 +44,6 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     
     @Override
     public String toString() {
-        String result = localize("{message.execute.action}");
-        if(propertyName != null) {
-            result += " : " + propertyName;
-            if(property.getDebugInfo() != null) {
-                result += ":" + property.getDebugInfo();
-            }
-        } else {
-            result += " : " + property;
-        }
-        return result;
+        return localize("{message.execute.action}") + (" : " + property);
     }
 }
