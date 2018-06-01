@@ -1,27 +1,23 @@
 package lsfusion.utils;
 
-import java.util.*;
-
+import lsfusion.base.BaseUtils;
 import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
 
+import java.util.*;
+
 /**
+ * source: https://coderanch.com/t/420958/open-source/Copying-sheet-excel-file-excel
  * @author jk
  * getted from http://jxls.cvs.sourceforge.net/jxls/jxls/src/java/org/jxls/util/Util.java?revision=1.8&view=markup
  * by Leonid Vysochyn
  * and modified (adding styles copying)
  * modified by Philipp Löpmeier (replacing deprecated classes and methods, using generic types)
- * modified by a.filipchik (xlsx support)
+ * modified by a.filipchik (xlsx support & optimizations)
  */
 public final class WriteUtils {
-
-    /**
-     * DEFAULT CONSTRUCTOR.
-     */
-    private WriteUtils() {
-    }
 
     public static void copyHSSFSheets(HSSFWorkbook sourceWB, HSSFWorkbook destinationWB) {
         for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
@@ -34,31 +30,24 @@ public final class WriteUtils {
                 }
                 sheetName += "(" + index + ")";
             }
-            copyHSSFSheet(destinationWB.createSheet(sheetName), sheet);
+            HSSFSheet newSheet = destinationWB.createSheet(sheetName);
+            copySheetSettings(newSheet, sheet);
+            copyHSSFSheet(newSheet, sheet);
+            copyPictures(newSheet, sheet);
         }
     }
 
-    /**
-     * @param newSheet the sheet to create from the copy.
-     * @param sheet    the sheet to copy.
-     */
     public static void copyHSSFSheet(HSSFSheet newSheet, HSSFSheet sheet) {
-        copyHSSFSheet(newSheet, sheet, true);
-    }
-
-    /**
-     * @param newSheet  the sheet to create from the copy.
-     * @param sheet     the sheet to copy.
-     * @param copyStyle true copy the style.
-     */
-    public static void copyHSSFSheet(HSSFSheet newSheet, HSSFSheet sheet, boolean copyStyle) {
         int maxColumnNum = 0;
-        Map<Integer, HSSFCellStyle> styleMap = (copyStyle) ? new HashMap<Integer, HSSFCellStyle>() : null;
+        Map<Integer, HSSFCellStyle> styleMap = new HashMap<>();
+        // manage a list of merged zone in order to not insert two times a merged zone
+        Set<String> mergedRegions = new TreeSet<>();
+        List<CellRangeAddress> sheetMergedRegions = sheet.getMergedRegions();
         for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
             HSSFRow srcRow = sheet.getRow(i);
             HSSFRow destRow = newSheet.createRow(i);
             if (srcRow != null) {
-                WriteUtils.copyHSSFRow(sheet, newSheet, srcRow, destRow, styleMap);
+                copyHSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
                 if (srcRow.getLastCellNum() > maxColumnNum) {
                     maxColumnNum = srcRow.getLastCellNum();
                 }
@@ -69,16 +58,7 @@ public final class WriteUtils {
         }
     }
 
-    /**
-     * @param srcSheet  the sheet to copy.
-     * @param destSheet the sheet to create.
-     * @param srcRow    the row to copy.
-     * @param destRow   the row to create.
-     * @param styleMap  -
-     */
-    public static void copyHSSFRow(HSSFSheet srcSheet, HSSFSheet destSheet, HSSFRow srcRow, HSSFRow destRow, Map<Integer, HSSFCellStyle> styleMap) {
-        // manage a list of merged zone in order to not insert two times a merged zone
-        Set<CellRangeAddressWrapper> mergedRegions = new TreeSet<CellRangeAddressWrapper>();
+    public static void copyHSSFRow(HSSFSheet destSheet, HSSFRow srcRow, HSSFRow destRow, Map<Integer, HSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
         destRow.setHeight(srcRow.getHeight());
         // pour chaque row
         for (int j = srcRow.getFirstCellNum(); j <= srcRow.getLastCellNum(); j++) {
@@ -91,17 +71,13 @@ public final class WriteUtils {
                 // copy chaque cell
                 copyHSSFCell(oldCell, newCell, styleMap);
                 // copy les informations de fusion entre les cellules
-                //System.out.println("row num: " + srcRow.getRowNum() + " , col: " + (short)oldCell.getColumnIndex());
-                CellRangeAddress mergedRegion = getMergedRegion(srcSheet, srcRow.getRowNum(), (short) oldCell.getColumnIndex());
+                CellRangeAddress mergedRegion = getMergedRegion(sheetMergedRegions, srcRow.getRowNum(), (short) oldCell.getColumnIndex());
 
                 if (mergedRegion != null) {
-                    //System.out.println("Selected merged region: " + mergedRegion.toString());
                     CellRangeAddress newMergedRegion = new CellRangeAddress(mergedRegion.getFirstRow(), mergedRegion.getLastRow(), mergedRegion.getFirstColumn(), mergedRegion.getLastColumn());
-                    //System.out.println("New merged region: " + newMergedRegion.toString());
-                    CellRangeAddressWrapper wrapper = new CellRangeAddressWrapper(newMergedRegion);
-                    if (isNewMergedRegion(wrapper, mergedRegions)) {
-                        mergedRegions.add(wrapper);
-                        destSheet.addMergedRegion(wrapper.range);
+                    if (isNewMergedRegion(newMergedRegion, mergedRegions)) {
+                        mergedRegions.add(newMergedRegion.formatAsString());
+                        destSheet.addMergedRegion(newMergedRegion);
                     }
                 }
             }
@@ -124,23 +100,23 @@ public final class WriteUtils {
                 newCell.setCellStyle(newCellStyle);
             }
         }
-        switch (oldCell.getCellType()) {
-            case HSSFCell.CELL_TYPE_STRING:
+        switch (oldCell.getCellTypeEnum()) {
+            case STRING:
                 newCell.setCellValue(oldCell.getStringCellValue());
                 break;
-            case HSSFCell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 newCell.setCellValue(oldCell.getNumericCellValue());
                 break;
-            case HSSFCell.CELL_TYPE_BLANK:
-                newCell.setCellType(HSSFCell.CELL_TYPE_BLANK);
+            case BLANK:
+                newCell.setCellType(CellType.BLANK);
                 break;
-            case HSSFCell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 newCell.setCellValue(oldCell.getBooleanCellValue());
                 break;
-            case HSSFCell.CELL_TYPE_ERROR:
+            case ERROR:
                 newCell.setCellErrorValue(oldCell.getErrorCellValue());
                 break;
-            case HSSFCell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 newCell.setCellFormula(oldCell.getCellFormula());
                 break;
             default:
@@ -160,51 +136,102 @@ public final class WriteUtils {
                 }
                 sheetName += "(" + index + ")";
             }
-            copyXSSFSheet(destinationWB.createSheet(sheetName), sheet);
+            XSSFSheet newSheet = destinationWB.createSheet(sheetName);
+            copySheetSettings(newSheet, sheet);
+            copyXSSFSheet(newSheet, sheet);
+            copyPictures(newSheet, sheet);
         }
     }
 
-    /**
-     * @param newSheet the sheet to create from the copy.
-     * @param sheet    the sheet to copy.
-     */
-    public static void copyXSSFSheet(XSSFSheet newSheet, XSSFSheet sheet) {
-        copyXSSFSheet(newSheet, sheet, true);
+    public static void copySheetSettings(Sheet newSheet, Sheet sheetToCopy) {
+
+        newSheet.setAutobreaks(sheetToCopy.getAutobreaks());
+        newSheet.setDefaultColumnWidth(sheetToCopy.getDefaultColumnWidth());
+        newSheet.setDefaultRowHeight(sheetToCopy.getDefaultRowHeight());
+        newSheet.setDefaultRowHeightInPoints(sheetToCopy.getDefaultRowHeightInPoints());
+        newSheet.setDisplayGuts(sheetToCopy.getDisplayGuts());
+        newSheet.setFitToPage(sheetToCopy.getFitToPage());
+
+        newSheet.setForceFormulaRecalculation(sheetToCopy.getForceFormulaRecalculation());
+
+        PrintSetup sheetToCopyPrintSetup = sheetToCopy.getPrintSetup();
+        PrintSetup newSheetPrintSetup = newSheet.getPrintSetup();
+
+        newSheetPrintSetup.setPaperSize(sheetToCopyPrintSetup.getPaperSize());
+        newSheetPrintSetup.setScale(sheetToCopyPrintSetup.getScale());
+        newSheetPrintSetup.setPageStart(sheetToCopyPrintSetup.getPageStart());
+        newSheetPrintSetup.setFitWidth(sheetToCopyPrintSetup.getFitWidth());
+        newSheetPrintSetup.setFitHeight(sheetToCopyPrintSetup.getFitHeight());
+        newSheetPrintSetup.setLeftToRight(sheetToCopyPrintSetup.getLeftToRight());
+        newSheetPrintSetup.setLandscape(sheetToCopyPrintSetup.getLandscape());
+        newSheetPrintSetup.setValidSettings(sheetToCopyPrintSetup.getValidSettings());
+        newSheetPrintSetup.setNoColor(sheetToCopyPrintSetup.getNoColor());
+        newSheetPrintSetup.setDraft(sheetToCopyPrintSetup.getDraft());
+        newSheetPrintSetup.setNotes(sheetToCopyPrintSetup.getNotes());
+        newSheetPrintSetup.setNoOrientation(sheetToCopyPrintSetup.getNoOrientation());
+        newSheetPrintSetup.setUsePage(sheetToCopyPrintSetup.getUsePage());
+        newSheetPrintSetup.setHResolution(sheetToCopyPrintSetup.getHResolution());
+        newSheetPrintSetup.setVResolution(sheetToCopyPrintSetup.getVResolution());
+        newSheetPrintSetup.setHeaderMargin(sheetToCopyPrintSetup.getHeaderMargin());
+        newSheetPrintSetup.setFooterMargin(sheetToCopyPrintSetup.getFooterMargin());
+        newSheetPrintSetup.setCopies(sheetToCopyPrintSetup.getCopies());
+
+        Header sheetToCopyHeader = sheetToCopy.getHeader();
+        Header newSheetHeader = newSheet.getHeader();
+        newSheetHeader.setCenter(sheetToCopyHeader.getCenter());
+        newSheetHeader.setLeft(sheetToCopyHeader.getLeft());
+        newSheetHeader.setRight(sheetToCopyHeader.getRight());
+
+        Footer sheetToCopyFooter = sheetToCopy.getFooter();
+        Footer newSheetFooter = newSheet.getFooter();
+        newSheetFooter.setCenter(sheetToCopyFooter.getCenter());
+        newSheetFooter.setLeft(sheetToCopyFooter.getLeft());
+        newSheetFooter.setRight(sheetToCopyFooter.getRight());
+
+        newSheet.setHorizontallyCenter(sheetToCopy.getHorizontallyCenter());
+        newSheet.setMargin(Sheet.LeftMargin, sheetToCopy.getMargin(Sheet.LeftMargin));
+        newSheet.setMargin(Sheet.RightMargin, sheetToCopy.getMargin(Sheet.RightMargin));
+        newSheet.setMargin(Sheet.TopMargin, sheetToCopy.getMargin(Sheet.TopMargin));
+        newSheet.setMargin(Sheet.BottomMargin, sheetToCopy.getMargin(Sheet.BottomMargin));
+
+        newSheet.setPrintGridlines(sheetToCopy.isPrintGridlines());
+        newSheet.setRowSumsBelow(sheetToCopy.getRowSumsBelow());
+        newSheet.setRowSumsRight(sheetToCopy.getRowSumsRight());
+        newSheet.setVerticallyCenter(sheetToCopy.getVerticallyCenter());
+        newSheet.setDisplayFormulas(sheetToCopy.isDisplayFormulas());
+        newSheet.setDisplayGridlines(sheetToCopy.isDisplayGridlines());
+        newSheet.setDisplayRowColHeadings(sheetToCopy.isDisplayRowColHeadings());
+        newSheet.setDisplayZeros(sheetToCopy.isDisplayZeros());
+        newSheet.setPrintGridlines(sheetToCopy.isPrintGridlines());
+        newSheet.setRightToLeft(sheetToCopy.isRightToLeft());
+        newSheet.setZoom(100);
     }
 
-    /**
-     * @param newSheet  the sheet to create from the copy.
-     * @param sheet     the sheet to copy.
-     * @param copyStyle true copy the style.
-     */
-    public static void copyXSSFSheet(XSSFSheet newSheet, XSSFSheet sheet, boolean copyStyle) {
+    public static void copyXSSFSheet(XSSFSheet newSheet, XSSFSheet sheet) {
         int maxColumnNum = 0;
-        Map<Integer, XSSFCellStyle> styleMap = (copyStyle) ? new HashMap<Integer, XSSFCellStyle>() : null;
+        Map<Integer, XSSFCellStyle> styleMap = new HashMap<>();
+        // manage a list of merged zone in order to not insert two times a merged zone
+        Set<String> mergedRegions = new TreeSet<>();
+        List<CellRangeAddress> sheetMergedRegions = sheet.getMergedRegions();
         for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
             XSSFRow srcRow = sheet.getRow(i);
             XSSFRow destRow = newSheet.createRow(i);
             if (srcRow != null) {
-                WriteUtils.copyXSSFRow(sheet, newSheet, srcRow, destRow, styleMap);
+                BaseUtils.systemLogger.info("copy row " + i);
+                WriteUtils.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
                 if (srcRow.getLastCellNum() > maxColumnNum) {
                     maxColumnNum = srcRow.getLastCellNum();
                 }
             }
         }
         for (int i = 0; i <= maxColumnNum; i++) {
-            newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+            if(newSheet.getColumnWidth(i) != sheet.getColumnWidth(i)) {
+                newSheet.setColumnWidth(i, sheet.getColumnWidth(i));
+            }
         }
     }
 
-    /**
-     * @param srcSheet  the sheet to copy.
-     * @param destSheet the sheet to create.
-     * @param srcRow    the row to copy.
-     * @param destRow   the row to create.
-     * @param styleMap  -
-     */
-    public static void copyXSSFRow(XSSFSheet srcSheet, XSSFSheet destSheet, XSSFRow srcRow, XSSFRow destRow, Map<Integer, XSSFCellStyle> styleMap) {
-        // manage a list of merged zone in order to not insert two times a merged zone
-        Set<CellRangeAddressWrapper> mergedRegions = new TreeSet<CellRangeAddressWrapper>();
+    public static void copyXSSFRow(XSSFSheet destSheet, XSSFRow srcRow, XSSFRow destRow, Map<Integer, XSSFCellStyle> styleMap, List<CellRangeAddress> sheetMergedRegions, Set<String> mergedRegions) {
         destRow.setHeight(srcRow.getHeight());
         // pour chaque row
         for (int j = srcRow.getFirstCellNum(); j <= srcRow.getLastCellNum(); j++) {
@@ -217,22 +244,16 @@ public final class WriteUtils {
                 // copy chaque cell
                 copyXSSFCell(oldCell, newCell, styleMap);
                 // copy les informations de fusion entre les cellules
-                //System.out.println("row num: " + srcRow.getRowNum() + " , col: " + (short)oldCell.getColumnIndex());
-                CellRangeAddress mergedRegion = getMergedRegion(srcSheet, srcRow.getRowNum(), (short) oldCell.getColumnIndex());
-
+                CellRangeAddress mergedRegion = getMergedRegion(sheetMergedRegions, srcRow.getRowNum(), (short) oldCell.getColumnIndex());
                 if (mergedRegion != null) {
-                    //System.out.println("Selected merged region: " + mergedRegion.toString());
                     CellRangeAddress newMergedRegion = new CellRangeAddress(mergedRegion.getFirstRow(), mergedRegion.getLastRow(), mergedRegion.getFirstColumn(), mergedRegion.getLastColumn());
-                    //System.out.println("New merged region: " + newMergedRegion.toString());
-                    CellRangeAddressWrapper wrapper = new CellRangeAddressWrapper(newMergedRegion);
-                    if (isNewMergedRegion(wrapper, mergedRegions)) {
-                        mergedRegions.add(wrapper);
-                        destSheet.addMergedRegion(wrapper.range);
+                    if (isNewMergedRegion(newMergedRegion, mergedRegions)) {
+                        mergedRegions.add(newMergedRegion.formatAsString());
+                        destSheet.addMergedRegion(newMergedRegion);
                     }
                 }
             }
         }
-
     }
 
     public static void copyXSSFCell(XSSFCell oldCell, XSSFCell newCell, Map<Integer, XSSFCellStyle> styleMap) {
@@ -252,23 +273,23 @@ public final class WriteUtils {
                 newCell.setCellStyle(newCellStyle);
             }
         }
-        switch (oldCell.getCellType()) {
-            case XSSFCell.CELL_TYPE_STRING:
+        switch (oldCell.getCellTypeEnum()) {
+            case STRING:
                 newCell.setCellValue(oldCell.getStringCellValue());
                 break;
-            case XSSFCell.CELL_TYPE_NUMERIC:
+            case NUMERIC:
                 newCell.setCellValue(oldCell.getNumericCellValue());
                 break;
-            case XSSFCell.CELL_TYPE_BLANK:
-                newCell.setCellType(XSSFCell.CELL_TYPE_BLANK);
+            case BLANK:
+                newCell.setCellType(CellType.BLANK);
                 break;
-            case XSSFCell.CELL_TYPE_BOOLEAN:
+            case BOOLEAN:
                 newCell.setCellValue(oldCell.getBooleanCellValue());
                 break;
-            case XSSFCell.CELL_TYPE_ERROR:
+            case ERROR:
                 newCell.setCellErrorValue(oldCell.getErrorCellValue());
                 break;
-            case XSSFCell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 newCell.setCellFormula(oldCell.getCellFormula());
                 break;
             default:
@@ -277,21 +298,67 @@ public final class WriteUtils {
 
     }
 
-    /**
-     * Récupère les informations de fusion des cellules dans la sheet source pour les appliquer
-     * à la sheet destination...
-     * Récupère toutes les zones merged dans la sheet source et regarde pour chacune d'elle si
-     * elle se trouve dans la current row que nous traitons.
-     * Si oui, retourne l'objet CellRangeAddress.
-     *
-     * @param sheet   the sheet containing the data.
-     * @param rowNum  the num of the row to copy.
-     * @param cellNum the num of the cell to copy.
-     * @return the CellRangeAddress created.
-     */
-    public static CellRangeAddress getMergedRegion(HSSFSheet sheet, int rowNum, short cellNum) {
-        for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
-            CellRangeAddress merged = sheet.getMergedRegion(i);
+    private static void copyPictures(HSSFSheet newSheet, HSSFSheet sheet) {
+        Drawing drawingOld = sheet.createDrawingPatriarch();
+        Drawing drawingNew = newSheet.createDrawingPatriarch();
+        CreationHelper helper = newSheet.getWorkbook().getCreationHelper();
+
+        List<HSSFShape> shapes = ((HSSFPatriarch) drawingOld).getChildren();
+        for (HSSFShape shape : shapes) {
+            if (shape instanceof HSSFPicture) {
+                HSSFPicture pic = (HSSFPicture) shape;
+                HSSFPictureData picdata = pic.getPictureData();
+                int pictureIndex = newSheet.getWorkbook().addPicture(picdata.getData(), picdata.getFormat());
+                ClientAnchor anchor = null;
+                if (pic.getAnchor() != null) {
+                    anchor = helper.createClientAnchor();
+                    anchor.setDx1(pic.getAnchor().getDx1());
+                    anchor.setDx2(pic.getAnchor().getDx2());
+                    anchor.setDy1(pic.getAnchor().getDy1());
+                    anchor.setDy2(pic.getAnchor().getDy2());
+                    anchor.setCol1(((HSSFClientAnchor) pic.getAnchor()).getCol1());
+                    anchor.setCol2(((HSSFClientAnchor) pic.getAnchor()).getCol2());
+                    anchor.setRow1(((HSSFClientAnchor) pic.getAnchor()).getRow1());
+                    anchor.setRow2(((HSSFClientAnchor) pic.getAnchor()).getRow2());
+                    anchor.setAnchorType(((HSSFClientAnchor) pic.getAnchor()).getAnchorType());
+                }
+                drawingNew.createPicture(anchor, pictureIndex);
+            }
+        }
+    }
+
+
+    private static void copyPictures(XSSFSheet newSheet, XSSFSheet sheet) {
+        Drawing drawingOld = sheet.createDrawingPatriarch();
+        Drawing drawingNew = newSheet.createDrawingPatriarch();
+        CreationHelper helper = newSheet.getWorkbook().getCreationHelper();
+
+        List<XSSFShape> shapes = ((XSSFDrawing) drawingOld).getShapes();
+        for (XSSFShape shape : shapes) {
+            if (shape instanceof XSSFPicture) {
+                XSSFPicture pic = (XSSFPicture) shape;
+                XSSFPictureData picdata = pic.getPictureData();
+                int pictureIndex = newSheet.getWorkbook().addPicture(picdata.getData(), picdata.getPictureType());
+                ClientAnchor anchor = null;
+                if (pic.getAnchor() != null) {
+                    anchor = helper.createClientAnchor();
+                    anchor.setDx1(pic.getAnchor().getDx1());
+                    anchor.setDx2(pic.getAnchor().getDx2());
+                    anchor.setDy1(pic.getAnchor().getDy1());
+                    anchor.setDy2(pic.getAnchor().getDy2());
+                    anchor.setCol1(((XSSFClientAnchor) pic.getAnchor()).getCol1());
+                    anchor.setCol2(((XSSFClientAnchor) pic.getAnchor()).getCol2());
+                    anchor.setRow1(((XSSFClientAnchor) pic.getAnchor()).getRow1());
+                    anchor.setRow2(((XSSFClientAnchor) pic.getAnchor()).getRow2());
+                    anchor.setAnchorType(((XSSFClientAnchor) pic.getAnchor()).getAnchorType());
+                }
+                drawingNew.createPicture(anchor, pictureIndex);
+            }
+        }
+    }
+
+    public static CellRangeAddress getMergedRegion(List<CellRangeAddress> sheetMergedRegions, int rowNum, short cellNum) {
+        for (CellRangeAddress merged : sheetMergedRegions) {
             if (merged.isInRange(rowNum, cellNum)) {
                 return merged;
             }
@@ -299,68 +366,7 @@ public final class WriteUtils {
         return null;
     }
 
-    /**
-     * Récupère les informations de fusion des cellules dans la sheet source pour les appliquer
-     * à la sheet destination...
-     * Récupère toutes les zones merged dans la sheet source et regarde pour chacune d'elle si
-     * elle se trouve dans la current row que nous traitons.
-     * Si oui, retourne l'objet CellRangeAddress.
-     *
-     * @param sheet   the sheet containing the data.
-     * @param rowNum  the num of the row to copy.
-     * @param cellNum the num of the cell to copy.
-     * @return the CellRangeAddress created.
-     */
-    public static CellRangeAddress getMergedRegion(XSSFSheet sheet, int rowNum, short cellNum) {
-        for (int i = 0; i < sheet.getNumMergedRegions(); i++) {
-            CellRangeAddress merged = sheet.getMergedRegion(i);
-            if (merged.isInRange(rowNum, cellNum)) {
-                return merged;
-            }
-        }
-        return null;
+    private static boolean isNewMergedRegion(CellRangeAddress newMergedRegion, Set<String> mergedRegions) {
+        return !mergedRegions.contains(newMergedRegion.formatAsString());
     }
-
-    /**
-     * Check that the merged region has been created in the destination sheet.
-     *
-     * @param newMergedRegion the merged region to copy or not in the destination sheet.
-     * @param mergedRegions   the list containing all the merged region.
-     * @return true if the merged region is already in the list or not.
-     */
-    private static boolean isNewMergedRegion(CellRangeAddressWrapper newMergedRegion, Set<CellRangeAddressWrapper> mergedRegions) {
-        return !mergedRegions.contains(newMergedRegion);
-    }
-
-    public static class CellRangeAddressWrapper implements Comparable<CellRangeAddressWrapper> {
-
-        public CellRangeAddress range;
-
-        /**
-         * @param theRange the CellRangeAddress object to wrap.
-         */
-        public CellRangeAddressWrapper(CellRangeAddress theRange) {
-            this.range = theRange;
-        }
-
-        /**
-         * @param o the object to compare.
-         * @return -1 the current instance is prior to the object in parameter, 0: equal, 1: after...
-         */
-        public int compareTo(CellRangeAddressWrapper o) {
-
-            if (range.getFirstColumn() < o.range.getFirstColumn() && range.getFirstRow() < o.range.getFirstRow()) {
-                return -1;
-            } else if (range.getFirstColumn() == o.range.getFirstColumn() && range.getFirstRow() == o.range.getFirstRow()) {
-                return 0;
-            } else {
-                return 1;
-            }
-
-        }
-
-    }
-
-
 }
-
