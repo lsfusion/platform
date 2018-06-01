@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.WeakIdentityHashSet;
+import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
@@ -106,7 +107,9 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             User user;
             try (DataSession session = dbManager.createSession()) {
                 user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
-                session.apply(businessLogics, stack);
+                String result = session.applyMessage(businessLogics, stack);
+                if(result != null)
+                    throw new RemoteMessageException(result);
             }
 
 //            if (reuseSession) {
@@ -149,7 +152,9 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                 businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
                 businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
                 businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
-                session.apply(businessLogics, stack);
+                String result = session.applyMessage(businessLogics, stack);
+                if(result != null)
+                    throw new RemoteMessageException(result);
             }
         }
 
