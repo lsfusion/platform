@@ -165,6 +165,7 @@ customFile = DATA LOCAL CUSTOMFILE ();
 wordFile = DATA LOCAL WORDFILE ();
 imageFile = DATA LOCAL IMAGEFILE ();
 pdfFile = DATA LOCAL PDFFILE ();
+rawFile = DATA LOCAL RAWFILE ();
 excelFile = DATA LOCAL EXCELFILE();
 
 // --------------------------------------------- Yes/No --------------------------------- //
