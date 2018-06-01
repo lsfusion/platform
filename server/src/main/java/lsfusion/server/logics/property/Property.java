@@ -87,13 +87,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             result = topName != null ? "at " + topName : getPID();
         }
         
-        if (caption != null && caption != LocalizedString.NONAME) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
+        LocalizedString caption;
+        if (this.caption != null && this.caption != LocalizedString.NONAME) {
+            caption = this.caption;
         } else {
-            String topCaption = getTopCaption();
-            if (topCaption != null) {
-                result += " '" + topCaption + "'";
-            }
+            caption = getTopCaption();
+        }
+        if (caption != null) {
+            result += " '" + ThreadLocalContext.localize(caption) + "'";
         }
 
         if (debugInfo != null) {
@@ -553,9 +554,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
     
-    public String getTopCaption() {
+    public LocalizedString getTopCaption() {
         if (debugInfo != null) {
-            return ThreadLocalContext.localize(debugInfo.getTopCaption());
+            return debugInfo.getTopCaption();
         }
         return null;
     }
