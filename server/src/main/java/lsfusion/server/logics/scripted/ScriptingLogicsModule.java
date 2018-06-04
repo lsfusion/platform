@@ -3214,7 +3214,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, boolean clientAction, boolean dialog, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
-        LCP<?> targetProp = findLCPNoParamsByPropertyUsage(propUsage);
+        LCP<?> targetProp = propUsage == null ? baseLM.readFile : findLCPNoParamsByPropertyUsage(propUsage);
         ValueClass moveProp = movePathProp == null ? null : movePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, dialog, delete)),
                 movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));

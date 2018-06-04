@@ -113,6 +113,8 @@ importFiles(id) = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
+readFile = DATA LOCAL CUSTOMFILE ();
+
 ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
 downloadFile 'Скопировать файл на клиент' = CUSTOM 'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
