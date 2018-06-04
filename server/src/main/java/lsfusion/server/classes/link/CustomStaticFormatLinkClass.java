@@ -82,6 +82,6 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
     @Override
     public byte getTypeID() {
-        return Data.CUSTOMSTATICFORMATFILE;
+        return Data.CUSTOMSTATICFORMATLINK;
     }
 }
