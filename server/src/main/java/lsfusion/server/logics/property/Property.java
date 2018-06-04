@@ -205,18 +205,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return canonicalName;
     }
 
-    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, PropertyDBNamePolicy policy) {
+    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, DBNamingPolicy policy) {
         assert name != null && namespace != null;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
-        this.dbName = policy.transformToDBName(canonicalName);
+        this.dbName = policy.transformPropertyCNToDBName(canonicalName);
 
         setExplicitClasses(signatureOrder, signature);
     }
 
-    public void setCanonicalName(String canonicalName, PropertyDBNamePolicy policy) {
+    public void setCanonicalName(String canonicalName, DBNamingPolicy policy) {
         checkCanonicalName(canonicalName);
         this.canonicalName = canonicalName;
-        this.dbName = policy.transformToDBName(canonicalName);
+        this.dbName = policy.transformPropertyCNToDBName(canonicalName);
     }
 
     private void checkCanonicalName(String canonicalName) {

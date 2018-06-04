@@ -15,9 +15,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
-import lsfusion.server.logics.DBManager;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
@@ -30,12 +28,12 @@ import java.util.*;
 public class TableFactory implements FullTablesInterface {
     private static final Logger startLogger = ServerLoggers.startLogger;
 
-    private BaseClass baseClass;
+    private DBNamingPolicy policy;
     private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<>();
     private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
 
-    public TableFactory(BaseClass baseClass) {
-        this.baseClass = baseClass;
+    public TableFactory(DBNamingPolicy policy) {
+        this.policy = policy;
     }
 
     @NFLazy // только NFOrderSet'ов в implementTablesMap и parents недостаточно, так алгоритм include не thread-safe (хотя и устойчив к перестановкам версий)
@@ -87,7 +85,7 @@ public class TableFactory implements FullTablesInterface {
                 if (mapTable != null) return mapTable;
             }
 
-        return getIncludedMapTable(findItem);
+        return getAutoMapTable(findItem);
     }
 
     public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem) {
@@ -99,7 +97,7 @@ public class TableFactory implements FullTablesInterface {
                     return table;
             }
         }
-        return getIncludedMapTable(findItem);
+        return getAutoMapTable(findItem);
     }
 
     public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImOrderMap<T, ValueClass> findItem, ImplementTable table) {
@@ -133,7 +131,7 @@ public class TableFactory implements FullTablesInterface {
 
     // получает "автоматическую таблицу"
     @NFLazy
-    private <T> MapKeysTable<T> getIncludedMapTable(ImOrderMap<T, ValueClass> findItem) {
+    private <T> MapKeysTable<T> getAutoMapTable(ImOrderMap<T, ValueClass> findItem) {
         int classCount = findItem.size();
         List<ImplementTable> incTables = includedTablesMap.get(classCount);
         if(incTables==null) {
@@ -147,27 +145,15 @@ public class TableFactory implements FullTablesInterface {
 
         // если не найдена таблица, то создаем новую
         List<ValueClass> valueClasses = new ArrayList<>();
-
         for (int i = 0; i < classCount; i++) {
-            ValueClass valueClass = findItem.getValue(i);
-            valueClasses.add(valueClass instanceof CustomClass ? baseClass : valueClass);
+            valueClasses.add(findItem.getValue(i));
         }
         Collections.sort(valueClasses, ValueClass.comparator);
 
-        int baseClassCount = 0;
-        String dataPrefix = "";
-        for (ValueClass valueClass : valueClasses) {
-            if (valueClass instanceof CustomClass)
-                baseClassCount++;
-            else
-                dataPrefix += "_" + valueClass.getSID();
-        }
-
-        ImplementTable implementTable = new ImplementTable("base_" + baseClassCount + dataPrefix, valueClasses.toArray(new ValueClass[classCount]));
+        ImplementTable implementTable = new ImplementTable(policy.createAutoTableName(valueClasses), valueClasses.toArray(new ValueClass[classCount]));
         incTables.add(implementTable);
         return implementTable.getSingleMapTable(findItem, true);
     }
-
 
     public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 

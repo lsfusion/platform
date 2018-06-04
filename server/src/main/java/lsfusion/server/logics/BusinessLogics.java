@@ -310,19 +310,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                "/lsfusion/system/EvalScript.lsf", LM, this));
     }
 
-    private PropertyDBNamePolicy getDBNamingPolicy() {
-        PropertyDBNamePolicy dbNamingPolicy = null;
+    private DBNamingPolicy getDBNamingPolicy() {
+        DBNamingPolicy dbNamingPolicy = null;
         try {
             String policyName = getDbManager().getDbNamingPolicy();
             if (policyName != null && !policyName.isEmpty()) {
                 Integer maxIdLength = getDbManager().getDbMaxIdLength();
                 Class cls = Class.forName(policyName);
-                dbNamingPolicy = (PropertyDBNamePolicy) cls.getConstructors()[0].newInstance(maxIdLength);
+                dbNamingPolicy = (DBNamingPolicy) cls.getConstructors()[0].newInstance(maxIdLength);
             }
         } catch (InvocationTargetException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             logger.error("Failed to get DBNamingPolicy, used default", e);
         }
-        return dbNamingPolicy == null ? new DefaultDBNamePolicy(63) : dbNamingPolicy;
+        return dbNamingPolicy == null ? new DefaultDBNamingPolicy(63) : dbNamingPolicy;
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
