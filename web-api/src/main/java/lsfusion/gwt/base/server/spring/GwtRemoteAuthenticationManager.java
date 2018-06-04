@@ -2,6 +2,7 @@ package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.exceptions.LoginException;
+import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.exceptions.RemoteServerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
@@ -37,6 +38,8 @@ public class GwtRemoteAuthenticationManager implements RemoteAuthenticationManag
             return result;
         } catch (LoginException le) {
             throw new UsernameNotFoundException(le.getMessage());
+        } catch (RemoteMessageException le) {
+            throw new RuntimeException(le.getMessage());
         } catch (RemoteServerException e) {
             throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
         } catch (RemoteException e) {

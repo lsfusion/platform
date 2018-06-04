@@ -37,8 +37,6 @@ public class RemoteExceptionsAspect {
     private static RemoteInternalException createInternalServerException(Throwable e, ContextAwarePendingRemoteObject target) {
         logger.error("Internal server error: ", e);
 
-        assert !(e.getCause() instanceof LoginException);
-
         try {
             target.logServerException(e);
         } catch (Exception ex) {

@@ -9,6 +9,7 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteInternalException;
+import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.commons.codec.binary.Base64;
 
@@ -208,35 +209,38 @@ public final class LoginAction {
             return false;
         }
 
-        int status = connect();
+        Object status = connect();
 
-        while (!(status == OK)) {
-            switch (status) {
-                case HOST_NAME_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.check.server.address"));
-                    break;
-                case CONNECT_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
-                    break;
-                case SERVER_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.internal.server.error"));
-                    break;
-                case PENDING_RESTART_WARNING:
-                    loginDialog.setWarningMsg(getString("errors.server.reboots"));
-                    break;
-                case ERROR:
-                    loginDialog.setWarningMsg(getString("errors.error.connecting"));
-                    break;
-                case CANCELED:
-                    loginDialog.setWarningMsg(getString("errors.error.cancel"));
-                    break;
-                case LOGIN_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
-                    break;
-                case LOCKED_ERROR:
-                    loginDialog.setWarningMsg(getString("errors.locked.user"));
-                    break;
-            }
+        while (!(status instanceof Integer && (int)status == OK)) {
+            if(status instanceof Integer) {
+                switch ((int)status) {
+                    case HOST_NAME_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.check.server.address"));
+                        break;
+                    case CONNECT_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
+                        break;
+                    case SERVER_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.internal.server.error"));
+                        break;
+                    case PENDING_RESTART_WARNING:
+                        loginDialog.setWarningMsg(getString("errors.server.reboots"));
+                        break;
+                    case ERROR:
+                        loginDialog.setWarningMsg(getString("errors.error.connecting"));
+                        break;
+                    case CANCELED:
+                        loginDialog.setWarningMsg(getString("errors.error.cancel"));
+                        break;
+                    case LOGIN_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
+                        break;
+                    case LOCKED_ERROR:
+                        loginDialog.setWarningMsg(getString("errors.locked.user"));
+                        break;
+                }
+            } else
+                loginDialog.setWarningMsg((String)status);
             loginDialog.setAutoLogin(false);
             loginInfo = loginDialog.login();
             if (loginInfo == null) {
@@ -250,7 +254,7 @@ public final class LoginAction {
         return true;
     }
 
-    private int connect() {
+    private Object connect() {
         RemoteLogicsLoaderInterface remoteLoader;
         RemoteLogicsInterface remoteLogics;
         long computerId;
@@ -318,6 +322,9 @@ public final class LoginAction {
         } catch (LockedException e) {
             e.printStackTrace();
             return LOCKED_ERROR;
+        } catch (RemoteMessageException e) {
+            e.printStackTrace();
+            return e.getMessage();
         } catch (Throwable e) {
             e.printStackTrace();
             return ERROR;
