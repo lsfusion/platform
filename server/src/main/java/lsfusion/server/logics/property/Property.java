@@ -79,10 +79,24 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     } 
     
     public String toString() {
-        String result = getSID();
+        String result;
+        if (canonicalName != null) {
+            result = canonicalName;
+        } else {
+            String topName = getTopName();
+            result = topName != null ? "at " + topName : getPID();
+        }
+        
+        LocalizedString caption;
+        if (this.caption != null && this.caption != LocalizedString.NONAME) {
+            caption = this.caption;
+        } else {
+            caption = getTopCaption();
+        }
         if (caption != null) {
             result += " '" + ThreadLocalContext.localize(caption) + "'";
         }
+
         if (debugInfo != null) {
             result += " [" + debugInfo + "]";
         }
@@ -144,7 +158,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return orderInterfaces;
     }
     
-    public ImOrderSet<T> getFriendlyPropertyOrderInterfaces() { 
+    public ImOrderSet<T> getFriendlyOrderInterfaces() { 
         return orderInterfaces; 
     }
 
@@ -525,8 +539,26 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         this.explicitClasses = getPackedSignature(interfaces, signature);
     }
     
+    public String getPID() {
+        return "p" + ID;
+    }
+    
     public String getSID() {
-        return canonicalName != null ? canonicalName : ("p" + ID); 
+        return canonicalName != null ? canonicalName : getPID(); 
+    }
+    
+    public String getTopName() {
+        if (debugInfo != null) {
+            return debugInfo.getTopName();
+        }
+        return null;
+    }
+    
+    public LocalizedString getTopCaption() {
+        if (debugInfo != null) {
+            return debugInfo.getTopCaption();
+        }
+        return null;
     }
 
     public boolean isLocal() {

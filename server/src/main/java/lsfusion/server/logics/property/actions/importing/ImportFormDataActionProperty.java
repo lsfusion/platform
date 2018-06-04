@@ -228,7 +228,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         Join<Property> importJoin = importTable.join(mapKeys);
         try {
             for (Property property : importTable.getValues()) {
-                PropertyChange propChange = new PropertyChange(property.getFriendlyPropertyOrderInterfaces().mapSet(keySet).join(mapKeys), importJoin.getExpr(property), importJoin.getWhere());
+                PropertyChange propChange = new PropertyChange(property.getFriendlyOrderInterfaces().mapSet(keySet).join(mapKeys), importJoin.getExpr(property), importJoin.getWhere());
                 context.getEnv().change((CalcProperty) property, propChange);
             }
         } finally {

@@ -26,7 +26,7 @@ public abstract class ExecutionStackItem {
         } else return false;
     }
 
-    public ImList<ProgressBar> getProgress() {
+    public ProgressBar getProgress() {
         return null;
     }
 

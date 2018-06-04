@@ -17,9 +17,7 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.padLeft;
 import static lsfusion.base.BaseUtils.replicate;
@@ -95,14 +93,6 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    public Object requestUserInteraction(ClientAction action) {
-        if (processClientAction(action)) {
-            return null;
-        }
-        return super.requestUserInteraction(action);
-    }
-
-    @Override
     public boolean canBeProcessed() {
         return true;
     }
@@ -116,14 +106,36 @@ public class LogicsInstanceContext extends AbstractContext {
         }
         return new Object[actions.length];
     }
+    
+    // так как applyMessage не может вызываться внутри applyMessage, стек не нужен
+    private ThreadLocal<StringBuilder> logMessage = new ThreadLocal<>(); 
+    
+    @Override
+    public void pushLogMessage() {
+        logMessage.set(new StringBuilder());
+    }
+
+    @Override
+    public String popLogMessage() {
+        String result = logMessage.get().toString();
+        logMessage.remove();
+        return result;
+    }
 
     private boolean processClientAction(ClientAction action) {
         if (action instanceof LogMessageClientAction) {
             LogMessageClientAction logAction = (LogMessageClientAction) action;
-            if (logAction.failed) {
-                throw new LogMessageLogicsException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
+            StringBuilder logBuilder = logMessage.get();
+            if(logBuilder != null) {
+                if (logBuilder.length() > 0)
+                    logBuilder.append('\n');
+                logBuilder.append(logAction.message);
             } else {
-                logger.error(logAction.message);
+                if (logAction.failed) {
+                    throw new LogMessageLogicsException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
+                } else {
+                    logger.error(logAction.message);
+                }
             }
             return true;
         } else if (action instanceof MessageClientAction) {

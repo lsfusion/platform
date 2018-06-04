@@ -18,7 +18,6 @@ import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -50,10 +49,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.ClassChange;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.ProgressStackItem;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.StackProgress;
+import lsfusion.server.stack.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -611,24 +607,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
             final int total = sql.getCount(implementTable, owner);
             ResultHandler<KeyField, PropertyField> reader = new ReadBatchResultHandler<KeyField, PropertyField>(10000) {
                 public void start() {
-                    stackItem.value = ThreadLocalContext.pushProgressMessage(localize("{logics.upload.db}"), proceeded.result, total);
+                    stackItem.value = ExecutionStackAspect.pushProgressStackItem(localize("{logics.upload.db}"), proceeded.result, total);
                 }
 
                 public void proceedBatch(ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> batch) throws SQLException {
                     sqlTo.insertBatchRecords(implementTable, batch.getMap(), owner);
                     proceeded.set(proceeded.result + batch.size());
-                    ThreadLocalContext.popActionMessage(stackItem.value);
-                    stackItem.value = ThreadLocalContext.pushProgressMessage(localize("{logics.upload.db}"), proceeded.result, total);
+                    ExecutionStackAspect.popProgressStackItem(stackItem.value);
+                    stackItem.value = ExecutionStackAspect.pushProgressStackItem(localize("{logics.upload.db}"), proceeded.result, total);
                 }
 
                 public void finish() throws SQLException {
-                    ThreadLocalContext.popActionMessage(stackItem.value);
+                    ExecutionStackAspect.popProgressStackItem(stackItem.value);
                     super.finish();
                 }
             };
             implementTable.readData(sql, LM.baseClass, owner, true, reader);
         } finally {
-            ThreadLocalContext.popActionMessage(stackItem.value);
+            ExecutionStackAspect.popProgressStackItem(stackItem.value);
         }
     }
 

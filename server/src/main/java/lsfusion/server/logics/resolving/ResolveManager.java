@@ -6,10 +6,10 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
+import lsfusion.server.logics.CompoundNameUtils;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.table.ImplementTable;
@@ -23,10 +23,14 @@ public class ResolveManager {
     private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractLCPResolver;
     private ElementResolver<LCP<?>, List<ResolveClassSet>> abstractNotEqualLCPResolver;
     private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLCPResolver;
+    private ElementResolver<LCP<?>, List<ResolveClassSet>> directLocalsResolver;
+    private ElementResolver<LCP<?>, List<ResolveClassSet>> indirectLocalsResolver;
+
     private ElementResolver<LAP<?>, List<ResolveClassSet>> directLAPResolver;
     private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractLAPResolver;
     private ElementResolver<LAP<?>, List<ResolveClassSet>> abstractNotEqualLAPResolver;
     private ElementResolver<LAP<?>, List<ResolveClassSet>> indirectLAPResolver;
+    
     private ElementResolver<AbstractGroup, ?> groupResolver;
     private ElementResolver<NavigatorElement, ?> navigatorResolver;
     private ElementResolver<FormEntity, ?> formResolver;
@@ -45,12 +49,14 @@ public class ResolveManager {
         directLCPResolver = new LPResolver<>(LM, new ModuleLCPFinder(), true, false);
         abstractLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, false);
         abstractNotEqualLCPResolver = new LPResolver<>(LM, new ModuleAbstractLCPFinder(), true, true);
-        indirectLCPResolver = new LPResolver<>(LM, new ModuleSoftLCPFinder(), false, false);
-
+        indirectLCPResolver = new LPResolver<>(LM, new ModuleIndirectLCPFinder(), false, false);
+        directLocalsResolver = new LPResolver<>(LM, new ModuleDirectLocalsFinder(), true, false);
+        indirectLocalsResolver = new LPResolver<>(LM, new ModuleIndirectLocalsFinder(), false, false);
+        
         directLAPResolver = new LPResolver<>(LM, new ModuleLAPFinder(), true, false);
         abstractLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, false);
         abstractNotEqualLAPResolver = new LPResolver<>(LM, new ModuleAbstractLAPFinder(), true, true);
-        indirectLAPResolver = new LPResolver<>(LM, new ModuleSoftLAPFinder(), false, false);
+        indirectLAPResolver = new LPResolver<>(LM, new ModuleIndirectLAPFinder(), false, false);
         
         groupResolver = new ElementResolver<>(LM, new ModuleGroupFinder());
         navigatorResolver = new ElementResolver<>(LM, new ModuleNavigatorElementFinder());
@@ -62,6 +68,25 @@ public class ResolveManager {
     }
     
     public LCP<?> findProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LCP<?> property = null;
+        if (!CompoundNameUtils.hasNamespace(compoundName)) {
+            property = findLocalProperty(compoundName, params);
+        }
+        if (property == null) {
+            property = findGlobalProperty(compoundName, params);
+        }
+        return property;
+    }
+    
+    private LCP<?> findLocalProperty(String name, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
+        LCP<?> property = directLocalsResolver.resolve(name, params);
+        if (property == null) {
+            property = indirectLocalsResolver.resolve(name, params);
+        }
+        return property;
+    }
+
+    private LCP<?> findGlobalProperty(String compoundName, List<ResolveClassSet> params) throws ResolvingErrors.ResolvingError {
         LCP<?> property = directLCPResolver.resolve(compoundName, params);
         if (property == null) {
             property = indirectLCPResolver.resolve(compoundName, params);

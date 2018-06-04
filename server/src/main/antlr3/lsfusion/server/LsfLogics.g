@@ -168,6 +168,9 @@ grammar LsfLogics;
 	}
 
 	public DebugInfo.DebugPoint getCurrentDebugPoint(boolean previous) {
+		if (!$propertyStatement.isEmpty()) {
+			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $propertyStatement::topName, $propertyStatement::topCaption);
+		}
 		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
 	}
 
@@ -1058,6 +1061,10 @@ formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = 
 ////////////////////////////////////////////////////////////////////////////////
 
 propertyStatement
+scope {
+	String topName;
+	LocalizedString topCaption;
+}
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	List<ResolveClassSet> signature = null; 
@@ -1076,8 +1083,8 @@ propertyStatement
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
 		{
-			propertyName = $declaration.name;
-			caption = $declaration.caption;
+			$propertyStatement::topName = propertyName = $declaration.name;
+			$propertyStatement::topCaption = caption = $declaration.caption;
 		}
 		EQ
 		(	
@@ -3328,9 +3335,12 @@ nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props 
     ;
 	
 localDataPropertyDefinition returns [List<LCP<?>> properties]
+@init {
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+}
 @after {
 	if (inPropParseState()) {
-		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType);
+		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType, point);
 	}
 }
 	:	'LOCAL'

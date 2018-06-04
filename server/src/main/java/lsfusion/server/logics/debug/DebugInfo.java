@@ -1,6 +1,7 @@
 package lsfusion.server.logics.debug;
 
 import lsfusion.base.Pair;
+import lsfusion.server.logics.i18n.LocalizedString;
 
 public class DebugInfo {
 
@@ -10,11 +11,17 @@ public class DebugInfo {
         public final int offset;
         public boolean isInsideNonEnabledMeta;
         
-        public DebugPoint(String moduleName, int line, int offset, boolean isInsideNonEnabledMeta) {
+        public String topName;
+        public LocalizedString topCaption;
+        
+        public DebugPoint(String moduleName, int line, int offset, boolean isInsideNonEnabledMeta, String topName, LocalizedString topCaption) {
             this.moduleName = moduleName;
             this.line = line;
             this.offset = offset;
-            this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;            
+            this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;
+            
+            this.topName = topName;
+            this.topCaption = topCaption;
         }
         
         public boolean needToCreateDelegate() {
@@ -82,4 +89,11 @@ public class DebugInfo {
         return point;
     }
     
+    public String getTopName() {
+        return point.topName;
+    }
+    
+    public LocalizedString getTopCaption() {
+        return point.topCaption; 
+    }
 }

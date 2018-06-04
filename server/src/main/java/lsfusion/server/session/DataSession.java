@@ -1309,10 +1309,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        if(apply(BL, stack, interaction))
-            return null;
-        else
-            return ThreadLocalContext.getLogMessage();
+        ThreadLocalContext.pushLogMessage();
+        String logMessage = null;
+        try {
+            if (apply(BL, stack, interaction))
+                return null;
+        } finally {
+            logMessage = ThreadLocalContext.popLogMessage();
+        }
+        return logMessage;
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 

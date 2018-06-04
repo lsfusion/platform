@@ -1,9 +1,8 @@
 package lsfusion.server.stack;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.ExceptionUtils;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.form.entity.FormEntity;
@@ -11,21 +10,149 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.ProfileObject;
 import lsfusion.server.profiler.Profiler;
+import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteContextAspect;
 import lsfusion.server.remote.RemoteForm;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 
-import java.util.ConcurrentModificationException;
-import java.util.ListIterator;
-import java.util.Stack;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.*;
 
 import static lsfusion.server.profiler.Profiler.PROFILER_ENABLED;
 
 @Aspect
 public class ExecutionStackAspect {
-    private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = MapFact.getGlobalConcurrentWeakHashMap();
+
+    // String or ProgressBar or first Boolean 
+    private static List<Object> getMessageList(Stack<ExecutionStackItem> stack, boolean addCancelable) {
+        List<Object> result = new ArrayList<>();
+        boolean lastLSFActionFound = false;
+        for (int i=stack.size()-1;i>=0;i--) {
+            ExecutionStackItem stackItem = stack.get(i);
+            if (addCancelable && stackItem.isCancelable())
+                result.add(true);
+
+            // игнорируем lsf элементы стека, которые не создают новый стек выполнения и не являются последними (предполагается что их можно понять из нижнего элемента)
+            boolean isLSF = stackItem instanceof ExecuteActionStackItem;
+            if(!(lastLSFActionFound && isLSF && !((ExecuteActionStackItem) stackItem).isInDelegate())) {
+                if(isLSF)
+                    lastLSFActionFound = true;
+
+                ProgressBar progress = stackItem.getProgress();
+                result.add(progress != null ? progress : stackItem.toString());
+            }
+        }
+        return result;
+    }
+
+    public static String getActionMessage(Set<Thread> threads) {
+        List<Object> actionMessageList = getMessageList(threads);
+        String result = "";
+        for(Object actionMessage : actionMessageList) {
+            result += BaseUtils.toString(((List<Object>)actionMessage), "\n");
+        }
+        return result;
+    }
+    
+    public static List<Object> getMessageList(Set<Thread> threads) {
+        return getStackList(threads, true, true);
+    }
+    
+    public static List<Object> getStackList(Set<Thread> threads, boolean checkConcurrent, boolean addCancelable) {
+        List<ThreadStackDump> list = getSortedThreadStacks(threads, checkConcurrent);
+
+        List<Object> result = new ArrayList<>();
+        for(ThreadStackDump entry : list) {
+            List<Object> messageStack = getMessageList(entry.stack, addCancelable);
+            for(int i=messageStack.size()-1;i>=0;i--) // добавляем в обратном порядке (из стека делаем список)
+                result.add(messageStack.get(i));
+        }
+        return result;
+    }
+
+    public static Thread getLastThread(Set<Thread> threads) {
+        List<ThreadStackDump> list = getSortedThreadStacks(threads, true);
+        return list.isEmpty() ? null : list.get(list.size() - 1).thread;
+    }
+
+    public static ProgressStackItem pushProgressStackItem(String message, Integer progress, Integer total) {
+        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total);
+        pushStackItem(progressStackItem);
+        return progressStackItem;
+    }
+
+    public static void popProgressStackItem(ExecutionStackItem stackItem) {
+        popStackItem(null);
+    }
+
+    private static class ThreadStackDump implements Comparable<ThreadStackDump> {
+        public final Thread thread;
+        public final Stack<ExecutionStackItem> stack;
+        public final long time;
+
+        public ThreadStackDump(Thread thread, Stack<ExecutionStackItem> stack, long time) {
+            this.thread = thread;
+            this.stack = stack;
+            this.time = time;
+        }
+
+        @Override
+        public int compareTo(ThreadStackDump o) {
+            return Long.compare(time, o.time);
+        }
+    }
+
+    public static List<ThreadStackDump> getSortedThreadStacks(Set<Thread> threads, boolean checkConcurrent) {
+        List<ThreadStackDump> list = new ArrayList<>(); 
+        for(Thread thread : threads) {
+            StackAndTime stackAndTime = executionStack.get(thread);
+            if(stackAndTime != null)
+                list.add(new ThreadStackDump(thread, checkConcurrent ? stackAndTime.stack.getSync() : stackAndTime.stack.getUnsync(), stackAndTime.time));
+        }
+        Collections.sort(list);
+        return list;
+    }
+
+    // нжуен для синхронизации
+    // пока ничего не синхронизируем а ловим ConcurrentModification в асинхронных вызовах
+    private static class SyncStack {
+        
+        private final Stack<ExecutionStackItem> stack = new Stack<>();
+        
+        public ExecutionStackItem push(ExecutionStackItem item) {
+            return stack.push(item);
+        }
+        public ExecutionStackItem pop() {
+            return stack.pop();
+        }
+        
+        private Stack<ExecutionStackItem> getSync() { // вызывается из асинхронных read потоков
+            while(true) {
+                try {
+                    Stack<ExecutionStackItem> dump = new Stack<>();
+                    for(ExecutionStackItem stackItem : stack)
+                        dump.add(stackItem);
+                    return dump;
+                } catch (ConcurrentModificationException e) {                    
+                }
+            }
+        }
+        
+        private Stack<ExecutionStackItem> getUnsync() { // вызывается из синхронных write потоков
+            return stack;
+        }
+    }
+
+    private static class StackAndTime {
+        public SyncStack stack = new SyncStack();
+        public Long time = System.currentTimeMillis(); // last call
+    }
+    private static ConcurrentWeakHashMap<Thread, StackAndTime> executionStack = MapFact.getGlobalConcurrentWeakHashMap();
+    
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     public static ThreadLocal<ExecutionTimeCounter> executionTime = new ThreadLocal<>();
     
@@ -48,9 +175,9 @@ public class ExecutionStackAspect {
     }
 
     @Around(RemoteContextAspect.allUserRemoteCalls)
-    public Object execute(ProceedingJoinPoint joinPoint, RemoteForm target) throws Throwable {
+    public Object execute(ProceedingJoinPoint joinPoint, ContextAwarePendingRemoteObject target) throws Throwable {
         assert target == joinPoint.getTarget();
-        RMICallStackItem item = new RMICallStackItem(joinPoint);
+        RMICallStackItem item = new RMICallStackItem(joinPoint, target);
         return processStackItem(joinPoint, item);
     }
     
@@ -58,18 +185,10 @@ public class ExecutionStackAspect {
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
         assert item != null;
         
-        boolean pushedMessage = false;
-        Stack<ExecutionStackItem> stack = getOrInitStack();
-
-        ExecutionTimeCounter executionTimeCounter = null;
-        
-        stack.push(item);
-        if (presentItem(item)) {
-            ThreadLocalContext.pushActionMessage(item);
-            pushedMessage = true;
-        }
+        StackAndTime stackAndTime = pushStackItem(item);
         
         try {
+            ExecutionTimeCounter executionTimeCounter = null;
             long start = 0;
             long sqlStart = 0;
             long uiStart = 0;
@@ -96,6 +215,7 @@ public class ExecutionStackAspect {
             if (start > 0 && PROFILER_ENABLED) {
                 long executionTime = System.nanoTime() - start;
                 FormInstance formInstance = ThreadLocalContext.getFormInstance();
+                Stack<ExecutionStackItem> stack = stackAndTime.stack.getUnsync();
                 assert stack.indexOf(item) == stack.size() - 1;
                 Profiler.increase(
                         item.profileObject, 
@@ -118,13 +238,30 @@ public class ExecutionStackAspect {
             }
             throw e;
         } finally {
-            stack.pop();
-            if (pushedMessage) {
-                ThreadLocalContext.popActionMessage(item);
-            }
+            popStackItem(stackAndTime);
         }
     }
-    
+
+    public static StackAndTime pushStackItem(ExecutionStackItem item) {
+        Thread thread = Thread.currentThread();
+        StackAndTime stackAndTime = executionStack.get(thread);
+        if (stackAndTime == null) {
+            stackAndTime = new StackAndTime();
+            executionStack.put(thread, stackAndTime);
+        }
+        stackAndTime.stack.push(item);
+        stackAndTime.time = System.currentTimeMillis();
+        return stackAndTime;
+    }
+
+    public static void popStackItem(StackAndTime stackAndTime) {
+        if(stackAndTime == null) {
+            Thread thread = Thread.currentThread();
+            stackAndTime = executionStack.get(thread);
+        }
+        stackAndTime.stack.pop();
+    }
+
     private boolean isProfileStackItem(ExecutionStackItem item) {
         return item.profileObject != null;
     }
@@ -137,23 +274,6 @@ public class ExecutionStackAspect {
             }
         }
         return null;
-    }
-
-    public Stack<ExecutionStackItem> getOrInitStack() {
-        Stack<ExecutionStackItem> stack = getStack(Thread.currentThread());
-        if (stack == null) {
-            stack = new Stack<>();
-            executionStack.put(Thread.currentThread(), stack);
-        }
-        return stack;
-    }
-
-    public static Stack<ExecutionStackItem> getStack() {
-        return getStack(Thread.currentThread());
-    }
-    
-    public static Stack<ExecutionStackItem> getStack(Thread thread) {
-        return executionStack.get(thread);
     }
 
     public static void setStackString(String exceptionStackString) {
@@ -183,88 +303,20 @@ public class ExecutionStackAspect {
     }
 
     public static String getStackString(Thread thread, boolean checkConcurrent, boolean cut) {
-        String result = "";
-        Stack<ExecutionStackItem> stack = getStack(thread);
-        if (stack != null) {
-            if(checkConcurrent) {
-                while (true) {
-                    try {
-                        result = getStackString(stack, cut);
-                        break;
-                    } catch (ConcurrentModificationException ignored) {
-                    }
-                }
-            } else {
-                result = getStackString(stack, cut);
-            }
+        List<Object> elements = getStackList(Collections.singleton(thread), checkConcurrent, false);
+        StringBuilder result = new StringBuilder();
+        for(Object element : elements) {
+            if (result.length() > 0)
+                result.append("\n");
+
+            String elementString = element.toString();
+            if(cut)
+                elementString = BaseUtils.substring(elementString, 1000);
+            result.append(elementString);
         }
-        return BaseUtils.nullEmpty(result);    
+        return result.toString();    
     }
 
-    private static String getStackString(Stack<ExecutionStackItem> stack, boolean cut) {
-        String result = "";
-        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
-        boolean lastActionFound = false;
-        while (itemListIterator.hasPrevious()) {
-            ExecutionStackItem item = itemListIterator.previous();
-            if (presentItem(item) || !lastActionFound) {
-                if (!result.isEmpty()) {
-                    result += "\n";
-                }
-
-                if (isLSFAction(item) && !lastActionFound) {
-                    lastActionFound = true;
-                    result += getLastActionString(stack, (ExecuteActionStackItem) item, cut);
-                } else {
-                    result += cut ? BaseUtils.substring(item.toString(), 1000) : item;
-                }
-            }
-        }
-        return result;
-    }
-    
-    // для последнего action'а в стеке ищем вверх по стеку первый action с именем (до action'а с IN_DELEGATE)
-    private static String getLastActionString(Stack<ExecutionStackItem> stack, ExecuteActionStackItem lastAction, boolean cut) {
-        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(lastAction) + 1);
-        while (itemListIterator.hasPrevious()) {
-            ExecutionStackItem item = itemListIterator.previous();
-            if (isLSFAction(item)) {
-                ExecuteActionStackItem actionItem = (ExecuteActionStackItem) item;
-                if (actionItem != lastAction && actionItem.isInDelegate()) {
-                    break;
-                }
-                
-                if (actionItem.getCanonicalName() != null) {
-                    lastAction.setPropertyName(actionItem.getCaption() + " - " + actionItem.getCanonicalName());
-                    break;
-                }
-            }
-        }
-        return cut ? BaseUtils.substring(lastAction.toString(), 1000) : lastAction.toString();
-    }
-
-    public static String getProgressBarLastActionString() {
-        String result = "";
-        Stack<ExecutionStackItem> stack = getStack();
-        if(stack != null) {
-            ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
-            while (itemListIterator.hasPrevious()) {
-                ExecutionStackItem item = itemListIterator.previous();
-                if (isLSFAction(item)) {
-                    result = getLastActionString(stack, (ExecuteActionStackItem) item, false);
-                    break;
-                } else {
-                    result = item.toString();
-                }
-            }
-        }
-        return result;
-    }
-
-    private static boolean presentItem(ExecutionStackItem item) {
-        return !isLSFAction(item) || ((ExecuteActionStackItem) item).isInDelegate();
-    }
-    
     private static boolean isLSFAction(ExecutionStackItem item) {
         return item instanceof ExecuteActionStackItem;
     }
