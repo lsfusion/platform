@@ -82,6 +82,8 @@ public class TypeSerializer {
         if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) {
+            boolean multiple = inStream.readBoolean();
+            boolean storeName = inStream.readBoolean();
             String filterDescription = inStream.readUTF();
             ImSet<String> filterExtensions;
             int extCount = inStream.readInt();
@@ -94,7 +96,7 @@ public class TypeSerializer {
                 }
                 filterExtensions = mFilterExpressions.immutable();
             }
-            return CustomStaticFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean(), filterDescription, filterExtensions);
+            return CustomStaticFormatFileClass.get(multiple, storeName, filterDescription, filterExtensions);
         }
         if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
@@ -103,6 +105,7 @@ public class TypeSerializer {
         if (type == Data.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
         if (type == Data.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) {
+            boolean multiple = inStream.readBoolean();
             String filterDescription = inStream.readUTF();
             ImSet<String> filterExtensions;
             int extCount = inStream.readInt();
@@ -114,7 +117,7 @@ public class TypeSerializer {
                     mFilterExtensions.exclAdd(inStream.readUTF());
                 filterExtensions = mFilterExtensions.immutable();
             }
-            return CustomStaticFormatLinkClass.get(inStream.readBoolean(), filterDescription, filterExtensions);
+            return CustomStaticFormatLinkClass.get(multiple, filterDescription, filterExtensions);
         }
         if (type == Data.DYNAMICFORMATLINK) return DynamicFormatLinkClass.get(inStream.readBoolean());
         if (type == Data.PDFLINK) return PDFLinkClass.get(inStream.readBoolean());
