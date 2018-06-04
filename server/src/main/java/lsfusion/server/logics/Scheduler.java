@@ -597,7 +597,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                             DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
                             BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                                     .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
-                            BL.schedulerLM.messageScheduledClientTaskLog.change(ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
+                            BL.schedulerLM.messageScheduledClientTaskLog.change(String.valueOf(e) + "\n" + ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
                             BL.schedulerLM.lsfStackScheduledClientTaskLog.change(ExecutionStackAspect.getExceptionStackString(), afterFinishLogSession, scheduledClientTaskLogObject);
                             BL.schedulerLM.dateScheduledClientTaskLog.change(time, afterFinishLogSession, scheduledClientTaskLogObject);
 
