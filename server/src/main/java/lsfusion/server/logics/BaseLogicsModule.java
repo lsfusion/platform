@@ -117,6 +117,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP exportFile;
     public LCP exportFiles;
     public LCP ignorePrintType;
+    public LCP readFile;
 
     public LCP imported;
     public LCP importedString;
@@ -397,6 +398,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         exportFile = findProperty("exportFile[]");
         exportFiles = findProperty("exportFiles[VARSTRING[100]]");
         ignorePrintType = findProperty("ignorePrintType[]");
+        readFile = findProperty("readFile[]");
 
         imported = findProperty("imported[INTEGER]");
         importedString = findProperty("importedString[VARSTRING[10]]");

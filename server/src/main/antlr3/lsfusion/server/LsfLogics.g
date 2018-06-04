@@ -1897,7 +1897,7 @@ readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, $moveExpr.property, clientAction, dialog, delete);
 	}
 }
-	:	'READ' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
+	:	'READ' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? expr=propertyExpression[context, dynamic] ('TO' pUsage=propertyUsage)? (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
 	;
 
 writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
