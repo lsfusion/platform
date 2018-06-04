@@ -32,7 +32,7 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.form;
     }
 
-    public String getLogMessage() {
+    public String popLogMessage() {
         return form.getLogMessage();
     }
 

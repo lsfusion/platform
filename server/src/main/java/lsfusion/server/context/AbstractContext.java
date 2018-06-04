@@ -107,8 +107,12 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public String getLogMessage() {
-        throw new UnsupportedOperationException("getLogMessage is not supported");
+    public void pushLogMessage() {
+    }
+
+    @Override
+    public String popLogMessage() {
+        throw new UnsupportedOperationException("popLogMessage is not supported");
     }
 
     @Override

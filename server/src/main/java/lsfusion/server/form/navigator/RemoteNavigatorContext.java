@@ -26,7 +26,7 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.logicsInstance;
     }
 
-    public String getLogMessage() {
+    public String popLogMessage() {
         return navigator.getLogMessage();
     }
 

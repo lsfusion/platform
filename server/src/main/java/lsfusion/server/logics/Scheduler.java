@@ -644,7 +644,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
 
             @Override
-            public String getLogMessage() {
+            public String popLogMessage() {
                 return logMessage;
             }
         }

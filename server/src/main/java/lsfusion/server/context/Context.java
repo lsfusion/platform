@@ -47,7 +47,8 @@ public interface Context {
     ObjectValue requestUserData(DataClass dataClass, Object oldValue);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
-    String getLogMessage();
+    void pushLogMessage();
+    String popLogMessage();
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
