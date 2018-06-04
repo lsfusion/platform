@@ -37,11 +37,11 @@ setExtension = FORMULA CUSTOMFILE 'casttocustomfile(($1),$2)';
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
 mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
 //path, isClient
-delete 'Удалить файл' = CUSTOM 'lsfusion.erp.utils.utils.DeleteFileActionProperty' (VARISTRING[255], BOOLEAN);
+delete 'Удалить файл' = CUSTOM 'lsfusion.erp.utils.utils.DeleteActionProperty' (VARISTRING[255], BOOLEAN);
 delete 'Удалить файл' (VARISTRING[255] path) = { delete(path, NULL); }
 deleteClient 'Удалить файл (на клиенте)' (VARISTRING[255] path) = { delete(path, TRUE); }
 //sourcePath, destinationPath, isClient
-move 'Переместить файл' = CUSTOM 'lsfusion.erp.utils.utils.MoveFileActionProperty' (VARISTRING[255], VARISTRING[255], BOOLEAN);
+move 'Переместить файл' = CUSTOM 'lsfusion.erp.utils.utils.MoveActionProperty' (VARISTRING[255], VARISTRING[255], BOOLEAN);
 move 'Переместить файл' (VARISTRING[255] source, VARISTRING[255] destination) = { move(source, destination, NULL); }
 moveClient 'Переместить файл (на клиенте)' (VARISTRING[255] source, VARISTRING[255] destination) = { move(source, destination, TRUE); }
 

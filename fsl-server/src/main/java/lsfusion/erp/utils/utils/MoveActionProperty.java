@@ -11,12 +11,12 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class MoveFileActionProperty extends ScriptingActionProperty {
+public class MoveActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface destinationInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public MoveFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public MoveActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

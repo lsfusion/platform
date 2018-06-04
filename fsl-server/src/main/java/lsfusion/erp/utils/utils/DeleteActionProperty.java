@@ -11,11 +11,11 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class DeleteFileActionProperty extends ScriptingActionProperty {
+public class DeleteActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface isClientInterface;
 
-    public DeleteFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public DeleteActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
