@@ -50,12 +50,10 @@ public abstract class StaticFormatFileClass extends FileClass {
         if(!(multiple == staticFileClass.multiple && storeName == staticFileClass.storeName))
             return null;
         
-        if(getClass() == staticFileClass.getClass()) {
-            assert equals(compClass);
+        if(equals(compClass))
             return this;
-        }
 
-        ImSet<String> mergedExtensions = getExtensions().merge(staticFileClass.getExtensions());
-        return CustomStaticFormatFileClass.get(multiple, storeName, "", mergedExtensions);
+//        ImSet<String> mergedExtensions = getExtensions().merge(staticFileClass.getExtensions());
+        return CustomStaticFormatFileClass.get(multiple, storeName);
     }
 }

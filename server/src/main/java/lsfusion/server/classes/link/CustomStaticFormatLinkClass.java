@@ -3,6 +3,7 @@ package lsfusion.server.classes.link;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Data;
+import lsfusion.server.classes.CustomStaticFormatFileClass;
 import lsfusion.server.classes.DataClass;
 
 import java.io.DataOutputStream;
@@ -17,6 +18,8 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
     private ImSet<String> filterExtensions;
 
     protected String getFileSID() {
+        if(filterExtensions.isEmpty())
+            return "RAWLINK";
         return "CUSTOMLINK";
     }
 
@@ -30,6 +33,12 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
     private static List<CustomStaticFormatLinkClass> instances = new ArrayList<>();
 
+    public static CustomStaticFormatLinkClass get() { // RAWLINK
+        return get(false);
+    }
+    public static CustomStaticFormatLinkClass get(boolean multiple) {
+        return get(multiple, "", SetFact.singleton(""));
+    }
     public static CustomStaticFormatLinkClass get(boolean multiple, String description, ImSet<String> extensions) {
         if(extensions.contains("")) // если есть RAWLINK то и результат считаем RAWLINK
             extensions = SetFact.singleton("");

@@ -29,12 +29,10 @@ public abstract class StaticFormatLinkClass extends LinkClass {
         if(!(multiple == staticFileClass.multiple))
             return null;
 
-        if(getClass() == staticFileClass.getClass()) {
-            assert equals(compClass);
+        if(equals(staticFileClass))
             return this;
-        }
 
-        ImSet<String> mergedExtensions = getExtensions().merge(staticFileClass.getExtensions());
-        return CustomStaticFormatLinkClass.get(multiple, "", mergedExtensions);
+//        ImSet<String> mergedExtensions = getExtensions().merge(staticFileClass.getExtensions());
+        return CustomStaticFormatLinkClass.get(multiple);
     }
 }

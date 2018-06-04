@@ -16,6 +16,8 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     private ImSet<String> filterExtensions;
 
     protected String getFileSID() {
+        if(filterExtensions.isEmpty())
+            return "RAWFILE";
         return "CUSTOMFILE";
     }
 
@@ -28,7 +30,13 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     }
 
     private static List<CustomStaticFormatFileClass> instances = new ArrayList<>();
-
+    
+    public static CustomStaticFormatFileClass get() { // RAWFILE
+        return get(false, false);
+    }
+    public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName) {
+        return get(multiple, storeName, "", SetFact.singleton(""));
+    }
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, ImSet<String> extensions) {
         if(extensions.contains("")) // если есть RAWFILE то и результат считаем RAWFILE
             extensions = SetFact.singleton("");
