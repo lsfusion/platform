@@ -36,4 +36,9 @@ public class WordLinkClass extends StaticFormatLinkClass {
     public byte getTypeID() {
         return Data.WORDLINK;
     }
+
+    @Override
+    public String getDefaultCastExtension() {
+        return "doc";
+    }
 }

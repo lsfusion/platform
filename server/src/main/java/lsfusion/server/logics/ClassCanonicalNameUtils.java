@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.ExtInt;
+import lsfusion.base.col.SetFact;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
@@ -82,11 +83,13 @@ public final class ClassCanonicalNameUtils {
         put("WORDFILE", WordClass.get(false, false));
         put("IMAGEFILE", ImageClass.get(false, false));
         put("PDFFILE", PDFClass.get(false, false));
+        put("RAWFILE", CustomStaticFormatFileClass.get());
         put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
@@ -132,11 +135,13 @@ public final class ClassCanonicalNameUtils {
         put("WORDFILE", WordClass.get(false, false));
         put("IMAGEFILE", ImageClass.get(false, false));
         put("PDFFILE", PDFClass.get(false, false));
+        put("RAWFILE", CustomStaticFormatFileClass.get());
         put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
+        put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);

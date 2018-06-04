@@ -1,5 +1,7 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Data;
 
 import java.io.DataOutputStream;
@@ -11,9 +13,11 @@ import java.util.List;
 public class CustomStaticFormatFileClass extends StaticFormatFileClass {
 
     private String filterDescription;
-    private String[] filterExtensions;
+    private ImSet<String> filterExtensions;
 
     protected String getFileSID() {
+        if(filterExtensions.isEmpty())
+            return "RAWFILE";
         return "CUSTOMFILE";
     }
 
@@ -22,14 +26,23 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     }
 
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {
-        return get(multiple, storeName, description, extensions.split(" "));
+        return get(multiple, storeName, description, SetFact.toExclSet(extensions.split(" ")));
     }
 
     private static List<CustomStaticFormatFileClass> instances = new ArrayList<>();
-
-    public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String[] extensions) {
+    
+    public static CustomStaticFormatFileClass get() { // RAWFILE
+        return get(false, false);
+    }
+    public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName) {
+        return get(multiple, storeName, "", SetFact.singleton(""));
+    }
+    public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, ImSet<String> extensions) {
+        if(extensions.contains("")) // если есть RAWFILE то и результат считаем RAWFILE
+            extensions = SetFact.singleton("");
+        
         for(CustomStaticFormatFileClass instance : instances)
-            if(instance.multiple == multiple && instance.filterDescription.equals(description) && Arrays.equals(instance.filterExtensions, extensions))
+            if(instance.multiple == multiple && instance.filterDescription.equals(description) && instance.filterExtensions.equals(extensions))
                 return instance;
 
         CustomStaticFormatFileClass instance = new CustomStaticFormatFileClass(multiple, storeName, description, extensions);
@@ -38,7 +51,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return instance;
     }
 
-    private CustomStaticFormatFileClass(boolean multiple, boolean storeName, String filterDescription, String[] filterExtensions) {
+    private CustomStaticFormatFileClass(boolean multiple, boolean storeName, String filterDescription, ImSet<String> filterExtensions) {
         super(multiple, storeName);
         this.filterDescription = filterDescription;
         this.filterExtensions = filterExtensions;
@@ -46,12 +59,17 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
 
     @Override
     public String getOpenExtension(byte[] file) {
-        return filterExtensions[0];
+        return filterExtensions.get(0);
+    }
+
+    @Override
+    protected ImSet<String> getExtensions() {
+        return filterExtensions;
     }
 
     @Override
     public String getSID() {
-        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions) + "]";
+        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions.toArray(new String[filterExtensions.size()])) + "]";
     }
 
     @Override
@@ -59,7 +77,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         super.serialize(outStream);
 
         outStream.writeUTF(filterDescription);
-        outStream.writeInt(filterExtensions.length);
+        outStream.writeInt(filterExtensions.size());
         for (String extension : filterExtensions) {
             outStream.writeUTF(extension);
         }

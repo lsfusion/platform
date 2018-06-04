@@ -16,6 +16,9 @@ public class DynamicFormatFileClass extends FileClass {
 
     private static Collection<DynamicFormatFileClass> instances = new ArrayList<>();
 
+    public static DynamicFormatFileClass get() {
+        return get(false, false);
+    }
     public static DynamicFormatFileClass get(boolean multiple, boolean storeName) {
         for (DynamicFormatFileClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)

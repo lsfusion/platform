@@ -38,17 +38,19 @@ public class AnyValuePropertyHolder {
     private final LCP wordFileProperty;
     private final LCP imageFileProperty;
     private final LCP pdfFileProperty;
+    private final LCP rawFileProperty;
     private final LCP customFileProperty;
     private final LCP excelFileProperty;
     private final LCP wordLinkProperty;
     private final LCP imageLinkProperty;
     private final LCP pdfLinkProperty;
+    private final LCP rawLinkProperty;
     private final LCP customLinkProperty;
     private final LCP excelLinkProperty;
 
     public AnyValuePropertyHolder(LCP objectProperty, LCP stringProperty, LCP textProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
                                   LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
-                                  LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty, LCP wordLinkProperty, LCP imageLinkProperty, LCP pdfLinkProperty,
+                                  LCP pdfFileProperty, LCP rawFileProperty, LCP customFileProperty, LCP excelFileProperty, LCP wordLinkProperty, LCP imageLinkProperty, LCP pdfLinkProperty, LCP rawLinkProperty, 
                                   LCP customLinkProperty, LCP excelLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -66,11 +68,13 @@ public class AnyValuePropertyHolder {
                 && wordFileProperty.property.getType() == WordClass.get(false, false)
                 && imageFileProperty.property.getType() == ImageClass.get(false, false)
                 && pdfFileProperty.property.getType() == PDFClass.get(false, false)
+                && rawFileProperty.property.getType() == CustomStaticFormatFileClass.get()
                 && customFileProperty.property.getType() == DynamicFormatFileClass.get(false, false)
                 && excelFileProperty.property.getType() == ExcelClass.get(false, false)
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
                 && imageLinkProperty.property.getType() == ImageLinkClass.get(false)
                 && pdfLinkProperty.property.getType() == PDFLinkClass.get(false)
+                && rawLinkProperty.property.getType() == CustomStaticFormatLinkClass.get()
                 && customLinkProperty.property.getType() == DynamicFormatLinkClass.get(false)
                 && excelLinkProperty.property.getType() == ExcelLinkClass.get(false)
                 ;
@@ -91,11 +95,13 @@ public class AnyValuePropertyHolder {
         this.wordFileProperty = wordFileProperty;
         this.imageFileProperty = imageFileProperty;
         this.pdfFileProperty = pdfFileProperty;
+        this.rawFileProperty = rawFileProperty;
         this.customFileProperty = customFileProperty;
         this.excelFileProperty = excelFileProperty;
         this.wordLinkProperty = wordLinkProperty;
         this.imageLinkProperty = imageLinkProperty;
         this.pdfLinkProperty = pdfLinkProperty;
+        this.rawLinkProperty = rawLinkProperty;
         this.customLinkProperty = customLinkProperty;
         this.excelLinkProperty = excelLinkProperty;
     }
@@ -134,6 +140,8 @@ public class AnyValuePropertyHolder {
             return imageFileProperty;
         } else if (valueType instanceof PDFClass) {
             return pdfFileProperty;
+        } else if (valueType instanceof CustomStaticFormatFileClass) {
+            return rawFileProperty;
         } else if (valueType instanceof DynamicFormatFileClass) {
             return customFileProperty;
         } else if (valueType instanceof ExcelClass) {
@@ -146,6 +154,8 @@ public class AnyValuePropertyHolder {
             return imageLinkProperty;
         } else if (valueType instanceof PDFLinkClass) {
             return pdfLinkProperty;
+        } else if (valueType instanceof CustomStaticFormatLinkClass) {
+            return rawLinkProperty;
         } else if (valueType instanceof DynamicFormatLinkClass) {
             return customLinkProperty;
         } else if (valueType instanceof ExcelLinkClass) {
@@ -161,8 +171,8 @@ public class AnyValuePropertyHolder {
     public ImOrderSet<SessionDataProperty> getProps() {
         return SetFact.toOrderExclSet(
                 objectProperty, stringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
-                dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, customFileProperty, excelFileProperty, imageLinkProperty, 
-                pdfLinkProperty, customLinkProperty, excelLinkProperty
+                dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, rawFileProperty, customFileProperty, excelFileProperty, imageLinkProperty, 
+                pdfLinkProperty, rawLinkProperty, customLinkProperty, excelLinkProperty
         ).mapOrderSetValues(new GetValue<SessionDataProperty, LCP>() {
             public SessionDataProperty getMapValue(LCP value) {
                 return (SessionDataProperty) value.property;

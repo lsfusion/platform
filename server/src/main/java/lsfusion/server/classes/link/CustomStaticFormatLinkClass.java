@@ -1,6 +1,9 @@
 package lsfusion.server.classes.link;
 
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Data;
+import lsfusion.server.classes.CustomStaticFormatFileClass;
 import lsfusion.server.classes.DataClass;
 
 import java.io.DataOutputStream;
@@ -12,9 +15,11 @@ import java.util.List;
 public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
     private String filterDescription;
-    private String[] filterExtensions;
+    private ImSet<String> filterExtensions;
 
     protected String getFileSID() {
+        if(filterExtensions.isEmpty())
+            return "RAWLINK";
         return "CUSTOMLINK";
     }
 
@@ -23,14 +28,23 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
     }
 
     public static CustomStaticFormatLinkClass get(boolean multiple, String description, String extensions) {
-        return get(multiple, description, extensions.split(" "));
+        return get(multiple, description, SetFact.toExclSet(extensions.split(" ")));
     }
 
     private static List<CustomStaticFormatLinkClass> instances = new ArrayList<>();
 
-    public static CustomStaticFormatLinkClass get(boolean multiple, String description, String[] extensions) {
+    public static CustomStaticFormatLinkClass get() { // RAWLINK
+        return get(false);
+    }
+    public static CustomStaticFormatLinkClass get(boolean multiple) {
+        return get(multiple, "", SetFact.singleton(""));
+    }
+    public static CustomStaticFormatLinkClass get(boolean multiple, String description, ImSet<String> extensions) {
+        if(extensions.contains("")) // если есть RAWLINK то и результат считаем RAWLINK
+            extensions = SetFact.singleton("");
+
         for(CustomStaticFormatLinkClass instance : instances)
-            if(instance.multiple == multiple && instance.filterDescription.equals(description) && Arrays.equals(instance.filterExtensions, extensions))
+            if(instance.multiple == multiple && instance.filterDescription.equals(description) && instance.filterExtensions.equals(extensions))
                 return instance;
 
         CustomStaticFormatLinkClass instance = new CustomStaticFormatLinkClass(multiple, description, extensions);
@@ -39,15 +53,20 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
         return instance;
     }
 
-    private CustomStaticFormatLinkClass(boolean multiple, String filterDescription, String[] filterExtensions) {
+    private CustomStaticFormatLinkClass(boolean multiple, String filterDescription, ImSet<String> filterExtensions) {
         super(multiple);
         this.filterDescription = filterDescription;
         this.filterExtensions = filterExtensions;
     }
 
     @Override
+    protected ImSet<String> getExtensions() {
+        return filterExtensions;
+    }
+
+    @Override
     public String getSID() {
-        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions) + "]";
+        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions.toArray(new String[filterExtensions.size()])) + "]";
     }
 
     @Override
@@ -55,7 +74,7 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
         super.serialize(outStream);
 
         outStream.writeUTF(filterDescription);
-        outStream.writeInt(filterExtensions.length);
+        outStream.writeInt(filterExtensions.size());
         for (String extension : filterExtensions) {
             outStream.writeUTF(extension);
         }
