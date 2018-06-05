@@ -31,10 +31,6 @@ public class ExcelClass extends StaticFormatFileClass {
         super(multiple, storeName);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof ExcelClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.EXCEL;
     }

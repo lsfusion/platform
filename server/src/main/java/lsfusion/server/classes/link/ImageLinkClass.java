@@ -29,10 +29,6 @@ public class ImageLinkClass extends StaticFormatLinkClass {
         super(multiple);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof ImageLinkClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.IMAGELINK;
     }

@@ -23,10 +23,6 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
         return "CUSTOMLINK";
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass.equals(this) ? this : null;
-    }
-
     public static CustomStaticFormatLinkClass get(boolean multiple, String description, String extensions) {
         return get(multiple, description, SetFact.toExclSet(extensions.split(" ")));
     }

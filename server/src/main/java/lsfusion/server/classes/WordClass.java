@@ -31,10 +31,6 @@ public class WordClass extends StaticFormatFileClass {
         super(multiple, storeName);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof WordClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.WORD;
     }
