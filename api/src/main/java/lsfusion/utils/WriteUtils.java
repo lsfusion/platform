@@ -217,7 +217,7 @@ public final class WriteUtils {
             XSSFRow srcRow = sheet.getRow(i);
             XSSFRow destRow = newSheet.createRow(i);
             if (srcRow != null) {
-                BaseUtils.systemLogger.info("copy row " + i);
+                //BaseUtils.systemLogger.info("copy row " + i);
                 WriteUtils.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
                 if (srcRow.getLastCellNum() > maxColumnNum) {
                     maxColumnNum = srcRow.getLastCellNum();
