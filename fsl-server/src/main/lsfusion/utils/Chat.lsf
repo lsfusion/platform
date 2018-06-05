@@ -181,9 +181,9 @@ restartServer() += { IF sendRestartMessage() THEN sendRestartServerMessage(); }
 sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' () = { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
 cancelRestartServer() += { IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
 
-EXTEND FORM admin PROPERTIES() sendRestartMessage;
+EXTEND FORM settings PROPERTIES() sendRestartMessage;
 
-DESIGN admin {
+DESIGN settings {
     administration {
         MOVE PROPERTY(sendRestartMessage()) BEFORE PROPERTY(restartServer());
     }
@@ -573,5 +573,7 @@ seekChat(CustomUser user) += {
 }
 
 NAVIGATOR {
-    NEW fullChat IMAGE '/images/chat.png' BEFORE Authentication.account;
+    system {
+        NEW fullChat AFTER logs;
+    }
 }
