@@ -29,10 +29,6 @@ public class PDFLinkClass extends StaticFormatLinkClass {
         super(multiple);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof PDFLinkClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.PDFLINK;
     }

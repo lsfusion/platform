@@ -29,10 +29,6 @@ public class WordLinkClass extends StaticFormatLinkClass {
         super(multiple);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof WordLinkClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.WORDLINK;
     }

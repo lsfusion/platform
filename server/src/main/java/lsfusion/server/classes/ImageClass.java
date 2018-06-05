@@ -28,10 +28,6 @@ public class ImageClass extends StaticFormatFileClass {
         super(multiple, storeName);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof ImageClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.IMAGE;
     }

@@ -29,10 +29,6 @@ public class ExcelLinkClass extends StaticFormatLinkClass {
         super(multiple);
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass instanceof ExcelLinkClass ? this : null;
-    }
-
     public byte getTypeID() {
         return Data.EXCELLINK;
     }

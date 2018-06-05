@@ -21,10 +21,6 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         return "CUSTOMFILE";
     }
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
-        return compClass.equals(this) ? this : null;
-    }
-
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {
         return get(multiple, storeName, description, SetFact.toExclSet(extensions.split(" ")));
     }
