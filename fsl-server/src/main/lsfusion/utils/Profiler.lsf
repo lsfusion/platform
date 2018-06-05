@@ -427,7 +427,7 @@ setSelected 'Посмотреть дерево вызовов'(ProfileObject po)
 } ASON CONTEXTMENU text[ProfileObject];
 
 NAVIGATOR {
-    systemEvents {
+    performance {
         NEW profiler;
     }
 }

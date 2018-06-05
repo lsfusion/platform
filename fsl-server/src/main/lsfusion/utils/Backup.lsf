@@ -133,7 +133,7 @@ FORM customRestore 'Восстановление данных'
 ;
 
 NAVIGATOR {
-    configuration {
+    scheduler {
         NEW backup;
         NEW customRestore;
     }
