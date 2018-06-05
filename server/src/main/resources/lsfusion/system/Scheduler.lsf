@@ -126,7 +126,7 @@ setupScheduledTask 'Перезапустить задание' = CUSTOM 'lsfusio
 WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            
-FORM scheduledTask 'Планировщик'
+FORM scheduledTask 'Задания'
 
     PROPERTIES() threadCountScheduler
 
@@ -222,7 +222,7 @@ FORM scheduledTaskProperties 'Действия'
 ;
 
 NAVIGATOR {
-    configuration {
-        NEW Scheduler.scheduledTask;
+    scheduler {
+        NEW Scheduler.scheduledTask FIRST;
     }
 }

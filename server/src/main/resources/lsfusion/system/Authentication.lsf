@@ -393,8 +393,8 @@ changePassword() = {
 }
 
 NAVIGATOR {
-    administration {
-        NEW FOLDER security 'Управление доступом' AFTER application {
+    system {
+        NEW FOLDER security '{navigator.security}' AFTER scheduler {
             NEW customUsers;
             NEW computers;
         }

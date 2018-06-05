@@ -227,8 +227,13 @@ NAVIGATOR {
                 NEW integrationData;
                 NEW migrationData;
             }
-            NEW FOLDER configuration '{navigator.system}';
-            NEW FOLDER systemEvents '{navigator.systemEvents}';
+            
+            NEW FOLDER system '{navigator.system}' {
+                NEW FOLDER performance '{navigator.performance}';
+                NEW FOLDER scheduler '{navigator.scheduler}';    
+                NEW FOLDER logs '{navigator.logs}';            
+            }
+            
             NEW FOLDER objects '{navigator.objects}' WINDOW tree; 
         }
     }

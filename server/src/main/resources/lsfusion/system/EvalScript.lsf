@@ -101,7 +101,7 @@ FORM scriptsLog 'Скрипты'
     LIST Script OBJECT s
 ;
 
-FORM script 'Скрипт'
+FORM interpreter 'Интерпретатор'
     OBJECTS s = Script PANEL
     PROPERTIES(s) name, text
     
@@ -115,14 +115,14 @@ FORM script 'Скрипт'
 
 createScript () = {
     NEW s = Script {
-        SEEK script.s = s;
+        SEEK interpreter.s = s;
     }
 }
 
 copyScript 'Копировать' (Script sf) = {
     NEW s = Script {
         text(s) <- text(sf);
-        SEEK script.s = s;
+        SEEK interpreter.s = s;
     }
     IF NOT PREV(sf IS Script) THEN
         DELETE sf;
@@ -138,24 +138,24 @@ findScript 'Найти' (Script sf) = {
         ASK 'Создать новый скрипт на основе выбранного ? ' DO {
             NEW st = Script {
                 text(st) <- text(s);
-                SEEK script.s = st;
+                SEEK interpreter.s = st;
             }
             new () <- TRUE;
         }
         IF NOT new() THEN {
-            SEEK script.s = s;
+            SEEK interpreter.s = s;
         }
     }   
 }
 
-EXTEND FORM script
+EXTEND FORM interpreter
     PROPERTIES(s) copyScript, findScript
     
     EVENTS
         ON INIT createScript();
 ;
 
-DESIGN script {
+DESIGN interpreter {
     NEW pane {
         fill = 1;
         type = TABBED;
@@ -190,8 +190,8 @@ DESIGN script {
 }
 
 NAVIGATOR {
-    configuration {
-        NEW script;
+    system {
+        NEW interpreter AFTER performance;
     }
 }
 

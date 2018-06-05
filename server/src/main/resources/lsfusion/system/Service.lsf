@@ -285,10 +285,10 @@ makeHeapDump 'Сделать Heap Dump' = CUSTOM 'lsfusion.server.logics.service
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
-CLASS ReflectionProperty 'Настройки';
+CLASS ReflectionProperty 'Параметры';
 TABLE reflectionProperty (ReflectionProperty);
 
-name 'Имя настройки' = DATA VARISTRING[100] (ReflectionProperty);
+name 'Имя параметра' = DATA VARISTRING[100] (ReflectionProperty);
 reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
 baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
 
@@ -316,15 +316,6 @@ WHEN CHANGED (baseValue(ReflectionProperty r)) DO {
 }
 WHEN CHANGED (baseValue(ReflectionProperty r, UserRole ur)) DO saveReflectionProperty(r, ur);
 
-FORM reflectionProperties 'Настройки свойств'
-    OBJECTS r = ReflectionProperty
-    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
-    OBJECTS ur = UserRole
-    PROPERTIES(ur) READONLY name, sid 
-    PROPERTIES(r,ur) value READONLY, baseValue
-    FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
-;
-
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
 selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR (User);
@@ -336,7 +327,7 @@ overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фок
 focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR (User);
 overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
 
-FORM admin 'Администрирование'
+FORM settings 'Настройки'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
@@ -352,10 +343,21 @@ FORM admin 'Администрирование'
     OBJECTS u=User
     PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
     OBJECTS uc=User
-    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor;
+    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
+    
+    OBJECTS r = ReflectionProperty
+    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
+    OBJECTS ur = UserRole
+    PROPERTIES(ur) READONLY name, sid 
+    PROPERTIES(r,ur) value READONLY, baseValue
+    FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
+    
+    OBJECTS m = MemoryLimit
+    PROPERTIES(m) name, maxHeapSize, vmargs
+    PROPERTIES(m) TOOLBAR NEW, DELETE 
 ;
 
-DESIGN admin {
+DESIGN settings {
     NEW tabs {
         type = TABBED;
         fill = 1;
@@ -482,14 +484,20 @@ DESIGN admin {
             }
             
         }
+        
+        NEW parameters {
+            caption = 'Параметры';
+            MOVE BOX(r);
+            MOVE BOX(ur);
+            MOVE BOX(m);
+        }
     }
     MOVE TOOLBARBOX;
 }
 
 NAVIGATOR { 
-    configuration {
-        NEW Service.admin;
-        NEW Service.reflectionProperties;
+    system {
+        NEW Service.settings FIRST;
     }
 }
 
