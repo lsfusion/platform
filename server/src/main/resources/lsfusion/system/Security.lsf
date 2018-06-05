@@ -306,12 +306,6 @@ name 'Имя' = DATA VARSTRING[100] (MemoryLimit);
 maxHeapSize 'MaxHeapSize' = DATA VARSTRING[10] (MemoryLimit);
 vmargs 'VM args' = DATA VARSTRING[1000] (MemoryLimit);
 
-FORM memoryLimits 'Параметры старта JNLP'
-    OBJECTS m = MemoryLimit
-    PROPERTIES(m) name, maxHeapSize, vmargs
-    PROPERTIES(m) TOOLBAR NEW, DELETE 
-;
-
 // ---------------------------------------- Копирование роли ----------------------- //
 overCopy = ABSTRACT LIST (UserRole, UserRole);
 
@@ -576,7 +570,6 @@ NAVIGATOR {
     security {
         NEW Security.userRoles;
         NEW Security.securityPolicy;
-        NEW memoryLimits;
     }
 }
 

@@ -502,10 +502,12 @@ DESIGN actions {
 }
 
 NAVIGATOR {
-    configuration {
-        NEW Reflection.physicalModel;
-        NEW Reflection.forms;
-        NEW Reflection.properties;
-        NEW Reflection.actions;
+    system {
+        NEW FOLDER metadata '{navigator.metadata}' AFTER logs {
+            NEW Reflection.physicalModel;
+            NEW Reflection.forms;
+            NEW Reflection.properties;
+            NEW Reflection.actions;
+        }
     }
 }

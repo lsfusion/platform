@@ -16,7 +16,10 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.ClassFormEntity;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -469,8 +472,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public NavigatorElement administration;
 
     public NavigatorElement application;
-    public NavigatorElement systemEvents;
-    public NavigatorElement configuration;
+    public NavigatorElement logs;
+    public NavigatorElement system;
 
     private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
@@ -497,9 +500,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         application = findNavigatorElement("application");
 
-        configuration = findNavigatorElement("configuration");
+        system = findNavigatorElement("system");
 
-        systemEvents = findNavigatorElement("systemEvents");
+        logs = findNavigatorElement("logs");
     }
 
 
