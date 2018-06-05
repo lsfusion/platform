@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -31,8 +30,7 @@ public class OpenPathActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            DataObject sourceObject = context.getDataKeyValue(sourceInterface);
-            String source = (String) sourceObject.getValue();
+            String source = (String) context.getKeyValue(sourceInterface).getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
             if (source != null) {

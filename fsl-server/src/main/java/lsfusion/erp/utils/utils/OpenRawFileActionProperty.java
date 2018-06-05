@@ -7,6 +7,7 @@ import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -29,12 +30,13 @@ public class OpenRawFileActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            DataObject sourceObject = context.getDataKeyValue(sourceInterface);
+            ObjectValue sourceObject = context.getKeyValue(sourceInterface);
             byte[] source = (byte[]) sourceObject.getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
-            if (source != null) {
-                context.delayUserInteraction(new OpenFileClientAction(source, name, BaseUtils.firstWord(((StaticFormatFileClass) sourceObject.objectClass).getOpenExtension(source), ",")));
+            if (sourceObject instanceof DataObject && source != null) {
+                String extension = BaseUtils.firstWord(((StaticFormatFileClass) ((DataObject) sourceObject).objectClass).getOpenExtension(source), ",");
+                context.delayUserInteraction(new OpenFileClientAction(source, name, extension));
             }
 
 
