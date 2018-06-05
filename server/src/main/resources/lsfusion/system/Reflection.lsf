@@ -502,7 +502,7 @@ DESIGN actions {
 }
 
 NAVIGATOR {
-    system {
+    configuration {
         NEW FOLDER metadata '{navigator.metadata}' AFTER systemEvents {
             NEW Reflection.physicalModel;
             NEW Reflection.forms;
