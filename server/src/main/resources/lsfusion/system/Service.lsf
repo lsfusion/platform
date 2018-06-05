@@ -327,7 +327,7 @@ overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фок
 focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR (User);
 overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
 
-FORM settings 'Настройки'
+FORM admin 'Настройки'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
@@ -357,7 +357,7 @@ FORM settings 'Настройки'
     PROPERTIES(m) TOOLBAR NEW, DELETE 
 ;
 
-DESIGN settings {
+DESIGN admin {
     NEW tabs {
         type = TABBED;
         fill = 1;
@@ -497,7 +497,7 @@ DESIGN settings {
 
 NAVIGATOR { 
     system {
-        NEW Service.settings FIRST;
+        NEW Service.admin FIRST;
     }
 }
 
