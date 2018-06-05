@@ -573,7 +573,7 @@ seekChat(CustomUser user) += {
 }
 
 NAVIGATOR {
-    system {
+    configuration {
         NEW fullChat AFTER systemEvents;
     }
 }
