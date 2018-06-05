@@ -503,7 +503,7 @@ DESIGN actions {
 
 NAVIGATOR {
     system {
-        NEW FOLDER metadata '{navigator.metadata}' AFTER logs {
+        NEW FOLDER metadata '{navigator.metadata}' AFTER systemEvents {
             NEW Reflection.physicalModel;
             NEW Reflection.forms;
             NEW Reflection.properties;
