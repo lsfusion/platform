@@ -496,7 +496,7 @@ DESIGN admin {
 }
 
 NAVIGATOR { 
-    system {
+    configuration {
         NEW Service.admin FIRST;
     }
 }
