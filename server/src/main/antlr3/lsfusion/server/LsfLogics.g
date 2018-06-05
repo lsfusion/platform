@@ -2825,18 +2825,17 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	FormPrintType printType = null;
     Boolean syncType = null;
     Integer selectTop = null;
-    String sheetName = null;
     LCPWithParams passwordProperty = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, sheetName, passwordProperty);
+		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, $sUsage.propUsage, passwordProperty);
 	}
 }
 	:	'PRINT' mf=mappedForm[context, null, dynamic]
 		(   ( // static - jasper
-            (   'XLS'  { printType = FormPrintType.XLS; } ('SHEET' sheetVal = stringLiteral { sheetName = $sheetVal.val; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
-            |	'XLSX' { printType = FormPrintType.XLSX; } ('SHEET' sheetVal = stringLiteral { sheetName = $sheetVal.val; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
+            (   'XLS'  { printType = FormPrintType.XLS; } ('SHEET' sUsage = propertyUsage)? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
+            |	'XLSX' { printType = FormPrintType.XLSX; } ('SHEET' sUsage = propertyUsage)? ('PASSWORD' pwd = propertyExpression[context, dynamic] { passwordProperty = $pwd.property; })?
             |	'PDF' { printType = FormPrintType.PDF; }
             |	'DOC'  { printType = FormPrintType.DOC; }
             |	'DOCX' { printType = FormPrintType.DOCX; }
