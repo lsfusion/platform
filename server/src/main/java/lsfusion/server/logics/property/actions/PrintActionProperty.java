@@ -39,7 +39,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     
     private final boolean removeNulls; // print message
 
-    private final String sheetName;
+    private final LCP sheetNameProperty;
 
     public PrintActionProperty(LocalizedString caption,
                                FormSelector<O> form,
@@ -49,7 +49,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                                boolean syncType,
                                Integer top,
                                CalcProperty password,
-                               String sheetName,
+                               LCP sheetNameProperty,
                                LCP exportFile,
                                CalcProperty printer,
                                LCP formPageCount, boolean removeNulls) {
@@ -61,7 +61,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         
         this.removeNulls = removeNulls;
 
-        this.sheetName = sheetName;
+        this.sheetNameProperty = sheetNameProperty;
 
         if (printer != null) {
             this.printerProperty = printer.getImplement(
@@ -83,6 +83,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
     @Override
     protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws SQLException, SQLHandledException, JRException, IOException, ClassNotFoundException {
         String password = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
+        String sheetName = sheetNameProperty == null ? null : (String) sheetNameProperty.read(context);
         return IOUtils.getFileBytes(ReportGenerator.exportToFile(reportData, staticType, sheetName, password));
     }
 
@@ -93,6 +94,7 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         } else {
             String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
             String password = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
+            String sheetName = sheetNameProperty == null ? null : (String) sheetNameProperty.read(context);
             Integer pageCount = (Integer)context.requestUserInteraction(
                     new ReportClientAction(customReportPathList, formSID, syncType, reportData, staticType, pName, SystemProperties.inDevMode, password, sheetName));
             formPageCount.change(pageCount, context);
