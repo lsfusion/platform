@@ -3,10 +3,13 @@ package lsfusion.base;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -110,15 +113,22 @@ public class ResourceUtils {
         return getClassPath().split(System.getProperty("path.separator"));
     }
 
-    public static void watchPathForChange(Path path, Runnable callback) throws IOException {
-        WatchService watcher = FileSystems.getDefault().newWatchService();
-        path.register(watcher, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE});
+    public static void watchPathForChange(Path path, Runnable callback, Pattern pattern) throws IOException {
+        final WatchService watchService = FileSystems.getDefault().newWatchService();
+//        path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE});
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
+                return FileVisitResult.CONTINUE;
+            }
+        });
 
         WatchKey key;
         while (true) {
             try {
                 // wait for key to be signaled
-                key = watcher.take();
+                key = watchService.take();
             } catch (InterruptedException x) {
                 return;
             }
@@ -126,7 +136,9 @@ public class ResourceUtils {
             for (WatchEvent<?> event : key.pollEvents()) {
                 WatchEvent.Kind<?> kind = event.kind();
                 if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == OVERFLOW) {
-                    callback.run();
+                    Path eventPath = (Path)event.context();
+                    if(eventPath != null && pattern.matcher(eventPath.toString()).matches())
+                        callback.run();
                 }
             }
             key.reset();
