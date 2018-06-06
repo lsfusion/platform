@@ -45,9 +45,11 @@ public class GEditBindingMap implements Serializable {
     }
 
     public String getKeyPressAction(EditEvent editEvent) {
-        NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
-        if (KEYDOWN.equals(nativeEvent.getType())) {
-            return getKeyAction(getKeyStroke(nativeEvent));
+        if (editEvent instanceof NativeEditEvent) {
+            NativeEvent nativeEvent = ((NativeEditEvent) editEvent).getNativeEvent();
+            if (KEYDOWN.equals(nativeEvent.getType())) {
+                return getKeyAction(getKeyStroke(nativeEvent));
+            }
         }
         return null;
     }
