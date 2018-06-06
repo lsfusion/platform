@@ -368,6 +368,12 @@ DESIGN physicalModel {
     }
 }
 
+FORM navigatorElements 'Элементы навигатора'
+    TREE neTree ne=NavigatorElement PARENT parent
+    PROPERTIES(ne) READONLY caption, canonicalName, number
+    ORDER number(ne)   
+;
+
 FORM forms 'Формы'
 
     OBJECTS tf=Form
@@ -505,6 +511,7 @@ NAVIGATOR {
     configuration {
         NEW FOLDER metadata '{navigator.metadata}' AFTER systemEvents {
             NEW Reflection.physicalModel;
+            NEW Reflection.navigatorElements;
             NEW Reflection.forms;
             NEW Reflection.properties;
             NEW Reflection.actions;
