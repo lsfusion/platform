@@ -1263,8 +1263,6 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	{
 		if (op != null) {
 			$property = self.addScriptedRelationalProp(op, leftProp, rightProp);
-		} else if (mainProp != null) {
-			$property = new LCPWithParams(self.addScriptedTypeExprProp(mainProp, leftProp), leftProp);
 		} else {
 			$property = leftProp;
 		}
@@ -1277,7 +1275,6 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 			    rhs=likePE[context, dynamic] { rightProp = $rhs.property; }
 			    { if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } }
 			)
-		|	def=typePropertyDefinition { mainProp = $def.property; }
 		)?
 	;
 
@@ -1370,16 +1367,25 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci] 
 @init {	
 	boolean hasPostfix = false;
+	Boolean type = null;
 }
 @after {
-	if (inPropParseState() && hasPostfix) {
-		$property = self.addScriptedDCCProp($expr.property, $index.val);
+	if (inPropParseState()) {
+	    if(hasPostfix)
+    		$property = self.addScriptedDCCProp($expr.property, $index.val);
+        else if(type != null)
+            $property = self.addScriptedTypeProp($expr.property, $clsId.sid, type);
 	} 
 }
 	:	expr=simplePE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 		(
 		    { if(inPropParseState()) { self.checkCIInExpr($expr.ci); } }
-			'[' index=uintLiteral ']' { hasPostfix = true; }
+		    (
+			    '[' index=uintLiteral ']' { hasPostfix = true; }
+                |
+                ('IS' { type = true; } | 'AS' { type = false; } )
+                clsId=classId
+            )
 		)?
 	;		 
 
@@ -2168,21 +2174,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
 	;
 
-typePropertyDefinition returns [LCP property] 
-@init {
-	boolean bIs = false;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedTypeProp($clsId.sid, bIs);
-	}	
-}
-	:	('IS' { bIs = true; } | 'AS')
-		clsId=classId
-	;
-
-
-propertyUsage returns [PropertyUsage propUsage]  
+propertyUsage returns [PropertyUsage propUsage]
 @init {
 	List<String> classList = null;
 }

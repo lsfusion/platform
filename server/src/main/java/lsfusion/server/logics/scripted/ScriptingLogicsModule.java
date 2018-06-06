@@ -3420,16 +3420,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(formEntity)), Collections.<LCPWithParams>emptyList());
     }
 
-    public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
         if (bIs) {
-            return is(findClass(className));
+            return is(valueClass);
         } else {
-            return object(findClass(className));
+            return object(valueClass);
         }
     }
 
-    public LCP addScriptedTypeExprProp(LCP mainProp, LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(mainProp, Collections.singletonList(property)).getLP();
+    public LCPWithParams addScriptedTypeProp(LCPWithParams ccProp, String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(addTypeProp(findClass(className), bIs), Collections.singletonList(ccProp));
     }
 
     public void addScriptedConstraint(LCP<?> property, Event event, boolean checked, List<PropertyUsage> propUsages, LCP<?> messageProperty, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
