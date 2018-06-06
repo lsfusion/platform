@@ -67,7 +67,12 @@ transactTimeout 'Таймаут для транз. (сек.)' (User user) = tran
 permitChangeAllProperty 'Разрешить изменение всех свойств' = DATA BOOLEAN (UserRole);
 permitChangeAllProperty 'Разрешить изменение всех свойств' (User user) = permitChangeAllProperty(mainRole(user));
 forbidChangeAllProperty 'Запретить изменение всех свойств' = DATA BOOLEAN (UserRole);
-forbidChangeAllPropertyRole 'Запретить изменение всех свойств' (User user) = forbidChangeAllProperty(mainRole(user));
+forbidChangeAllProperty 'Запретить изменение всех свойств' (User user) = forbidChangeAllProperty(mainRole(user));
+
+forbidViewAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' = DATA BOOLEAN (UserRole);
+forbidViewAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' (User user) = forbidViewAllSetupPolicies (mainRole(user));
+forbidChangeAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' = DATA BOOLEAN (UserRole);
+forbidChangeAllSetupPolicies 'Запретить изменение настройки политики безопасности свойств' (User user) = forbidChangeAllSetupPolicies (mainRole(user));
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
 
@@ -316,6 +321,8 @@ copyData(UserRole userRole, UserRole ur) = {
     forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
     permitChangeAllProperty(ur) <- permitChangeAllProperty(userRole);
     forbidChangeAllProperty(ur) <- forbidChangeAllProperty(userRole);
+    forbidViewAllSetupPolicies(ur) <- forbidViewAllSetupPolicies(userRole);
+    forbidChangeAllSetupPolicies(ur) <- forbidChangeAllSetupPolicies(userRole);
     defaultForms(ur) <- defaultForms(userRole);
     permitAllForms(ur) <- permitAllForms(userRole);
     forbidAllForms(ur) <- forbidAllForms(userRole);
@@ -358,7 +365,7 @@ FORM securityPolicy 'Политика безопасности'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(ur) transactTimeout, permitViewAllProperty, forbidViewAllProperty, permitChangeAllProperty,
-                   forbidChangeAllProperty, nameDefaultForms, permitAllForms, forbidAllForms
+                   forbidChangeAllProperty, forbidViewAllSetupPolicies, forbidChangeAllSetupPolicies, nameDefaultForms, permitAllForms, forbidAllForms
 
     OBJECTS p=Policy
     PROPERTIES(p)  name, description
