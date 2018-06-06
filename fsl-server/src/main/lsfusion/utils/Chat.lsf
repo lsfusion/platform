@@ -573,7 +573,5 @@ seekChat(CustomUser user) += {
 }
 
 NAVIGATOR {
-    configuration {
-        NEW fullChat AFTER systemEvents;
-    }
+    NEW fullChat IMAGE '/images/chat.png' BEFORE Authentication.account;
 }
