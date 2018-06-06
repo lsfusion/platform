@@ -839,6 +839,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             if(inAllKeep)
                 mInAllKeeps.add(fromExpr);
         }
+
+        if(allKeep && join instanceof UnionJoin && ((UnionJoin) join).depends(notKeepJoins)) {
+            allKeep = false; // придется перепроверять так как может оказаться не keep не в графе (а проверку не keep не в графе непонятно как делать)
+        }
+
         if(keepThis && !allKeep) // если этот элемент не "полный", значит понадобятся все child'ы для трансляции, соотвественно пометим "полные" из них
             mAllKeeps.addAll(mInAllKeeps.immutable());
 
@@ -852,10 +857,6 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             keepThis = true;
 
         boolean allKeep = recProceedChildrenCostWhere(join, proceeded, mMiddleTreeKeeps, mAllKeeps, mTranslate, keepThis, keepJoins, notKeepJoins, inEdges);
-
-        if(allKeep && join instanceof UnionJoin && ((UnionJoin) join).depends(notKeepJoins)) {
-            allKeep = false; // придется перепроверять так как может оказаться не keep не в графе (а проверку не keep не в графе непонятно как делать)
-        }
 
         if (keepThis) // есть верхний keep join, соответственно это его проблема добавить Where (этот сам "подцепится" после этого)
             mMiddleTreeKeeps.add(join, upKeep ? IntermediateKeep.instance : new MiddleTopKeep(upExpr)); // есть ребро "наверх", используем выражение из него
