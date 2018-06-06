@@ -446,10 +446,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             qu.addProperty("forbidViewAllProperty", securityLM.forbidViewAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("permitChangeAllProperty", securityLM.permitChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllProperty", securityLM.forbidChangeAllPropertyRole.getExpr(session.getModifier(), userExpr));
+
+            qu.addProperty("forbidViewAllSetupPolicies", securityLM.forbidViewAllSetupPolicies.getExpr(session.getModifier(), userExpr));
+            qu.addProperty("forbidChangeAllSetupPolicies", securityLM.forbidChangeAllSetupPolicies.getExpr(session.getModifier(), userExpr));
             
             qu.addProperty("cachePropertyPolicy", securityLM.cachePropertyPolicyUser.getExpr(session.getModifier(), userExpr));
 
             boolean cachePropertyPolicy = false;
+            boolean forbidViewAllSetupPolicies = false;
+            boolean forbidChangeAllSetupPolicies = false;
             
             ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
@@ -469,6 +474,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     policy.property.change.defaultPermission = true;
                 
                 cachePropertyPolicy = valueMap.get("cachePropertyPolicy") != null;
+                forbidViewAllSetupPolicies = valueMap.get("forbidViewAllSetupPolicies") != null;
+                forbidChangeAllSetupPolicies = valueMap.get("forbidChangeAllSetupPolicies") != null;
             }
 
             QueryBuilder<String, String> qne = new QueryBuilder<>(SetFact.toExclSet("userId", "neId"));
@@ -501,6 +508,15 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                     }
                 } catch (CanonicalNameUtils.ParseException e) {
                     startLogger.debug(String.format("Canonical name parsing error: '%s' when applying security policy", e.getMessage()));
+                }
+            }
+
+            if(forbidViewAllSetupPolicies || forbidChangeAllSetupPolicies) {
+                for (Property prop : LM.propertyPolicyGroup.getIndexedPropChildren().keyIt()) {
+                    if(forbidViewAllSetupPolicies)
+                        policy.property.view.deny(prop);
+                    if(forbidChangeAllSetupPolicies)
+                        policy.property.change.deny(prop);
                 }
             }
 

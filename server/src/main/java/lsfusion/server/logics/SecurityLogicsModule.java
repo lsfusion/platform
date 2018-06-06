@@ -34,6 +34,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP fullForbidViewUserProperty;
     public LCP fullForbidChangeUserProperty;
 
+    public LCP forbidViewAllSetupPolicies;
+    public LCP forbidChangeAllSetupPolicies;
+
     public LCP permitNavigatorElement;
     public LCP forbidNavigatorElement;
     public LCP permitExportNavigatorElement;
@@ -111,7 +114,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         permitViewAllPropertyUser = findProperty("permitViewAllProperty[User]");
         forbidViewAllPropertyUser = findProperty("forbidViewAllProperty[User]");
         permitChangeAllPropertyUser = findProperty("permitChangeAllProperty[User]");
-        forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole[User]");
+        forbidChangeAllPropertyRole = findProperty("forbidChangeAllProperty[User]");
+
+        forbidViewAllSetupPolicies = findProperty("forbidViewAllSetupPolicies[User]");
+        forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
 
         // Разрешения для каждого свойства
         fullForbidViewUserProperty = findProperty("fullForbidView[User,ActionOrProperty]");
