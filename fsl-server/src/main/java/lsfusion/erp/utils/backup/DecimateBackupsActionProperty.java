@@ -46,14 +46,14 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
 
             QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
             backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr));
+            backupQuery.addProperty("timeBackup", findProperty("time[Backup]").getExpr(session.getModifier(), backupExpr));
             backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(session.getModifier(), backupExpr).getWhere().not());
-
             backupQuery.and(findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr).getWhere());
 
-            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(session);
+            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(session, MapFact.toOrderMap((Object) "dateBackup", true, "timeBackup", true));
 
             int count = 0;
-            for (int i = backupResult.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < backupResult.size(); i++) {
                 DataObject backupObject = backupResult.getKey(i).getObject("Backup");
 
                 Date dateBackup = (Date) backupResult.getValue(i).get("dateBackup").getValue();
@@ -82,7 +82,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((CalcProperty) findProperty("date[Backup]").property, (CalcProperty) findProperty("time[Backup]").property);
+            return getChangeProps(findProperty("date[Backup]").property, findProperty("time[Backup]").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }
