@@ -2671,7 +2671,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                                     logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
                                     customReports = null;
                                 }
-                            });
+                            }, Pattern.compile(".*\\.jrxml"));
                         }
                     }, true, null, false, "Custom Reports"));
                 }
