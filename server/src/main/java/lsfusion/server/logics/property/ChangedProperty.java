@@ -153,13 +153,17 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
     
     public ImSet<CalcProperty> getSingleApplyDroppedIsClassProps() {
-        assert type == IncrementType.DROP && property instanceof IsClassProperty;
+        assert isSingleApplyDroppedIsClassProp();
         return ((IsClassProperty) property).getSingleApplyDroppedIsClassProps();
     }
 
+    public boolean isSingleApplyDroppedIsClassProp() {
+        return type == IncrementType.DROP && property instanceof IsClassProperty && ((IsClassProperty) property).getInterfaceClass() instanceof CustomClass && scope == ChangeEvent.scope;
+    }
+    
     @Override
     public ApplyCalcEvent getApplyEvent() {
-        if (type == IncrementType.DROP && property instanceof IsClassProperty && ((IsClassProperty) property).getInterfaceClass() instanceof CustomClass) {
+        if (isSingleApplyDroppedIsClassProp()) {
             if(event == null)
                 event = new ApplyRemoveClassesEvent(this);
             return (ApplyRemoveClassesEvent)event;

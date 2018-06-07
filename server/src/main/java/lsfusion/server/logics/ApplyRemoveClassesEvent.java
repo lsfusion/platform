@@ -13,7 +13,7 @@ public class ApplyRemoveClassesEvent extends ApplyCalcEvent {
     public ApplyRemoveClassesEvent(ChangedProperty property) {
         this.property = property;
         
-        assert property.property instanceof IsClassProperty && ((IsClassProperty) property.property).getInterfaceClass() instanceof CustomClass && !property.getSetOrDropped();
+        assert property.isSingleApplyDroppedIsClassProp();
     }
     
     public IsClassProperty getIsClassProperty() {
