@@ -91,6 +91,7 @@ public class FileUtils {
                     ReadUtils.deleteSFTPFile(path.getPath());
                     break;
                 case "file":
+                    sourcePath = sourcePath.startsWith("file://") ? sourcePath.substring(7) : sourcePath;
                     if (!new File(sourcePath).delete()) {
                         throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
                     }
