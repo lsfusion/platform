@@ -21,7 +21,7 @@ public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends 
 
         // нужно, чтобы всегда была хоть одно свойство (иначе если нет ни одного base grid'ы не показываются)
         LCP objValueProp = LM.getObjValueProp(this, object);
-        PropertyDrawEntity objectValue = addPropertyDraw(objValueProp, version, object);
+        PropertyDrawEntitrdffdy objectValue = addPropertyDraw(objValueProp, version, object);
         objectValue.setEditType(PropertyEditType.READONLY);
         
         addPropertyDraw(object, version, LM.baseGroup, true);
