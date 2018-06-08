@@ -3011,7 +3011,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LCPWithParams resultLP = isLastParamRow ? new LCPWithParams(resultProp, paramOld - 1) : new LCPWithParams(resultProp);
 
                 doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP), new ArrayList<LCPWithParams>(), doAction,
-                        nullExec, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
+                        nullExec, null, null, false, false, false, isLastParamRow ? Collections.<LCPWithParams>emptyList() : null, false);
             }
 
             currentContext = removedContext;

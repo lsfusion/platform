@@ -416,7 +416,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             mResult.add(property.pushFor(context, pushProp, orders, ordersNotNull));
 
         // добавляем оставшиеся, с for'ом компилируя внутренние элементы
-        if (rest.size() > 0)
+        if (rest.size() > 0 || elseAction != null)
             mResult.add(DerivedProperty.createForAction(innerInterfaces, context, pushProp, orders,
                     ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false, innerInterfaces.remove(context), false));
 
