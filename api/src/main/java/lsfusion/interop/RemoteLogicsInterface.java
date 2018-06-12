@@ -17,7 +17,9 @@ import java.util.Map;
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     Integer getApiVersion() throws RemoteException;
-    
+
+    String getPlatformVersion() throws RemoteException;
+
     GUIPreferences getGUIPreferences() throws RemoteException;
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;

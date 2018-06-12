@@ -326,16 +326,6 @@ public final class LoginAction {
     public void setAutoLogin(boolean autoLogin) {
         this.autoLogin = autoLogin;
     }
-
-    public boolean needShutdown() {
-        try {
-            Integer oldApiVersion = BaseUtils.getApiVersion();
-            Integer newApiVersion = remoteLogics.getApiVersion();
-            return !oldApiVersion.equals(newApiVersion);
-        } catch (RemoteException e) {
-            return false;
-        }
-    }
     
     public class UserInfo {
         String name;

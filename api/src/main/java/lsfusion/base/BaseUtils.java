@@ -50,6 +50,14 @@ public class BaseUtils {
         return 69;
     }
 
+    public static String getPlatformVersion() {
+        try {
+            return org.apache.commons.io.IOUtils.toString(BaseUtils.class.getResourceAsStream("/lsfusion.version"));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
@@ -755,20 +763,20 @@ public class BaseUtils {
             outStream.writeInt(number.scale());
         }
     }
-    
+
     public static BigDecimal deserializeBigDecimal(DataInputStream inStream) throws IOException {
         int arrayLen = inStream.readInt();
         if (arrayLen < 0) {
             return null;
         }
-        
+
         byte[] numberArray = new byte[arrayLen];
         inStream.read(numberArray);
         BigInteger intNumber = new BigInteger(numberArray);
         int scale = inStream.readInt();
         return new BigDecimal(intNumber, scale);
     }
-    
+
     public static boolean startsWith(char[] string, int off, char[] check) {
         if (string.length - off < check.length)
             return false;

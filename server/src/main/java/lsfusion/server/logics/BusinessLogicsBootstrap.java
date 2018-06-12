@@ -1,9 +1,6 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.Result;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
@@ -59,6 +56,10 @@ public class BusinessLogicsBootstrap {
                     System.exit(0);
                 }
 
+                String version = BaseUtils.getPlatformVersion();
+                if(version != null) {
+                    logger.info("Client is available at http://lsfusion.ru/download/client-" + version + ".jnlp");
+                }
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
                 logger.info("Error starting server, server will be stopped.");
