@@ -1,9 +1,11 @@
 package lsfusion.server.data;
 
 import lsfusion.base.*;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.InnerContext;
@@ -94,7 +96,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, TableOwner owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, TableOwner owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         ImMap<KeyField, DataObject> fixedKeyValues;
         ImMap<PropertyField, ObjectValue> fixedPropValues;
@@ -111,15 +113,38 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             fixedPropValues = propFields.addEquals(propertyValues);
             fixedTable = table.addFields(session, keys.removeOrder(fixedKeyValues.keys()), keyValues.remove(fixedKeyValues.keys()), propertyValues.remove(fixedPropValues.keys()), owner, opOwner);
         }
-        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner, opOwner, changed),
-                keys, fixedKeyValues, fixedPropValues);
+        SessionTable table = fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner, opOwner, changed);
+        if(type == Modify.DELETE)
+            return aspectDelete(session, table, owner, opOwner);
+        return new SessionDataTable(table, keys, fixedKeyValues, fixedPropValues);
     }
 
     @Override
     public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
-        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE || (Settings.get().isModifySessionTableInsteadOfRewrite() && !used(query)))) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
-            return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed, updateClasses), keys, keyValues, propertyValues);
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE || (Settings.get().isModifySessionTableInsteadOfRewrite() && !used(query)))) { // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+            SessionTable modifiedTable = this.table.modifyRows(session, query, type, env, owner, changed, updateClasses);
+            if(type == Modify.DELETE)
+                return aspectDelete(session, modifiedTable, owner, env.getOpOwner());
+            return new SessionDataTable(modifiedTable, keys, keyValues, propertyValues);
+        }
         return super.modifyRows(session, query, baseClass, type, env, owner, changed, updateClasses);
+    }
+
+
+    private SessionData aspectDelete(SQLSession session, SessionTable table, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+        if(table.classes.isFalse()) // no rows
+            return new SessionRows(keys, getProperties());
+
+        // finding all isFalse - which means that all values are nulls
+        ImSet<PropertyField> remove = table.propertyClasses.filterFnValues(new SFunctionSet<ClassWhere<Field>>() {
+            public boolean contains(ClassWhere<Field> element) {
+                return element.isFalse();
+            }
+        }).keys();
+        if(remove.isEmpty())
+            return new SessionDataTable(table, keys, keyValues, propertyValues);
+        
+        return new SessionDataTable(table.removeFields(session, SetFact.<KeyField>EMPTY(), remove, owner, opOwner), keys, keyValues, propertyValues.addExcl(remove.toMap(NullValue.instance)));
     }
 
     @Override

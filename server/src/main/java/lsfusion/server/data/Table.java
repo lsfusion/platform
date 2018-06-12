@@ -157,7 +157,6 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.classes = classes;
         this.propertyClasses = propertyClasses;
 
-        assert !(this instanceof SessionTable && classes.isFalse()); // временно, проверить как такое может получиться
         // assert classes.fitTypes();
         // последний or для debug
         assert (this instanceof SerializedTable || this instanceof ImplementTable.InconsistentTable || classes == null) || classes.isEqual(keys.getSet()) && propClassesFull() && assertClasses(); // см. ClassExprWhere.getKeyType

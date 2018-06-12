@@ -2705,7 +2705,7 @@ public class BaseUtils {
     public static String defaultToString(Object o) {
         return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
     }
-    
+
     public static String removeTrailingSlash(String s) {
         assert s.isEmpty() || s.endsWith("/");
         if(!s.isEmpty())
