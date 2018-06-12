@@ -46,7 +46,15 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 64;
+        return 65;
+    }
+
+    public static String getPlatformVersion() {
+        try {
+            return org.apache.commons.io.IOUtils.toString(BaseUtils.class.getResourceAsStream("/lsfusion.version"));
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

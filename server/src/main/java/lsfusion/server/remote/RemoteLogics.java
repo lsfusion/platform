@@ -189,8 +189,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public Integer getApiVersion() throws RemoteException {
+    public Integer getApiVersion() {
         return BaseUtils.getApiVersion();
+    }
+
+    @Override
+    public String getPlatformVersion() {
+        return BaseUtils.getPlatformVersion();
     }
 
     public GUIPreferences getGUIPreferences() throws RemoteException {

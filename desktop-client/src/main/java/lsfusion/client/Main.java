@@ -203,8 +203,23 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
-                    if(loginAction.needShutdown()) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart"), "LSFusion", JOptionPane.WARNING_MESSAGE);
+                    String serverVersion = null;
+                    String clientVersion = null;
+                    String oldPlatformVersion = BaseUtils.getPlatformVersion();
+                    String newPlatformVersion = remoteLogics.getPlatformVersion();
+                    if(oldPlatformVersion != null && !oldPlatformVersion.equals(newPlatformVersion)) {
+                        serverVersion = newPlatformVersion;
+                        clientVersion = oldPlatformVersion;
+                    } else {
+                        Integer oldApiVersion = BaseUtils.getApiVersion();
+                        Integer newApiVersion = remoteLogics.getApiVersion();
+                        if(!oldApiVersion.equals(newApiVersion)) {
+                            serverVersion = newPlatformVersion + " [" + newApiVersion + "]";
+                            clientVersion = oldPlatformVersion + " [" + oldApiVersion + "]";
+                        }
+                    }
+                    if(serverVersion != null) {
+                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "LSFusion", JOptionPane.WARNING_MESSAGE);
                         Main.shutdown();
                         return;
                     }
