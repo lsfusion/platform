@@ -334,18 +334,18 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
-                String script = StringClass.text.parseHTTP(paramScript, charset);
+                String script = StringClass.text.parseHTTP(paramScript, Charset.forName(charset));
                 if (action) {
                     //оборачиваем в run без параметров
                     script = "run() = {" + script + ";\n};";
                 }
                 LAP<?> runAction = businessLogics.evaluateRun(script);
                 if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
+                    returnList = executeExternal(runAction, returnCanonicalNames, params, Charset.forName(charset));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -40,7 +40,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     //external requests
     List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException;
-    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException;
+    List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
     List<Object> read(String property, Object[] params, Charset charset) throws RemoteException;
 
     String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException; 
