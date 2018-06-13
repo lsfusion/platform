@@ -692,6 +692,7 @@ public class GreedyTreeBuilding<V, C extends Comparable<C>, E extends GreedyTree
             traverseCut(startNode, startNode, result, functor, cutComparator);
             if (result.cutNode != null) {
                 createTreeWithCut(result.cutNode, functor);
+                bestCost = result.cost;
             }
         } while (result.cutNode != null);
         return rootTreeNode;
