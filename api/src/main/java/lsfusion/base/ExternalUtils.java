@@ -62,7 +62,8 @@ public class ExternalUtils {
                 script = paramsList.get(0);
                 paramsList = paramsList.subList(1, paramsList.size());
             }
-            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
+            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]),
+                    paramsList.toArray(), charset == null ? null : charset.toString());
         } else if (uri.startsWith("/read")) {
             String property = getParameterValue(queryParams, PROPERTY_PARAM);
             if (property != null) {
