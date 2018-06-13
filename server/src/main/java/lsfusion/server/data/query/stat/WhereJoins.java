@@ -934,6 +934,25 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return expr;        
     }
     
+    // it's important that if KeyJoinExpr.getBaseExpr().getBaseJoin() is kept, then and KeyJoinExpr should be kept (in should not happen, but in theory could be)
+    // if not, keyJoinExpr may be translated, while KeyJoinExpr.getBaseExpr() kept, and it will break some assertions (for example that allKeep => upJoinWhere = upJoinWhere.translate)
+    private static ImSet<BaseJoin> addKeyJoinExprs(ImSet<BaseJoin> set, MAddMap<BaseJoin, Stat> joinStats) {
+        // оптимизация
+        MExclSet<KeyJoinExpr> mAddedKeyJoinExprs = null;
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            BaseJoin join = joinStats.getKey(i);
+            if (join instanceof KeyJoinExpr && !set.contains(join) && set.contains(((KeyJoinExpr) join).getBaseExpr().getBaseJoin())) {
+//                assert false;
+                if(mAddedKeyJoinExprs == null)
+                    mAddedKeyJoinExprs = SetFact.mExclSetMax(size);
+                mAddedKeyJoinExprs.exclAdd((KeyJoinExpr) join);
+            }
+        }
+        if(mAddedKeyJoinExprs != null)
+            set = set.addExcl(mAddedKeyJoinExprs.immutable());
+        return set;
+    }
+    
     private static ImSet<BaseExpr> replaceKeyJoinExprs(ImSet<BaseExpr> set) {
         // оптимизация
         boolean foundKeyJoin = false;
@@ -961,7 +980,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return null;
         }
         assert !pushedKeys.isEmpty();
-        final ImSet<BaseJoin> keepJoins = cost.getJoins().removeIncl(queryJoin);
+        final ImSet<BaseJoin> keepJoins = addKeyJoinExprs(cost.getJoins().removeIncl(queryJoin), joinStats);
         FunctionSet<BaseJoin> notKeepJoins = new SFunctionSet<BaseJoin>() {
             @Override
             public boolean contains(BaseJoin element) {
