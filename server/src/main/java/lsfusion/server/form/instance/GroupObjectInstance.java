@@ -858,6 +858,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     }
                 }
             }
+            if (userSeeks!=null) // if there is user seek, force refresh (because delete for example uses user seeks to update view), this hack will be gone when seeks will be supported in tree
+                updateKeys = true;
             seeks = SEEK_HOME;
         } else {
             if (userSeeks!=null) { // пользовательский поиск
