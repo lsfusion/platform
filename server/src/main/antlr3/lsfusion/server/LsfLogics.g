@@ -3101,7 +3101,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.HTTP) {
         $property = self.addScriptedExternalHTTPActionProp($type.method, $type.conStr, $type.bodyUrl, $type.headers, $type.headersTo, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
-        $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
 	}
 }
@@ -3111,7 +3111,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, LCPWithParams conStr, LCPWithParams bodyUrl, LCPWithParams exec, PropertyUsage headers, PropertyUsage headersTo, boolean eval = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, LCPWithParams conStr, LCPWithParams bodyUrl, LCPWithParams exec, PropertyUsage headers, PropertyUsage headersTo, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|	'HTTP'	{ $format = ExternalFormat.HTTP; }
 	            (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
@@ -3119,7 +3119,7 @@ externalFormat [List<TypedParameter> context, boolean dynamic] returns [External
 	            ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	            ('HEADERSTO' headersToVal = propertyUsage { $headersTo = $headersToVal.propUsage; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | 'EVAL' { $eval = true; } ) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
+	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | ('EVAL' { $eval = true; } ('ACTION' { $action = true; })? )) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
 	;
 
@@ -3299,12 +3299,15 @@ deleteActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 	;  
 
 evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
+@init {
+	boolean action = false;
+}
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props, context);
+		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props, context, action);
 	}
 }
-	:	'EVAL' expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
+	:	'EVAL' ('ACTION' { action = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
 	;
 	
 drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
