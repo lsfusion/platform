@@ -1593,9 +1593,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams action, boolean eval, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false))))),
-                BaseUtils.add(params, action), context, toPropertyUsageList);
+    public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams actionLCP, boolean eval, boolean action, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
+        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
+                BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
     private ImList<LCP> findLCPsNoParamsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -2009,7 +2010,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAPWithParams addScriptedEvalActionProp(LCPWithParams property, List<LCPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedEvalActionProp(LCPWithParams property, List<LCPWithParams> params, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         Type exprType = property.getLP().property.getType();
         if (!(exprType instanceof StringClass)) {
             errLog.emitEvalExpressionError(parser);
@@ -2024,7 +2025,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        LAP<?> res = addEvalAProp(property.getLP(), paramsLCP);
+        LAP<?> res = addEvalAProp(property.getLP(), paramsLCP, action);
         return new LAPWithParams(res, new ArrayList<>(allParams));
     }
 
