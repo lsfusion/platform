@@ -54,6 +54,9 @@ open 'Открыть файл' (CUSTOMFILE source) = { open(source, NULL); }
 open 'Открыть файл' = CUSTOM 'lsfusion.erp.utils.utils.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
 open 'Открыть файл' (RAWFILE source) = { open(source, NULL); }
 
+fileSize = DATA LOCAL LONG ();
+getFileSize 'Получить размер файла' = CUSTOM 'lsfusion.erp.utils.utils.GetFileSizeActionProperty' (CUSTOMFILE);
+
 //zip files
 zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[1000]);
 zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
