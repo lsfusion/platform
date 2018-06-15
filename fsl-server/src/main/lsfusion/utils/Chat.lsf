@@ -181,9 +181,9 @@ restartServer() += { IF sendRestartMessage() THEN sendRestartServerMessage(); }
 sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' () = { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
 cancelRestartServer() += { IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
 
-EXTEND FORM admin PROPERTIES() sendRestartMessage;
+EXTEND FORM maintenance PROPERTIES() sendRestartMessage;
 
-DESIGN admin {
+DESIGN maintenance {
     administration {
         MOVE PROPERTY(sendRestartMessage()) BEFORE PROPERTY(restartServer());
     }
