@@ -330,16 +330,7 @@ overrideFocusedCellBorderColor 'Цвет границы ячейки при фо
 FORM admin 'Настройки'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
-                 reportCharWidth, reportRowHeight, reportNotToStretch, 
-                 scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
-                 checkAggregationsAction, checkClassesAction, checkIndicesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
-                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate,
-                 threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
-                 recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
-                 packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
-                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump, 
-                 disableTILMode, hostnameServerComputer, reupdateMode, singleTransaction,
-                 turnExplainAnalizeOnCurrentUser, clearApplicationLog
+                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer
     OBJECTS u=User
     PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
     OBJECTS uc=User
@@ -369,29 +360,7 @@ DESIGN admin {
                 NEW current {
                     caption = 'Текущие значения';
                     MOVE PROPERTY(currentDate());
-                }
-                NEW administration {
-                    caption = 'Запуск';
-                    MOVE PROPERTY(scheduledRestart());
-                    MOVE PROPERTY(forbidLogin()); 
-                    MOVE PROPERTY(restartServer());
-                    MOVE PROPERTY(cancelRestartServer());
                     MOVE PROPERTY(hostnameServerComputer());
-                }    
-                NEW upload {
-                    caption = 'Загрузить в другую базу';
-                    MOVE PROPERTY(uploadStaticCaptionType());
-                    MOVE PROPERTY(uploadHost());
-                    MOVE PROPERTY(uploadUser());
-                    MOVE PROPERTY(uploadPassword());
-                    MOVE PROPERTY(uploadInstance());
-                    MOVE PROPERTY(uploadDB());
-                    MOVE PROPERTY(uploadToDBAction());
-                }
-                NEW log {
-                    caption = 'Логирование';
-                    MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
-                    MOVE PROPERTY(clearApplicationLog());
                 }
                 NEW report {
                     caption = 'Отчеты';
@@ -400,64 +369,9 @@ DESIGN admin {
                     MOVE PROPERTY(reportNotToStretch());
                 }                                               
             }
-            NEW centralColumn {
-                NEW oneThread {
-                    caption = 'Однопоточные действия';
-                    MOVE PROPERTY(serviceDBAction());
-                    NEW recalculateOneThread {
-                        caption = 'Исправление целостности базы данных';
-                        MOVE PROPERTY(recalculateClassesAction());
-                        MOVE PROPERTY(recalculateAction());
-                        MOVE PROPERTY(recalculateFollowsAction());
-                        MOVE PROPERTY(recalculateStatsAction());
-                        MOVE PROPERTY(overCalculateStatsAction());             
-                        MOVE PROPERTY(maxQuantityOverCalculate());
-                    }
-                    NEW checkOneThread {
-                        caption = 'Проверка целостности базы данных';
-                        MOVE PROPERTY(checkClassesAction());
-                        MOVE PROPERTY(checkAggregationsAction());
-                        MOVE PROPERTY(checkIndicesAction());
-                    }
-                NEW database {
-                    caption = 'База данных';
-                    MOVE PROPERTY(packAction());
-                    MOVE PROPERTY(analyzeDBAction());
-                    MOVE PROPERTY(vacuumDBAction());
-                    MOVE PROPERTY(disableTILMode());
-                    MOVE PROPERTY(reupdateMode());
-                    MOVE PROPERTY(singleTransaction());
-                }                            
-                }        
-            }
-            NEW rightColumn {
-                 NEW multiThread {
-                     caption = 'Многопоточные действия';
-                     MOVE PROPERTY(threadCountMultiThread());
-                     MOVE PROPERTY(serviceDBMultiThreadAction());
-                     NEW recalculateMultiThread {
-                         caption = 'Исправление целостности базы данных';
-                         MOVE PROPERTY(recalculateClassesMultiThreadAction());
-                         MOVE PROPERTY(recalculateMultiThreadAction());
-                         MOVE PROPERTY(recalculateFollowsMultiThreadAction());
-                         MOVE PROPERTY(recalculateStatsMultiThreadAction());  
-                         MOVE PROPERTY(overCalculateStatsMultiThreadAction());
-                     }
-                     NEW checkMultiThread {
-                         caption = 'Проверка целостности базы данных';
-                         MOVE PROPERTY(checkClassesMultiThreadAction());
-                         MOVE PROPERTY(checkAggregationsMultiThreadAction());
-                     }                  
-                 }  
+            NEW rightColumn {                 
                 NEW virtualMachine {
                     caption = 'Виртуальная машина';
-                    MOVE PROPERTY(runGarbageCollector());
-                    MOVE PROPERTY(getVMInfo());
-                    MOVE PROPERTY(dropLRUPercent());
-                    MOVE PROPERTY(randomDropLRU());
-                    MOVE PROPERTY(dropLRU());
-                    MOVE PROPERTY(turnCacheStatsOff());
-                    MOVE PROPERTY(makeHeapDump());
                 }                      
             }
         }
@@ -495,9 +409,114 @@ DESIGN admin {
     MOVE TOOLBARBOX;
 }
 
+FORM maintenance 'Обслуживание'
+    PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
+                 uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
+                 turnExplainAnalizeOnCurrentUser, clearApplicationLog, serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, 
+                 recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate, checkClassesAction, checkAggregationsAction, checkIndicesAction,
+                 packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
+                 recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
+                 recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkAggregationsMultiThreadAction,      
+                 runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump           
+;
+
+DESIGN maintenance {        
+    NEW pane {
+        fill = 1;
+        type = COLUMNS;
+        columns = 3;
+        NEW leftColumn {               
+            NEW administration {
+                caption = 'Запуск';
+                MOVE PROPERTY(scheduledRestart());
+                MOVE PROPERTY(forbidLogin()); 
+                MOVE PROPERTY(restartServer());
+                MOVE PROPERTY(cancelRestartServer());
+            }    
+            NEW upload {
+                caption = 'Загрузить в другую базу';
+                MOVE PROPERTY(uploadStaticCaptionType());
+                MOVE PROPERTY(uploadHost());
+                MOVE PROPERTY(uploadUser());
+                MOVE PROPERTY(uploadPassword());
+                MOVE PROPERTY(uploadInstance());
+                MOVE PROPERTY(uploadDB());
+                MOVE PROPERTY(uploadToDBAction());
+            }
+            NEW log {
+                caption = 'Логирование';
+                MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
+                MOVE PROPERTY(clearApplicationLog());
+            }                                                          
+        }
+        NEW centralColumn {
+            NEW oneThread {
+                caption = 'Однопоточные действия';
+                MOVE PROPERTY(serviceDBAction());
+                NEW recalculateOneThread {
+                    caption = 'Исправление целостности базы данных';
+                    MOVE PROPERTY(recalculateClassesAction());
+                    MOVE PROPERTY(recalculateAction());
+                    MOVE PROPERTY(recalculateFollowsAction());
+                    MOVE PROPERTY(recalculateStatsAction());
+                    MOVE PROPERTY(overCalculateStatsAction());             
+                    MOVE PROPERTY(maxQuantityOverCalculate());
+                }
+                NEW checkOneThread {
+                    caption = 'Проверка целостности базы данных';
+                    MOVE PROPERTY(checkClassesAction());
+                    MOVE PROPERTY(checkAggregationsAction());
+                    MOVE PROPERTY(checkIndicesAction());
+                }
+            NEW database {
+                caption = 'База данных';
+                MOVE PROPERTY(packAction());
+                MOVE PROPERTY(analyzeDBAction());
+                MOVE PROPERTY(vacuumDBAction());
+                MOVE PROPERTY(disableTILMode());
+                MOVE PROPERTY(reupdateMode());
+                MOVE PROPERTY(singleTransaction());
+            }                            
+            }        
+        }
+        NEW rightColumn {
+             NEW multiThread {
+                 caption = 'Многопоточные действия';
+                 MOVE PROPERTY(threadCountMultiThread());
+                 MOVE PROPERTY(serviceDBMultiThreadAction());
+                 NEW recalculateMultiThread {
+                     caption = 'Исправление целостности базы данных';
+                     MOVE PROPERTY(recalculateClassesMultiThreadAction());
+                     MOVE PROPERTY(recalculateMultiThreadAction());
+                     MOVE PROPERTY(recalculateFollowsMultiThreadAction());
+                     MOVE PROPERTY(recalculateStatsMultiThreadAction());  
+                     MOVE PROPERTY(overCalculateStatsMultiThreadAction());
+                 }
+                 NEW checkMultiThread {
+                     caption = 'Проверка целостности базы данных';
+                     MOVE PROPERTY(checkClassesMultiThreadAction());
+                     MOVE PROPERTY(checkAggregationsMultiThreadAction());
+                 }                  
+             }  
+            NEW virtualMachine {
+                caption = 'Виртуальная машина';
+                MOVE PROPERTY(runGarbageCollector());
+                MOVE PROPERTY(getVMInfo());
+                MOVE PROPERTY(dropLRUPercent());
+                MOVE PROPERTY(randomDropLRU());
+                MOVE PROPERTY(dropLRU());
+                MOVE PROPERTY(turnCacheStatsOff());
+                MOVE PROPERTY(makeHeapDump());
+            }                      
+        }
+    }       
+    MOVE TOOLBARBOX; 
+}
+
 NAVIGATOR { 
     configuration {
         NEW Service.admin FIRST;
+        NEW maintenance AFTER performance;
     }
 }
 

@@ -1,6 +1,6 @@
 MODULE EvalScript;
 
-REQUIRE System, Time;
+REQUIRE System, Service, Time;
 
 NAMESPACE System;
 
@@ -34,7 +34,7 @@ actionBodyExecution 'Выполнить действие' (Script s) = {
     TRY { 
         preRunScript(s);
         NEWSESSION {
-            EVAL ACTION text(s);
+            EVAL CONCAT ' ', 'run() = \{', text(s), ';\n\};';
         }
     } 
 }
@@ -191,7 +191,7 @@ DESIGN interpreter {
 
 NAVIGATOR {
     configuration {
-        NEW interpreter AFTER performance;
+        NEW interpreter BEFORE maintenance;
     }
 }
 
