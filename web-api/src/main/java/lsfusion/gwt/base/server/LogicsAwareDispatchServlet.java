@@ -180,7 +180,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return dispatch;
     }
 
-    public T getLogics() {
+    public T getLogics() throws RemoteException {
         return blProvider.getLogics();
     }
 
