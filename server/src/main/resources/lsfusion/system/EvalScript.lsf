@@ -1,6 +1,6 @@
 MODULE EvalScript;
 
-REQUIRE System, Time;
+REQUIRE System, Service, Time;
 
 NAMESPACE System;
 
@@ -191,7 +191,7 @@ DESIGN interpreter {
 
 NAVIGATOR {
     configuration {
-        NEW interpreter AFTER performance;
+        NEW interpreter BEFORE maintenance;
     }
 }
 
