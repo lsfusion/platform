@@ -31,8 +31,8 @@ vacuumTablesAction 'Упаковать БД потаблично' () = {
 alterTableColumnsToLong 'Alter Table Columns To Long' = CUSTOM 'lsfusion.erp.utils.AlterTableColumnsToLongActionProperty' (Table);
 
 EXTEND FORM physicalModel PROPERTIES(t) BEFORE skipVacuum(t) GRID vacuumTableAction, alterTableColumnsToLong;
-EXTEND FORM admin PROPERTIES() vacuumTablesAction;
-DESIGN admin {
+EXTEND FORM maintenance PROPERTIES() vacuumTablesAction;
+DESIGN maintenance {
     database {
         MOVE PROPERTY(vacuumTablesAction());
     }
@@ -41,8 +41,8 @@ DESIGN admin {
 changeAllDates 'Сместить время всех свойств и ключей' = CUSTOM 'lsfusion.erp.utils.ChangeAllDatesActionProperty' () CONFIRM;
 secondsChangeAllDates 'Интервал в секундах' = DATA INTEGER ();
 
-EXTEND FORM admin PROPERTIES() changeAllDates, secondsChangeAllDates;
-DESIGN admin {
+EXTEND FORM maintenance PROPERTIES() changeAllDates, secondsChangeAllDates;
+DESIGN maintenance {
     rightColumn {
         NEW changeDates {
             caption = 'Сместить время';
