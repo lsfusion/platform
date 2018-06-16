@@ -69,8 +69,13 @@ public class TryActionProperty extends KeepContextActionProperty {
         Type tryType = tryAction.property.getSimpleRequestInputType(optimistic, inRequest);
         Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic, inRequest);
 
-        if (!optimistic && (tryType == null || finallyType == null)) {
-            return null;
+        if (!optimistic) {
+            if (tryType == null) {
+                return null;
+            }
+            if (finallyAction != null && finallyType == null) {
+                return null;
+            }
         }
 
         return tryType == null
