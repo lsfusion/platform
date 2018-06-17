@@ -7,6 +7,9 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +70,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
         this.exportName = exportName;
     }
 
-    public T getLogics() {
+    public T getLogics() throws RemoteException {
         return synchronizedGet(new Provider<T>() {
             @Override
             public T get() {
@@ -76,7 +79,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
         });
     }
 
-    private <T> T synchronizedGet(Provider<T> getter) {
+    private <T> T synchronizedGet(Provider<T> getter) throws RemoteException {
         readLogicsLock.lock();
 
         //double-check locking
@@ -100,12 +103,12 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
         }
     }
 
-    private void createRemoteLogics() {
+    private void createRemoteLogics() throws RemoteException {
         try {
             RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(registryHost, registryPort, exportName, "RemoteLogicsLoader");
 
             logics = (T) loader.getLogics();
-        } catch (Exception e) {
+        } catch (NotBoundException | MalformedURLException e) {
             logger.error("Ошибка при получении объекта логики: ", e);
             throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
         }
