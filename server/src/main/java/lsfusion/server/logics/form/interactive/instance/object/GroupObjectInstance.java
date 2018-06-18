@@ -684,7 +684,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             PropertyChange<ClassPropertyInterface> change;
             switch (propType) {
                 case FILTER:
-                    change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged));
+                    change = new PropertyChange<>(mappedProp.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
                     break;
                 case ORDER:
                     if(orders.isEmpty())
