@@ -109,8 +109,6 @@ public class OracleSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getFieldName(String name) {
-        if(name.equals("struct"))
-            return "aaaa";
         return BaseUtils.packWords(super.getFieldName(name), 30);
     }
 
