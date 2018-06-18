@@ -1,23 +1,24 @@
 package lsfusion.base;
 
-import java.util.Map;
-import java.util.HashMap;
+import lsfusion.base.col.MapFact;
+
 import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // объект Immutable и не подвержен memory leak и соответственно содержит только ссылки на GlobalObject'ы
 public interface GlobalObject {
     
-    Map<GlobalObject, Integer> compareMap = new HashMap<>();
+    ConcurrentHashMap<GlobalObject, Integer> uniqueCompareMap = MapFact.getGlobalConcurrentHashMap();
+    AtomicInteger globalCounter = new AtomicInteger();
     Comparator<GlobalObject> comparator = new Comparator<GlobalObject>() {
-        private int getCompareInt(GlobalObject concreteClass) {
-            synchronized(compareMap) {
-                Integer compareInt = compareMap.get(concreteClass);
-                if(compareInt==null) {
-                    compareInt = compareMap.size();
-                    compareMap.put(concreteClass, compareInt);
-                }
-                return compareInt;
+        private int getUniqueCompareInt(GlobalObject globalObject) {
+            Integer compareInt = uniqueCompareMap.get(globalObject);
+            if(compareInt==null) {
+                compareInt = globalCounter.incrementAndGet();
+                uniqueCompareMap.put(globalObject, compareInt);
             }
+            return compareInt;
         }
 
         public int compare(GlobalObject o1, GlobalObject o2) {
@@ -32,10 +33,13 @@ public interface GlobalObject {
             if(o2 instanceof GlobalInteger) {
                 return -1;
             } else {
-                compare1 = getCompareInt(o1);
-                compare2 = getCompareInt(o2);
+                compare1 = o1.hashCode();
+                compare2 = o2.hashCode();
+                if(compare1 == compare2) {
+                    compare1 = getUniqueCompareInt(o1);
+                    compare2 = getUniqueCompareInt(o2);
+                }
             }
-
             return compare1>compare2?1:(compare1<compare2?-1:0);
         }
     };
