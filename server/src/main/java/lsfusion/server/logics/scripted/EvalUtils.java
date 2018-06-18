@@ -27,8 +27,8 @@ public class EvalUtils {
         return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
     }
 
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script) throws EvaluationException {
-        return evaluate(BL, null, null, null, null, false, script);
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script, boolean action) throws EvaluationException {
+        return evaluate(BL, null, null, null, null, false, action ? EvalActionParser.parse(script) : script);
     }
     
     public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LCP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
@@ -110,5 +110,91 @@ public class EvalUtils {
 
         strBuilder.append(script);
         return strBuilder.toString();
+    }
+
+    private static class EvalActionParser {
+        private enum State {SCRIPT, PARAM, STRING, COMMENT}
+
+        private static String paramPrefix = "nvbxcz";
+
+        public static String parse(String script) {
+
+            if(script != null) {
+                if(!script.endsWith(";")) {
+                    script += ";";
+                }
+                StringBuilder result = new StringBuilder();
+                StringBuilder params = new StringBuilder();
+                StringBuilder currentParam = new StringBuilder();
+                State currentState = State.SCRIPT;
+                boolean prevSlash = false;
+                boolean prevBackSlash = false;
+
+                int i = 0;
+                while (i < script.length()) {
+                    char c = script.charAt(i);
+                    switch (currentState) {
+                        case SCRIPT:
+                            if (c == '/' && prevSlash) {
+                                //comment starts
+                                currentState = State.COMMENT;
+                                result.append(c);
+                            } else if (c == '\'') {
+                                //string literal starts
+                                currentState = State.STRING;
+                                result.append(c);
+                            } else if (c == '$') {
+                                //param starts
+                                currentState = State.PARAM;
+                                currentParam = new StringBuilder();
+                                break;
+                            } else {
+                                result.append(c);
+                            }
+                            break;
+                        case PARAM:
+                            if (Character.isDigit(c)) {
+                                //param continues
+                                currentParam.append(c);
+                            } else {
+                                //param ends
+                                String param = paramPrefix + currentParam;
+                                result.append(param);
+                                params.append(params.length() > 0 ? ", " : "").append(param);
+
+                                if (c == '/' && prevSlash) {
+                                    //comment starts
+                                    currentState = State.COMMENT;
+                                } else if (c == '\'') {
+                                    //string literal starts
+                                    currentState = State.STRING;
+                                } else {
+                                    currentState = State.SCRIPT;
+                                }
+                                result.append(c);
+                            }
+                            break;
+                        case STRING:
+                            if (c == '\'' && !prevBackSlash) {
+                                //string literal ends
+                                currentState = State.SCRIPT;
+                            }
+                            result.append(c);
+                            break;
+                        case COMMENT:
+                            if (c == '\n') {
+                                //comment ends
+                                currentState = State.SCRIPT;
+                            }
+                            result.append(c);
+                            break;
+                    }
+                    prevSlash = c == '/';
+                    prevBackSlash = c == '\\';
+                    i++;
+                }
+                return String.format("run(%s) {%s\n}", params, result);
+            } else return null;
+        }
     }
 }

@@ -23,9 +23,11 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
+import java.util.Map;
 
 public class ExternalUtils {
 
@@ -58,9 +60,7 @@ public class ExternalUtils {
         };
     }
 
-    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, 
-                                                  ContentType requestContentType, String[] headerNames, String[] headerValues, 
-                                                  String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(ExecInterface remoteExec, String url, String uri, String query, InputStream is, ContentType requestContentType, String[] headerNames, String[] headerValues, String logicsHost, Integer logicsPort, String logicsExportName) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 

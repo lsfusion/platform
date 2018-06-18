@@ -73,11 +73,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             try {
                 Charset charset = Charset.forName(request.charsetName);
                 String script = StringClass.text.parseHTTP(paramScript, charset);
-                if (action) {
-                    //оборачиваем в run без параметров
-                    script = "run() {" + script + "\n}";
-                }
-                LAP<?> runAction = businessLogics.evaluateRun(script);
+                LAP<?> runAction = businessLogics.evaluateRun(script, action);
                 if(runAction != null) {
                     result = executeExternal(runAction, request);
                 } else {
