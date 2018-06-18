@@ -1,7 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.ExternalUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
@@ -9,7 +8,6 @@ import org.springframework.web.HttpRequestHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLDecoder;
 
 public class ExternalRequestHandler implements HttpRequestHandler {
 
@@ -22,7 +20,8 @@ public class ExternalRequestHandler implements HttpRequestHandler {
             String query = request.getQueryString();
             String contentType = request.getContentType();
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
-                    query == null ? "" : query, request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
+                    query == null ? "" : query, request.getInputStream(), request.getParameterMap(),
+                    contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
 
             if (responseHttpEntity.response != null) {
                 response.setContentType(responseHttpEntity.response.getContentType().getValue());
@@ -33,8 +32,9 @@ public class ExternalRequestHandler implements HttpRequestHandler {
                 response.getWriter().print("Executed successfully");
 
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
-            throw new RuntimeException(e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.addHeader("Content-Type", "text/html; charset=" + request.getCharacterEncoding());
+            response.getWriter().print(e.getMessage() != null ? e.getMessage() : "Internal Server Error");
         }
     }
 }

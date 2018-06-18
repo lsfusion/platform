@@ -35,8 +35,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<P, ? extends ObjectValue> sourceToData = mapSource.join(context.getKeys());
-        String script = (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
-        return action ? EvalActionParser.parse(script) : script;
+        return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
     }
 
     private ObjectValue[] getParams(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -54,7 +53,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         String script = getScript(context);
 
         try {
-            LAP<?> runAction = context.getBL().evaluateRun(script);
+            LAP<?> runAction = context.getBL().evaluateRun(script, action);
             if (runAction != null)
                 runAction.execute(context, getParams(context));
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
@@ -73,91 +72,4 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private String getMessage(Throwable e) {
         return e.getMessage() == null ? String.valueOf(e) : e.getMessage();
     }
-
-    private static class EvalActionParser {
-        private enum State {SCRIPT, PARAM, STRING, COMMENT}
-
-        private static String paramPrefix = "nvbxcz";
-
-        public static String parse(String script) {
-
-            if(script != null) {
-                if(!script.endsWith(";")) {
-                    script += ";";
-                }
-                StringBuilder result = new StringBuilder();
-                StringBuilder params = new StringBuilder();
-                StringBuilder currentParam = new StringBuilder();
-                State currentState = State.SCRIPT;
-                boolean prevSlash = false;
-                boolean prevBackSlash = false;
-
-                int i = 0;
-                while (i < script.length()) {
-                    char c = script.charAt(i);
-                    switch (currentState) {
-                        case SCRIPT:
-                            if (c == '/' && prevSlash) {
-                                //comment starts
-                                currentState = State.COMMENT;
-                                result.append(c);
-                            } else if (c == '\'') {
-                                //string literal starts
-                                currentState = State.STRING;
-                                result.append(c);
-                            } else if (c == '$') {
-                                //param starts
-                                currentState = State.PARAM;
-                                currentParam = new StringBuilder();
-                                break;
-                            } else {
-                                result.append(c);
-                            }
-                            break;
-                        case PARAM:
-                            if (Character.isDigit(c)) {
-                                //param continues
-                                currentParam.append(c);
-                            } else {
-                                //param ends
-                                String param = paramPrefix + currentParam;
-                                result.append(param);
-                                params.append(params.length() > 0 ? ", " : "").append(param);
-
-                                if (c == '/' && prevSlash) {
-                                    //comment starts
-                                    currentState = State.COMMENT;
-                                } else if (c == '\'') {
-                                    //string literal starts
-                                    currentState = State.STRING;
-                                } else {
-                                    currentState = State.SCRIPT;
-                                }
-                                result.append(c);
-                            }
-                            break;
-                        case STRING:
-                            if (c == '\'' && !prevBackSlash) {
-                                //string literal ends
-                                currentState = State.SCRIPT;
-                            }
-                            result.append(c);
-                            break;
-                        case COMMENT:
-                            if (c == '\n') {
-                                //comment ends
-                                currentState = State.SCRIPT;
-                            }
-                            result.append(c);
-                            break;
-                    }
-                    prevSlash = c == '/';
-                    prevBackSlash = c == '\\';
-                    i++;
-                }
-                return String.format("run(%s) = {%s\n};", params, result);
-            } else return null;
-        }
-    }
-
 }

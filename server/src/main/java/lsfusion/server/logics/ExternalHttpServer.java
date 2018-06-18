@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpServer;
 import lsfusion.base.ExternalUtils;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.EventThreadInfo;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.MonitorServer;
@@ -17,6 +16,7 @@ import org.apache.http.entity.ContentType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -75,7 +75,7 @@ public class ExternalHttpServer extends MonitorServer {
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteLogics, request.getRequestURI().getPath(),
-                        request.getRequestURI().getRawQuery(), request.getRequestBody(), getContentType(request));
+                        request.getRequestURI().getRawQuery(), request.getRequestBody(), new HashMap<String, String[]>(), getContentType(request));
 
                 if (response.response != null)
                     sendResponse(request, response.response, response.response.getContentType().getValue(), response.contentDisposition);
@@ -85,7 +85,7 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.importLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, "Internal error occurred: " + e.getMessage());
+                    sendErrorResponse(request, e.getMessage());
                 } catch (Exception ignored) {
                 }
             } finally {
@@ -114,6 +114,7 @@ public class ExternalHttpServer extends MonitorServer {
 
         private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
             request.sendResponseHeaders(error ? 500 : 200, response.length);
+            request.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
             OutputStream os = request.getResponseBody();
             os.write(response);
             os.close();

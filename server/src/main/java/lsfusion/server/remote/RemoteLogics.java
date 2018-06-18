@@ -344,11 +344,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         if (paramScript != null) {
             try {
                 String script = StringClass.text.parseHTTP(paramScript, Charset.forName(charset));
-                if (action) {
-                    //оборачиваем в run без параметров
-                    script = "run() = {" + script + ";\n};";
-                }
-                LAP<?> runAction = businessLogics.evaluateRun(script);
+                LAP<?> runAction = businessLogics.evaluateRun(script, action);
                 if (runAction != null)
                     returnList = executeExternal(runAction, returnCanonicalNames, params, Charset.forName(charset));
             } catch (Exception e) {

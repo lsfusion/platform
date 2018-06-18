@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +44,7 @@ public class ExternalUtils {
     private static final String RETURNS_PARAM = "returns";
     private static final String PROPERTY_PARAM = "property";
 
-    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, ContentType requestContentType) throws IOException, MessagingException {
+    public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, Map<String, String[]> requestParams, ContentType requestContentType) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
@@ -57,7 +59,10 @@ public class ExternalUtils {
             paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
         } else if (uri.startsWith("/eval")) {
             Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-            if (script == null && !paramsList.isEmpty()) {
+            if (!requestParams.isEmpty()) {
+                script = script != null ? script : getScriptRequestParam(requestParams);
+                paramsList = getRequestParams(requestParams);
+            } else if (script == null && !paramsList.isEmpty()) {
                 //Первый параметр считаем скриптом
                 script = paramsList.get(0);
                 paramsList = paramsList.subList(1, paramsList.size());
@@ -83,6 +88,23 @@ public class ExternalUtils {
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
         }
         return new ExternalResponse(entity, contentDisposition);
+    }
+
+    private static String getScriptRequestParam(Map requestParams) {
+        Object params = requestParams.get(SCRIPT_PARAM);
+        if (params instanceof List && !((List) params).isEmpty()) {
+            return String.valueOf(((List) params).get(0));
+        } else return null;
+    }
+
+    private static List<Object> getRequestParams(Map<String, String[]> requestParams) {
+        List<Object> params = new ArrayList<>();
+        for (Map.Entry<String, String[]> entry : requestParams.entrySet()) {
+            if (!entry.getKey().equals(SCRIPT_PARAM)) {
+                params.addAll(Arrays.asList(entry.getValue()));
+            }
+        }
+        return params;
     }
 
     public static ContentType getContentType(String extension) {

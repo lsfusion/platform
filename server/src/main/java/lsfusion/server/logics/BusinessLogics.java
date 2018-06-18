@@ -75,10 +75,7 @@ import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.*;
-import lsfusion.server.logics.scripted.EvalUtils;
-import lsfusion.server.logics.scripted.MetaCodeFragment;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.*;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
@@ -167,8 +164,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
     @IdentityLazy
-    public LAP<?> evaluateRun(String script) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
-        ScriptingLogicsModule module = EvalUtils.evaluate(this, script);
+    public LAP<?> evaluateRun(String script, boolean action) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException  {
+        ScriptingLogicsModule module = EvalUtils.evaluate(this, script, action);
         String runName = module.getName() + ".run";
         return module.findAction(runName);
     }
