@@ -5,7 +5,6 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.sql.DataAdapter;
-import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -38,8 +37,8 @@ public class UploadToDBActionProperty extends ScriptingActionProperty {
             try {
                 if(type.trim().equals("Service_DBType.POSTGRE"))
                     adapter = new PostgreDataAdapter(db, host, user, password);
-                else if(type.trim().equals("Service_DBType.MSSQL")) 
-                    adapter = new MSSQLDataAdapter(db, host, user, password, instance);
+//                else if(type.trim().equals("Service_DBType.MSSQL"))
+//                    adapter = new MSSQLDataAdapter(db, host, user, password, instance);
                 else
                     throw new UnsupportedOperationException();
             } catch (Exception e) {
