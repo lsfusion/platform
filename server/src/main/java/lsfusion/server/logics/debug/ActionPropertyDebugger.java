@@ -55,6 +55,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static lsfusion.server.context.ThreadLocalContext.getRmiManager;
 import static lsfusion.server.logics.debug.ActionDelegationType.*;
 
 public class ActionPropertyDebugger implements DebuggerService {
@@ -94,7 +95,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         try {
             if(isEnabled()) {
                 DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
-                int port = SystemProperties.getDebuggerPort();
+                int port = getRmiManager().getDebuggerPort();
                 Registry registry = LocateRegistry.createRegistry(port);
                 registry.bind("lsfDebuggerService", stub);
             }

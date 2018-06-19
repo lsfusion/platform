@@ -40,6 +40,8 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     private int httpPort = 0;
 
+    private int debuggerPort = 0;
+
     private int exportPort = 0;
 
     private int jmxPort = 0;
@@ -70,6 +72,14 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     public void setHttpPort(int httpPort) {
         this.httpPort = httpPort;
+    }
+
+    public int getDebuggerPort() {
+        return debuggerPort;
+    }
+
+    public void setDebuggerPort(int debuggerPort) {
+        this.debuggerPort = debuggerPort;
     }
 
     public int getJmxPort() {
