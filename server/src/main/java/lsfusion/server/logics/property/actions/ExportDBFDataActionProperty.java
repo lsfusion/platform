@@ -4,10 +4,7 @@ import com.google.common.base.Throwables;
 import com.hexiong.jdbf.DBFWriter;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.IOUtils;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.ObjectType;
@@ -31,9 +28,9 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
 
     public ExportDBFDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
-                                       String charset) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
+                                       ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where,
+                                       ImOrderMap<String, Boolean> orders, LCP targetProp, String charset) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, orders, targetProp);
 
         this.charset = charset == null ? "UTF-8" : charset;
     }

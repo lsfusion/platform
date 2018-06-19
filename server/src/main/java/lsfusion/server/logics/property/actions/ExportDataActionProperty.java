@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
@@ -25,6 +26,7 @@ import lsfusion.server.session.Modifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 public abstract class ExportDataActionProperty<I extends PropertyInterface> extends ExtendContextActionProperty<I> {
 
@@ -33,6 +35,7 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
     private ImMap<String, CalcPropertyInterfaceImplement<I>> exprs;
     private ImMap<String, Type> types;
     private final CalcPropertyInterfaceImplement<I> where;
+    private ImOrderMap<String, Boolean> orders;
 
     private final LCP<?> targetProp;
 
@@ -40,13 +43,15 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
 
     public ExportDataActionProperty(LocalizedString caption, String extension,
                                     ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
-                                    ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp) {
+                                    ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
+                                    ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, ImOrderMap<String, Boolean> orders, LCP targetProp) {
         super(caption, innerInterfaces, mapInterfaces);
         this.extension = extension;
         this.fields = fields;
         this.exprs = exprs;
         this.types = types;
         this.where = where;
+        this.orders = orders;
         this.targetProp = targetProp;
 
 //        assert mapInterfaces.getSet().merge(writeTo.getInterfaces()).equals(innerInterfaces);
@@ -71,7 +76,7 @@ public abstract class ExportDataActionProperty<I extends PropertyInterface> exte
         final Modifier modifier = context.getModifier();
 
         final Query<I, String> query = getQuery(innerKeys, innerExprs, modifier);
-        ImList<ImMap<String, Object>> rows = query.execute(context).valuesList();
+        ImList<ImMap<String, Object>> rows = query.execute(context, orders, 0).valuesList();
 
         try {
             // можно было бы типы заранее высчитать, но могут быть значения сверху и тогда их тип будет неизвестен заранее

@@ -3,10 +3,7 @@ package lsfusion.server.logics.property.actions;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.IOUtils;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -28,9 +25,9 @@ public class ExportJSONDataActionProperty<I extends PropertyInterface> extends E
     public ExportJSONDataActionProperty(LocalizedString caption, String extension,
                                         ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                         ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
-                                        ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where, LCP targetProp,
-                                        boolean hasListOption) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
+                                        ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where,
+                                        ImOrderMap<String, Boolean> orders, LCP targetProp, boolean hasListOption) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, orders, targetProp);
         this.hasListOption = hasListOption;
     }
 
