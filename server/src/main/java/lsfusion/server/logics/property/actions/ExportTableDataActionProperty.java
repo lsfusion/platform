@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
@@ -18,8 +15,8 @@ public class ExportTableDataActionProperty<I extends PropertyInterface> extends 
     private boolean singleRow;
     public ExportTableDataActionProperty(LocalizedString caption, String extension, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                          ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types,
-                                         CalcPropertyInterfaceImplement<I> where, LCP targetProp, boolean singleRow) {
-        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, targetProp);
+                                         CalcPropertyInterfaceImplement<I> where, ImOrderMap<String, Boolean> orders, LCP targetProp, boolean singleRow) {
+        super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, orders, targetProp);
         this.singleRow = singleRow;
     }
 

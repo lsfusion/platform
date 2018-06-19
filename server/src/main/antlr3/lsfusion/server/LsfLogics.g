@@ -2016,6 +2016,8 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 
 	FormExportType exportType = null;
 
+    List<LCPWithParams> orderProperties = new ArrayList<>();
+    List<Boolean> orderDirections = new ArrayList<>();
 	LCPWithParams sheet = null;
 	LCPWithParams memo = null;
 	String separator = null;
@@ -2028,7 +2030,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, hasListOption, separator, noHeader, charset);
+			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, hasListOption, separator, noHeader, charset, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
@@ -2041,7 +2043,14 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
+		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
+        	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
+        )?
 		('TO' pUsage=propertyUsage)?
+	;
+
+propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, boolean order = false]
+	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $order = true; })?
 	;
 
 nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<>(), List<LCPWithParams> properties = new ArrayList<>()]

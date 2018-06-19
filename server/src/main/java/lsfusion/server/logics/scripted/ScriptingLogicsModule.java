@@ -7,6 +7,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -3257,7 +3258,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LCPWithParams> exprs, LCPWithParams whereProperty,
-                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
+                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, String charset,
+                                                         List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : BL.LM.exportFile;
 
@@ -3290,10 +3292,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         });
 
+        ImOrderMap<String, Boolean> orders = MapFact.EMPTYORDER();
+        for(int i = 0; i < orderProperties.size(); i++) {
+            for(LCPWithParams expr : exprs) {
+                if(expr.getLP().equals(orderProperties.get(i).getLP())) {
+                    orders = orders.addOrderExcl(idSet.get(exprs.indexOf(expr)), orderDirections.get(i));
+                    break;
+                }
+            }
+
+        }
+
         ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
 
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LAP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, targetProp, whereProperty != null, hasListOption, separator, noHeader, charset, resultParams.toArray());
+        LAP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, orders, targetProp, whereProperty != null, hasListOption, separator, noHeader, charset, resultParams.toArray());
         return new LAPWithParams(result, resultInterfaces);
     }
 
