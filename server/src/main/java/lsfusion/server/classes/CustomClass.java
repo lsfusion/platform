@@ -662,13 +662,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return map;
     }
 
-    public boolean hasStaticObjects() {
-        for(ConcreteCustomClass child : getUpSet().getSetConcreteChildren())
-            if(child.hasConcreteStaticObjects())
-                return true;
-        return false;
-    }
-
     public boolean isComplex;
 
     @IdentityLazy

@@ -86,7 +86,7 @@ staticName 'Статическое имя' (StaticObject object) = staticName[Ob
 nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
 
 staticCaption 'Статическое имя' = DATA ISTRING[100] (Object); // temporary for migration
-staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject;
+staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject IN id;
 
 objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));

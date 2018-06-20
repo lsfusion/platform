@@ -24,12 +24,8 @@ public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends 
 
         object = addSingleGroupObject(cls, version);
 
-        boolean hasStaticObjects = cls.hasStaticObjects();
-        if(hasStaticObjects)
-            addPropertyDraw(LM.staticCaption, version, object);
-
         ImList<PropertyClassImplement> idProps = LM.recognizeGroup.getProperties(cls, version);
-        if(idProps.isEmpty() && !hasStaticObjects) {
+        if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
             LCP objValueProp = LM.getObjValueProp(this, object);
             PropertyDrawEntity objectValue = addPropertyDraw(objValueProp, version, object);
