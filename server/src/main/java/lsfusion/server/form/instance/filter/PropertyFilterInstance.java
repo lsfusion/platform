@@ -20,13 +20,16 @@ import java.sql.SQLException;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
-    public final CalcPropertyObjectInstance<P> property;
+    protected final CalcPropertyObjectInstance<P> property;
     public final boolean resolveAdd;
 
     public PropertyFilterInstance(CalcPropertyObjectInstance<P> property, boolean resolveAdd) {
         this.property = property;
         this.resolveAdd = resolveAdd;
+        this.toDraw = null;
     }
+    
+    private final GroupObjectInstance toDraw; // only for user filters
 
     public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
@@ -35,11 +38,12 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         if(inStream.readBoolean())
             propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializePropertyKeys(propertyDraw, inStream, form)); 
         property = propertyObject;
+        toDraw = propertyDraw.toDraw;
         resolveAdd = false;
     }
 
     public GroupObjectInstance getApplyObject() {
-        return property.getApplyObject();
+        return toDraw != null ? toDraw : property.getApplyObject();
     }
 
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {

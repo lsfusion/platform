@@ -23,11 +23,6 @@ public class IsClassFilterInstance<P extends PropertyInterface> extends Property
 
     final CustomClass isClass;
 
-    public IsClassFilterInstance(CalcPropertyObjectInstance<P> property, CustomClass isClass, boolean resolveAdd) {
-        super(property, resolveAdd);
-        this.isClass = isClass;
-    }
-
     public IsClassFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream, form);
         isClass = form.getCustomClass(inStream.readLong());

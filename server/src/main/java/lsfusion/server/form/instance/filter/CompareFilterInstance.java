@@ -30,17 +30,6 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     public Compare compare;
     public CompareInstance value;
 
-    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareInstance value) {
-        this(property, compare, value, false);
-    }
-
-    // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
-    public CompareFilterInstance(CalcPropertyObjectInstance<P> property, Compare compare, CompareInstance value, boolean resolve) {
-        super(property, resolve);
-        this.compare = compare;
-        this.value = value;
-    }
-
     public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
         negate = inStream.readBoolean();
