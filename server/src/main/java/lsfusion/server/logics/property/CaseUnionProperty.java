@@ -253,24 +253,37 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
-        MList<ActionCase<Interface>> mCases = ListFact.mList();
-        for(CalcCase<Interface> propCase : getCases()) {
+        int lastNotNullAction = 0;
+        ImList<CalcCase<Interface>> cases = getCases();
+        MList<ActionCase<Interface>> mActionCases = ListFact.mList();
+        for(CalcCase<Interface> propCase : cases) {
             ActionPropertyMapImplement<?, Interface> editAction = propCase.implement.mapEditAction(editActionSID, filterProperty);
-            if(editAction == null)
-                break;
+            if(isExclusive) {
+                if(editAction == null)
+                    continue;                                
+            } else {
+                if(editAction == null)
+                    editAction = DerivedProperty.createEmptyAction();                    
+                else
+                    lastNotNullAction = mActionCases.size() + 1;
+            }
 
             CalcPropertyMapImplement<?, Interface> where;
             if(propCase.isSimple())
                 where = ((CalcPropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
                 where = (CalcPropertyMapImplement<?, Interface>) propCase.where;
-            mCases.add(new ActionCase<>(where, editAction));
+            mActionCases.add(new ActionCase<>(where, editAction));
         }
-        ImList<ActionCase<Interface>> cases = mCases.immutableList();
-        if(cases.isEmpty())
+        ImList<ActionCase<Interface>> actionCases = mActionCases.immutableList();
+        
+        if(!isExclusive && lastNotNullAction < actionCases.size()) // optimization, cutting nulls in the end
+            actionCases = actionCases.subList(0, lastNotNullAction);
+            
+        if(actionCases.isEmpty())
             return null;
 
-        return DerivedProperty.createCaseAction(interfaces, isExclusive, cases);
+        return DerivedProperty.createCaseAction(interfaces, isExclusive, actionCases);
     }
 
     @Override
