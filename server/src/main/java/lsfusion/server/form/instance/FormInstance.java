@@ -1491,7 +1491,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (ComponentView component : containers.it())
             if (!isLocalHidden(component))
                 return false;
-        // для случая, когда группа FORCE PANEL, в группе только свойства, зависящие от ключей, и находятся не в первом табе.
+        // для случая, когда группа PANEL, в группе только свойства, зависящие от ключей, и находятся не в первом табе.
         // наличие ключа влияет на видимость этих свойств, которая в свою очередь влияет на видимость таба.
         // неполное решение, т.к. возможны ещё более сложные случаи
         if (group.isNull() && group.entity.isForcedPanel()) {
