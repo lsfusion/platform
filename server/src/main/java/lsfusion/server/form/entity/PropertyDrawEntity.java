@@ -345,7 +345,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     return editAction.getGroupChange();
                 else { // if CHANGE action requests DataClass, then use this action
                     assert CHANGE_WYS.equals(actionId);
-                    if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default 
+                    if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
                         return editAction;
                 }
             }
