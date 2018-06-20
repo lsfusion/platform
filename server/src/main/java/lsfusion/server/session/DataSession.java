@@ -1884,7 +1884,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             if (attempts >= settings.getConflictSleepThreshold())
                                 try {
                                     ServerLoggers.sqlHandLogger.info("Sleep started after conflict updates : " + attempts);
-                                    Thread.sleep((long) (BaseUtils.pow(settings.getConflictSleepTimeDegree(), attempts) * 1000));
+                                    Thread.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
                                     ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
                                 } catch (InterruptedException e) {
                                     ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
