@@ -1,6 +1,7 @@
 package lsfusion.erp.utils.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTSheetProtection;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,6 +65,11 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
                         Sheet sheet = it.next();
                         if (password != null) {
                             sheet.protectSheet(password);
+                            //allow resize images
+                            CTSheetProtection protection = ReflectionUtils.invokePrivateMethod(sheet.getClass(), sheet, "safeGetProtectionField", new Class<?>[0]);
+                            if(protection != null) {
+                                protection.setObjects(false);
+                            }
                         }
                     }
                     try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
