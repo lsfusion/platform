@@ -718,8 +718,6 @@ public class ReportGenerator {
                 return new JRXlsExporter();
             case XLSX:
                 return new JRXlsxExporter();
-            case PDF:
-                return new JRPdfExporter();
             case DOC:
                 return new JRDocxExporter();
             case DOCX:
@@ -728,8 +726,9 @@ public class ReportGenerator {
                 return new JRRtfExporter();
             case HTML:
                 return new ReportHTMLExporter();
+            default:
+                return new JRPdfExporter(); // by default exporting to pdf
         }
-        throw new UnsupportedOperationException();
     }
 
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) throws ClassNotFoundException, IOException, JRException {

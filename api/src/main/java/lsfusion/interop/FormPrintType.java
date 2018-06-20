@@ -32,7 +32,7 @@ public enum FormPrintType implements FormStaticType {
             case HTML:
                 return "html";
             default:
-                return "pdf"; // по умолчанию экспортируем в PDF
+                return "pdf"; // by default exporting to pdf
         }
     }
 }
