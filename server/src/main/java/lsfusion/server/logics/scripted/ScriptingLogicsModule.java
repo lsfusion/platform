@@ -3272,7 +3272,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals, List<LCPWithParams> exprs, LCPWithParams whereProperty,
-                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, boolean noEscape, String charset,
+                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                          List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : null;
@@ -3318,7 +3318,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP result = null;
         try {
             result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exIds, exLiterals, orders, targetProp,
-                    whereProperty != null, separator, noHeader, noEscape, charset, resultParams.toArray());
+                    whereProperty != null, separator, noHeader, noEscape, charset, attr, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
