@@ -1,8 +1,10 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.GlobalObject;
 import lsfusion.base.SoftHashMap;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.server.ServerLoggers;
@@ -20,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Aspect
 public class CacheAspect {
@@ -405,5 +408,15 @@ public class CacheAspect {
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
         return lazyTwinExecute(args[0], thisJoinPoint, switchArgs);
+    }
+
+    public final static ConcurrentHashMap<Object, Object> twins = MapFact.getGlobalConcurrentHashMap();
+    public static <T extends GlobalObject> T twinObject(T object) {
+        T twin = (T) twins.get(object);
+        if(twin!=null)
+            return twin;
+
+        twins.put(object, object);
+        return object;
     }
 }

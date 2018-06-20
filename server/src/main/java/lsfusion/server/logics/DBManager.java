@@ -658,7 +658,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             Properties props = new Properties();
             props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
             props.put("dayoff.fieldname", lp.property.getDBName());
-            adapter.ensureScript("jumpWorkdays.sc", props);
+            adapter.ensureScript("jumpWorkdays.sql", props);
         }
 
         SQLSyntax syntax = getSyntax();

@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
@@ -156,9 +157,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
-        if (restartManager.isPendingRestart() && (navigatorInfo.login == null || !navigatorInfo.login.equals("admin"))) {
-            return null;
-        }
+        if (restartManager.isPendingRestart() && (navigatorInfo.login == null || !navigatorInfo.login.equals("admin")))
+            throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
 
         return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
     }

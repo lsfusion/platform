@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
+import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.ReflectionUtils;
@@ -7,6 +8,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -27,7 +29,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     }
 
     @Override
-    public RemoteNavigatorInterface getNavigator() {
+    public RemoteNavigatorInterface getNavigator() throws RemoteException {
         //double-check locking
         if (navigator == null) {
             synchronized (navigatorLock) {
@@ -68,16 +70,13 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                                 bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
                                 javaVersion, null, language, country), true);
-//                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password, 
-//                                bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, 
-//                                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null), true);
-                        if (unsynced == null) {
-                            throw new IllegalStateException("Не могу создать навигатор.");
-                        }
+//                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password,
+//                                bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
+//                                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
                         navigator = unsynced; // ReflectionUtils.makeSynchronized(RemoteNavigatorInterface.class, unsynced) - в десктопе не синхронизировалось, непонятно зачем здесь синхронизировать
                     } catch (RemoteException e) {
                         blProvider.invalidate();
-                        throw new RuntimeException("Не могу создать навигатор.", e);
+                        throw e;
                     }
                 }
             }

@@ -198,8 +198,13 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
             @Override
             public void onWindowClosing(Window.ClosingEvent event) {
-                windowsController.storeWindowsSizes();
-                clean();
+                try {
+                    if (windowsController != null) {
+                        windowsController.storeWindowsSizes();
+                    }
+                } finally {
+                    clean();
+                }
             }
         });
 

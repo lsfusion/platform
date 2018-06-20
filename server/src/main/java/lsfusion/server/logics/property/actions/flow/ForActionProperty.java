@@ -19,6 +19,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -489,4 +490,26 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return pushFor.push(mapPushInterfaces.result.filterRev(context).valuesSet(), mapPush,
                 DerivedProperty.mapImplements(orders, mapPushInterfaces.result), ordersNotNull, mapInnerInterfaces.result).map(mapPushInterfaces.result.reverse());
     }
+
+    @Override
+    public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
+        Type actionType = action.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type elseType = elseAction == null ? null : elseAction.property.getSimpleRequestInputType(optimistic, inRequest);
+
+        if (!optimistic) {
+            if (actionType == null) {
+                return null;
+            }
+            if (elseAction != null && elseType == null) {
+                return null;
+            }
+        }
+
+        return actionType == null
+                ? elseType
+                : elseType == null
+                ? actionType
+                : actionType.getCompatible(elseType);
+    }
+
 }

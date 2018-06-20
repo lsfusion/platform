@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
+import lsfusion.server.caches.CacheAspect;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.caches.hash.HashContext;
@@ -313,7 +314,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     @ManualLazy
     public Struct getValueClass() {
         if (struct == null) {
-            struct = ThreadLocalContext.getLogicsInstance().twinObject(new Struct(keys, properties, classes, propertyClasses, getTableStatKeys(), getStatProps()));
+            struct = CacheAspect.twinObject(new Struct(keys, properties, classes, propertyClasses, getTableStatKeys(), getStatProps())); // possibly premature optimization, but it\s here for a pretty long time, so just in case
         }
         return struct;
     }

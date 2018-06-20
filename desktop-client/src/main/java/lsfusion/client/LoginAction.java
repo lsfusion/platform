@@ -6,10 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
-import lsfusion.interop.exceptions.LockedException;
-import lsfusion.interop.exceptions.LoginException;
-import lsfusion.interop.exceptions.RemoteInternalException;
-import lsfusion.interop.exceptions.RemoteMessageException;
+import lsfusion.interop.exceptions.*;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.commons.codec.binary.Base64;
 
@@ -304,10 +301,6 @@ public final class LoginAction {
             remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
                     loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
                     cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize, language, country), true);
-            if (remoteNavigator == null) {
-                Main.remoteLoader = null;
-                return PENDING_RESTART_WARNING;
-            }
         } catch (CancellationException ce) {
             return CANCELED;
         } catch (UnknownHostException e) {
@@ -322,6 +315,10 @@ public final class LoginAction {
         } catch (LockedException e) {
             e.printStackTrace();
             return LOCKED_ERROR;
+        } catch (ServerRestartingException e) {
+            e.printStackTrace();
+            Main.remoteLoader = null;
+            return PENDING_RESTART_WARNING;
         } catch (RemoteMessageException e) {
             e.printStackTrace();
             return e.getMessage();
