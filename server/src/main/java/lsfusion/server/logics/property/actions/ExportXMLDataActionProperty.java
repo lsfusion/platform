@@ -20,14 +20,16 @@ import java.io.PrintWriter;
 
 public class ExportXMLDataActionProperty<I extends PropertyInterface> extends ExportDataActionProperty<I> {
     private boolean hasListOption;
+    private boolean attr;
 
     public ExportXMLDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs,
                                        ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where,
-                                       ImOrderMap<String, Boolean> orders, LCP targetProp, boolean hasListOption) {
+                                       ImOrderMap<String, Boolean> orders, LCP targetProp, boolean hasListOption, boolean attr) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, orders, targetProp);
         this.hasListOption = hasListOption;
+        this.attr = attr;
     }
 
     @Override
@@ -65,9 +67,13 @@ public class ExportXMLDataActionProperty<I extends PropertyInterface> extends Ex
         for (String key : row.keyIt()) {
             String cellValue = fieldTypes.getType(key).formatString(row.get(key));
             if (cellValue != null) {
-                Element element = new Element(key);
-                element.addContent(cellValue);
-                parentElement.addContent(element);
+                if(attr) {
+                    parentElement.setAttribute(key, cellValue);
+                } else {
+                    Element element = new Element(key);
+                    element.addContent(cellValue);
+                    parentElement.addContent(element);
+                }
             }
         }
     }
