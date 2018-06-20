@@ -646,7 +646,8 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Export property action ----------------- //
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator,
+                                         boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
@@ -657,7 +658,7 @@ public abstract class LogicsModule {
         where = DerivedProperty.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, mapInterfaces, aliases, literals, exprs, where, orders, false, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
         
