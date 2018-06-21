@@ -3247,10 +3247,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 ids, props, nulls, charset, baseLM)), params);
     }
 
-    public LAPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        ImOrderSet<LCP> props = findLPsForImport(propUsages, oldContext, newContext);
-        LAPWithParams importAction = addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(/*fileProp.property.property.getValueClass(ClassType.valuePolicy), */format, ids, props, nulls, baseLM)), Collections.singletonList(fileProp));
-        return proceedImportDoClause(false, doAction, elseAction, oldContext, newContext, props, nulls, importAction);
+    public LAPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages,
+                                                         List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext,
+                                                         List<TypedParameter> newContext, boolean hasListOption) throws ScriptingErrorLog.SemanticErrorException {
+        ImOrderSet<LCP> props = findLPsForImport(propUsages, hasListOption, oldContext, newContext);
+        LAPWithParams importAction = addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(format, ids, props, nulls, hasListOption, baseLM)), Collections.singletonList(fileProp));
+        return proceedImportDoClause(hasListOption, doAction, elseAction, oldContext, newContext, props, nulls, importAction);
     }
 
     public ImList<Type> getTypesForExportProp(List<LCPWithParams> paramProps, List<TypedParameter> params) {

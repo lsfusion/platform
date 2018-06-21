@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ImportTableDataActionProperty extends ImportDataActionProperty {
-    public ImportTableDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
-        super(1, ids, properties, nulls, baseLM);
+    public ImportTableDataActionProperty(List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, boolean hasListOption, BaseLogicsModule baseLM) {
+        super(1, ids, properties, nulls, hasListOption, baseLM);
     }
 
     @Override

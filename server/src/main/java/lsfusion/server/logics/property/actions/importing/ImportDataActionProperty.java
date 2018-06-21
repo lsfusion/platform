@@ -99,9 +99,10 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
         return new ImportDBFDataActionProperty(paramsCount, hasWheres, hasMemo, ids, properties, nulls, charset, baseLM);
     }
 
-    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, ImOrderSet<LCP> properties, List<Boolean> nulls, BaseLogicsModule baseLM) {
-        if (format == ImportSourceFormat.TABLE) {
-            return new ImportTableDataActionProperty(ids, properties, nulls, baseLM);
+    public static ImportDataActionProperty createProperty(ImportSourceFormat format, List<String> ids, ImOrderSet<LCP> properties,
+                                                          List<Boolean> nulls, boolean hasListOption, BaseLogicsModule baseLM) {
+        if (format == ImportSourceFormat.TABLE || format == ImportSourceFormat.LIST) {
+            return new ImportTableDataActionProperty(ids, properties, nulls, hasListOption, baseLM);
         } else if (format == ImportSourceFormat.MDB) {
             return new ImportMDBDataActionProperty(ids, properties, nulls, baseLM);
         } else if(format == null)
