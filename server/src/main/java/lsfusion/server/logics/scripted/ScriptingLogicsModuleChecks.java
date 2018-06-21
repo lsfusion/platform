@@ -59,9 +59,9 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkProperty(LCP lp, String name, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkProperty(LP lp, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
-            errLog.emitPropertyNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
+            errLog.emitPropertyNotFoundError(parser, name);
         }
     }
 

@@ -518,7 +518,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if(!nullIfNotFound)
-            checks.checkProperty(property, sourceName == null ? name : sourceName, params);
+            checks.checkProperty(property, sourceName == null ? name : sourceName);
         return property;
     }
     private LAP<?> findLAPByNameAndClasses(String name, String sourceName, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
