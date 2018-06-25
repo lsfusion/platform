@@ -74,7 +74,7 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
             else if (type instanceof IntegerClass)
                 dbfFields.add(new OverJDBField(field, 'N', 10, 0));
             else if (type instanceof NumericClass)
-                dbfFields.add(new OverJDBField(field, 'N', ((NumericClass) type).getWhole(), ((NumericClass) type).getPrecision()));
+                dbfFields.add(new OverJDBField(field, 'N', ((NumericClass) type).getLength(), ((NumericClass) type).getPrecision()));
             else if (type instanceof ObjectType)
                 dbfFields.add(new OverJDBField(field, 'N', 18, 0));
             else if (type instanceof DateClass || type instanceof DateTimeClass) {

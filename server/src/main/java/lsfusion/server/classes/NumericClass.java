@@ -50,6 +50,10 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return length-precision;
     }
 
+    public byte getLength() {
+        return length;
+    }
+
     public int getPrecision() {
         return precision;
     }
