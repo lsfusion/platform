@@ -932,9 +932,16 @@ public abstract class GroupingDialog extends JDialog {
 
             LinkedHashMap<Integer, PivotColumn> pivotColumns = getSelectedPivotColumns();
             int pivotDataFieldsCount = getSelectedPivotDataFieldsCount();
-            
-            for (int i = pivotDataFieldsCount; i > 0; i--) {
+
+            //сначала получаем все Fields из HiddenFields, так как при проставлении Orientation они уходят из HiddenFields
+            List<Dispatch> dataFieldDispatchList = new ArrayList<>();
+            for (int i = 1; i <= pivotDataFieldsCount; i++) {
                 Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + pivotColumns.size() + 1)).toDispatch();
+                dataFieldDispatchList.add(fieldDispatch);
+            }
+            //заменять на foreach нельзя, т.к. нам важен порядок
+            for (int i = 0; i < dataFieldDispatchList.size(); i++) {
+                Dispatch fieldDispatch = dataFieldDispatchList.get(i);
                 Dispatch.put(fieldDispatch, "Orientation", new Variant(xlDataField));
                 Dispatch.put(fieldDispatch, "Function", new Variant(xlSum));
                 String caption = Dispatch.get(fieldDispatch, "Caption").getString().replace("Сумма по полю ", "");
