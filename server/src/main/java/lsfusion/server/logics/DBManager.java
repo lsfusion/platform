@@ -106,8 +106,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private String dbNamingPolicy;
     private Integer dbMaxIdLength;
 
-    public boolean needExtraUpdateStats = false;
-
     private BaseLogicsModule<?> LM;
 
     private ReflectionLogicsModule reflectionLM;

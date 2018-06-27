@@ -761,13 +761,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 LM.onStarted.execute(session, getStack());
                 session.apply(businessLogics, getStack());
             }
-            if(dbManager.needExtraUpdateStats) {
-                try (DataSession session = dbManager.createSession()) {
-                    dbManager.updateStats(session.sql);
-                    session.apply(businessLogics, getStack());
-                }
-            }
-
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
