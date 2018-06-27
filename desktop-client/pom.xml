@@ -83,6 +83,11 @@
             <groupId>net.sf.fax4j</groupId>
             <artifactId>fax4j</artifactId>
         </dependency>
+        <!--this plugin fix errors of default ImageIO-->
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-jpeg</artifactId>
+        </dependency>
         <dependency>
             <groupId>javax.jnlp</groupId>
             <artifactId>jnlp-api</artifactId>
