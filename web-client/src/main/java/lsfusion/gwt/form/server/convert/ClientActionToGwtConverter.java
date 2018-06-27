@@ -76,7 +76,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         switch (modalityType) {
             case DOCKED: return GModalityType.DOCKED;
             case MODAL: return GModalityType.MODAL;
-            case FULLSCREEN_MODAL: return GModalityType.FULLSCREEN_MODAL;
             case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
             case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
         }

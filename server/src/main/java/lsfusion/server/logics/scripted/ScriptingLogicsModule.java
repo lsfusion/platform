@@ -2884,12 +2884,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<O> contextObjects = mContextObjects.immutableList();
         ImList<CalcProperty> contextProps = mContextProps.immutableList();
 
-        if(windowType == null) {
-            if (!inputObjects.isEmpty())
-                windowType = WindowFormType.DIALOG;
-            else 
-                windowType = WindowFormType.FLOAT;
-        }
+        if(windowType == null)
+            windowType = WindowFormType.FLOAT;
 
         List<LCPWithParams> propParams = new ArrayList<>();
         propParams.addAll(contextLPs);

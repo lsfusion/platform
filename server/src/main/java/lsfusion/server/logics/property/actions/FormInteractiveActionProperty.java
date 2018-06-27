@@ -40,13 +40,13 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
     
     private ModalityType getModalityType() {
         if(syncType) {
-            if (windowType == WindowFormType.FLOAT)
+            if (windowType == WindowFormType.FLOAT) {
+                if(!inputObjects.isEmpty())
+                    return ModalityType.DIALOG_MODAL;
                 return ModalityType.MODAL;
-            else if (windowType == WindowFormType.DOCKED)
+            } else {
+                assert (windowType == WindowFormType.DOCKED);
                 return ModalityType.DOCKED_MODAL;
-            else {
-                assert (windowType == WindowFormType.DIALOG);
-                return ModalityType.DIALOG_MODAL;
             }
         } else
             return ModalityType.DOCKED;

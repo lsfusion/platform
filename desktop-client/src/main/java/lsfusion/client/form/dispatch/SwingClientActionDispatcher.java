@@ -189,7 +189,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     super.hideDialog();
                     afterModalActionInSameEDT(false);
                 }
-            }.showDialog(modality.isFullScreen());
+            }.showDialog(false);
         } else {
             Main.frame.runForm(action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
         }
