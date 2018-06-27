@@ -42,7 +42,6 @@ import static lsfusion.server.context.ThreadLocalContext.localize;
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
     SMTPMessage message;
-    Multipart mp = new MimeMultipart();
     Properties mailProps = new Properties();
     String userName;
     String password;
@@ -99,11 +98,12 @@ public class EmailSender {
         return Session.getInstance(mailProps, null);
     }
 
-    private void setMessageHeading() throws MessagingException {
+    private void setMessageHeading(String subject) throws MessagingException {
         message = new SMTPMessage(getSession());
         message.setFrom();
         message.setSentDate(new java.util.Date());
         setRecipients(emails);
+        message.setSubject(subject, "utf-8");
     }
 
 
@@ -113,7 +113,7 @@ public class EmailSender {
         }
     }
 
-    public void setText(String text) throws MessagingException, IOException {
+    public void setText(Multipart mp, String text) throws MessagingException, IOException {
         MimeBodyPart textPart = new MimeBodyPart();
         textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, "text/html; charset=utf-8")));
         textPart.setDisposition(Part.INLINE);
@@ -146,23 +146,23 @@ public class EmailSender {
         }
     }
 
-    public void attachFile(AttachmentProperties attachment) throws MessagingException, IOException {
+    public void attachFile(Multipart mp, AttachmentProperties attachment) throws MessagingException, IOException {
         FileDataSource fds = new FileDataSource(attachment.fileName);
         ByteArrayDataSource dataSource = new ByteArrayDataSource(fds.getInputStream(), getMimeType(attachment.format));
-        attachFile(dataSource, attachment.attachmentName);
+        attachFile(mp, dataSource, attachment.attachmentName);
     }
 
-    public void attachFile(byte[] buf, String attachmentName) throws MessagingException {
+    public void attachFile(Multipart mp, byte[] buf, String attachmentName) throws MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(AttachmentFormat.PDF));
-        attachFile(dataSource, attachmentName);
+        attachFile(mp, dataSource, attachmentName);
     }
     
-    public void attachFile(byte[] buf, String name , String extension) throws MessagingException {
+    public void attachFile(Multipart mp, byte[] buf, String name , String extension) throws MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(extension));
-        attachFile(dataSource, name);    
+        attachFile(mp, dataSource, name);
     }
 
-    private void attachFile(DataSource source, String attachmentName) throws MessagingException {
+    private void attachFile(Multipart mp, DataSource source, String attachmentName) throws MessagingException {
         MimeBodyPart filePart = new MimeBodyPart();
         filePart.setDataHandler(new DataHandler(source));
         filePart.setFileName(attachmentName);
@@ -192,22 +192,22 @@ public class EmailSender {
     public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         assert inlineFiles != null && attachments != null && files != null && inlineTexts != null;
 
-        setMessageHeading();
-        message.setSubject(subject, "utf-8");
+        Multipart mp = new MimeMultipart();
+        setMessageHeading(subject);
 
         for(String inlineText : inlineTexts)
-            setText(inlineText);
+            setText(mp, inlineText);
         if(!inlineFiles.isEmpty())
-            setText(createInlinePart(inlineFiles));
+            setText(mp, createInlinePart(inlineFiles));
 
         for (AttachmentProperties attachment : attachments) {
-            attachFile(attachment);
+            attachFile(mp, attachment);
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
-            attachFile(entry.getKey().array, entry.getValue());
+            attachFile(mp, entry.getKey().array, entry.getValue());
         }
         for (Map.Entry<ByteArray, Pair<String, String>> entry : customAttachments.entrySet()) {
-            attachFile(entry.getKey().array, entry.getValue().first, entry.getValue().second);
+            attachFile(mp, entry.getKey().array, entry.getValue().first, entry.getValue().second);
         }
 
         message.setContent(mp);
@@ -217,10 +217,11 @@ public class EmailSender {
     public void sendSimpleMail(ExecutionContext context, String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
         assert attachments != null;
 
-        setMessageHeading();
-        message.setSubject(subject, "utf-8");
+        Multipart mp = new MimeMultipart();
+        setMessageHeading(subject);
+
         for (AttachmentProperties attachment : attachments) {
-            attachFile(attachment);
+            attachFile(mp, attachment);
         }
         message.setContent(mp);
         
@@ -258,16 +259,16 @@ public class EmailSender {
     public void sendPlainMail(ExecutionContext context, String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         assert inlineForms != null && attachments != null && files != null;
 
-        setMessageHeading();
-        message.setSubject(subject, "utf-8");
+        Multipart mp = new MimeMultipart();
+        setMessageHeading(subject);
 
-        setText(inlineForms);
+        setText(mp, inlineForms);
 
         for (AttachmentProperties attachment : attachments) {
-            attachFile(attachment);
+            attachFile(mp, attachment);
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
-            attachFile(entry.getKey().array, entry.getValue());
+            attachFile(mp, entry.getKey().array, entry.getValue());
         }
 
         message.setContent(mp);
