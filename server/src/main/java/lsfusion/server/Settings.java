@@ -1814,15 +1814,15 @@ public class Settings implements Cloneable {
         this.maxEdgeIterations = maxEdgeIterations;
     }
 
-    private int minClassDataIndexCount = 1000; // при превышении какого количества записей строить индексы
-
-    public int getMinClassDataIndexCount() {
-        return minClassDataIndexCount;
-    }
-
-    public void setMinClassDataIndexCount(int minClassDataIndexCount) {
-        this.minClassDataIndexCount = minClassDataIndexCount;
-    }
+//    private int minClassDataIndexCount = 1000; // при превышении какого количества записей строить индексы
+//
+//    public int getMinClassDataIndexCount() {
+//        return minClassDataIndexCount;
+//    }
+//
+//    public void setMinClassDataIndexCount(int minClassDataIndexCount) {
+//        this.minClassDataIndexCount = minClassDataIndexCount;
+//    }
 
     private boolean explainNoAnalyze = false;
 
