@@ -74,6 +74,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private Map<Long, SyncExecution> syncExecuteServerInvocationMap = MapFact.mAddRemoveMap();
     private Map<Long, SyncExecution> syncContinueServerInvocationMap = MapFact.mAddRemoveMap();
+    private Map<Long, SyncExecution> syncThrowInServerInvocationMap = MapFact.mAddRemoveMap();
     private Map<Long, SyncExecution> syncProcessRMIRequestMap = MapFact.mAddRemoveMap();
 
     public RemoteForm(F form, int port, RemoteFormListener remoteFormListener, ExecutionStack upStack) throws RemoteException {
@@ -779,7 +780,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private <T> T processRMIRequest(long requestIndex, long lastReceivedRequestIndex, final EExecutionStackCallable<T> request) throws RemoteException {
         Optional<?> optionalResult = recentResults.get(requestIndex);
         if (optionalResult != null) {
+            assert requestIndex >= minReceivedRequestIndex;
             return optionalResult(optionalResult);
+        }
+        
+        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) {
+            ServerLoggers.assertLog(false, "REPEATING REQUEST AFTER IT WAS RECEIVED"); // in theory it can be request hung before it reached server, and it was retried, received, and only after that first request reached server, but probably it's not possible  
+            return null; // this check is important, because otherwise acquireRequestLock will never stop
         }
 
         String invocationSID = generateInvocationSid(requestIndex);
@@ -857,6 +864,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         if (lastReceivedRequestIndex < 0) {
             recentResults.clear();
         } else {
+            // if request is already received, there is no need for recentResults for that request (we'll assume that there cannot be retryableRequest after that)
+            // however it is < (and not <=) because the same requestIndex is used for continueServerInvocation (so it would be possible to clear result that might be needed for retryable request)
+            // the cleaner solution is to lookahead if there will be continueServerInvocation and don't set lastReceivedRequestIndex in RmiQueue in that case, but now using < is a lot easier
             for (long i = minReceivedRequestIndex; i < lastReceivedRequestIndex; ++i) {
                 recentResults.remove(i);
             }
@@ -1140,6 +1150,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         @Around("execution(public lsfusion.interop.form.ServerResponse RemoteForm.continueServerInvocation(long, long, int, Object[])) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, actionResults)")
         public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, final Object[] actionResults) throws Throwable {
             return syncExecute(form.syncContinueServerInvocationMap, requestIndex, joinPoint);
+        }
+        @Around("execution(public lsfusion.interop.form.ServerResponse RemoteForm.throwInServerInvocation(long, long, int, Throwable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, continueIndex, throwable)")
+        public Object execute(ProceedingJoinPoint joinPoint, RemoteForm form, long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable throwable) throws Throwable {
+            return syncExecute(form.syncThrowInServerInvocationMap, requestIndex, joinPoint);
         }
 
         @Around("execution(private Object RemoteForm.processRMIRequest(long, long, lsfusion.server.context.EExecutionStackCallable)) && target(form) && args(requestIndex, lastReceivedRequestIndex, request)")

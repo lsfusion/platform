@@ -57,6 +57,6 @@ public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFi
             filters.add(byteStream.toByteArray());
         }
 
-        return getServerResponseResult(form, form.remoteForm.setUserFilters(action.requestIndex, -1, filters.toArray(new byte[filters.size()][])));
+        return getServerResponseResult(form, form.remoteForm.setUserFilters(action.requestIndex, defaultLastReceivedRequestIndex, filters.toArray(new byte[filters.size()][])));
     }
 }

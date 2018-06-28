@@ -24,7 +24,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, StringRes
 
         GwtToClientConverter converter = GwtToClientConverter.getInstance();
         
-        ReportGenerationData reportData = form.remoteForm.getReportData(action.requestIndex, -1, action.groupObjectID, action.toExcel, converter.convertFormUserPreferences(action.preferences));
+        ReportGenerationData reportData = form.remoteForm.getReportData(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectID, action.toExcel, converter.convertFormUserPreferences(action.preferences));
 
         return new StringResult(FileUtils.exportReport(action.toExcel ? FormPrintType.XLSX : FormPrintType.PDF, reportData));
     }

@@ -186,7 +186,9 @@ public class RmiQueue implements DispatcherListener {
         }
 
         request.setRequestIndex(requestIndex);
-        request.setLastReceivedRequestIndex(lastReceivedRequestIndex - 1);
+        request.setLastReceivedRequestIndex(lastReceivedRequestIndex);
+
+        request.setTimeoutParams(new Pair<>(3, 20));
 
         return blockingRequest(request, true);
     }

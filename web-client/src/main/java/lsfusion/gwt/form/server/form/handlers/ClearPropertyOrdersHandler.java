@@ -19,7 +19,7 @@ public class ClearPropertyOrdersHandler extends ServerResponseActionHandler<Clea
         FormSessionObject form = getFormSessionObject(action.formSessionID);
         return getServerResponseResult(
                 form,
-                form.remoteForm.clearPropertyOrders(action.requestIndex, -1, action.groupObjectID)
+                form.remoteForm.clearPropertyOrders(action.requestIndex, defaultLastReceivedRequestIndex, action.groupObjectID)
         );
     }
 }
