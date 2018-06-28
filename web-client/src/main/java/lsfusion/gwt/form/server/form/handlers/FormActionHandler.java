@@ -18,7 +18,7 @@ public abstract class FormActionHandler<A extends Action<R>, R extends Result> e
 
     }
 
-    protected final static int defaultLastReceivedRequestIndex = -1;
+    protected final static int defaultLastReceivedRequestIndex = -2;
 
     /**
     * Ищет форму в сессии с name=formSessionID

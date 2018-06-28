@@ -43,7 +43,7 @@ public class RmiQueue implements DispatcherListener {
     private int syncsDepth = 0;
 
     private long nextRmiRequestIndex = 0;
-    private long lastReceivedRequestIndex = 0;
+    private long lastReceivedRequestIndex = -1;
     
     private DispatcherInterface dispatcher;
     
