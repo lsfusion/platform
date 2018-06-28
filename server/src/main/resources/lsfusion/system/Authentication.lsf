@@ -79,8 +79,6 @@ forbidEditProfile 'Запретить пользователю редактир�
 lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
 lastComputer 'Рабочее место' = DATA Computer (CustomUser);
 hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
-ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
-ignorePrintType() += ignorePrintTypeCustom(currentUser());
 
 calculateBase64Hash 'Вычислить Base64 хэш' = CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 logOut (restart, reconnect) = CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
@@ -172,7 +170,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
     sha256Password ON CHANGE changeSHA256Password(u), email,
-    isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+    isLocked, lastActivity, hostnameLastComputer, useBusyDialogCustom, useRequestTimeout,
     allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u

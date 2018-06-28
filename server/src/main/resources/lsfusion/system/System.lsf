@@ -117,8 +117,6 @@ importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 readFile = DATA LOCAL CUSTOMFILE ();
 
-ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
-
 downloadFile 'Скопировать файл на клиент' = CUSTOM 'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 
 loadDownloadedLibrary 'Загрузить скачанную библиотеку' = CUSTOM 'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
