@@ -12,7 +12,7 @@ public abstract class RmiRequest<T> {
     private static final Logger logger = ClientLoggers.invocationLogger;
 
     private long requestIndex = -1;
-    private long lastReceivedRequestIndex = -1;
+    private long lastReceivedRequestIndex = 0;
     private String name;
     
     /**

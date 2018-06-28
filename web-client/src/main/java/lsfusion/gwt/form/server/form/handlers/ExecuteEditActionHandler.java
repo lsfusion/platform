@@ -23,6 +23,6 @@ public class ExecuteEditActionHandler extends ServerResponseActionHandler<Execut
 
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
 
-        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, -1, action.propertyId, fullKey, action.actionSID));
+        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, defaultLastReceivedRequestIndex, action.propertyId, fullKey, action.actionSID));
     }
 }

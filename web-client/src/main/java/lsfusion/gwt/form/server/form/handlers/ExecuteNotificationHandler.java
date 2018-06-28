@@ -17,6 +17,6 @@ public class ExecuteNotificationHandler extends ServerResponseActionHandler<Exec
     @Override
     public ServerResponseResult executeEx(ExecuteNotification action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        return getServerResponseResult(form, form.remoteForm.executeNotificationAction(action.requestIndex, -1, action.idNotification));
+        return getServerResponseResult(form, form.remoteForm.executeNotificationAction(action.requestIndex, defaultLastReceivedRequestIndex, action.idNotification));
     }
 }

@@ -29,7 +29,7 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
                 form,
                 form.remoteForm.changeProperty(
                         action.requestIndex,
-                        -1,
+                        defaultLastReceivedRequestIndex,
                         action.propertyId,
                         fullKey,
                         serializeObject(gwtConverter.convertOrCast(value, servlet.getBLProvider())),
