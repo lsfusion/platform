@@ -60,15 +60,4 @@ public class SequentialRequestLock {
             throw new RemoteInterruptedException(e);
         }
     }
-
-    public void skipRequestLock(ExecutorService pausablesExecutor, final String ownerSID, final long requestIndex) {
-        ServerLoggers.pausableLog("Skipping request lock for " + ownerSID + " for request #" + requestIndex);
-        pausablesExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                acquireRequestLock(ownerSID, requestIndex);
-                releaseRequestLock(ownerSID, requestIndex);
-            }
-        });
-    }
 }
