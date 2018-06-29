@@ -50,12 +50,7 @@ public class ExecutionStackAspect {
     }
 
     public static String getActionMessage(Set<Thread> threads) {
-        List<Object> actionMessageList = getMessageList(threads);
-        String result = "";
-        for(Object actionMessage : actionMessageList) {
-            result += BaseUtils.toString(((List<Object>)actionMessage), "\n");
-        }
-        return result;
+        return BaseUtils.toString(getMessageList(threads), "\n");
     }
     
     public static List<Object> getMessageList(Set<Thread> threads) {
