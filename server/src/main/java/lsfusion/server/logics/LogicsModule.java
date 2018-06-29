@@ -1409,7 +1409,7 @@ public abstract class LogicsModule {
     } 
     
     // ------------------- Loggable ----------------- //
-    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725), 
+    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48), 
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();

@@ -45,7 +45,6 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -75,7 +74,10 @@ import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.*;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.scripted.EvalUtils;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
@@ -1066,7 +1068,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
-            // issue #1725 Потенциальное совпадение канонических имен различных свойств 
+            // issue #47 Потенциальное совпадение канонических имен различных свойств 
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
             // базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = (actions ? PropertyCanonicalNameUtils.policyPropPrefix : PropertyCanonicalNameUtils.policyActionPrefix) + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
