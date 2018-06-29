@@ -784,10 +784,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             return optionalResult(optionalResult);
         }
         
-        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) {
-            ServerLoggers.assertLog(false, "REPEATING REQUEST AFTER IT WAS RECEIVED"); // in theory it can be request hung before it reached server, and it was retried, received, and only after that first request reached server, but probably it's not possible  
+        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded
             return null; // this check is important, because otherwise acquireRequestLock will never stop
-        }
 
         String invocationSID = generateInvocationSid(requestIndex);
 
@@ -811,6 +809,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             ServerLoggers.pausableLog("Return cachedResult for: " + requestIndex);
             return optionalResult(optionalResult);
         }
+
+        if(requestIndex != -1 && requestIndex < minReceivedRequestIndex) // request can be lost and reach server only after retried and even next request already received, proceeded  
+            return null; // this check is important, because otherwise acquireRequestLock will never stop and numberOfFormChangesRequests will be always > 0
 
         numberOfFormChangesRequests.incrementAndGet();
         requestLock.acquireRequestLock(invocation.getSID(), requestIndex);
