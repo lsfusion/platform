@@ -551,14 +551,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private LogicsModule getModuleWithCheck(String moduleName) {
-        LogicsModule module = nameToModule.get(moduleName);
-        if (module == null) {
-            throw new RuntimeException(String.format("Module %s not found.", moduleName));
-        }
-        return module;
-    }
-    
     private void overrideModulesList(String startModuleName) {
         Set<LogicsModule> was = new HashSet<>();
         Queue<LogicsModule> queue = new LinkedList<>();
@@ -577,8 +569,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         while (!queue.isEmpty()) {
             LogicsModule current = queue.poll();
 
+            assert current != null;
             for (String nextModuleName : current.getRequiredModules()) {
-                LogicsModule nextModule = getModuleWithCheck(nextModuleName);
+                LogicsModule nextModule = getRequiredModuleWithCheck(nextModuleName, current.getName());
                 if (!was.contains(nextModule)) {
                     was.add(nextModule);
                     queue.add(nextModule);
@@ -588,6 +581,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         logicModules = new ArrayList<>(was);
         nameToModule.clear();
+    }
+    
+    private LogicsModule getModuleWithCheck(String moduleName) {
+        LogicsModule module = nameToModule.get(moduleName);
+        if (module == null) {
+            throw new RuntimeException(String.format("Module '%s' not found.", moduleName));
+        }
+        return module;
+    }
+
+    private LogicsModule getRequiredModuleWithCheck(String moduleName, String parentModuleName) {
+        LogicsModule module = nameToModule.get(moduleName);
+        if (module == null) {
+            throw new RuntimeException(String.format("Error in module '%s': required module '%s' was not found.", parentModuleName, moduleName));
+        }
+        return module;
     }
 
     public void initObjectClass() {
