@@ -599,4 +599,10 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitImportFromWrongClassError(parser);    
         }
     }
+
+    public void checkSessionPropertyParameter(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.getLP() == null) {
+            errLog.emitSessionOperatorParameterError(parser); 
+        }
+    }
 }

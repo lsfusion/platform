@@ -3488,7 +3488,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         prevScope = null;
     }
 
-    public LCPWithParams addScriptedSessionProp(IncrementType type, LCPWithParams property) {
+    public LCPWithParams addScriptedSessionProp(IncrementType type, LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkSessionPropertyParameter(property);
         LCP newProp;
         PrevScope scope = (type == null ? PrevScope.DB : (prevScope != null ? prevScope : PrevScope.EVENT)); // по сути оптимизация если scope известен использовать его
         if (type == null) {

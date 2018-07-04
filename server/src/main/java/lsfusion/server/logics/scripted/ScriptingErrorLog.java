@@ -48,8 +48,18 @@ public class ScriptingErrorLog {
         return errWriter.toString();
     }
 
-    public static String getErrorMessage(BaseRecognizer parser, String oldMsg, RecognitionException e) {
-        return /*BaseRecognizer.getRuleInvocationStack(e, parser.findClass().getName()) + " " + */ oldMsg;
+    public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
+        if (parser.getCurrentParser() != null) {
+            SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
+            String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
+            emitSemanticError(msg, e);
+        } else {
+            throw new RuntimeException(message);
+        }
+    }
+    
+    public String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
+        return getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
     }
 
     public String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
@@ -58,8 +68,8 @@ public class ScriptingErrorLog {
         return "[" + errorType + "]:\t" + hdr + " " + msg;
     }
 
-    public String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
-        return getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
+    public static String getErrorMessage(BaseRecognizer parser, String oldMsg, RecognitionException e) {
+        return /*BaseRecognizer.getRuleInvocationStack(e, parser.findClass().getName()) + " " + */ oldMsg;
     }
 
     public void displayRecognitionError(BaseRecognizer parser, ScriptParser scriptParser, String errorType, String[] tokenNames, RecognitionException e) {
@@ -591,15 +601,9 @@ public class ScriptingErrorLog {
 
     public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "recursive implement");
-    }    
-    
-    public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
-        if (parser.getCurrentParser() != null) {
-            SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
-            String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
-            emitSemanticError(msg, e);
-        } else {
-            throw new RuntimeException(message);
-        }
+    }
+
+    public void emitSessionOperatorParameterError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "single parameter could not be a parameter of a session operator");
     }
 }
