@@ -3,7 +3,6 @@ MODULE System;
 NAMESPACE System;
 
 CLASS NATIVE Object;
-TABLE object (Object);
 CLASS NATIVE CustomObjectClass;
 TABLE customObjectClass (CustomObjectClass);
 objectClass = NATIVE CustomObjectClass (Object);
