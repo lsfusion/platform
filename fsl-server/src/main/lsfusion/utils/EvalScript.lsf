@@ -1,0 +1,197 @@
+MODULE EvalScript;
+
+REQUIRE System, Service, Time;
+
+NAMESPACE System;
+
+CLASS Script 'Скрипт';
+TABLE script(Script);
+
+name 'Наименование' = DATA VARSTRING[100] (Script);
+text 'Текст' = DATA TEXT (Script);
+textScript = GROUP MAX Script script BY text(script);
+ 
+dateTime 'Время запуска' = DATA DATETIME (Script);
+
+dateTimeChange 'Время изменения' = DATA DATETIME (Script);  
+dateTimeChange(Script s) <- currentDateTime() WHEN CHANGED(text(s));
+
+preRunScript(Script s) = {
+    dateTime(s) <- currentDateTime();
+    APPLY;
+}
+
+scriptExecution 'Выполнить скрипт' (Script s) = { 
+    TRY { 
+        preRunScript(s); 
+        NEWSESSION { 
+            EVAL text(s); 
+        } 
+    } 
+}
+
+actionBodyExecution 'Выполнить действие' (Script s) = { 
+    TRY { 
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'run() = \{', text(s), ';\n\};';
+        }
+    } 
+}
+
+formExecution 'Показать форму' (Script s) = { 
+    TRY { 
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() = \{ SHOW form NOWAIT; \}';
+        }
+    } 
+}
+
+javaActionBodyExecution 'Выполнить Java-код' (Script s) = { 
+    TRY {
+        preRunScript(s);
+        NEWSESSION {
+            EVAL CONCAT ' ', 'run() = CUSTOM <\{ ', text(s), ' \}>;';
+        }
+    } 
+}
+
+// Универсальная таблица для последующего импорта
+CLASS Row 'Ряд';
+TABLE row(Row);
+
+string1 'Строка 1' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string2 'Строка 2' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string3 'Строка 3' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string4 'Строка 4' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string5 'Строка 5' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string6 'Строка 6' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string7 'Строка 7' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string8 'Строка 8' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string9 'Строка 9' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string10 'Строка 10' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+
+numeric1 'Число 1' = DATA NUMERIC[20,7] (Row);
+numeric2 'Число 2' = DATA NUMERIC[20,7] (Row);
+numeric3 'Число 3' = DATA NUMERIC[20,7] (Row);
+numeric4 'Число 4' = DATA NUMERIC[20,7] (Row);
+numeric5 'Число 5' = DATA NUMERIC[20,7] (Row);
+
+date1 'Дата 1' = DATA DATE (Row);
+date2 'Дата 2' = DATA DATE (Row);
+date3 'Дата 3' = DATA DATE (Row);
+
+FORM scriptLog 'Скрипт'
+    OBJECTS s = Script PANEL
+    PROPERTIES(s) name, text, dateTime
+
+    EDIT Script OBJECT s
+;
+
+FORM scriptsLog 'Скрипты'
+    
+    OBJECTS s=Script FIRST
+    PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
+    PROPERTIES(s) NEWSESSION DELETE 
+    ORDER dateTimeChange(s) DESC
+
+    FILTERGROUP user FILTER 'Именованные' name(s) 'F9'
+
+    LIST Script OBJECT s
+;
+
+FORM interpreter 'Интерпретатор'
+    OBJECTS s = Script PANEL
+    PROPERTIES(s) name, text
+    
+    PROPERTIES(s) scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
+                 
+    OBJECTS r = Row GRID
+    PROPERTIES(r) string1, string2, string3, string4, string5, string6, string7, string8, string9, string10 
+    PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
+    PROPERTIES(r) NEW, DELETE GRID
+;
+
+createScript () = {
+    NEW s = Script {
+        SEEK interpreter.s = s;
+    }
+}
+
+copyScript 'Копировать' (Script sf) = {
+    NEW s = Script {
+        text(s) <- text(sf);
+        SEEK interpreter.s = s;
+    }
+    IF NOT PREV(sf IS Script) THEN
+        DELETE sf;
+}
+
+findScript 'Найти' (Script sf) = {
+    DIALOG scriptsLog OBJECTS s INPUT DO {
+        IF NOT PREV(sf IS Script) THEN
+            DELETE sf;
+
+        LOCAL new = BOOLEAN();
+        new() <- NULL;
+        ASK 'Создать новый скрипт на основе выбранного ? ' DO {
+            NEW st = Script {
+                text(st) <- text(s);
+                SEEK interpreter.s = st;
+            }
+            new () <- TRUE;
+        }
+        IF NOT new() THEN {
+            SEEK interpreter.s = s;
+        }
+    }   
+}
+
+EXTEND FORM interpreter
+    PROPERTIES(s) copyScript, findScript
+    
+    EVENTS
+        ON INIT createScript();
+;
+
+DESIGN interpreter {
+    NEW pane {
+        fill = 1;
+        type = TABBED;
+        NEW scriptPane {
+            fill = 1;        
+            caption = 'Скрипт';
+            NEW script {
+                caption = 'Параметры';
+                type = CONTAINERH;
+                MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(name(s)) { font = 'bold 24'; alignment = STRETCH; }
+            }
+            MOVE PROPERTY(text(s)) {
+                panelCaptionAbove = TRUE;    
+                fill = 1;
+            }
+            NEW run {
+                caption = 'Запуск';
+                type = CONTAINERH;
+                MOVE PROPERTY(scriptExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution(s)) { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution(s)) { font = 'bold 24'; }
+            }
+        }
+        MOVE BOX(r) {
+            caption = 'Данные';
+        }
+    }
+    MOVE TOOLBARBOX;
+}
+
+NAVIGATOR {
+    configuration {
+        NEW interpreter BEFORE maintenance;
+    }
+}
+
