@@ -349,7 +349,7 @@ public class RmiQueue implements DispatcherListener {
         if (logger.isDebugEnabled()) {
             logger.debug("Async request: " + request);
         }
-        request.setTimeoutParams(new Pair<>(2, 1));
+        request.setTimeoutParams(new Pair<>(3, 20));
 
         execRmiRequestInternal(request);
 
