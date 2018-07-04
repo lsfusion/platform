@@ -32,15 +32,17 @@ public class CheckTableClassesActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
-        final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
+        boolean disableClasses = context.getBL().reflectionLM.disableClassesTable.read(context, tableObject) != null;
+        if (!disableClasses) {
+            final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
+            final Result<String> message = new Result<>();
+            ServiceDBActionProperty.run(context, new RunService() {
+                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                    message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction));
+                }
+            });
 
-        final Result<String> message = new Result<>();
-        ServiceDBActionProperty.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getDbManager().checkTableClasses(session, tableName.trim(), isolatedTransaction));
-            }
-        });
-
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.data.classes}"))) + '\n' + '\n' + message.result, localize("{logics.checking.data.classes}"), true));
+        }
     }
 }

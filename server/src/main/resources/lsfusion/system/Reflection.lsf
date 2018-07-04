@@ -232,7 +232,6 @@ percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableCo
 sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
-notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
 recalculateAggregation 'Пересчитать агрегации' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
 recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
@@ -254,8 +253,18 @@ checkClasses 'Проверить классы таблицы' = CUSTOM 'lsfusion
 checkClasses(VARISTRING[100] string) = { checkClasses(table(string)); }
 recalculateClasses 'Пересчитать классы таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
-notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
 recalculateStats 'Пересчитать статистику таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+
+disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (Table);
+disableStatsTable 'Отключить пересчёт и проверку статистики' (Table t) = notRecalculateStats(t);
+disableAggregations 'Отключить пересчёт и проверку аггрегаций' (TableColumn tc) = notRecalculate(tc);
+disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (TableColumn);
+disableStatsTableColumn 'Отключить пересчёт и проверку статистики' = DATA BOOLEAN (TableColumn);
+
+disableClasses 'Отключить пересчёт и проверку классов' (VARISTRING[100] sid) = disableClasses(tableSID(sid));
+disableStatsTable 'Отключить пересчёт и проверку статистики' (VARISTRING[100] sid) = disableStatsTable(tableSID(sid));
+disableAggregations (VARISTRING[100] sid) = disableAggregations(tableColumnSID(sid));
+disableStatsTableColumn 'Отключить пересчёт и проверку статистики' (VARISTRING[100] sid) = disableStatsTableColumn(tableColumnSID(sid));
 
 CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
@@ -315,7 +324,9 @@ changeNotNullQuantity(TableColumn tc) = {
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
-    PROPERTIES(t) GRID recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
+    PROPERTIES(t) GRID disableClasses, checkClasses, recalculateClasses,
+                       disableStatsTable, notRecalculateStats, recalculateStats, 
+                       recalculateColumnsAggregations, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity CHANGEABLE, quantityTop
@@ -323,7 +334,7 @@ FORM physicalModel 'Таблицы'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sid, caption, canonicalName, annotation, property, return, quantity CHANGEABLE ON CHANGE changeQuantity(tc), quantityTop,
                    notNullQuantity CHANGEABLE ON CHANGE changeNotNullQuantity(tc), percentNotNull, lastRecalculateProperty
-    PROPERTIES(tc) GRID notRecalculate, recalculateAggregation, recalculateAggregationWithDependencies, 
+    PROPERTIES(tc) GRID disableAggregations, notRecalculate, disableClasses, disableStatsTableColumn, recalculateAggregation, recalculateAggregationWithDependencies, 
             recalculateAggregationWithDependents, checkAggregation
 
     OBJECTS dc=DropColumn

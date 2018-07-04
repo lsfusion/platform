@@ -35,17 +35,19 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
+        boolean disableAggregations = context.getBL().reflectionLM.disableAggregationsTableColumn.read(context, tableColumnObject) != null;
+        if(!disableAggregations) {
+            try (DataSession dataSession = context.createSession()) {
+                ServiceDBActionProperty.run(context, new RunService() {
+                    public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                        context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction);
+                    }
+                });
+                dataSession.apply(context);
+            }
 
-        try(DataSession dataSession = context.createSession()) {
-            ServiceDBActionProperty.run(context, new RunService() {
-                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                    context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction);
-                }
-            });
-            dataSession.apply(context);
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}",
+                    localize("{logics.recalculation.aggregations}"))), localize("{logics.recalculation.aggregations}")));
         }
-
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", 
-                localize("{logics.recalculation.aggregations}"))), localize("{logics.recalculation.aggregations}")));
     }
 }

@@ -1695,7 +1695,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImSet<String> skipProperties = SetFact.EMPTY();
         try (final DataSession dataSession = getDbManager().createSession()) {
 
-            Expr expr = reflectionLM.notRecalculateSID.getExpr(query.getMapExprs().singleValue());
+            Expr expr = reflectionLM.disableAggregationsTableColumnSID.getExpr(query.getMapExprs().singleValue());
             query.and(expr.getWhere());
             skipProperties = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String,Object>>() {
                 @Override
@@ -1805,7 +1805,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
-                    boolean recalculate = ignoreCheck || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = ignoreCheck || reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         result.add((AggregateProperty) property);
                 }
@@ -1821,7 +1821,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 public boolean contains(CalcProperty property) {
                     boolean recalculate = true;
                     try {
-                        recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                        recalculate = reflectionLM.disableClassesTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     } catch (SQLException | SQLHandledException e) {
                         serviceLogger.error(e.getMessage());
                     }
@@ -2012,12 +2012,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         int count = 0;
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet());
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet());
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
             serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
-            dataTable.recalculateStat(this.reflectionLM, session);
+            dataTable.recalculateStat(this.reflectionLM, getDbManager().getDisableStatsTableColumnSet(), session);
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
@@ -2027,11 +2027,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
         int count = 0;
         MSet<Long> propertiesSet = getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
-        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet());
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            if(dataTable.overCalculateStat(this.reflectionLM, session, propertiesSet,
+            if(dataTable.overCalculateStat(this.reflectionLM, session, propertiesSet, getDbManager().getDisableStatsTableColumnSet(),
                     new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
@@ -2135,7 +2135,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
         String message = DataSession.checkClasses(session, LM.baseClass);
-        for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+        for(ImplementTable implementTable : LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet())) {
             message += DataSession.checkTableClasses(implementTable, session, LM.baseClass, false); // так как снизу есть проверка классов
         }
         for (CalcProperty property : getStoredDataProperties())
@@ -2223,7 +2223,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet())) {
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     long start = System.currentTimeMillis();

@@ -16,6 +16,7 @@ import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Set;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -33,16 +34,20 @@ public class RecalculateTableStatsActionProperty extends ScriptingActionProperty
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
         final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
-
-        ServiceDBActionProperty.run(context, new RunService() {
-                    public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                        try (DataSession dataSession = context.getDbManager().createSession()) {
-                            context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM, dataSession);
-                            applySession(context, dataSession);
+        final Set<String> disableStatsTableColumnSet = context.getDbManager().getDisableStatsTableColumnSet();
+        boolean disableStats = context.getBL().reflectionLM.disableStatsTable.read(context, tableObject) != null;
+        if (!disableStats) {
+            ServiceDBActionProperty.run(context, new RunService() {
+                        public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                            try (DataSession dataSession = context.getDbManager().createSession()) {
+                                context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
+                                        disableStatsTableColumnSet, dataSession);
+                                applySession(context, dataSession);
+                            }
                         }
                     }
-                }
-        );
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
+            );
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculation.stats}"))), localize("{logics.recalculation.stats}")));
+        }
     }
 }

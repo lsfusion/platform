@@ -49,7 +49,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask<Object> { // int
         checkContext();
         List elements = new ArrayList();
         elements.add(1);
-        elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
+        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableClassesTableSet()).toJavaSet());
         elements.addAll(getBL().getStoredDataProperties().toJavaList());
         return elements;
     }

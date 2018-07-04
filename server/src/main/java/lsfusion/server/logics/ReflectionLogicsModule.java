@@ -49,7 +49,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP userLoggableProperty;
     public LCP storedProperty;
     public LCP isSetNotNullProperty;
-    public LCP signatureProperty;
     public LCP returnProperty;
     public LCP classProperty;
     public LCP complexityProperty;
@@ -160,11 +159,18 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP overQuantityTableColumn;
     public LCP notNullQuantityTableColumn;
-    public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
 
-    public LCP notRecalculateSID;
-    public LCP notRecalculateStatsSID;
+    public LCP disableClassesTable;
+    public LCP disableStatsTable;
+    public LCP disableAggregationsTableColumn;
+    public LCP disableClassesTableColumn;
+    public LCP disableStatsTableColumn;
+
+    public LCP disableClassesTableSID;
+    public LCP disableStatsTableSID;
+    public LCP disableAggregationsTableColumnSID;
+    public LCP disableStatsTableColumnSID;
 
     public LCP<?> sidTableDropColumn;
     public LCP<?> sidDropColumn;
@@ -386,11 +392,19 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         overQuantityTableColumn = findProperty("overQuantity[TableColumn]");
         notNullQuantityTableColumn = findProperty("notNullQuantity[TableColumn]");
 
-        notRecalculateTableColumn = findProperty("notRecalculate[TableColumn]");
-        notRecalculateSID = findProperty("notRecalculate[VARISTRING[100]]");
         recalculateAggregationTableColumn = findAction("recalculateAggregation[TableColumn]");
 
-        notRecalculateStatsSID = findProperty("notRecalculateStats[VARISTRING[100]]");
+        //Отключение пересчётов и проверок
+        disableClassesTable = findProperty("disableClasses[Table]");
+        disableStatsTable = findProperty("disableStatsTable[Table]");
+        disableAggregationsTableColumn = findProperty("disableAggregations[TableColumn]");
+        disableClassesTableColumn = findProperty("disableClasses[TableColumn]");
+        disableStatsTableColumn = findProperty("disableStatsTableColumn[TableColumn]");
+
+        disableClassesTableSID = findProperty("disableClasses[VARISTRING[100]]");
+        disableStatsTableSID = findProperty("disableStatsTable[VARISTRING[100]]");
+        disableAggregationsTableColumnSID = findProperty("disableAggregations[VARISTRING[100]]");
+        disableStatsTableColumnSID = findProperty("disableStatsTableColumn[VARISTRING[100]]");
 
         // Удаленные колонки
         sidTableDropColumn = findProperty("sidTable[DropColumn]");

@@ -19,7 +19,6 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.session.DataSession;
-import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,10 +32,10 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     }
 
     @Override
-    protected void runInnerTask(Object element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
+    protected void runInnerTask(Object element, ExecutionStack stack) throws SQLException, SQLHandledException {
         try (DataSession session = getDbManager().createSession()) {
             if (element instanceof ImplementTable) {
-                ((ImplementTable) element).recalculateStat(getBL().reflectionLM, session);
+                ((ImplementTable) element).recalculateStat(getBL().reflectionLM, getDbManager().getDisableStatsTableColumnSet(), session);
             } else if (element instanceof ObjectValueClassSet) {
                 QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
@@ -63,7 +62,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
     protected List<Object> getElements() {
         checkContext();
         List<Object> elements = new ArrayList<>();
-        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getNotRecalculateStatsTableSet()).toJavaSet());
+        elements.addAll(getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet()).toJavaSet());
         elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());
         return elements;
     }

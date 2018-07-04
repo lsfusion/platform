@@ -1571,7 +1571,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if (dependents) {
             for (CalcProperty prop : businessLogics.getAggregateStoredProperties(true)) {
                 if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, property)) {
-                    boolean recalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = reflectionLM.disableAggregationsTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         recalculateAggregationWithDependenciesTableColumn(dataSession, session, prop, isolatedTransaction, calculated, true);
                 }
@@ -1579,11 +1579,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public Set<String> getNotRecalculateStatsTableSet() {
+    public Set<String> getDisableStatsTableSet() {
         QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
         ImSet<String> notRecalculateStatsTableSet = SetFact.EMPTY();
         try (final DataSession dataSession = createSession()) {
-            Expr expr = reflectionLM.notRecalculateStatsSID.getExpr(query.getMapExprs().singleValue());
+            Expr expr = reflectionLM.disableStatsTableSID.getExpr(query.getMapExprs().singleValue());
             query.and(expr.getWhere());
             notRecalculateStatsTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
                 @Override
@@ -1597,6 +1597,45 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return notRecalculateStatsTableSet.toJavaSet();
     }
+
+    public Set<String> getDisableClassesTableSet() {
+        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+        ImSet<String> disableClassesTableSet = SetFact.EMPTY();
+        try (final DataSession dataSession = createSession()) {
+            Expr expr = reflectionLM.disableClassesTableSID.getExpr(query.getMapExprs().singleValue());
+            query.and(expr.getWhere());
+            disableClassesTableSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
+                @Override
+                public String getMapValue(ImMap<String, Object> value) {
+                    return (String) value.singleValue();
+                }
+            });
+
+        } catch (SQLException | SQLHandledException e) {
+            serviceLogger.info(e.getMessage());
+        }
+        return disableClassesTableSet.toJavaSet();
+    }
+
+    public Set<String> getDisableStatsTableColumnSet() {
+        QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+        ImSet<String> disableStatsTableColumnSet = SetFact.EMPTY();
+        try (final DataSession dataSession = createSession()) {
+            Expr expr = reflectionLM.disableStatsTableColumnSID.getExpr(query.getMapExprs().singleValue());
+            query.and(expr.getWhere());
+            disableStatsTableColumnSet = query.execute(dataSession).keys().mapSetValues(new GetValue<String, ImMap<String, Object>>() {
+                @Override
+                public String getMapValue(ImMap<String, Object> value) {
+                    return (String) value.singleValue();
+                }
+            });
+
+        } catch (SQLException | SQLHandledException e) {
+            serviceLogger.info(e.getMessage());
+        }
+        return disableStatsTableColumnSet.toJavaSet();
+    }
+
 
     private void checkModules(OldDBStructure dbStructure) {
         String droppedModules = "";

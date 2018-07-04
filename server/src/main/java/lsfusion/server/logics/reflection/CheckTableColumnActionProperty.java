@@ -35,14 +35,16 @@ public class CheckTableColumnActionProperty extends ScriptingActionProperty {
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
+        boolean disableAggregations = context.getBL().reflectionLM.disableAggregationsTableColumn.read(context, tableColumnObject) != null;
+        if (!disableAggregations) {
+            final Result<String> message = new Result<>();
+            ServiceDBActionProperty.run(context, new RunService() {
+                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                    message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim()));
+                }
+            });
 
-        final Result<String> message = new Result<>();
-        ServiceDBActionProperty.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim()));
-            }
-        });
-
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.aggregations}"))) + '\n' + '\n' + message.result, localize("{logics.checking.aggregations}"), true));
+        }
     }
 }

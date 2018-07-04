@@ -31,14 +31,17 @@ public class RecalculateTableClassesActionProperty extends ScriptingActionProper
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject tableObject = context.getDataKeyValue(tableInterface);
-        final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
+        boolean disableClasses = context.getBL().reflectionLM.disableClassesTable.read(context, tableObject) != null;
+        if (!disableClasses) {
+            final String tableName = (String) context.getBL().reflectionLM.sidTable.read(context, tableObject);
 
-        ServiceDBActionProperty.run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().recalculateTableClasses(session, tableName.trim(), isolatedTransaction);
-            }
-        });
+            ServiceDBActionProperty.run(context, new RunService() {
+                public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                    context.getDbManager().recalculateTableClasses(session, tableName.trim(), isolatedTransaction);
+                }
+            });
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}")));
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", localize("{logics.recalculating.data.classes}"))), localize("{logics.recalculating.data.classes}")));
+        }
     }
 }

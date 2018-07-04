@@ -25,7 +25,7 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
     @Override
     protected void runInnerTask(ImplementTable element, ExecutionStack stack) throws RecognitionException, SQLException, SQLHandledException {
         try (DataSession session = getDbManager().createSession()) {
-            element.overCalculateStat(getBL().reflectionLM, session, propertiesSet, null/*progressBar*/);
+            element.overCalculateStat(getBL().reflectionLM, session, propertiesSet, getDbManager().getDisableStatsTableColumnSet(), null/*progressBar*/);
             session.apply(getBL(), stack);
         }
     }
@@ -39,7 +39,7 @@ public class OverCalculateStatsTask extends GroupPropertiesSingleTask<ImplementT
         } catch (Exception e) {
             propertiesSet = SetFact.mSet();
         }
-        return getBL().LM.tableFactory.getImplementTables().toOrderSet().toJavaList();
+        return getBL().LM.tableFactory.getImplementTables(getDbManager().getDisableStatsTableSet()).toOrderSet().toJavaList();
     }
 
     @Override
