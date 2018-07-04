@@ -290,9 +290,9 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
     }
 
     public ServerResponse changeProperty(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, byte[] pushChange, Long pushAdd) throws RemoteException {
-        logRemoteMethodStartCall("executeEditAction");
+        logRemoteMethodStartCall("changeProperty");
         ServerResponse result = target.changeProperty(requestIndex, lastReceivedRequestIndex, propertyID, fullKey, pushChange, pushAdd);
-        logRemoteMethodEndCall("executeEditAction", result);
+        logRemoteMethodEndCall("changeProperty", result);
         return result;
     }
 
