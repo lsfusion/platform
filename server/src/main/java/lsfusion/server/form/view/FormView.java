@@ -3,6 +3,7 @@ package lsfusion.server.form.view;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -22,6 +23,7 @@ import lsfusion.server.logics.mutables.SIDHandler;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderMap;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.logics.mutables.interfaces.NFSet;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
@@ -59,15 +61,12 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public int autoRefresh = 0;
 
     // список деревеьев
-    public NFOrderSet<TreeGroupView> treeGroups = NFFact.orderSet();
+    private NFSet<TreeGroupView> treeGroups = NFFact.set();
+    public ImSet<TreeGroupView> getTreeGroups() {
+        return treeGroups.getSet();
+    }
     public Iterable<TreeGroupView> getTreeGroupsIt() {
         return treeGroups.getIt();
-    }
-    public ImOrderSet<TreeGroupView> getTreeGroupsList() {
-        return treeGroups.getOrderSet();
-    }
-    public Iterable<TreeGroupView> getNFTreeGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
-        return treeGroups.getNFListIt(version);
     }
 
     // список групп
@@ -165,7 +164,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             addGroupObjectBase(group, version);
         }
 
-        for (TreeGroupEntity treeGroup : entity.getNFTreeGroupsListIt(version)) {
+        for (TreeGroupEntity treeGroup : entity.getNFTreeGroupsIt(version)) {
             addTreeGroupBase(treeGroup, version);
         }
 
@@ -250,12 +249,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return addGroupObjectBase(groupObject, null, null, version);
     }
 
+    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
+        return addTreeGroupBase(treeGroup, null, false, version);
+    }
+
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
         return addGroupObjectBase(groupObject, neighbour, isRightNeighbour, version);
     }
 
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, Version version) {
-        return addTreeGroupBase(treeGroup, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, boolean isRightNeighbour, Version version) {
+        return addTreeGroupBase(treeGroup, neighbour, isRightNeighbour, version);
     }
 
     private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
@@ -265,7 +268,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         setComponentSID(treeGroupView.getUserFilter(), getUserFilterSID(treeGroupView), version);
     }
 
-    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
+    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version) {
         TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup, version);
         treeGroups.add(treeGroupView, version);
         addTreeGroupView(treeGroupView, version);
@@ -619,7 +622,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, mainContainer, serializationType);
-        pool.serializeCollection(outStream, getTreeGroupsList(), serializationType);
+        pool.serializeCollection(outStream, getTreeGroups(), serializationType);
         pool.serializeCollection(outStream, getGroupObjectsListIt(), serializationType);
         pool.serializeCollection(outStream, getPropertiesList(), serializationType);
         pool.serializeCollection(outStream, getRegularFiltersList());
@@ -642,7 +645,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         mainContainer = pool.deserializeObject(inStream);
-        treeGroups = NFFact.finalOrderSet(pool.<TreeGroupView>deserializeList(inStream));
+        treeGroups = NFFact.finalSet(pool.<TreeGroupView>deserializeSet(inStream));
         groupObjects = NFFact.finalOrderSet(pool.<GroupObjectView>deserializeList(inStream));
         properties = NFFact.finalOrderSet(pool.<PropertyDrawView>deserializeList(inStream));
         regularFilters = NFFact.finalOrderSet(pool.<RegularFilterGroupView>deserializeList(inStream));

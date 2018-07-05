@@ -3,6 +3,7 @@ package lsfusion.server.form.view;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.Alignment;
@@ -110,25 +111,17 @@ public class DefaultFormView extends FormView {
         toolbarContainer = formSet.getToolbarContainer();
         registerComponent(toolbarContainers, toolbarContainer, null, version);
 
-        Iterator<TreeGroupView> treeIterator = getNFTreeGroupsListIt(version).iterator();
-        TreeGroupView treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
-        boolean groupStarted = false;
+        TreeGroupEntity prevTree = null;
         for (GroupObjectView groupObject : getNFGroupObjectsListIt(version)) {
-            //если группа началась, ставим флаг. Если группа закончилась, addTreeGroupView и флаг снимаем
-            if(treeNextGroup != null) {
-                boolean isInTree = groupObject.entity.isInTree();
-                if (isInTree && groupObject.entity.treeGroup.equals(treeNextGroup.entity)) {
-                    groupStarted = true;
-                } else if (groupStarted) {
-                    addTreeGroupView(treeNextGroup, version);
-                    treeNextGroup = treeIterator.hasNext() ? treeIterator.next() : null;
-                    groupStarted = isInTree && treeNextGroup != null && groupObject.entity.treeGroup.equals(treeNextGroup.entity);
-                }
-            }
+            TreeGroupEntity newTree = groupObject.entity.treeGroup;
+            if(prevTree != null && !BaseUtils.nullEquals(prevTree, newTree))
+                addTreeGroupView(get(prevTree), version);            
+            prevTree = newTree;
+
             addGroupObjectView(groupObject, version);
         }
-        if(groupStarted)
-            addTreeGroupView(treeNextGroup, version);
+        if(prevTree != null)
+            addTreeGroupView(get(prevTree), version);
 
         for (PropertyDrawView propertyDraw : getNFPropertiesListIt(version)) {
             addPropertyDrawView(propertyDraw, version);
@@ -271,10 +264,13 @@ public class DefaultFormView extends FormView {
     }
 
     private void addGroupObjectView(GroupObjectView groupObject, Version version) {
+        addGroupObjectView(groupObject, null, false, version);
+    }
+    private void addGroupObjectView(GroupObjectView groupObject, GroupObjectEntity neighbourGroupObject, boolean isRightNeigbour, Version version) {
         if(!groupObject.entity.isInTree()) {
             GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, new ContainerView.VersionContainerAdder(version));
 
-            objectsContainer.add(groupSet.getBoxContainer(), version);
+            addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, isRightNeigbour, version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
             registerComponent(gridContainers, groupSet.getGridBoxContainer(), groupObject, version);
@@ -291,6 +287,19 @@ public class DefaultFormView extends FormView {
             if (groupObject.entity.isForcedPanel()) { // если groupObject идет в панель, то grid'а быть не может, и если box не выставить не 0, он не будет брать весь размер
                 groupSet.getBoxContainer().setFlex(0);
             }
+        }
+    }
+
+    private void addPropertyGroupContainerView(ContainerView boxContainer, GroupObjectEntity neighbour, boolean isRightNeigbour, Version version) {
+        PropertyGroupContainerView neighbourView = neighbour != null ? (neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour)) : null;
+        if(neighbourView != null) {
+            ContainerView neighbourBox = getBoxContainer(neighbourView);
+            if(isRightNeigbour)
+                objectsContainer.addAfter(boxContainer, neighbourBox, version);
+            else
+                objectsContainer.addBefore(boxContainer, neighbourBox, version);
+        } else {
+            objectsContainer.add(boxContainer, version);
         }
     }
 
@@ -315,9 +324,12 @@ public class DefaultFormView extends FormView {
 
     // сейчас во многом повторяет addGroupObjectView, потом надо рефакторить
     private void addTreeGroupView(TreeGroupView treeGroup, Version version) {
+        addTreeGroupView(treeGroup, null, false, version);
+    }
+    private void addTreeGroupView(TreeGroupView treeGroup, GroupObjectEntity neighbour, boolean isRightNeigbour, Version version) {
         TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
-
-        objectsContainer.add(treeSet.getBoxContainer(), version);
+        
+        addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, isRightNeigbour, version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
         registerComponent(gridContainers, treeSet.getGridContainer(), treeGroup, version);
@@ -361,14 +373,14 @@ public class DefaultFormView extends FormView {
     @Override
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
         GroupObjectView view = super.addGroupObject(groupObject, neighbour, isRightNeighbour, version);
-        addGroupObjectView(view, version);
+        addGroupObjectView(view, neighbour, isRightNeighbour != null && isRightNeighbour, version);
         return view;
     }
 
     @Override
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, Version version) {
-        TreeGroupView view = super.addTreeGroup(treeGroup, version);
-        addTreeGroupView(view, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, boolean isRightNeighbour, Version version) {
+        TreeGroupView view = super.addTreeGroup(treeGroup, neighbour, isRightNeighbour, version);
+        addTreeGroupView(view, neighbour, isRightNeighbour, version);
         return view;
     }
 

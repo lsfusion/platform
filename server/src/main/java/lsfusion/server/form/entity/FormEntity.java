@@ -102,15 +102,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return groups.getNFListIt(version);
     }
     
-    private NFOrderSet<TreeGroupEntity> treeGroups = NFFact.orderSet();
+    private NFSet<TreeGroupEntity> treeGroups = NFFact.set();
     public Iterable<TreeGroupEntity> getTreeGroupsIt() {
         return treeGroups.getIt();
     }
-    public ImList<TreeGroupEntity> getTreeGroupsList() {
-        return treeGroups.getList(); 
-    }
-    public Iterable<TreeGroupEntity> getNFTreeGroupsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
-        return treeGroups.getNFListIt(version);
+    public Iterable<TreeGroupEntity> getNFTreeGroupsIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
+        return treeGroups.getNFIt(version);
     }    
     
     private NFOrderSet<PropertyDrawEntity> propertyDraws = NFFact.orderSet();
@@ -440,7 +437,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return object;
     }
 
-    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, String sID, Version version, GroupObjectEntity... tGroups) {
+    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, boolean isRightNeighbour, String sID, Version version, GroupObjectEntity... tGroups) {
         if (sID != null)
             treeGroup.setSID(sID);
         for (GroupObjectEntity group : tGroups) {
@@ -453,7 +450,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null)
-            richDesign.addTreeGroup(treeGroup, version);
+            richDesign.addTreeGroup(treeGroup, neighbour, isRightNeighbour, version);
 
         return treeGroup;
     }

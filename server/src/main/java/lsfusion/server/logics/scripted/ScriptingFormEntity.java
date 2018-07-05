@@ -60,22 +60,38 @@ public class ScriptingFormEntity {
         return form;
     }
 
-    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptingGroupObjects(groupObjects, null, version);
-    }
-    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        List<GroupObjectEntity> groups = new ArrayList<>();
+    public void addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, Version version) throws ScriptingErrorLog.SemanticErrorException {
         for (ScriptingGroupObject groupObject : groupObjects) {
-            GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
+            GroupObjectEntity neighbour = groupObject.neighbourGroupObject;
+            Boolean isRightNeighbour = groupObject.isRightNeighbour;
+            checkNeighbour(neighbour, isRightNeighbour);
+            addScriptingGroupObject(groupObject, null, neighbour, isRightNeighbour, version);
+        }
+    }
+    public List<GroupObjectEntity> addScriptingGroupObjects(List<ScriptingGroupObject> groupObjects, TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        List<GroupObjectEntity> groups = new ArrayList<>();
 
-            for (int j = 0; j < groupObject.objects.size(); j++) {
-                String className = groupObject.classes.get(j);
-                ValueClass cls = LM.findClass(groupObject.classes.get(j));
-                String objectName = nvl(groupObject.objects.get(j), className);
-                LocalizedString objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
+        boolean reverseList = neighbourGroupObject != null && !isRightNeighbour;
+        for (ScriptingGroupObject groupObject : (reverseList ? BaseUtils.reverse(groupObjects) : groupObjects)) {
+            GroupObjectEntity groupObj = addScriptingGroupObject(groupObject, treeGroup, neighbourGroupObject, isRightNeighbour, version);
+            if(neighbourGroupObject != null)
+                neighbourGroupObject = groupObj;
+            groups.add(groupObj);
+        }
+        return (reverseList ? BaseUtils.reverse(groups) : groups);
+    }
 
-                ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
-                addObjectEntity(objectName, obj, groupObj, version);
+    private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
+
+        for (int j = 0; j < groupObject.objects.size(); j++) {
+            String className = groupObject.classes.get(j);
+            ValueClass cls = LM.findClass(groupObject.classes.get(j));
+            String objectName = nvl(groupObject.objects.get(j), className);
+            LocalizedString objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
+
+            ObjectEntity obj = new ObjectEntity(form.genID(), cls, objectCaption);
+            addObjectEntity(objectName, obj, groupObj, version);
 
                 if (groupObject.events.get(j) != null) {
                     form.addActionsOnEvent(obj, version, groupObject.events.get(j));
@@ -86,57 +102,57 @@ public class ScriptingFormEntity {
                 }
             }
 
-            String groupName = groupObject.groupName;
-            if (groupName == null) {
-                groupName = "";
-                for (ObjectEntity obj : groupObj.getOrderObjects()) {
-                    groupName = (groupName.length() == 0 ? "" : groupName + ".") + obj.getSID();
-                }
+        String groupName = groupObject.groupName;
+        if (groupName == null) {
+            groupName = "";
+            for (ObjectEntity obj : groupObj.getOrderObjects()) {
+                groupName = (groupName.length() == 0 ? "" : groupName + ".") + obj.getSID();
             }
-
-            ClassViewType viewType = groupObject.viewType;
-            if (viewType != null)
-                groupObj.setInitClassView(viewType);
-            if(!groupObject.isInitType)
-                groupObj.setSingleClassView();
-
-            if (groupObject.pageSize != null) {
-                groupObj.pageSize = groupObject.pageSize;
-            }
-
-            if (groupObject.updateType != null) {
-                groupObj.updateType = groupObject.updateType;
-            }
-
-            String propertyGroupName = groupObject.propertyGroupName;
-            AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
-            if(propertyGroup != null)
-                groupObj.propertyGroup = propertyGroup;
-
-            String integrationSID = groupObject.integrationSID;
-            if(integrationSID == null && groupObject.groupName == null) {
-                integrationSID = "";
-                for (ObjectEntity obj : groupObj.getOrderObjects()) {
-                    integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
-                }
-            }
-            if(integrationSID != null)
-                groupObj.setIntegrationSID(integrationSID);
-
-            groupObj.setIntegrationKey(groupObject.integrationKey);
-
-            if(groupObject.isSubReport)
-                setSubReport(groupObj, groupObject.subReportPath);
-
-            addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
-            groups.add(groupObj);
         }
-        return groups;
+
+        ClassViewType viewType = groupObject.viewType;
+        if (viewType != null)
+            groupObj.setInitClassView(viewType);
+        if(!groupObject.isInitType)
+            groupObj.setSingleClassView();
+
+        if (groupObject.pageSize != null) {
+            groupObj.pageSize = groupObject.pageSize;
+        }
+
+        if (groupObject.updateType != null) {
+            groupObj.updateType = groupObject.updateType;
+        }
+
+        String propertyGroupName = groupObject.propertyGroupName;
+        AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
+        if(propertyGroup != null)
+            groupObj.propertyGroup = propertyGroup;
+
+        String integrationSID = groupObject.integrationSID;
+        if(integrationSID == null && groupObject.groupName == null) {
+            integrationSID = "";
+            for (ObjectEntity obj : groupObj.getOrderObjects()) {
+                integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+            }
+        }
+        if(integrationSID != null)
+            groupObj.setIntegrationSID(integrationSID);
+
+        groupObj.setIntegrationKey(groupObject.integrationKey);
+
+        if(groupObject.isSubReport)
+            setSubReport(groupObj, groupObject.subReportPath);
+
+        addGroupObjectEntity(groupName, groupObj, neighbour, isRightNeighbour, version);
+        return groupObj;
     }
 
-    public void addScriptingTreeGroupObject(String treeSID, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.PropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptingTreeGroupObject(String treeSID, GroupObjectEntity neighbour, boolean isRightNeighbour, List<ScriptingGroupObject> groupObjects, List<List<ScriptingLogicsModule.PropertyUsage>> parentProperties, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        checkNeighbour(neighbour, isRightNeighbour);
+
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
-        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, version);
+        List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, neighbour, isRightNeighbour, version);
         for (ScriptingGroupObject groupObject : groupObjects) {
             List<ScriptingLogicsModule.PropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
@@ -158,7 +174,8 @@ public class ScriptingFormEntity {
                     groupObj.setIsParents(propertyObjects.toArray(new CalcPropertyObjectEntity[propertyObjects.size()]));
             }
         }
-        form.addTreeGroupObject(treeGroup, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
+        
+        form.addTreeGroupObject(treeGroup, neighbour, isRightNeighbour, treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
     private LCP findLCPByPropertyUsage(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
@@ -172,13 +189,22 @@ public class ScriptingFormEntity {
             return LM.findLCPByNameAndClasses(property.name, property.getSourceName(), classSets);
         }
     }
-
+    
+    public void checkNeighbour(GroupObjectEntity neighbour, Boolean isRightNeighbour) throws ScriptingErrorLog.SemanticErrorException {
+        if (neighbour != null && neighbour.isInTree()) {
+            if(isRightNeighbour != null && isRightNeighbour) {
+                if(!neighbour.equals(neighbour.treeGroup.getGroups().last()))
+                    LM.getErrLog().emitGroupObjectInTreeAfterNotLastError(LM.getParser(), neighbour.getSID());
+            } else {
+                if(!neighbour.equals(neighbour.treeGroup.getGroups().get(0)))
+                    LM.getErrLog().emitGroupObjectInTreeBeforeNotFirstError(LM.getParser(), neighbour.getSID());
+            }            
+        }
+    }
+    
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
-        }
-        if (neighbour != null && neighbour.isInTree()) {
-            LM.getErrLog().emitGroupObjectInTreeAfterBeforeError(LM.getParser(), neighbour.getSID());
         }
         group.setSID(groupName);
         form.addGroupObject(group,neighbour, isRightNeighbour, version);

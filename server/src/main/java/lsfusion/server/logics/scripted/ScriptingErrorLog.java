@@ -156,8 +156,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("element '%s' can't be a parent element because it's not a navigator folder", parentElement));
     }
     
-    public void emitGroupObjectInTreeAfterBeforeError(ScriptParser parser, String groupObject) throws SemanticErrorException {
-        emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
+    public void emitGroupObjectInTreeAfterNotLastError(ScriptParser parser, String groupObject) throws SemanticErrorException {
+        emitSimpleError(parser, "'" + groupObject + "' is not last in tree group - can't use it in AFTER");
+    }
+
+    public void emitGroupObjectInTreeBeforeNotFirstError(ScriptParser parser, String groupObject) throws SemanticErrorException {
+        emitSimpleError(parser, "'" + groupObject + "' is not first in tree group - can't use it in BEFORE");
     }
 
     public void emitComponentParentError(ScriptParser parser, String compName) throws SemanticErrorException {
