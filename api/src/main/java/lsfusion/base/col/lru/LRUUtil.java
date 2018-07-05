@@ -187,8 +187,8 @@ public class LRUUtil {
     public static final int DEFAULT_CONCURRENCY_LEVEL = SystemUtils.getAvailableProcessors() * 8;
 
     public static class Strategy {
-        public int baseTime;
-        public int maxTime;
+        private final int baseTime;
+        private final int maxTime;
 
         public Strategy(int baseTime, int maxTime) {
             this.baseTime = baseTime;
