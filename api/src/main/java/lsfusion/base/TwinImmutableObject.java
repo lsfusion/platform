@@ -8,8 +8,25 @@ public abstract class TwinImmutableObject<T extends TwinImmutableObject> extends
 
     protected abstract boolean calcTwins(TwinImmutableObject o);
     
+    public static int twinCallCountCacheThreshold = 4;
+    
+    // cache twins only if object is pretty long living (twin called several times)
+    private int twinCallCount; // no synchronization needed, because it's used only for caching 
+    
     private static LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean> cacheTwins = new LRUWWVSMap<>(LRUUtil.G1);    
     protected boolean twins(TwinImmutableObject o) {
+        boolean noCache = false;
+        if(twinCallCount < twinCallCountCacheThreshold) {
+            noCache = true;
+            twinCallCount++;
+        }
+        if(o.twinCallCount < twinCallCountCacheThreshold) {
+            noCache = true;
+            o.twinCallCount++;
+        }
+        if(noCache)
+            return calcTwins(o);
+        
         TwinImmutableObject c1 = this;
         TwinImmutableObject c2 = o; 
         if(System.identityHashCode(c1) > System.identityHashCode(c2)) {
