@@ -17,8 +17,6 @@ public class ScriptingGroupObject {
     ClassViewType viewType;
     boolean isInitType;
     Integer pageSize;
-    ScriptingLogicsModule.PropertyUsage reportPathPropUsage;
-    List<String> reportPathMapping;
     UpdateType updateType;
     
     GroupObjectEntity neighbourGroupObject;
@@ -46,11 +44,6 @@ public class ScriptingGroupObject {
         this.pageSize = pageSize;
     }
 
-    public void setReportPathProp(ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) {
-        this.reportPathPropUsage = propUsage;
-        this.reportPathMapping = mapping;
-    }
-    
     public void setUpdateType(UpdateType updateType) {
         this.updateType = updateType; 
     }

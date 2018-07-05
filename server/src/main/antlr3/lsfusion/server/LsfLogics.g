@@ -489,17 +489,19 @@ formTreeGroupObjectList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, groups, properties, self.getVersion());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.isRightNeighbour, groups, properties, self.getVersion());
 	}
 }
 	:	'TREE'
 		(id = ID { treeSID = $id.text; })?
 		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
 		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
+	    opts = formTreeGroupObjectOptions		
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } formGroupObjectOptions[$groupObject]		
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } 
+	    formGroupObjectOptions[$groupObject]		
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
@@ -508,6 +510,11 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
+		)*
+	;
+	
+formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
+	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
 		)*
 	;
 
