@@ -2045,7 +2045,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
             if(isInTransaction() && syntax.hasTransactionSavepointProblem()) {
                 Integer count;
-                if (Settings.get().isUseSavepointsForExceptions() && snapEnv.hasRepeatCommand() && (count = attemptCountMap.get(SQLTimeoutException.ADJUSTTRANSTIMEOUT)) != null && count >= 1)
+                int savePointCountForExceptions = Settings.get().getSavePointCountForExceptions();
+                if (savePointCountForExceptions > 0 && snapEnv.hasRepeatCommand() && (count = attemptCountMap.get(SQLTimeoutException.ADJUSTTRANSTIMEOUT)) != null && count >= savePointCountForExceptions)
                     savepoint = connection.sql.setSavepoint();
             }
 
