@@ -1992,12 +1992,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         session.executeSelect(sql, getQueryExecEnv(session.userProvider), queryEnv.getOpOwner(), getQueryParams(queryEnv, limit), queryEnv.getTransactTimeout(), keyNames, propertyNames, resultHandler);
     }
 
-    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        sql.outSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+    public void outSelect(SQLSession session, QueryEnvironment env, boolean uniqueViolation) throws SQLException, SQLHandledException {
+        sql.outSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), uniqueViolation, env.getOpOwner());
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return sql.readSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), env.getOpOwner());
+        return sql.readSelect(keyNames, propertyNames, session, getQueryExecEnv(session.userProvider), null, getQueryParams(env), env.getTransactTimeout(), false, env.getOpOwner());
     }
 }
 

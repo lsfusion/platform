@@ -322,6 +322,13 @@ public class MapFact {
             }});
     }
 
+    public static <K, V, T> ImMap<K, ImMap<V, T>> immutableMapMap(MExclMap<K, MMap<V, T>> mMap) {
+        return mMap.immutable().mapValues(new GetValue<ImMap<V, T>, MMap<V, T>>() {
+            public ImMap<V, T> getMapValue(MMap<V, T> value) {
+                return value.immutable();
+            }});
+    }
+
     public static <K, V> ImMap<K, ImSet<V>> immutableMap(MExclMap<K, MSet<V>> mMap) {
         return mMap.immutable().mapValues(new GetValue<ImSet<V>, MSet<V>>() {
             public ImSet<V> getMapValue(MSet<V> value) {

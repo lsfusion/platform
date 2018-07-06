@@ -92,10 +92,10 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     }
 
     public void outSelect(SQLSession session) throws SQLException, SQLHandledException {
-        outSelect(session, DataSession.emptyEnv(OperationOwner.debug));
+        outSelect(session, DataSession.emptyEnv(OperationOwner.debug), false);
     }
-    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        compile(new CompileOptions<V>(session.syntax)).outSelect(session, env);
+    public void outSelect(SQLSession session, QueryEnvironment env, boolean uniqueViolation) throws SQLException, SQLHandledException {
+        compile(new CompileOptions<V>(session.syntax)).outSelect(session, env, uniqueViolation);
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {

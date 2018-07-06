@@ -7,13 +7,18 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.FileClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.Cost;
 import lsfusion.server.data.sql.SQLExecute;
@@ -176,15 +181,85 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
     }
 
-    public <K, V> void outSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
-        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(keys, props, session, queryExecEnv, outerEnv, queryParams, transactTimeout, owner));
+    public <K, V> void outSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, boolean uniqueViolation, OperationOwner owner) throws SQLException, SQLHandledException {
+        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(keys, props, session, queryExecEnv, outerEnv, queryParams, transactTimeout, uniqueViolation, owner));
     }
+    
+    private static class ReadUniqueViolationResultHandler<K, V> implements ResultHandler<K, V> {
+        public void start() {
+        }
+        
+        private static final Object nullObject = new Object() {
+            public String toString() {
+                return "null";
+            }
+        };
 
-    public <K, V> String readSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
-        // выведем на экран
-        ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<>();
+        public void finish() throws SQLException {
+        }
+
+        private final MExclMap<ImMap<K, Object>, MMap<V, ImSet<Object>>> mExecResult = MapFact.mExclMap();
+
+        public void proceed(ImMap<K, Object> rowKey, ImMap<V, Object> rowValue) throws SQLException {
+            ImMap<V, ImSet<Object>> rowValueSet = rowValue.mapValues(new GetValue<ImSet<Object>, Object>() {
+                public ImSet<Object> getMapValue(Object value) {
+                    return value == null ? SetFact.singleton(nullObject) : SetFact.singleton(value); // ImSet doesn't support nulls
+                }
+            });
+
+            MMap<V, ImSet<Object>> mValues = mExecResult.get(rowKey);
+            if(mValues == null) {
+                mValues = MapFact.mMap(rowValueSet, new SymmAddValue<V, ImSet<Object>>() {
+                    public ImSet<Object> addValue(V key, ImSet<Object> prevValue, ImSet<Object> newValue) {
+                        return prevValue.merge(newValue);
+                    }
+                });
+                mExecResult.exclAdd(rowKey, mValues);
+            } else
+                mValues.addAll(rowValueSet);
+        }
+
+        public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean hasQueryLimit() {
+            return false;
+        }
+
+        public ImMap<ImMap<K, Object>, ImMap<V, String>> terminate() {
+            ImMap<ImMap<K, Object>, MMap<V, ImSet<Object>>> execResult = mExecResult.immutable();
+            ImFilterValueMap<ImMap<K, Object>, ImMap<V, String>> result = execResult.mapFilterValues();
+            for(int i=0,size=execResult.size();i<size;i++) {
+                ImMap<V, ImSet<Object>> diffValues = execResult.getValue(i).immutable();
+                final Result<Boolean> hasDifferentProps = new Result<>(false);
+                ImMap<V, String> diffConcatValues = diffValues.mapItValues(new GetValue<String, ImSet<Object>>() {
+                    @Override
+                    public String getMapValue(ImSet<Object> value) {
+                        if (value.size() > 1)
+                            hasDifferentProps.set(true);
+                        return value.toString(",");
+                    }
+                });
+                if(hasDifferentProps.result)
+                    result.mapValue(i, diffConcatValues);
+            }
+            return result.immutableValue();
+        }
+    } 
+
+    public <K, V> String readSelect(ImMap<K, String> keys, ImMap<V, String> props, SQLSession session, DynamicExecuteEnvironment queryExecEnv, Object outerEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, boolean uniqueViolation, OperationOwner owner) throws SQLException, SQLHandledException {
+        ImMap<String, ? extends Reader> keyReaders = this.keyReaders;
+        ImMap<String, ? extends Reader> propertyReaders = this.propertyReaders;
+
+        ResultHandler<String, String> handler = uniqueViolation ? new ReadUniqueViolationResultHandler<String, String>() : new ReadAllResultHandler<String, String>();
         session.executeSelect(this, queryExecEnv, outerEnv, owner, queryParams, transactTimeout, handler);
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = handler.terminate();
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result;
+        if(uniqueViolation) {
+            result = BaseUtils.immutableCast(((ReadUniqueViolationResultHandler<String, String>)handler).terminate());
+            propertyReaders = propertyReaders.keys().toMap(StringClass.text);
+        } else
+            result = ((ReadAllResultHandler<String, String>)handler).terminate();
 
         String resultString = "";
         if(result.isEmpty())
@@ -310,7 +385,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
                 SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner, SQLSession.register(name, tableOwner, TableChange.INSERT));
                 return session.insertSessionSelect(execute, new ERunnable() {
                     public void run() throws Exception {
-                        outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, owner);
+                        outSelect(keyReaders.keys().toMap(), propertyReaders.keys().toMap(), session, subQueryExecEnv, materializedQueries, queryParams, transactTimeout, true, owner);
                     }
                 });
             }

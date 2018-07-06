@@ -2642,7 +2642,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         checkTableOwner(name, owner);
         return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider, null, register(name, owner, TableChange.INSERT), selectTop), new ERunnable() {
             public void run() throws Exception {
-                query.outSelect(SQLSession.this, env);
+                query.outSelect(SQLSession.this, env, true);
             }});
     }
 
