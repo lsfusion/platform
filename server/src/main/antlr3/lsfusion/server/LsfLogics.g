@@ -2900,8 +2900,8 @@ headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(
 @init {
     ObjectEntity object = null;
 }
-	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); }
-		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); })*
+	:	headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } }
+		(',' headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } })*
 	;
 
 
