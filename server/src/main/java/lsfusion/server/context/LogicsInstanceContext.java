@@ -129,7 +129,7 @@ public class LogicsInstanceContext extends AbstractContext {
             if(logBuilder != null) {
                 if (logBuilder.length() > 0)
                     logBuilder.append('\n');
-                logBuilder.append(logAction.message);
+                logBuilder.append(logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
             } else {
                 if (logAction.failed) {
                     throw new LogMessageLogicsException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
