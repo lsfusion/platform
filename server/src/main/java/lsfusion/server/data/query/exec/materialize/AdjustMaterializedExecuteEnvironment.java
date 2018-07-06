@@ -638,7 +638,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             inTransaction = session.isInTransaction();
             setTimeout = step.getTimeout();
 
-            if(session.isInTransaction() && session.syntax.hasTransactionSavepointProblem() && !Settings.get().isUseSavepointsForExceptions()) { // если нет savepoint'ов увеличиваем до времени с начала транзакции
+            if(session.isInTransaction() && session.syntax.hasTransactionSavepointProblem() && Settings.get().getSavePointCountForExceptions() > 0) { // если нет savepoint'ов увеличиваем до времени с начала транзакции
                 secondsFromTransactStart = session.getSecondsFromTransactStart();
                 if (setTimeout > 0) // если есть транзакция, увеличиваем timeout до времени транзакции
                     setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
