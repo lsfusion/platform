@@ -86,7 +86,7 @@ public abstract class DefaultFormsController implements FormsController {
             tabsPanel.selectTab(formsList.indexOf(formSID));
         } else {
 
-            final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable(), formSID);
+            final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable("(loading...)"), formSID);
 
             NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), tabSID), new ErrorHandlingCallback<GetFormResult>() {
                 @Override
@@ -136,10 +136,9 @@ public abstract class DefaultFormsController implements FormsController {
             setCurForm(modalForm.getForm());
         } else {
             if (dockable == null) {
-                dockable = addDockable(new FormDockable(this, form), form.sID);
-            } else {
-                dockable.initialize(this, form);
+                dockable = addDockable(new FormDockable(), form.sID);
             }
+            dockable.initialize(this, form); // initialize should be after addDockable, otherwise offsetTop and other sizes are not recalculated in preAfterUpdateTableData, and it breaks scrolling (for example LAST option at form opening)
             setCurForm(dockable.getForm());
 
             final FormDockable finalDockable = dockable;
