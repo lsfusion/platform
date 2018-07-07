@@ -1018,9 +1018,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         String tableName = ps.table;
         if (tableName != null) {
             targetTable = findTable(tableName);
-            if (!targetTable.equalClasses(property.property.getOrderTableInterfaceClasses(ClassType.storedPolicy))) {
-                // todo : проверка неправильная - должна быть на ClassWhere
-                //errLog.emitWrongClassesForTable(parser, name, tableName);
+            if (targetTable.getMapKeysTable(property.property.getOrderTableInterfaceClasses(ClassType.storedPolicy)) == null) {
+                errLog.emitWrongClassesForTable(parser, name, tableName);
             }
         }
         if (property.property instanceof StoredDataProperty) {
