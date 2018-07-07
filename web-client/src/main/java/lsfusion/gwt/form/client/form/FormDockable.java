@@ -21,18 +21,16 @@ final class FormDockable {
 
     private boolean initialized = false;
 
-    public FormDockable() {
-        tabWidget = new TabWidget("(loading...)");
+    public FormDockable(String caption) {
+        tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(true);
 
         contentWidget = new ContentWidget(new LoadingWidget());
     }
 
-    public FormDockable(final FormsController formsController, GForm gForm) {
+    public FormDockable() {
         tabWidget = new TabWidget("");
         contentWidget = new ContentWidget(null);
-
-        initialize(formsController,  gForm);
     }
 
     public void initialize(final FormsController formsController, final GForm gForm) {
