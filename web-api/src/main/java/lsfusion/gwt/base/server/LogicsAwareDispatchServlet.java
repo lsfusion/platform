@@ -6,6 +6,7 @@ import lsfusion.gwt.base.server.dispatch.SecuredAction;
 import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.NavigatorProvider;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.base.shared.actions.RequestAction;
@@ -55,6 +56,8 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
     private String rpcPolicyLocation;
 
     private String beanName;
+
+    private String servSID = GwtSharedUtils.randomString(25);
 
     protected Dispatch dispatch;
 
@@ -199,9 +202,11 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     public void tabOpened(String tabSID) {
         openTabs.add(tabSID);
+        logger.info("OPENED TAB : " + tabSID + " IN SESSION " + servSID + " CURRENT OPENED TABS : " + openTabs);
     }
 
     public void tabClosed(String tabSID) throws RemoteException {
+        logger.info("CLOSED TAB : " + tabSID + " IN SESSION " + servSID + " CURRENT OPENED TABS : " + openTabs);
         openTabs.remove(tabSID);
         if (openTabs.isEmpty()) {
             invalidate();
