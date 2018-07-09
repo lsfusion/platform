@@ -1,7 +1,6 @@
 package jasperapi;
 
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.design.JRDesignField;
 
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReportDependentDataSource implements JRDataSource {
-    private List<Object> values;
+    private List<Object> parentKeyValues;
     private final List<ReportDependentDataSource> childSources;
     private final ClientReportData data;
     private String repeatCountFieldName = null;
@@ -25,52 +24,67 @@ public class ReportDependentDataSource implements JRDataSource {
         this.childSources = childSources;
     }
 
-    public Object getFieldValue(String fieldName) throws JRException {
+    public Object getFieldValue(String fieldName) {
         JRDesignField field = new JRDesignField();
         field.setName(fieldName);
         return getFieldValue(field);
     }
 
-    public Object getFieldValue(JRField jrField) throws JRException {
+    public Object getFieldValue(JRField jrField) {
         return data.getFieldValue(jrField);
     }
 
-    public boolean next() throws JRException {
-        if (repeatCount == 0) {
-            boolean hasNext = data.next();
-            if (hasNext && values != null) {
-                for (int i = 0; i < values.size(); i++) {
-                    if (data.getKeyValueByIndex(i) == null && values.get(i) != null || !data.getKeyValueByIndex(i).equals(values.get(i))) {
-                        hasNext = false;
-                        data.revert();
-                        break;
-                    }
-                }
-            }
-
-            if (hasNext && childSources != null) {
-                List<Object> keyValues = new ArrayList<>();
-                for (int i = 0; i < data.getObjectsCount(); i++) {
-                    keyValues.add(data.getKeyValueByIndex(i));
-                }
-
-                for (ReportDependentDataSource childSource : childSources) {
-                    childSource.setValues(keyValues);
-                }
-            }
-
-            if (hasNext && repeatCountFieldName != null) {
-                Object obj = getFieldValue(repeatCountFieldName);
-                if (obj instanceof Integer && (Integer)obj > 0) {
-                    repeatCount = (Integer)obj - 1;
-                }
-            }
-            return hasNext;
-        } else {
+    public boolean next() {
+        if (repeatCount > 0) {
             --repeatCount;
-            return true;
-        }
+        } else {
+            boolean hasNext = data.next();
+            if (!hasNext) return false;
+            if (!sameParentKeyValues()) {
+                data.revert();
+                return false;
+            }
+
+            setKeyValuesToChildren();
+            setRepeatCountIfExists();
+        } 
+        return true;
     }
 
-    private void setValues(List<Object> values) { this.values = values; }
+    private boolean sameParentKeyValues() {
+        if (parentKeyValues != null) {
+            for (int i = 0; i < parentKeyValues.size(); i++) {
+                if (data.getKeyValueByIndex(i) == null && parentKeyValues.get(i) != null || !data.getKeyValueByIndex(i).equals(parentKeyValues.get(i))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    private void setKeyValuesToChildren() {
+        if (childSources != null) {
+            List<Object> keyValues = new ArrayList<>();
+            for (int i = 0; i < data.getObjectsCount(); i++) {
+                keyValues.add(data.getKeyValueByIndex(i));
+            }
+
+            for (ReportDependentDataSource childSource : childSources) {
+                childSource.setParentKeyValues(keyValues);
+            }
+        }
+    }
+    
+    private void setParentKeyValues(List<Object> parentKeyValues) { 
+        this.parentKeyValues = parentKeyValues; 
+    }
+
+    private void setRepeatCountIfExists() {
+        if (repeatCountFieldName != null) {
+            Object obj = getFieldValue(repeatCountFieldName);
+            if (obj instanceof Integer && (Integer) obj > 0) {
+                repeatCount = (Integer) obj - 1;
+            }
+        }
+    }
 }

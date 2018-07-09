@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
 import lsfusion.interop.form.*;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.BaseClass;
@@ -170,7 +169,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
     @StackMessage("{message.form.read.report.node}")
     private void iterateChildReport(@ParamMessage ReportNode node, ImOrderSet<GroupObject> parentGroups, SessionTableUsage<Obj, Pair<Object, PropertyType>> parentTable, ReportGenerationDataType reportType, int selectTop) throws SQLException, SQLHandledException {
-        String sid = node.getID();
+        String reportNodeSID = node.getID();
         List<GroupObjectEntity> groupList = node.getGroupList();
         MOrderExclSet<GroupObject> mLocalGroups = SetFact.mOrderExclSet(groupList.size()); // пограничные List'ы
         for (GroupObjectEntity group : groupList) {
@@ -239,7 +238,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 data.add(keys, propertyValues);
             }
 
-            sources.put(sid, data);
+            sources.put(reportNodeSID, data);
 
             iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable, reportType, selectTop);
         } finally {

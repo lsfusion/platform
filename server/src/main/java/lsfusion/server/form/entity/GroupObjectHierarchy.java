@@ -248,9 +248,7 @@ public class GroupObjectHierarchy {
             Set<ReportNode> dependentNodes = new HashSet<>();
                 
             for (Map.Entry<ReportNode, List<ReportNode>> entry : dependencies.entrySet()) {
-                for (ReportNode node : entry.getValue()) {
-                    dependentNodes.add(node);
-                }
+                dependentNodes.addAll(entry.getValue());
             }
 
             for (ReportNode node : reportNodes) {

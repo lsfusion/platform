@@ -88,7 +88,7 @@ public class ReportData<Order, Obj extends Order, PropertyReader> {
         }
     }
 
-    public Map<String, String> getPropertyCaptionsMap(FormView formView, ReportGenerationDataType reportType, FormSourceInterface<?,?,?,?, Order, Obj, PropertyReader> formInterface) throws IOException {
+    public Map<String, String> getPropertyCaptionsMap(FormView formView, ReportGenerationDataType reportType, FormSourceInterface<?,?,?,?, Order, Obj, PropertyReader> formInterface) {
         Map<String, String> propertyCaptionsMap = new HashMap<>();
         for (Pair<String, PropertyReader> propertyData : properties) {
             propertyCaptionsMap.put(getPropFullID(propertyData.first, propertyData.second, reportType, formInterface), ThreadLocalContext.localize(formView.getProperty(((PropertyDrawEntity) propertyData.second)).getCaption()));

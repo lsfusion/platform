@@ -7,7 +7,6 @@ import lsfusion.base.Pair;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.ReportGenerationDataType;
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 
 import java.io.DataInputStream;
@@ -118,7 +117,7 @@ public class ClientReportData implements JRDataSource {
         return compositeColumnValues;
     }
 
-    public boolean next() throws JRException {
+    public boolean next() {
         if(!iterator.hasNext()) return false;
         currentKeyRow = iterator.next();
         return true;
@@ -139,7 +138,7 @@ public class ClientReportData implements JRDataSource {
         compositeColumnValues = columnValues; 
     }
 
-    public Object getFieldValue(JRField jrField) throws JRException {
+    public Object getFieldValue(JRField jrField) {
 
         String fieldName = jrField.getName();
         
