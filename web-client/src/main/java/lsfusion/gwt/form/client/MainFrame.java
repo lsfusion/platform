@@ -98,6 +98,19 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public void onModuleLoad() {
         dispatcher.execute(new RegisterTabAction(tabSID), new ErrorHandlingCallback<VoidResult>());
 
+        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
+            @Override
+            public void onWindowClosing(Window.ClosingEvent event) {
+                try {
+                    if (windowsController != null) {
+                        windowsController.storeWindowsSizes();
+                    }
+                } finally {
+                    clean();
+                }
+            }
+        });
+
         dispatcher.execute(new GetLocaleAction(), new ErrorHandlingCallback<StringResult>() {
             @Override
             public void success(StringResult result) {
@@ -194,19 +207,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         });
 
         initializeWindows();
-
-        Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
-            @Override
-            public void onWindowClosing(Window.ClosingEvent event) {
-                try {
-                    if (windowsController != null) {
-                        windowsController.storeWindowsSizes();
-                    }
-                } finally {
-                    clean();
-                }
-            }
-        });
 
         GConnectionLostManager.start();
 
@@ -320,8 +320,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void clean() {
-        GConnectionLostManager.invalidate();
         dispatcher.execute(new CleanAction(tabSID), new ErrorHandlingCallback<VoidResult>());
+        GConnectionLostManager.invalidate();
         System.gc();
     }
 
