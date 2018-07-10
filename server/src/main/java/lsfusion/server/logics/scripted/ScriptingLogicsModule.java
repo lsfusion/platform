@@ -3255,7 +3255,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<LCPWithParams> exprs, LCPWithParams whereProperty,
-                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, String charset, boolean attr,
+                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                          List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
         
         LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : BL.LM.exportFile;
@@ -3320,7 +3320,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         LAP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exportIdSet, exprTypes, orders, targetProp,
-                whereProperty != null, hasListOption, separator, noHeader, charset, attr, resultParams.toArray());
+                whereProperty != null, hasListOption, separator, noHeader, noEscape, charset, attr, resultParams.toArray());
         return new LAPWithParams(result, resultInterfaces);
     }
 

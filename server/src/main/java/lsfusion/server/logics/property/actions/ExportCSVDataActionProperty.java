@@ -23,16 +23,18 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
 
     private String separator;
     private boolean noHeader;
+    private boolean noEscape;
     private String charset;
 
     public ExportCSVDataActionProperty(LocalizedString caption, String extension,
                                        ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces,
                                        ImOrderSet<String> fields, ImMap<String, CalcPropertyInterfaceImplement<I>> exprs, ImMap<String, Type> types, CalcPropertyInterfaceImplement<I> where,
-                                       ImOrderMap<String, Boolean> orders, LCP targetProp, String separator, boolean noHeader, String charset) {
+                                       ImOrderMap<String, Boolean> orders, LCP targetProp, String separator, boolean noHeader, boolean noEcsape, String charset) {
         super(caption, extension, innerInterfaces, mapInterfaces, fields, exprs, types, where, orders, targetProp);
 
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
         this.noHeader = noHeader;
+        this.noEscape = noEcsape;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
     }
 
@@ -42,7 +44,7 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
             if (!noHeader)
                 os.write(getLineBytes(fields.toJavaList()));
 
-            CsvEscaper csvEscaper = new CsvEscaper(separator);
+            CsvEscaper csvEscaper = new CsvEscaper(noEscape, separator);
             for (ImMap<String, Object> row : rows) {
                 List<String> line = new ArrayList<>();
                 for (String field : fields) {
@@ -66,8 +68,9 @@ public class ExportCSVDataActionProperty<I extends PropertyInterface> extends Ex
         private static final String CSV_QUOTE_STR = String.valueOf(CSV_QUOTE);
         private char[] CSV_SEARCH_CHARS;
 
-        public CsvEscaper(String separator) {
-            this.CSV_SEARCH_CHARS = separator.isEmpty() ? new char[] {CSV_QUOTE, CharUtils.CR, CharUtils.LF} : new char[] {separator.charAt(0), CSV_QUOTE, CharUtils.CR, CharUtils.LF};
+        public CsvEscaper(boolean noEscape, String separator) {
+            this.CSV_SEARCH_CHARS = noEscape ? new char[] {} :
+                    separator.isEmpty() ? new char[] {CSV_QUOTE, CharUtils.CR, CharUtils.LF} : new char[] {separator.charAt(0), CSV_QUOTE, CharUtils.CR, CharUtils.LF};
         }
 
         @Override

@@ -496,12 +496,12 @@ formTreeGroupObjectList
 		(id = ID { treeSID = $id.text; })?
 		groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); }
 		(',' groupElement=formTreeGroupObjectDeclaration { groups.add($groupElement.groupObject); properties.add($groupElement.properties); })*
-	    opts = formTreeGroupObjectOptions		
+	    opts = formTreeGroupObjectOptions
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } 
-	    formGroupObjectOptions[$groupObject]		
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; }
+	    formGroupObjectOptions[$groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
@@ -512,7 +512,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
 		)*
 	;
-	
+
 formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, boolean isRightNeighbour]
 	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $isRightNeighbour = $relative.isRightNeighbour; }
 		)*
@@ -2029,6 +2029,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams memo = null;
 	String separator = null;
 	boolean noHeader = false;
+	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
 	LCPWithParams root = null;
@@ -2037,13 +2038,15 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, hasListOption, separator, noHeader, charset, attr, orderProperties, orderDirections);
+			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage,
+			                                                 hasListOption, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
 		(	'XML' { exportType = FormExportType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?  ('ATTR' { attr = true; })?
 	    |  	'JSON' { exportType = FormExportType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
-		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
+		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
 	    |  	'TABLE' { exportType = FormExportType.TABLE; }
