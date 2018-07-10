@@ -20,7 +20,6 @@
         <junit.version>4.10</junit.version>
         <log4j.version>1.2.16</log4j.version>
         <log4j.extras.version>1.0</log4j.extras.version>
-        <logback.version>1.2.3</logback.version>
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.15-M3</jacob.version>
         <commons.lang.version>3.4</commons.lang.version>
@@ -67,6 +66,7 @@
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
         <informix.version>4.10.9</informix.version>
         <mysql.version>5.1.21</mysql.version>
+        <slf4j.version>1.6.1</slf4j.version>
         <janino.version>2.7.8</janino.version>
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <jdbf.version>2.1.0</jdbf.version>
@@ -127,11 +127,6 @@
                 <groupId>log4j</groupId>
                 <artifactId>apache-log4j-extras</artifactId>
                 <version>${log4j.extras.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xBaseJ</groupId>
@@ -384,6 +379,11 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.janino</groupId>
