@@ -561,9 +561,8 @@ public abstract class LogicsModule {
 
     // ------------------- Export property action ----------------- //
 
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, final ImList<Type> types,
-                                         ImOrderMap<String, Boolean> orders, LCP targetProp, boolean conditional, boolean hasListOption, String separator,
-                                         boolean noHeader, String charset, boolean attr, Object... params) {
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, ImOrderSet<String> exportAliases, final ImList<Type> types,
+                                         ImOrderMap<String, Boolean> orders, LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, String charset, boolean attr, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
@@ -581,27 +580,27 @@ public abstract class LogicsModule {
         ExtendContextActionProperty exportAction;
         if (type == FormExportType.CSV)
             exportAction = new ExportCSVDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, separator, noHeader, charset);
         else if (type == FormExportType.DBF)
             exportAction = new ExportDBFDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, charset);
         else if (type == FormExportType.JSON)
             exportAction = new ExportJSONDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, hasListOption);
         else if (type == FormExportType.XML)
             exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, hasListOption, attr);
         else if (type == FormExportType.TABLE)
             exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                     conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, false);
         else
             exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), aliases, aliasesExprs, aliasesTypes,
+                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
                 conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, true);
 
 
@@ -1409,7 +1408,7 @@ public abstract class LogicsModule {
     } 
     
     // ------------------- Loggable ----------------- //
-    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48), 
+    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #48),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();
