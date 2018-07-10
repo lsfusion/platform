@@ -3257,6 +3257,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : BL.LM.exportFile;
 
+        List<String> orderIds = new ArrayList<>();
+        for(LCPWithParams orderProperty : orderProperties) {
+            if(!exprs.contains(orderProperty)) {
+                exprs.add(orderProperty);
+                String orderId = "expr" + ids.size();
+                ids.add(orderId);
+                orderIds.add(orderId);
+            }
+        }
+
         List<LCPWithParams> props = exprs;
         if(whereProperty != null)
             props = BaseUtils.add(exprs, whereProperty);
@@ -3300,7 +3310,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
 
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LAP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exprTypes, orders, targetProp, whereProperty != null, hasListOption, separator, noHeader, charset, resultParams.toArray());
+        ImOrderSet<String> exportIdSet = SetFact.EMPTYORDER();
+        for(String id : idSet) {
+            if(!orderIds.contains(id)) {
+                exportIdSet = exportIdSet.addOrderExcl(id);
+            }
+        }
+        LAP result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), idSet, exportIdSet, exprTypes, orders, targetProp,
+                whereProperty != null, hasListOption, separator, noHeader, charset, resultParams.toArray());
         return new LAPWithParams(result, resultInterfaces);
     }
 
