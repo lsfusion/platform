@@ -499,7 +499,7 @@ formTreeGroupObjectList
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } formGroupObjectOptions[$groupObject]		
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } formGroupObjectOptions[$groupObject]
 	; 
 
 formGroupObjectOptions[ScriptingGroupObject groupObject]
@@ -2022,6 +2022,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams memo = null;
 	String separator = null;
 	boolean noHeader = false;
+	boolean noEscape = false;
 	String charset = null;
 	LCPWithParams root = null;
 	Boolean hasListOption = null;
@@ -2030,13 +2031,15 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage, hasListOption, separator, noHeader, charset, orderProperties, orderDirections);
+			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.properties, $whereExpr.property, $pUsage.propUsage,
+			                                                 hasListOption, separator, noHeader, noEscape, charset, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
 		(	'XML' { exportType = FormExportType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
 	    |  	'JSON' { exportType = FormExportType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
-		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
+		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'LIST' { exportType = FormExportType.LIST; }
 	    |  	'TABLE' { exportType = FormExportType.TABLE; }
@@ -2696,7 +2699,7 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 }
 	:
 	(   
-		(	formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } } 
+		(	formName=compoundID { if(inPropParseState()) { form = self.findForm($formName.sid); } }
 			('OBJECTS' list=formActionObjectList[form, context, newContext, dynamic] { $props = $list.props; })?
 			{
 				if(inPropParseState())

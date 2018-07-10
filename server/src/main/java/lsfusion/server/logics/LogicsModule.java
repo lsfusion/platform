@@ -561,7 +561,8 @@ public abstract class LogicsModule {
 
     // ------------------- Export property action ----------------- //
     protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, ImOrderSet<String> exportAliases, final ImList<Type> types,
-                                         ImOrderMap<String, Boolean> orders, LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, String charset, Object... params) {
+                                         ImOrderMap<String, Boolean> orders, LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, boolean noEscape,
+                                         String charset, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
@@ -580,7 +581,7 @@ public abstract class LogicsModule {
         if (type == FormExportType.CSV)
             exportAction = new ExportCSVDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, separator, noHeader, charset);
+                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, separator, noHeader, noEscape, charset);
         else if (type == FormExportType.DBF)
             exportAction = new ExportDBFDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
                     (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
@@ -1407,7 +1408,7 @@ public abstract class LogicsModule {
     } 
     
     // ------------------- Loggable ----------------- //
-    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725), 
+    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (issue #1725),
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
         assert lp.property.isNamed();
