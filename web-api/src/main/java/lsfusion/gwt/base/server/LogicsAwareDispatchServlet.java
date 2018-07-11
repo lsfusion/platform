@@ -211,15 +211,20 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         }
     }
 
-    public void invalidate() {
+    public void invalidate() throws RemoteException {
         try {
             blProvider.invalidate();
-        } catch (Exception ignored) {}
-        try {
-            navigatorProvider.getNavigator().close();
-        } catch (Exception ignored) {}
-        navigatorProvider.invalidate();
-        clientCallBack = null;
+        } finally {
+            try {
+                navigatorProvider.getNavigator().close();
+            } finally {
+                try {
+                    navigatorProvider.invalidate();
+                } finally {
+                    clientCallBack = null;
+                }
+            }
+        }
     }
 
     public HttpServletRequest getRequest() {

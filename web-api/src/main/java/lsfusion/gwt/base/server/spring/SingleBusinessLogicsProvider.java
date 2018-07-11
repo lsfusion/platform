@@ -118,7 +118,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     public void invalidate() {
         try {
             GWT.log("Invalidating logics...", new Exception());
-        } catch (NoClassDefFoundError ignored) {} // валится при попытке подключиться после перестарта сервера
+        } catch (Throwable ignored) {} // валится при попытке подключиться после перестарта сервера
         
         writeLogicsLock.lock();
         try {
