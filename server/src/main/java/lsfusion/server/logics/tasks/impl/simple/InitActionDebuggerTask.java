@@ -7,10 +7,18 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.DebugInfo;
+import lsfusion.server.logics.debug.DebuggerService;
+import lsfusion.server.logics.debug.LocalhostClientSocketFactory;
 import lsfusion.server.logics.tasks.GroupSplitTask;
 import org.apache.log4j.Logger;
+import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import java.io.File;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
+import static lsfusion.server.context.ThreadLocalContext.getRmiManager;
 
 public class InitActionDebuggerTask extends GroupSplitTask<String> {
     @Override
@@ -44,6 +52,12 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
         groupDelegates = ActionPropertyDebugger.getInstance().getGroupDelegates();
         try {
             sourceDir = IOUtils.createTempDirectory("lsfusiondebug");
+
+            DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(ActionPropertyDebugger.getInstance(), 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
+            int port = getRmiManager().getDebuggerPort();
+            Registry registry = LocateRegistry.createRegistry(port);
+            registry.bind("lsfDebuggerService", stub);
+
         } catch (Exception e) {
             Throwables.propagate(e);
         }

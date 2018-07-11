@@ -92,17 +92,6 @@ public class ActionPropertyDebugger implements DebuggerService {
     private Map<String, Class> delegatesHolderClasses = new HashMap<>();
 
     private ActionPropertyDebugger() {
-        try {
-            if(isEnabled()) {
-                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
-                int port = getRmiManager().getDebuggerPort();
-                Registry registry = LocateRegistry.createRegistry(port);
-                registry.bind("lsfDebuggerService", stub);
-            }
-        } catch (Throwable t) {
-            logger.error("Cannot start LSF debugger", t);
-//            Throwables.propagate(e);
-        }
     } //singleton
 
     private Set<DebugInfo> delegates = new HashSet<>();
