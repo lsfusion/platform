@@ -51,6 +51,8 @@ public class ExportDBFDataActionProperty<I extends PropertyInterface> extends Ex
                 }
                 writer.addRecord(record.toArray(new Object[record.size()]));
             }
+            closeWriter(writer);
+            writer = null; //prevent closing in finally
             return IOUtils.getFileBytes(file);
 
         } catch (JDBFException e) {
