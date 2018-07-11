@@ -6,6 +6,8 @@ import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.actions.form.FormBoundAction;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.form.shared.actions.navigator.CleanAction;
+import lsfusion.gwt.form.shared.actions.navigator.RegisterTabAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
@@ -40,7 +42,13 @@ public abstract class LoggableActionHandler <A extends Action<R>, R extends Resu
         message += action.getClass().getSimpleName();
         if (action instanceof FormRequestIndexCountingAction) {
             message += " : " + ((FormRequestIndexCountingAction) action).requestIndex;
-        }    
+        }
+        if (action instanceof RegisterTabAction) {
+            message += "TAB ID " + ((RegisterTabAction) action).tabSID + " IN SESSION " + servlet.servSID + " CURRENT OPENED TABS " + servlet.openTabs;
+        }
+        if (action instanceof CleanAction) {
+            message += "TAB ID " + ((CleanAction) action).tabSID + " IN SESSION " + servlet.servSID + " CURRENT OPENED TABS " + servlet.openTabs;
+        }
         return message;
     }
 }
