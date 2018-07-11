@@ -57,13 +57,13 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     private String beanName;
 
-    private String servSID = GwtSharedUtils.randomString(25);
+    public String servSID = GwtSharedUtils.randomString(25);
 
     protected Dispatch dispatch;
 
     private ClientCallBackInterface clientCallBack = null;
     
-    protected Set<String> openTabs = Collections.synchronizedSet(new HashSet<String>());
+    public Set<String> openTabs = Collections.synchronizedSet(new HashSet<String>());
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
         this.useGETForGwtRPC = useGETForGwtRPC;
@@ -202,11 +202,9 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     public void tabOpened(String tabSID) {
         openTabs.add(tabSID);
-        logger.info("OPENED TAB : " + tabSID + " IN SESSION " + servSID + " CURRENT OPENED TABS : " + openTabs);
     }
 
     public void tabClosed(String tabSID) throws RemoteException {
-        logger.info("CLOSED TAB : " + tabSID + " IN SESSION " + servSID + " CURRENT OPENED TABS : " + openTabs);
         openTabs.remove(tabSID);
         if (openTabs.isEmpty()) {
             invalidate();
