@@ -262,13 +262,13 @@ public class ClientFormController implements AsyncListener {
 
         initializeRegularFilters();
 
+        initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
+
         if(firstChanges != null) {
             applyFormChanges(-1, firstChanges);
         } else {
             getRemoteChanges(false);
         }
-
-        initializeDefaultOrders();
 
         initializeAutoRefresh();
     }
