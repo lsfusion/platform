@@ -333,22 +333,6 @@
         </layout>
     </appender>
 
-    <appender name="pricecheckerlog" class="org.apache.log4j.rolling.RollingFileAppender">
-        <param name="encoding" value="UTF-8" />
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="5"/>
-            <param name="activeFileName" value="logs/pricechecker-log.log"/>
-            <param name="fileNamePattern" value="logs/pricechecker-log-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
-        </layout>
-    </appender>
-
     <appender name="schedulerlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -531,11 +515,6 @@
     <category name="TerminalLogger">
         <priority value="ALL"/>
         <appender-ref ref="terminallog"/>
-    </category>
-
-    <category name="PriceCheckerLogger">
-        <priority value="ALL"/>
-        <appender-ref ref="pricecheckerlog"/>
     </category>
 
     <category name="SchedulerLogger" additivity="false">
