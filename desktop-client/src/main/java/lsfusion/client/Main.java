@@ -273,7 +273,7 @@ public class Main {
                         }
                     }
 
-                    busyDialog = remoteLogics.isBusyDialog() || remoteNavigator.isBusyDialog();
+                    busyDialog = remoteNavigator.isBusyDialog();
                     
                     useRequestTimeout = remoteNavigator.isUseRequestTimeout();
 

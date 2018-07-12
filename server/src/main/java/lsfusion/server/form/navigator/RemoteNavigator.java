@@ -18,6 +18,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -514,7 +515,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public boolean isBusyDialog() throws RemoteException {
         boolean useBusyDialog = false;
         try (DataSession session = createSession()) {
-            useBusyDialog = businessLogics.authenticationLM.useBusyDialog.read(session) != null;
+            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
         } catch (SQLException | SQLHandledException ignored) {
         }
         return useBusyDialog;

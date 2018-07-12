@@ -18,6 +18,6 @@ public class IsBusyDialogHandler extends LoggableActionHandler<IsBusyDialogActio
 
     @Override
     public BooleanResult executeEx(IsBusyDialogAction action, ExecutionContext context) throws DispatchException, IOException {
-        return new BooleanResult(servlet.getLogics().isBusyDialog() || servlet.getNavigator().isBusyDialog());
+        return new BooleanResult(servlet.getNavigator().isBusyDialog());
     }
 }
