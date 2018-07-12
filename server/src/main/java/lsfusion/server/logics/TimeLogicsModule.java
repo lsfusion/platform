@@ -35,7 +35,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public LCP numberDOW;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(TimeLogicsModule.class.getResourceAsStream("/lsfusion/system/Time.lsf"), "/lsfusion/system/Time.lsf", baseLM, BL);
+        super(TimeLogicsModule.class.getResourceAsStream("/system/Time.lsf"), "/system/Time.lsf", baseLM, BL);
     }
 
     @Override

@@ -1,0 +1,408 @@
+MODULE Authentication;
+
+REQUIRE System, Contact;
+
+// ------------------------- Рабочие места ---------------------- //
+
+CLASS Computer 'Рабочее место';
+TABLE computer (Computer);
+
+hostname 'Имя хоста' = DATA VARISTRING[100] (Computer) IN recognize;
+
+// Сканер
+scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);
+scannerSingleRead 'Одно событие на весь штрих-код' = DATA BOOLEAN (Computer);
+
+//Считыватель дисконтных карт
+useDiscountCardReader 'Включить считыватель дисконтных карт' = DATA BOOLEAN (Computer);
+
+//Весы
+scalesComPort 'Com-port весов' = DATA INTEGER (Computer);
+
+FORM computer 'Рабочее место'
+    OBJECTS c = Computer PANEL
+    PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    
+    EDIT Computer OBJECT c
+;
+
+FORM computers 'Рабочие места'
+    OBJECTS c = Computer
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
+;
+
+FORM computersDialog 'Рабочие места'
+    OBJECTS c = Computer
+    
+    PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
+    PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE 
+    
+    LIST Computer OBJECT c     
+;
+DESIGN computersDialog { BOX { size = (1024, 768); }}
+
+// -------------------------- Пользователи ---------------------------- //
+CLASS ABSTRACT User 'Пользователь';
+TABLE user (User);
+
+CLASS SystemUser 'Системный пользователь' : User;
+
+CLASS CustomUser 'Обычный пользователь' : User, Contact;
+TABLE customUser (CustomUser);
+TABLE loginSID (STRING[30], STRING[30]);
+
+currentUser = NATIVE User ();
+currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
+
+name 'Имя пользователя' (User user) = IF user IS SystemUser 
+                        THEN 'Системный пользователь'
+                        ELSE name[Contact](user);
+name 'Имя пользователя' (CustomUser user) = name[User](user AS CustomUser);
+
+currentComputer = NATIVE Computer ();
+hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
+
+isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
+login 'Логин' = DATA STRING[30] (CustomUser);
+currentUserLogin 'Логин Тек. Польз.' () = login[CustomUser](currentUser());
+allowExcessAllocatedBytes 'Разрешено превышение allocated bytes' = DATA BOOLEAN (CustomUser);
+currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login[CustomUser](currentUser()) == 'admin';
+customUser 'Обычный пользователь' (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
+upcaseLogin 'Логин в верхнем регистре' (CustomUser customUser) = upper(login(customUser));
+customUserUpcase 'Обычный пользователь' (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
+sha256Password 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
+calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
+forbidChangePassword 'Запретить пользователю изменять пароль' = ABSTRACT BOOLEAN (CustomUser);
+forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
+
+lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
+lastComputer 'Рабочее место' = DATA Computer (CustomUser);
+hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
+ignorePrintTypeCustom 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
+ignorePrintType() += ignorePrintTypeCustom(currentUser());
+
+calculateBase64Hash 'Вычислить Base64 хэш' = CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+logOut (restart, reconnect) = CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+shutdown 'Отключить' = {
+    logOut(NULL, NULL);
+}
+reconnect 'Переподключить' = {
+    logOut(TRUE, TRUE);
+}
+restart 'Выйти' = {
+    logOut(TRUE, NULL);
+}
+
+relogin 'Сменить пользователя' = CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+
+generateLoginPassword 'Сгенерировать логин и пароль' = CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
+
+minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
+useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
+serverLDAP 'Сервер' = DATA VARSTRING[100] ();
+portLDAP 'Порт' = DATA INTEGER ();
+baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
+userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
+
+//показ busyDialog конкретному пользователю. В будущем станет не нужным.
+useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
+useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
+
+useRequestTimeout 'Использовать таймаут в запросах' = DATA BOOLEAN(CustomUser); 
+useRequestTimeout() = useRequestTimeout[CustomUser](currentUser());
+
+userLanguage 'Язык локали пользователя' = DATA VARSTRING[3] (CustomUser);
+userCountry 'Страна локали пользователя' = DATA VARSTRING[3] (CustomUser);
+userTimeZone 'Часовой пояс пользователя' = DATA VARSTRING[30] (CustomUser);
+userTwoDigitYearStart 'Первый год двумя цифрами пользователя' = DATA INTEGER (CustomUser);
+
+clientLanguage 'Язык локали клиента' = DATA VARSTRING[3] (CustomUser);
+clientCountry 'Страна локали клиента' = DATA VARSTRING[3] (CustomUser);
+useClientLocale 'Использовать локаль клиента' = DATA BOOLEAN (CustomUser);
+
+defaultUserLanguage 'Язык локали по умолчанию' = DATA VARSTRING[3] ();
+defaultUserCountry 'Страна локали по умолчанию' = DATA VARSTRING[3] ();
+defaultUserTimeZone 'Часовой пояс по умолчанию' = DATA VARSTRING[30] ();
+defaultUserTwoDigitYearStart 'Первый год двумя цифрами по умолчанию' = DATA INTEGER ();
+
+language 'Язык локали' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
+country 'Страна локали' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
+                                                                THEN clientCountry(user)
+                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
+
+timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
+twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
+
+deliveredNotificationAction = ABSTRACT LIST (CustomUser);
+
+locked = DATA User (Object);
+lockResult = DATA LOCAL NESTED BOOLEAN ();
+
+lock(Object object) = {
+	NEWSESSION {    
+	    lockResult() <- NULL;
+	    APPLY SERIALIZABLE {
+	        IF NOT object THEN
+	            RETURN;
+	        IF locked(object) THEN {
+	            cancel();
+	        } ELSE {
+	            locked(object) <- currentUser();
+	            lockResult() <- TRUE;
+	        }
+	    }
+	}
+}
+
+unlock(Object object) = {
+	NEWSESSION { 
+	    APPLY locked(object) <- NULL;
+	}
+}
+
+changeSHA256Password(CustomUser customUser) = {
+    INPUT st=STRING[30] DO {
+        EXEC calculateBase64Hash('SHA-256', st);
+        sha256Password(customUser) <- calculatedHash();
+    }
+}
+
+FORM customUser 'Пользователь'
+    OBJECTS u=CustomUser PANEL
+    PROPERTIES(u) firstName, lastName, login,
+    sha256Password ON CHANGE changeSHA256Password(u), email,
+    isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+    allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
+
+    EDIT CustomUser OBJECT u
+;
+
+DESIGN customUser {
+    NEW container BEFORE TOOLBARBOX {
+        type = SPLITH;
+        fill = 1;
+        MOVE BOX(u) {
+            flex = 0.3;
+        };
+        GROUP(,u) {
+            type = COLUMNS;
+            columns = 1;
+        }
+    }
+}
+
+edit 'Редактировать' (CustomUser u) = {
+	NEWSESSION {
+        SHOW customUser OBJECTS u = u DOCKED;
+	}
+} IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
+
+FORM customUsers 'Пользователи'
+    OBJECTS u=CustomUser
+    PROPERTIES(u) READONLY name[Contact], login, email
+    PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
+                  language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
+                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
+                  lastActivity, hostnameLastComputer, NEW, edit , DELETE 
+
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
+;
+
+FORM customUsersDialog 'Пользователи'
+    OBJECTS u=CustomUser
+    PROPERTIES(u) READONLY name[Contact], login, email
+
+    LIST CustomUser OBJECT u
+;
+
+DESIGN customUsersDialog { BOX { size = (1024, 768); }}
+
+FORM editProfile '{navigator.account.edit.profile}' IMAGE '/images/editReport.png'
+    OBJECTS u=CustomUser PANEL
+    PROPERTIES(u) login READONLY
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
+
+    FILTERS u==currentUser()
+;
+
+DESIGN editProfile {
+    BOX {
+        type = CONTAINERH;
+    }
+}
+
+// ---------------- Действия по изменению пользователя ------------------- //
+
+userChanged() = DATA LOCAL BOOLEAN();
+
+// Смена пользователя по логину и паролю
+FORM reloginLoginUser 'Сменить пользователя'
+    OBJECTS data = (login = STRING[30], password = STRING[30]) PANEL
+    PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
+;
+
+DESIGN reloginLoginUser {
+    BOX {
+        BOX(data) {
+            caption = 'Смена пользователя';
+            PROPERTY(valueLogin){
+                caption = 'Логин';
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE TOOLBARLEFT;
+        REMOVE PROPERTY(formRefresh());
+    }
+}
+
+reloginLoginUser() = {
+    DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
+        LOCAL user = CustomUser();
+        user() <- customUser(login);
+        IF user() THEN {
+            IF isLocked(user()) THEN {
+                MESSAGE 'Данный пользователь заблокирован';
+            } ELSE {
+                EXEC calculateBase64Hash('SHA-256', password);
+                IF sha256Password(user()) == calculatedHash() THEN {
+                    EXEC relogin(user());
+                    IF userChanged() THEN {
+                        MESSAGE 'Пользователь изменён';
+                    }
+                } ELSE {
+                    MESSAGE 'Неверный пароль (хэш)';
+                }
+            }
+        } ELSE {
+            MESSAGE 'Пользователь не найден';
+        }
+    }
+    apply();
+}
+
+// Смена пользователя по паролю
+FORM reloginPasswordUser 'Сменить пользователя'
+    OBJECTS password = STRING[30] PANEL
+    PROPERTIES valuePassword = VALUE(password)
+;
+
+DESIGN reloginPasswordUser {
+    BOX {
+        BOX(password) {
+            caption = 'Смена пользователя';
+            PROPERTY(valuePassword){
+                caption = 'Пароль';
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE TOOLBARLEFT;
+        REMOVE PROPERTY(formRefresh());
+    }
+}
+
+reloginPassword(CustomUser customUser) = {
+    DIALOG reloginPasswordUser OBJECTS password INPUT DO {
+        IF isLocked(customUser) THEN {
+            MESSAGE 'Данный пользователь заблокирован';
+        }  ELSE {
+                EXEC calculateBase64Hash('SHA-256', password);
+                IF sha256Password(customUser)==calculatedHash() THEN {
+                    EXEC relogin(customUser);
+                    IF userChanged() THEN {
+                        MESSAGE 'Пользователь изменён';
+                    }
+                } ELSE {
+                    MESSAGE 'Неверный пароль (хэш)';
+                }
+        }
+    }
+}
+
+// ---------------- Действия по изменению даннных пользователя ------------------- //
+
+FORM changePasswordUser 'Сменить пароль'
+    OBJECTS u=CustomUser PANEL
+    PROPERTIES(u) READONLY login
+
+    OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) PANEL
+    PROPERTIES valueOld = VALUE(old), valueNew1 = VALUE(new1), valueNew2 = VALUE(new2)
+
+    FILTERS u==currentUser()
+;
+
+DESIGN changePasswordUser {
+    BOX {
+        BOX(passwords) {
+            MOVE PROPERTY(login(u)) FIRST {
+               font = 'Tahoma 36';
+            };
+            PROPERTY(valueOld){
+                caption = 'Старый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valueNew1){
+                caption = 'Новый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+            PROPERTY(valueNew2){
+                caption = 'Повторите новый пароль';
+                echoSymbols = TRUE;
+                font = 'Tahoma 36';
+            }
+        }
+        REMOVE TOOLBARLEFT;
+        REMOVE PROPERTY(formRefresh());
+    }
+}
+
+changePassword(CustomUser customUser) = {
+    DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
+            EXEC calculateBase64Hash('SHA-256', old);
+            IF  calculatedHash() != sha256Password(customUser) THEN {
+                MESSAGE 'Неверный старый пароль (хэш)';
+                BREAK;
+            }
+
+        IF new1 != new2 THEN {
+            MESSAGE 'Введённые пароли не совпадают';
+            BREAK;
+        }
+        //passwordCustomUser(customUser) <- chosenString('new1');
+        EXEC calculateBase64Hash('SHA-256', new1);
+        sha256Password(customUser) <- calculatedHash();
+        MESSAGE 'Пароль изменён';
+        }
+}
+
+changePassword() = {
+      IF forbidChangePassword(currentUser()) THEN {
+        MESSAGE 'Вы не можете изменить свой пароль';
+      }
+      ELSE {
+            EXEC changePassword(currentUser());
+      }
+      apply();
+}
+
+NAVIGATOR {
+    configuration {
+        NEW FOLDER security '{navigator.security}' AFTER scheduler {
+            NEW customUsers;
+            NEW computers;
+        }
+    }
+    NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE '/images/lock.png' {
+        NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE '/images/relogin.png';
+        NEW editProfile;
+        NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/change_password.png';
+        NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE '/images/logout.png';
+    }
+}
