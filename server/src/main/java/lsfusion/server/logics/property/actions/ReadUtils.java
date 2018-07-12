@@ -298,7 +298,8 @@ public class ReadUtils {
         if (properties != null) {
             FTPClient ftpClient = new FTPClient();
             try {
-
+                if (properties.charset != null)
+                    ftpClient.setControlEncoding(properties.charset);
                 ftpClient.connect(properties.server, properties.port);
                 ftpClient.login(properties.username, properties.password);
                 ftpClient.enterLocalPassiveMode();
