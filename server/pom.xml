@@ -7,8 +7,17 @@
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
-    <!-- multiple inheritance : abstract-logics --> <!-- server is also a logics -->
+    <artifactId>server</artifactId>
+    <packaging>jar</packaging>
+    <name>Server</name>
+
+    <properties>
+        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
+        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+    </properties>
+
     <build>
+        <!-- multiple inheritance : abstract-logics --> <!-- server is also a logics -->
         <resources>
             <!-- lsfusion project structure : mark resource directories -->
             <resource>
@@ -24,7 +33,6 @@
                 </includes>
             </resource>
         </resources>
-
         <plugins>
             <!-- lsfusion project structure : mark source root directories in IDE -->
             <plugin>
@@ -43,20 +51,7 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
-    </build>
 
-    <artifactId>server</artifactId>
-    <packaging>jar</packaging>
-    <name>Server</name>
-
-    <properties>
-        <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
-        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
-    </properties>
-
-    <build>
-        <plugins>
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr3-maven-plugin</artifactId>
