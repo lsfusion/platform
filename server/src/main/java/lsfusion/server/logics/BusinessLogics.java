@@ -45,7 +45,6 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -306,8 +305,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
         evalScriptLM = addModule(new ScriptingLogicsModule(
-               SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/EvalScript.lsf"), 
-               "/lsfusion/system/EvalScript.lsf", LM, this));
+               SchedulerLogicsModule.class.getResourceAsStream("/system/EvalScript.lsf"),
+                "/system/EvalScript.lsf", LM, this));
     }
 
     private DBNamingPolicy getDBNamingPolicy() {
