@@ -1,6 +1,7 @@
 package lsfusion.client.remote.proxy;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -141,13 +142,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public boolean isBusyDialog() throws RemoteException {
-        return target.isBusyDialog();
-    }
-
-    @Override
-    public boolean isUseRequestTimeout() throws RemoteException {
-        return target.isUseRequestTimeout();
+    public ClientSettings getClientSettings() throws RemoteException {
+        return target.getClientSettings();
     }
 
     @Override

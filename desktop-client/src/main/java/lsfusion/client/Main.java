@@ -98,10 +98,11 @@ public class Main {
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
+    public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
     
     public static long timeDiffServerClientLog = 1000;
-    
+
     public static Integer fontSize;
     private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
@@ -299,9 +300,11 @@ public class Main {
                         }
                     }
 
-                    busyDialog = remoteNavigator.isBusyDialog();
+                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
 
-                    useRequestTimeout = remoteNavigator.isUseRequestTimeout();
+                    busyDialog = clientSettings.busyDialog;
+                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+                    useRequestTimeout = clientSettings.useRequestTimeout;
 
                     ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 

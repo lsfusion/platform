@@ -1,5 +1,6 @@
 package lsfusion.interop.navigator;
 
+import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -45,11 +46,9 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     // для конфигуратора методы
     boolean isConfigurationAccessAllowed() throws RemoteException;
 
-    boolean isBusyDialog() throws RemoteException;
-    
-    boolean isUseRequestTimeout() throws RemoteException;
+    ClientSettings getClientSettings() throws RemoteException;
 
     LocalePreferences getLocalePreferences() throws RemoteException;
-    
+
     Integer getFontSize() throws RemoteException;
 }

@@ -106,7 +106,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private PanelRenderer asyncView;
 
     private HotkeyManager hotkeyManager = new HotkeyManager();
-    private LoadingManager loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
+    private LoadingManager loadingManager = MainFrame.busyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
     private boolean blocked = false;
     private boolean selected = true;

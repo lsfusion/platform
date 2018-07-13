@@ -31,6 +31,7 @@ import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
+import lsfusion.gwt.form.shared.actions.navigator.GetClientSettingsResult;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
 import lsfusion.gwt.form.shared.view.actions.GAction;
@@ -50,7 +51,8 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
-    public static boolean isBusyDialog;
+    public static boolean busyDialog;
+    public static long busyDialogTimeout;
     public static String localeCookieName = "GWT_LOCALE";
 
     private GNavigatorController navigatorController;
@@ -203,11 +205,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         });
 
-        dispatcher.execute(new IsBusyDialogAction(), new ErrorHandlingCallback<BooleanResult>() {
+        dispatcher.execute(new GetClientSettings(), new ErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
-            public void success(BooleanResult result) {
-                isBusyDialog = result.value;
-                loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
+            public void success(GetClientSettingsResult result) {
+                busyDialog = result.busyDialog;
+                busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
+                loadingManager = busyDialog ? new GBusyDialogDisplayer(MainFrame.this) : new LoadingBlocker(MainFrame.this); // почему-то в busyDialog не работает showBusyDialog и blockingPanel
             }
         });
 

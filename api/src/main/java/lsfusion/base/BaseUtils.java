@@ -47,7 +47,7 @@ public class BaseUtils {
 
     //minHeapFreeRatio + cherry-picks from master
     public static Integer getApiVersion() {
-        return 73;
+        return 74;
     }
 
     public static String getPlatformVersion() {
@@ -212,7 +212,7 @@ public class BaseUtils {
             assert keys.equals(map.keySet());
             return (Map<K, V>) map;
         }
-            
+
         Map<K, V> result = new HashMap<>();
         for (K key : keys) {
             V value = map.get(key);
@@ -220,7 +220,7 @@ public class BaseUtils {
         }
         return result;
     }
-    
+
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, Iterable<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K key : keys) {
@@ -936,7 +936,7 @@ public class BaseUtils {
             return (Map<B, V>) map1;
         if(map1.isEmpty())
             return (Map<B, V>) map2;
-        
+
         Map<B, V> result = new HashMap<B, V>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
             V prevValue = result.put(entry2.getKey(), entry2.getValue());
