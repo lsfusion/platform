@@ -93,6 +93,7 @@ public class Main {
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
+    public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
     
     public static long timeDiffServerClientLog = 1000;
@@ -288,9 +289,11 @@ public class Main {
                         }
                     }
 
-                    busyDialog = remoteNavigator.isBusyDialog();
-                    
-                    useRequestTimeout = remoteNavigator.isUseRequestTimeout();
+                    ClientSettings clientSettings = remoteNavigator.getClientSettings();
+
+                    busyDialog = clientSettings.busyDialog;
+                    busyDialogTimeout = Math.max(clientSettings.busyDialogTimeout, 1000); //минимальный таймаут 1000мс
+                    useRequestTimeout = clientSettings.useRequestTimeout;
 
                     ((DockableMainFrame) frame).executeNavigatorAction("SystemEvents.onClientStarted[]", 0, null, null);
 

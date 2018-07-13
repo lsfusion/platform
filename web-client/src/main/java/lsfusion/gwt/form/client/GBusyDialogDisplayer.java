@@ -9,7 +9,6 @@ import lsfusion.gwt.form.client.form.ServerMessageProvider;
 import java.util.List;
 
 public class GBusyDialogDisplayer extends LoadingManager {
-    public static final int GLASS_SCREEN_SHOW_DELAY = 500;
     public static final int MESSAGE_UPDATE_PERIOD = 1000;
 
     private final PopupPanel blockingPanel;
@@ -41,7 +40,7 @@ public class GBusyDialogDisplayer extends LoadingManager {
             blockingPanel.center();
             busyDialog.showBusyDialog();
             busyDialog.makeMaskVisible(false);
-            timer.schedule(GLASS_SCREEN_SHOW_DELAY);
+            timer.schedule((int) MainFrame.busyDialogTimeout);
 
             Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
                 @Override

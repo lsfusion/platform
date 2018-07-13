@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
@@ -512,26 +513,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 
-    public boolean isBusyDialog() throws RemoteException {
+    @Override
+    public ClientSettings getClientSettings() {
         boolean useBusyDialog = false;
+        boolean useRequestTimeout = false;
+
         try (DataSession session = createSession()) {
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
+            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
         } catch (SQLException | SQLHandledException ignored) {
         }
-        return useBusyDialog;
-    }
-
-    @Override
-    public boolean isUseRequestTimeout() throws RemoteException {
-        if(Settings.get().isUseRequestTimeout())
-            return true;
-        
-        boolean useRequestTimeout = false;
-        try (DataSession session = createSession()) {
-            useRequestTimeout = businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
-        } catch (SQLException | SQLHandledException ignored) {
-        }
-        return useRequestTimeout;
+        return new ClientSettings(useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout);
     }
 
     private void loadLocalePreferences(ExecutionStack stack) {

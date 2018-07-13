@@ -73,8 +73,8 @@ public class RmiQueue implements DispatcherListener {
         }
     }
 
-    public static void waitOnEdtSyncBlocker() throws InterruptedException {
-        waitOnEdtSyncBlocker(1000); // проблема в том что сейчас пара wait / notify не синхронизирована, поэтому на всякий случай вставим timeout
+    public static void waitOnEdtSyncBlocker(boolean busyDialog) throws InterruptedException {
+        waitOnEdtSyncBlocker(busyDialog ? Main.busyDialogTimeout : 1000); // проблема в том что сейчас пара wait / notify не синхронизирована, поэтому на всякий случай вставим timeout
     }
 
     public static void waitOnEdtSyncBlocker(long timeout) throws InterruptedException {
@@ -236,7 +236,7 @@ public class RmiQueue implements DispatcherListener {
                 }
 
                 while ((direct && !rmiFuture.isDone()) || (!direct && !rmiFutures.isEmpty())) {
-                    waitOnEdtSyncBlocker();
+                    waitOnEdtSyncBlocker(false);
 
                     ConnectionLostManager.blockIfHasFailed();
                     if (abandoned.get()) {
@@ -283,7 +283,7 @@ public class RmiQueue implements DispatcherListener {
                 }
 
                 while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureExecuted(rmiFuture))) { // ждём до тех пор, пока наш запрос не выполнится и не уйдёт из очереди.
-                    long timeout = 1000 - (System.currentTimeMillis() - start);
+                    long timeout = Main.busyDialogTimeout - (System.currentTimeMillis() - start);
 
                     boolean flush = !direct;
 
@@ -300,7 +300,7 @@ public class RmiQueue implements DispatcherListener {
                             public void run() {
                                 while ((direct && !rmiFuture.isDone()) || (!direct && !isRmiFutureDone() && !isRmiFutureExecuted(rmiFuture))) {
                                     try {
-                                        waitOnEdtSyncBlocker();
+                                        waitOnEdtSyncBlocker(true);
                                     } catch (InterruptedException e) {
                                         logger.error(e);
                                     }
