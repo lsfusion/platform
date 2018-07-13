@@ -8,6 +8,20 @@
         <relativePath>../build/pom.xml</relativePath>
     </parent>
 
+    <!-- multiple inheritance : deployable -->
+    <!-- deploy targets-->
+    <distributionManagement>
+        <repository>
+            <id>lsfusion</id>
+            <url>${lsfusion.releases.repo}</url>
+        </repository>
+        <snapshotRepository>
+            <id>lsfusion.snapshots</id>
+            <url>${lsfusion.snapshots.repo}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
     <repositories>
         <repository>
             <id>lsfusion.public</id>
