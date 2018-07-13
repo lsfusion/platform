@@ -7,20 +7,6 @@
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
-    <!-- multiple inheritance : deployable --> <!-- needed to deploy server pom.xml itself -->
-    <!-- deploy targets-->
-    <distributionManagement>
-        <repository>
-            <id>lsfusion</id>
-            <url>${lsfusion.releases.repo}</url>
-        </repository>
-        <snapshotRepository>
-            <id>lsfusion.snapshots</id>
-            <url>${lsfusion.snapshots.repo}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-
     <artifactId>server</artifactId>
     <packaging>jar</packaging>
     <name>Server</name>
