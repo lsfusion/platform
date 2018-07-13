@@ -9,6 +9,7 @@
 
     <modules>
         <module>build</module>
+        <module>base</module>
         <module>logics</module>
         <module>api</module>
         <module>report-api</module>
