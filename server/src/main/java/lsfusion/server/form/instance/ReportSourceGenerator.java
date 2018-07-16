@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.*;
@@ -307,7 +308,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 ImOrderSet<GroupObject> groups = getNeededGroupsForColumnProp(property);
                 ImOrderMap<ImMap<Obj, Object>, ImMap<Object, Object>> qResult = getColumnPropQueryResult(groups, property);
 
-                ImCol<Obj> propObjects = formInterface.getPObjects(formInterface.getPropertyObject(property));
+                ImSet<Obj> propObjects = getPropertyDependencies(property);
 
                 Map<List<Object>, Object> data = new HashMap<>();
                 Map<List<Object>, Object> captionData = new HashMap<>();
@@ -401,11 +402,27 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         return query.execute(getSession().sql, mQueryOrders.immutableOrder(), 0, getQueryEnv());
     }
 
-    private Set<GroupObject> getPropertyDependencies(PropertyDraw property) {
+    private ImSet<Obj> getPropertyDependencies(PropertyDraw property) {
+        MAddSet<PropertyObject> propertyObjects = SetFact.mAddSet();
+        propertyObjects.add(formInterface.getPropertyObject(property));
+        PropertyObject propertyCaption = (PropertyObject) formInterface.getPropertyCaption(property);
+        if(propertyCaption != null)
+            propertyObjects.add(propertyCaption);
+        PropertyObject propertyFooter = (PropertyObject) formInterface.getPropertyFooter(property);
+        if(propertyFooter != null)
+            propertyObjects.add(propertyFooter);
+        MSet<Obj> mObjects = SetFact.mSet();
+        for(int i=0,size=propertyObjects.size();i<size;i++)
+            for (Obj object : formInterface.getPObjects(propertyObjects.get(i))) {
+                mObjects.add(object);
+            }
+        return mObjects.immutable();
+    }
+
+    private Set<GroupObject> getGroupObjects(Iterable<Obj> objects) {
         Set<GroupObject> groups = new HashSet<>();
-        for (Obj object : formInterface.getPObjects(formInterface.getPropertyObject(property))) {
+        for (Obj object : objects)
             groups.add(formInterface.getGroupTo(object));
-        }
         return groups;
     }
 
@@ -413,10 +430,8 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     // включаются и дополнительные объекты, которые не используются (в частности fullFormHierarchy), но нужны чтобы найти ВСЕ разновидности групп в колонки
     // это конечно "избыточно", но пока так 
     private ImOrderSet<GroupObject> getNeededGroupsForColumnProp(PropertyDraw property) {
-        Set<GroupObject> initialGroups = getPropertyDependencies(property);
-        MSet<GroupObject> groups = SetFact.mSet();
-        
-        for (GroupObject group : initialGroups) {
+        MSet<GroupObject> groups = SetFact.mSet();        
+        for (GroupObject group : getGroupObjects(getPropertyDependencies(property))) {
             GroupObjectEntity groupEntity = formInterface.getEntity(group);
             ReportNode curNode = fullFormHierarchy.getReportNode(groupEntity);
             List<GroupObjectEntity> nodeGroups = curNode.getGroupList();
