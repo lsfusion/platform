@@ -43,7 +43,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LCP overBaseValueReflectionPropertyUserRole;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
+        super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
     }
 
     @Override

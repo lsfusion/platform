@@ -733,6 +733,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 if (oldTable != null) {
                     for (KeyField key : table.keys) {
                         KeyField oldKey = oldTable.findKey(key.getName());
+                        if(oldKey == null)
+                            throw new RuntimeException("Key " + key + " is not found in table : " + oldTable + ". New table : " + table);
                         if (!(key.type.equals(oldKey.type))) {
                             sql.modifyColumn(table, key, oldKey.type);
                             startLogger.info("Changing type of key column " + key + " in table " + table + " from " + oldKey.type + " to " + key.type);

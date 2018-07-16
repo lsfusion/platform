@@ -16,7 +16,7 @@ public class ContactLogicsModule extends ScriptingLogicsModule{
     public LCP contactEmail;
 
     public ContactLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ContactLogicsModule.class.getResourceAsStream("/lsfusion/system/Contact.lsf"), "/lsfusion/system/Contact.lsf", baseLM, BL);
+        super(ContactLogicsModule.class.getResourceAsStream("/system/Contact.lsf"), "/system/Contact.lsf", baseLM, BL);
     }
 
     @Override

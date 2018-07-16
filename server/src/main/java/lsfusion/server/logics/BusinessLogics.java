@@ -122,7 +122,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected final static Logger lruLogger = ServerLoggers.lruLogger;
     protected final static Logger allocatedBytesLogger = ServerLoggers.allocatedBytesLogger;
 
-    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/lsfusion/system");
+    public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
     public static final String[] systemModulesNames = {"System", "Authentication", "Email", "EvalScript", "Reflection", "Contact", 
@@ -303,6 +303,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         emailLM = addModule(new EmailLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
+        evalScriptLM = addModule(new ScriptingLogicsModule(
+               SchedulerLogicsModule.class.getResourceAsStream("/system/EvalScript.lsf"),
+                "/system/EvalScript.lsf", LM, this));
     }
 
     private DBNamingPolicy getDBNamingPolicy() {

@@ -1,0 +1,241 @@
+MODULE Email;
+
+REQUIRE System, Reflection;
+
+GROUP email 'Настройки почтового сервера' : public;   //rootGroup
+
+CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подключения' {
+    SSL 'SSL',
+    TLS 'TLS'
+}
+FORM encryptedConnectionTypeStatuses
+    OBJECTS s = EncryptedConnectionTypeStatus
+    PROPERTIES(s) READONLY staticCaption
+    LIST EncryptedConnectionTypeStatus OBJECT s
+;
+
+CLASS ReceiveAccountType 'Тип учётной записи' {
+    POP3 'POP3',
+    IMAP 'IMAP'
+}
+
+FORM receiveAccountTypes
+    OBJECTS r = ReceiveAccountType
+    PROPERTIES(r) READONLY staticCaption
+    LIST ReceiveAccountType OBJECT r
+;
+
+CLASS Notification 'Уведомление';
+TABLE notification (Notification);
+TABLE notificationProperty (Notification, Property);
+
+isEvent 'При любом изменении' = DATA BOOLEAN (Notification);
+emailFrom 'Адрес отправителя' = DATA VARSTRING[50] (Notification);
+emailTo 'Адрес получателя' = DATA VARSTRING[50] (Notification);
+emailToCC 'Копия' = DATA VARSTRING[50] (Notification);
+emailToBC 'Скрытая копия' = DATA VARSTRING[50] (Notification);
+text 'Текст письма' = DATA TEXT (Notification);
+subject 'Тема письма'= DATA VARSTRING[100] (Notification);
+in 'Вкл.' = DATA BOOLEAN (Notification, Property);
+
+CLASS Account 'E-mail аккаунт';
+TABLE account (Account);
+
+name 'Имя аккаунта' = DATA VARSTRING[50](Account);
+password 'Пароль' = DATA VARSTRING[50](Account) ECHO;
+fromAddress 'Адрес отправителя' = DATA VARSTRING[50] (Account);
+accountFromAddress = GROUP AGGR Account account WHERE account IS Account BY fromAddress (account); 
+
+isDefaultNotification 'Использовать для отправки уведомлений' = DATA BOOLEAN (Account);
+defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX Account account IF isDefaultNotification(account);
+fromAddressDefaultNotificationAccount 'Адрес для отправки уведомлений по умолчанию' () = fromAddress(defaultNotificationAccount());
+
+isDefaultInbox 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
+defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX Account account IF isDefaultInbox(account);
+inboxAccount (VARSTRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
+
+smtpHost 'SMTP хост' = DATA VARSTRING[50](Account);
+smtpPort 'SMTP порт' = DATA VARSTRING[10](Account);
+receiveHost 'Хост входящей почты' = DATA VARSTRING[50](Account);
+receivePort 'Порт входящей почты' = DATA INTEGER(Account);
+receiveAccountType 'Тип учётной записи' = DATA ReceiveAccountType(Account);
+nameReceiveAccountType 'Тип учётной записи' (Account account) = staticCaption(receiveAccountType(account));
+blindCarbonCopy 'Копия (BCC)'= DATA VARSTRING[50](Account);
+deleteMessages 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
+lastDays 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
+disable 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
+enable 'Включить отсылку и получение почты' (Account account) = NOT disable(account) AND account IS Account;
+unpack 'Распаковывать архивы' = DATA BOOLEAN (Account);
+
+encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
+nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
+
+CLASS Email 'Письмо';
+TABLE email(Email);
+
+id = DATA VARSTRING[100] (Email);  
+emailId = GROUP AGGR Email email WHERE email IS Email BY id (email); 
+account = DATA Account (Email);
+
+subject 'Тема' = DATA VARSTRING[100] (Email);
+fromAddress 'От' = DATA VARSTRING[100] (Email);
+toAddress 'Кому' = DATA VARSTRING[100] (Email);
+dateTimeSent 'Дата/время отправки' = DATA DATETIME (Email);
+dateSent 'Дата отправки' = DATE(dateTimeSent(Email e));
+dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
+message 'Сообщение' = DATA RICHTEXT (Email);
+emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
+openEMLFile 'Открыть файл EML' (Email email) = { OPEN emlFile (email); }
+
+receiveEmailAction 'Получить всю почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction 'Получить почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+
+emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
+
+FORM account 'E-mail аккаунт'
+    OBJECTS a = Account PANEL
+    PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
+                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
+                  isDefaultNotification, isDefaultInbox, disable, unpack
+    EDIT Account OBJECT a
+;
+
+FORM accounts 'E-mail аккаунты'
+   
+    OBJECTS a = Account
+    PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
+                  receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
+                  isDefaultNotification, disable, unpack
+    PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
+
+    LIST Account OBJECT a
+;
+
+CLASS AttachmentEmail 'Вложение';
+TABLE attachmentEmail(AttachmentEmail);
+
+id = DATA VARSTRING[100] (AttachmentEmail);  
+imported 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
+markImported 'Пометить импортированным' (AttachmentEmail ae) = {
+    IF NOT imported(ae) THEN imported(ae) <- TRUE;
+}
+importError 'Ошибка при импорте' = DATA BOOLEAN (AttachmentEmail);  
+showError (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) OR importError(attachmentEmail)
+                                                            AND attachmentEmail IS AttachmentEmail;
+notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) AND NOT importError(attachmentEmail)
+                                                            AND attachmentEmail IS AttachmentEmail;
+email = DATA Email (AttachmentEmail) NONULL DELETE;
+attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
+name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
+file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
+openFile 'Открыть' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
+saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
+lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
+importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
+
+FORM remindUserPass 'Напоминание пароля'
+
+    OBJECTS u=CustomUser PANEL
+    PROPERTIES(u) READONLY login, name[Contact]
+;
+
+emailUserPass 'Напоминание пароля' (Contact user) = { EMAIL
+                               SUBJECT 'Напоминание пароля' IF user IS CustomUser
+                               TO email(user)
+                               INLINE remindUserPass OBJECTS u = user; }
+
+FORM mail 'Почта' 
+
+    OBJECTS a=Account
+
+    PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
+                  fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
+                  isDefaultNotification, isDefaultInbox, disable, unpack
+    PROPERTIES(a)  NEW, DELETE 
+    
+    OBJECTS e=Email LAST
+  
+    PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
+                   dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
+    PROPERTIES(e) NEWSESSION DELETE GRID
+    PROPERTIES(a)  receiveEmailAction TODRAW e 
+    FILTERS account(e)==a
+                    
+    OBJECTS ae=AttachmentEmail
+    
+    PROPERTIES(ae) READONLY imported, importError, name, lastError PANEL
+    PROPERTIES(ae) GRID openFile, saveFile, markImported
+    FILTERS email(ae)==e
+    
+    OBJECTS n=Notification
+    OBJECTS p=Property
+        
+    PROPERTIES(n, p) in
+    PROPERTIES(n) subject, text PANEL, emailFrom, emailTo, emailToCC, emailToBC, isEvent, NEW
+    PROPERTIES(p) READONLY caption, canonicalName
+    ORDER canonicalName(p)
+        
+    FILTERGROUP emailFilter
+        FILTER 'Только отмеченные' in(n, p) 'F9'
+;
+
+DESIGN mail {
+    BOX {
+        NEW specContainer {
+            fill = 1;
+            MOVE BOX(a);
+            NEW mailContainer {
+                fill = 3;
+                type = TABBED;    
+                NEW emailContainer {
+                    caption = 'Входящие';
+                    MOVE BOX(e);
+                    NEW tabbedContainer {
+                        fill = 1;
+                        type=TABBED;
+                        NEW textContainer {
+                            caption = 'Сообщение';
+                            type = CONTAINERV;        
+                            MOVE PROPERTY(message(e)) {
+                                fill = 1;
+                                valueSize = ( -1, 200);
+                                panelCaptionAbove = TRUE;
+                            }
+                        }
+                        NEW attachment {
+                            fill = 1;
+                            caption = 'Вложения';
+                            type = CONTAINERH;
+                            MOVE BOX(ae);
+                            MOVE PROPERTY (lastError(ae)){ 
+                                panelCaptionAbove = TRUE;
+                                fill = 0.3;
+                            };
+                        }
+                    }
+                }
+                NEW notificationContainer {
+                    caption = 'Уведомления';
+                    MOVE BOX(n);
+                    NEW pane {
+                        fill = 1;
+                        type = CONTAINERH;
+                        MOVE BOX(p);
+                        MOVE PROPERTY(text(n)) {
+                            fill = 1;
+                            panelCaptionAbove = TRUE;
+                        }
+                    }
+                }
+            }
+            MOVE TOOLBARBOX;
+        }
+    }
+}
+
+NAVIGATOR {
+    //NEW remindUserPass;
+    scheduler {
+        NEW Email.mail;
+    }
+}

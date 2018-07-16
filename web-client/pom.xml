@@ -8,6 +8,14 @@
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>lsfusion.public</id>
+            <name>lsFusion Public Repository</name>
+            <url>${lsfusion.public.repo}</url>
+        </repository>
+    </repositories>
+
     <artifactId>web-client</artifactId>
     <packaging>jar</packaging>
     <name>Web Client</name>

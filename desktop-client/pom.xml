@@ -6,6 +6,7 @@
         <version>1.3.5-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
+
     <artifactId>desktop-client</artifactId>
     <packaging>jar</packaging>
     <name>Desktop Client</name>
@@ -14,6 +15,42 @@
         <assemble.mainClass>lsfusion.client.Main</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
     </properties>
+    
+    <profiles>
+        <profile>
+            <id>sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- sign for JWS (assert using with pack) -->
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ant-sign</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Repacking jar ${assemble.jar}" />
+                                        <exec executable="pack200">
+                                            <arg value="--repack" />
+                                            <arg value="--effort=1" />
+                                            <arg value="--segment-limit=-1" />
+                                            <arg value="${assemble.jar}" />
+                                        </exec>
+
+                                        <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>

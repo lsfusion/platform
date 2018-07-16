@@ -1,0 +1,522 @@
+MODULE Service;
+
+REQUIRE System, Reflection, Time, Security;
+
+NAMESPACE Service;
+
+serviceDBAction 'Обслуживание БД' = CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
+checkAggregationsAction 'Проверить агрегации' = CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
+checkClassesAction 'Проверить классы' = CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
+checkIndicesAction 'Проверить индексы' = CUSTOM 'lsfusion.server.logics.service.CheckIndicesActionProperty' ();
+recalculateClassesAction 'Пересчитать классы' = CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
+recalculateAction 'Пересчитать агрегации' = CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
+recalculateFollowsAction 'Пересчитать следствия и ограничения' = CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
+recalculateStatsAction 'Пересчитать статистику' = CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
+overCalculateStatsAction 'Дорасчитать статистику' = CUSTOM 'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
+maxQuantityOverCalculate 'Пороговое кол-во дорасчёта' = DATA INTEGER ();
+
+makeProcessDumpAction 'Process Dump' = CUSTOM 'lsfusion.server.logics.service.process.MakeProcessDumpActionProperty' ();
+
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkClassesMultiThreadAction 'Проверить классы (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, threadCount, timeout)' = CUSTOM 'lsfusion.server.logics.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, timeout)' (INTEGER propertyTimeout) = { serviceDBMultiThreadAction (NULL, propertyTimeout); }
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= { checkAggregationsMultiThreadAction (NULL, propertyTimeout); }
+checkClassesMultiThreadAction 'Проверить классы (многопоточно, timeout)' (INTEGER propertyTimeout)= { checkClassesMultiThreadAction (NULL, propertyTimeout); }
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, timeout)' (INTEGER propertyTimeout)= { recalculateClassesMultiThreadAction (NULL, propertyTimeout); }
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= { recalculateMultiThreadAction (NULL, propertyTimeout); }
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, timeout)' (INTEGER propertyTimeout)= { recalculateFollowsMultiThreadAction (NULL, propertyTimeout); }
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= { recalculateStatsMultiThreadAction (NULL, propertyTimeout); }
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= { overCalculateStatsMultiThreadAction (NULL, propertyTimeout); }
+
+threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = { serviceDBMultiThreadAction(threadCountMultiThread(), NULL); }
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = { checkAggregationsMultiThreadAction(threadCountMultiThread(), NULL); }
+checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = { checkClassesMultiThreadAction(threadCountMultiThread(), NULL); }
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = { recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL); }
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = { recalculateMultiThreadAction(threadCountMultiThread(), NULL); }
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = { recalculateFollowsMultiThreadAction (threadCountMultiThread(), NULL); }
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)' = { recalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно)' = { overCalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
+
+analyzeDBAction 'Анализ БД' = CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
+vacuumDBAction 'Упаковать БД' = CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
+packAction 'Упаковать таблицы' = CUSTOM 'lsfusion.server.logics.service.PackActionProperty' ();
+getVMInfo 'Данные виртуальной машины' = CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
+
+singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
+
+CLASS DBType {
+    POSTGRE 'Postgre',
+    MSSQL 'MS SQL'
+}
+uploadType 'Тип базы' = DATA DBType ();
+uploadStaticNameType = staticName(uploadType()); 
+uploadStaticCaptionType 'Тип базы' = staticCaption(uploadType()); 
+uploadHost 'Имя сервера' = DATA VARSTRING[100] ();
+uploadUser 'Пользователь' = DATA VARSTRING[100] ();
+uploadPassword 'Пароль' = DATA VARSTRING[100] ();
+uploadInstance 'Имя сервера БД' = DATA VARSTRING[100] ();
+onStarted() += {
+    uploadType() <- DBType.MSSQL;
+    uploadHost() <- 'localhost';
+    uploadUser() <- 'sa';
+    uploadPassword() <- '11111';
+    uploadInstance() <- 'SQLEXPRESS';
+}
+uploadDB 'Имя базы' = DATA VARSTRING[100] (); 
+uploadToDBAction 'Загрузить' = CUSTOM 'lsfusion.server.logics.service.UploadToDBActionProperty' ();
+
+META defineMode(property, action, type, caption1, caption2)
+    setRepeatableRead###property caption1 = CUSTOM action (type);
+    refreshRepeatableRead###property caption2() = {
+        setRepeatableRead###property(property());
+    }
+    WHEN CHANGED(property()) DO {
+        refreshRepeatableRead###property();
+    }
+    onStarted() += {
+        refreshRepeatableRead###property();
+    } 
+END
+
+disableTILMode 'Выключен SERIALIZABLE' = DATA BOOLEAN ();
+serverComputer 'Сервер' = DATA Computer();
+hostnameServerComputer 'Сервер' () = hostname(serverComputer());
+
+@defineMode(disableTILMode, 'lsfusion.server.logics.service.SetRepeatableReadDisableTILModeActionProperty', BOOLEAN, 'Выключить SERIALIZABLE', 'Обновить SERIALIZABLE в VM');
+
+@defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
+
+setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
+explainAnalyzeMode 'Включён Explain' = DATA BOOLEAN (User);
+refreshExplainAnalyzeMode 'Обновить Explain Analyze'(User user) = {
+    setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
+}
+WHEN CHANGED(explainAnalyzeMode(User user)) DO {
+    refreshExplainAnalyzeMode(user);
+}
+
+turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE (Текущий пользователь)' () = {
+    explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
+}
+
+setLoggerDebugEnabled 'Включить вывод в лог SQL запросов' = CUSTOM 'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+loggerDebugEnabled 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
+refreshLoggerDebugEnabled ''(User user) = {
+    setLoggerDebugEnabled(loggerDebugEnabled(user), user);
+}
+WHEN CHANGED(loggerDebugEnabled(User user)) DO {
+    refreshLoggerDebugEnabled(user);
+}
+
+setRemoteLoggerDebugEnabled 'Включить вывод в лог действий пользователей' = CUSTOM 'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+remoteLoggerDebugEnabled 'Выводить в лог действия пользователей' = DATA BOOLEAN (User);
+refreshRemoteLoggerDebugEnabled ''(User user) = {
+    setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
+}
+WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
+    refreshRemoteLoggerDebugEnabled(user);
+}
+
+setExLogEnabled 'Включить вывод в лог сист. инфо (debug)' = CUSTOM 'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
+remoteExLogEnabled 'Выводить в лог сист. инфо (debug)' = DATA BOOLEAN (User);
+refreshExLogEnabled ''(User user) = {
+    setExLogEnabled(remoteExLogEnabled(user), user);
+}
+WHEN CHANGED(remoteExLogEnabled(User user)) DO {
+    refreshExLogEnabled(user);
+}
+
+setPausableLogEnabled 'Включить вывод в лог синх. инфо (debug)' = CUSTOM 'lsfusion.server.logics.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
+remotePausableLogEnabled 'Выводить в лог синх. инфо (debug)' = DATA BOOLEAN (User);
+refreshPausableLogEnabled ''(User user) = {
+    setPausableLogEnabled(remotePausableLogEnabled(user), user);
+}
+WHEN CHANGED(remotePausableLogEnabled(User user)) DO {
+    refreshPausableLogEnabled(user);
+}
+
+CLASS TypeExecEnv {
+    materialize 'Материализация подзапросов', 
+    disablenestloop 'Отключение nested loop', 
+    none 'Нет'
+}
+
+captionExecEnv 'Название' (Object type) = staticCaption (type);
+id (TypeExecEnv type) = CASE EXCLUSIVE
+                        WHEN type == TypeExecEnv.materialize THEN 2
+                        WHEN type == TypeExecEnv.disablenestloop THEN 1
+                        WHEN type == TypeExecEnv.none THEN 0 IN base;
+
+setExecEnv 'Выводить в лог EXPLAIN запросов' = CUSTOM 'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
+execEnv 'Тип адаптивного выполнения' = DATA TypeExecEnv (User);
+refreshExecEnv 'Обновить Explain'(User user) = {
+    setExecEnv(id(execEnv(user)), user);  
+}
+WHEN CHANGED(execEnv(User user)) DO {
+    refreshExecEnv(user);
+}
+nameExecEnv 'Тип адаптивного выполнения' (User user) = captionExecEnv(execEnv(user)) IN base;
+
+// --------------- Удаление прикладных логов ------------------------ //
+
+clearApplicationLog 'Очистить прикладные логи' = ABSTRACT LIST () ;
+
+META defineLog (object, caption, container)
+    countDaysClear##object 'За сколько дней хранить лог '##caption = DATA INTEGER (); 
+    
+    EXTEND FORM options PROPERTIES countDaysClear##object();
+    DESIGN options { container { MOVE PROPERTY(countDaysClear##object());} }    
+END
+META defineLog (object, dateProp)
+    clearApplicationLog () += {
+	NEWSESSION {
+	        IF countDaysClear##object() THEN {
+	            DELETE object d WHERE d IS object AND dateProp(d)<= subtract(currentDate(), countDaysClear##object());
+	        }
+	        apply();
+	    }
+}   
+END
+META defineLog (object, caption, container, dateProp)
+    @defineLog (object, caption, container);
+    @defineLog (object, dateProp);    
+END
+
+DESIGN options {
+    pane {
+        NEW log {
+            caption = 'Логирование';
+        }
+    }
+}
+
+@defineLog (Email, 'входящей почты', log, dateSent);
+
+countDaysClearFusionTempFiles 'За сколько дней хранить временные файлы lsfusion' = DATA INTEGER (); 
+clearFusionTempFiles = CUSTOM 'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
+EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
+    DESIGN options { log { MOVE PROPERTY(countDaysClearFusionTempFiles());} }    
+
+setVolatileStatsEnabled 'Установить использование nested loop' = CUSTOM 'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
+volatileStatsEnabled 'Не использовать nested loop' = DATA BOOLEAN (User);
+refreshVolatileStatsEnabled ''(User user) = {
+    setVolatileStatsEnabled(volatileStatsEnabled(user), user);
+}
+WHEN CHANGED(volatileStatsEnabled(User user)) DO {
+    refreshVolatileStatsEnabled(user);
+}
+
+onStarted() += {
+    FOR explainAnalyzeMode(User u) DO 
+        refreshExplainAnalyzeMode(u);
+    FOR loggerDebugEnabled(User u) DO 
+        refreshLoggerDebugEnabled(u);
+    FOR volatileStatsEnabled(User u) DO 
+        refreshVolatileStatsEnabled(u);
+    FOR remoteLoggerDebugEnabled(User u) DO 
+        refreshRemoteLoggerDebugEnabled(u);
+    FOR remoteExLogEnabled(User u) DO 
+        refreshExLogEnabled(u);
+    FOR remotePausableLogEnabled(User u) DO 
+        refreshPausableLogEnabled(u);
+    FOR execEnv(User u) DO 
+        refreshExecEnv(u);
+} 
+
+setReupdateMode 'Включить REUPDATE' = CUSTOM 'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
+reupdateMode 'Включен REUPDATE' = DATA BOOLEAN ();
+refreshReupdateMode 'Обновить REUPDATE в VM'() = {
+    setReupdateMode(reupdateMode());
+}
+WHEN CHANGED(reupdateMode()) DO {
+    refreshReupdateMode();
+}
+onStarted() += {
+    refreshReupdateMode();
+} 
+
+restartPushed = DATA BOOLEAN ();
+notRestartPushed = NOT restartPushed();
+
+scheduledRestart 'Остановка через 5 минут' = DATA BOOLEAN ();
+restartServerAction 'Запланировать остановку сервера' = CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
+cancelRestartServerAction 'Отменить запланированную остановку сервера' = CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+
+forbidLogin 'Запретить вход новым пользователям' = DATA BOOLEAN ();
+setPendingRestartAction 'Запретить вход новым пользователям' = CUSTOM <{ context.getRestartManager().setPendingRestart(true); }>;
+resetPendingRestartAction 'Разрешить вход новым пользователям' = CUSTOM <{ context.getRestartManager().setPendingRestart(false); }>;
+
+
+restartServer 'Остановить сервер' = ABSTRACT LIST ();
+restartServer() += {
+    IF scheduledRestart() THEN restartServerAction();
+    IF forbidLogin() THEN setPendingRestartAction();
+    restartPushed() <- TRUE;
+    apply();
+}
+
+cancelRestartServer 'Отменить остановку сервера' = ABSTRACT LIST ();
+cancelRestartServer() += { 
+    cancelRestartServerAction();
+    resetPendingRestartAction();
+    restartPushed() <- NULL;
+    apply();
+}
+
+onStarted() += {
+    restartPushed() <- NULL;
+} 
+
+runGarbageCollector 'Запустить сборщик мусора' = CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
+dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
+randomDropLRU 'Случ. очистка LRU' = DATA BOOLEAN ();
+dropLRUCustom 'Очистить LRU' = CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
+dropLRU 'Очистить LRU' () = { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
+turnCacheStatsOff 'Отключить статистику кэшей' = CUSTOM 'lsfusion.server.logics.service.TurnCacheStatsOff' ();
+makeHeapDump 'Сделать Heap Dump' = CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
+isServerRestarting = NATIVE BOOLEAN ();
+isNotServerRestarting () = NOT isServerRestarting();
+
+CLASS ReflectionProperty 'Параметры';
+TABLE reflectionProperty (ReflectionProperty);
+
+name 'Имя параметра' = DATA VARISTRING[100] (ReflectionProperty);
+reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
+baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
+
+TABLE reflectionPropertyUserRole(ReflectionProperty, UserRole);
+baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (ReflectionProperty, UserRole);
+overBaseValue 'Сохранённое значение для текущего пользователя' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
+defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
+value 'Значение для роли' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+
+pushReflectionPropertyAction 'Перегрузить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
+popReflectionPropertyAction 'Сбросить свойство' = CUSTOM 'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
+
+writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию' = CUSTOM 'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
+saveReflectionProperty 'Сохранить настройку свойства' = CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
+
+onStarted() += { 
+    writeDefaultReflectionPropertiesAction();
+    FOR baseValue(ReflectionProperty r) DO saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
+    FOR baseValue(ReflectionProperty r, UserRole ur) DO saveReflectionProperty(r, ur);
+}
+
+WHEN CHANGED (baseValue(ReflectionProperty r)) DO {
+    saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
+    FOR overSID(UserRole ur) DO saveReflectionProperty(r, ur);
+}
+WHEN CHANGED (baseValue(ReflectionProperty r, UserRole ur)) DO saveReflectionProperty(r, ur);
+
+selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
+overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
+selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR (User);
+overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE selectedRowBorderColor(currentUser()), selectedRowBorderColor(), RGB(175, 175, 255);
+selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR (User);
+overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor(), RGB(237, 238, 244);
+focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR (User);
+overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor(), RGB(237, 238, 244);
+focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR (User);
+overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor(), RGB(98, 98, 255);
+
+FORM admin 'Настройки'
+    PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
+                 selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
+                 reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer
+    OBJECTS u=User
+    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    OBJECTS uc=User
+    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
+    
+    OBJECTS r = ReflectionProperty
+    PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
+    OBJECTS ur = UserRole
+    PROPERTIES(ur) READONLY name, sid 
+    PROPERTIES(r,ur) value READONLY, baseValue
+    FILTERGROUP override FILTER 'Только перегруженные' baseValue(r) OR baseValue(r, ur) 'F9'
+    
+    OBJECTS m = MemoryLimit
+    PROPERTIES(m) name, maxHeapSize, vmargs
+    PROPERTIES(m) TOOLBAR NEW, DELETE 
+;
+
+DESIGN admin {
+    NEW tabs {
+        type = TABBED;
+        fill = 1;
+        NEW pane {
+            caption = 'Основные';
+            type = COLUMNS;
+            columns = 3;
+            NEW leftColumn {
+                NEW current {
+                    caption = 'Текущие значения';
+                    MOVE PROPERTY(currentDate());
+                    MOVE PROPERTY(hostnameServerComputer());
+                }
+                NEW report {
+                    caption = 'Отчеты';
+                    MOVE PROPERTY(reportCharWidth());
+                    MOVE PROPERTY(reportRowHeight());
+                    MOVE PROPERTY(reportNotToStretch());
+                }                                               
+            }
+            NEW rightColumn {                 
+                NEW virtualMachine {
+                    caption = 'Виртуальная машина';
+                }                      
+            }
+        }
+        
+        MOVE BOX(u);
+        NEW colorsPane {
+            caption = 'Цвета';
+            MOVE BOX(uc);
+            NEW bottomPane {
+                type = CONTAINERH;
+                NEW defaultColors {
+                   caption = 'Цвета по умолчанию';
+                   MOVE PROPERTY(selectedRowBackgroundColor());
+                   MOVE PROPERTY(selectedRowBorderColor());
+                   MOVE PROPERTY(selectedCellBackgroundColor());
+                   MOVE PROPERTY(focusedCellBackgroundColor());
+                   MOVE PROPERTY(focusedCellBorderColor());
+               } 
+               NEW generalColors {
+                   caption = 'Обшие настройки';
+                   MOVE PROPERTY(defaultBackgroundColor());
+                   MOVE PROPERTY(defaultForegroundColor());
+               }
+            }
+            
+        }
+        
+        NEW parameters {
+            caption = 'Параметры';
+            MOVE BOX(r);
+            MOVE BOX(ur);
+            MOVE BOX(m);
+        }
+    }
+    MOVE TOOLBARBOX;
+}
+
+FORM maintenance 'Обслуживание'
+    PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
+                 uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
+                 turnExplainAnalizeOnCurrentUser, clearApplicationLog, serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, 
+                 recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate, checkClassesAction, checkAggregationsAction, checkIndicesAction,
+                 packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
+                 recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
+                 recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkAggregationsMultiThreadAction,      
+                 runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump           
+;
+
+DESIGN maintenance {        
+    NEW pane {
+        fill = 1;
+        type = COLUMNS;
+        columns = 3;
+        NEW leftColumn {               
+            NEW administration {
+                caption = 'Запуск';
+                MOVE PROPERTY(scheduledRestart());
+                MOVE PROPERTY(forbidLogin()); 
+                MOVE PROPERTY(restartServer());
+                MOVE PROPERTY(cancelRestartServer());
+            }    
+            NEW upload {
+                caption = 'Загрузить в другую базу';
+                MOVE PROPERTY(uploadStaticCaptionType());
+                MOVE PROPERTY(uploadHost());
+                MOVE PROPERTY(uploadUser());
+                MOVE PROPERTY(uploadPassword());
+                MOVE PROPERTY(uploadInstance());
+                MOVE PROPERTY(uploadDB());
+                MOVE PROPERTY(uploadToDBAction());
+            }
+            NEW log {
+                caption = 'Логирование';
+                MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
+                MOVE PROPERTY(clearApplicationLog());
+            }                                                          
+        }
+        NEW centralColumn {
+            NEW oneThread {
+                caption = 'Однопоточные действия';
+                MOVE PROPERTY(serviceDBAction());
+                NEW recalculateOneThread {
+                    caption = 'Исправление целостности базы данных';
+                    MOVE PROPERTY(recalculateClassesAction());
+                    MOVE PROPERTY(recalculateAction());
+                    MOVE PROPERTY(recalculateFollowsAction());
+                    MOVE PROPERTY(recalculateStatsAction());
+                    MOVE PROPERTY(overCalculateStatsAction());             
+                    MOVE PROPERTY(maxQuantityOverCalculate());
+                }
+                NEW checkOneThread {
+                    caption = 'Проверка целостности базы данных';
+                    MOVE PROPERTY(checkClassesAction());
+                    MOVE PROPERTY(checkAggregationsAction());
+                    MOVE PROPERTY(checkIndicesAction());
+                }
+            NEW database {
+                caption = 'База данных';
+                MOVE PROPERTY(packAction());
+                MOVE PROPERTY(analyzeDBAction());
+                MOVE PROPERTY(vacuumDBAction());
+                MOVE PROPERTY(disableTILMode());
+                MOVE PROPERTY(reupdateMode());
+                MOVE PROPERTY(singleTransaction());
+            }                            
+            }        
+        }
+        NEW rightColumn {
+             NEW multiThread {
+                 caption = 'Многопоточные действия';
+                 MOVE PROPERTY(threadCountMultiThread());
+                 MOVE PROPERTY(serviceDBMultiThreadAction());
+                 NEW recalculateMultiThread {
+                     caption = 'Исправление целостности базы данных';
+                     MOVE PROPERTY(recalculateClassesMultiThreadAction());
+                     MOVE PROPERTY(recalculateMultiThreadAction());
+                     MOVE PROPERTY(recalculateFollowsMultiThreadAction());
+                     MOVE PROPERTY(recalculateStatsMultiThreadAction());  
+                     MOVE PROPERTY(overCalculateStatsMultiThreadAction());
+                 }
+                 NEW checkMultiThread {
+                     caption = 'Проверка целостности базы данных';
+                     MOVE PROPERTY(checkClassesMultiThreadAction());
+                     MOVE PROPERTY(checkAggregationsMultiThreadAction());
+                 }                  
+             }  
+            NEW virtualMachine {
+                caption = 'Виртуальная машина';
+                MOVE PROPERTY(runGarbageCollector());
+                MOVE PROPERTY(getVMInfo());
+                MOVE PROPERTY(dropLRUPercent());
+                MOVE PROPERTY(randomDropLRU());
+                MOVE PROPERTY(dropLRU());
+                MOVE PROPERTY(turnCacheStatsOff());
+                MOVE PROPERTY(makeHeapDump());
+            }                      
+        }
+    }       
+    MOVE TOOLBARBOX; 
+}
+
+NAVIGATOR { 
+    configuration {
+        NEW Service.admin FIRST;
+        NEW maintenance AFTER performance;
+    }
+}
+
