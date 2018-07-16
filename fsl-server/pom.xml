@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>lsfusion.build</groupId>
-        <artifactId>build</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../build/pom.xml</relativePath>
+        <groupId>lsfusion.platform</groupId>
+        <artifactId>base</artifactId>
+        <version>1.3.5-SNAPSHOT</version>
+        <relativePath>../../platform/base/pom.xml</relativePath>
     </parent>
 
     <groupId>lsfusion.fsl</groupId>
@@ -17,11 +17,45 @@
     
     <properties>
         <assemble.mainClass>lsfusion.server.logics.BusinessLogicsBootstrap</assemble.mainClass>
-        <assemble.finalName>lsfusion-server-${project.version}</assemble.finalName>
+        <assemble.finalName>lsfusion-fsl-server-${project.version}</assemble.finalName>
     </properties>
 
     <build>
+        <!-- multiple inheritance : abstract-logics --> <!-- fsl-server is also a logics -->
+        <resources>
+            <!-- lsfusion project structure : mark resource directories -->
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/lsfusion</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
+            <!-- lsfusion project structure : mark source root directories in IDE -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/lsfusion</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
