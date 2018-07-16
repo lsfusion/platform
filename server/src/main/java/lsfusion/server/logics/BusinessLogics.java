@@ -303,9 +303,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         emailLM = addModule(new EmailLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
-        evalScriptLM = addModule(new ScriptingLogicsModule(
-               SchedulerLogicsModule.class.getResourceAsStream("/system/EvalScript.lsf"),
-                "/system/EvalScript.lsf", LM, this));
     }
 
     private DBNamingPolicy getDBNamingPolicy() {
