@@ -226,15 +226,19 @@ showDefaultForms() = {
         LOCAL firstForm = VARSTRING[100] ();
         FOR actionName = canonicalName(action(NavigatorAction e)) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
             LOCAL NESTED action = TEXT ();
+            LOCAL NESTED maximize = BOOLEAN();
             FOR formName = canonicalName(form(e)) DO { 
                 IF NOT firstForm() THEN {
                     firstForm() <- formName;
+                    maximize() <- TRUE;
                 }
                 action() <- 'SHOW ' + formName + ' NOWAIT';
             } ELSE
                 action() <- actionName + '()';
                 
             NEWSESSION EVAL 'run() = \{ ' + action() + '; \};';
+            IF maximize() THEN 
+                maximizeForm();
         }
         IF firstForm() THEN {
             maximizeForm();
