@@ -240,10 +240,9 @@ showDefaultForms() = {
             IF maximize() THEN 
                 maximizeForm();
         }
-        IF firstForm() THEN {
-            maximizeForm();
-            EVAL 'run() = \{ ACTIVATE FORM ' + firstForm() +'; \};';
-        }
+        //IF firstForm() THEN {
+            //EVAL 'run() = \{ ACTIVATE FORM ' + firstForm() +'; \};';
+        //}
     }
 }
 
