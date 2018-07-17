@@ -23,7 +23,7 @@ public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, C
 
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
-        List<LifecycleMessage> messages = servlet.getClientCallBack().pullMessages();
+        List<LifecycleMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
         return getClientMessageResult(messages);
     }
 

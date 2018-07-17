@@ -61,8 +61,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
 
     protected Dispatch dispatch;
 
-    private ClientCallBackInterface clientCallBack = null;
-    
     public Set<String> openTabs = Collections.synchronizedSet(new HashSet<String>());
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
@@ -195,11 +193,6 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return navigatorProvider.getNavigator();
     }
 
-    public ClientCallBackInterface getClientCallBack() throws RemoteException {
-        clientCallBack = getNavigator().getClientCallBack();
-        return clientCallBack;
-    }
-
     public void tabOpened(String tabSID) {
         openTabs.add(tabSID);
     }
@@ -218,11 +211,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             try {
                 navigatorProvider.getNavigator().close();
             } finally {
-                try {
-                    navigatorProvider.invalidate();
-                } finally {
-                    clientCallBack = null;
-                }
+                navigatorProvider.invalidate();
             }
         }
     }
