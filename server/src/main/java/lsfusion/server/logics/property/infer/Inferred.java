@@ -33,6 +33,10 @@ public class Inferred<T extends PropertyInterface> {
         ImMap<T, ExClassSet> result = params;
         for(Compared<T> compare : compared) {
             ImMap<T, ExClassSet> recInferred = new Inferred<>(result, new NotNull<>(result.keys()), compared.removeIncl(compare)).finishEx(inferType); // вообще говоря not null не правильный, но это ни на что не влияет
+            if (recInferred == null) {
+                return null;
+            }
+            
             // вызываем infer без этого compare чтобы предотвратить рекурсию
             ExClassSet classSet = ExClassSet.op(compare.resolveInferred(compare.first, recInferred, inferType), compare.resolveInferred(compare.second, recInferred, inferType), false);
             ResolveClassSet vSet = null;
