@@ -17,6 +17,7 @@
     </properties>
     
     <profiles>
+        <!-- IMPORTANT need to be before pack profile to pack signed jar and not vice versa-->
         <profile>
             <id>sign</id>
             <build>
@@ -43,6 +44,60 @@
 
                                         <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
                                     </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>pack</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- pack200 : build -->
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ant-pack</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo message="Pack200-ing jar ${assemble.jar}" />
+                                        <exec executable="pack200">
+                                            <arg value="--effort=1" />
+                                            <arg value="--segment-limit=-1" />
+                                            <arg value="${assemble.packed}" />
+                                            <arg value="${assemble.jar}" />
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <!-- pack200 : install and deploy -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-assembly-packed</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>attach-artifact</goal>
+                                </goals>
+                                <configuration>
+                                    <artifacts>
+                                        <artifact>
+                                            <file>${assemble.packed}</file>
+                                            <type>pack.gz</type>
+                                            <classifier>assembly</classifier>
+                                        </artifact>
+                                    </artifacts>
                                 </configuration>
                             </execution>
                         </executions>
