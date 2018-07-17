@@ -48,4 +48,52 @@
             </build>
         </profile>
     </profiles>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Platform modules -->
+            <!-- Has to be here and not in build, because at least when server version is overrided, api version isn't (and logics has build parent, not base)-->
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>logics</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>api</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>report-api</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>desktop-client</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>desktop-client</artifactId>
+                <version>${lsfusion.version}</version>
+                <classifier>assembly</classifier>
+                <type>pack.gz</type>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>server</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>web-api</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>web-client</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
