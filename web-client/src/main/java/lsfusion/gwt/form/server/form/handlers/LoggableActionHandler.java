@@ -44,10 +44,10 @@ public abstract class LoggableActionHandler <A extends Action<R>, R extends Resu
             message += " : " + ((FormRequestIndexCountingAction) action).requestIndex;
         }
         if (action instanceof RegisterTabAction) {
-            message += "TAB ID " + ((RegisterTabAction) action).tabSID + " IN SESSION " + servlet.servSID + " CURRENT OPENED TABS " + servlet.openTabs;
+            message += "TAB ID " + ((RegisterTabAction) action).tabSID + " IN " + servlet.getSessionInfo();
         }
         if (action instanceof CleanAction) {
-            message += "TAB ID " + ((CleanAction) action).tabSID + " IN SESSION " + servlet.servSID + " CURRENT OPENED TABS " + servlet.openTabs;
+            message += "TAB ID " + ((CleanAction) action).tabSID + " IN " + servlet.getSessionInfo();
         }
         return message;
     }
