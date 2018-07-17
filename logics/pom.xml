@@ -44,7 +44,6 @@
                 <dependency>
                     <groupId>lsfusion.platform</groupId>
                     <artifactId>desktop-client</artifactId>
-                    <version>${lsfusion.version}</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -106,7 +105,6 @@
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>server</artifactId>
-            <version>${lsfusion.version}</version>
         </dependency>
     </dependencies>
 </project>
