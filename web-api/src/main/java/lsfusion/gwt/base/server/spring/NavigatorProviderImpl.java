@@ -5,6 +5,7 @@ import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;
@@ -14,7 +15,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean, InvalidateListener {
 
@@ -26,6 +30,32 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     public NavigatorProviderImpl(BusinessLogicsProvider blProvider) {
         this.blProvider = blProvider;
         blProvider.addInvalidateListener(this);
+    }
+
+    public String servSID = GwtSharedUtils.randomString(25);
+
+    public final Set<String> openTabs = new HashSet<String>();
+
+    @Override
+    public void tabOpened(String tabSID) {
+        synchronized (openTabs) {
+            openTabs.add(tabSID);
+        }
+    }
+
+    @Override
+    public synchronized boolean tabClosed(String tabSID) {
+        synchronized (openTabs) {
+            openTabs.remove(tabSID);
+            return openTabs.isEmpty();
+        }
+    }
+
+    @Override
+    public String getSessionInfo() {
+        synchronized (openTabs) {
+            return "SESSION " + servSID + " CURRENT OPENED TABS " + openTabs;
+        }
     }
 
     @Override
@@ -91,6 +121,9 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     }
     
     public void invalidate() {
+        synchronized (openTabs) {
+            assert openTabs.isEmpty();
+        }
         synchronized (navigatorLock) {
             navigator = null;
         }

@@ -71,7 +71,7 @@ forbidChangeAllProperty 'Запретить изменение всех свой
 
 forbidViewAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' = DATA BOOLEAN (UserRole);
 forbidViewAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' (User user) = forbidViewAllSetupPolicies (mainRole(user));
-forbidChangeAllSetupPolicies 'Запретить просмотр настройки политики безопасности свойств' = DATA BOOLEAN (UserRole);
+forbidChangeAllSetupPolicies 'Запретить изменение настройки политики безопасности свойств' = DATA BOOLEAN (UserRole);
 forbidChangeAllSetupPolicies 'Запретить изменение настройки политики безопасности свойств' (User user) = forbidChangeAllSetupPolicies (mainRole(user));
 
 dataPermitView 'Разрешить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
