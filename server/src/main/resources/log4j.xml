@@ -317,22 +317,6 @@
         </layout>
     </appender>
 
-    <appender name="terminallog" class="org.apache.log4j.rolling.RollingFileAppender">
-        <param name="encoding" value="UTF-8" />
-        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
-            <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="5"/>
-            <param name="activeFileName" value="logs/terminal-log.log"/>
-            <param name="fileNamePattern" value="logs/terminal-log-%i.log.zip"/>
-        </rollingPolicy>
-        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
-        </triggeringPolicy>
-        <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
-        </layout>
-    </appender>
-
     <appender name="schedulerlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -512,11 +496,6 @@
         <!--<appender-ref ref="stdout"/>-->
     </category>
 
-    <category name="TerminalLogger">
-        <priority value="ALL"/>
-        <appender-ref ref="terminallog"/>
-    </category>
-
     <category name="SchedulerLogger" additivity="false">
         <priority value="ALL"/>
         <appender-ref ref="schedulerlog"/>
@@ -541,7 +520,7 @@
         <priority value="INFO" />
         <appender-ref ref="jasperlog"/>
     </category>
-    
+
     <root>
         <priority value="ERROR"/>
         <appender-ref ref="stdout"/>
