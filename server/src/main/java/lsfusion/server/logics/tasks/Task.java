@@ -104,7 +104,7 @@ public abstract class Task {
                     taskQueue.ensurePolled(this);
                     proceed(BL, executor, context, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
                 } catch (Throwable t) {
-                    logger.error(ExecutionStackAspect.getExceptionStackString());
+                    logger.error(ExecutionStackAspect.getExceptionStackString(), t);
                     if(!ignoreExceptions())
                         throwableConsumer.consume(t);
                 } finally {

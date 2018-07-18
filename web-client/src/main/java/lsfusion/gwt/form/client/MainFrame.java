@@ -40,10 +40,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
@@ -251,7 +248,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private void setLocale(String newLocale) {
         String oldLocale = Cookies.getCookie(localeCookieName);
         if(oldLocale == null || !oldLocale.equals(newLocale)) {
-            Cookies.setCookie(localeCookieName, newLocale);
+            Cookies.setCookie(localeCookieName, newLocale, new Date(Long.MAX_VALUE));
             Window.Location.reload();
         }
     }
