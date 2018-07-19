@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>lsfusion.platform</groupId>
-        <artifactId>base</artifactId>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>platform-assemble</artifactId>
         <version>1.3.5-SNAPSHOT</version>
-        <relativePath>../base/pom.xml</relativePath>
+        <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 
     <repositories>
@@ -16,6 +16,7 @@
         </repository>
     </repositories>
 
+    <groupId>lsfusion.platform</groupId>
     <artifactId>web-client</artifactId>
     <packaging>jar</packaging>
     <name>Web Client</name>

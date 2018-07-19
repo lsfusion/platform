@@ -1,16 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>lsfusion.platform</groupId>
+    <groupId>lsfusion</groupId>
     <artifactId>platform</artifactId>
     <version>1.3.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>lsFusion platform</name>
 
+    <!-- deploy destinations -->
+    <distributionManagement>
+        <repository>
+            <id>lsfusion</id>
+            <url>${lsfusion.releases.repo}</url>
+        </repository>
+        <snapshotRepository>
+            <id>lsfusion.snapshots</id>
+            <url>${lsfusion.snapshots.repo}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <modules>
         <module>build</module>
-        <module>base</module>
-        <module>logics</module>
         <module>api</module>
         <module>report-api</module>
         <module>desktop-client</module>
