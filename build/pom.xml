@@ -16,6 +16,7 @@
 
     <modules>
         <module>base</module>
+        <module>assemble</module>
         <module>logics</module>
         <module>platform-base</module>
         <module>platform-assemble</module>
