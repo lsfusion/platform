@@ -149,6 +149,7 @@
     </pluginRepositories>
 
     <!-- deploy destinations -->
+    <!-- actually it is needed only for platform-base module (and all its parents), but because we want to deploy everything with one command for top module (including base and logics), has to be here -->
     <distributionManagement>
         <repository>
             <id>lsfusion</id>
