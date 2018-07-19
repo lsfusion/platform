@@ -1,6 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- needed for distribution management to deploy everything with one command for top module-->
+    <parent>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>base</artifactId>
+        <version>1.3.5-SNAPSHOT</version>
+        <relativePath>../../platform/build/base/pom.xml</relativePath>
+    </parent>
+
     <groupId>lsfusion.fsl</groupId>
     <artifactId>fsl-build</artifactId>
     <version>1.3.5-SNAPSHOT</version>
