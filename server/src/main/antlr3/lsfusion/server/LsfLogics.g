@@ -2092,6 +2092,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
+    LCPWithParams root = null;
 	boolean attr = false;
     FormEntity form = null;
 }
@@ -2102,7 +2103,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     	else if($type.format == ImportSourceFormat.DBF)
         	$property = self.addScriptedImportFormDBFActionProperty(form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty(form, attr);
+    		$property = self.addScriptedImportFormXMLActionProperty(form, root, attr);
     	else if($type.format == ImportSourceFormat.JSON)
     	    $property = self.addScriptedImportFormJSONActionProperty(form);
 
@@ -2110,7 +2111,8 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
-	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
+	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
+	                                                   noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; root = $type.root; }
 	;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
