@@ -14,7 +14,6 @@
     <name>Assemble</name>
 
     <profiles>
-        <!-- multiple inheritance : assemble -->
         <profile>
             <id>assemble</id>
             <build>
