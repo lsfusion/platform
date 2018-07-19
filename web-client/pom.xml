@@ -10,14 +10,6 @@
         <relativePath>../build/platform-base/pom.xml</relativePath>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>lsfusion.public</id>
-            <name>lsFusion Public Repository</name>
-            <url>${lsfusion.public.repo}</url>
-        </repository>
-    </repositories>
-
     <groupId>lsfusion.platform</groupId>
     <artifactId>web-client</artifactId>
     <packaging>jar</packaging>
@@ -91,6 +83,7 @@
                     <webappDirectory>${war.explodedDir}</webappDirectory>
                 </configuration>
             </plugin>
+            <!-- installing and uploading war -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
