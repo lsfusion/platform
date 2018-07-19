@@ -3442,8 +3442,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportFormDBFDataActionProperty(formEntity, charset)), Collections.<LCPWithParams>emptyList());
     }
 
-    public LAPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(formEntity, attr)), Collections.<LCPWithParams>emptyList());
+    public LAPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, LCPWithParams rootProp, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
+        ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
+        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, formEntity, attr)), params);
     }
 
     public LAPWithParams addScriptedImportFormJSONActionProperty(FormEntity formEntity) throws ScriptingErrorLog.SemanticErrorException {

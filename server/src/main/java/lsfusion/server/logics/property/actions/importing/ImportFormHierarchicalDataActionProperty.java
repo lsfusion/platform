@@ -30,6 +30,8 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     private Map<String, Integer> tagsMap;
 
+    protected String root;
+
     public abstract E getRootElement(byte[] file);
 
     public abstract ImportFormIterator getIterator(Pair<String, Object> rootElement);
@@ -46,6 +48,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
+            root = context.getKeys().isEmpty() ? null : (String) context.getSingleKeyValue().getValue();
             byte[] file = (byte[]) context.getBL().LM.findProperty("System.importFile[]").read(context);
             if (file != null) {
                 file = BaseUtils.getFile(file);
