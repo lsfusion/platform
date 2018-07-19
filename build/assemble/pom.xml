@@ -16,6 +16,7 @@
     <profiles>
         <profile>
             <id>assemble</id>
+            <!-- multiple-inheritance : assemble -->
             <build>
                 <plugins>
                     <plugin>
