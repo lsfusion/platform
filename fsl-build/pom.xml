@@ -1,21 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-
-    <groupId>lsfusion</groupId>
-    <artifactId>fsl</artifactId>
+    <groupId>lsfusion.fsl</groupId>
+    <artifactId>fsl-build</artifactId>
     <version>1.3.5-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Fusion Standard Library</name>
-    
+    <name>Build</name>
+
     <modules>
-        <module>fsl-build</module>
-        <module>fsl-server</module>
+        <module>fsl-logics</module>
     </modules>
 
     <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/fsl/branches/fsl-RC</developerConnection>
+        <developerConnection>scm:svn:svn://server/lsfusion/platform/branches/platform-RC</developerConnection>
     </scm>
 
     <build>
@@ -31,10 +28,6 @@
                     <password>enimder</password>
                     <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

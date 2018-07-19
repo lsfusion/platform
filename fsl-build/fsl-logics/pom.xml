@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>lsfusion.platform</groupId>
+        <groupId>lsfusion.platform.build</groupId>
         <artifactId>logics</artifactId>
         <version>1.3.5-SNAPSHOT</version>
-        <relativePath>../../platform/logics/pom.xml</relativePath>
+        <relativePath>../../../platform/build/logics/pom.xml</relativePath>
     </parent>
-    <groupId>lsfusion.fsl</groupId>
+    <groupId>lsfusion.fsl.build</groupId>
     <artifactId>fsl-logics</artifactId>
     <version>1.3.5-SNAPSHOT</version>
     <packaging>pom</packaging>
