@@ -28,142 +28,90 @@
         <war.desktopClientPath>${war.explodedDir}/lsfusion-client.jar.pack.gz</war.desktopClientPath>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>gwt</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
-                        <configuration>
-                            <module>lsfusion.gwt.form.Form</module>
-
-                            <webappDirectory>${war.explodedDir}</webappDirectory>
-                            <force>true</force>
-                            <draftCompile>false</draftCompile>
-                            <optimizationLevel>2</optimizationLevel>
-                            <style>OBFUSCATED</style>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>gwt-dev</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
-                        <configuration>
-                            <module>lsfusion.gwt.form.Form</module>
-
-                            <webappDirectory>${war.explodedDir}</webappDirectory>
-                            <force>true</force>
-                            <draftCompile>true</draftCompile>
-                            <optimizationLevel>1</optimizationLevel>
-                            <style>DETAILED</style>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>compile</phase>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>desktop</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>prepare-war</id>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <target>
-                                        <copy file="${settings.localRepository}/lsfusion/platform/desktop-client/${lsfusion.version}/desktop-client-${lsfusion.version}-assembly.pack.gz" tofile="${war.desktopClientPath}">
-                                        </copy>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            <dependencies>
-                <dependency>
-                    <groupId>lsfusion.platform</groupId>
-                    <artifactId>desktop-client</artifactId>
-                    <classifier>assembly</classifier>
-                    <type>pack.gz</type>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>war</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>war</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-war</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>attach-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <artifacts>
-                                        <artifact>
-                                            <file>${war.packed}</file>
-                                            <type>war</type>
-                                        </artifact>
-                                    </artifacts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
+        <plugins>
+            <!-- compiling gwt-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <configuration>
+                    <module>lsfusion.gwt.form.Form</module>
+
+                    <webappDirectory>${war.explodedDir}</webappDirectory>
+                    <force>true</force>
+                    <draftCompile>false</draftCompile>
+                    <optimizationLevel>2</optimizationLevel>
+                    <style>OBFUSCATED</style>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- desktop embedding -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-war</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${settings.localRepository}/lsfusion/platform/desktop-client/${lsfusion.version}/desktop-client-${lsfusion.version}-assembly.pack.gz" tofile="${war.desktopClientPath}">
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- building war -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <primaryArtifact>false</primaryArtifact>
+                    <warName>${war.finalName}</warName>
+                    <webappDirectory>${war.explodedDir}</webappDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-war</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${war.packed}</file>
+                                    <type>war</type>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
         <resources>
             <resource>
                 <directory>src/main/java</directory>
@@ -175,24 +123,28 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <primaryArtifact>false</primaryArtifact>
-                    <warName>${war.finalName}</warName>
-                    <webappDirectory>${war.explodedDir}</webappDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <!-- for installing locally on tomcat-->
+            <id>gwt-dev</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>gwt-maven-plugin</artifactId>
+                        <configuration>
+                            <draftCompile>false</draftCompile>
+                            <optimizationLevel>1</optimizationLevel>
+                            <style>DETAILED</style>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
@@ -202,7 +154,15 @@
             <groupId>lsfusion.platform</groupId>
             <artifactId>desktop-client</artifactId>
         </dependency>
-        
+
+        <!-- desktop embedding -->
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>desktop-client</artifactId>
+            <classifier>assembly</classifier>
+            <type>pack.gz</type>
+        </dependency>
+
         <dependency>
             <groupId>jstl</groupId>
             <artifactId>jstl</artifactId>
