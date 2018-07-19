@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
@@ -248,7 +249,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     private void setLocale(String newLocale) {
         String oldLocale = Cookies.getCookie(localeCookieName);
         if(oldLocale == null || !oldLocale.equals(newLocale)) {
-            Cookies.setCookie(localeCookieName, newLocale, new Date(Long.MAX_VALUE));
+            Cookies.setCookie(localeCookieName, newLocale, new Date(System.currentTimeMillis() + 1000L*60L*60L*24L*365L*5L));
             Window.Location.reload();
         }
     }
