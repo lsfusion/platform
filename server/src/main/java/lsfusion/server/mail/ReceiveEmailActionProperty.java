@@ -54,6 +54,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
             accountQuery.addProperty("nameReceiveAccountTypeAccount", emailLM.nameReceiveAccountTypeAccount.getExpr(accountExpr));
             accountQuery.addProperty("deleteMessagesAccount", emailLM.deleteMessagesAccount.getExpr(accountExpr));
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
+            accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
             accountQuery.and(emailLM.enableAccount.getExpr(accountExpr).getWhere());
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> accountResult = accountQuery.executeClasses(context);
@@ -74,9 +75,10 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                     boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
                     boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount").getValue() != null;
                     Integer lastDaysAccount = (Integer) accountValues.get("lastDaysAccount").getValue();
+                    Integer maxMessagesAccount = (Integer) accountValues.get("maxMessagesAccount").getValue();
 
                     receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                            isPop3Account, deleteMessagesAccount, lastDaysAccount);
+                            isPop3Account, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
                 } catch (Exception e) {
                     logError(context, localize("{mail.failed.to.receive.mail}") + " " + nameAccount);
@@ -89,7 +91,8 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount)
+                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                              Integer maxMessagesAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
             logError(context, localize("{mail.pop3.host.not.specified.letters.will.not.be.received}"));
@@ -97,7 +100,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount, lastDaysAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
         receiver.receiveEmail(context);
     }

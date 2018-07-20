@@ -2,16 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>lsfusion.platform</groupId>
-        <artifactId>build</artifactId>
+        <groupId>lsfusion.platform.build</groupId>
+        <artifactId>assemble</artifactId>
         <version>1.3.5-SNAPSHOT</version>
-        <relativePath>../build/pom.xml</relativePath>
+        <relativePath>../assemble/pom.xml</relativePath>
     </parent>
 
-    <groupId>lsfusion.platform</groupId>
     <artifactId>logics</artifactId>
     <packaging>pom</packaging>
-    <version>1.3.5-SNAPSHOT</version>
     <name>Logics</name>
 
     <properties>
