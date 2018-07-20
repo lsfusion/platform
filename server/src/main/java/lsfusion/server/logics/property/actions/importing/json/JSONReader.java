@@ -6,6 +6,9 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class JSONReader {
 
@@ -32,5 +35,53 @@ public class JSONReader {
             sb.append((char) cp);
         }
         return sb.toString();
+    }
+
+    public static Object findRootNode(Object rootNode, String rootName, String root) throws JSONException {
+        if (rootName != null && rootName.equals(root))
+            return rootNode;
+
+        if (rootNode instanceof JSONArray) {
+
+            for (JSONObject child : getChildren(rootNode)) {
+                Object result = findRootNode(child, null, root);
+                if (result != null)
+                    return result;
+            }
+
+        } else if (rootNode instanceof JSONObject) {
+
+            Iterator<String> it = ((JSONObject) rootNode).keys();
+            while (it.hasNext()) {
+                String key = it.next();
+                Object child = ((JSONObject) rootNode).get(key);
+                Object result = findRootNode(child, key, root);
+                if(result != null)
+                    return result;
+            }
+
+        }
+        return null;
+    }
+
+    public static List<JSONObject> getChildren(Object rootNode) throws JSONException {
+        List<JSONObject> result = new ArrayList<>();
+        if (rootNode instanceof JSONArray) {
+            for (int i = 0; i < ((JSONArray) rootNode).length(); i++) {
+                Object child = ((JSONArray) rootNode).get(i);
+                if (child instanceof JSONObject)
+                    result.add((JSONObject) child);
+            }
+            return result;
+        } else {
+            Iterator<String> objectIterator = ((JSONObject) rootNode).keys();
+            while (objectIterator.hasNext()) {
+                String key = objectIterator.next();
+                Object object = ((JSONObject) rootNode).get(key);
+                if (object instanceof JSONObject)
+                    result.add((JSONObject) object);
+            }
+        }
+        return result;
     }
 }

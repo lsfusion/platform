@@ -14,14 +14,21 @@ import java.io.IOException;
 
 public class ImportFormJSONDataActionProperty extends ImportFormHierarchicalDataActionProperty<JSONObject> {
 
-    public ImportFormJSONDataActionProperty(FormEntity formEntity) {
-        super(new ValueClass[]{}, formEntity);
+    public ImportFormJSONDataActionProperty(ValueClass[] classes, FormEntity formEntity) {
+        super(classes, formEntity);
     }
 
     @Override
     public JSONObject getRootElement(byte[] file) {
         try {
-            return JSONReader.read(file);
+            JSONObject json = JSONReader.read(file);
+            Object rootNode = root == null ? json : JSONReader.findRootNode(json, null, root);
+            if(rootNode instanceof JSONObject) {
+                return (JSONObject) rootNode;
+            } else if(rootNode instanceof JSONArray) {
+                throw new RuntimeException(String.format("Import JSON error: root node %s should be object, not array", root));
+            } else
+                throw new RuntimeException(String.format("Import JSON error: root node %s not found", root));
         } catch (IOException | JSONException e) {
             throw Throwables.propagate(e);
         }

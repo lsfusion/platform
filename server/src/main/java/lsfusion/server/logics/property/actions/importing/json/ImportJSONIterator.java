@@ -21,44 +21,17 @@ public abstract class ImportJSONIterator extends ImportIterator {
         this.properties = properties;
         Object json = JSONReader.readObject(file);
         if (root != null) {
-            Object rootNode = findRootNode(json, null, root);
+            Object rootNode = JSONReader.findRootNode(json, null, root);
             if (rootNode != null) {
                 //если hasListOption, то берём сам объект, иначе - его children.
                 // Для JSONArray hasListOption не проверяем, так как hasListOption=true не имеет смысла
-                childrenIterator = hasListOption && rootNode instanceof JSONObject ? new SingletonIterator(rootNode) : getChildren(rootNode).iterator();
+                childrenIterator = hasListOption && rootNode instanceof JSONObject ? new SingletonIterator(rootNode) : JSONReader.getChildren(rootNode).iterator();
             } else {
                 throw new RuntimeException(String.format("Import JSON error: root node %s not found", root));
             }
         } else {
-            childrenIterator = hasListOption && json instanceof JSONObject ? new SingletonIterator(json) : getChildren(json).iterator();
+            childrenIterator = hasListOption && json instanceof JSONObject ? new SingletonIterator(json) : JSONReader.getChildren(json).iterator();
         }
-    }
-
-    private Object findRootNode(Object rootNode, String rootName, String root) throws JSONException {
-        if (rootName != null && rootName.equals(root))
-            return rootNode;
-
-        if (rootNode instanceof JSONArray) {
-
-            for (JSONObject child : getChildren(rootNode)) {
-                Object result = findRootNode(child, null, root);
-                if (result != null)
-                    return result;
-            }
-
-        } else if (rootNode instanceof JSONObject) {
-
-            Iterator<String> it = ((JSONObject) rootNode).keys();
-            while (it.hasNext()) {
-                String key = it.next();
-                Object child = ((JSONObject) rootNode).get(key);
-                Object result = findRootNode(child, key, root);
-                if(result != null)
-                    return result;
-            }
-
-        }
-        return null;
     }
 
     @Override
