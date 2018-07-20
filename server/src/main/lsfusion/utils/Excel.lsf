@@ -1,0 +1,109 @@
+MODULE Excel;
+
+REQUIRE System, MasterData;
+
+CLASS Template 'Шаблон';
+TABLE template(Template);
+
+name 'Имя' = DATA VARSTRING[100] (Template);
+file 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
+loadFile 'Загрузить шаблон'(Template t) = { INPUT =file(t) CHANGE; }
+openFile 'Открыть шаблон'(Template t) = { OPEN file(t); }
+id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+
+process = CUSTOM 'lsfusion.utils.excel.ProcessTemplateActionProperty' (Template);
+
+resultTemplate = DATA LOCAL EXCELFILE ();
+openResultTemplate () = { OPEN resultTemplate(); }
+
+openProcess 'Сгенерировать документ'(Template template) = {
+    process(template);
+    openResultTemplate();
+}
+
+CLASS TemplateEntry 'Строка шаблона';
+TABLE templateEntry(TemplateEntry);
+
+template 'Шаблон' = DATA Template (TemplateEntry);
+key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
+description 'Описание' = DATA VARSTRING[100](TemplateEntry);
+isNumeric 'Числовые данные' = DATA BOOLEAN (TemplateEntry);
+format 'Формат' = DATA VARSTRING[20] (TemplateEntry);
+value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+
+isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\n'; 
+
+FORM template 'Шаблон Excel'
+
+    OBJECTS t = Template PANEL
+    PROPERTIES (t) name, id
+    PROPERTIES (t) loadFile, openFile
+
+    OBJECTS te = TemplateEntry
+    PROPERTIES (te) isTable, key, description, isNumeric, format, value, rowSeparator SHOWIF isTable(te), NEW, DELETE GRID
+    PROPERTIES (t) TODRAW te TOOLBAR openProcess
+
+    FILTERS template (te) == t
+
+    EDIT Template OBJECT t
+;
+
+DESIGN template {
+    BOX {
+        size = (1024, 768);
+        type = CONTAINERV;
+        MOVE BOX(t) {
+            type = CONTAINERH;
+            NEW row1 {
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(id(t));
+            };
+            NEW row2 {
+                type = CONTAINERH;
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(openFile(t));
+            };
+        }
+        MOVE BOX(te);
+    }
+    MOVE TOOLBARBOX;
+}
+
+FORM templates 'Шаблоны Excel'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY name, id
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
+
+    OBJECTS te = TemplateEntry
+    PROPERTIES (te) READONLY isTable, key, description, isNumeric, value
+
+    FILTERS template (te) == t
+;
+
+FORM dialogTemplates 'Шаблоны Excel'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY name, id
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
+
+    LIST Template OBJECT t
+;
+DESIGN dialogTemplates {
+    BOX {
+        size = (1024, 768);
+    }
+}
+
+NAVIGATOR {
+    masterData {
+        templatesNavigator {
+            NEW templates;
+        }
+    }
+}
+
+
+

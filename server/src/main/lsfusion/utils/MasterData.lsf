@@ -1,0 +1,62 @@
+MODULE MasterData;
+
+REQUIRE System;
+
+NAVIGATOR {
+    NEW FOLDER masterData 'Справочники' BEFORE administration WINDOW toolbar IMAGE '/images/catalog.png' {
+        NEW FOLDER regionalData 'Региональные параметры';
+        NEW FOLDER templatesNavigator 'Шаблоны';
+    }
+}
+
+// -------------------- meta
+
+META defineNamedObject(id, caption)
+    
+    CLASS ###id caption;
+    TABLE id (###id);
+    
+    name 'Наименование' = DATA VARISTRING[100] (###id) CHARWIDTH 15;
+    
+    FORM id caption
+        OBJECTS o = ###id PANEL
+        PROPERTIES(o) name
+        
+        EDIT ###id OBJECT o
+    ;
+    
+    FORM id##s caption
+        OBJECTS o = ###id
+        PROPERTIES(o) READONLY name
+        PROPERTIES(o) NEWSESSION NEW, EDIT, DELETE
+    ;
+    
+    FORM dialog###id##s caption
+        OBJECTS o = ###id
+        PROPERTIES(o) READONLY name
+        
+        LIST ###id OBJECT o
+    ;
+    
+    NAVIGATOR {
+        masterData {
+            NEW id##s;
+        }
+    }
+
+END
+
+META defineStaticObject(id, caption)
+    CLASS ###id caption;
+    TABLE id (###id);
+    
+    name 'Наименование' (###id o) = staticCaption(o) IF o IS ###id CHARWIDTH 15;
+    
+    FORM dialog###id##s caption
+        OBJECTS o = ###id
+        PROPERTIES(o) READONLY name
+        
+        LIST ###id OBJECT o
+    ;
+
+END

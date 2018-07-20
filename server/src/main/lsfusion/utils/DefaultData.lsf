@@ -1,0 +1,41 @@
+MODULE DefaultData;
+
+REQUIRE System;
+
+GROUP loadDefault 'Загрузка отдельных объектов' : public;
+
+loadDefaultData 'Загрузить стандартные данные' = ABSTRACT LIST();
+
+FORM defaultData 'Стандартные данные'
+    PROPERTIES() loadDefaultData
+;
+DESIGN defaultData {
+    NEW pane BEFORE TOOLBARBOX {
+        fill = 1;
+        type = TABBED;
+        NEW commons {
+            type = COLUMNS;
+            columns = 3;
+            caption = 'Общие';
+            MOVE PROPERTY(loadDefaultData());
+        }
+    }
+}
+
+NAVIGATOR {
+    application {
+        NEW defaultData;
+    }
+}
+
+META implementLoadDefaultData (property)
+    loadDefaultData () += { property(); }
+    EXTEND FORM defaultData
+        PROPERTIES() property
+    ;
+    DESIGN defaultData {
+        commons {
+            MOVE PROPERTY(property());
+        }
+    }
+END

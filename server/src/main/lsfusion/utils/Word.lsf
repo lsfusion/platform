@@ -1,0 +1,118 @@
+MODULE Word;
+
+REQUIRE System, MasterData;
+
+CLASS Template 'Шаблон';
+TABLE template(Template);
+
+name 'Имя' = DATA VARSTRING[100] (Template);
+file 'Файл шаблона' (Template) = DATA WORDFILE (Template);
+loadFile 'Загрузить шаблон'(Template t) = { INPUT =file(t) CHANGE; }
+openFile 'Открыть шаблон'(Template t) = { OPEN file(t); }
+id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+
+process = CUSTOM 'lsfusion.utils.word.ProcessTemplateActionProperty' (Template);
+
+resultTemplate = DATA LOCAL WORDFILE ();
+openResultTemplate () = { OPEN resultTemplate(); }
+
+openProcess 'Сгенерировать документ'(Template template) = {
+    process(template);
+    openResultTemplate();
+}
+
+templateId (string1) = GROUP AGGR Template template WHERE template IS Template BY id(template);
+
+CLASS TemplateEntry 'Строка шаблона';
+TABLE templateEntry(TemplateEntry);
+
+template 'Шаблон' = DATA Template (TemplateEntry);
+key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
+description 'Описание' = DATA VARSTRING[100](TemplateEntry);
+value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+
+// Таблица
+isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+
+dataFirstRow = DATA INTEGER (TemplateEntry);
+firstRow 'Первый ряд с данными (начиная с 0)' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
+
+dataColumnSeparator = DATA VARSTRING[20] (TemplateEntry);
+columnSeparator 'Разделитель колонок' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
+
+dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
+rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
+
+templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry WHERE templateEntry IS TemplateEntry BY  key(templateEntry), id(template(templateEntry));
+
+FORM template 'Шаблон Word'
+
+    OBJECTS t = Template PANEL
+    PROPERTIES (t) name, id
+    PROPERTIES (t) loadFile, openFile
+
+    OBJECTS te = TemplateEntry
+    PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) PANEL SHOWIF isTable(te) firstRow, columnSeparator, rowSeparator
+    PROPERTIES (t) TODRAW te TOOLBAR openProcess
+
+    FILTERS template (te) == t
+
+    EDIT Template OBJECT t
+;
+
+DESIGN template {
+    BOX {
+        size = (1024, 768);
+        type = CONTAINERV;
+        MOVE BOX(t) {
+            type = CONTAINERH;
+            NEW row1 {
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(id(t));
+            };
+            NEW row2 {
+                type = CONTAINERH;
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(openFile(t));
+            };
+        }
+        MOVE BOX(te);
+    }
+    MOVE TOOLBARBOX;
+}
+
+
+FORM templates 'Шаблоны Word'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY name, id
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
+
+    OBJECTS te = TemplateEntry
+    PROPERTIES (te) READONLY isTable, key, description, value
+    FILTERS template (te) == t
+;
+
+FORM dialogTemplates 'Шаблоны Word'
+
+    OBJECTS t = Template
+    PROPERTIES (t) READONLY name, id
+    PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
+
+    LIST Template OBJECT t
+;
+DESIGN dialogTemplates {
+    BOX {
+        size = (1024, 768);
+    }
+}
+
+
+NAVIGATOR {
+    masterData {
+        templatesNavigator  {
+            NEW templates;
+        }
+    }
+}

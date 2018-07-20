@@ -1,0 +1,146 @@
+MODULE Backup;
+
+REQUIRE System, Reflection, SchedulerDefaultData;
+
+makeBackup 'Создать копию'= CUSTOM 'lsfusion.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackupAction 'Создать копию' = {
+    makeBackup();
+    formRefresh();
+}
+makePartialBackup 'Создать копию (оперативно)'= CUSTOM 'lsfusion.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackupAction 'Создать копию (оперативно)' = {
+    makePartialBackup();
+    formRefresh();
+}
+save 'Скачать'= CUSTOM 'lsfusion.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete 'Удалить'= CUSTOM 'lsfusion.utils.backup.DeleteBackupActionProperty' (Backup);
+
+deleteAction 'Удалить' (Backup b) = {
+    delete(b);
+    formRefresh();
+} CONFIRM;
+
+saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
+saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
+maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
+decimateBackups 'Проредить'= CUSTOM 'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackupsAction 'Проредить' = {
+    decimateBackups();
+    formRefresh();
+}
+
+customRestore 'Восстановить таблицы' = CUSTOM 'lsfusion.utils.backup.CustomRestoreActionProperty' (Backup);
+inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
+restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
+inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);
+replaceOnlyNull 'Не замещать' = DATA BOOLEAN (TableColumn);
+
+CLASS Backup 'Резервная копия';
+TABLE backup(Backup);
+
+partial 'Оперативная копия' = DATA BOOLEAN (Backup);
+date 'Дата' = DATA DATE (Backup);
+time 'Время' = DATA TIME (Backup);
+file 'Адрес файла' = DATA VARSTRING[200] (Backup);
+name 'Имя файла' = DATA VARSTRING[100] (Backup);
+fileLog 'Адрес лога файла' = DATA VARSTRING[200] (Backup);
+fileDeleted 'Файл удалён' = DATA BOOLEAN (Backup);
+log 'Лог' = DATA TEXT (Backup);
+notSucceeded 'Не завершён' (Backup b) = NOT log(b);
+
+backupFileName 'Имя файла резервной копии' = DATA LOCAL VARSTRING[100] ();
+backupFilePath 'Файл резервной копии' = DATA LOCAL VARSTRING[200]();
+
+exclude 'Исключить из оперативного копирования' = DATA BOOLEAN (Table);
+
+TABLE backupTable(Backup, Table);
+exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
+
+FORM backup 'Резервное копирование'
+    OBJECTS b = Backup
+    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
+    PROPERTIES() TODRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
+    PROPERTIES(b) save
+    PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
+    PROPERTIES(b) deleteAction GRID
+    FILTERGROUP notDeleted FILTER 'Только не удалённые' NOT fileDeleted(b) DEFAULT 
+    FILTERGROUP succeeded FILTER 'Только завершённые' log(b) DEFAULT 
+    
+    OBJECTS t1 = Table
+    PROPERTIES(t1) READONLY sid, rows
+    PROPERTIES(t1) exclude
+    
+    OBJECTS t2 = Table
+    PROPERTIES(t2) READONLY sid
+    PROPERTIES(b, t2) READONLY exclude
+;
+
+DESIGN backup {
+    NEW pane {
+        fill = 1;
+        type = TABBED;
+        NEW pane1 {
+            caption = 'Резервные копии';
+            type = CONTAINERH;
+            NEW leftPane {
+                fill = 1;
+                MOVE BOX(b);
+                MOVE BOX(t1);
+            }
+            NEW rightPane {
+                fill = 1;
+                MOVE PROPERTY(log(b)) {
+                    fill = 1;
+                    panelCaptionAbove = TRUE;
+                }
+                MOVE BOX(t2) {
+                    caption = 'Скопированные таблицы';
+                }
+            }
+        }
+        NEW pane2 {
+            caption = 'Настройки';
+            align = STRETCH;
+            MOVE PROPERTY(saveFirstDayBackups());
+            MOVE PROPERTY(saveMondayBackups());
+            MOVE PROPERTY(maxQuantityBackups());
+        }        
+    }
+    MOVE TOOLBARBOX;
+}
+
+FORM backups 'Резервные копии'
+    OBJECTS b=Backup
+    PROPERTIES(b) READONLY partial, name, file, fileDeleted
+    FILTERS NOT fileDeleted(b)
+    LIST Backup OBJECT b
+;
+
+FORM customRestore 'Восстановление данных'
+    OBJECTS t = Table
+    PROPERTIES(t) inCustomRestore, restoreObjects, sid READONLY
+    FILTERGROUP active FILTER 'Только включенные' inCustomRestore(t) 
+        
+    OBJECTS tc=TableColumn
+    PROPERTIES(tc) inCustomRestore, replaceOnlyNull
+    PROPERTIES(tc) READONLY sid, caption, canonicalName
+    FILTERS table(tc) == t
+
+    
+    OBJECTS b = Backup PANEL
+    PROPERTIES(b) name SELECTOR, customRestore
+    ORDER name(b) DESC
+;
+
+NAVIGATOR {
+    scheduler {
+        NEW backup;
+        NEW customRestore;
+    }
+}
+
+loadDefaultScheduledTasks () += {    
+    loadDefaultScheduledTask ('Резервное копирование', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
+    loadDefaultScheduledTaskDetail ('Резервное копирование', 1, 'Backup.makeBackup[]');
+    loadDefaultScheduledTaskDetail ('Резервное копирование', 2, 'Backup.decimateBackups[]');        
+}
