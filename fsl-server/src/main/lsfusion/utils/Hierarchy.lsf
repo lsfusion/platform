@@ -1,0 +1,75 @@
+MODULE Hierarchy;
+
+REQUIRE Utils;
+
+META defineHierarchy(object)
+    @defineHierarchy(object, ###object);
+END
+
+META defineHierarchyAbstract(object)
+    @defineHierarchyAbstract(object, ###object);
+END
+
+META defineHierarchy (object, class)
+    parent = DATA class (class) AUTOSET;
+    @defineHierarchyCustom(object, class);
+END
+
+META defineHierarchyAbstract (object, class)
+    parent = ABSTRACT class (class) MATERIALIZED;
+    @defineHierarchyCustom(object, class);
+END
+
+META defineHierarchyCustom (object, class)
+    nameParent 'Родительский объект' = name(parent(class object)) IN base;
+
+    level 'Уровень' (class child, class parent) = RECURSION 1l IF child IS class AND parent == child
+                                                                  STEP 2l IF parent == parent($parent) MATERIALIZED;
+
+    object(class child, LONG level)  = GROUP
+                                                   MAX class parent IF level == level(child, parent);
+
+    level 'Уровень'(class child)  = GROUP SUM 1 IF level(child, class parent);
+
+    levelRoot 'Уровень' (class child, class parent) = PARTITION SUM 1 IF level(child, parent)
+                                                                      ORDER DESC level(child, parent)
+                                                                      BY child MATERIALIZED;
+    object##Root (class child, level) = GROUP NAGGR class parent BY levelRoot(child, parent);  
+
+    isParent 'Является потомком' (class child, class parent) = TRUE IF level(child, parent);
+
+    childNumber 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent(class child) MATERIALIZED;
+
+    descendantNumber 'Кол-во всех потомков'(class parent)  = GROUP SUM 1 IF isParent(class child, parent) MATERIALIZED;
+
+    isLeaf 'Лист' (class object) = object IS class AND NOT childNumber(object) MATERIALIZED;
+
+    isParentLeaf (class child, class parent) = isParent(child, parent) AND isLeaf(child);
+
+    canonicalName 'Полное имя' (class object) = VARISTRING[255](
+                           (GROUP CONCAT name(class parent), ' / ' ORDER DESC level(object, parent)))
+                           CHARWIDTH 50 MATERIALIZED;
+END
+
+META defineHierarchyFilter(object, class, property)
+    // фильтры по имени
+    filter###property###object 'Фильтр по наименованию' = DATA LOCAL NESTED VARSTRING[255] ();
+    inFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isSubstring(name(child), filter###property###object()); 
+    inIFilterName (class parent) = GROUP SUM 1 IF isParent(class child, parent) AND isISubstring(name(child), filter###property###object()); 
+END
+
+META defineHierarchyPlain(object)
+    object##1 (###object child) = object##Root(child, 1) MATERIALIZED;    
+    object##2 (###object child) = object##Root(child, 2) MATERIALIZED;    
+    object##3 (###object child) = object##Root(child, 3) MATERIALIZED;    
+    object##4 (###object child) = object##Root(child, 4) MATERIALIZED;    
+    object##5 (###object child) = object##Root(child, 5) MATERIALIZED;    
+    object##6 (###object child) = object##Root(child, 6) MATERIALIZED;    
+END
+
+META defineHierarchyPlainOrder(object, property, prefixName, prefix)
+    order###property###object 'Порядок (внутри группы)' (g) = PARTITION SUM 1 BY parent###object(g) ORDER property###object(g);
+    canonicalOrder###property###object 'Порядок (полный)' (g) = GROUP CONCAT lpad(VARSTRING[3](order###property###object(parent)), 3, '0') , '.' BY child ORDER DESC level###object###object(child, parent);
+
+    prefixName###object 'Наименование (со сдвигом)' (g) = VARSTRING[100](repeat(prefix, INTEGER(level###object(g))-1)) + name###object(g);
+END

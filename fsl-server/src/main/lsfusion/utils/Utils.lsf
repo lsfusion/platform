@@ -1,0 +1,418 @@
+MODULE Utils;
+
+REQUIRE System;
+
+printToLog 'Записать в лог' = CUSTOM 'lsfusion.erp.utils.utils.PrintToLogActionProperty' (TEXT);
+
+// --------------------------------------------- Стандартные группы --------------------------------- //
+
+GROUP print 'Печатные формы' : public;
+
+// ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
+fileName 'Список файлов' = DATA LOCAL VARISTRING[255] (INTEGER);
+fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
+//path, charset, isClient
+listFiles 'Получить список файлов' = CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255], VARISTRING[10], BOOLEAN); 
+listFiles 'Получить список файлов' (VARISTRING[255] path) = { listFiles(path, 'UTF-8', NULL); }
+listFilesClient 'Получить список файлов (на клиенте)' (VARISTRING[255] path) = { listFiles(path, NULL, TRUE); }
+
+// ------------------------------ Проверка существования файла по пути ------------------------------ //
+fileExists = DATA LOCAL BOOLEAN ();
+//path, isClient
+fileExists 'Проверка существования файла' = CUSTOM 'lsfusion.erp.utils.utils.FileExistsActionProperty' (VARISTRING[255], BOOLEAN); 
+fileExists 'Проверка существования файла'(VARISTRING[255] path) = { fileExists(path, NULL); }
+fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path) = { fileExists(path, TRUE); } 
+
+// --------------------------------- STRING -> CUSTOMFILE -> STRING --------------------------------- //
+resultCustomFile = DATA LOCAL CUSTOMFILE ();
+//value, charset, extension
+stringToCustomFile 'Запись строки в файл' = CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
+
+resultString = DATA LOCAL TEXT ();
+//customFile, charset
+customFileToString 'Запись файла в строку' = CUSTOM 'lsfusion.erp.utils.utils.FileToStringActionProperty' (CUSTOMFILE, VARSTRING[10]);
+
+setExtension = FORMULA CUSTOMFILE 'casttocustomfile(($1),$2)';
+
+// ----------------------------------- Работа с файловой системой ----------------------------------- //
+mkdir 'Создать папку' = CUSTOM 'lsfusion.erp.utils.utils.MkdirActionProperty' (VARISTRING[255]);
+//path, isClient
+delete 'Удалить файл' = CUSTOM 'lsfusion.erp.utils.utils.DeleteActionProperty' (VARISTRING[255], BOOLEAN);
+delete 'Удалить файл' (VARISTRING[255] path) = { delete(path, NULL); }
+deleteClient 'Удалить файл (на клиенте)' (VARISTRING[255] path) = { delete(path, TRUE); }
+//sourcePath, destinationPath, isClient
+move 'Переместить файл' = CUSTOM 'lsfusion.erp.utils.utils.MoveActionProperty' (VARISTRING[255], VARISTRING[255], BOOLEAN);
+move 'Переместить файл' (VARISTRING[255] source, VARISTRING[255] destination) = { move(source, destination, NULL); }
+moveClient 'Переместить файл (на клиенте)' (VARISTRING[255] source, VARISTRING[255] destination) = { move(source, destination, TRUE); }
+
+//source path, name
+open 'Открыть файл' = CUSTOM 'lsfusion.erp.utils.utils.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
+open 'Открыть файл' (VARSTRING[255] source) = { open(source, NULL); }
+//source customFile, name
+open 'Открыть файл' = CUSTOM 'lsfusion.erp.utils.utils.OpenCustomFileActionProperty' (CUSTOMFILE, VARISTRING[255]);
+open 'Открыть файл' (CUSTOMFILE source) = { open(source, NULL); }
+//source rawFile, name
+open 'Открыть файл' = CUSTOM 'lsfusion.erp.utils.utils.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
+open 'Открыть файл' (RAWFILE source) = { open(source, NULL); }
+
+//source customLink
+open 'Открыть ссылку' = CUSTOM 'lsfusion.erp.utils.utils.OpenCustomLinkActionProperty' (CUSTOMLINK);
+//source rawLink
+open 'Открыть ссылку' = CUSTOM 'lsfusion.erp.utils.utils.OpenRawLinkActionProperty' (RAWLINK);
+
+fileSize = DATA LOCAL LONG ();
+getFileSize 'Получить размер файла' = CUSTOM 'lsfusion.erp.utils.utils.GetFileSizeActionProperty' (CUSTOMFILE);
+
+//zip files
+zipping 'Архивируемый файл' = DATA LOCAL CUSTOMFILE (VARSTRING[1000]);
+zipped 'Файл архива' = DATA LOCAL CUSTOMFILE ();
+makeZipFile 'Заархивировать файлы' = CUSTOM 'lsfusion.erp.utils.utils.MakeZipFileActionProperty' ();
+
+//unzip files
+unzipping 'Файл архива' = DATA LOCAL CUSTOMFILE ();
+unzipped 'Разархивированные файлы' = DATA LOCAL CUSTOMFILE (VARSTRING[100]);
+makeUnzipFile 'Разархивировать архив' = CUSTOM 'lsfusion.erp.utils.utils.MakeUnzipFileActionProperty' ();
+
+// ---------------------------------- Выполнение cmd  ---------------------------------- //
+cmd 'Выполнить cmd' = CUSTOM 'lsfusion.erp.utils.utils.RunCommandActionProperty' (TEXT);
+
+// ---------------------------------- Работа с файлами Excel  ---------------------------------- //
+protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
+protectExcel 'Защитить файл Excel паролем' = CUSTOM 'lsfusion.erp.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
+
+// --------------------------------------------- Работа со строками --------------------------------- //
+
+lower (TEXT p1) = FORMULA 'lower($1)';
+
+stringEqualsAll(STRING[3] string) = string == STRING[3]('Все');
+
+isWordInCSV = FORMULA NULL INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
+
+getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA TEXT '(string_to_array($1,$2))[($3)]';
+wordCount (TEXT p1, TEXT p2) = FORMULA INTEGER 'array_length((string_to_array($1,$2)),1)';
+
+istartsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+startsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+endsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
+
+// todo : для MS SQL пофиксить формулу, чтобы правильно работало, если в подстроке есть %
+isISubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
+isSubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
+
+replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
+
+charLength (TEXT p1) = FORMULA INTEGER PG 'char_length($1)', MS 'len($1)';
+length = FORMULA LONG 'length($1)';
+
+substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
+substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
+
+ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
+rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
+
+ltrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'ltrim($1,$2)';
+rtrim (TEXT p1, TEXT p2) = FORMULA TEXT PG 'rtrim($1,$2)';
+
+trim (TEXT p1) = FORMULA TEXT PG 'trim($1)', MS 'ltrim(rtrim($1))';
+
+left (TEXT p1, INTEGER p2) = FORMULA TEXT 'left($1,$2)';
+right (TEXT p1, INTEGER p2) = FORMULA TEXT 'right($1,$2)';
+
+lpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'lpad($1,$2,$3)';
+rpad (TEXT p1, INTEGER p2, TEXT p3) = FORMULA TEXT PG 'rpad($1,$2,$3)';
+
+repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($1,$2)';
+
+onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
+
+encode = FORMULA 'encode(($1),($2))';
+
+// --------------------------------------------- Работа с числами --------------------------------- //
+
+floor = FORMULA 'floor($1)';
+floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
+ceil = FORMULA 'ceiling($1)';
+ceil = FORMULA NULL 'ceiling(($1)/notZero($2))*($2)';
+min = FORMULA '($1+$2-ABS($1-$2))/2';
+max = FORMULA '($1+$2+ABS($1-$2))/2';
+trunc = FORMULA 'trunc($1,$2)';
+
+sqr = FORMULA '($1)*($1)';
+sqrt = FORMULA 'sqrt($1)';
+power = FORMULA 'power($1, $2)';
+percent = FORMULA '(($1)*($2)/100)';
+share = FORMULA '(($1)*100/($2))';
+round = FORMULA PG 'round(CAST(($1) as numeric),$2)', MS 'round(CAST(($1) as numeric(38,19)),$2)';
+abs = FORMULA 'abs($1)';
+delta = FORMULA 'abs(($1)-($2))';
+
+ln = FORMULA 'ln($1)';
+exp = FORMULA 'exp($1)';
+
+divideInteger(a,b) = INTEGER(a) / INTEGER(b);
+divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST(((-CAST(($1) as integer)-1)/CAST(($2) as integer)) as integer) ELSE CAST(CAST(($1) as integer)/CAST(($2) as integer) as integer) END';
+divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
+
+mod = FORMULA 'mod($1,$2)';
+
+iterate(INTEGER i, INTEGER from, INTEGER to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
+count(INTEGER i, INTEGER count) = iterate(i, 1, count);
+
+toChar (object, format) = FORMULA TEXT 'to_char(($1),($2))'; 
+toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
+toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_integer($1)', MS 'dbo.convert_to_integer($1)';
+
+// ---------------------------------------Побитовые операции --------------------------------- //
+bitwiseAnd = FORMULA INTEGER '$1 & $2';
+bitwiseOr = FORMULA INTEGER '$1 | $2';
+bitwiseNot = FORMULA INTEGER '~ $1';
+
+// --------------------------------------------- Округления --------------------------------- //
+roundM1 (number) = round(number, -1);
+round0 (number) = round(number, 0);
+round1 (number) = round(number, 1);
+round2 (number) = round(number, 2);
+round3 (number) = round(number, 3);
+round4 (number) = round(number, 4);
+round5 (number) = round(number, 5);
+round6 (number) = round(number, 6);
+
+// -------------------------------------------- Свойства под файлы ---------------------------- //
+
+customFile = DATA LOCAL CUSTOMFILE ();
+wordFile = DATA LOCAL WORDFILE ();
+imageFile = DATA LOCAL IMAGEFILE ();
+pdfFile = DATA LOCAL PDFFILE ();
+rawFile = DATA LOCAL RAWFILE ();
+excelFile = DATA LOCAL EXCELFILE();
+
+// --------------------------------------------- Yes/No --------------------------------- //
+CLASS YesNo 'Логическое' {
+    yes 'ДА',
+    no 'НЕТ'
+};
+
+META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
+    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,
+        object1, object1Identity, object2, object2Identity, 7, group);
+END
+
+META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
+    @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,
+        object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
+END
+
+// --------------------------------------------- Диалоги --------------------------------- //
+
+FORM dialogString 'Выбор строки'
+    OBJECTS s = VARSTRING[200] PANEL
+    PROPERTIES(s) objValue = VALUE
+;
+
+DESIGN dialogString {
+    NEW string BEFORE TOOLBARBOX {
+        fill = 1;
+        MOVE PROPERTY (objValue) {
+            fill = 1;
+            caption = 'Введите строку';
+            font = 'bold 64';
+            panelCaptionAbove = TRUE;
+        }
+    }
+}
+
+FORM dialogDate 'Выбор даты'
+    OBJECTS d = DATE PANEL
+    PROPERTIES(d) objValue = VALUE
+;
+
+DESIGN dialogDate {
+    NEW date BEFORE TOOLBARBOX {
+        fill = 1;
+        MOVE PROPERTY (objValue) {
+            fill = 1;
+            caption = 'Введите дату';
+            font = 'bold 64';
+            panelCaptionAbove = TRUE;
+        }
+    }
+
+}
+
+FORM dialogInteger 'Выбор числа'
+    OBJECTS i = INTEGER PANEL
+    PROPERTIES(i) objValue = VALUE
+;
+
+DESIGN dialogInteger {
+    PROPERTY (objValue) {
+        caption = 'Введите число';
+        font = 'bold 64';
+        panelCaptionAbove = TRUE;
+    }
+}
+
+FORM dialogNumeric 'Выбор числа'
+    OBJECTS n = NUMERIC[20,7] PANEL
+    PROPERTIES(n) objValue = VALUE
+;
+
+DESIGN dialogNumeric {
+    PROPERTY (objValue) {
+        caption = 'Введите число';
+        font = 'bold 64';
+        panelCaptionAbove = TRUE;
+    }
+}
+
+// --------------------------------------------- Печать --------------------------------- //
+
+FORM printBlankPagePortrait;
+
+FORM printBlankPageLandscape;
+
+// --------------------------- Агрегации --------------------------------- //
+
+// -- Агрегации для 1го объекта -- //
+
+META defineAggregationCustom1 (primProperty, primObject, primClass, aggrObject, aggrClass, aggrProperty)
+    aggrObject (primObject) =
+        GROUP AGGR aggrClass aggrObject
+        WHERE aggrObject IS aggrClass BY primObject(aggrObject) MATERIALIZED INDEXED;
+
+    aggrProperty(primClass primObject) => aggrObject(primObject) RESOLVE LEFT;
+
+    is(aggrClass aggrObject) = aggrObject IS aggrClass;
+    is(aggrClass aggrObject) => aggrProperty(primObject(aggrObject)) RESOLVE RIGHT;
+END
+
+META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
+    @defineAggregationCustom1(primProperty, primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationClass (primObject, primClass, aggrObject, aggrClass, aggrProperty)
+//    primObject = DATA primClass (aggrClass) INDEXED;
+    
+    aggrObject = AGGR aggrClass WHERE aggrProperty(primClass primObject) MATERIALIZED INDEXED;
+
+//    @defineAggregationCustom1(primObject###aggrObject, primObject, primClass, aggrObject, aggrClass, aggrProperty);
+END
+
+META defineAggregation (primObject, aggrObject, aggrProperty)
+    @defineAggregationClass(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
+END
+
+// -- Агрегации для 2х объектов -- //
+
+META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
+    aggrObject (prim1Object, prim2Object) =
+        GROUP AGGR aggrClass aggrObject
+        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
+
+    aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT;
+
+    is(aggrClass aggrObject) = aggrObject IS aggrClass;
+    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT;
+END
+
+META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
+//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
+//    prim2Object = DATA prim2Class (aggrClass) INDEXED;
+
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object) MATERIALIZED INDEXED;
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty);
+END
+
+META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+// -- Агрегации для 3х объектов -- //
+
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
+    aggrClass (prim1Object, prim2Object, prim3Object) =
+        GROUP AGGR aggrClass aggrObject
+        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject) MATERIALIZED INDEXED;
+
+    aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) => aggrClass(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
+
+    is(aggrClass aggrObject) = aggrObject IS aggrClass;
+    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject)) RESOLVE RIGHT;
+END
+
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
+//    prim1Object = DATA prim1Class (aggrClass);
+//    prim2Object = DATA prim2Class (aggrClass);
+//    prim3Object = DATA prim3Class (aggrClass);
+
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) MATERIALIZED INDEXED;
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty);
+END
+
+META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+// -- Агрегации для 4х объектов -- //   
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
+    aggrObject (prim1Object, prim2Object, prim3Object, prim4Object) =
+        GROUP AGGR aggrClass aggrObject 
+        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject);// MATERIALIZED INDEXED;
+
+    aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) => aggrObject(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE LEFT;
+
+    is(aggrClass aggrObject) = aggrObject IS aggrClass;
+    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject)) RESOLVE RIGHT;
+END
+
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
+//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
+//    prim2Object = DATA prim2Class (aggrClass);
+//    prim3Object = DATA prim3Class (aggrClass);
+//    prim4Object = DATA prim4Class (aggrClass);
+
+    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) MATERIALIZED INDEXED;
+
+//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
+END
+
+META defineAggregation (prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+// --------------------------- Ссылки на файлы через FILELINK --------------------------- //
+
+META defineFileLink (caption, fileType, property, class1)
+    fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [= REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
+END
+
+// --------------------------- Групповая корректировка на форме --------------------------------- //
+
+isEditable 'Включить корректировку на форме' = DATA LOCAL NESTED BOOLEAN();
+
+isReadonly = NOT isEditable();
+
+META extendFormEditable (form)
+    EXTEND FORM form
+        PROPERTIES() isEditable
+    ;
+    DESIGN form {
+        TOOLBARBOX {
+            MOVE PROPERTY(isEditable()) BEFORE TOOLBARRIGHT;
+        }
+    }
+END

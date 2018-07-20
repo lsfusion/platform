@@ -1,0 +1,134 @@
+MODULE Historizable;
+
+REQUIRE System, Authentication, Time;
+
+GROUP created 'Создан' : public;
+
+META defineCreated(objectClass)
+    createdTime 'Время создания'= DATA DATETIME (objectClass) IN created;
+    createdTime (objectClass o) <- currentDateTime() WHEN SET(o IS objectClass);
+    
+    createdUser = DATA CustomUser (objectClass);
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) CHARWIDTH 10 IN created;
+    createdUser (objectClass o) <- currentUser() WHEN SET(o IS objectClass);
+    
+    createdComputer = DATA Computer (objectClass);
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) CHARWIDTH 10 IN created;
+    createdComputer (objectClass o) <- currentComputer() WHEN SET(o IS objectClass);
+END
+
+META defineCreatedAbstract(objectClass)
+    createdTime 'Время создания'= ABSTRACT DATETIME (objectClass) IN created;
+    
+    createdUser = ABSTRACT CustomUser (objectClass);
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) CHARWIDTH 10 IN created;
+    
+    createdComputer = ABSTRACT Computer (objectClass);
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) CHARWIDTH 10 IN created;
+END
+
+META defineHistorizable(property, propPostfix, caption, type, object, objectIdentity, group)
+    data###property caption = DATA type (###object, DATE) IN group;
+
+    property caption (###object object, DATE date) = GROUP LAST data###property(object, DATE dateIn)
+                                                                         ORDER dateIn
+                                                                         WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
+
+    over###property caption = OVERRIDE data###property(###object object, DATE date), property(object, date) IN group;
+
+    property caption (###object object) = property(object, currentDate()) IN group;
+
+    FORM add###property###object###propPostfix caption
+        OBJECTS a=###object PANEL, d=DATE PANEL
+        PROPERTIES name(a) READONLY, VALUE(d), data###property(a, d)
+    ;
+    DESIGN add###property###object###propPostfix {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
+
+    add###property 'Добавить' (###object object) = { SHOW add###property###object###propPostfix OBJECTS a = object; }  TOOLBAR IMAGE 'add.png' CHANGEKEY 'INSERT';
+
+    FORM dialog###property###object###propPostfix caption
+        OBJECTS a=###object PANEL, d=DATE
+        PROPERTIES name(a) READONLY, add###property(a) TODRAW d , VALUE(d) READONLY, data###property(a, d)
+        FILTERS data###property(a, d)
+    ;
+    DESIGN dialog###property###object###propPostfix {
+        PROPERTY(name(a)) { focusable = FALSE; }
+    }
+
+    dialog###property caption (###object object) = { SHOW dialog###property###object###propPostfix OBJECTS a = object; }  ASON CONTEXTMENU property[###object] ASON CHANGE property[###object];
+END
+
+// ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
+
+META defineHistorizableCustom(property, caption, type, typeIdentity, classIdentity, object, objectIdentity, group)
+    data###property caption = DATA type (###object, DATE);
+    data###typeIdentity###classIdentity###property caption (###object object, DATE date) = typeIdentity(data###property(object, date)) IN group;
+
+    property caption (###object object, DATE date) = GROUP LAST  data###property(object, DATE dateIn)
+                                                           ORDER dateIn
+                                                           WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
+
+    property caption (###object object) = property(object, currentDate());
+    typeIdentity###classIdentity###property caption (###object object) = typeIdentity(property(object)) IN group;
+
+    FORM add###property###object caption
+        OBJECTS a=###object PANEL, d=DATE PANEL
+        PROPERTIES typeIdentity(a) READONLY, VALUE(d), data###typeIdentity###classIdentity###property(a, d)
+    ;
+    DESIGN add###property###object {
+        PROPERTY(typeIdentity(a)) { focusable = FALSE; }
+    }
+
+    add###property 'Добавить' (###object object) = { SHOW add###property###object OBJECTS a = object; }  TOOLBAR IMAGE 'add.png' CHANGEKEY 'INSERT';
+
+    FORM dialog###property###object caption
+        OBJECTS a=###object PANEL, d=DATE
+        PROPERTIES typeIdentity(a) READONLY, add###property(a) TODRAW d , VALUE(d) READONLY, data###typeIdentity###classIdentity###property(a, d)
+        FILTERS data###property(a, d)
+    ;
+    DESIGN dialog###property###object {
+        PROPERTY(typeIdentity(a)) { focusable = FALSE; }
+    }
+
+    dialog###property caption (###object object) = { SHOW dialog###property###object OBJECTS a = object; }  ASON CONTEXTMENU typeIdentity###classIdentity###property[###object] ASON CHANGE typeIdentity###classIdentity###property[###object];
+END
+
+// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
+META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
+    data###property caption = DATA type (###object1, ###object2, DATE) IN group;
+
+    property caption (###object1 object1, ###object2 object2, DATE date) = 
+        GROUP LAST  data###property(object1, object2, DATE dateIn)
+              ORDER dateIn
+              WHERE data###property(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
+
+    over###property caption = OVERRIDE data###property(###object1 object1, ###object2 object2, DATE date), property(object1, object2, date);
+
+    property caption (###object1 object1, ###object2 object2) = property(object1, object2, currentDate()) IN group;
+
+    FORM add###property###object1###object2 caption
+        OBJECTS a=###object1 PANEL, b=###object2 PANEL, d=DATE PANEL
+        PROPERTIES name(a) READONLY, name(b) READONLY, VALUE(d), data###property(a, b, d)
+    ;
+    DESIGN add###property###object1###object2 {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
+
+    add###property 'Добавить' (###object1 object1, ###object2 object2) = { SHOW add###property###object1###object2 OBJECTS a = object1, b = object2; }  TOOLBAR IMAGE 'add.png' CHANGEKEY 'INSERT';
+
+    FORM dialog###property###object1###object2 caption
+        OBJECTS a=###object1 PANEL, b=###object2 PANEL, d=DATE
+        PROPERTIES name(a) READONLY, name(b) READONLY, add###property(a, b) TODRAW d , VALUE(d) READONLY, data###property(a, b, d)
+        FILTERS data###property(a, b, d)
+    ;
+    DESIGN dialog###property###object1###object2 {
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
+    }
+
+    dialog###property caption (###object1 object1, ###object2 object2) = { SHOW dialog###property###object1###object2 OBJECTS a = object1, b = object2; }  ASON CONTEXTMENU property[###object1,###object2] ASON CHANGE property[###object1,###object2];
+    overDialog###property##Date caption (###object1 object1, ###object2 object2) = { SHOW dialog###property###object1###object2 OBJECTS a = object1, b = object2; }  ASON CONTEXTMENU over###property[###object1,###object2,DATE];
+END
