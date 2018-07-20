@@ -2105,7 +2105,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    else if($type.format == ImportSourceFormat.XML)
     		$property = self.addScriptedImportFormXMLActionProperty(form, root, attr);
     	else if($type.format == ImportSourceFormat.JSON)
-    	    $property = self.addScriptedImportFormJSONActionProperty(form);
+    	    $property = self.addScriptedImportFormJSONActionProperty(form, root);
 
 	}
 }
