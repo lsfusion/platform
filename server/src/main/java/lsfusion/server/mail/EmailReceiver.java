@@ -54,9 +54,11 @@ public class EmailReceiver {
     boolean isPOP3;
     boolean deleteMessagesAccount;
     Integer lastDaysAccount;
+    Integer maxMessagesAccount;
 
     public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount, Integer lastDaysAccount) {
+                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                         Integer maxMessagesAccount) {
             mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", receiveHostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
@@ -67,6 +69,7 @@ public class EmailReceiver {
         this.isPOP3 = isPOP3;
         this.deleteMessagesAccount = deleteMessagesAccount;
         this.lastDaysAccount = lastDaysAccount;
+        this.maxMessagesAccount = maxMessagesAccount;
     }
 
     public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
@@ -232,9 +235,11 @@ public class EmailReceiver {
                 minDateTime = new Timestamp(calendar.getTime().getTime());
             }
 
-            Message[] messages = emailFolder.getMessages();
-            ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messages.length));
-            for (Message message : messages) {
+            int count = 0;
+            int messageCount = emailFolder.getMessageCount();
+            ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
+            while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
+                Message message = emailFolder.getMessage(messageCount - count);
                 Timestamp dateTimeSentEmail = getSentDate(message);
                 if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
                     String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
@@ -262,6 +267,7 @@ public class EmailReceiver {
                         }
                     }
                 }
+                count++;
             }
 
             emailFolder.close(true);

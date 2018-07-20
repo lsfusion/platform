@@ -46,6 +46,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP nameReceiveAccountTypeAccount;
     public LCP deleteMessagesAccount;
     public LCP lastDaysAccount;
+    public LCP maxMessagesAccount;
     public LCP blindCarbonCopyAccount;
     public LCP fromAddressAccount;
     public LCP disableAccount;
@@ -95,6 +96,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountType[Account]");
         deleteMessagesAccount = findProperty("deleteMessages[Account]");
         lastDaysAccount = findProperty("lastDays[Account]");
+        maxMessagesAccount = findProperty("maxMessages[Account]");
         blindCarbonCopyAccount = findProperty("blindCarbonCopy[Account]");
 
         disableAccount = findProperty("disable[Account]");
