@@ -1,0 +1,13 @@
+MODULE Printer;
+
+REQUIRE System;
+
+//text, charset, printerName
+writeToPrinter 'Отправить на принтер' = CUSTOM 'lsfusion.erp.utils.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToServerPrinter 'Отправить на принтер (на сервере)' = CUSTOM 'lsfusion.erp.utils.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+printed 'Отправлено на принтер' = DATA LOCAL BOOLEAN ();
+
+getAvailablePrinters 'Список доступных принтеров' = CUSTOM 'lsfusion.erp.utils.printer.GetAvailablePrintersActionProperty' ();
+
+//text, charset, ip, port
+writeToSocketAction = CUSTOM 'lsfusion.erp.utils.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);

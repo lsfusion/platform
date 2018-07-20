@@ -1,0 +1,101 @@
+MODULE Geo;
+
+REQUIRE System;
+
+CLASS ABSTRACT POI 'POI';
+TABLE POI(POI);
+
+autoSynchronizeCoordinates 'Синхронизировать координаты' = DATA BOOLEAN ();
+
+CLASS MapProvider 'Использовать карты' {
+    google 'Google',
+    yandex 'Yandex'
+}
+FORM mapProviders
+    OBJECTS m = MapProvider
+    PROPERTIES(m) READONLY staticCaption
+    LIST MapProvider OBJECT m
+;
+
+calculateUserMapProvider = DATA MapProvider ();
+calculateMapProvider = OVERRIDE calculateUserMapProvider(), MapProvider.yandex;
+showUserMapProvider = DATA MapProvider ();
+showMapProvider = OVERRIDE showUserMapProvider(), MapProvider.yandex;
+useTor 'Использовать для карт Tor' = DATA BOOLEAN ();
+
+nameCalculateUserMapProvider 'Использовать карты (для расчёта)' () = staticCaption(calculateUserMapProvider());
+nameShowUserMapProvider 'Использовать карты (для показа)' () = staticCaption(showUserMapProvider());
+
+name 'Название'= ABSTRACT VARISTRING[200] (POI) MATERIALIZED;
+
+nameCountry 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) MATERIALIZED;
+
+mainAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
+additionalAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
+
+address 'Адрес' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
+
+latitude 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
+longitude 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
+
+// Получение координат
+readLatitude 'Координата X' = DATA LOCAL NUMERIC[10,5] ();
+readLongitude 'Координата Y' = DATA LOCAL NUMERIC[10,5] ();
+
+getCoordinatesAddress = CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
+getCoordinates(STRING[255] address) = { getCoordinatesAddress(address, calculateMapProvider()); }
+recalculateDistance = CUSTOM 'lsfusion.erp.utils.geo.RecalculateDistancePOIActionProperty' (POI);
+
+calculateCoordinates 'Рассчитать координаты'(POI POI)= {
+
+    getCoordinates (CONCAT ',', nameCountry(POI), address(POI));
+    latitude(POI) <- readLatitude();
+    longitude(POI) <- readLongitude();
+    recalculateDistance(POI);
+
+}
+WHEN LOCAL (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
+
+recalculateAllDistances 'Пересчитать все расстояния'() = {
+    FOR POI p IS POI DO {
+        recalculateDistance(p);
+    }
+}
+
+// Показать на карте одну точку
+showOnMap 'Показать на карте'= CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
+showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address) = { showOnMap (latitude, longitude, showMapProvider(), address); }
+
+showOnMap 'Показать на карте'(POI POI)= {
+    EXEC showOnMap (latitude (POI), longitude (POI), address(POI));
+}
+
+// Показать на карте путь
+numberPath 'Номер' = DATA LOCAL INTEGER (POI);
+descriptionPath 'Описание' = DATA LOCAL VARSTRING[200] (POI);
+
+TABLE poiPoi (POI, POI); 
+distancePOIPOI 'Расстояние' = DATA INTEGER (POI, POI);
+showOnPath 'Показать точки на карте'= CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
+
+inPath 'Вкл' = DATA LOCAL BOOLEAN (POI);
+startPathPOI 'Место старта'= DATA LOCAL POI();
+calculatePath 'Рассчитать путь'= CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty' ();
+
+EXTEND FORM options
+    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
+;
+
+DESIGN options {
+    commons {
+        NEW coordinatesContainer {
+            caption = 'Навигация';
+                MOVE PROPERTY(autoSynchronizeCoordinates());
+                MOVE PROPERTY(nameCalculateUserMapProvider());
+                MOVE PROPERTY(nameShowUserMapProvider());
+                MOVE PROPERTY(useTor());
+                MOVE PROPERTY(recalculateAllDistances());	
+        }
+    }
+}
+
