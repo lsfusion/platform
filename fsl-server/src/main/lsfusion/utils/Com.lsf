@@ -1,8 +1,0 @@
-MODULE Com;
-
-REQUIRE System;
-
-//file, baudrate, com-port, daemon
-writeToComPort 'Запись в com-port' = CUSTOM 'lsfusion.erp.utils.com.WriteToComPortActionProperty' (CUSTOMFILE, INTEGER, INTEGER, BOOLEAN);
-writeToComPort 'Запись в com-port' (CUSTOMFILE file, INTEGER baudrate, INTEGER comPort) = { writeToComPort(file, baudrate, comPort, NULL); }
-writeToComPortDaemon 'Запись в com-port (подключённый через ScannerDaemonTask)' (CUSTOMFILE file, INTEGER baudrate, INTEGER comPort) = { writeToComPort(file, baudrate, comPort, TRUE); }
