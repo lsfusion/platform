@@ -125,7 +125,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
-    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "EvalScript", "Reflection", "Contact", 
+    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection", "Contact", 
                                                        "Scheduler", "Security", "Service", "SystemEvents", "Time"};
     
     private List<LogicsModule> logicModules = new ArrayList<>();
