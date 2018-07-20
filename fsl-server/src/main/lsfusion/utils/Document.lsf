@@ -265,10 +265,10 @@ END
 
 // Примечание
 META defineDocumentHeaderNote (objectClass)
-    note 'Примечание' = DATA VARISTRING[100] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
+    note 'Примечание' = DATA VARISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentAbstractHeaderNote (objectClass)
-    note 'Примечание' = ABSTRACT VARISTRING[100] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
+    note 'Примечание' = ABSTRACT VARISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderNote(objectClass)
     @defineDocumentAbstractHeaderNote(objectClass);
@@ -277,10 +277,10 @@ META defineDocumentInterfaceHeaderNote(objectClass)
 END
 
 META defineDocumentDetailNote (detailClass)
-    note 'Примечание' = DATA VARSTRING[100] (detailClass) CHARWIDTH 30;
+    note 'Примечание' = DATA VARSTRING[500] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentAbstractDetailNote (detailClass)
-    note 'Примечание' = ABSTRACT VARSTRING[100] (detailClass) CHARWIDTH 30;
+    note 'Примечание' = ABSTRACT VARSTRING[500] (detailClass) CHARWIDTH 30;
 END
 META defineDocumentInterfaceDetailNote(detailClass)
     @defineDocumentAbstractDetailNote(detailClass);
