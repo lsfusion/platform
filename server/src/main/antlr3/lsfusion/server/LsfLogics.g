@@ -2106,13 +2106,13 @@ aliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns
 importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
 	ImportSourceFormat format = null;
-	LCPWithParams sheet = null;
-	LCPWithParams memo = null;
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
     LCPWithParams root = null;
 	boolean attr = false;
+	List<String> headerKeys = new ArrayList<>();
+    List<String> headerValues = new ArrayList<>();
     FormEntity form = null;
 }
 @after {
@@ -2122,7 +2122,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     	else if($type.format == ImportSourceFormat.DBF)
         	$property = self.addScriptedImportFormDBFActionProperty(form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty(form, root, attr);
+    		$property = self.addScriptedImportFormXMLActionProperty(form, root, attr, headerKeys, headerValues);
     	else if($type.format == ImportSourceFormat.JSON)
     	    $property = self.addScriptedImportFormJSONActionProperty(form);
 
@@ -2130,8 +2130,8 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
-	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; memo = $type.memo; separator = $type.separator;
-	                                                   noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; root = $type.root; }
+	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr;
+	                                                             charset = $type.charset; root = $type.root; headerKeys = $type.headerKeys; headerValues = $type.headerValues; }
 	;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
@@ -2212,6 +2212,16 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
 	|	'TABLE'	{ $format = ImportSourceFormat.TABLE; }
 	|	'MDB'	{ $format = ImportSourceFormat.MDB; }
+	;
+
+importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [ImportSourceFormat format, String separator,
+                                                                            boolean noHeader, String charset, LCPWithParams root, boolean attr,
+                                                                            List<String> headerKeys = new ArrayList<String>(), List<String> headerValues = new ArrayList<String>()]
+	:	'DBF'	{ $format = ImportSourceFormat.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
+	                                                  ('HEADERS' list=headersList[$form] { $headerKeys = $list.headerKeys; $headerValues = $list.headerValues; })?
+	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	;
 
 propertyUsage returns [PropertyUsage propUsage]
