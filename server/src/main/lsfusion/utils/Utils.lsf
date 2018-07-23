@@ -402,7 +402,7 @@ END
 
 // --------------------------- Групповая корректировка на форме --------------------------------- //
 
-isEditable 'Включить корректировку на форме' = DATA LOCAL NESTED BOOLEAN();
+isEditable '{utils.is.editable}' = DATA LOCAL NESTED BOOLEAN();
 
 isReadonly = NOT isEditable();
 
