@@ -3,7 +3,10 @@ package lsfusion.server.logics.property.actions.importing.xml;
 import lsfusion.base.Pair;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
 import org.jdom.Element;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ImportFormXMLIterator extends ImportFormIterator {
 
@@ -11,9 +14,16 @@ public class ImportFormXMLIterator extends ImportFormIterator {
     private List<Element> children;
     private int i;
 
-    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot) {
+    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot, Map<String, String> headers) {
         this.root = (Element) keyValueRoot.second;
-        this.children = ((Element)keyValueRoot.second).getChildren();
+        this.children = new ArrayList<>();
+        for (Object child : ((Element) keyValueRoot.second).getChildren()) {
+            if (headers.containsKey(((Element) child).getName())) {
+                this.children.addAll(((Element) child).getChildren());
+            } else {
+                this.children.add((Element) child);
+            }
+        }
         i = 0;
     }
 

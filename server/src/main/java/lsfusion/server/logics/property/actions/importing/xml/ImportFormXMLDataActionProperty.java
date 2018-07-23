@@ -12,13 +12,16 @@ import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataActionProperty<Element> {
     private boolean attr; //пока не используется, для чтения attributes, а не children
+    private Map<String, String> headers;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, boolean attr) {
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, boolean attr, Map<String, String> headers) {
         super(classes, formEntity);
         this.attr = attr;
+        this.headers = headers;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
 
     @Override
     public ImportFormIterator getIterator(Pair<String, Object> rootElement) {
-        return new ImportFormXMLIterator(rootElement);
+        return new ImportFormXMLIterator(rootElement, headers);
     }
 
     @Override
