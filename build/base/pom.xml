@@ -6,10 +6,6 @@
     <version>1.3.5-SNAPSHOT</version>
     <name>Base</name>
 
-    <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/build/trunk</developerConnection>
-    </scm>
-
     <properties>
         <!-- Repositories properties -->
         <lsfusion.releases.repo>http://repo.lsfusion.org/repository/releases</lsfusion.releases.repo>
