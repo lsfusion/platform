@@ -20,25 +20,4 @@
         <module>platform-base</module>
         <module>platform-assemble</module>
     </modules>
-
-    <scm>
-        <developerConnection>scm:svn:svn://server/lsfusion/platform/branches/platform-RC</developerConnection>
-    </scm>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <releaseProfiles>sources</releaseProfiles>
-                    <username>redmine</username>
-                    <password>enimder</password>
-                    <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
