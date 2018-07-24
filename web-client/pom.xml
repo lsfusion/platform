@@ -66,6 +66,7 @@
                             <version>${lsfusion.version}</version>
                             <classifier>assembly</classifier>
                             <type>pack.gz</type>
+                            <destFileName>lsfusion-client.jar.pack.gz</destFileName>
                         </artifactItem>
                     </artifactItems>
                     <outputDirectory>${war.explodedDir}</outputDirectory>

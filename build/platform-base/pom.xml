@@ -12,11 +12,17 @@
     <packaging>pom</packaging>
     <name>Platform Base</name>
 
-    <!-- multiple-inheritance : platform-base (platform-assemble) -->
     <build>
         <plugins>
+            <!-- upload sources -->
             <plugin>
-                <!-- upload sources -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.2.1</version>
                 <executions>
