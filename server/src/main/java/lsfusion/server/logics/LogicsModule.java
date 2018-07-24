@@ -1702,7 +1702,7 @@ public abstract class LogicsModule {
         property.setChangeKey(KeyStrokes.getAddActionPropertyKeyStroke());
         property.setShowChangeKey(false);
 
-        if(objectEntity != null) { // ADDFORM как оператор
+        if(objectEntity != null) {
             property.addProcessor(new Property.DefaultProcessor() {
                 public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
                     entity.toDraw = objectEntity.groupTo;

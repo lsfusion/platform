@@ -393,7 +393,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitAddActionsClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "built-in class cannot be used in NEW/ADDFORM/EDITFORM actions");
+        emitSimpleError(parser, "built-in class cannot be used in NEW actions");
     }
 
     public void emitAggrClassError(ScriptParser parser) throws SemanticErrorException {
