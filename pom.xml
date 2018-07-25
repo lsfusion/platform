@@ -24,8 +24,12 @@
         <module>web-client</module>
     </modules>
 
+    <properties>
+        <project.scm.id>GitHub</project.scm.id>
+    </properties>
+
     <scm>
-        <developerConnection>scm:git:https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/lsfusion/platform.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/lsfusion/platform.git</developerConnection>
     </scm>
 
     <build>
