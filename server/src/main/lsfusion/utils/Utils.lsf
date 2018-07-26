@@ -127,6 +127,9 @@ onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\
 
 encode = FORMULA 'encode(($1),($2))';
 
+encodedBase64 = DATA LOCAL TEXT();
+encodeBase64 = CUSTOM 'lsfusion.utils.utils.EncodeBase64ActionProperty' (TEXT);
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
