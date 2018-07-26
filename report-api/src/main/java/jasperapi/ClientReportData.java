@@ -86,6 +86,10 @@ public class ClientReportData implements JRDataSource {
         return property != null && property.propertyType != null && property.propertyType.equals("BOOLEAN");
     }
 
+    private boolean isImage(ReportPropertyData property) {
+        return property != null && property.propertyType != null && property.propertyType.equals("IMAGEFILE");
+    }
+
     public List<String> getPropertyNames() {
         return propertyNames;
     }
@@ -185,13 +189,16 @@ public class ClientReportData implements JRDataSource {
 
         if (value instanceof byte[]) {
             if (files != null) {
-                ByteArray file = new ByteArray(((byte[])value));
-                String fileName = files.get(file);
-                if(fileName==null) {
-                    fileName = "File " + (files.size()+1) + ".pdf";
-                    files.put(file, fileName);
+                //there was an old strange hack for attaching pdf files, so it's a fix to not to attach image files
+                if (!isImage(properties.get(fieldName))) {
+                    ByteArray file = new ByteArray(((byte[]) value));
+                    String fileName = files.get(file);
+                    if (fileName == null) {
+                        fileName = "File " + (files.size() + 1) + ".pdf";
+                        files.put(file, fileName);
+                    }
+                    value = fileName;
                 }
-                value = fileName;
             }
         }
 
