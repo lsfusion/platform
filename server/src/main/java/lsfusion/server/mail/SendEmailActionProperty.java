@@ -9,8 +9,10 @@ import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
@@ -259,11 +261,18 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             } else {
                  name = "attachment" + i;
             }
-            
-            byte[] file = (byte[]) attachFiles.get(i).read(context, context.getKeys());
-            if (file != null) {
-                String extension = BaseUtils.getExtension(file);
-                result.put(new ByteArray(BaseUtils.getFile(file)), new Pair<>(name + "." + extension, extension));
+
+            ObjectValue fileObject = attachFiles.get(i).readClasses(context, context.getKeys());
+            byte[] file = (byte[]) fileObject.getValue();
+            if (fileObject instanceof DataObject) {
+                Type objectType = ((DataObject)fileObject).getType();
+                if (objectType instanceof StaticFormatFileClass) {
+                    String extension = ((StaticFormatFileClass) objectType).getOpenExtension(file);
+                    result.put(new ByteArray(file), new Pair<>(name + "." + extension, extension));
+                } else {
+                    String extension = BaseUtils.getExtension(file);
+                    result.put(new ByteArray(BaseUtils.getFile(file)), new Pair<>(name + "." + extension, extension));
+                }
             }
         }
         return result;
