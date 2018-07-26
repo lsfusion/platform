@@ -25,7 +25,7 @@
     </modules>
 
     <properties>
-        <project.scm.id>GitHub</project.scm.id>
+        <project.scm.id>github.com</project.scm.id>
     </properties>
 
     <scm>
