@@ -147,7 +147,7 @@ InstallDir "$ProgramFiles${ARCH}\lsFusion Platform"
 CRCCheck on
 XPStyle on
 ShowInstDetails show
-VIProductVersion ${VERSION}.0
+VIProductVersion ${VI_LSFUSION_VERSION}
 VIAddVersionKey /LANG=${LANG_ENGLISH} ProductName "lsFusion Platform"
 VIAddVersionKey /LANG=${LANG_ENGLISH} ProductVersion "${VERSION}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} CompanyName "${COMPANY}"
