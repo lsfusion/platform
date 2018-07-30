@@ -644,6 +644,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	$options = new FormPropertyOptions();
 }
 	:	(	editType = propertyEditTypeLiteral { $options.setEditType($editType.val); }
+	    |   'SELECTOR' { $options.setSelector(true); }
 		|	'HINTNOUPDATE' { $options.setHintNoUpdate(true); }
 		|	'HINTTABLE' { $options.setHintTable(true); }
         |   (('NEWSESSION' | 'NESTEDSESSION' { $options.setNested(true); } ) { $options.setNewSession(true); })
@@ -4775,7 +4776,6 @@ flexAlignmentLiteral returns [FlexAlignment val]
 propertyEditTypeLiteral returns [PropertyEditType val]
 	:	'CHANGEABLE' { $val = PropertyEditType.EDITABLE; }
 	|	'READONLY' { $val = PropertyEditType.READONLY; }
-	|	'SELECTOR' { $val = PropertyEditType.SELECTOR; }
 	;
 
 emailRecipientTypeLiteral returns [Message.RecipientType val]

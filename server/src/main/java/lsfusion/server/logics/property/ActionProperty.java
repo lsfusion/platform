@@ -10,6 +10,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
@@ -483,11 +484,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     @Override
     public ActionPropertyMapImplement<?, P> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
+        if(editActionSID.equals(ServerResponse.CHANGE_WYS) || editActionSID.equals(ServerResponse.EDIT_OBJECT))
+            return null;
         return getImplement();
     }
-
-    // если этот action используется как действие для редактирования свойства, проверять ли это свойство на readOnly
-    public boolean checkReadOnly = true;
 
     /**
      * возвращает тип для "простого" редактирования, когда этот action используется в качестве действия для редактирования </br>

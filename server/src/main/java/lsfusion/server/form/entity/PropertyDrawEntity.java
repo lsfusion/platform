@@ -1,5 +1,6 @@
 package lsfusion.server.form.entity;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -13,25 +14,27 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.PropertyReadType;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.NumericClass;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLCallable;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.instance.InstanceFactory;
-import lsfusion.server.form.instance.Instantiable;
-import lsfusion.server.form.instance.PropertyDrawInstance;
-import lsfusion.server.form.instance.PropertyType;
+import lsfusion.server.form.instance.*;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 
 import javax.swing.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -173,18 +176,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.toDraw = toDraw;
     }
 
-    public DataClass getRequestInputType(FormEntity form) {
-        return getRequestInputType(CHANGE, form, optimisticAsync);
+    public DataClass getRequestInputType(SecurityPolicy policy) {
+        return getRequestInputType(CHANGE, policy, optimisticAsync);
     }
 
-    public DataClass getWYSRequestInputType(FormEntity form) {
-        return getRequestInputType(CHANGE_WYS, form, false);
+    public DataClass getWYSRequestInputType(SecurityPolicy policy) {
+        return getRequestInputType(CHANGE_WYS, policy, false);
     }
 
-    public DataClass getRequestInputType(String actionSID, FormEntity form, boolean optimistic) {
+    public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
         Type type = null;
         if (propertyObject instanceof CalcPropertyObjectEntity) {
-            ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, form);
+            ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, policy);
 
             if (changeAction != null) {
                 type = changeAction.property.getSimpleRequestInputType(optimistic);
@@ -196,59 +199,84 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return (DataClass) type;
     }
 
-    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
-        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(CHANGE, form);
+    public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
+        ActionPropertyObjectEntity<A> changeAction = (ActionPropertyObjectEntity<A>) getEditAction(CHANGE, policy);
         if(changeAction!=null)
             return changeAction.getAddRemove(form);
         return null;
     }
 
-    public boolean hasEditObjectAction() {
-        return (editActions != null && editActions.containsKey(EDIT_OBJECT)) || propertyObject.property.isEditObjectActionDefined();
+    private boolean isEdit(String editActionSID) {
+        // GROUP_CHANGE can also be in context menu binding (see Property constructor)
+        boolean isEdit = CHANGE.equals(editActionSID) || CHANGE_WYS.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID) || GROUP_CHANGE.equals(editActionSID);
+        assert isEdit || hasContextMenuBinding(editActionSID) || hasKeyBinding(editActionSID);
+        return isEdit;
     }
     
-    public ActionPropertyObjectEntity getChangeAction(FormEntity entity) {
-        return getEditAction(CHANGE, entity);
-    }
+    private boolean checkPermission(ActionProperty editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+        Property securityProperty;
+        if (isEdit(editActionSID) && !editAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
+            if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
+                return false;
 
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {
-        Property<P> property = propertyObject.property;
-
-        if(!hasContextMenuBinding(actionId) && !hasKeyBinding(actionId)) { // распространяется только на редактирование
-            assert CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId) || EDIT_OBJECT.equals(actionId) || GROUP_CHANGE.equals(actionId);
-            if (isReadOnly())
-                return null;
-            if (isSelector())
-                return getSelectorAction(property, entity);
+            securityProperty = propertyObject.property; // will check property itself 
+        } else { // menu or key binding
+            securityProperty = editAction;
         }
 
+        return securityPolicy == null || securityPolicy.property.change.checkPermission(securityProperty);
+    }
+
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
+        try {
+            return getEditAction(actionId, securityPolicy, null);
+        } catch (SQLException | SQLHandledException e) {
+            assert false;
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        ActionPropertyObjectEntity<?> editAction = getEditAction(actionId);
+
+        if (editAction != null) {
+            if(!checkPermission(editAction.property, actionId, checkReadOnly, securityPolicy)) // no permission
+                editAction = null;
+        } else {
+            if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) { // default implementations for group change and change wys
+                editAction = getEditAction(CHANGE, securityPolicy, checkReadOnly);
+                if (editAction != null) {
+                    if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
+                        editAction = editAction.getGroupChange();
+                    else {
+                        assert CHANGE_WYS.equals(actionId);
+                        if (getRequestInputType(securityPolicy) == null) // if CHANGE action requests DataClass, then use this action 
+                            editAction = null;
+                    }
+                }
+            }
+        }
+        return editAction;
+    }
+
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId) {
         if (editActions != null) {
             ActionPropertyObjectEntity editAction = editActions.get(actionId);
-            if (editAction != null) {
+            if (editAction != null)
                 return editAction;
-            }
         }
-
-        if (GROUP_CHANGE.equals(actionId)) {
-            ActionPropertyObjectEntity<?> editAction = getEditAction(CHANGE, entity);
-            if(editAction == null)
-                return null;
-            return editAction.getGroupChange();
-        }
-
-        if (CHANGE_WYS.equals(actionId)) {
-            //если CHANGE_WYS не переопределён на уровне Property и CHANGE request'ает DataClass, то возвращаем CHANGE
-            if (!propertyObject.property.isChangeWYSOverriden() && getRequestInputType(entity) != null) {
-                return getEditAction(CHANGE, entity);
-            }
-        }
-
+        
         ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
-        return editActionImplement == null ? null : editActionImplement.mapObjects(propertyObject.mapping);
+        if(editActionImplement == null)
+            return null;
+        
+        return editActionImplement.mapObjects(propertyObject.mapping);
     }
 
-    private ActionPropertyObjectEntity<?> getSelectorAction(Property<P> property, FormEntity entity) {
-        ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(getToDraw(entity).getObjects()); // берем нижний объект в toDraw
+    public ActionPropertyObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
+        Property<P> property = propertyObject.property;
+        
+        ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(getNFToDraw(entity, version).getObjects()); // берем нижний объект в toDraw
         for (ObjectEntity objectInstance : groupObjects.valueIt()) {
             if (objectInstance.baseClass instanceof CustomClass) {
                 ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
@@ -392,10 +420,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void setEditType(PropertyEditType editType) {
         this.editType = editType;
-    }
-
-    public boolean isSelector() {
-        return editType == PropertyEditType.SELECTOR;
     }
 
     public boolean isReadOnly() {

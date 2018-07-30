@@ -10,6 +10,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
+import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.classes.ColorClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -374,10 +376,6 @@ public class ScriptingFormEntity {
     }
 
     public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (options.getEditType() != null) {
-            property.setEditType(options.getEditType());
-        }
-
         FormPropertyOptions.Columns columns = options.getColumns();
         if (columns != null) {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
@@ -447,6 +445,14 @@ public class ScriptingFormEntity {
                 property.setKeyAction(key, keyBindings.get(key));
             }
         }
+
+        PropertyEditType editType = options.getEditType();
+        if (editType != null)
+            property.setEditType(editType);
+
+        Boolean isSelector = options.getSelector();
+        if(isSelector != null && isSelector)
+            property.setEditAction(ServerResponse.CHANGE, property.getSelectorAction(form, version));
 
         String eventID = options.getEventId();
         if (eventID != null)

@@ -6,7 +6,10 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLCallable;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
@@ -14,11 +17,13 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.property.NullValueProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 
+import java.sql.SQLException;
+
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, FormEntity entity) {
-        ActionPropertyObjectEntity editAction = this.entity.getEditAction(actionId, entity);
+    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+        ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionId, securityPolicy, checkReadOnly);
         if(editAction!=null)
             return instanceFactory.getInstance(editAction);
         return null;
@@ -50,18 +55,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     public Type getType() {
         return entity.getType();
-    }
-    
-    public boolean isSelector() {
-        return entity.isSelector();
-    }
-    
-    public boolean hasContextMenuBinding(String actionSid) {
-        return entity.hasContextMenuBinding(actionSid);
-    }
-    
-    public boolean hasKeyBinding(String actionSid) {
-        return entity.hasKeyBinding(actionSid);
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)

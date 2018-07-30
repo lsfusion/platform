@@ -1095,7 +1095,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LP<?, ?> mainProperty = findLPByActionOrPropertyUsage(mainPropertyUsage);
         onContextAction.addToContextMenuFor(mainProperty, contextMenuCaption);
-        ((ActionProperty) onContextAction.property).checkReadOnly = false;
 
         onContextAction.setAsEditActionFor(onContextAction.property.getSID(), mainProperty);
     }
@@ -1177,8 +1176,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String actionSID = actionImplement.property.getSID();
         property.property.setContextMenuAction(actionSID, FormPropertyOptions.getContextMenuCaption(contextMenuCaption, actionImplement.property));
-        actionImplement.property.checkReadOnly = false;
-
         property.property.setEditAction(actionSID, actionImplement);
     }
 
@@ -1189,8 +1186,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         String actionSID = actionImplement.property.getSID();
         property.property.setKeyAction(KeyStroke.getKeyStroke(key), actionSID);
-        actionImplement.property.checkReadOnly = false;
-
         property.property.setEditAction(actionSID, actionImplement);
     }
 

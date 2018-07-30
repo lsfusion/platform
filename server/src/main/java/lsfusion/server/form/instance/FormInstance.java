@@ -980,19 +980,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     
     @LogTime
     @ThisMessage
-    public void executeEditAction(final PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
-        ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
+    public void executeEditAction(final PropertyDrawInstance<?> property, String editActionSID, final ImMap<ObjectInstance, DataObject> keys, final ObjectValue pushChange, DataClass pushChangeType, final DataObject pushAdd, boolean pushConfirm, final ExecutionStack stack) throws SQLException, SQLHandledException {
+        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? new SQLCallable<Boolean>() {
+            public Boolean call() throws SQLException, SQLHandledException {
+                return property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null;
+            }
+        } : null;
+        ActionPropertyObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicy);
         if(editAction == null) {
-            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
-            return;
-        }
-
-        if (property.propertyReadOnly != null && property.propertyReadOnly.getRemappedPropertyObject(keys).read(this) != null && ((ActionProperty) editAction.property).checkReadOnly) {
-            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
-            return;
-        }
-
-        if (!checkEditActionPermission(editAction, editActionSID, property)) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
@@ -1019,21 +1014,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         });
     }
-    
-    private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
-        ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
-        if (property.isSelector()) {
-            return true;
-        } else if (securityPolicy.checkPermission(editAction.property)) {
-            if (((property.hasContextMenuBinding(editActionSID) || property.hasKeyBinding(editActionSID)) && editAction.property.isNamed()) || securityPolicy.checkPermission(property.propertyObject.property)) { // если есть в меню и имеет собственный name, не смотрим на политику безопасности самого свойства (так как предполагается что есть своя)
-                return true;
-            }
-        }
-        return false;  
-    }
 
     private boolean checkReadOnlyPermission(ActionPropertyObjectInstance editAction, PropertyDrawInstance property) {
-         ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
+        ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
         return securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
     }
 
@@ -1069,7 +1052,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
-            DataClass changeType = property.entity.getWYSRequestInputType(entity);
+            DataClass changeType = property.entity.getWYSRequestInputType(securityPolicy);
             if (changeType != null) {
                 for (int i = 0, size = pasteRows.size(); i < size; i++) {
                     ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);

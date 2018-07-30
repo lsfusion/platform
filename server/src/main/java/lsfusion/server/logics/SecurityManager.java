@@ -23,6 +23,9 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.form.entity.ActionPropertyObjectEntity;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
@@ -117,18 +120,19 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             readOnlyPolicy.cls.edit.add.defaultPermission = false;
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
-            
-            for (Property property : businessLogics.getProperties()) {
-                ActionPropertyMapImplement<?, ?> editAction = property.getEditAction(ServerResponse.CHANGE);
-                if(editAction == null || editAction.property.ignoreReadOnlyPolicy()) {
-                    readOnlyPolicy.property.change.permit(property);
-                    if (editAction != null) {
-                        readOnlyPolicy.property.change.permit(editAction.property);
-                    }
-                } else {
-                    readOnlyPolicy.property.change.deny(property);
-                    if (property instanceof ActionProperty) {
-                        readOnlyPolicy.property.view.deny(property);
+
+            String[] changeEvents = {ServerResponse.CHANGE, ServerResponse.CHANGE_WYS, ServerResponse.GROUP_CHANGE, ServerResponse.EDIT_OBJECT};
+            for (FormEntity formEntity : businessLogics.getAllForms()) {
+                for(PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsIt()) {
+                    for(String changeEvent : changeEvents) {
+                        ActionPropertyObjectEntity<?> editAction = propertyDraw.getEditAction(changeEvent);
+                        if (editAction != null && editAction.property.ignoreReadOnlyPolicy()) {
+                            readOnlyPolicy.property.change.permit(editAction.property); // permits editAction if it doesn't change anything
+                        } else {
+                            if (propertyDraw.propertyObject.property instanceof ActionProperty) { // hiding actions that cannot be executed 
+                                readOnlyPolicy.property.view.deny(propertyDraw.propertyObject.property);
+                            }
+                        }
                     }
                 }
             }

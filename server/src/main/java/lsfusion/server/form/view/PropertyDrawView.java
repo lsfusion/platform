@@ -9,7 +9,6 @@ import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.Settings;
-import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
@@ -19,7 +18,6 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -37,6 +35,9 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Map;
+
+import static lsfusion.interop.form.ServerResponse.CHANGE;
+import static lsfusion.interop.form.ServerResponse.EDIT_OBJECT;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -96,12 +97,12 @@ public class PropertyDrawView extends ComponentView {
         return entity.propertyObject.property.getType();
     }
 
-    public Type getChangeType(FormEntity form) {
-        return entity.getRequestInputType(form);
+    public Type getChangeType(ServerContext context) {
+        return entity.getRequestInputType(context.securityPolicy);
     }
     
-    public Type getChangeWYSType(FormEntity form) {
-        return entity.getWYSRequestInputType(form);
+    public Type getChangeWYSType(ServerContext context) {
+        return entity.getWYSRequestInputType(context.securityPolicy);
     }
 
     @Override
@@ -120,8 +121,8 @@ public class PropertyDrawView extends ComponentView {
         return super.getBaseDefaultAlignment(formEntity);
     }
 
-    public Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form) {
-        return entity.getAddRemove(form);        
+    public Pair<ObjectEntity, Boolean> getAddRemove(ServerContext context) {
+        return entity.getAddRemove(context.entity, context.securityPolicy);        
     }
 
     public LocalizedString getDefaultCaption() {
@@ -251,19 +252,19 @@ public class PropertyDrawView extends ComponentView {
 
         // асинхронные интерфейсы
 
-        Type changeType = getChangeType(pool.context.view.entity);
+        Type changeType = getChangeType(pool.context);
         outStream.writeBoolean(changeType != null);
         if (changeType != null) {
             TypeSerializer.serializeType(outStream, changeType);
         }
 
-        Type changeWYSType = getChangeWYSType(pool.context.view.entity);
+        Type changeWYSType = getChangeWYSType(pool.context);
         outStream.writeBoolean(changeWYSType != null);
         if (changeWYSType != null) {
             TypeSerializer.serializeType(outStream, changeWYSType);
         }
 
-        Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context.view.entity);
+        Pair<ObjectEntity, Boolean> addRemove = getAddRemove(pool.context);
         outStream.writeBoolean(addRemove != null);
         if(addRemove!=null) {
             pool.serializeObject(outStream, pool.context.view.getObject(addRemove.first));
@@ -273,7 +274,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(entity.askConfirm);
         if(entity.askConfirm)
             pool.writeString(outStream, getAskConfirmMessage());
-        outStream.writeBoolean(entity.hasEditObjectAction());
+        outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
 
         pool.writeString(outStream, entity.getNamespace());
@@ -363,7 +364,7 @@ public class PropertyDrawView extends ComponentView {
         for (int i = 0; i < contextMenuBindings.size(); ++i) {
             String actionSID = contextMenuBindings.getKey(i);
             LocalizedString caption = contextMenuBindings.getValue(i);
-            ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity);
+            ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.securityPolicy);
             if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
@@ -473,13 +474,9 @@ public class PropertyDrawView extends ComponentView {
     }
     
     public boolean hasChangeAction(ServerContext context) {
-        ActionPropertyObjectEntity<?> editAction = entity.getChangeAction(context.entity);
-        if (editAction != null) {
-            boolean readOnly = (((ActionProperty) editAction.property).checkReadOnly && entity.propertyReadOnly != null && entity.propertyReadOnly.property.checkAlwaysNull(false));
-            ChangePropertySecurityPolicy changePropertySecurityPolicy = context.securityPolicy.property.change;
-            boolean securityPermission = changePropertySecurityPolicy.checkPermission(editAction.property) && changePropertySecurityPolicy.checkPermission(entity.propertyObject.property);
-            return !readOnly && securityPermission;
-        }
-        return false;    
+        return entity.getEditAction(CHANGE, context.securityPolicy) != null;    
+    }
+    public boolean hasEditObjectAction(ServerContext context) {
+        return entity.getEditAction(EDIT_OBJECT, context.securityPolicy) != null;    
     }
 }
