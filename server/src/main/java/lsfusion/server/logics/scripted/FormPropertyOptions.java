@@ -20,6 +20,7 @@ import static lsfusion.base.BaseUtils.nvl;
 
 public class FormPropertyOptions {
     private PropertyEditType editType;
+    private Boolean isSelector;    
     private Boolean hintNoUpdate;
     private Boolean hintTable;
     private Boolean optimisticAsync;
@@ -59,7 +60,14 @@ public class FormPropertyOptions {
     public Boolean isNested() {
         return isNested;
     }
-    
+
+    public Boolean getSelector() {
+        return isSelector;
+    }
+
+    public void setSelector(Boolean selector) {
+        isSelector = selector;
+    }
 
     public PropertyEditType getEditType() {
         return editType;
@@ -191,7 +199,6 @@ public class FormPropertyOptions {
 
             addEditAction(property.getSID(), action);
             addContextMenuBinding(property.getSID(), getContextMenuCaption(caption, property));
-            property.checkReadOnly = false;
         }
     }
 
@@ -218,7 +225,6 @@ public class FormPropertyOptions {
             String propertySID = action.property.getSID();
             addEditAction(propertySID, action);
             addKeyBinding(KeyStroke.getKeyStroke(key), propertySID);
-            ((ActionProperty) action.property).checkReadOnly = false;
         }
     }
 
@@ -288,6 +294,7 @@ public class FormPropertyOptions {
         merged.setNewSession(nvl(overrides.isNewSession(), newSession));
         merged.setNested(nvl(overrides.isNested(), isNested));
         merged.setEditType(nvl(overrides.getEditType(), editType));
+        merged.setSelector(nvl(overrides.getSelector(), isSelector));
         merged.setHintNoUpdate(nvl(overrides.getHintNoUpdate(), hintNoUpdate));
         merged.setHintTable(nvl(overrides.getHintTable(), hintTable));
         merged.setOptimisticAsync(nvl(overrides.getOptimisticAsync(), optimisticAsync));

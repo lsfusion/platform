@@ -375,7 +375,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasNoChange() {
         for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, this);
+            ActionPropertyObjectEntity<?> editAction = property.getEditAction(ServerResponse.CHANGE, null); // in theory it is possible to support securityPolicy, but in this case we have to drag it through hasFlow + do some complex caching 
             if (editAction != null && editAction.property.hasFlow(ChangeFlowType.FORMCHANGE) && !editAction.property.endsWithApplyAndNoChangesAfterBreaksBefore())
                 return false;
         }
@@ -1171,30 +1171,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
 
         return result;
-    }
-
-    public void setReadOnlyIf(CalcPropertyObjectEntity condition) {
-        for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
-            if (propertyView != getPropertyDraw(condition)) {
-                setReadOnlyIf(propertyView, condition);
-            }
-        }
-    }
-
-    public void setReadOnlyIf(LP property, CalcPropertyObjectEntity condition) {
-        setReadOnlyIf(getPropertyDraw(property.property), condition);
-    }
-
-    public void setReadOnlyIf(GroupObjectEntity groupObject, CalcPropertyObjectEntity condition) {
-        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            if (propertyView != getPropertyDraw(condition)) {
-                setReadOnlyIf(propertyView, condition);
-            }
-        }
-    }
-
-    public void setReadOnlyIf(PropertyDrawEntity property, CalcPropertyObjectEntity condition) {
-        property.propertyReadOnly = condition;
     }
 
     public void setEditType(AbstractGroup group, PropertyEditType editType, GroupObjectEntity groupObject) {

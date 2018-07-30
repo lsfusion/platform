@@ -1064,7 +1064,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), logActionProperty.caption);
             property.setEditAction(property.getSID(), logActionProperty.getImplement(property.getReflectionOrderInterfaces()));
-            logActionProperty.checkReadOnly = false;
         }
     }
 
@@ -1082,7 +1081,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
             LM.makeActionPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
-            setupPolicyAction.checkReadOnly = false;
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
         }

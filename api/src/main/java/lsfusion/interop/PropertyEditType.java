@@ -5,16 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum PropertyEditType {
-    EDITABLE, READONLY, SELECTOR;
-
+    EDITABLE, READONLY;
+    
     public static PropertyEditType deserialize(byte data) throws IOException {
         switch(data) {
             case 0:
                 return EDITABLE;
             case 1:
                 return READONLY;
-            case 2:
-                return SELECTOR;
         }
         throw new RuntimeException("Deserialize PropertyEditType");
     }
@@ -25,8 +23,6 @@ public enum PropertyEditType {
                 return 0;
             case READONLY:
                 return 1;
-            case SELECTOR:
-                return 2;
         }
         throw new RuntimeException("Serialize PropertyEditType");
     }
@@ -36,6 +32,6 @@ public enum PropertyEditType {
     }
 
     public static List<String> typeNameList() {
-        return Arrays.asList("EDITABLE", "READONLY", "SELECTOR");
+        return Arrays.asList("EDITABLE", "READONLY");
     }
 }

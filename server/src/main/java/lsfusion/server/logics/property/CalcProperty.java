@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
+import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.*;
@@ -1451,8 +1452,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть
             return null;
 
-        if(!canBeChanged())
+        if(editActionSID.equals(ServerResponse.CHANGE_WYS)) // like GROUP_CHANGE will be proceeded in PropertyDrawEntity
             return null;
+
+        if(editActionSID.equals(ServerResponse.EDIT_OBJECT)) {
+            if (!(getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)) 
+                return null;
+        } else {
+            if (!canBeChanged()) 
+                return null;
+        }
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);

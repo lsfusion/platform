@@ -3,7 +3,7 @@ package lsfusion.gwt.form.shared.view;
 import java.io.IOException;
 
 public enum GPropertyEditType {
-    EDITABLE, READONLY, SELECTOR;
+    EDITABLE, READONLY;
 
     public static GPropertyEditType deserialize(byte data) throws IOException {
         switch(data) {
@@ -11,8 +11,6 @@ public enum GPropertyEditType {
                 return EDITABLE;
             case 1:
                 return READONLY;
-            case 2:
-                return SELECTOR;
         }
         throw new RuntimeException("Deserialize GPropertyEditType");
     }
@@ -23,8 +21,6 @@ public enum GPropertyEditType {
                 return 0;
             case READONLY:
                 return 1;
-            case SELECTOR:
-                return 2;
         }
         throw new RuntimeException("Serialize GPropertyEditType");
     }

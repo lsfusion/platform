@@ -293,32 +293,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             return editAction;
         }
 
-        if (GROUP_CHANGE.equals(editActionSID)) {
-            //будем определять на уровне PropertyDraw
-            assert false;
-        } else if (CHANGE_WYS.equals(editActionSID)) {
-//            возвращаем дефолт
-        }
+        if(GROUP_CHANGE.equals(editActionSID))
+            return null;
+
+        assert CHANGE.equals(editActionSID) || CHANGE_WYS.equals(editActionSID) || EDIT_OBJECT.equals(editActionSID);
 
         return getDefaultEditAction(editActionSID, filterProperty);
-    }
-    
-    public boolean isChangeWYSOverriden() {
-        return getEditActions().containsKey(CHANGE_WYS);
-    }
-
-    public boolean isEditObjectActionDefined() {
-        if (getEditActions().containsKey(EDIT_OBJECT)) {
-            return true;
-        }
-
-        ActionPropertyMapImplement<?, T> editObjectAction = getDefaultEditAction(EDIT_OBJECT, null);
-        if (editObjectAction != null && editObjectAction.property instanceof DefaultChangeActionProperty) {
-            DefaultChangeActionProperty defaultEditAction = (DefaultChangeActionProperty) editObjectAction.property;
-            return defaultEditAction.getImplementType() instanceof ObjectType;
-        }
-
-        return false;
     }
 
     public abstract ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty);

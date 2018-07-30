@@ -404,7 +404,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         switch (editType) {
             case EDITABLE: return GPropertyEditType.EDITABLE;
             case READONLY: return GPropertyEditType.READONLY;
-            case SELECTOR: return GPropertyEditType.SELECTOR;
         }
         return null;
     }

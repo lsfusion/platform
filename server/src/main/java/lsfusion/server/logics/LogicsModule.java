@@ -1532,7 +1532,6 @@ public abstract class LogicsModule {
         if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
             LAP<?> drillDownFormProperty = isLightStart ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
             ActionProperty formProperty = drillDownFormProperty.property;
-            formProperty.checkReadOnly = false;
             property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
             property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
         }
