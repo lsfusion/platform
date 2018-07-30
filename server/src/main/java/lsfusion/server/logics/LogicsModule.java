@@ -49,7 +49,6 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
-import lsfusion.server.logics.property.actions.file.OpenActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -1519,16 +1518,6 @@ public abstract class LogicsModule {
     @IdentityStrongLazy
     protected LAP addAsyncUpdateAProp() {
         return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(LocalizedString.create("Async Update"))));
-    }
-
-    // ------------------- OPEN FILE ----------------- //
-
-    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp, boolean syncType) {
-        List<ValueClass> valueClasses = new ArrayList<>();
-        valueClasses.add(prop);
-        if(nameProp != null)
-            valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), syncType, valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- EVAL ----------------- //
