@@ -116,36 +116,23 @@ public final class LoginAction {
                 if (loginInfo.getServerPort() != null) {
                     serverPort = loginInfo.getServerPort();
                 }
-                boolean newScheme = true; // для поддержки обратной совместимости. делалось на скорую руку. через некоторое время следует как минимум удалить ветку с !newScheme
                 userInfos = new ArrayList<>();
                 if (scanner.hasNextLine()) {
                     String users = scanner.nextLine();
                     if (!users.isEmpty()) {
                         Scanner usersScanner = new Scanner(users);
+                        usersScanner.useDelimiter("\\t");
                         while (usersScanner.hasNext()) {
                             String name = usersScanner.next();
                             boolean save = false;
                             String pass = null;
                             if (usersScanner.hasNext()) {
-                                String saveString = usersScanner.next();
-                                if ("true".equals(saveString) || "false".equals(saveString)) {
-                                    save = Boolean.parseBoolean(saveString);
-                                } else {
-                                    newScheme = false;
-                                    break;
-                                }
+                                save = Boolean.parseBoolean(usersScanner.next());
                             }
                             if (save && usersScanner.hasNext()) {
                                 pass = new String(Base64.decodeBase64(usersScanner.next()));
                             }
                             userInfos.add(new UserInfo(name, save, pass));
-                        }
-                        
-                        if (!newScheme) {
-                            String[] userStrings = users.split("\t");
-                            for (String userString : userStrings) {
-                                userInfos.add(new UserInfo(userString, false, null));
-                            }
                         }
                     }
                 }
@@ -160,25 +147,15 @@ public final class LoginAction {
                 if (serverDB.isEmpty()) {
                     serverDB = "default";
                 }
-                boolean savePwd = loginInfo.getSavePwd();
-                if (!savePwd) { // в loginInfo приходят только значения из командной строки. ставим этот флаг, чтобы в диалоге заполнялось поле с паролем 
-                    if (newScheme) {
-                        if (!userInfos.isEmpty()) {
-                            savePwd = userInfos.get(0).savePassword;
-                        }
-                    } else {
-                        savePwd = Boolean.valueOf(scanner.hasNextLine() ? scanner.nextLine() : "");
-                    }
+                boolean savePwd = loginInfo.getSavePwd(); // в loginInfo приходят только значения из командной строки. ставим этот флаг, чтобы в диалоге заполнялось поле с паролем
+                if (!savePwd && !userInfos.isEmpty()) {
+                    savePwd = userInfos.get(0).savePassword;
                 }
                 String password = "";
                 if (loginInfo.getPassword() != null) {
                     password = loginInfo.getPassword();
-                } else if (newScheme) {
-                    if (!userInfos.isEmpty()) {
-                        password = userInfos.get(0).password;
-                    }
-                } else if (scanner.hasNextLine()) {
-                    password = new String(Base64.decodeBase64(scanner.nextLine()));
+                } else if (!userInfos.isEmpty()) {
+                    password = userInfos.get(0).password;
                 }
                 return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
             }
