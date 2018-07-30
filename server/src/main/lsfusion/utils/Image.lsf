@@ -9,6 +9,6 @@ resizeImage = CUSTOM 'lsfusion.utils.image.ResizeImageActionProperty' (IMAGEFILE
 //    REQUEST IMAGEFILE INPUT;
 //    IF requestedImageFile() THEN {
 //        resizeImage(requestedImageFile(), 2);
-//        OPEN resizedImage();
+//        open(resizedImage());
 //    }
 //}

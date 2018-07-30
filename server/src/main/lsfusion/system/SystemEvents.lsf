@@ -130,7 +130,7 @@ requestUserLogs 'Запросить логи' (CustomUser user) = {
 openUserLogs 'Открыть логи' (CustomUser user) = {
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
-            OPEN fileUserLogs(conn) NAME userLogin(conn) + '-log';
+            open(fileUserLogs(conn), userLogin(conn) + '-log');
         } ELSE {
             MESSAGE 'Логи ещё не получены. Ожидайте';
         }
@@ -148,7 +148,7 @@ requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
 openThreadDump 'Открыть ThreadDump' (CustomUser user) = {
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
-            OPEN fileThreadDump(conn) NAME userLogin(conn) + '-dump';
+            open(fileThreadDump(conn), userLogin(conn) + '-dump');
         } ELSE {
             MESSAGE 'ThreadDump ещё не получен. Ожидайте';
         }

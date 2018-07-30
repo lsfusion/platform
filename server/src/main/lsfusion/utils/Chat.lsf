@@ -56,7 +56,7 @@ hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE FIXEDCHARWIDTH 1;
 loadAttachment 'Прикрепить вложение' (Message m) = { INPUT =attachment(m) CHANGE; }
 openAttachment 'Открыть вложение' (Message m) = {
     IF attachment(m) THEN {
-        OPEN attachment(m);
+        open(attachment(m));
     } ELSE {
         MESSAGE 'Вложение отсутствует!';
     }
