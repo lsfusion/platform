@@ -609,12 +609,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         });
     }
 
-    public void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
+    public void openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, final WindowHiddenHandler handler) {
         if (modalityType == GModalityType.DOCKED_MODAL) {
             block();
         }
 
-        Widget blockingWidget = formsController.openForm(form, modalityType, initFilterEvent, new WindowHiddenHandler() {
+        Widget blockingWidget = formsController.openForm(form, modalityType, forbidDuplicate, initFilterEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 unblock();
