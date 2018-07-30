@@ -18,7 +18,6 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.jfree.ui.ExtensionFileFilter;
-import org.springframework.util.FileCopyUtils;
 
 import javax.swing.*;
 import java.io.*;
@@ -109,6 +108,9 @@ public class ReadUtils {
                                 fileBytes = IOUtils.getFileBytes(file);
                             }
                         }
+                        if (!type.equals("file")) //delete temp file
+                            if (!file.delete())
+                                file.deleteOnExit();
                     } else {
                         errorCode = 3;
                     }
@@ -123,32 +125,6 @@ public class ReadUtils {
         }
         String error = getError(errorCode, sourcePath);
         return new ReadResult(fileBytes, type, file != null ? file.getAbsolutePath() : null, errorCode, error);
-    }
-
-    public static void postProcessFile(String sourcePath, String type, String filePath, String movePath, boolean delete) throws IOException, SftpException, JSchException {
-        File file = new File(filePath);
-        boolean move = movePath != null;
-        if (move) {
-            if (movePath.startsWith("file://")) {
-                ServerLoggers.importLogger.info(String.format("Writing file to %s", movePath));
-                FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-            } else if (movePath.startsWith("ftp://"))
-                WriteActionProperty.storeFileToFTP(movePath, file);
-            else if (movePath.startsWith("sftp://"))
-                WriteActionProperty.storeFileToSFTP(movePath, file);
-            else
-                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath + ", supports only file, ftp, sftp"));
-        }
-        if (!type.equals("file") || delete || move)
-            if (!file.delete())
-                file.deleteOnExit();
-        if (delete || move) {
-            if (type.equals("ftp")) {
-                deleteFTPFile(sourcePath);
-            } else if (type.equals("sftp")) {
-                deleteSFTPFile(sourcePath);
-            }
-        }
     }
 
     public static String showReadFileDialog(String path) {
@@ -277,18 +253,6 @@ public class ReadUtils {
             }
         } else {
             throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file"));
-        }
-    }
-
-    public static void deleteFile(String type, String path) throws IOException, SftpException, JSchException {
-        File sourceFile = new File(path);
-        if (!sourceFile.delete()) {
-            sourceFile.deleteOnExit();
-        }
-        if (type.equals("ftp")) {
-            ReadUtils.deleteFTPFile(path);
-        } else if (type.equals("sftp")) {
-            ReadUtils.deleteSFTPFile(path);
         }
     }
 

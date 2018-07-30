@@ -3210,12 +3210,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
     
-    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, boolean clientAction, boolean dialog, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
         LCP<?> targetProp = propUsage == null ? baseLM.readFile : findLCPNoParamsByPropertyUsage(propUsage);
-        ValueClass moveProp = movePathProp == null ? null : movePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
-        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, dialog, delete)),
-                movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
+        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, clientAction, dialog)),
+                Collections.singletonList(sourcePathProp));
     }
 
     public LAPWithParams addScriptedWriteActionProperty(LCPWithParams sourceProp, LCPWithParams pathProp, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
