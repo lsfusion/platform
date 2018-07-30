@@ -14,6 +14,7 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -524,7 +525,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return new ActionPropertyClassImplement<>(this, classes, mapping);
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy // STRONG because of using in security policy
     public ActionPropertyMapImplement<?, P> getGroupChange() {
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
