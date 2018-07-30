@@ -158,18 +158,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
-        Type type = null;
-        if (propertyObject instanceof CalcPropertyObjectEntity) {
+        if (propertyObject instanceof CalcPropertyObjectEntity) { // optimization
             ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, policy);
 
             if (changeAction != null) {
-                type = changeAction.property.getSimpleRequestInputType(optimistic);
+                return (DataClass)changeAction.property.getSimpleRequestInputType(optimistic);
             }
         }
-
-        assert type == null || type instanceof DataClass;
-
-        return (DataClass) type;
+        return null;
     }
 
     public <A extends PropertyInterface> Pair<ObjectEntity, Boolean> getAddRemove(FormEntity form, SecurityPolicy policy) {
@@ -212,23 +208,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
         ActionPropertyObjectEntity<?> editAction = getEditAction(actionId);
 
-        if (editAction != null) {
-            if(!checkPermission(editAction.property, actionId, checkReadOnly, securityPolicy)) // no permission
-                editAction = null;
-        } else {
-            if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) { // default implementations for group change and change wys
-                editAction = getEditAction(CHANGE, securityPolicy, checkReadOnly);
-                if (editAction != null) {
-                    if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
-                        editAction = editAction.getGroupChange();
-                    else {
-                        assert CHANGE_WYS.equals(actionId);
-                        if (getRequestInputType(securityPolicy) == null) // if CHANGE action requests DataClass, then use this action 
-                            editAction = null;
-                    }
-                }
-            }
-        }
+        if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicy))
+            return null;
+        
         return editAction;
     }
 
@@ -240,10 +222,23 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
         
         ActionPropertyMapImplement<?, P> editActionImplement = propertyObject.property.getEditAction(actionId);
-        if(editActionImplement == null)
-            return null;
-        
-        return editActionImplement.mapObjects(propertyObject.mapping);
+        if(editActionImplement != null)
+            return editActionImplement.mapObjects(propertyObject.mapping);
+
+        // default implementations for group change and change wys
+        if (GROUP_CHANGE.equals(actionId) || CHANGE_WYS.equals(actionId)) {
+            ActionPropertyObjectEntity<?> editAction = getEditAction(CHANGE);
+            if (editAction != null) {
+                if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
+                    return editAction.getGroupChange();
+                else {
+                    assert CHANGE_WYS.equals(actionId);
+                    if (editAction.property.getSimpleRequestInputType(optimisticAsync) != null) // if CHANGE action requests DataClass, then use this action 
+                        return editAction;
+                }
+            }
+        }
+        return null;
     }
 
     public ActionPropertyObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
