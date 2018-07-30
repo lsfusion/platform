@@ -1,6 +1,6 @@
 MODULE Email;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, Utils;
 
 GROUP email 'Настройки почтового сервера' : public;   //rootGroup
 
@@ -86,7 +86,7 @@ dateSent 'Дата отправки' = DATE(dateTimeSent(Email e));
 dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
-openEMLFile 'Открыть файл EML' (Email email) = { OPEN emlFile (email); }
+openEMLFile 'Открыть файл EML' (Email email) = { open(emlFile(email)); }
 
 receiveEmailAction 'Получить всю почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 receiveEmailAction 'Получить почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
@@ -129,7 +129,7 @@ email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFile 'Открыть' (AttachmentEmail attachmentEmail) = { OPEN file(attachmentEmail); }
+openFile 'Открыть' (AttachmentEmail attachmentEmail) = { open(file(attachmentEmail)); }
 saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
