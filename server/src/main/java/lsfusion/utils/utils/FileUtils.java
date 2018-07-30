@@ -36,33 +36,32 @@ public class FileUtils {
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false);
             if (readResult.errorCode == 0) {
-                File sourceFile = new File(readResult.filePath);
                 String error = null;
                 try {
                     switch (destPath.type) {
                         case "ftp":
-                            WriteActionProperty.storeFileToFTP(destinationPath, sourceFile);
+                            WriteActionProperty.storeFileToFTP(destinationPath, readResult.fileBytes);
                             break;
                         case "sftp":
-                            WriteActionProperty.storeFileToSFTP(destinationPath, sourceFile);
+                            WriteActionProperty.storeFileToSFTP(destinationPath, readResult.fileBytes);
                             break;
                         default:
                             ServerLoggers.importLogger.info(String.format("Writing file to %s", destinationPath));
-                            FileCopyUtils.copy(sourceFile, new File(destPath.path));
+                            FileCopyUtils.copy(new File(readResult.filePath), new File(destPath.path));
                             break;
                     }
                 } finally {
-                    if (!sourceFile.delete()) {
-                        error = String.format("Failed to delete file '%s'", readResult.filePath);
-                    }
                     switch (srcPath.type) {
                         case "ftp":
-                            //todo: parseFTPPath сможет принимать путь без ftp://
-                            ReadUtils.deleteFTPFile(sourcePath);
+                            deleteFTPFile(srcPath.path);
                             break;
                         case "sftp":
-                            //todo: parseFTPPath сможет принимать путь без ftp://
-                            ReadUtils.deleteSFTPFile(sourcePath);
+                            deleteSFTPFile(srcPath.path);
+                            break;
+                        default:
+                            if (!new File(readResult.filePath).delete()) {
+                                error = String.format("Failed to delete file '%s'", readResult.filePath);
+                            }
                             break;
                     }
                 }
@@ -83,12 +82,10 @@ public class FileUtils {
         } else {
             switch (path.type) {
                 case "ftp":
-                    //todo: parseFTPPath сможет принимать путь без ftp://
-                    ReadUtils.deleteFTPFile(path.getPath());
+                    deleteFTPFile(path.path);
                     break;
                 case "sftp":
-                    //todo: parseFTPPath сможет принимать путь без ftp://
-                    ReadUtils.deleteSFTPFile(path.getPath());
+                    deleteSFTPFile(path.path);
                     break;
                 case "file":
                     if (!new File(path.path).delete()) {
@@ -96,6 +93,61 @@ public class FileUtils {
                     }
                     break;
             }
+        }
+    }
+
+    private static void deleteFTPFile(String path) throws IOException {
+        FTPPath properties = parseFTPPath(path, 21);
+        FTPClient ftpClient = new FTPClient();
+        try {
+            if (properties.charset != null)
+                ftpClient.setControlEncoding(properties.charset);
+            ftpClient.connect(properties.server, properties.port);
+            ftpClient.login(properties.username, properties.password);
+            ftpClient.enterLocalPassiveMode();
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            boolean done = ftpClient.deleteFile(properties.remoteFile);
+            if (!done) {
+                throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
+            }
+        }
+    }
+
+    private static void deleteSFTPFile(String path) throws JSchException, SftpException {
+        FTPPath properties = parseFTPPath(path, 22);
+        String remoteFile = properties.remoteFile;
+        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(properties.username, properties.server, properties.port);
+            session.setPassword(properties.password);
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            channelSftp.rm(remoteFile);
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 

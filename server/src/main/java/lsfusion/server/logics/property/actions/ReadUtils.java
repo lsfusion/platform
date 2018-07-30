@@ -256,67 +256,6 @@ public class ReadUtils {
         }
     }
 
-    //после перехода на 1.3.5 переедет в fsl
-    public static void deleteFTPFile(String path) throws IOException {
-        FTPPath properties = parseFTPPath(path, 21);
-        if (properties != null) {
-            FTPClient ftpClient = new FTPClient();
-            try {
-                if (properties.charset != null)
-                    ftpClient.setControlEncoding(properties.charset);
-                ftpClient.connect(properties.server, properties.port);
-                ftpClient.login(properties.username, properties.password);
-                ftpClient.enterLocalPassiveMode();
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-
-                boolean done = ftpClient.deleteFile(properties.remoteFile);
-                if (!done) {
-                    throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
-                }
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
-            }
-        }
-    }
-
-    //после перехода на 1.3.5 переедет в fsl
-    public static void deleteSFTPFile(String path) throws JSchException, SftpException {
-        FTPPath properties = parseFTPPath(path, 22);
-        if (properties != null) {
-            String remoteFile = properties.remoteFile;
-            remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-
-            Session session = null;
-            Channel channel = null;
-            ChannelSftp channelSftp = null;
-            try {
-                JSch jsch = new JSch();
-                session = jsch.getSession(properties.username, properties.server, properties.port);
-                session.setPassword(properties.password);
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-                session.connect();
-                channel = session.openChannel("sftp");
-                channel.connect();
-                channelSftp = (ChannelSftp) channel;
-                channelSftp.rm(remoteFile);
-            } finally {
-                if (channelSftp != null)
-                    channelSftp.exit();
-                if (channel != null)
-                    channel.disconnect();
-                if (session != null)
-                    session.disconnect();
-            }
-        }
-    }
-
     private static FTPPath parseFTPPath(String path, Integer defaultPort) {
         /*sftp|ftp://username:password;charset@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
@@ -647,8 +586,8 @@ public class ReadUtils {
     }
 
     public static class ReadResult implements Serializable {
-        byte[] fileBytes;
-        String type;
+        public byte[] fileBytes;
+        public String type;
         public String filePath;
         public int errorCode;
         public String error;
