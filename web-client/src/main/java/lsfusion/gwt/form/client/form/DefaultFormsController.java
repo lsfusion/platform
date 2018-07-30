@@ -112,8 +112,13 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
-    public Widget openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        return openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
+    public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        if(forbidDuplicate && formsList.contains(form.sID)) {
+            tabsPanel.selectTab(formsList.indexOf(form.sID));
+            return null;
+        } else {
+            return openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
+        }
     }
 
     private Widget openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {

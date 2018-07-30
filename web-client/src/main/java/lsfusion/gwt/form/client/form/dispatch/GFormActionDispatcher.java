@@ -49,7 +49,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        form.openForm(action.form, action.modalityType, latestEditEvent, new WindowHiddenHandler() {
+        form.openForm(action.form, action.modalityType, action.forbidDuplicate, latestEditEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 if (action.modalityType.isModal()) {

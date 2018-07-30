@@ -68,7 +68,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, FormDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
-        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.tabSID, servlet));
+        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.tabSID, servlet),
+                action.forbidDuplicate);
     }
 
     @Converter(from = ModalityType.class)

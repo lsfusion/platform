@@ -3,6 +3,7 @@ package lsfusion.gwt.form.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
@@ -32,6 +33,7 @@ import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
+import lsfusion.gwt.form.shared.view.actions.GAction;
 import lsfusion.gwt.form.shared.view.actions.GActivateFormAction;
 import lsfusion.gwt.form.shared.view.actions.GFormAction;
 import lsfusion.gwt.form.shared.view.actions.GMaximizeFormAction;
@@ -130,10 +132,15 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
 
         formsController = new DefaultFormsController(tabSID) {
             @Override
-            public void executeNavigatorAction(GNavigatorAction action) {
+            public void executeNavigatorAction(GNavigatorAction action, final NativeEvent event) {
                 syncDispatch(new ExecuteNavigatorAction(tabSID, action.canonicalName, 1), new ErrorHandlingCallback<ServerResponseResult>() {
                     @Override
                     public void success(ServerResponseResult result) {
+                        if(event.getCtrlKey()) {
+                            for (GAction action : result.actions) // хак, но весь механизм forbidDuplicate один большой хак
+                                if (action instanceof GFormAction)
+                                    ((GFormAction) action).forbidDuplicate = false;
+                        }
                         actionDispatcher.dispatchResponse(result);
                     }
                 });
@@ -339,7 +346,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             if (action.modalityType.isModal()) {
                 pauseDispatching();
             }
-            formsController.openForm(action.form, action.modalityType, null, new WindowHiddenHandler() {
+            formsController.openForm(action.form, action.modalityType, action.forbidDuplicate, null, new WindowHiddenHandler() {
                 @Override
                 public void onHidden() {
                     if (action.modalityType.isModal()) {
