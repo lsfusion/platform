@@ -16,7 +16,7 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
     }
 
     public boolean supportSingleSimplify() {
-        return true;
+        return false; // because it will break implicit cast'ing (CONCAT '', f(), 5 will return 5 when f() is null)
     }
 
     public boolean supportNeedValue() {
