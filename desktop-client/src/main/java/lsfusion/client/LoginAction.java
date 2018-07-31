@@ -105,7 +105,7 @@ public final class LoginAction {
     private LoginInfo restoreLoginData(LoginInfo loginInfo) {
         try {
             File file = SystemUtils.getUserFile(CONFIG_FILE_NAME, false);
-            if (file.exists()) {
+            if (file.exists() && file.length() < 10000) { // don't restore if cfg file has grown large: most likely it's damaged
                 FileReader fileRd = new FileReader(file);
                 Scanner scanner = new Scanner(fileRd);
                 String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
