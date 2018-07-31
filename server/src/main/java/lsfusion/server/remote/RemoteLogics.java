@@ -203,7 +203,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         try {
             if (logicsLogo != null && !logicsLogo.isEmpty())
                 logicsLogoBytes = IOUtils.toByteArray(getClass().getResourceAsStream("/" + logicsLogo));
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error reading logics logo: ", e);
         }
         return new GUIPreferences(name, displayName, null, logicsLogoBytes, Boolean.parseBoolean(clientHideMenu));
