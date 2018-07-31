@@ -24,8 +24,6 @@ public class SystemProperties {
         assert assertsEnabled = true;
         return assertsEnabled;
     }
-    
-    public static final String settingsPath = System.getProperty("lsfusion.server.settingsPath", "lsfusion.xml");
 
     public static final boolean doNotCalculateStats = "true".equals(System.getProperty("lsfusion.server.logics.donotcalculatestats"));
 
