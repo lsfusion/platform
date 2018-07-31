@@ -270,15 +270,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public ActionPropertyObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
         Property<P> property = propertyObject.property;
-        
-        ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(getNFToDraw(entity, version).getObjects()); // берем нижний объект в toDraw
-        for (ObjectEntity objectInstance : groupObjects.valueIt()) {
-            if (objectInstance.baseClass instanceof CustomClass) {
-                ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
-                return new ActionPropertyObjectEntity<>(
-                        dialogAction,
-                        MapFact.singleton(dialogAction.interfaces.single(), objectInstance)
-                );
+
+        GroupObjectEntity groupObject = getNFToDraw(entity, version);
+        if(groupObject != null) {
+            ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(groupObject.getObjects()); // берем нижний объект в toDraw
+            for (ObjectEntity objectInstance : groupObjects.valueIt()) {
+                if (objectInstance.baseClass instanceof CustomClass) {
+                    ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
+                    return new ActionPropertyObjectEntity<>(dialogAction, MapFact.singleton(dialogAction.interfaces.single(), objectInstance));
+                }
             }
         }
         return null;
