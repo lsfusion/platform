@@ -1,19 +1,15 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.remote.FormReportManager;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -37,7 +33,7 @@ public class BusinessLogicsBootstrap {
 
         boolean instanceCreated = false;
         try {
-            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(SystemProperties.settingsPath);
+            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(System.getProperty("lsfusion.server.settingsPath", "lsfusion-bootstrap.xml"));
             logicsInstance = (LogicsInstance) springContext.getBean("logicsInstance");
             instanceCreated = true;
         } catch (Throwable t) {
