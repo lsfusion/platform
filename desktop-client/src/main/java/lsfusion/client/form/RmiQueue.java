@@ -121,6 +121,7 @@ public class RmiQueue implements DispatcherListener {
                             try {
                                 return future.get((long) timeout, TimeUnit.SECONDS);
                             } catch (TimeoutException e) {
+                                future.cancel(true);
                                 if (futureInterface.isFirst()) {
                                     exponent++;
                                     remoteLogger.info("TimeoutException: timeout - " + timeout + "s, next timeout - " + getTimeout(timeoutParams, exponent) + "s");
