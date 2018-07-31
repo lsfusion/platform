@@ -445,8 +445,9 @@ public class ScriptingFormEntity {
             property.setEditType(editType);
 
         Boolean isSelector = options.getSelector();
-        if(isSelector != null && isSelector)
-            property.setEditAction(ServerResponse.CHANGE, property.getSelectorAction(form, version));
+        ActionPropertyObjectEntity selectorAction;
+        if(isSelector != null && isSelector && (selectorAction = property.getSelectorAction(form, version)) != null)
+            property.setEditAction(ServerResponse.CHANGE, selectorAction);
 
         String eventID = options.getEventId();
         if (eventID != null)
