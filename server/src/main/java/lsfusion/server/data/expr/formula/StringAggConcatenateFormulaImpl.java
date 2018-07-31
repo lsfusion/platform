@@ -27,7 +27,7 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
     @Override
     public String getSource(ExprSource source) {
         int exprCount = source.getExprCount();
-        assert exprCount > 1;
+        assert exprCount > 0;
         if (exprCount == 0) {
             return "";
         }
