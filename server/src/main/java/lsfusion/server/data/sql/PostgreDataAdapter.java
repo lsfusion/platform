@@ -26,8 +26,10 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class PostgreDataAdapter extends DataAdapter {
 
-    public String binPath;
-    public String dumpDir;
+    private String defaultBinPath;
+    private String defaultDumpDir;
+    private String binPath;
+    private String dumpDir;
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
         this(dataBase, server, userID, password, false);
@@ -44,8 +46,18 @@ public class PostgreDataAdapter extends DataAdapter {
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
         super(PostgreSQLSyntax.instance, dataBase, server, null, userID, password, connectTimeout, cleanDB);
 
+        this.defaultBinPath = binPath;
+        this.defaultDumpDir = dumpDir;
         this.binPath = binPath;
         this.dumpDir = dumpDir;
+    }
+
+    public void setBinPath(String binPath) {
+        this.binPath = binPath != null ? binPath : defaultBinPath;
+    }
+
+    public void setDumpDir(String dumpDir) {
+        this.dumpDir = dumpDir != null ? dumpDir : defaultDumpDir;
     }
 
     public void ensureDB(boolean cleanDB) throws Exception {

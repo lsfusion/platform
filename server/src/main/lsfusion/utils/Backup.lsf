@@ -20,6 +20,13 @@ deleteAction 'Удалить' (Backup b) = {
     formRefresh();
 } CONFIRM;
 
+binPath 'Директория Bin PostgreSQL' = DATA VARSTRING[100] ();
+setBinPath = CUSTOM 'lsfusion.utils.backup.SetBinPathActionProperty'();
+WHEN CHANGED(binPath()) DO setBinPath();
+dumpDir 'Путь сохранения бэкапов PostgreSQL' = DATA VARSTRING[100] ();
+setDumpDir = CUSTOM 'lsfusion.utils.backup.SetDumpDirActionProperty'();
+WHEN CHANGED(dumpDir()) DO setDumpDir();
+
 saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
 saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
 maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
@@ -58,7 +65,7 @@ exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
+    PROPERTIES() binPath, dumpDir, saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
     PROPERTIES() TODRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
@@ -101,6 +108,8 @@ DESIGN backup {
         NEW pane2 {
             caption = 'Настройки';
             align = STRETCH;
+            MOVE PROPERTY(binPath());
+            MOVE PROPERTY(dumpDir());
             MOVE PROPERTY(saveFirstDayBackups());
             MOVE PROPERTY(saveMondayBackups());
             MOVE PROPERTY(maxQuantityBackups());
