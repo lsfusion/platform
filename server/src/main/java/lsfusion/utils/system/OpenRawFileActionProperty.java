@@ -1,26 +1,26 @@
-package lsfusion.utils.utils;
+package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.OpenFileClientAction;
+import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 
-import java.io.FileInputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenPathActionProperty extends ScriptingActionProperty {
+public class OpenRawFileActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
 
-    public OpenPathActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public OpenRawFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -30,13 +30,15 @@ public class OpenPathActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            String source = (String) context.getKeyValue(sourceInterface).getValue();
+            ObjectValue sourceObject = context.getKeyValue(sourceInterface);
+            byte[] source = (byte[]) sourceObject.getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
-            if (source != null) {
-                context.delayUserInteraction(new OpenFileClientAction(IOUtils.toByteArray(new FileInputStream(source)),
-                        name != null ? name : FilenameUtils.getBaseName(source), BaseUtils.getFileExtension(source)));
+            if (sourceObject instanceof DataObject && source != null) {
+                String extension = BaseUtils.firstWord(((StaticFormatFileClass) ((DataObject) sourceObject).objectClass).getOpenExtension(source), ",");
+                context.delayUserInteraction(new OpenFileClientAction(source, name, extension));
             }
+
 
         } catch (Exception e) {
             throw Throwables.propagate(e);
