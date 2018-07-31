@@ -1,6 +1,6 @@
 MODULE Email;
 
-REQUIRE System, Reflection, Utils;
+REQUIRE System, Reflection;
 
 GROUP email 'Настройки почтового сервера' : public;   //rootGroup
 

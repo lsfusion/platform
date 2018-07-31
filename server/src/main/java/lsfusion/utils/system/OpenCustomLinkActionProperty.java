@@ -1,4 +1,4 @@
-package lsfusion.utils.utils;
+package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.OpenUriClientAction;
@@ -17,10 +17,10 @@ import java.net.URI;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenRawLinkActionProperty extends ScriptingActionProperty {
+public class OpenCustomLinkActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
 
-    public OpenRawLinkActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public OpenCustomLinkActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
