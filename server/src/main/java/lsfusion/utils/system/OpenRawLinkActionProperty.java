@@ -5,6 +5,7 @@ import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.link.LinkClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -20,7 +21,7 @@ import java.util.Iterator;
 public class OpenRawLinkActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
 
-    public OpenRawLinkActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public OpenRawLinkActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,7 +18,7 @@ public class OpenCustomFileActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
 
-    public OpenCustomFileActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public OpenCustomFileActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
