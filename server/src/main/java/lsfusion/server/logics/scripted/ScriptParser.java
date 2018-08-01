@@ -1,9 +1,12 @@
 package lsfusion.server.logics.scripted;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.antlr.runtime.*;
 
 import java.util.ArrayList;
@@ -41,7 +44,7 @@ public class ScriptParser {
     public ScriptParser(ScriptingErrorLog errLog) {
         this.errLog = errLog;
     }
-
+    
     public void initParseStep(ScriptingLogicsModule LM, CharStream stream, State state) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(stream);
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
@@ -56,10 +59,15 @@ public class ScriptParser {
         currentExpandedLines = 0;
         currentState = state;
         parsers.push(new ParserInfo(parser, null, null, 0));
-        if (state == State.PRE) {
-            parser.moduleHeader();
-        } else {
-            parser.script();
+        try {
+            if (state == State.PRE) {
+                parser.moduleHeader();
+            } else {
+                parser.script();
+            }
+        } catch (Throwable t) {
+            ExecutionStackAspect.setStackString("Error during parsing at : " + parser.getCurrentDebugPoint());
+            throw ExceptionUtils.propagate(t, RecognitionException.class);
         }
         parsers.pop();
         currentState = null;
