@@ -70,7 +70,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private AuthenticationLogicsModule authenticationLM;
     private SecurityLogicsModule securityLM;
     private ReflectionLogicsModule reflectionLM;
-    private ContactLogicsModule contactLM;
 
     public SecurityManager() {
         super(SECURITYMANAGER_ORDER);
@@ -104,7 +103,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
-        this.contactLM = businessLogics.contactLM;
 
         try {
             defaultPolicy = new SecurityPolicy();
@@ -215,17 +213,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             if (userId != null)
                 return localize("{logics.error.user.duplicate}");
 
-            Object emailId = businessLogics.contactLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
+            Object emailId = businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
             if (emailId != null) {
                 return localize("{logics.error.emailContact.duplicate}");
             }
 
             DataObject userObject = session.addObject(authenticationLM.customUser);
             authenticationLM.loginCustomUser.change(username, session, userObject);
-            businessLogics.contactLM.emailContact.change(email, session, userObject);
+            businessLogics.authenticationLM.emailContact.change(email, session, userObject);
             authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
-            businessLogics.contactLM.firstNameContact.change(firstName, session, userObject);
-            businessLogics.contactLM.lastNameContact.change(lastName, session, userObject);
+            businessLogics.authenticationLM.firstNameContact.change(firstName, session, userObject);
+            businessLogics.authenticationLM.lastNameContact.change(lastName, session, userObject);
             session.apply(businessLogics, stack);
         } catch (SQLException e) {
             return localize("{logics.error.registration}");
@@ -614,13 +612,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             DataObject customUser = user.getDataObject(authenticationLM.customUser, session);
 
             if (firstName != null)
-                contactLM.firstNameContact.change(firstName, session, (DataObject) customUser);
+                authenticationLM.firstNameContact.change(firstName, session, (DataObject) customUser);
 
             if (lastName != null)
-                contactLM.lastNameContact.change(lastName, session, (DataObject) customUser);
+                authenticationLM.lastNameContact.change(lastName, session, (DataObject) customUser);
             
             if (email != null)
-                contactLM.emailContact.change(email, session, (DataObject) customUser);
+                authenticationLM.emailContact.change(email, session, (DataObject) customUser);
 
             if (userRoleSIDs != null) {
                 for (String userRoleName : userRoleSIDs) {

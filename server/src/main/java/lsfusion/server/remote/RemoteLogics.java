@@ -250,7 +250,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     protected Long getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
-        return (Long) businessLogics.contactLM.contactEmail.read(session, new DataObject(email));
+        return (Long) businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email));
     }
 
     @Override
