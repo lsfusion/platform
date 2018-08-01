@@ -2086,6 +2086,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         result.add(getCleanTempTablesTask(scheduler));
         result.add(getFlushPendingTransactionCleanersTask(scheduler));
         result.add(getRestartConnectionsTask(scheduler));
+        result.add(getUpdateSavePointsInfoTask(scheduler));
         result.addAll(resetCustomReportsCacheTasks(scheduler));
         result.add(getProcessDumpTask(scheduler));
         return result;
@@ -2148,6 +2149,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 SQLSession.restartConnections(prevStart);
             }
         }, false, Settings.get().getPeriodRestartConnections(), false, "Connection restart");
+    }
+
+    private Scheduler.SchedulerTask getUpdateSavePointsInfoTask(Scheduler scheduler) {
+        final Result<Long> prevResult = new Result<>(null);
+        return scheduler.createSystemTask(new EExecutionStackRunnable() {
+            public void run(ExecutionStack stack) throws Exception {
+                getDbManager().getAdapter().updateSavePointsInfo(prevResult);
+            }
+        }, false, Settings.get().getUpdateSavePointsPeriod(), false, "Update save points thresholds");
     }
 
 

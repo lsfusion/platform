@@ -92,6 +92,8 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         public boolean needConnectionLock;
         public boolean disableNestedLoop;
         public int setTimeout;
+        public boolean needSavePoint;
+        public boolean useSavePoint;
 
         public Snapshot(boolean volatileStats, int timeout, int transactTimeout) {
             this.volatileStats = volatileStats;
@@ -136,11 +138,23 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
                 return;
 
             inTransaction = session.isInTransaction();
+            if(inTransaction)
+                secondsFromTransactStart = session.getSecondsFromTransactStart();
             setTimeout = timeout;
 
-            if(session.isInTransaction() && session.syntax.hasTransactionSavepointProblem() && Settings.get().getSavePointCountForExceptions() > 0) { // если нет savepoint'ов увеличиваем до времени с начала транзакции
-                secondsFromTransactStart = session.getSecondsFromTransactStart();
-                if (setTimeout > 0) // если есть транзакция, увеличиваем timeout до времени транзакции
+            useSavePoint = false;
+            needSavePoint = false;
+            if(inTransaction && hasRepeatCommand()) {
+                if(session.syntax.hasTransactionSavepointProblem()) {
+                    Integer count;
+                    int savePointCountForExceptions = Settings.get().getSavePointCountForExceptions();
+                    if (savePointCountForExceptions > 0 && (count = session.getTransactTimeouts()) != null && count >= savePointCountForExceptions) {
+                        useSavePoint = session.registerUseSavePoint();
+                        needSavePoint = true;
+                    }
+                }
+
+                if(!useSavePoint) // if not using savepoints, increasing timeout to the time from transaction start
                     setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
             }
 
@@ -168,6 +182,11 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         public void afterConnection(SQLSession session, OperationOwner owner) throws SQLException {
             if(needConnectionLock)
                 session.lockTryCommon(owner);
+        }
+
+        @Override
+        public boolean isUseSavePoint() {
+            return useSavePoint;
         }
 
         public boolean isTransactTimeout() {

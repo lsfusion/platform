@@ -41,4 +41,6 @@ public interface DynamicExecEnvSnapshot<OE, S extends DynamicExecEnvSnapshot<OE,
     S forAnalyze(); // важно чтобы не было repeatCommand, потому как иначе может заполниться handler, а пойдет repeat и он второй раз будет выполняться
 
     ImMap<SQLQuery, MaterializedQuery> getMaterializedQueries();
+
+    boolean isUseSavePoint();
 }

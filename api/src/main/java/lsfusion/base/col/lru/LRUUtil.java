@@ -60,6 +60,8 @@ public class LRUUtil {
     private static final String useGCFraction = "-XX:+UseG1GC";
     public static void initLRUTuner(final LRULogger logger) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
+
+        // the same as in updateSavePointsInfo
         double averageRate = 0.7;
         double safeMem = 0.1;
         boolean useG1GC = false;

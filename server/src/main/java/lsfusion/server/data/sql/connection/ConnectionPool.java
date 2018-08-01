@@ -16,4 +16,9 @@ public interface ConnectionPool {
 
     Connection newRestartConnection() throws SQLException;
     void closeRestartConnection(Connection connection) throws SQLException;
+
+    void registerNeedSavePoint();
+    void unregisterNeedSavePoint();
+    boolean registerUseSavePoint();
+    void unregisterUseSavePoint();
 }

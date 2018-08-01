@@ -1,5 +1,7 @@
 package lsfusion.server.data.sql.connection;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
@@ -281,5 +283,78 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     public void restorePrivate(ExConnection connection) throws SQLException {
         connection.sql = newConnection();
         connection.temporary = new SQLTemporaryPool();
+    }
+
+    private AtomicInteger neededSavePoints = new AtomicInteger();
+    private AtomicInteger usedSavePoints = new AtomicInteger();
+    
+    private Integer useSavePointsThreshold;
+    private double useSavePointsThresholdMultiplier = 1.0;
+
+    @Override
+    public void registerNeedSavePoint() {
+        neededSavePoints.getAndDecrement();
+    }
+
+    @Override
+    public void unregisterNeedSavePoint() {
+        neededSavePoints.decrementAndGet();
+    }
+
+    private int getUseSafeThreshold() {
+        if(useSavePointsThreshold == null)
+            useSavePointsThreshold = Settings.get().getUseSavePointsThreshold();
+        
+        return (int) (useSavePointsThreshold * useSavePointsThresholdMultiplier);
+    }
+    
+    @Override
+    public boolean registerUseSavePoint() {
+        int usedCount = usedSavePoints.getAndIncrement();
+        return usedCount < getUseSafeThreshold();        
+    }
+
+    @Override
+    public void unregisterUseSavePoint() {
+        usedSavePoints.decrementAndGet();
+    }
+    
+    private int updateCount;
+    private int sufficientCount;
+    
+    public void updateSavePointsInfo(Result<Long> prevResult) {
+        
+        updateCount++;        
+        if(neededSavePoints.get() <= getUseSafeThreshold())
+            sufficientCount++;
+
+        long currentTime = System.currentTimeMillis();
+        if(prevResult.result == null)
+            prevResult.set(currentTime);
+        
+        long resultPeriod = Settings.get().getUpdateSavePointsResultPeriod();                
+
+        if((currentTime - prevResult.result) / 1000 > resultPeriod) {
+            prevResult.set(null);
+            
+            // the same as in initLRUTuner
+            double averageRate = 0.7;
+            double safeInterval = 0.1;
+
+            long upThreshold = (long) ((averageRate + safeInterval) * updateCount);
+            long downThreshold = (long) ((averageRate - safeInterval) * updateCount);
+            
+            if(sufficientCount > upThreshold) {
+                useSavePointsThresholdMultiplier = BaseUtils.max(useSavePointsThresholdMultiplier / Settings.get().getUpdateSavePointsCoeff(), Settings.get().getUpdateSavePointsMinMultiplier());
+                ServerLoggers.sqlConnectionLogger.info("DEC SAVEPOINT MULTI " + useSavePointsThresholdMultiplier);
+            }
+            if(sufficientCount < downThreshold) {
+                useSavePointsThresholdMultiplier = BaseUtils.min(useSavePointsThresholdMultiplier * Settings.get().getUpdateSavePointsCoeff(), Settings.get().getUpdateSavePointsMaxMultiplier());
+                ServerLoggers.sqlConnectionLogger.info("INC SAVEPOINT MULTI " + useSavePointsThresholdMultiplier);
+            }                
+            
+            updateCount = 0;
+            sufficientCount = 0;
+        }
     }
 }
