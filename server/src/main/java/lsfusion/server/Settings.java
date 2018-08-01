@@ -2381,4 +2381,59 @@ public class Settings implements Cloneable {
     public void setBlockingFileRead(boolean blockingFileRead) {
         this.blockingFileRead = blockingFileRead;
     }
+
+    private int useSavePointsThreshold = 5;
+    private int updateSavePointsPeriod = 1; // in seconds
+    private int updateSavePointsResultPeriod = 30*60; // in seconds
+    private double updateSavePointsCoeff = 1.3;
+    private double updateSavePointsMinMultiplier = 0.8;
+    private double updateSavePointsMaxMultiplier = 3.0;
+
+    public int getUseSavePointsThreshold() {
+        return useSavePointsThreshold;
+    }
+
+    public void setUseSavePointsThreshold(int useSavePointsThreshold) {
+        this.useSavePointsThreshold = useSavePointsThreshold;
+    }
+
+    public int getUpdateSavePointsPeriod() {
+        return updateSavePointsPeriod;
+    }
+
+    public void setUpdateSavePointsPeriod(int updateSavePointsPeriod) {
+        this.updateSavePointsPeriod = updateSavePointsPeriod;
+    }
+
+    public int getUpdateSavePointsResultPeriod() {
+        return updateSavePointsResultPeriod;
+    }
+
+    public void setUpdateSavePointsResultPeriod(int updateSavePointsResultPeriod) {
+        this.updateSavePointsResultPeriod = updateSavePointsResultPeriod;
+    }
+
+    public double getUpdateSavePointsCoeff() {
+        return updateSavePointsCoeff;
+    }
+
+    public void setUpdateSavePointsCoeff(double updateSavePointsCoeff) {
+        this.updateSavePointsCoeff = updateSavePointsCoeff;
+    }
+
+    public double getUpdateSavePointsMinMultiplier() {
+        return updateSavePointsMinMultiplier;
+    }
+
+    public void setUpdateSavePointsMinMultiplier(double updateSavePointsMinMultiplier) {
+        this.updateSavePointsMinMultiplier = updateSavePointsMinMultiplier;
+    }
+
+    public double getUpdateSavePointsMaxMultiplier() {
+        return updateSavePointsMaxMultiplier;
+    }
+
+    public void setUpdateSavePointsMaxMultiplier(double updateSavePointsMaxMultiplier) {
+        this.updateSavePointsMaxMultiplier = updateSavePointsMaxMultiplier;
+    }
 }

@@ -39,6 +39,11 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
         }
 
         @Override
+        public boolean isUseSavePoint() {
+            return false;
+        }
+
+        @Override
         public void beforeStatement(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
             sqlSession.setEnableNestLoop(connection, owner, false);
         }

@@ -2043,12 +2043,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
             }
 
-            if(isInTransaction() && syntax.hasTransactionSavepointProblem()) {
-                Integer count;
-                int savePointCountForExceptions = Settings.get().getSavePointCountForExceptions();
-                if (savePointCountForExceptions > 0 && snapEnv.hasRepeatCommand() && (count = attemptCountMap.get(SQLTimeoutException.ADJUSTTRANSTIMEOUT)) != null && count >= savePointCountForExceptions)
-                    savepoint = connection.sql.setSavepoint();
-            }
+            if(snapEnv.isUseSavePoint())
+                savepoint = connection.sql.setSavepoint();
 
             Result<Integer> length = new Result<>();
             statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement, length);
@@ -2081,16 +2077,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         problemInTransaction = null;
                     }
                 }, firstException);
+                unregisterUseSavePoint();
                 savepoint = null;
             }
         } finally {
-            if(savepoint != null && problemInTransaction == null) { // если был exception в транзакции никакой release уже не сработает
-                final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException, SQLHandledException {
-                        fConnection.sql.releaseSavepoint(fSavepoint);
-                    }
-                }, firstException);
+            if(savepoint != null) {
+                if(problemInTransaction == null) { // if there was an exception in transaction, releaseSavepoint will fail anyway
+                    final ExConnection fConnection = connection;
+                    final Savepoint fSavepoint = savepoint;
+                    runSuppressed(new SQLRunnable() {
+                        public void run() throws SQLException, SQLHandledException {
+                            fConnection.sql.releaseSavepoint(fSavepoint);
+                        }
+                    }, firstException);
+                }
+                unregisterUseSavePoint();
             }
         }
 
@@ -3399,5 +3400,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     @Override
     public void close() throws SQLException {
         explicitClose();
+    }
+
+    public Integer getTransactTimeouts() {
+        return attemptCountMap.get(SQLTimeoutException.ADJUSTTRANSTIMEOUT);
+    }
+
+    public void registerNeedSavePoint() {
+        connectionPool.registerNeedSavePoint();
+    }
+
+    public void unregisterNeedSavePoint() {
+        connectionPool.unregisterNeedSavePoint();
+    }
+
+    public boolean registerUseSavePoint() {
+        return connectionPool.registerUseSavePoint();
+    }
+
+    public void unregisterUseSavePoint() {
+        connectionPool.unregisterUseSavePoint();
     }
 }
