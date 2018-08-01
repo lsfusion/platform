@@ -125,7 +125,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
-    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection", "Contact", 
+    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection",
                                                        "Scheduler", "Security", "Service", "SystemEvents", "Time"};
     
     private List<LogicsModule> logicModules = new ArrayList<>();
@@ -140,7 +140,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public BaseLogicsModule<T> LM;
     public ServiceLogicsModule serviceLM;
     public ReflectionLogicsModule reflectionLM;
-    public ContactLogicsModule contactLM;
     public AuthenticationLogicsModule authenticationLM;
     public SecurityLogicsModule securityLM;
     public SystemEventsLogicsModule systemEventsLM;
@@ -296,7 +295,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         LM = addModule(new BaseLogicsModule(this, getDBNamingPolicy()));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
-        contactLM = addModule(new ContactLogicsModule(this, LM));
         authenticationLM = addModule(new AuthenticationLogicsModule(this, LM));
         securityLM = addModule(new SecurityLogicsModule(this, LM));
         systemEventsLM = addModule(new SystemEventsLogicsModule(this, LM));
@@ -554,7 +552,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
         return module;
     }
-    
+
     private void overrideModulesList(String startModuleName) {
         Set<LogicsModule> was = new HashSet<>();
         Queue<LogicsModule> queue = new LinkedList<>();
@@ -1064,7 +1062,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
-            // issue #1725 Потенциальное совпадение канонических имен различных свойств 
+            // issue #1725 Потенциальное совпадение канонических имен различных свойств
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
             // базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = (actions ? PropertyCanonicalNameUtils.policyPropPrefix : PropertyCanonicalNameUtils.policyActionPrefix) + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 

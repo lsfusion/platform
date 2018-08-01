@@ -1,6 +1,6 @@
 MODULE Authentication;
 
-REQUIRE System, Contact;
+REQUIRE System;
 
 // ------------------------- Рабочие места ---------------------- //
 
@@ -43,6 +43,22 @@ FORM computersDialog 'Рабочие места'
 DESIGN computersDialog { BOX { size = (1024, 768); }}
 
 // -------------------------- Пользователи ---------------------------- //
+
+CLASS ABSTRACT Contact 'Контакт';
+TABLE contact (Contact);
+
+firstName 'Имя' = DATA VARISTRING[30] (Contact) CHARWIDTH 10 IN base;
+lastName 'Фамилия' = DATA VARISTRING[30] (Contact) CHARWIDTH 10 IN base;
+name 'Имя' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN recognize;
+
+phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
+postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
+birthday 'День рождения' = DATA DATE (Contact);
+
+email 'E-mail'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>Неверный формат e-mail</html>';
+contact (email) = GROUP MAX Contact contact BY email(contact);
+
+
 CLASS ABSTRACT User 'Пользователь';
 TABLE user (User);
 

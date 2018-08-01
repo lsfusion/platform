@@ -27,6 +27,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
 
+    public LCP firstNameContact;
+    public LCP lastNameContact;
+    public LCP emailContact;
+    public LCP contactEmail;
+
     public LCP isLockedCustomUser;
     public LCP loginCustomUser;
     public LCP customUserLogin;
@@ -99,6 +104,11 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
 
         super.initProperties();
+
+        firstNameContact = findProperty("firstName[Contact]");
+        lastNameContact = findProperty("lastName[Contact]");
+        emailContact = findProperty("email[Contact]");
+        contactEmail = findProperty("contact[VARSTRING[400]]");
 
         currentUserName = findProperty("currentUserName[]");
         currentUserAllowExcessAllocatedBytes = findProperty("currentUserAllowExcessAllocatedBytes[]");
