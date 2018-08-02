@@ -808,7 +808,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (changes.containsKey(canonicalName)) {
                 canonicalName = changes.get(canonicalName);
             }
-            LCP<?> lcp = findProperty(canonicalName);
+            LCP<?> lcp = null;
+            try {
+                lcp = findProperty(canonicalName);
+            } catch (Exception ignored) {
+            }
             if(lcp != null) { // temporary for migration, так как могут на действиях стоять
                 Integer statsProperty = (Integer) values.get("overStatsProperty");
                 statsProperty = statsProperty == null ? getStatsProperty(lcp.property) : statsProperty;
