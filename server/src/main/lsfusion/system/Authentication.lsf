@@ -407,7 +407,7 @@ changePassword() = {
 }
 
 NAVIGATOR {
-    configuration {
+    system {
         NEW FOLDER security '{navigator.security}' AFTER scheduler {
             NEW customUsers;
             NEW computers;
