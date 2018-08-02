@@ -190,7 +190,7 @@ DESIGN interpreter {
 }
 
 NAVIGATOR {
-    configuration {
+    system {
         NEW interpreter BEFORE maintenance;
     }
 }
