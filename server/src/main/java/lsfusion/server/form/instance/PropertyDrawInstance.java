@@ -22,8 +22,8 @@ import java.sql.SQLException;
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
 
-    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
-        ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionId, securityPolicy, checkReadOnly);
+    public ActionPropertyObjectInstance getEditAction(String actionId, InstanceFactory instanceFactory, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
+        ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionId, checkReadOnly, securityPolicies);
         if(editAction!=null)
             return instanceFactory.getInstance(editAction);
         return null;
