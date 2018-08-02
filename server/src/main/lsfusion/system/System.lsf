@@ -245,10 +245,10 @@ NAVIGATOR {
                 NEW migrationData;
             }
             
-            NEW FOLDER system '{navigator.system}' {
+            NEW FOLDER configuration '{navigator.system}' {
                 NEW FOLDER performance '{navigator.performance}';
                 NEW FOLDER scheduler '{navigator.scheduler}';    
-                NEW FOLDER logs '{navigator.logs}';            
+                NEW FOLDER systemEvents '{navigator.logs}';            
             }
             
             NEW FOLDER objects '{navigator.objects}' WINDOW tree; 

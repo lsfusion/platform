@@ -439,7 +439,7 @@ DESIGN pings {
 }
 
 NAVIGATOR {
-    logs {
+    systemEvents {
         NEW SystemEvents.exceptions;
         NEW SystemEvents.connections;
         NEW SystemEvents.launches;
