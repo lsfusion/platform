@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
@@ -209,7 +210,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return isEdit;
     }
     
-    private boolean checkPermission(ActionProperty editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    private boolean checkPermission(ActionProperty editAction, String editActionSID, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
         Property securityProperty;
         if (isEdit(editActionSID) && !editAction.ignoreReadOnlyPolicy()) { // if event handler doesn't change anything (for example SELECTOR), consider this event to be binding (not edit) 
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
@@ -220,22 +221,25 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             securityProperty = editAction;
         }
 
-        return securityPolicy == null || securityPolicy.property.change.checkPermission(securityProperty);
+        for(SecurityPolicy securityPolicy : securityPolicies)
+            if(!securityPolicy.property.change.checkPermission(securityProperty))
+                return false;
+        return true;
     }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy) {
         try {
-            return getEditAction(actionId, securityPolicy, null);
+            return getEditAction(actionId, null, securityPolicy != null ? SetFact.singleton(securityPolicy) : SetFact.<SecurityPolicy>EMPTY());
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
     }
     
-    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SecurityPolicy securityPolicy, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+    public ActionPropertyObjectEntity<?> getEditAction(String actionId, SQLCallable<Boolean> checkReadOnly, ImSet<SecurityPolicy> securityPolicies) throws SQLException, SQLHandledException {
         ActionPropertyObjectEntity<?> editAction = getEditAction(actionId);
 
-        if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicy))
+        if (editAction != null && !checkPermission(editAction.property, actionId, checkReadOnly, securityPolicies))
             return null;
         
         return editAction;

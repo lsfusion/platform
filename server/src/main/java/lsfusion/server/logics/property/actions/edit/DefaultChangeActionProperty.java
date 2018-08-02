@@ -87,55 +87,53 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
         final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 
-        if (formInstance.securityPolicy.property.change.checkPermission(implement.property)) {
-            Type changeType = getImplementType();
-
-            if (propertyValues.canBeChanged(modifier)) {
-                ObjectValue changeValue;
-                if (changeType instanceof DataClass) {
-                    Object oldValue = null;
-                    //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
-                    if (!(changeType instanceof FileClass)) {
-                        oldValue = implement.read(context, keys);
-                    }
-                    changeValue = context.requestUserData((DataClass) changeType, oldValue);
-                } else if (changeType instanceof ObjectType) {
-                    if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
-                        ObjectValue currentObject = propertyValues.readClasses(context);
-                        if(currentObject instanceof DataObject) // force notnull для edit'а по сути
-                            context.getBL().LM.getFormEdit().execute(context, currentObject);
+        Type changeType = getImplementType();
+        
+        if (propertyValues.canBeChanged(modifier)) {
+            ObjectValue changeValue;
+            if (changeType instanceof DataClass) {
+                Object oldValue = null;
+                //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
+                if (!(changeType instanceof FileClass)) {
+                    oldValue = implement.read(context, keys);
+                }
+                changeValue = context.requestUserData((DataClass) changeType, oldValue);
+            } else if (changeType instanceof ObjectType) {
+                if (ServerResponse.EDIT_OBJECT.equals(editActionSID)) {
+                    ObjectValue currentObject = propertyValues.readClasses(context);
+                    if(currentObject instanceof DataObject) // force notnull для edit'а по сути
+                        context.getBL().LM.getFormEdit().execute(context, currentObject);
 //                        context.requestUserObject(
 //                                formInstance.createObjectEditorDialogRequest(propertyValues, context.stack)
 //                        );
-                        return;
-                    }
+                    return;
+                }
 
-                    changeValue = context.requestUserObject(
-                            formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context.stack)
+                changeValue = context.requestUserObject(
+                        formInstance.createChangeEditorDialogRequest(propertyValues, context.getChangingPropertyToDraw(), filterProperty, context.stack)
+                );
+
+                if(filterProperty!=null && changeValue!=null) {
+                    Object updatedValue = filterProperty.read(
+                            context.getSession().sql, MapFact.singleton(filterProperty.interfaces.single(), changeValue), modifier, context.getQueryEnv()
                     );
 
-                    if(filterProperty!=null && changeValue!=null) {
-                        Object updatedValue = filterProperty.read(
-                                context.getSession().sql, MapFact.singleton(filterProperty.interfaces.single(), changeValue), modifier, context.getQueryEnv()
-                        );
-
-                        try {
-                            context.delayUserInteraction(new UpdateEditValueClientAction(BaseUtils.serializeObject(updatedValue)));
-                        } catch (IOException e) {
-                            Throwables.propagate(e);
-                        }
-                        context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
+                    try {
+                        context.delayUserInteraction(new UpdateEditValueClientAction(BaseUtils.serializeObject(updatedValue)));
+                    } catch (IOException e) {
+                        Throwables.propagate(e);
                     }
-                } else {
-                    throw new RuntimeException("not supported");
+                    context.delayUserInteraction(new AsyncGetRemoteChangesClientAction());
                 }
-
-                if (changeValue != null) {
-                    implement.change(keys, context.getEnv(), changeValue);
-                }
-
-                return;
+            } else {
+                throw new RuntimeException("not supported");
             }
+
+            if (changeValue != null) {
+                implement.change(keys, context.getEnv(), changeValue);
+            }
+
+            return;
         }
 
         context.delayUserInteraction(EditNotPerformedClientAction.instance);

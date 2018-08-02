@@ -986,13 +986,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 return property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null;
             }
         } : null;
-        ActionPropertyObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicy);
+        ImSet<SecurityPolicy> securityPolicies = SetFact.singleton(securityPolicy);
+        if(showReadOnly)
+            securityPolicies = securityPolicies.merge(logicsInstance.getSecurityManager().readOnlyPolicy);        
+        ActionPropertyObjectInstance<?> editAction = property.getEditAction(editActionSID, instanceFactory, checkReadOnly, securityPolicies);
         if(editAction == null) {
-            ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
-            return;
-        }
-
-        if (showReadOnly && !checkReadOnlyPermission(editAction, property)) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
             return;
         }
@@ -1013,11 +1011,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 return remappedEditAction.execute(FormInstance.this, stack, pushAdd, property, FormInstance.this);
             }
         });
-    }
-
-    private boolean checkReadOnlyPermission(ActionPropertyObjectInstance editAction, PropertyDrawInstance property) {
-        ChangePropertySecurityPolicy securityPolicy = logicsInstance.getSecurityManager().readOnlyPolicy.property.change;
-        return securityPolicy.checkPermission(editAction.property) && securityPolicy.checkPermission(property.propertyObject.property);
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
