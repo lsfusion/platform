@@ -277,7 +277,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             String canonicalName = (String) propertyValues.get("canonicalNameAction");
             String script = (String) propertyValues.get("script");
             if(script != null && !script.isEmpty())
-                script = String.format("run() = {%s;\n};", script);
+                script = String.format("run() {%s;\n};", script);
             boolean ignoreExceptions = propertyValues.get("ignoreExceptions") != null;
             Integer timeout = (Integer) propertyValues.get("timeout");
             String parameter = (String) propertyValues.get("parameter");

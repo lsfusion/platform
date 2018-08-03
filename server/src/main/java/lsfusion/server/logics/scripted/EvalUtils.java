@@ -195,7 +195,7 @@ public class EvalUtils {
                     prevBackSlash = c == '\\';
                     i++;
                 }
-                return String.format("run(%s) = {%s\n};", params, result);
+                return String.format("run(%s) {%s\n};", params, result);
             } else return null;
         }
     }
