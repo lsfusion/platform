@@ -1826,13 +1826,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     if (rChanges.containsKey(propCN)) {
                         String oldPropCN = rChanges.get(propCN);
                         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(businessLogics, oldPropCN);
-                        String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(), 
-                                LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
-                        
-                        if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
-                            storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                        try {
+                            String oldLogPropCN = LogicsModule.getLogPropertyCN("System", parser.getNamespace(), parser.getName(),
+                                    LogicsModule.getSignatureForLogProperty(parser.getSignature(), businessLogics.systemEventsLM));
+
+                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
+                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                            }
+                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
+                        } catch (CanonicalNameUtils.ParseException e) {
+                            startLogger.info(String.format("Cannot migrate LOG property to '%s': '%s'", logPropCN, e.getMessage()));           
                         }
-                        storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                     }
                 }
             }
