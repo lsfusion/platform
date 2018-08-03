@@ -21,44 +21,44 @@ GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 
 canceled 'Canceled' = DATA LOCAL BOOLEAN ();
-empty() = {};
-empty(Object o) = {};
+empty()  { };
+empty(Object o)  { };
 
-apply = { APPLY; }
-cancel = { CANCEL; }
-onStarted = ABSTRACT LIST ();
+apply  { APPLY; }
+cancel  { CANCEL; }
+onStarted  ABSTRACT LIST ( );
 
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
-formApply '{action.form.save}' = CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
-formCancel '{action.form.cancel}' = CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
-formEditReport '{action.form.edit}' = CUSTOM 'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
-formDrop '{action.form.drop}' = CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
-formRefresh '{action.form.refresh}' = CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
-formOk '{action.form.ok}' = CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
-formClose '{action.form.close}' = CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
+formApply '{action.form.save}'  CUSTOM  'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
+formCancel '{action.form.cancel}'  CUSTOM  'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
+formEditReport '{action.form.edit}'  CUSTOM  'lsfusion.server.logics.property.actions.form.EditReportActionProperty' ();
+formDrop '{action.form.drop}'  CUSTOM  'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
+formRefresh '{action.form.refresh}'  CUSTOM  'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
+formOk '{action.form.ok}'  CUSTOM  'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
+formClose '{action.form.close}'  CUSTOM  'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = CUSTOM 'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
+seek 'Найти объект'  CUSTOM  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
 
-sleep 'Sleep' = CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
+sleep 'Sleep'  CUSTOM  'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 
-applyOnlyWithoutRecalc = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
-applyOnlyCalc = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
-applyOnlyCheck = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCheckActionProperty' ();
-applyOnlyData = CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
-applyAll = CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
+applyOnlyWithoutRecalc  CUSTOM  'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
+applyOnlyCalc  CUSTOM  'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
+applyOnlyCheck  CUSTOM  'lsfusion.server.logics.property.actions.ApplyOnlyCheckActionProperty' ();
+applyOnlyData  CUSTOM  'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
+applyAll  CUSTOM  'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
-setNoCancelInTransaction() = CUSTOM <{ context.getSession().setNoCancelInTransaction(true); }>;
-dropNoCancelInTransaction() = CUSTOM <{ context.getSession().setNoCancelInTransaction(false); }>;
+setNoCancelInTransaction()  CUSTOM  <{ context.getSession().setNoCancelInTransaction(true); }>;
+dropNoCancelInTransaction()  CUSTOM  <{ context.getSession().setNoCancelInTransaction(false); }>;
 
-setNoEventsInTransaction() = CUSTOM <{ context.getSession().setNoEventsInTransaction(true); }>;
-dropNoEventsInTransaction() = CUSTOM <{ context.getSession().setNoEventsInTransaction(false); }>;
+setNoEventsInTransaction()  CUSTOM  <{ context.getSession().setNoEventsInTransaction(true); }>;
+dropNoEventsInTransaction()  CUSTOM  <{ context.getSession().setNoEventsInTransaction(false); }>;
 
-check() = {
+check()  { 
     applyOnlyCheck();
     
     TRY { 
@@ -68,8 +68,8 @@ check() = {
     }    
 }
 
-executeLocalEvents = CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
-executeLocalEvents() = { executeLocalEvents(NULL); }
+executeLocalEvents  CUSTOM  'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
+executeLocalEvents()  { executeLocalEvents(NULL); }
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX Object object BY staticName(object);
@@ -106,18 +106,18 @@ hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name
-open 'Открыть файл' = CUSTOM 'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
-open 'Открыть файл' (VARSTRING[255] source) = { open(source, NULL); }
+open 'Открыть файл'  CUSTOM  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
+open 'Открыть файл' (VARSTRING[255] source)  { open(source, NULL); }
 //source customFile, name
-open 'Открыть файл' = CUSTOM 'lsfusion.utils.system.OpenCustomFileActionProperty' (CUSTOMFILE, VARISTRING[255]);
-open 'Открыть файл' (CUSTOMFILE source) = { open(source, NULL); }
+open 'Открыть файл'  CUSTOM  'lsfusion.utils.system.OpenCustomFileActionProperty' (CUSTOMFILE, VARISTRING[255]);
+open 'Открыть файл' (CUSTOMFILE source)  { open(source, NULL); }
 //source rawFile, name
-open 'Открыть файл' = CUSTOM 'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
-open 'Открыть файл' (RAWFILE source) = { open(source, NULL); }
+open 'Открыть файл'  CUSTOM  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
+open 'Открыть файл' (RAWFILE source)  { open(source, NULL); }
 //source customLink
-open 'Открыть ссылку' = CUSTOM 'lsfusion.utils.system.OpenCustomLinkActionProperty' (CUSTOMLINK);
+open 'Открыть ссылку'  CUSTOM  'lsfusion.utils.system.OpenCustomLinkActionProperty' (CUSTOMLINK);
 //source rawLink
-open 'Открыть ссылку' = CUSTOM 'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
+open 'Открыть ссылку'  CUSTOM  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
@@ -134,17 +134,17 @@ readFile = DATA LOCAL CUSTOMFILE ();
 
 ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
-downloadFile 'Скопировать файл на клиент' = CUSTOM 'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
+downloadFile 'Скопировать файл на клиент'  CUSTOM  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 
-loadDownloadedLibrary 'Загрузить скачанную библиотеку' = CUSTOM 'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
-loadDownloadedFont 'Загрузить шрифт' = CUSTOM 'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
+loadDownloadedLibrary 'Загрузить скачанную библиотеку'  CUSTOM  'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
+loadDownloadedFont 'Загрузить шрифт'  CUSTOM  'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
-loadLibrary 'Загрузить библиотеку' (path)  = {
+loadLibrary 'Загрузить библиотеку' (path)   { 
     downloadFile(path);
     loadDownloadedLibrary(path);
 }
 
-loadFont 'Загрузить шрифт' (path)  = {
+loadFont 'Загрузить шрифт' (path)   { 
     downloadFile(path);
     loadDownloadedFont(path);
 }
@@ -180,14 +180,14 @@ requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-edit 'Редактировать' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
-edit(Object o) += { DIALOG EDIT Object =o DOCKED; }
-formEdit(Object o) = { edit(o); }
+edit 'Редактировать'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit(Object o) + {  DIALOG EDIT Object =o DOCKED; }
+formEdit(Object o)  { edit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
-delete 'Удалить' = ABSTRACT MULTI OVERRIDE FIRST (Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
-delete(Object o) += { DELETE o; } 
-formDelete(Object o) = {
+delete 'Удалить'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
+delete(Object o) + {  DELETE o; } 
+formDelete(Object o)  { 
     IF sessionOwners() THEN
         delete(o);
     ELSE 
@@ -219,12 +219,12 @@ END
 @applicationForm(migrationData, '{navigator.migration}');
 
 networkPath 'Сетевой путь' = DATA LOCAL VARSTRING[255] ();
-loadNetworkPath 'Загрузить' = CUSTOM 'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
+loadNetworkPath 'Загрузить'  CUSTOM  'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
 FORM networkPathForm 'Выбор сетевого пути'
     PROPERTIES() networkPath, loadNetworkPath;
 
 META defineLinkDialog (object, class)
-    dialog###object(class o) = {
+    dialog###object(class o)  { 
         networkPath() <- VARSTRING[255] (object(o));
         DIALOG networkPathForm DO {
             object(o) <- IMAGELINK (networkPath()); 

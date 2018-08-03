@@ -16,12 +16,12 @@ dateTime 'Время запуска' = DATA DATETIME (Script);
 dateTimeChange 'Время изменения' = DATA DATETIME (Script);  
 dateTimeChange(Script s) <- currentDateTime() WHEN CHANGED(text(s));
 
-preRunScript(Script s) = {
+preRunScript(Script s)  { 
     dateTime(s) <- currentDateTime();
     APPLY;
 }
 
-scriptExecution 'Выполнить скрипт' (Script s) = { 
+scriptExecution 'Выполнить скрипт' (Script s)  { 
     TRY { 
         preRunScript(s); 
         NEWSESSION { 
@@ -30,7 +30,7 @@ scriptExecution 'Выполнить скрипт' (Script s) = {
     } 
 }
 
-actionBodyExecution 'Выполнить действие' (Script s) = { 
+actionBodyExecution 'Выполнить действие' (Script s)  { 
     TRY { 
         preRunScript(s);
         NEWSESSION {
@@ -39,7 +39,7 @@ actionBodyExecution 'Выполнить действие' (Script s) = {
     } 
 }
 
-formExecution 'Показать форму' (Script s) = { 
+formExecution 'Показать форму' (Script s)  { 
     TRY { 
         preRunScript(s);
         NEWSESSION {
@@ -48,11 +48,11 @@ formExecution 'Показать форму' (Script s) = {
     } 
 }
 
-javaActionBodyExecution 'Выполнить Java-код' (Script s) = { 
+javaActionBodyExecution 'Выполнить Java-код' (Script s)  { 
     TRY {
         preRunScript(s);
         NEWSESSION {
-            EVAL CONCAT ' ', 'run() = CUSTOM <\{ ', text(s), ' \}>;';
+            EVAL CONCAT ' ', 'run()  CUSTOM  <\{ ', text(s), ' \}>;';
         }
     } 
 }
@@ -113,13 +113,13 @@ FORM interpreter 'Интерпретатор'
     PROPERTIES(r) NEW, DELETE GRID
 ;
 
-createScript () = {
+createScript ()  { 
     NEW s = Script {
         SEEK interpreter.s = s;
     }
 }
 
-copyScript 'Копировать' (Script sf) = {
+copyScript 'Копировать' (Script sf)  { 
     NEW s = Script {
         text(s) <- text(sf);
         SEEK interpreter.s = s;
@@ -128,7 +128,7 @@ copyScript 'Копировать' (Script sf) = {
         DELETE sf;
 }
 
-findScript 'Найти' (Script sf) = {
+findScript 'Найти' (Script sf)  { 
     DIALOG scriptsLog OBJECTS s INPUT DO {
         IF NOT PREV(sf IS Script) THEN
             DELETE sf;

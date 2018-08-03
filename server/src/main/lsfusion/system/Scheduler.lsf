@@ -60,7 +60,7 @@ timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (Sc
 ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
 // temporary for migration
-copyAction() = {
+copyAction()  { 
     FOR Action action = actionCanonicalName(canonicalName(property(ScheduledTaskDetail td))) INLINE DO {
         action(td) <- action;
     }    
@@ -91,13 +91,13 @@ date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
 isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
-stopScheduler 'Остановить планировщик' = CUSTOM 'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
-stopSchedulerApply 'Остановить планировщик' = {
+stopScheduler 'Остановить планировщик'  CUSTOM  'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
+stopSchedulerApply 'Остановить планировщик'  { 
     stopScheduler();
     apply();
 }
-runSetupScheduler 'Запустить планировщик' = CUSTOM 'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
-runSetupSchedulerApply 'Запустить планировщик' = {
+runSetupScheduler 'Запустить планировщик'  CUSTOM  'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
+runSetupSchedulerApply 'Запустить планировщик'  { 
     runSetupScheduler();
     apply();
 }
@@ -106,10 +106,10 @@ isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
 threadCountScheduler 'Кол-во потоков' = DATA INTEGER ();
 
-onStarted() += { runSetupScheduler(); }
+onStarted() + {  runSetupScheduler(); }
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
-evalScript 'Выполнить скрипт' () = { EVAL scriptText(); }
+evalScript 'Выполнить скрипт' ()  { EVAL scriptText(); }
                                          
 changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
@@ -121,8 +121,8 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                          AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
-executeScheduledTask 'Выполнить задание' = CUSTOM 'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
-setupScheduledTask 'Перезапустить задание' = CUSTOM 'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
+executeScheduledTask 'Выполнить задание'  CUSTOM  'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
+setupScheduledTask 'Перезапустить задание'  CUSTOM  'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
 WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            

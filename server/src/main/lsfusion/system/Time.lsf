@@ -80,7 +80,7 @@ CLASS Month 'Месяц' {
 TABLE month (Month);
 
 number 'Номер месяца' = DATA INTEGER (Month);
-onStarted() += {
+onStarted() + { 
     number(Month d) <- 1 WHERE d == Month.january; 
     number(Month d) <- 2 WHERE d == Month.february; 
     number(Month d) <- 3 WHERE d == Month.march; 
@@ -124,7 +124,7 @@ CLASS DOW 'День недели' {
 TABLE dow (DOW);
 
 number 'Номер дня недели' = DATA INTEGER (DOW);
-onStarted() += {
+onStarted() + { 
     number(DOW d) <- 0 WHERE d == DOW.sunday; 
     number(DOW d) <- 1 WHERE d == DOW.monday; 
     number(DOW d) <- 2 WHERE d == DOW.tuesday; 
@@ -135,7 +135,7 @@ onStarted() += {
 }
 
 numberM 'Номер дня недели' = DATA INTEGER (DOW);
-onStarted() += {
+onStarted() + { 
     numberM(DOW d) <- 0 WHERE d == DOW.monday; 
     numberM(DOW d) <- 1 WHERE d == DOW.tuesday; 
     numberM(DOW d) <- 2 WHERE d == DOW.wednesday; 

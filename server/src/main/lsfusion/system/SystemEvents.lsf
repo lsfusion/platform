@@ -100,18 +100,18 @@ disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionS
 currentLaunch = DATA Launch();
 launch = DATA Launch(Connection);
 
-onStarted() += {
+onStarted() + { 
     connectionStatus(connection) <- ConnectionStatus.disconnectedConnection 
         WHERE connectionStatus(connection) == ConnectionStatus.connectedConnection AND currentLaunch() != launch(connection);
 }
 
-reconnect 'Переподключить' (CustomUser user) = {
+reconnect 'Переподключить' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { NEWTHREAD reconnect(); CONNECTION conn; }
         }
 } CONFIRM;
 
-shutdown 'Отключить' (CustomUser user) = {
+shutdown 'Отключить' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { NEWTHREAD shutdown(); CONNECTION conn; }
         }
@@ -120,14 +120,14 @@ shutdown 'Отключить' (CustomUser user) = {
 hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection;
 
 fileUserLogs = DATA CUSTOMFILE (Connection);
-userLogs () = CUSTOM 'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
-requestUserLogs 'Запросить логи' (CustomUser user) = {
+userLogs ()  CUSTOM  'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
+requestUserLogs 'Запросить логи' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
         NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
     }
 }
-openUserLogs 'Открыть логи' (CustomUser user) = {
+openUserLogs 'Открыть логи' (CustomUser user)  { 
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
             open(fileUserLogs(conn), userLogin(conn) + '-log');
@@ -138,14 +138,14 @@ openUserLogs 'Открыть логи' (CustomUser user) = {
 }
 
 fileThreadDump = DATA CUSTOMFILE (Connection);
-threadDump () = CUSTOM 'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
-requestThreadDump 'Запросить ThreadDump' (CustomUser user) = {
+threadDump ()  CUSTOM  'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
+requestThreadDump 'Запросить ThreadDump' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 
         NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
     }
 }
-openThreadDump 'Открыть ThreadDump' (CustomUser user) = {
+openThreadDump 'Открыть ThreadDump' (CustomUser user)  { 
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
             open(fileThreadDump(conn), userLogin(conn) + '-dump');
@@ -217,11 +217,11 @@ is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(co
 
 countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
 
-onClientStarted = ABSTRACT LIST ();
+onClientStarted  ABSTRACT LIST ( );
 
-onWebClientStarted = ABSTRACT LIST ();
+onWebClientStarted  ABSTRACT LIST ( );
 
-showDefaultForms() = {
+showDefaultForms()  { 
     IF defaultForms(currentUser()) == DefaultForms.default THEN {
         LOCAL firstForm = VARSTRING[100] ();
         FOR actionName = canonicalName(action(NavigatorAction e)) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
@@ -246,13 +246,13 @@ showDefaultForms() = {
     }
 }
 
-onClientStarted() += { showDefaultForms(); }
-onWebClientStarted() += { showDefaultForms(); }
+onClientStarted() + {  showDefaultForms(); }
+onWebClientStarted() + {  showDefaultForms(); }
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
     
-clearApplicationLog () += {
+clearApplicationLog () + { 
 	NEWSESSION {
 	    IF countDaysClearPings() THEN {
 	        pingFromTo(Computer c, DATETIME dFrom, DATETIME dTo) <- NULL WHERE dTo <= subtractDay(currentDateTime(), countDaysClearPings());

@@ -83,15 +83,15 @@ levelPermitViewParent (PropertyGroup propertyGroup) =
 levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitView (propertyGroup), levelPermitView (propertyGroup);
 
-migrateAccess = ABSTRACT LIST (Property, Action); // temporary for migration
-migrateUserRoleAccess = ABSTRACT LIST (Property, Action); // temporary for migration
+migrateAccess  ABSTRACT LIST ( Property, Action); // temporary for migration
+migrateUserRoleAccess  ABSTRACT LIST ( Property, Action); // temporary for migration
 
 META defineActionOrPropertySecurityUserRoleData(name, caption)
     name caption = DATA BOOLEAN (UserRole, Property);
     name caption = DATA BOOLEAN (UserRole, Action);
     name caption (UserRole userRole, ActionOrProperty actionOrProperty) = MULTI name[UserRole, Property](userRole, actionOrProperty), name[UserRole, Action](userRole, actionOrProperty) MATERIALIZED;
     
-    migrateUserRoleAccess(Property property, Action action) += {
+    migrateUserRoleAccess(Property property, Action action) + { 
         name(UserRole userRole, action) <- name(userRole, property);
     }
 END
@@ -101,7 +101,7 @@ META defineActionOrPropertySecurityData(name, caption)
     name caption = DATA BOOLEAN (Action);
     name caption (ActionOrProperty actionOrProperty) = MULTI name[Property](actionOrProperty), name[Action](actionOrProperty) MATERIALIZED;
 
-    migrateAccess(Property property, Action action) += {
+    migrateAccess(Property property, Action action) + { 
         name(action) <- name(property);
     }
     
@@ -208,10 +208,10 @@ fullForbidChange (User user, ActionOrProperty property) =
     (fullForbidChange(property) AND user IS User OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
 
 cachePropertyPolicy 'Кэшировать политику безопасности для свойств' = DATA BOOLEAN (User);
-updatePropertyPolicyCaches = CUSTOM 'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
+updatePropertyPolicyCaches  CUSTOM  'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
 WHEN [=GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR CHANGED(fullForbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
     updatePropertyPolicyCaches(user);
-onStarted() += {
+onStarted() + { 
     FOR cachePropertyPolicy(User user) DO 
         updatePropertyPolicyCaches(user);
 }
@@ -235,7 +235,7 @@ defaultForms 'Отображение форм при запуске' (User user)
 defaultNumber 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = defaultNumber(mainRole(user), navigatorElement);
 
-maximizeForm = CUSTOM 'lsfusion.server.logics.security.MaximizeFormActionProperty' ();
+maximizeForm  CUSTOM  'lsfusion.server.logics.security.MaximizeFormActionProperty' ();
 
 permit 'Разрешить' = DATA BOOLEAN (NavigatorElement);
 forbid 'Запретить' = DATA BOOLEAN (NavigatorElement);
@@ -313,9 +313,9 @@ maxHeapSize 'MaxHeapSize' = DATA VARSTRING[10] (MemoryLimit);
 vmargs 'VM args' = DATA VARSTRING[1000] (MemoryLimit);
 
 // ---------------------------------------- Копирование роли ----------------------- //
-overCopy = ABSTRACT LIST (UserRole, UserRole);
+overCopy  ABSTRACT LIST ( UserRole, UserRole);
 
-copyData(UserRole userRole, UserRole ur) = {
+copyData(UserRole userRole, UserRole ur)  { 
     name(ur) <- name(userRole);
     permitViewAllProperty(ur) <- permitViewAllProperty(userRole);
     forbidViewAllProperty(ur) <- forbidViewAllProperty(userRole);
@@ -351,7 +351,7 @@ copyData(UserRole userRole, UserRole ur) = {
     EXEC overCopy(userRole, ur);
 }
 
-copy 'Копировать'(UserRole userRole) = {
+copy 'Копировать'(UserRole userRole)  { 
 	NEWSESSION {
 	    NEW ur = UserRole {
 	        EXEC copyData(userRole, ur);
@@ -531,7 +531,7 @@ FORM actionPolicy 'Политика безопасности для действ
     PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
 ;
 
-checkCurrentDateDependsAction = CUSTOM 'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
+checkCurrentDateDependsAction  CUSTOM  'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 
 DESIGN propertyPolicy {
@@ -582,7 +582,7 @@ NAVIGATOR {
 }
 
 // temporary for migration
-copyAccess() = {
+copyAccess()  { 
     FOR Property prop = propertyCanonicalName(TEXT name) AND Action action = actionCanonicalName(name) INLINE DO {
         migrateAccess(prop, action);
         migrateUserRoleAccess(prop, action);

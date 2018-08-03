@@ -86,10 +86,10 @@ dateSent 'Дата отправки' = DATE(dateTimeSent(Email e));
 dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
 emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
-openEMLFile 'Открыть файл EML' (Email email) = { open(emlFile(email)); }
+openEMLFile 'Открыть файл EML' (Email email)  { open(emlFile(email)); }
 
-receiveEmailAction 'Получить всю почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction 'Получить почту' = CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction 'Получить всю почту'  CUSTOM  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction 'Получить почту'  CUSTOM  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 
@@ -117,7 +117,7 @@ TABLE attachmentEmail(AttachmentEmail);
 
 id = DATA VARSTRING[100] (AttachmentEmail);  
 imported 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
-markImported 'Пометить импортированным' (AttachmentEmail ae) = {
+markImported 'Пометить импортированным' (AttachmentEmail ae)  { 
     IF NOT imported(ae) THEN imported(ae) <- TRUE;
 }
 importError 'Ошибка при импорте' = DATA BOOLEAN (AttachmentEmail);  
@@ -129,8 +129,8 @@ email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
-openFile 'Открыть' (AttachmentEmail attachmentEmail) = { open(file(attachmentEmail)); }
-saveFile 'Скачать' (AttachmentEmail attachmentEmail) = { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
+openFile 'Открыть' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
+saveFile 'Скачать' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 
@@ -140,7 +140,7 @@ FORM remindUserPass 'Напоминание пароля'
     PROPERTIES(u) READONLY login, name[Contact]
 ;
 
-emailUserPass 'Напоминание пароля' (Contact user) = { EMAIL
+emailUserPass 'Напоминание пароля' (Contact user)  { EMAIL
                                SUBJECT 'Напоминание пароля' IF user IS CustomUser
                                TO email(user)
                                INLINE remindUserPass OBJECTS u = user; }

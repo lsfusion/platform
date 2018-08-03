@@ -42,11 +42,11 @@ longitude 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude 'Координата X' = DATA LOCAL NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA LOCAL NUMERIC[10,5] ();
 
-getCoordinatesAddress = CUSTOM 'lsfusion.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
-getCoordinates(STRING[255] address) = { getCoordinatesAddress(address, calculateMapProvider()); }
-recalculateDistance = CUSTOM 'lsfusion.utils.geo.RecalculateDistancePOIActionProperty' (POI);
+getCoordinatesAddress  CUSTOM  'lsfusion.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
+getCoordinates(STRING[255] address)  { getCoordinatesAddress(address, calculateMapProvider()); }
+recalculateDistance  CUSTOM  'lsfusion.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
-calculateCoordinates 'Рассчитать координаты'(POI POI)= {
+calculateCoordinates 'Рассчитать координаты'(POI POI) { 
 
     getCoordinates (CONCAT ',', nameCountry(POI), address(POI));
     latitude(POI) <- readLatitude();
@@ -56,17 +56,17 @@ calculateCoordinates 'Рассчитать координаты'(POI POI)= {
 }
 WHEN LOCAL (SETCHANGED(nameCountry(POI POI)) OR SETCHANGED(address(POI))) AND autoSynchronizeCoordinates() DO EXEC calculateCoordinates(POI);
 
-recalculateAllDistances 'Пересчитать все расстояния'() = {
+recalculateAllDistances 'Пересчитать все расстояния'()  { 
     FOR POI p IS POI DO {
         recalculateDistance(p);
     }
 }
 
 // Показать на карте одну точку
-showOnMap 'Показать на карте'= CUSTOM 'lsfusion.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
-showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address) = { showOnMap (latitude, longitude, showMapProvider(), address); }
+showOnMap 'Показать на карте' CUSTOM  'lsfusion.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
+showOnMap(DOUBLE latitude, DOUBLE longitude, STRING[100] address)  { showOnMap (latitude, longitude, showMapProvider(), address); }
 
-showOnMap 'Показать на карте'(POI POI)= {
+showOnMap 'Показать на карте'(POI POI) { 
     EXEC showOnMap (latitude (POI), longitude (POI), address(POI));
 }
 
@@ -76,11 +76,11 @@ descriptionPath 'Описание' = DATA LOCAL VARSTRING[200] (POI);
 
 TABLE poiPoi (POI, POI); 
 distancePOIPOI 'Расстояние' = DATA INTEGER (POI, POI);
-showOnPath 'Показать точки на карте'= CUSTOM 'lsfusion.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
+showOnPath 'Показать точки на карте' CUSTOM  'lsfusion.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
 
 inPath 'Вкл' = DATA LOCAL BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA LOCAL POI();
-calculatePath 'Рассчитать путь'= CUSTOM 'lsfusion.utils.geo.CalculatePathActionProperty' ();
+calculatePath 'Рассчитать путь' CUSTOM  'lsfusion.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options
     PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
