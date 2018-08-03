@@ -1094,9 +1094,9 @@ scope {
 			$propertyStatement::topName = propertyName = $declaration.name;
 			$propertyStatement::topCaption = caption = $declaration.caption;
 		}
-		EQ
-		(	
+		(
 		    (
+                EQ
                 { LCP property = null; PropertySettings ps = null; }
 		        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
                 ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
@@ -3582,10 +3582,14 @@ overrideStatement
 }
 	:	prop=propertyUsage
 		'(' list=typedParameterList ')' { context = $list.params; dynamic = false; }
-		'+='
-		('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
-		(	(expr=propertyExpression[context, dynamic] { property = $expr.property; } ';')
-		|	actionDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { action = $actionDB.property; isAction = true; }
+		(
+    		'+='
+		    ('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
+		    expr=propertyExpression[context, dynamic] { property = $expr.property; } ';'
+		|
+    		'+'
+		    ('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
+		    actionDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { action = $actionDB.property; isAction = true; }
 		)
 	;
 

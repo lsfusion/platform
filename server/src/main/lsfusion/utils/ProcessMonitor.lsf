@@ -21,11 +21,11 @@ CLASS StateProcess 'Статус процесса' {
     idle 'Idle in transaction'
 }
 
-updateProcessMonitorAction 'Обновить монитор процессов' = CUSTOM 'lsfusion.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess 'Убить java-процесс' = CUSTOM 'lsfusion.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
-killSQLProcess 'Убить SQL-процесс' = CUSTOM 'lsfusion.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
-cancelJavaProcess 'Снять java-процесс' = CUSTOM 'lsfusion.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
-cancelSQLProcess 'Снять SQL-процесс' = CUSTOM 'lsfusion.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+updateProcessMonitorAction 'Обновить монитор процессов'  CUSTOM  'lsfusion.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+killJavaProcess 'Убить java-процесс'  CUSTOM  'lsfusion.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
+killSQLProcess 'Убить SQL-процесс'  CUSTOM  'lsfusion.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
+cancelJavaProcess 'Снять java-процесс'  CUSTOM  'lsfusion.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
+cancelSQLProcess 'Снять SQL-процесс'  CUSTOM  'lsfusion.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) CHARWIDTH 15;
@@ -54,7 +54,7 @@ dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME
 idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i) = CUSTOM 'lsfusion.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
+copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i)  CUSTOM  'lsfusion.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
 copiedFullQuerySQLProcess 'Скопированный полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 debugInfoSQLProcess 'Debug Info (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
@@ -139,17 +139,17 @@ blue(VARSTRING[10] i) = CASE
 sqlColorProcess(VARSTRING[10] i) = COLOR(intToColor(red(i), green(i), blue(i)));
 backgroundProcess(VARSTRING[10] i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
-cancelProcess 'Снять процесс' (VARSTRING[10] i) = {
+cancelProcess 'Снять процесс' (VARSTRING[10] i)  { 
     IF idSQLProcess(i) THEN cancelSQLProcess(i); ELSE cancelJavaProcess(i);
     updateProcessMonitorAction();
 }           
-killProcess 'Убить процесс' (VARSTRING[10] i) = { 
+killProcess 'Убить процесс' (VARSTRING[10] i)  { 
     IF isActiveSQLProcess(i) THEN killSQLProcess(i); ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
 showExtraButtons(VARSTRING[10] i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
                       
-setDefaultProcessType() = {
+setDefaultProcessType()  { 
     processType() <- ProcessType.activeSQL;
 }    
 

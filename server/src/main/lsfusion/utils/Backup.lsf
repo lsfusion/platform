@@ -2,20 +2,20 @@ MODULE Backup;
 
 REQUIRE System, Reflection, SchedulerDefaultData;
 
-makeBackup 'Создать копию'= CUSTOM 'lsfusion.utils.backup.BackupActionProperty' () TOOLBAR;
-makeBackupAction 'Создать копию' = {
+makeBackup 'Создать копию' CUSTOM  'lsfusion.utils.backup.BackupActionProperty' () TOOLBAR;
+makeBackupAction 'Создать копию'  { 
     makeBackup();
     formRefresh();
 }
-makePartialBackup 'Создать копию (оперативно)'= CUSTOM 'lsfusion.utils.backup.PartialBackupActionProperty' () TOOLBAR;
-makePartialBackupAction 'Создать копию (оперативно)' = {
+makePartialBackup 'Создать копию (оперативно)' CUSTOM  'lsfusion.utils.backup.PartialBackupActionProperty' () TOOLBAR;
+makePartialBackupAction 'Создать копию (оперативно)'  { 
     makePartialBackup();
     formRefresh();
 }
-save 'Скачать'= CUSTOM 'lsfusion.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-delete 'Удалить'= CUSTOM 'lsfusion.utils.backup.DeleteBackupActionProperty' (Backup);
+save 'Скачать' CUSTOM  'lsfusion.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete 'Удалить' CUSTOM  'lsfusion.utils.backup.DeleteBackupActionProperty' (Backup);
 
-deleteAction 'Удалить' (Backup b) = {
+deleteAction 'Удалить' (Backup b)  { 
     delete(b);
     formRefresh();
 } CONFIRM;
@@ -30,13 +30,13 @@ WHEN CHANGED(dumpDir()) DO setDumpDir();
 saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
 saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
 maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
-decimateBackups 'Проредить'= CUSTOM 'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
-decimateBackupsAction 'Проредить' = {
+decimateBackups 'Проредить' CUSTOM  'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackupsAction 'Проредить'  { 
     decimateBackups();
     formRefresh();
 }
 
-customRestore 'Восстановить таблицы' = CUSTOM 'lsfusion.utils.backup.CustomRestoreActionProperty' (Backup);
+customRestore 'Восстановить таблицы'  CUSTOM  'lsfusion.utils.backup.CustomRestoreActionProperty' (Backup);
 inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
 restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
 inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);
@@ -148,7 +148,7 @@ NAVIGATOR {
     }
 }
 
-loadDefaultScheduledTasks () += {    
+loadDefaultScheduledTasks () + {     
     loadDefaultScheduledTask ('Резервное копирование', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
     loadDefaultScheduledTaskDetail ('Резервное копирование', 1, 'Backup.makeBackup[]');
     loadDefaultScheduledTaskDetail ('Резервное копирование', 2, 'Backup.decimateBackups[]');        

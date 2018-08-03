@@ -4,7 +4,7 @@ REQUIRE System;
 
 GROUP loadDefault 'Загрузка отдельных объектов' : public;
 
-loadDefaultData 'Загрузить стандартные данные' = ABSTRACT LIST();
+loadDefaultData 'Загрузить стандартные данные'  ABSTRACT LIST( );
 
 FORM defaultData 'Стандартные данные'
     PROPERTIES() loadDefaultData
@@ -29,7 +29,7 @@ NAVIGATOR {
 }
 
 META implementLoadDefaultData (property)
-    loadDefaultData () += { property(); }
+    loadDefaultData () + {  property(); }
     EXTEND FORM defaultData
         PROPERTIES() property
     ;

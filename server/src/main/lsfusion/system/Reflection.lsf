@@ -233,27 +233,27 @@ sparseColumns 'Количество разреженных колонок' (tabl
 
 notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
 
-recalculateAggregation 'Пересчитать агрегации' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
-recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
-recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
-checkAggregation 'Проверить агрегации' = CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
-checkAggregation(VARISTRING[100] string) = { checkAggregation(tableColumnSID(string)); }
-dropDB = CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
-drop 'Окончательно удалить колонку' (DropColumn cl) = {
+recalculateAggregation 'Пересчитать агрегации'  CUSTOM  'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)'  CUSTOM  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)'  CUSTOM  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregation 'Проверить агрегации'  CUSTOM  'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+checkAggregation(VARISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
+dropDB  CUSTOM  'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
+drop 'Окончательно удалить колонку' (DropColumn cl)  { 
     dropDB(cl);
     DELETE cl;
 }
 
-recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table) = {
+recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateAggregation(tableColumn);    
     }
 }
-checkClasses 'Проверить классы таблицы' = CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
-checkClasses(VARISTRING[100] string) = { checkClasses(table(string)); }
-recalculateClasses 'Пересчитать классы таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+checkClasses 'Проверить классы таблицы'  CUSTOM  'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClasses(VARISTRING[100] string)  { checkClasses(table(string)); }
+recalculateClasses 'Пересчитать классы таблицы'  CUSTOM  'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
-recalculateStats 'Пересчитать статистику таблицы' = CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+recalculateStats 'Пересчитать статистику таблицы' CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
 
 disableClasses 'Отключить пересчёт и проверку классов' = DATA BOOLEAN (Table);
 disableStatsTable 'Отключить пересчёт и проверку статистики' (Table t) = notRecalculateStats(t);
@@ -299,22 +299,22 @@ sum 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 max 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
-changeQuantity(Property p, INTEGER q) = {
+changeQuantity(Property p, INTEGER q)  { 
     quantity(p) <- q;
 }
 
-changeQuantity(TableColumn tc) = {
+changeQuantity(TableColumn tc)  { 
     INPUT int = INTEGER DO
         IF int THEN {
             changeQuantity(property(tc), int);
         }      
 }
 
-changeNotNullQuantity(Property p, INTEGER q) = {
+changeNotNullQuantity(Property p, INTEGER q)  { 
     notNullQuantity(p) <- q;
 }
 
-changeNotNullQuantity(TableColumn tc) = {
+changeNotNullQuantity(TableColumn tc)  { 
     INPUT int = INTEGER DO
         IF int THEN {
             changeNotNullQuantity(property(tc), int);

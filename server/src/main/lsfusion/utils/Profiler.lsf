@@ -10,7 +10,7 @@ TABLE profileObject(ProfileObject);
 TABLE profileData(ProfileObject, ProfileObject, User, Form);
 
 text 'Действие' = DATA TEXT (ProfileObject) IN recognize CHARWIDTH 40;
-onStarted() += {
+onStarted() + { 
     text(ProfileObject po) <- staticCaption(ProfileObject.top) WHERE po == ProfileObject.top;
 }
 profileObject = GROUP AGGR ProfileObject profileObject BY text(profileObject);
@@ -34,10 +34,10 @@ squaresSum 'Сумма квадратов времени выполнения' =
 isStartedProfiler 'Запущен'  = DATA BOOLEAN ();
 isStoppedProfiler 'Остановлен' () = NOT isStartedProfiler();
 
-onStarted() += { isStartedProfiler() <- NULL; }
+onStarted() + {  isStartedProfiler() <- NULL; }
 
-doStartProfiler 'Запустить профилировщик' () = CUSTOM 'lsfusion.utils.StartProfilerActionProperty';
-startProfiler 'Запустить профилировщик' () = {
+doStartProfiler 'Запустить профилировщик' ()  CUSTOM  'lsfusion.utils.StartProfilerActionProperty';
+startProfiler 'Запустить профилировщик' ()  { 
     totalTime(ProfileObject p1, ProfileObject p2, User u, Form f) <- NULL;
     totalSQLTime(ProfileObject p1, ProfileObject p2, User u, Form f) <- NULL; 
     totalUserInteractionTime(ProfileObject p1, ProfileObject p2, User u, Form f) <- NULL; 
@@ -52,9 +52,9 @@ startProfiler 'Запустить профилировщик' () = {
     doStartProfiler();
 }
 
-doStopProfiler 'Остановить профилировщик' () = CUSTOM 'lsfusion.utils.StopProfilerActionProperty';
+doStopProfiler 'Остановить профилировщик' ()  CUSTOM  'lsfusion.utils.StopProfilerActionProperty';
 
-stopProfiler 'Остановить профилировщик' () = {
+stopProfiler 'Остановить профилировщик' ()  { 
     doStopProfiler();
     isStartedProfiler() <- NULL;
     APPLY;
@@ -62,7 +62,7 @@ stopProfiler 'Остановить профилировщик' () = {
 
 id(User user) = INTEGER(user AS User) MATERIALIZED INDEXED; 
 
-writeProfilerBatch () = {
+writeProfilerBatch ()  { 
     FOR [= GROUP SUM 1 IF callCount(TEXT t1, TEXT t2, INTEGER u, VARSTRING[100] f) BY t1](TEXT t1) AND NOT profileObject(t1) INLINE NEW p = ProfileObject DO {
         text(p) <- t1;    
     }     
@@ -203,7 +203,7 @@ child(ProfileObject up) = IF NOT up == selectedTop() THEN
         OVERRIDE (GROUP LAST ProfileObject down IF link(up, down) AND pathFrom(selectedTop(), down) ORDER order(up, down)),
             ProfileObject.top IF up IS ProfileObject;
        
-initFilters() = {
+initFilters()  { 
     order() <- ProfilerIndex.totalTimeNoWait;
     active(ProfilerIndex i) <- TRUE WHERE i == ProfilerIndex.totalTimeNoWait OR i == ProfilerIndex.totalSQLTime OR i == ProfilerIndex.inherentJavaTime OR i == ProfilerIndex.callCount;
 }
@@ -211,10 +211,10 @@ initFilters() = {
 toString = FORMULA STRING[100] 'CAST($1 AS character(100))';
 toBoolean(s) = IF s == 'true' THEN TRUE;
 
-changeProfilingSettingsInteger(ReflectionProperty r, INTEGER value) = {
+changeProfilingSettingsInteger(ReflectionProperty r, INTEGER value)  { 
    baseValue(r) <- toString(value);
 }
-changeProfilingSettingsBoolean(ReflectionProperty r, BOOLEAN value) = {
+changeProfilingSettingsBoolean(ReflectionProperty r, BOOLEAN value)  { 
     baseValue(r) <- IF value THEN 'true' ELSE 'false';
 }
 
@@ -421,7 +421,7 @@ DESIGN profiler {
     MOVE TOOLBARBOX;
 }
 
-setSelected 'Посмотреть дерево вызовов'(ProfileObject po) = {
+setSelected 'Посмотреть дерево вызовов'(ProfileObject po)  { 
     dataSelectedTop() <- po;
     ACTIVATE TAB profiler.call;
 } ASON CONTEXTMENU text[ProfileObject];

@@ -3,7 +3,7 @@ MODULE Image;
 REQUIRE System;
 
 resizedImage = DATA LOCAL IMAGEFILE ();
-resizeImage = CUSTOM 'lsfusion.utils.image.ResizeImageActionProperty' (IMAGEFILE, DOUBLE);
+resizeImage  CUSTOM  'lsfusion.utils.image.ResizeImageActionProperty' (IMAGEFILE, DOUBLE);
 
 //sampleResizeAction = {
 //    REQUEST IMAGEFILE INPUT;

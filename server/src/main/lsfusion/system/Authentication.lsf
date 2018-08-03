@@ -96,21 +96,21 @@ lastActivity 'Последняя активность' = DATA DATETIME (CustomUs
 lastComputer 'Рабочее место' = DATA Computer (CustomUser);
 hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
 
-calculateBase64Hash 'Вычислить Base64 хэш' = CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
-logOut (restart, reconnect) = CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
-shutdown 'Отключить' = {
+calculateBase64Hash 'Вычислить Base64 хэш'  CUSTOM  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+logOut (restart, reconnect)  CUSTOM  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+shutdown 'Отключить'  { 
     logOut(NULL, NULL);
 }
-reconnect 'Переподключить' = {
+reconnect 'Переподключить'  { 
     logOut(TRUE, TRUE);
 }
-restart 'Выйти' = {
+restart 'Выйти'  { 
     logOut(TRUE, NULL);
 }
 
-relogin 'Сменить пользователя' = CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin 'Сменить пользователя'  CUSTOM  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
-generateLoginPassword 'Сгенерировать логин и пароль' = CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
+generateLoginPassword 'Сгенерировать логин и пароль'  CUSTOM  'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
 minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
@@ -148,12 +148,12 @@ country 'Страна локали' (CustomUser user) = IF useClientLocale(user)
 timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
-deliveredNotificationAction = ABSTRACT LIST (CustomUser);
+deliveredNotificationAction  ABSTRACT LIST ( CustomUser);
 
 locked = DATA User (Object);
 lockResult = DATA LOCAL NESTED BOOLEAN ();
 
-lock(Object object) = {
+lock(Object object)  { 
 	NEWSESSION {    
 	    lockResult() <- NULL;
 	    APPLY SERIALIZABLE {
@@ -169,13 +169,13 @@ lock(Object object) = {
 	}
 }
 
-unlock(Object object) = {
+unlock(Object object)  { 
 	NEWSESSION { 
 	    APPLY locked(object) <- NULL;
 	}
 }
 
-changeSHA256Password(CustomUser customUser) = {
+changeSHA256Password(CustomUser customUser)  { 
     INPUT st=STRING[30] DO {
         EXEC calculateBase64Hash('SHA-256', st);
         sha256Password(customUser) <- calculatedHash();
@@ -206,7 +206,7 @@ DESIGN customUser {
     }
 }
 
-edit 'Редактировать' (CustomUser u) = {
+edit 'Редактировать' (CustomUser u)  { 
 	NEWSESSION {
         SHOW customUser OBJECTS u = u DOCKED;
 	}
@@ -275,7 +275,7 @@ DESIGN reloginLoginUser {
     }
 }
 
-reloginLoginUser() = {
+reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
         LOCAL user = CustomUser();
         user() <- customUser(login);
@@ -320,7 +320,7 @@ DESIGN reloginPasswordUser {
     }
 }
 
-reloginPassword(CustomUser customUser) = {
+reloginPassword(CustomUser customUser)  { 
     DIALOG reloginPasswordUser OBJECTS password INPUT DO {
         IF isLocked(customUser) THEN {
             MESSAGE 'Данный пользователь заблокирован';
@@ -377,7 +377,7 @@ DESIGN changePasswordUser {
     }
 }
 
-changePassword(CustomUser customUser) = {
+changePassword(CustomUser customUser)  { 
     DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
             EXEC calculateBase64Hash('SHA-256', old);
             IF  calculatedHash() != sha256Password(customUser) THEN {
@@ -396,7 +396,7 @@ changePassword(CustomUser customUser) = {
         }
 }
 
-changePassword() = {
+changePassword()  { 
       IF forbidChangePassword(currentUser()) THEN {
         MESSAGE 'Вы не можете изменить свой пароль';
       }
