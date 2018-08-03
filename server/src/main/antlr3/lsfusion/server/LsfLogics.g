@@ -171,6 +171,9 @@ grammar LsfLogics;
 		if (!$propertyStatement.isEmpty()) {
 			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $propertyStatement::topName, $propertyStatement::topCaption);
 		}
+		if (!$actionStatement.isEmpty()) {
+			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $actionStatement::topName, $actionStatement::topCaption);
+		}
 		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
 	}
 
@@ -259,7 +262,9 @@ statement
 		|	extendClassStatement
 		|	groupStatement
 		|	propertyStatement
-		|	overrideStatement
+		|	actionStatement
+		|	overridePropertyStatement
+		|	overrideActionStatement
 		|	constraintStatement
 		|	followsStatement
 		|	writeWhenStatement
@@ -1081,50 +1086,72 @@ scope {
 		    self.setPropertyScriptInfo(lp, $text, point);
 	}
 }
-	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
+	:	declaration=actionOrPropertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
 		{
 			$propertyStatement::topName = propertyName = $declaration.name;
 			$propertyStatement::topCaption = caption = $declaration.caption;
 		}
-		(
-		    (
-                EQ
-                { LCP property = null; PropertySettings ps = null; }
-		        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
-                ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
-                {
-                    if (inPropParseState() && property != null) { // not native
-                        if(ps == null)
-                            ps = new PropertySettings();
-                        property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
-                        lp = property;
-                    }
-                }
-            )
-        |
+        EQ
+        { LCP property = null; PropertySettings ps = null; }
+        pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
+        ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
+        {
+            if (inPropParseState() && property != null) { // not native
+                if(ps == null)
+                    ps = new PropertySettings();
+                property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
+                lp = property;
+            }
+        }
+	;
+
+actionStatement
+scope {
+	String topName;
+	LocalizedString topCaption;
+}
+@init {
+	List<TypedParameter> context = new ArrayList<>();
+	List<ResolveClassSet> signature = null; 
+	boolean dynamic = true;
+	DebugInfo.DebugPoint point = getCurrentDebugPoint();
+	
+	String propertyName = null;
+	LocalizedString caption = null;
+	LP lp = null;
+}
+@after {
+	if (inPropParseState()) {
+	    if (lp != null) // not native
+		    self.setPropertyScriptInfo(lp, $text, point);
+	}
+}
+	:	'ACTION'?
+	    declaration=actionOrPropertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
+		{
+			$actionStatement::topName = propertyName = $declaration.name;
+			$actionStatement::topCaption = caption = $declaration.caption;
+		}
+        { LAP property = null; ActionSettings ps = null; }
+        (
             (
-                { LAP property = null; ActionSettings ps = null; }
-	            (
-	                (
-	                    ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
-	                    ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
-	                )
-	    		|	
-	    		    (
-	    		        aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
-		    		    (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
-	                )
-	            )
-                {
-                    if (inPropParseState()) {
-                        if(ps == null)
-                            ps = new ActionSettings();
-                        self.addSettingsToAction(property, propertyName, caption, context, signature, ps);
-                        lp = property;
-                    }
-                }
-		    )
+                ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+                ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
+            )
+        |	
+            (
+                aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
+                (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
+            )
         )
+        {
+            if (inPropParseState()) {
+                if(ps == null)
+                    ps = new ActionSettings();
+                self.addSettingsToAction(property, propertyName, caption, context, signature, ps);
+                lp = property;
+            }
+        }
 	;
 
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
@@ -1135,7 +1162,7 @@ propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP p
 	;
 
 
-propertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
+actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<TypedParameter> params]
 	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
 		('(' paramList=typedParameterList ')' { $params = $paramList.params; })? 
 	;
@@ -3546,34 +3573,41 @@ terminalFlowActionDefinitionBody returns [LAPWithParams property]
 /////////////////////////////OVERRIDE STATEMENT/////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-overrideStatement
+overridePropertyStatement
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	boolean dynamic = true;
 	LCPWithParams property = null;
-	LAPWithParams action = null;
 	LCPWithParams when = null;
-	boolean isAction = false;
 }
 @after {
 	if (inPropParseState()) {
-	    if(isAction)
-		    self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
-        else
-            self.addImplementationToAbstractProp($prop.propUsage, $list.params, property, when);
+        self.addImplementationToAbstractProp($prop.propUsage, $list.params, property, when);
 	}
 }
 	:	prop=propertyUsage
-		'(' list=typedParameterList ')' { context = $list.params; dynamic = false; }
-		(
-    		'+='
-		    ('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
-		    expr=propertyExpression[context, dynamic] { property = $expr.property; } ';'
-		|
-    		'+'
-		    ('WHEN' whenExpr=propertyExpression[context, dynamic] 'THEN' { when = $whenExpr.property; })?
-		    actionDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { action = $actionDB.property; isAction = true; }
-		)
+		'(' list=typedParameterList ')' { context = $list.params; }
+        '+='
+        ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
+        expr=propertyExpression[context, false] { property = $expr.property; } ';'
+	;
+
+overrideActionStatement
+@init {
+	List<TypedParameter> context = new ArrayList<>();
+	LAPWithParams action = null;
+	LCPWithParams when = null;
+}
+@after {
+	if (inPropParseState()) {
+        self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
+	}
+}
+	:	'ACTION'?
+	    prop=propertyUsage
+		'(' list=typedParameterList ')' { context = $list.params; }
+        '+'
+        ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
+        actionDB=listTopContextDependentActionDefinitionBody[context, false, true] { action = $actionDB.property; }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
