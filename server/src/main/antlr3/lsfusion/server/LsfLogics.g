@@ -591,9 +591,8 @@ formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNa
 
 
 formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event]
-	:	(objectName=ID { $name = $objectName.text; } EQ)?
+	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
 		id=classId { $className = $id.sid; }
-		(c=localizedStringLiteral { $caption = $c.val; })?
 		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
 	; 
 	
@@ -2404,7 +2403,7 @@ fixedCharWidthSetting [LP property]
 		self.setFixedCharWidth(property, $width.val);
 	}
 }
-	:	'FIXEDCHARWIDTH' width = intLiteral
+	:	'CHARWIDTH' width = intLiteral 'FIXED'
 	;
 
 charWidthSetting [LP property]
@@ -2987,7 +2986,7 @@ customActionDefinitionBody returns [LAP property, List<ResolveClassSet> signatur
 		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
 	}
 }
-	:	'CUSTOM'
+	:	'INTERNAL'
         (   
             classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? 
 		|   code = codeLiteral
@@ -3106,7 +3105,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 				form=compoundID { forms.add($form.sid); }
 				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
 			)
-		|	(	'ATTACH' 'FILE'
+		|	(	'ATTACH'
 				
 				attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
 				
@@ -4814,7 +4813,7 @@ fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'ITEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
-				| 	'CUSTOMFILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'CUSTOMLINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'  
+				| 	'FILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'CUSTOMLINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
 				|	'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
