@@ -141,7 +141,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isEditableChangeAction() {
-        assert !hasChangeAction || !isReadOnly(); // по идее если readOnly то не hasChangeAction 
         return hasChangeAction && !isReadOnly();
     }
 
