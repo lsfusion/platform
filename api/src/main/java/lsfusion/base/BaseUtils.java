@@ -19,8 +19,8 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -593,7 +593,7 @@ public class BaseUtils {
         }
 
         if (objectType == 11) {
-            return readObjectFromStream(inStream);
+            return deserializeBigDecimal(inStream);
         }
 
         throw new IOException();
@@ -613,15 +613,6 @@ public class BaseUtils {
             }
 
             return result.toString();
-        }
-    }
-
-    public static Object readObjectFromStream(DataInputStream inStream) throws IOException {
-        ObjectInputStream ois = new ObjectInputStream(inStream);
-        try {
-            return ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -706,7 +697,7 @@ public class BaseUtils {
 
         if (object instanceof BigDecimal) {
             outStream.writeByte(11);
-            writeObjectToStream(object, outStream);
+            serializeBigDecimal(outStream, (BigDecimal) object);
             return;
         }
 
@@ -761,11 +752,30 @@ public class BaseUtils {
         }
     }
 
-    public static void writeObjectToStream(Object object, DataOutputStream outStream) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(outStream);
-        oos.writeObject(object);
+    public static void serializeBigDecimal(DataOutputStream outStream, BigDecimal number) throws IOException {
+        if (number == null) {
+            outStream.writeInt(-1);
+        } else {
+            byte[] numberArray = number.unscaledValue().toByteArray();
+            outStream.writeInt(numberArray.length);
+            outStream.write(numberArray);
+            outStream.writeInt(number.scale());
+        }
     }
-
+    
+    public static BigDecimal deserializeBigDecimal(DataInputStream inStream) throws IOException {
+        int arrayLen = inStream.readInt();
+        if (arrayLen < 0) {
+            return null;
+        }
+        
+        byte[] numberArray = new byte[arrayLen];
+        inStream.read(numberArray);
+        BigInteger intNumber = new BigInteger(numberArray);
+        int scale = inStream.readInt();
+        return new BigDecimal(intNumber, scale);
+    }
+    
     public static boolean startsWith(char[] string, int off, char[] check) {
         if (string.length - off < check.length)
             return false;
