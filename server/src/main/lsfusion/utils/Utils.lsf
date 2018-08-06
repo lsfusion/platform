@@ -110,7 +110,8 @@ repeat (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'repeat($1,$2)', MS 'REPLICATE ($
 
 onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END', MS 'CASE WHEN ltrim($1) NOT LIKE \'%[^0-9]%\' THEN 1 ELSE NULL END';
 
-encode = FORMULA 'encode(($1),($2))';
+encode = FORMULA TEXT 'encode(($1),($2))';
+decode = FORMULA RAWFILE 'decode(($1),($2))';
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  CUSTOM  'lsfusion.utils.utils.EncodeBase64ActionProperty' (TEXT);
