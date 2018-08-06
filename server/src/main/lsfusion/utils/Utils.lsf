@@ -29,8 +29,8 @@ resultCustomFile = DATA LOCAL FILE ();
 stringToCustomFile 'Запись строки в файл'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
 
 resultString = DATA LOCAL TEXT ();
-//customFile, charset
-customFileToString 'Запись файла в строку'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
+//file, charset
+fileToString 'Запись файла в строку'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
 
 setExtension = FORMULA FILE 'casttocustomfile(($1),$2)';
 
@@ -168,7 +168,7 @@ round6 (number) = round(number, 6);
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 
-customFile = DATA LOCAL FILE ();
+file = DATA LOCAL FILE ();
 wordFile = DATA LOCAL WORDFILE ();
 imageFile = DATA LOCAL IMAGEFILE ();
 pdfFile = DATA LOCAL PDFFILE ();
