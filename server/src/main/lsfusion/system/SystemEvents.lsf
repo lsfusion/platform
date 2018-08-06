@@ -236,7 +236,7 @@ showDefaultForms()  {
             } ELSE
                 action() <- actionName + '()';
                 
-            NEWSESSION EVAL 'run() = \{ ' + action() + '; \};';
+            NEWSESSION EVAL 'run() \{ ' + action() + '; \};';
             IF maximize() THEN 
                 maximizeForm();
         }
