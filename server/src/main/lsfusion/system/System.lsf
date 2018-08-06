@@ -108,7 +108,7 @@ hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
 //source path, name
 open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
 open 'Открыть файл' (VARSTRING[255] source)  { open(source, NULL); }
-//source customFile, name
+//source file, name
 open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenCustomFileActionProperty' (FILE, VARISTRING[255]);
 open 'Открыть файл' (FILE source)  { open(source, NULL); }
 //source rawFile, name
