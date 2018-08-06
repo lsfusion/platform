@@ -130,6 +130,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         }
                     }
                 }
+                for(ImList<ActionPropertyObjectEntity<?>> eventActions : formEntity.getEventActions().valueIt()) {
+                    for(ActionPropertyObjectEntity<?> eventAction : eventActions) {
+                        if (eventAction != null && eventAction.property.ignoreReadOnlyPolicy()) {
+                            readOnlyPolicy.property.change.permit(eventAction.property); // permits eventAction if it doesn't change anything
+                        }
+                    }
+                }
             }
 
             allowConfiguratorPolicy = addPolicy(localize("{logics.policy.allow.configurator}"), localize("{logics.policy.logics.allow.configurator}"));
