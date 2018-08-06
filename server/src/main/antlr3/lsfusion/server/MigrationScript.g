@@ -165,7 +165,7 @@ fragment DIGITS		:	('0'..'9')+;
 
 PRIMITIVE_TYPE      :   'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATETIME' | 'DATE' | 'YEAR' | 'TIME'
                     |   'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE' | 'FILE' | 'EXCELFILE'
-                    |   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'CUSTOMLINK' | 'EXCELLINK'
+                    |   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK'
                     |   'STRING' | 'NUMERIC' | 'COLOR'
                     ;
 

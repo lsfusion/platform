@@ -115,7 +115,7 @@ open 'Открыть файл' (FILE source)  { open(source, NULL); }
 open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
 open 'Открыть файл' (RAWFILE source)  { open(source, NULL); }
 //source customLink
-open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenCustomLinkActionProperty' (CUSTOMLINK);
+open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenCustomLinkActionProperty' (LINK);
 //source rawLink
 open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
   
@@ -173,7 +173,7 @@ requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
 requestedRawLink = DATA LOCAL NESTED RAWLINK ();
-requestedCustomLink = DATA LOCAL NESTED CUSTOMLINK ();
+requestedCustomLink = DATA LOCAL NESTED LINK ();
 requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
