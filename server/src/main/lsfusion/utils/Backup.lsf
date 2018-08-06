@@ -21,10 +21,10 @@ deleteAction 'Удалить' (Backup b)  {
 } CONFIRM;
 
 binPath 'Директория Bin PostgreSQL' = DATA VARSTRING[100] ();
-setBinPath  CUSTOM 'lsfusion.utils.backup.SetBinPathActionProperty'();
+setBinPath  INTERNAL 'lsfusion.utils.backup.SetBinPathActionProperty'();
 WHEN CHANGED(binPath()) DO setBinPath();
 dumpDir 'Путь сохранения бэкапов PostgreSQL' = DATA VARSTRING[100] ();
-setDumpDir  CUSTOM 'lsfusion.utils.backup.SetDumpDirActionProperty'();
+setDumpDir  INTERNAL 'lsfusion.utils.backup.SetDumpDirActionProperty'();
 WHEN CHANGED(dumpDir()) DO setDumpDir();
 
 saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
