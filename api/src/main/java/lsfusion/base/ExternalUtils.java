@@ -165,7 +165,7 @@ public class ExternalUtils {
         Result<Boolean> humanReadable = new Result<>();
         String extension = getExtensionFromContentType(contentType, humanReadable);
         Charset charset = getCharsetFromContentType(contentType);
-        if(extension != null) { // CUSTOMFILE
+        if(extension != null) { // FILE
             byte[] file;
             if(humanReadable.result && convertedToString)
                 file = ((String)object).getBytes(charset);

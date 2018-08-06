@@ -84,7 +84,7 @@ public final class ClassCanonicalNameUtils {
         put("IMAGEFILE", ImageClass.get(false, false));
         put("PDFFILE", PDFClass.get(false, false));
         put("RAWFILE", CustomStaticFormatFileClass.get());
-        put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
+        put("FILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));
@@ -136,7 +136,7 @@ public final class ClassCanonicalNameUtils {
         put("IMAGEFILE", ImageClass.get(false, false));
         put("PDFFILE", PDFClass.get(false, false));
         put("RAWFILE", CustomStaticFormatFileClass.get());
-        put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
+        put("FILE", DynamicFormatFileClass.get(false, false));
         put("EXCELFILE", ExcelClass.get(false, false));
         put("WORDLINK", WordLinkClass.get(false));
         put("IMAGELINK", ImageLinkClass.get(false));

@@ -16,7 +16,7 @@ import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
-// !!! ONLY ACTIONS CREATED WITH CUSTOM OPERATOR !!!!
+// !!! ONLY ACTIONS CREATED WITH INTERNAL OPERATOR !!!!
 public abstract class ScriptingActionProperty extends ExplicitActionProperty {
     protected ScriptingLogicsModule LM;
     

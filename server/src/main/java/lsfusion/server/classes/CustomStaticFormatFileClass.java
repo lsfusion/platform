@@ -18,7 +18,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     protected String getFileSID() {
         if(filterExtensions.isEmpty())
             return "RAWFILE";
-        return "CUSTOMFILE";
+        return "FILE";
     }
 
     public static CustomStaticFormatFileClass get(boolean multiple, boolean storeName, String description, String extensions) {

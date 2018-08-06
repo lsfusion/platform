@@ -38,11 +38,11 @@ markSeenOnChange  ABSTRACT LIST ( Chat);
 editMessage 'Редактировать сообщение' (Chat c, Message m)  ABSTRACT LIST ( Chat, Message);
 
 author 'Автор' = DATA CustomUser (Message);
-nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) FIXEDCHARWIDTH 30;
+nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 FIXED;
 own(Message m) = author(m) == currentUser();
 text 'Текст' = DATA TEXT (Message) CHARWIDTH 50;
-dateTime 'Время' = DATA DATETIME (Message) FIXEDCHARWIDTH 30;
-lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) FIXEDCHARWIDTH 30;
+dateTime 'Время' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
+lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
 system 'Системное' = DATA BOOLEAN (Message);
 status 'Статус' = DATA MessageStatus (Message, CustomUser);
 captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
@@ -51,8 +51,8 @@ chat = DATA Chat (Message);
 nameChat 'Чат' (Message message) = name(chat(message)) CHARWIDTH 30;
 nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
-attachment 'Вложение' = DATA CUSTOMFILE (Message);
-hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE FIXEDCHARWIDTH 1;
+attachment 'Вложение' = DATA FILE (Message);
+hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 FIXED;
 loadAttachment 'Прикрепить вложение' (Message m)  { INPUT =attachment(m) CHANGE; }
 openAttachment 'Открыть вложение' (Message m)  { 
     IF attachment(m) THEN {
@@ -70,7 +70,7 @@ editable (Message m) = NOT readonly(m);
 
 seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
 deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
-status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' FIXEDCHARWIDTH 10;
+status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 FIXED;
  
 countMessages 'Кол-во сообщений' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
@@ -78,8 +78,8 @@ lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP LAS
 lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
 
 unreadMessages 'Непрочитанных' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
-unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) FIXEDCHARWIDTH 10;
-unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) FIXEDCHARWIDTH 10;
+unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 FIXED;
+unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 FIXED;
 sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
 
 chatNotFound = DATA LOCAL BOOLEAN ();
@@ -90,7 +90,7 @@ editingMessage 'Редактируемое сообщение' = DATA LOCAL Mess
 noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
 
-attachment 'Вложение' = DATA LOCAL NESTED CUSTOMFILE (Chat);
+attachment 'Вложение' = DATA LOCAL NESTED FILE (Chat);
 loadAttachment 'Прикрепить вложение' (Chat c)  { INPUT =attachment(c) CHANGE; }
 deleteAttachment 'Удалить вложение' (Chat c)  { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
 showLoadAttachment (Chat c) = NOT attachment(c);

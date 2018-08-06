@@ -545,7 +545,7 @@ END
 
 META defineDocumentDetailNumber (object, detailClass)
     number 'Номер' (detailClass d) = number(object(d)) IN recognize CHARWIDTH 7;
-    series 'Серия' (detailClass d) = series(object(d)) IN recognize FIXEDCHARWIDTH 3;
+    series 'Серия' (detailClass d) = series(object(d)) IN recognize CHARWIDTH 3 FIXED;
     seriesNumber 'Серия/номер' (detailClass d) = seriesNumber(object(d));
 END
 

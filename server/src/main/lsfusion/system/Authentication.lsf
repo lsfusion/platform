@@ -96,8 +96,8 @@ lastActivity 'Последняя активность' = DATA DATETIME (CustomUs
 lastComputer 'Рабочее место' = DATA Computer (CustomUser);
 hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
 
-calculateBase64Hash 'Вычислить Base64 хэш'  CUSTOM  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
-logOut (restart, reconnect)  CUSTOM  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+calculateBase64Hash 'Вычислить Base64 хэш'  INTERNAL  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+logOut (restart, reconnect)  INTERNAL  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
 shutdown 'Отключить'  { 
     logOut(NULL, NULL);
 }
@@ -108,9 +108,9 @@ restart 'Выйти'  {
     logOut(TRUE, NULL);
 }
 
-relogin 'Сменить пользователя'  CUSTOM  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin 'Сменить пользователя'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
-generateLoginPassword 'Сгенерировать логин и пароль'  CUSTOM  'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
+generateLoginPassword 'Сгенерировать логин и пароль'  INTERNAL  'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
 minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();

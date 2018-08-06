@@ -1835,7 +1835,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             }
                             storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
                         } catch (CanonicalNameUtils.ParseException e) {
-                            startLogger.info(String.format("Cannot migrate LOG property to '%s': '%s'", logPropCN, e.getMessage()));           
+                            startLogger.info(String.format("Cannot migrate LOG property to '%s': '%s'", logPropCN, e.getMessage()));
                         }
                     }
                 }

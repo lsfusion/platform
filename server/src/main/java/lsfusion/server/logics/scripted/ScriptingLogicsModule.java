@@ -1558,7 +1558,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExternalJavaActionProp(List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) {
-        throw new UnsupportedOperationException("CUSTOM JAVA not supported");
+        throw new UnsupportedOperationException("EXTERNAL JAVA not supported");
     }
 
     public LAPWithParams addScriptedExternalDBActionProp(LCPWithParams connectionString, LCPWithParams exec, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {

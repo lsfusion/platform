@@ -16,7 +16,7 @@ TABLE numerator (Numerator);
 
 name 'Наименование' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
 
-series 'Серия' = DATA STRING[2] (Numerator) IN recognize FIXEDCHARWIDTH 3;
+series 'Серия' = DATA STRING[2] (Numerator) IN recognize CHARWIDTH 3 FIXED;
 
 minValue 'Мин. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
 maxValue 'Макс. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
@@ -120,7 +120,7 @@ GROUP numbered 'Нумератор' : recognize;
 
 META defineNumberedAbstract(class)
     number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
-    series 'Серия' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED FIXEDCHARWIDTH 3; 
+    series 'Серия' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 FIXED; 
 
     seriesNumber 'Серия/Номер' (class o) = 
         CONCAT '', series(o), number(o) 
@@ -145,7 +145,7 @@ DESIGN options{
 
 META defineNumbered(class)
     number 'Номер' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
-    series 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
+    series 'Серия' = DATA STRING[2] (class) IN numbered CHARWIDTH 3 FIXED;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
          INLINE DO number(o) <- lower(number(o));
@@ -219,7 +219,7 @@ END
 META defineNumerated(object1, object2)
 
     number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 8;
-    series 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
+    series 'Серия' = DATA STRING[2] (###object1, ###object2) CHARWIDTH 3 FIXED;
     seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
 
     numerator = DATA Numerator (###object1, ###object2);

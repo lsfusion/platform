@@ -208,7 +208,7 @@ fullForbidChange (User user, ActionOrProperty property) =
     (fullForbidChange(property) AND user IS User OR hasUserRoleCustom(user) == forbidChange (user, property)) AND NOT permitChange(user, property);
 
 cachePropertyPolicy 'Кэшировать политику безопасности для свойств' = DATA BOOLEAN (User);
-updatePropertyPolicyCaches  CUSTOM  'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
+updatePropertyPolicyCaches  INTERNAL  'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
 WHEN [=GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR CHANGED(fullForbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
     updatePropertyPolicyCaches(user);
 onStarted() + { 
@@ -234,7 +234,7 @@ defaultForms 'Отображение форм при запуске' (User user)
 defaultNumber 'Номер по умолчанию' = DATA INTEGER (UserRole, NavigatorElement);
 defaultNumber 'Номер по умолчанию' (User user, NavigatorElement navigatorElement) = defaultNumber(mainRole(user), navigatorElement);
 
-maximizeForm  CUSTOM  'lsfusion.server.logics.security.MaximizeFormActionProperty' ();
+maximizeForm  INTERNAL  'lsfusion.server.logics.security.MaximizeFormActionProperty' ();
 
 permit 'Разрешить' = DATA BOOLEAN (NavigatorElement);
 forbid 'Запретить' = DATA BOOLEAN (NavigatorElement);
@@ -530,7 +530,7 @@ FORM actionPolicy 'Политика безопасности для действ
     PROPERTIES(ur, p) permitView, forbidView, permitChange, forbidChange
 ;
 
-checkCurrentDateDependsAction  CUSTOM  'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
+checkCurrentDateDependsAction  INTERNAL  'lsfusion.server.logics.security.CheckCurrentDateDependsActionProperty' (Property);
 WHEN FORMS propertyPolicy, properties SETCHANGED(userLoggable(Property p)) DO checkCurrentDateDependsAction(p);
 
 DESIGN propertyPolicy {
