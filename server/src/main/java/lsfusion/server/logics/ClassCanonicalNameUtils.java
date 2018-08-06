@@ -90,7 +90,7 @@ public final class ClassCanonicalNameUtils {
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
-        put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
+        put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("STRING", defaultStringClassObj);
@@ -142,7 +142,7 @@ public final class ClassCanonicalNameUtils {
         put("IMAGELINK", ImageLinkClass.get(false));
         put("PDFLINK", PDFLinkClass.get(false));
         put("RAWLINK", CustomStaticFormatLinkClass.get());
-        put("CUSTOMLINK", DynamicFormatLinkClass.get(false));
+        put("LINK", DynamicFormatLinkClass.get(false));
         put("EXCELLINK", ExcelLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("TEXT", StringClass.text);

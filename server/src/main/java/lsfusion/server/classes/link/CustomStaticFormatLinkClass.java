@@ -20,7 +20,7 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
     protected String getFileSID() {
         if(filterExtensions.isEmpty())
             return "RAWLINK";
-        return "CUSTOMLINK";
+        return "LINK";
     }
 
     public static CustomStaticFormatLinkClass get(boolean multiple, String description, String extensions) {
