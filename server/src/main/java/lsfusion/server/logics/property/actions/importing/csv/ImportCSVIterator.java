@@ -48,7 +48,7 @@ public class ImportCSVIterator extends ImportIterator {
                 //cut BOM
                 if (!line.isEmpty() && line.charAt(0) == '\uFEFF')
                     line = line.substring(1);
-                String[] splittedLine = line.split(String.format("\\%s|;", separator));
+                String[] splittedLine = line.split(String.format("\\%s", separator));
                 List<String> result = new ArrayList<>();
                 for (Integer column : columns) {
                     result.add(formatValue(properties, columns, column, splittedLine.length > column ? splittedLine[column] : ""));
