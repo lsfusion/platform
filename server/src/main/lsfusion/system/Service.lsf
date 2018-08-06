@@ -4,27 +4,27 @@ REQUIRE System, Reflection, Time, Security;
 
 NAMESPACE Service;
 
-serviceDBAction 'Обслуживание БД'  CUSTOM  'lsfusion.server.logics.service.ServiceDBActionProperty' ();
-checkAggregationsAction 'Проверить агрегации'  CUSTOM  'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
-checkClassesAction 'Проверить классы'  CUSTOM  'lsfusion.server.logics.service.CheckClassesActionProperty' ();
-checkIndicesAction 'Проверить индексы'  CUSTOM  'lsfusion.server.logics.service.CheckIndicesActionProperty' ();
-recalculateClassesAction 'Пересчитать классы'  CUSTOM  'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
-recalculateAction 'Пересчитать агрегации'  CUSTOM  'lsfusion.server.logics.service.RecalculateActionProperty' ();
-recalculateFollowsAction 'Пересчитать следствия и ограничения'  CUSTOM  'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
-recalculateStatsAction 'Пересчитать статистику'  CUSTOM  'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
-overCalculateStatsAction 'Дорасчитать статистику'  CUSTOM  'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
+serviceDBAction 'Обслуживание БД'  INTERNAL  'lsfusion.server.logics.service.ServiceDBActionProperty' ();
+checkAggregationsAction 'Проверить агрегации'  INTERNAL  'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
+checkClassesAction 'Проверить классы'  INTERNAL  'lsfusion.server.logics.service.CheckClassesActionProperty' ();
+checkIndicesAction 'Проверить индексы'  INTERNAL  'lsfusion.server.logics.service.CheckIndicesActionProperty' ();
+recalculateClassesAction 'Пересчитать классы'  INTERNAL  'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
+recalculateAction 'Пересчитать агрегации'  INTERNAL  'lsfusion.server.logics.service.RecalculateActionProperty' ();
+recalculateFollowsAction 'Пересчитать следствия и ограничения'  INTERNAL  'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
+recalculateStatsAction 'Пересчитать статистику'  INTERNAL  'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
+overCalculateStatsAction 'Дорасчитать статистику'  INTERNAL  'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
 maxQuantityOverCalculate 'Пороговое кол-во дорасчёта' = DATA INTEGER ();
 
-makeProcessDumpAction 'Process Dump'  CUSTOM  'lsfusion.server.logics.service.process.MakeProcessDumpActionProperty' ();
+makeProcessDumpAction 'Process Dump'  INTERNAL  'lsfusion.server.logics.service.process.MakeProcessDumpActionProperty' ();
 
-serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-checkClassesMultiThreadAction 'Проверить классы (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
-overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, threadCount, timeout)'  CUSTOM  'lsfusion.server.logics.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkClassesMultiThreadAction 'Проверить классы (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, threadCount, timeout)'  INTERNAL  'lsfusion.server.logics.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, timeout)' (INTEGER propertyTimeout)  { serviceDBMultiThreadAction (NULL, propertyTimeout); }
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, timeout)' (INTEGER propertyTimeout) { checkAggregationsMultiThreadAction (NULL, propertyTimeout); }
@@ -45,10 +45,10 @@ recalculateFollowsMultiThreadAction 'Пересчитать следствия �
 recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)'  { recalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
 overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно)'  { overCalculateStatsMultiThreadAction (threadCountMultiThread(), NULL); }
 
-analyzeDBAction 'Анализ БД'  CUSTOM  'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
-vacuumDBAction 'Упаковать БД'  CUSTOM  'lsfusion.server.logics.service.VacuumDBActionProperty' ();
-packAction 'Упаковать таблицы'  CUSTOM  'lsfusion.server.logics.service.PackActionProperty' ();
-getVMInfo 'Данные виртуальной машины'  CUSTOM  'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
+analyzeDBAction 'Анализ БД'  INTERNAL  'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
+vacuumDBAction 'Упаковать БД'  INTERNAL  'lsfusion.server.logics.service.VacuumDBActionProperty' ();
+packAction 'Упаковать таблицы'  INTERNAL  'lsfusion.server.logics.service.PackActionProperty' ();
+getVMInfo 'Данные виртуальной машины'  INTERNAL  'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
 
@@ -71,10 +71,10 @@ onStarted() + {
     uploadInstance() <- 'SQLEXPRESS';
 }
 uploadDB 'Имя базы' = DATA VARSTRING[100] (); 
-uploadToDBAction 'Загрузить'  CUSTOM  'lsfusion.server.logics.service.UploadToDBActionProperty' ();
+uploadToDBAction 'Загрузить'  INTERNAL  'lsfusion.server.logics.service.UploadToDBActionProperty' ();
 
 META defineMode(property, action, type, caption1, caption2)
-    setRepeatableRead###property caption1  CUSTOM  action (type);
+    setRepeatableRead###property caption1  INTERNAL  action (type);
     refreshRepeatableRead###property caption2()  { 
         setRepeatableRead###property(property());
     }
@@ -94,7 +94,7 @@ hostnameServerComputer 'Сервер' () = hostname(serverComputer());
 
 @defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
 
-setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов'  CUSTOM  'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
+setExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов'  INTERNAL  'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
 explainAnalyzeMode 'Включён Explain' = DATA BOOLEAN (User);
 refreshExplainAnalyzeMode 'Обновить Explain Analyze'(User user)  { 
     setExplainAnalyzeMode(explainAnalyzeMode(user), user);  
@@ -107,7 +107,7 @@ turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE (Текущи�
     explainAnalyzeMode(User user) <- TRUE WHERE user == currentUser();     
 }
 
-setLoggerDebugEnabled 'Включить вывод в лог SQL запросов'  CUSTOM  'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+setLoggerDebugEnabled 'Включить вывод в лог SQL запросов'  INTERNAL  'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 loggerDebugEnabled 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
 refreshLoggerDebugEnabled ''(User user)  { 
     setLoggerDebugEnabled(loggerDebugEnabled(user), user);
@@ -116,7 +116,7 @@ WHEN CHANGED(loggerDebugEnabled(User user)) DO {
     refreshLoggerDebugEnabled(user);
 }
 
-setRemoteLoggerDebugEnabled 'Включить вывод в лог действий пользователей'  CUSTOM  'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+setRemoteLoggerDebugEnabled 'Включить вывод в лог действий пользователей'  INTERNAL  'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
 remoteLoggerDebugEnabled 'Выводить в лог действия пользователей' = DATA BOOLEAN (User);
 refreshRemoteLoggerDebugEnabled ''(User user)  { 
     setRemoteLoggerDebugEnabled(remoteLoggerDebugEnabled(user), user);
@@ -125,7 +125,7 @@ WHEN CHANGED(remoteLoggerDebugEnabled(User user)) DO {
     refreshRemoteLoggerDebugEnabled(user);
 }
 
-setExLogEnabled 'Включить вывод в лог сист. инфо (debug)'  CUSTOM  'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
+setExLogEnabled 'Включить вывод в лог сист. инфо (debug)'  INTERNAL  'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
 remoteExLogEnabled 'Выводить в лог сист. инфо (debug)' = DATA BOOLEAN (User);
 refreshExLogEnabled ''(User user)  { 
     setExLogEnabled(remoteExLogEnabled(user), user);
@@ -134,7 +134,7 @@ WHEN CHANGED(remoteExLogEnabled(User user)) DO {
     refreshExLogEnabled(user);
 }
 
-setPausableLogEnabled 'Включить вывод в лог синх. инфо (debug)'  CUSTOM  'lsfusion.server.logics.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
+setPausableLogEnabled 'Включить вывод в лог синх. инфо (debug)'  INTERNAL  'lsfusion.server.logics.service.SetPausableLogUserActionProperty' (BOOLEAN, User);
 remotePausableLogEnabled 'Выводить в лог синх. инфо (debug)' = DATA BOOLEAN (User);
 refreshPausableLogEnabled ''(User user)  { 
     setPausableLogEnabled(remotePausableLogEnabled(user), user);
@@ -155,7 +155,7 @@ id (TypeExecEnv type) = CASE EXCLUSIVE
                         WHEN type == TypeExecEnv.disablenestloop THEN 1
                         WHEN type == TypeExecEnv.none THEN 0 IN base;
 
-setExecEnv 'Выводить в лог EXPLAIN запросов'  CUSTOM  'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
+setExecEnv 'Выводить в лог EXPLAIN запросов'  INTERNAL  'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
 execEnv 'Тип адаптивного выполнения' = DATA TypeExecEnv (User);
 refreshExecEnv 'Обновить Explain'(User user)  { 
     setExecEnv(id(execEnv(user)), user);  
@@ -201,11 +201,11 @@ DESIGN options {
 @defineLog (Email, 'входящей почты', log, dateSent);
 
 countDaysClearFusionTempFiles 'За сколько дней хранить временные файлы lsfusion' = DATA INTEGER (); 
-clearFusionTempFiles  CUSTOM  'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
+clearFusionTempFiles  INTERNAL  'lsfusion.server.logics.service.ClearFusionTempFilesActionProperty' ();
 EXTEND FORM options PROPERTIES countDaysClearFusionTempFiles();
     DESIGN options { log { MOVE PROPERTY(countDaysClearFusionTempFiles());} }    
 
-setVolatileStatsEnabled 'Установить использование nested loop'  CUSTOM  'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
+setVolatileStatsEnabled 'Установить использование nested loop'  INTERNAL  'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
 volatileStatsEnabled 'Не использовать nested loop' = DATA BOOLEAN (User);
 refreshVolatileStatsEnabled ''(User user)  { 
     setVolatileStatsEnabled(volatileStatsEnabled(user), user);
@@ -231,7 +231,7 @@ onStarted() + {
         refreshExecEnv(u);
 } 
 
-setReupdateMode 'Включить REUPDATE'  CUSTOM  'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
+setReupdateMode 'Включить REUPDATE'  INTERNAL  'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
 reupdateMode 'Включен REUPDATE' = DATA BOOLEAN ();
 refreshReupdateMode 'Обновить REUPDATE в VM'()  { 
     setReupdateMode(reupdateMode());
@@ -247,12 +247,12 @@ restartPushed = DATA BOOLEAN ();
 notRestartPushed = NOT restartPushed();
 
 scheduledRestart 'Остановка через 5 минут' = DATA BOOLEAN ();
-restartServerAction 'Запланировать остановку сервера'  CUSTOM  'lsfusion.server.logics.service.RestartActionProperty' ();
-cancelRestartServerAction 'Отменить запланированную остановку сервера'  CUSTOM  'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+restartServerAction 'Запланировать остановку сервера'  INTERNAL  'lsfusion.server.logics.service.RestartActionProperty' ();
+cancelRestartServerAction 'Отменить запланированную остановку сервера'  INTERNAL  'lsfusion.server.logics.service.CancelRestartActionProperty' ();
 
 forbidLogin 'Запретить вход новым пользователям' = DATA BOOLEAN ();
-setPendingRestartAction 'Запретить вход новым пользователям'  CUSTOM  <{ context.getRestartManager().setPendingRestart(true); }>;
-resetPendingRestartAction 'Разрешить вход новым пользователям'  CUSTOM  <{ context.getRestartManager().setPendingRestart(false); }>;
+setPendingRestartAction 'Запретить вход новым пользователям'  INTERNAL  <{ context.getRestartManager().setPendingRestart(true); }>;
+resetPendingRestartAction 'Разрешить вход новым пользователям'  INTERNAL  <{ context.getRestartManager().setPendingRestart(false); }>;
 
 
 restartServer 'Остановить сервер'  ABSTRACT LIST ( );
@@ -275,13 +275,13 @@ onStarted() + {
     restartPushed() <- NULL;
 } 
 
-runGarbageCollector 'Запустить сборщик мусора'  CUSTOM  'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
+runGarbageCollector 'Запустить сборщик мусора'  INTERNAL  'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
 dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
 randomDropLRU 'Случ. очистка LRU' = DATA BOOLEAN ();
-dropLRUCustom 'Очистить LRU'  CUSTOM  'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
+dropLRUCustom 'Очистить LRU'  INTERNAL  'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE, BOOLEAN);
 dropLRU 'Очистить LRU' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
-turnCacheStatsOff 'Отключить статистику кэшей'  CUSTOM  'lsfusion.server.logics.service.TurnCacheStatsOff' ();
-makeHeapDump 'Сделать Heap Dump'  CUSTOM  'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
+turnCacheStatsOff 'Отключить статистику кэшей'  INTERNAL  'lsfusion.server.logics.service.TurnCacheStatsOff' ();
+makeHeapDump 'Сделать Heap Dump'  INTERNAL  'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
@@ -298,11 +298,11 @@ overBaseValue 'Сохранённое значение для текущего �
 defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
 value 'Значение для роли' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 
-pushReflectionPropertyAction 'Перегрузить свойство'  CUSTOM  'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
-popReflectionPropertyAction 'Сбросить свойство'  CUSTOM  'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
+pushReflectionPropertyAction 'Перегрузить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
+popReflectionPropertyAction 'Сбросить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
 
-writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию'  CUSTOM  'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
-saveReflectionProperty 'Сохранить настройку свойства'  CUSTOM  'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
+writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию'  INTERNAL  'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
+saveReflectionProperty 'Сохранить настройку свойства'  INTERNAL  'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
 
 onStarted() + {  
     writeDefaultReflectionPropertiesAction();

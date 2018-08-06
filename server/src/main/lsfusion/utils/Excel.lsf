@@ -11,7 +11,7 @@ loadFile 'Загрузить шаблон'(Template t)  { INPUT =file(t) CHANGE;
 openFile 'Открыть шаблон'(Template t)  { open(file(t)); }
 id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
-process  CUSTOM  'lsfusion.utils.excel.ProcessTemplateActionProperty' (Template);
+process  INTERNAL  'lsfusion.utils.excel.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate ()  { open(resultTemplate()); }

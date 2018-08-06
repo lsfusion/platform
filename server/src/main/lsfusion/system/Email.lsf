@@ -85,11 +85,11 @@ dateTimeSent 'Дата/время отправки' = DATA DATETIME (Email);
 dateSent 'Дата отправки' = DATE(dateTimeSent(Email e));
 dateTimeReceived 'Дата получения' = DATA DATETIME (Email);
 message 'Сообщение' = DATA RICHTEXT (Email);
-emlFile 'Файл EML' = DATA CUSTOMFILE (Email);
+emlFile 'Файл EML' = DATA FILE (Email);
 openEMLFile 'Открыть файл EML' (Email email)  { open(emlFile(email)); }
 
-receiveEmailAction 'Получить всю почту'  CUSTOM  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
-receiveEmailAction 'Получить почту'  CUSTOM  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
+receiveEmailAction 'Получить всю почту'  INTERNAL  'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction 'Получить почту'  INTERNAL  'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 
@@ -128,7 +128,7 @@ notImported (AttachmentEmail attachmentEmail) = NOT imported (attachmentEmail) A
 email = DATA Email (AttachmentEmail) NONULL DELETE;
 attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attachment IS AttachmentEmail BY id (attachment), id(email(attachment)); 
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
-file 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
+file 'Файл' = DATA FILE (AttachmentEmail);
 openFile 'Открыть' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
 saveFile 'Скачать' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
