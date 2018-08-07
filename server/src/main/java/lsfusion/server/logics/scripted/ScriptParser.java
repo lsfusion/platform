@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
 import lsfusion.server.LsfLogicsLexer;
 import lsfusion.server.LsfLogicsParser;
 import lsfusion.server.logics.debug.DebugInfo;
@@ -125,22 +126,27 @@ public class ScriptParser {
         return count;
     }
 
-    public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<List<String>, List<Pair<Integer, Boolean>>> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
         if (isInsideMetacode()) {
             errLog.emitMetacodeInsideMetacodeError(this);
         }
 
-        List<String> code = new ArrayList<>();
+        List<String> tokens = new ArrayList<>();
+        List<Pair<Integer, Boolean>> tokenTypes = new ArrayList<>();
         Parser curParser = getCurrentParser();
         while (!curParser.input.LT(1).getText().equals("END")) {
             if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
                 errLog.emitMetaCodeNotEndedError(this, metaCodeName);
             }
-            String token = curParser.input.LT(1).getText();
-            code.add(token);
+            Token lt = curParser.input.LT(1);
+            int type = lt.getType();
+            boolean isMeta = type == LsfLogicsParser.META_ID;
+            if(isMeta || type == LsfLogicsParser.ID) // ID also can be meta parameter
+                tokenTypes.add(new Pair<>(tokens.size(), isMeta));
+            tokens.add(lt.getText());
             curParser.input.consume();
         }
-        return code;
+        return new Pair<>(tokens, tokenTypes);
     }
 
     public List<String> grabJavaCode() throws ScriptingErrorLog.SemanticErrorException {

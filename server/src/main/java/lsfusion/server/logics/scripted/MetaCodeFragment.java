@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.base.Pair;
 import lsfusion.server.logics.CanonicalNameUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,6 +10,7 @@ import java.util.List;
 public class MetaCodeFragment {
     public List<String> parameters;
     public List<String> tokens;
+    public List<Pair<Integer,Boolean>> metaTokens;
     private String canonicalName;
     private String code;
     private String moduleName;
@@ -16,9 +18,10 @@ public class MetaCodeFragment {
 
     private final char QUOTE = '\'';
 
-    public MetaCodeFragment(String canonicalName, List<String> params, List<String> tokens, String code, String moduleName, int lineNumber) {
+    public MetaCodeFragment(String canonicalName, List<String> params, List<String> tokens, List<Pair<Integer,Boolean>> metaTokens, String code, String moduleName, int lineNumber) {
         this.parameters = params;
         this.tokens = tokens;
+        this.metaTokens = metaTokens;
         this.code = code;
         this.moduleName = moduleName;
         this.lineNumber = lineNumber;
@@ -27,26 +30,13 @@ public class MetaCodeFragment {
 
     public String getCode(List<String> params) {
         assert params.size() == parameters.size();
-        ArrayList<String> newTokens = new ArrayList<>();
-        ArrayList<Integer> oldTokensCnt = new ArrayList<>();
-
-        for (int i = 0; i < tokens.size(); i++) {
-            String tokenStr = transformedToken(params, tokens.get(i));
-            if (tokenStr.equals("##") || tokenStr.equals("###")) {
-                if (!newTokens.isEmpty() && i+1 < tokens.size()) {
-                    String lastToken = newTokens.get(newTokens.size()-1);
-                    String nextToken = transformedToken(params, tokens.get(i+1));
-                    newTokens.set(newTokens.size()-1, concatTokens(lastToken, nextToken, tokenStr.equals("###")));
-                    oldTokensCnt.set(oldTokensCnt.size()-1, oldTokensCnt.get(oldTokensCnt.size()-1) + 2);
-                    ++i;
-                }
-            } else {
-                newTokens.add(tokenStr);
-                oldTokensCnt.add(1);
-            }
+        ArrayList<String> newTokens = new ArrayList<>(tokens);
+        for (Pair<Integer, Boolean> metaToken : metaTokens) {
+            Integer metaIndex = metaToken.first;
+            newTokens.set(metaIndex, transformToken(params, tokens.get(metaIndex), metaToken.second));
         }
 
-        return getTransformedCode(newTokens, tokens, oldTokensCnt, code);
+        return getTransformedCode(newTokens, tokens, code);
     }
 
     private int getUncommentedIndexOf(String code, String token, int startPos) {
@@ -60,44 +50,58 @@ public class MetaCodeFragment {
         }
     }
 
-    private String getTransformedCode(ArrayList<String> newTokens, List<String> oldTokens, ArrayList<Integer> oldTokensCnt, String code) {
-        String whitespaces = "";
+    private String getTransformedCode(ArrayList<String> newTokens, List<String> oldTokens, String code) {
         StringBuilder transformedCode = new StringBuilder();
         int codePos = getUncommentedIndexOf(code, ")", 0) + 1;
-        transformedCode.append(code.substring(0, codePos));
-        int oldTokenIndex = 0;
+        transformedCode.append(code, 0, codePos);
 
         for (int i = 0; i < newTokens.size(); i++) {
-            for (int j = 0; j < oldTokensCnt.get(i); j++) {
-                int tokenStartPos = getUncommentedIndexOf(code, oldTokens.get(oldTokenIndex + j), codePos);
-                whitespaces = whitespaces + code.substring(codePos, tokenStartPos);
-                if (j == 0) {
-                    transformedCode.append(whitespaces);
-                    whitespaces = "";
-                }
-                codePos = tokenStartPos + oldTokens.get(oldTokenIndex + j).length();
-            }
-            oldTokenIndex += oldTokensCnt.get(i);
+            int tokenStartPos = getUncommentedIndexOf(code, oldTokens.get(i), codePos);
+            transformedCode.append(code, codePos, tokenStartPos);
+            codePos = tokenStartPos + oldTokens.get(i).length();
             transformedCode.append(newTokens.get(i));
         }
-        transformedCode.append(whitespaces);
         transformedCode.append(code.substring(codePos));
         return transformedCode.toString();
     }
 
-    private String transformedToken(List<String> actualParams, String token) {
+    private String transformParamToken(List<String> actualParams, String token) {
         int index = parameters.indexOf(token);
         return index >= 0 ? actualParams.get(index) : token;
     }
-
-    private String concatTokens(String t1, String t2, boolean toCapitalize) {
-        if (t1.isEmpty() || t2.isEmpty()) {
-            return t1 + capitalize(t2, toCapitalize && !t1.isEmpty());
-        } else if (t1.charAt(0) == QUOTE || t2.charAt(0) == QUOTE) {
-            return QUOTE + unquote(t1) + capitalize(unquote(t2), toCapitalize) + QUOTE;
-        } else {
-            return t1 + capitalize(t2, toCapitalize);
+    private String transformToken(List<String> actualParams, String token, boolean isMeta) {
+        if(!isMeta) { // optimization;
+            assert !token.contains("##");
+            return transformParamToken(actualParams, token);
         }
+        String[] parts = token.split("##");
+        boolean isStringLiteral = false;
+        String result = "";
+        boolean firstPartIsNotEmpty = false;
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+
+            boolean capitalize = false;
+            if (part.startsWith("#")) {
+                assert i > 0;
+                capitalize = !result.isEmpty() || (i == 1 && parts[0].isEmpty()); // when there is ###param, forcing its capitalization
+                part = part.substring(1);
+            }
+
+            part = transformParamToken(actualParams, part);
+
+            if (!part.isEmpty() && part.charAt(0) == QUOTE) {
+                isStringLiteral = true;
+                part = unquote(part);
+            }
+            
+            result += capitalize(part, capitalize);
+        }
+        
+        if(isStringLiteral)
+            result = QUOTE + result + QUOTE;
+        
+        return result;
     }
 
     private String unquote(String s) {

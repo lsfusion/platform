@@ -3109,11 +3109,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedMetaCodeFragment(String name, List<String> params, List<String> tokens, List<Pair<Integer, Boolean>> metaTokens, String code, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateMetaCodeFragment(name, params.size());
         checks.checkDistinctParameters(params);
 
-        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, code, getName(), lineNumber);
+        MetaCodeFragment fragment = new MetaCodeFragment(elementCanonicalName(name), params, tokens, metaTokens, code, getName(), lineNumber);
         addMetaCodeFragment(fragment);
     }
 
@@ -3125,7 +3125,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         parser.runMetaCode(this, code, metaCode, MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta); 
     }
 
-    public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<List<String>, List<Pair<Integer, Boolean>>> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
         return parser.grabMetaCode(metaCodeName);
     }
 

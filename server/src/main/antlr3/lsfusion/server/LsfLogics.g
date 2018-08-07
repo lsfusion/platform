@@ -4317,17 +4317,20 @@ metaCodeDeclarationStatement
 @init {
 	String code;
 	List<String> tokens;
+	List<Pair<Integer, Boolean>> metaTokens;
 	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
 @after {
 	if (inInitParseState()) {
-		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, $text, lineNumber);
+		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, metaTokens, $text, lineNumber);
 	}
 }
 	
 	:	'META' id=ID '(' list=idList ')'
 		{
-			tokens = self.grabMetaCode($id.text);
+			Pair<List<String>, List<Pair<Integer, Boolean>>> tokensAndMeta = self.grabMetaCode($id.text);
+			tokens = tokensAndMeta.first;
+			metaTokens = tokensAndMeta.second;			
 		}
 		'END'
 	;
@@ -4818,7 +4821,7 @@ multOperand
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment STR_LITERAL_CHAR	: '\\\'' | '\\\\' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
+fragment STR_LITERAL_CHAR	: ('\\' ~('\n'|'\r')) | ~('\r'|'\n'|'\''|'\\');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
@@ -4828,14 +4831,22 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
+fragment STRING_LITERAL_FRAGMENT : '\'' STR_LITERAL_CHAR* '\'';
+fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
+fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
+fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
+fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
+fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+; 
+
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'ITEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
 				|	'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 NULL_LITERAL	:	'NULL';	
-ID				:	FIRST_ID_LETTER NEXT_ID_LETTER*;
+ID				:	ID_FRAGMENT;
+STRING_LITERAL	:	STRING_LITERAL_FRAGMENT;
+META_ID			:	META_FRAGMENT;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
-STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
@@ -4856,6 +4867,4 @@ PLUS			:	'+';
 MULT			:	'*';
 DIV				:	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
-CONCAT_OPERAND	:	'##';
-CONCAT_CAPITALIZE_OPERAND	:	'###';
 CODE_LITERAL    : OPEN_CODE_BRACKET .* CLOSE_CODE_BRACKET;
