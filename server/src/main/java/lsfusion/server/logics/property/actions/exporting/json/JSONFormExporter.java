@@ -44,8 +44,11 @@ public class JSONFormExporter extends HierarchicalFormExporter {
     }
 
     private void exportNode(Object parentElement, String parentId, AbstractNode node) throws JSONException {
-        if(node instanceof Leaf) {
-            ((JSONObject) parentElement).put(((Leaf) node).getKey(), ((Leaf) node).getValue());
+        if (node instanceof Leaf) {
+            String leafValue = getLeafValue((Leaf) node);
+            if (leafValue != null) {
+                ((JSONObject) parentElement).put(((Leaf) node).getKey(), leafValue);
+            }
         } else if(node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
                 JSONArray array = new JSONArray();

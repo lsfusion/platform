@@ -72,13 +72,13 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
 
                 List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                 if (propertiesEntry == null)
-                    propertiesEntry = new ArrayList();
+                    propertiesEntry = new ArrayList<>();
                 propertiesEntry.add(property);
                 propertiesMap.put(keysId, propertiesEntry);
 
                 List<KeyField> keyFieldsEntry = keyFieldsMap.get(keysId);
                 if (keyFieldsEntry == null)
-                    keyFieldsEntry = new ArrayList();
+                    keyFieldsEntry = new ArrayList<>();
                 for (String key : keys) {
                     KeyField keyField = new KeyField(key, ImportDataActionProperty.type);
                     if (!keyFieldsEntry.contains(keyField))
@@ -103,7 +103,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                     filtersMap.put(keysId, Pair.<List<String>, CalcProperty>create(keys, property.property));
                     List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                     if (propertiesEntry == null)
-                        propertiesEntry = new ArrayList();
+                        propertiesEntry = new ArrayList<>();
                     propertiesEntry.add(property.property);
                     propertiesMap.put(keysId, propertiesEntry);
                 } else if (property.property instanceof JoinProperty) { // непонятно почему 
@@ -119,7 +119,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                             filtersMap.put(keysId, Pair.create(keys, (CalcProperty) dProperty));
                             List<CalcProperty> propertiesEntry = propertiesMap.get(keysId);
                             if (propertiesEntry == null)
-                                propertiesEntry = new ArrayList();
+                                propertiesEntry = new ArrayList<>();
                             propertiesEntry.add((CalcProperty) dProperty);
                             propertiesMap.put(keysId, propertiesEntry);
                         }
@@ -166,7 +166,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
     }
 
     private List<String> getNeededGroupsForColumnProp(PropertyDrawEntity propertyDraw) {
-        List<String> result = new ArrayList();
+        List<String> result = new ArrayList<>();
         for(Object entry : propertyDraw.propertyObject.mapping.valueIt()) {
             result.add(((ObjectEntity) entry).getSID());
         }
