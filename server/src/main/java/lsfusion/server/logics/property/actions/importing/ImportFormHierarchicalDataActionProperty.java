@@ -6,7 +6,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
@@ -21,7 +20,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +60,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     }
 
     @Override
-    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object file, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) throws IOException, ParseException {
+    protected Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object file, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap, Map<String, List<String>> headersMap) {
         E rootElement = getRootElement((byte[]) file);
         tagsMap = new HashMap<>();
         return getData(Pair.create((String) null, (Object) rootElement), propertyKeysMap);
@@ -89,7 +87,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
                     Map<Property, ObjectValue> properties = dataEntry.get(key);
                     if (properties == null)
                         properties = new HashMap<>();
-                    properties.put(entry.second, isLeaf(child.second) ? new DataObject(getChildValue(child.second), (ConcreteClass) entry.second.getType()) : NullValue.instance);
+                    properties.put(entry.second, getObjectValue(child.second, (ConcreteClass) entry.second.getType()));
                     dataEntry.put(key, properties);
                     dataMap.put(keyId, dataEntry);
                 }
@@ -115,5 +113,13 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
             }
         }
         return keyObjects;
+    }
+
+    private ObjectValue getObjectValue(Object value, ConcreteClass type) {
+        try {
+            return isLeaf(value) ? new DataObject(type.getType().parseString(getChildValue(value)), type) : NullValue.instance;
+        } catch (ParseException e) {
+            return NullValue.instance;
+        }
     }
 }

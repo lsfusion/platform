@@ -69,8 +69,8 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
     }
 
     private Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(
-            List<Pair<String, I>> rootElements, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap) throws IOException, ParseException {
-        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataMap = new HashMap();
+            List<Pair<String, I>> rootElements, Map<String, Pair<List<String>, CalcProperty>> propertyKeysMap) throws ParseException {
+        Map<String, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataMap = new HashMap<>();
         ImportFormIterator iterator = getIterator(rootElements);
         Pair<String, Object> child;
         while ((child = iterator.next()) != null) {
@@ -88,11 +88,11 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
                 String keyId = getKeysId(entry.first);
                 Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = dataMap.get(keyId);
                 if (dataEntry == null)
-                    dataEntry = new HashMap();
+                    dataEntry = new HashMap<>();
                 ImMap<KeyField, DataObject> key = getKeys(entry.first);
                 Map<Property, ObjectValue> properties = dataEntry.get(key);
                 if (properties == null)
-                    properties = new HashMap();
+                    properties = new HashMap<>();
                 String childValue = getChildValue(child.second);
                 properties.put(entry.second, childValue == null ? NullValue.instance : new DataObject(entry.second.getType().parseString(childValue), (ConcreteClass) entry.second.getType()));
                 Map<Property, ObjectValue> propertiesEntry = dataEntry.get(key);
