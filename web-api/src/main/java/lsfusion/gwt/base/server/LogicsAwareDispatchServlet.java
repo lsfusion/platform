@@ -189,6 +189,10 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         return navigatorProvider.getNavigator();
     }
 
+    public ClientCallBackInterface getClientCallBack() throws RemoteException {
+        return navigatorProvider.getClientCallBack();
+    }
+
     public void tabOpened(String tabSID) {
         navigatorProvider.tabOpened(tabSID);
     }
@@ -198,7 +202,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             invalidate();
         }
     }
-    
+
     public String getSessionInfo() {
         return navigatorProvider.getSessionInfo();
     }

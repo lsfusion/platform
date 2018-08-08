@@ -8,6 +8,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.ClientCallBackInterface;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,16 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
     public String servSID = GwtSharedUtils.randomString(25);
 
+    private ClientCallBackInterface clientCallBack;
+
     public final Set<String> openTabs = new HashSet<String>();
+
+    @Override
+    public ClientCallBackInterface getClientCallBack() throws RemoteException {
+        if(clientCallBack == null)
+            clientCallBack = getNavigator().getClientCallBack();
+        return clientCallBack;
+    }
 
     @Override
     public void tabOpened(String tabSID) {
@@ -127,6 +137,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
         synchronized (navigatorLock) {
             navigator = null;
         }
+        clientCallBack = null;
     }
 
     @Override
