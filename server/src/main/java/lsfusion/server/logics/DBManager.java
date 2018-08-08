@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.lru.ALRUMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
@@ -25,7 +24,6 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
@@ -640,8 +638,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return new OldDBStructure(inputDB);
     }
 
-    public static boolean explicitMigrate = false;
-
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SQLSession sql = getThreadLocalSql();
 
@@ -664,7 +660,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
         
-        checkFormsTable(oldDBStructure);
         checkModules(oldDBStructure);
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
@@ -688,14 +683,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
-
-            if(newDBStructure.version >= 22 && oldDBStructure.version < 22 && oldDBStructure.version > 0) { // временно, для явной типизации
-                if (SystemProperties.lightStart) {
-                    throw new RuntimeException("YOU HAVE TO START SERVER WITH ISDEBUG : FALSE");
-                }
-                Settings.get().setStartServerAnyWay(true);
-                explicitMigrate = true;
-            }
 
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
@@ -916,16 +903,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
             startLogger.info("Filling static objects ids");
-            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges), oldDBStructure.version <= 25))
+            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
                 throw new RuntimeException("Error while filling static objects ids");
 
-            if (oldDBStructure.version < NavElementDBVersion && !oldDBStructure.isEmpty()) {
-                modifyNavigatorElementsClasses(sql);
-            }
-            if (oldDBStructure.version < 29 && !oldDBStructure.isEmpty()) {
-                modifyNavigatorFormClasses();
-            }
-            
             if (oldDBStructure.isEmpty()) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
@@ -956,25 +936,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Recalculating aggregations");
             recalculateAggregations(getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
             recalculateProperties.addAll(recalculateStatProperties);
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) { // temporary for migration
-                recalculateProperties = SetFact.fromJavaOrderSet(recalculateProperties).filterOrder(new SFunctionSet<CalcProperty>() {
-                    public boolean contains(CalcProperty element) {
-                        return !element.toString().contains("SystemEvents.Session");
-                    }
-                }).toJavaList();
-            }
             updateAggregationStats(recalculateProperties, tableStats);
             
-            if(oldDBStructure.version < NavElementDBVersion)
-                DataSession.recalculateTableClasses(reflectionLM.navigatorElementTable, sql, LM.baseClass);
-
-            if(newDBStructure.version >= 28 && oldDBStructure.version < 28 && !oldDBStructure.isEmpty()) {
-                startLogger.info("Migrating properties to actions data started");
-                if (!synchronizePropertyEntities(sql))
-                    throw new RuntimeException("Error while migrating properties to actions");
-                startLogger.info("Migrating properties to actions data ended");
-            }
-
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -1009,239 +972,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    // temporary for migration
-    public boolean synchronizePropertyEntities(SQLSession sql) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-        if(!synchronizePropertyEntities(true, sql))
-            return false;
-        
-        try {
-            recalculateAndUpdateClassStat((CustomClass) reflectionLM.findClass("Action"));
-            recalculateAndUpdateStat(reflectionLM.findTable("action"), null);
-
-            try(DataSession session = createSession(sql)) {
-                businessLogics.schedulerLM.copyAction.execute(session, getStack());
-                businessLogics.securityLM.copyAccess.execute(session, getStack());
-                if(!session.apply(businessLogics, getStack()))
-                    return false;
-                
-                for(String tableName : new String[]{"action", "userRoleActionOrProperty", "userRoleAction", "userActionOrProperty", "userAction"}) {
-                    recalculateAndUpdateStat((tableName.equals("action")?reflectionLM:businessLogics.securityLM).findTable(tableName), null);
-                }
-                
-                ALRUMap.forceRemoveAllLRU(1.0); // чтобы synchronizeActionEntities отработал
-            }
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-        return true;
-    }
-    private boolean needsToBeSynchronized(Property property) {
-        return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
-    }
-    public boolean synchronizePropertyEntities(boolean actions, SQLSession sql) {
-
-        startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities collecting data started");
-        ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
-        ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
-        ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
-        ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
-        ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
-        ImportField isSetNotNullPropertyField = new ImportField(reflectionLM.propertyIsSetNotNullValueClass);
-        ImportField returnPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
-        ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
-        ImportField complexityPropertyField = new ImportField(LongClass.instance);
-        ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
-        ImportField annotationPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
-        ImportField statsPropertyField = new ImportField(ValueExpr.COUNTCLASS);
-
-        ConcreteCustomClass customClass = actions ? reflectionLM.action : reflectionLM.property;
-        LCP objectByName = actions ? reflectionLM.actionCanonicalName : reflectionLM.propertyCanonicalName;
-        LCP nameByObject = actions ? reflectionLM.canonicalNameAction : reflectionLM.canonicalNameProperty;
-        ImportKey<?> keyProperty = new ImportKey(customClass, objectByName.getMapping(canonicalNamePropertyField));
-
-        try {
-            List<List<Object>> dataProperty = new ArrayList<>();
-            for (Property property : businessLogics.getOrderProperties()) {
-                if (needsToBeSynchronized(property)) {
-                    if((property instanceof ActionProperty) != actions)
-                        continue;
-
-                    String returnClass = "";
-                    String classProperty = "";
-                    String tableSID = "";
-                    Long complexityProperty = null;
-
-                    try {
-                        classProperty = property.getClass().getSimpleName();
-
-                        if(property instanceof CalcProperty) {
-                            CalcProperty calcProperty = (CalcProperty)property;
-                            complexityProperty = calcProperty.getComplexity();
-                            if (calcProperty.mapTable != null) {
-                                tableSID = calcProperty.mapTable.table.getName();
-                            } else {
-                                tableSID = "";
-                            }
-                        }
-
-                        returnClass = property.getValueClass(ClassType.syncPolicy).getSID();
-                    } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
-                    }
-
-                    dataProperty.add(asList(((ActionProperty)property).getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer) Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
-                }
-            }
-
-            startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities integration service started");
-            List<ImportProperty<?>> properties = new ArrayList<>();
-            properties.add(new ImportProperty(canonicalNamePropertyField, nameByObject.getMapping(keyProperty)));
-            properties.add(new ImportProperty(dbNamePropertyField, reflectionLM.dbNameProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(tableSIDPropertyField, reflectionLM.tableSIDProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(annotationPropertyField, reflectionLM.annotationProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(statsPropertyField, reflectionLM.statsProperty.getMapping(keyProperty)));
-
-            List<ImportDelete> deletes = new ArrayList<>();
-            deletes.add(new ImportDelete(keyProperty, LM.is(customClass).getMapping(keyProperty), false));
-
-            ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
-                    storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
-                    classPropertyField, complexityPropertyField, tableSIDPropertyField, annotationPropertyField, statsPropertyField), dataProperty);
-
-            try (DataSession session = createSession(sql)) {
-                session.pushVolatileStats("RM_PE");
-                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
-                service.synchronize(true, false);
-                session.popVolatileStats();
-                boolean result = session.apply(businessLogics, getStack());
-                startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities finished");
-                return result;
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private void modifyNavigatorElementsClasses(SQLSession session) {
-        try {
-            Map<String, Long> oldIds = getOldIds(session);
-            for (NavigatorElement ne : businessLogics.getNavigatorElements()) {
-                if (!(ne instanceof NavigatorAction)) {
-                    CustomClass cls = getNavigatorFolderOrFormClass(ne);
-                    String canonicalName = ne.getCanonicalName();
-                    if (cls != null) {
-                        Long oldId = oldIds.get(canonicalName);
-                        modifyNavigatorElementClass(session, canonicalName, cls, oldId);
-                    }
-                }
-            }
-        } catch (SQLException | SQLHandledException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void modifyNavigatorFormClasses() throws SQLException, SQLHandledException {
-        try(DataSession session = createSession(OperationOwner.unknown)) {
-            KeyExpr keyExpr = new KeyExpr("key");
-            session.changeClass(new ClassChange(keyExpr, keyExpr.isClass(businessLogics.reflectionLM.navigatorForm.getUpSet()), businessLogics.reflectionLM.navigatorAction));
-            session.apply(businessLogics, getStack());
-        }
-    }
-
-    private CustomClass getNavigatorFolderOrFormClass(NavigatorElement element) {
-        if (element instanceof NavigatorFolder) {
-            return businessLogics.findClass("Reflection.NavigatorFolder");
-        } else if (element instanceof NavigatorForm) {
-            return businessLogics.findClass("Reflection.NavigatorForm");
-        }
-        return null;
-    }
-
-    private void modifyNavigatorElementClass(SQLSession session, String canonicalName, CustomClass cls, Long oldId) throws SQLException, SQLHandledException {
-        Long newId = modifyNETable(session, canonicalName, cls);        
-        if (!isFolder(cls)) {
-            if (newId != null && oldId != null) {
-                modifyRoleTable(session, newId, oldId);
-            } else {
-                System.out.println("Error updating role table, canonicalName: " + canonicalName);
-            }
-            
-        }
-    }
-
-    
-    private boolean isFolder(CustomClass cls) {
-        return cls.getCanonicalName().equals("Reflection.NavigatorFolder");
-    }
-    
-    private Long modifyNETable(SQLSession session, String canonicalName, CustomClass cls) throws SQLException, SQLHandledException {
-        SQLSyntax syntax = session.syntax;
-        String tableName = syntax.getTableName("reflection_navigatorelement");
-        String classFieldName = syntax.getFieldName("system__class_reflection_navigatorelement");
-        String cnFieldName = syntax.getFieldName("reflection_canonicalname_navigatorelement");
-        String query;
-
-        Long newId = null;
-        if (isFolder(cls)) {
-            query = "UPDATE " + tableName + " SET " + classFieldName + "=" + cls.ID + " WHERE " + cnFieldName + "='" + canonicalName + "'";
-        } else {
-            newId = generateID();
-            query = "UPDATE " + tableName + " SET " + classFieldName + "=" + cls.ID + ", " + "key0=" + newId + " WHERE " + cnFieldName + "='" + canonicalName + "'";
-        }
-        session.executeDML(query);
-        return newId;
-    }
-    
-    private Map<String, Long> getOldIds(SQLSession session) throws SQLException, SQLHandledException {
-        SQLSyntax syntax = session.syntax;
-        String tableName = syntax.getTableName("reflection_navigatorelement");
-        String cnFieldName = syntax.getFieldName("reflection_canonicalname_navigatorelement");
-
-        KeyField key = new KeyField("key0", LongClass.instance);
-        PropertyField field = new PropertyField(cnFieldName, StringClass.getv(100));
-
-        ImRevMap<KeyField, String> keyMap = MapFact.singletonRev(key, "key0");
-        ImRevMap<PropertyField, String> propertyMap = MapFact.singletonRev(field, cnFieldName);
-
-        ReadAllResultHandler<KeyField, PropertyField> mapResultHandler = new ReadAllResultHandler<>(); 
-        
-        String query = "SELECT key0, " + cnFieldName + " FROM " + tableName;
-        session.executeSelect(query, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, keyMap, keyMap.reverse().mapValues(Field.<KeyField>fnTypeGetter()), 
-                propertyMap, propertyMap.reverse().mapValues(Field.<PropertyField>fnTypeGetter()), mapResultHandler);
-        
-        ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> qresult = mapResultHandler.get();
-        Map<String, Long> result = new HashMap<>();
-        for (int i = 0; i < qresult.size(); ++i) {
-            result.put((String)qresult.getValue(i).singleValue(), (Long) qresult.getKey(i).singleValue());
-        }
-        return result;
-    }
-    
-    private void modifyRoleTable(SQLSession session, long id, long oldId) throws SQLException, SQLHandledException {
-        SQLSyntax syntax = session.syntax;
-        String roleTableName = syntax.getTableName("security_userrolenavigatorelement");
-        String query = "UPDATE " + roleTableName + " SET key1=" + id + " WHERE key1 = " + oldId;
-        session.executeDML(query);
-    } 
-    
-    private void checkFormsTable(OldDBStructure dbStruct) {
-        if (!dbStruct.isEmpty()) {
-            Table table = dbStruct.getTable("Reflection_form");
-            if (table == null) {
-                throw new RuntimeException("Run 1.3.1 version first");
-            }
-        }
-    }
-    
     private void setDefaultUserLocalePreferences() throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             businessLogics.authenticationLM.defaultLanguage.change(defaultUserLanguage, session);
@@ -1355,9 +1085,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges, boolean migrateObjectClassID) throws SQLException, SQLHandledException {
+    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
-            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges, migrateObjectClassID);
+            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
             return session.apply(businessLogics, getStack());
         }
     }
@@ -2323,8 +2053,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return res;
     }
 
-    public static final int NavElementDBVersion = 27;
-    
     private class NewDBStructure extends DBStructure<Field> {
         
         public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
@@ -2426,7 +2154,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 int prevConcreteNum = inputDB.readInt();
                 for(int i = 0; i < prevConcreteNum; i++)
-                    concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), version <= 24 ? inputDB.readInt() : inputDB.readLong()));
+                    concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), inputDB.readLong()));
             }
         }
         

@@ -83,32 +83,8 @@ levelPermitViewParent (PropertyGroup propertyGroup) =
 levelPermitView = TRUE IF levelPermitViewParent (PropertyGroup propertyGroup);
 permitView 'Разрешить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitView (propertyGroup), levelPermitView (propertyGroup);
 
-migrateAccess  ABSTRACT LIST ( Property, Action); // temporary for migration
-migrateUserRoleAccess  ABSTRACT LIST ( Property, Action); // temporary for migration
-
-META defineActionOrPropertySecurityUserRoleData(name, caption)
-    name caption = DATA BOOLEAN (UserRole, Property);
-    name caption = DATA BOOLEAN (UserRole, Action);
-    name caption (UserRole userRole, ActionOrProperty actionOrProperty) = MULTI name[UserRole, Property](userRole, actionOrProperty), name[UserRole, Action](userRole, actionOrProperty) MATERIALIZED;
-    
-    migrateUserRoleAccess(Property property, Action action) + { 
-        name(UserRole userRole, action) <- name(userRole, property);
-    }
-END
-
-META defineActionOrPropertySecurityData(name, caption)
-    name caption = DATA BOOLEAN (Property);
-    name caption = DATA BOOLEAN (Action);
-    name caption (ActionOrProperty actionOrProperty) = MULTI name[Property](actionOrProperty), name[Action](actionOrProperty) MATERIALIZED;
-
-    migrateAccess(Property property, Action action) + { 
-        name(action) <- name(property);
-    }
-    
-    @defineActionOrPropertySecurityUserRoleData(name, caption);
-END
-
-@defineActionOrPropertySecurityData(dataPermitView, 'Разрешить просмотр свойства');
+dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (ActionOrProperty);
+dataPermitView 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, ActionOrProperty);
 permitView 'Разрешить просмотр свойства' (ActionOrProperty property) = OVERRIDE dataPermitView (property), levelPermitView (parent(property)) MATERIALIZED;
 
 dataForbidView 'Запретить просмотр группы свойств' = DATA BOOLEAN (PropertyGroup);
@@ -120,7 +96,8 @@ levelForbidViewParent (PropertyGroup propertyGroup) =
 levelForbidView = TRUE IF levelForbidViewParent (PropertyGroup propertyGroup);
 forbidView 'Запретить просмотр группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidView (propertyGroup), levelForbidView (propertyGroup);
 
-@defineActionOrPropertySecurityData(dataForbidView, 'Запретить просмотр свойства');
+dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (ActionOrProperty);
+dataForbidView 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, ActionOrProperty);
 forbidView 'Запретить просмотр свойства' (ActionOrProperty property) = OVERRIDE dataForbidView (property), levelForbidView (parent(property)) MATERIALIZED;
 
 dataPermitChange 'Разрешить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
@@ -132,7 +109,8 @@ levelPermitChangeParent (PropertyGroup propertyGroup) =
 levelPermitChange = TRUE IF levelPermitChangeParent (PropertyGroup propertyGroup);
 permitChange 'Разрешить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataPermitChange (propertyGroup), levelPermitChange (propertyGroup);
 
-@defineActionOrPropertySecurityData(dataPermitChange, 'Разрешить изменение свойства');
+dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (ActionOrProperty);
+dataPermitChange 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, ActionOrProperty);
 permitChange 'Разрешить изменение свойства' (ActionOrProperty property) = OVERRIDE dataPermitChange (property), levelPermitChange (parent(property)) MATERIALIZED;
 
 dataForbidChange 'Запретить изменение группы свойств' = DATA BOOLEAN (PropertyGroup);
@@ -144,7 +122,8 @@ levelForbidChangeParent (PropertyGroup propertyGroup) =
 levelForbidChange = TRUE IF levelForbidChangeParent (PropertyGroup propertyGroup);
 forbidChange 'Запретить изменение группы свойств' (PropertyGroup propertyGroup) = OVERRIDE dataForbidChange (propertyGroup), levelForbidChange (propertyGroup);
 
-@defineActionOrPropertySecurityData(dataForbidChange, 'Запретить изменение свойства');
+dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (ActionOrProperty);
+dataForbidChange 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, ActionOrProperty);
 forbidChange 'Запретить изменение свойства' (ActionOrProperty property) = OVERRIDE dataForbidChange (property), levelForbidChange (parent(property)) MATERIALIZED;
 
 notNullPermission (ActionOrProperty property) = OVERRIDE forbidChange(property), permitChange(property), forbidView(property), permitView(property) MATERIALIZED INDEXED;
@@ -326,15 +305,10 @@ copyData(UserRole userRole, UserRole ur)  {
     permitAllForms(ur) <- permitAllForms(userRole);
     forbidAllForms(ur) <- forbidAllForms(userRole);
 
-    dataPermitView(ur, Property property) <- dataPermitView(userRole, property);
-    dataForbidView(ur, Property property) <- dataForbidView(userRole, property);
-    dataPermitChange(ur, Property property) <- dataPermitChange(userRole, property);
-    dataForbidChange(ur, Property property) <- dataForbidChange(userRole, property);
-    
-    dataPermitView(ur, Action action) <- dataPermitView(userRole, action);
-    dataForbidView(ur, Action action) <- dataForbidView(userRole, action);
-    dataPermitChange(ur, Action action) <- dataPermitChange(userRole, action);
-    dataForbidChange(ur, Action action) <- dataForbidChange(userRole, action);
+    dataPermitView(ur, ActionOrProperty property) <- dataPermitView(userRole, property);
+    dataForbidView(ur, ActionOrProperty property) <- dataForbidView(userRole, property);
+    dataPermitChange(ur, ActionOrProperty property) <- dataPermitChange(userRole, property);
+    dataForbidChange(ur, ActionOrProperty property) <- dataForbidChange(userRole, property);
     
     dataPermitView(ur, PropertyGroup propertyGroup) <- dataPermitView(userRole, propertyGroup);
     dataForbidView(ur, PropertyGroup propertyGroup) <- dataForbidView(userRole, propertyGroup);
@@ -578,12 +552,4 @@ NAVIGATOR {
         NEW Security.userRoles;
         NEW Security.securityPolicy;
     }
-}
-
-// temporary for migration
-copyAccess()  { 
-    FOR Property prop = propertyCanonicalName(TEXT name) AND Action action = actionCanonicalName(name) INLINE DO {
-        migrateAccess(prop, action);
-        migrateUserRoleAccess(prop, action);
-    }    
 }

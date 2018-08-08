@@ -146,7 +146,5 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");
-
-        copyAccess = findAction("copyAccess[]");
     }
 }

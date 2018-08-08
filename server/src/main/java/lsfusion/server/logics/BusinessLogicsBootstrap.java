@@ -46,11 +46,6 @@ public class BusinessLogicsBootstrap {
 
                 registerShutdownHook();
 
-                if(DBManager.explicitMigrate) {
-                    logger.info("SERVER NEEDS TO BE STARTED ONCE AGAIN...");
-                    System.exit(0);
-                }
-
                 String version = BaseUtils.getPlatformVersion();
                 if(version != null) {
                     logger.info("Client is available at http://lsfusion.ru/download/client-" + version + ".jnlp");
