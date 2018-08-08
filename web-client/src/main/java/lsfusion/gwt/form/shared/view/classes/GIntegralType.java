@@ -36,9 +36,9 @@ public abstract class GIntegralType extends GFormatType<NumberFormat> {
                 s = s.replace(" ", UNBREAKABLE_SPACE);
             }
             String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-            if (s.contains(",") && decimalSeparator.equals("."))
+            if (s.contains(",") && !groupingSeparator.equals(",") && decimalSeparator.equals("."))
                 s = s.replace(",", ".");
-            else if (s.contains(".") && decimalSeparator.equals(","))
+            else if (s.contains(".") && !groupingSeparator.equals(".") && decimalSeparator.equals(","))
                 s = s.replace(".", ",");
             return getFormat(pattern).parse(s);
         } catch (NumberFormatException e) {
