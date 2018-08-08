@@ -142,10 +142,10 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         return textArea.requestFocusInWindow();
     }
 
-    public void prepareTextEditor(boolean clear) {
+    public void prepareTextEditor(boolean clear, boolean select) {
         if (clear) {
             textArea.setText("");
-        } else {
+        } else if (select) {
             textArea.selectAll();
         }
     }

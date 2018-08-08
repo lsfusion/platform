@@ -75,6 +75,7 @@ public class PropertyDrawView extends ComponentView {
 
     public LocalizedString caption;
     public boolean clearText;
+    public boolean notSelectAll;
     public String toolTip;
 
     public boolean notNull;
@@ -197,7 +198,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     private void setupShowIf(ReportDrawField field) {
-        // At the moment, only showif with no params is passing to the report 
+        // At the moment, only showif with no params is passing to the report
         if (entity.propertyShowIf != null && entity.propertyShowIf.property.interfaces.size() == 0) {
             field.hasShowIfProperty = true;
             field.showIfClass = getPropertyClass(entity.propertyShowIf);
@@ -208,8 +209,8 @@ public class PropertyDrawView extends ComponentView {
         ReportDrawField field = new ReportDrawField("", "", charWidth);
         property.property.getType().fillReportDrawField(field);
         return field.valueClass;
-    } 
-    
+    }
+
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
@@ -285,7 +286,7 @@ public class PropertyDrawView extends ComponentView {
 
         PropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
         Property<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
-        
+
         pool.writeString(outStream, debugBinding.getNamespace());
         pool.writeString(outStream, getSID());
         pool.writeString(outStream, debugBinding.getCanonicalName());
@@ -303,6 +304,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(entity.isCalcProperty());
         outStream.writeBoolean(clearText);
+        outStream.writeBoolean(notSelectAll);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 

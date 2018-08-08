@@ -104,6 +104,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean panelCaptionAfter;
     public boolean clearText;
+    public boolean notSelectAll;
     public String tableName;
     public String eventID;
     public boolean editOnSingleClick;
@@ -432,6 +433,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         checkEquals = inStream.readBoolean();
         clearText = inStream.readBoolean();
+        notSelectAll = inStream.readBoolean();
 
         quickFilterProperty = pool.deserializeObject(inStream);
 
