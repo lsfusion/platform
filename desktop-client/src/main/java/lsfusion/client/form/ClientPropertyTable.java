@@ -137,15 +137,18 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     void prepareTextEditor() {
+        ClientPropertyDraw property = getProperty(editRow, editCol);
         if (editorComp instanceof JTextComponent) {
             JTextComponent textEditor = (JTextComponent) editorComp;
-            textEditor.selectAll();
+            if(!property.notSelectAll) {
+                textEditor.selectAll();
+            }
             if (getProperty(editRow, editCol).clearText) {
                 textEditor.setText("");
             }
         } else if (editorComp instanceof ClientPropertyTableEditorComponent) {
             ClientPropertyTableEditorComponent propertyTableEditorComponent = (ClientPropertyTableEditorComponent) editorComp;
-            propertyTableEditorComponent.prepareTextEditor(getProperty(editRow, editCol).clearText);
+            propertyTableEditorComponent.prepareTextEditor(property.clearText, !property.notSelectAll);
         }
     }
 

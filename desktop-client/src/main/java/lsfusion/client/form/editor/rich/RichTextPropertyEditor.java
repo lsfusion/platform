@@ -72,10 +72,10 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
         return true;
     }
 
-    public void prepareTextEditor(boolean clear) {
+    public void prepareTextEditor(boolean clear, boolean select) {
         if (clear) {
             richArea.setText("");
-        } else {
+        } else if (select) {
             richArea.getWysEditor().selectAll();
         }
     }

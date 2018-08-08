@@ -74,6 +74,7 @@ public class PropertyDrawView extends ComponentView {
 
     public LocalizedString caption;
     public boolean clearText;
+    public boolean notSelectAll;
     public String toolTip;
 
     public boolean notNull;
@@ -273,6 +274,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(entity.propertyObject.property.checkEquals());
         outStream.writeBoolean(clearText);
+        outStream.writeBoolean(notSelectAll);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 

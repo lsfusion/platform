@@ -128,10 +128,10 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     @Override
-    public void prepareTextEditor(boolean clearText) {
+    public void prepareTextEditor(boolean clearText, boolean selectAll) {
         if (clearText) {
             ((JFormattedTextField) dateEditor).setText("");
-        } else {
+        } else if (selectAll) {
             ((JFormattedTextField) dateEditor).selectAll();
         }
     }
