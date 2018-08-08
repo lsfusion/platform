@@ -105,8 +105,11 @@ public class ExecutionStackAspect {
         List<ThreadStackDump> list = new ArrayList<>(); 
         for(Thread thread : threads) {
             StackAndTime stackAndTime = executionStack.get(thread);
-            if(stackAndTime != null)
-                list.add(new ThreadStackDump(thread, checkConcurrent ? stackAndTime.stack.getSync() : stackAndTime.stack.getUnsync(), stackAndTime.time));
+            if(stackAndTime != null) {
+                Stack<ExecutionStackItem> stack = checkConcurrent ? stackAndTime.stack.getSync() : stackAndTime.stack.getUnsync();
+                if(!stack.isEmpty())
+                    list.add(new ThreadStackDump(thread, stack, stackAndTime.time));
+            }
         }
         Collections.sort(list);
         return list;
