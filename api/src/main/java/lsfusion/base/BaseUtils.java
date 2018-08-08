@@ -45,8 +45,9 @@ public class BaseUtils {
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
+    //minHeapFreeRatio
     public static Integer getApiVersion() {
-        return 68;
+        return 69;
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
