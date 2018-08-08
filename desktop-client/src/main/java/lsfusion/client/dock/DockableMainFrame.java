@@ -111,14 +111,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
-            public void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException {
-                try {
-                    dockableManager.openForm(this, element.formCanonicalName, element.formSID, modifiers);
-                } catch (JRException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
             @Override
             public void openAction(ClientNavigatorAction action, int modifiers) {
                 executeNavigatorAction(action, (modifiers & InputEvent.CTRL_MASK) != 0);

@@ -20,7 +20,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass navigatorFolder;
     public ConcreteCustomClass navigatorAction;
-    public ConcreteCustomClass navigatorForm;
     public ConcreteCustomClass form;
     public ConcreteCustomClass propertyDraw;
     public ConcreteCustomClass propertyDrawShowStatus;
@@ -84,7 +83,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP formCaption;
     public LCP isForm;
     public LCP isNavigatorAction;
-    public LCP isNavigatorForm;
     public LCP isNavigatorFolder;
 
     public LCP sidGroupObject;
@@ -209,7 +207,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         navigatorElement = (ConcreteCustomClass) findClass("NavigatorElement");
         navigatorFolder = (ConcreteCustomClass) findClass("NavigatorFolder");
         navigatorAction = (ConcreteCustomClass) findClass("NavigatorAction");
-        navigatorForm = (ConcreteCustomClass) findClass("NavigatorForm"); 
         form = (ConcreteCustomClass) findClass("Form");
         propertyDraw = (ConcreteCustomClass) findClass("PropertyDraw");
         propertyDrawShowStatus = (ConcreteCustomClass) findClass("PropertyDrawShowStatus");
@@ -278,7 +275,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         
         isNavigatorFolder = findProperty("isNavigatorFolder[?]");
         isNavigatorAction = findProperty("isNavigatorAction[?]");
-        isNavigatorForm = findProperty("isNavigatorForm[?]");
 
         navigatorElementTable = findTable("navigatorElement");
         

@@ -24,10 +24,6 @@ public abstract class AbstractNavigatorPanel extends JPanel {
     }
 
 
-    public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-        clientNavigator.openForm(element, 0);
-    }
-
     public void openAction(ClientNavigatorAction action) {
         clientNavigator.openAction(action, 0);
     }

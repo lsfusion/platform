@@ -93,8 +93,6 @@
 
     <b:bean id="readMemoryLimitsHandler" class="lsfusion.gwt.base.server.spring.ReadMemoryLimitsRequestHandler"/>
 
-    <b:bean id="readFormHandler" class="lsfusion.gwt.base.server.spring.ReadFormRequestHandler"/>
-
     <b:bean id="externalHandler" class="lsfusion.gwt.base.server.spring.ExternalRequestHandler"/>
 
     <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />

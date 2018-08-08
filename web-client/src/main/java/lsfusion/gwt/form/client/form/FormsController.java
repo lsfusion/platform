@@ -11,8 +11,6 @@ import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public interface FormsController {
 
-    void openForm(String canonicalName, String formSID, GModalityType modalityType, NativeEvent nativeEvent);
-
     Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler);
 
     void select(Widget tabContent);

@@ -7,9 +7,6 @@ import lsfusion.client.tree.ClientTreeNode;
 import javax.swing.*;
 
 public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, NavigatorTreeNode> {
-    private static final ImageIcon formIcon = new ImageIcon(Main.class.getResource("/images/form.png"));
-    private static final ImageIcon reportIcon = new ImageIcon(Main.class.getResource("/images/report.png"));
-
     private final NavigatorTree tree;
     public final ClientNavigatorElement navigatorElement;
     public boolean nodeStructureChanged;
@@ -63,9 +60,6 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
 
     @Override
     public Icon getIcon() {
-        if (navigatorElement instanceof ClientNavigatorForm) {
-            return formIcon;
-        }
         return null;
     }
 

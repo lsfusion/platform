@@ -55,61 +55,10 @@ public abstract class DefaultFormsController implements FormsController {
                 }
             }
         });
-
-        quickOpenForm();
     }
 
     public Widget getView() {
         return tabsPanel;
-    }
-
-    private void quickOpenForm() {
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                String formSIDs = GwtClientUtils.getPageParameter("formSID");
-                if (formSIDs != null) {
-                    for (String formSID : formSIDs.split(",")) {
-                        openForm(formSID, formSID, GModalityType.DOCKED, null);
-                    }
-                }
-            }
-        });
-    }
-
-    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, NativeEvent nativeEvent) {
-        openForm(canonicalName, formSID, modalityType, false, nativeEvent);
-    }
-
-    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages, NativeEvent nativeEvent) {
-        if(MainFrame.forbidDuplicateForms && formsList.contains(formSID) && (nativeEvent == null || !nativeEvent.getCtrlKey())) {
-            tabsPanel.selectTab(formsList.indexOf(formSID));
-        } else {
-
-            final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable("(loading...)"), formSID);
-
-            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), tabSID), new ErrorHandlingCallback<GetFormResult>() {
-                @Override
-                public void failure(Throwable caught) {
-                    if (dockable != null) {
-                        removeDockable(dockable, formSID);
-                    }
-                    super.failure(caught);
-                }
-
-                @Override
-                protected void showErrorMessage(Throwable caught) {
-                    if (!suppressErrorMessages) {
-                        super.showErrorMessage(caught);
-                    }
-                }
-
-                @Override
-                public void success(GetFormResult result) {
-                    openFormAfterFontsInitialization(dockable, result.form, modalityType, null, null);
-                }
-            });
-        }
     }
 
     public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {

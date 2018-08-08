@@ -20,48 +20,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         super(target);
     }
 
-    public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) throws RemoteException {
-        List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteFormProxy.class);
-
-        boolean hasCachedRichDesignByteArray = false;
-        if (RemoteFormProxy.cachedRichDesign.get(formSID) != null) {
-            hasCachedRichDesignByteArray = true;
-            for (int i = 0; i < invocations.size(); ++i) {
-                if (invocations.get(i).name.equals("getRichDesignByteArray")) {
-                    invocations.remove(i);
-                    break;
-                }
-            }
-        }
-
-        RemoteFormProxy proxy = createForm(invocations, MethodInvocation.create(this.getClass(), "createForm", formSID, initialObjects, isModal, interactive));
-
-        if (hasCachedRichDesignByteArray) {
-            proxy.setProperty("getRichDesignByteArray", RemoteFormProxy.cachedRichDesign.get(formSID));
-        } else {
-            RemoteFormProxy.cachedRichDesign.put(formSID, (byte[]) proxy.getProperty("getRichDesignByteArray"));
-        }
-
-        return proxy;
-    }
-
-    private RemoteFormProxy createForm(List<MethodInvocation> immutableMethods, MethodInvocation creator) throws RemoteException {
-
-        Object[] result = createAndExecute(creator, immutableMethods.toArray(new MethodInvocation[immutableMethods.size()]));
-
-        RemoteFormInterface remoteForm = (RemoteFormInterface) result[0];
-        if (remoteForm == null) {
-            return null;
-        }
-
-        RemoteFormProxy proxy = new RemoteFormProxy(remoteForm);
-        for (int i = 0; i < immutableMethods.size(); ++i) {
-            proxy.setProperty(immutableMethods.get(i).name, result[i + 1]);
-        }
-
-        return proxy;
-    }
-
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {
         logRemoteMethodStartCall("getCurrentUserInfoByteArray");
         byte[] result = target.getCurrentUserInfoByteArray();

@@ -84,11 +84,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
     @Override
     public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
-        if (element instanceof GNavigatorForm) {
-            GNavigatorForm form = (GNavigatorForm) element;
-
-            formsController.openForm(form.formCanonicalName, form.formSID, form.modalityType, nativeEvent);
-        } else if (element instanceof GNavigatorAction) {
+        if (element instanceof GNavigatorAction) {
             formsController.executeNavigatorAction((GNavigatorAction) element, nativeEvent);
         }
     }

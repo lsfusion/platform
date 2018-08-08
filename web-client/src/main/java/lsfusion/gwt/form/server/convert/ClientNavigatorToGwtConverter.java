@@ -4,7 +4,6 @@ import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.navigator.*;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorFolder;
-import lsfusion.gwt.form.client.navigator.GNavigatorForm;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.actions.GAction;
@@ -41,22 +40,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
             element.parents.add((GNavigatorElement) convertOrCast(parent));
         }
         return element;
-    }
-
-    public GNavigatorForm initNavigatorForm(ClientNavigatorForm clientForm, GNavigatorForm form) {
-        form = initNavigatorElement(clientForm, form);
-        
-        form.formCanonicalName = clientForm.formCanonicalName;
-        form.formSID = clientForm.formSID;
-        form.modalityType = GModalityType.valueOf(clientForm.modalityType.name());
-        
-        return form;
-    }
-    
-    @Cached
-    @Converter(from = ClientNavigatorForm.class)
-    public GNavigatorForm convertNavigatorForm(ClientNavigatorForm clientForm) {
-        return initNavigatorForm(clientForm, new GNavigatorForm());
     }
 
     @Cached

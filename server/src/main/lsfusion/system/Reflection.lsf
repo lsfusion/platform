@@ -18,7 +18,6 @@ propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup 
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
-CLASS NavigatorForm 'Форма' : NavigatorElement;
 CLASS NavigatorFolder 'Папка' : NavigatorElement;    
 
 
@@ -33,7 +32,6 @@ parent 'Родительский элемент' = DATA NavigatorElement (Naviga
 
 isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
 isNavigatorAction (NavigatorElement element) = element IS NavigatorAction;
-isNavigatorForm (NavigatorElement element) = element IS NavigatorForm;
 
 CLASS Form 'Форма' {
     noForm 'NoForm'

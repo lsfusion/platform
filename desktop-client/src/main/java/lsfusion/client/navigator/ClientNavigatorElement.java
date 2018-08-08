@@ -89,7 +89,6 @@ public abstract class ClientNavigatorElement {
         ClientNavigatorElement element;
 
         switch (type) {
-            case 0: element = new ClientNavigatorForm(inStream); break;
             case 1: element = new ClientNavigatorFolder(inStream); break;
             case 2: element = new ClientNavigatorAction(inStream); break;
             default:

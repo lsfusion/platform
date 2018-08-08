@@ -85,21 +85,6 @@ public class DockableManager {
         openedForms.add(page);
     }
 
-    public ClientDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, int modifiers) throws IOException, ClassNotFoundException, JRException {
-        ClientDockable page;
-        if (MainFrame.forbidDuplicateForms && forms.getFormsList().contains(formSID) && (modifiers & InputEvent.CTRL_MASK) == 0) { //only when ctrl not pressed
-            page = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if(page != null) {
-                page.toFront();
-                page.requestFocusInWindow();
-            }
-        } else {
-            page = new ClientFormDockable(navigator, canonicalName, formSID, this);
-            openForm(page);
-        }
-        return page;
-    }
-
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
         ClientFormDockable page;
         if (MainFrame.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
@@ -137,23 +122,7 @@ public class DockableManager {
         }
 
         public ClientDockable read(ClientDockableLayout layout) {
-            if (layout.getCanonicalName() == null) {
-                return null;
-            }
-            
-            try {
-                ClientFormDockable page = mainNavigator.createFormDockableByCanonicalName(layout.getCanonicalName(), DockableManager.this);
-                if (page == null) {
-                    return null;
-                }
-                
-                page.addCDockableStateListener(new DockableVisibilityListener());
-
-                return page;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
+            return null;
         }
 
         public ClientDockableLayout write(ClientDockable dockable) {

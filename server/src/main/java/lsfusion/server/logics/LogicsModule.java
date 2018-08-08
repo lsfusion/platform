@@ -2051,7 +2051,6 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
-//        NavigatorForm navigatorForm = new NavigatorForm(form, canonicalName, caption);
         NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).property, canonicalName, caption, form, "/images/form.png", DefaultIcon.FORM);
 
         addNavigatorElement(navigatorForm);
