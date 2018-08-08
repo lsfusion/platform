@@ -47,8 +47,8 @@ DESIGN computersDialog { BOX { size = (1024, 768); }}
 CLASS ABSTRACT Contact 'Контакт';
 TABLE contact (Contact);
 
-firstName 'Имя' = DATA VARISTRING[30] (Contact) CHARWIDTH 10 IN base;
-lastName 'Фамилия' = DATA VARISTRING[30] (Contact) CHARWIDTH 10 IN base;
+firstName 'Имя' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
+lastName 'Фамилия' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
 name 'Имя' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN recognize;
 
 phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;

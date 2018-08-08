@@ -47,7 +47,7 @@ public class GBusyDialogDisplayer extends LoadingManager {
                 public boolean execute() {
                     blockingPanel.hide();
                     if (busyDialog.needInterrupt != null) {
-                        messageProvider.interrupt(busyDialog.needInterrupt);
+                        messageProvider.interrupt(!busyDialog.needInterrupt);
                         busyDialog.needInterrupt = null;
                         return true;
                     } else if (visible) {

@@ -99,7 +99,7 @@ public class BusyDialogDisplayer extends TimerTask {
                             busyDialog.updateBusyDialog(serverMessageProvider.get());
                             Boolean needInterrupt = busyDialog.needInterrupt();
                             if (needInterrupt != null)
-                                serverMessageProvider.interrupt(needInterrupt);
+                                serverMessageProvider.interrupt(!needInterrupt);
                         }
                     } catch (Throwable e) {
                         stop();
