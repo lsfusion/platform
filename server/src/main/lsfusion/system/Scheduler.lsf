@@ -50,7 +50,6 @@ order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
 script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
 scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
-property = DATA Property (ScheduledTaskDetail); // temporary for migration
 action = DATA Action (ScheduledTaskDetail);
 captionAction 'Действие' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
 canonicalNameAction 'Код действия' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
@@ -58,13 +57,6 @@ parameter 'Параметр действия' = DATA TEXT (ScheduledTaskDetail);
 classAction 'Класс действия' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
 timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
 ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
-
-// temporary for migration
-copyAction()  { 
-    FOR Action action = actionCanonicalName(canonicalName(property(ScheduledTaskDetail td))) INLINE DO {
-        action(td) <- action;
-    }    
-}
 
 CONSTRAINT script(ScheduledTaskDetail d) AND action(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
 

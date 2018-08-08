@@ -47,8 +47,6 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP scriptText;
     public LAP evalScript;
     
-    public LAP copyAction;
-
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/system/Scheduler.lsf"), "/system/Scheduler.lsf", baseLM, BL);
     }
@@ -98,7 +96,5 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
         scriptText = findProperty("scriptText[]");
         evalScript = findAction("evalScript[]");
-
-        copyAction = findAction("copyAction[]");
-    }
+   }
 }

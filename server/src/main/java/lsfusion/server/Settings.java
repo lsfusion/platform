@@ -2094,7 +2094,7 @@ public class Settings implements Cloneable {
         this.maxUsedTempRowsAverageMax = maxUsedTempRowsAverageMax;
     }
 
-    private boolean disableRegisterChanges = false; // временно, потом убрать
+    private boolean disableRegisterChanges = false;
 
     public boolean isDisableRegisterChanges() {
         return disableRegisterChanges;
