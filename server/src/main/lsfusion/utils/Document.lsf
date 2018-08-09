@@ -1053,13 +1053,13 @@ END
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
-    @defineAggregation (primObject, aggrObject, aggrProperty);
+    @defineAggregationClass(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
     @defineDocumentAggregationHeaderNote(primObject, aggrObject);
     @defineDocumentAggregationHeaderTime(primObject, aggrObject);
 END
 
 META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
-    @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty);
+    @defineAggregationClass(primObject##Detail, ###primObject##Detail, aggrObject##Detail, ###aggrObject##Detail, aggrProperty);
     aggrObject (###aggrObject##Detail detail) = aggrObject(primObject(primObject##Detail(detail)));
 
     @defineDocumentAggregationDetailIndex(primObject, aggrObject);
