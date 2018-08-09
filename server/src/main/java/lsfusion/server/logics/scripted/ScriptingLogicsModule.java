@@ -199,7 +199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (requiredModules.isEmpty() && !getName().equals("System")) {
             requiredModules.add("System");
         }
-        setRequiredNames(new LinkedHashSet<>(requiredModules));
+        setRequiredModules(new HashSet<>(requiredModules));
         setNamespacePriority(namespacePriority);
     }
 
@@ -4060,7 +4060,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             namespaceToModules.get(namespaceName).add(module);
         }
-        for (String requiredModuleName : module.getRequiredNames()) {
+        for (String requiredModuleName : module.getRequiredModules()) {
             LogicsModule requiredModule = BL.getSysModule(requiredModuleName);
             assert requiredModule != null;
             if (!visitedModules.contains(requiredModule)) {
