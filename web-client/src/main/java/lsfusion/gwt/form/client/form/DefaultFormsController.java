@@ -17,7 +17,6 @@ import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
