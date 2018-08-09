@@ -854,7 +854,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInSessionEvent()) { // если мы в сессионном событии, то может измениться sessionEventModifier и drop'уть таблицы, которые используются в изменении
             assert !isInTransaction();
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends())
-                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось
+                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, (FunctionSet<CalcProperty>) changes)) // если влияет на old из сессионного event'а и еще не читалось
                     return true;
         }
         return false;
@@ -862,16 +862,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public <P extends PropertyInterface> void updateSessionEvents(ImSet<? extends CalcProperty> changes) throws SQLException, SQLHandledException {
         if(!isInTransaction())
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends()) {
-                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось
+                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, (FunctionSet<CalcProperty>) changes)) // если влияет на old из сессионного event'а и еще не читалось
                     updateSessionEventChangedOld(old);
             }
     }
-    public <P extends PropertyInterface> void updateSessionNotChangedEvents(ImSet<? extends CalcProperty> changes) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> void updateSessionNotChangedEvents(ImSet<CalcProperty> changes) throws SQLException, SQLHandledException {
         if(!isInTransaction())
             for(OldProperty<PropertyInterface> old : getSessionEventOldDepends()) {
                 if (!sessionEventChangedOld.contains(old) && !sessionEventNotChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) // если влияет на old из сессионного event'а и еще не читалось и не помечено как notChanged
                     updateSessionNotChangedEvents(old, false);
             }
+    }
+    public <P extends PropertyInterface> void updateSessionNotChangedEvents(FunctionSet<SessionDataProperty> keep) {
+        ServerLoggers.assertLog(!isInTransaction() && !isInSessionEvent(), "UPDATE NOTCHANGED KEEP SHOULD NOT BE IN TRANSACTION OR IN LOCAL EVENT");
+        assert sessionEventChangedOld.isEmpty() && sessionEventNotChangedOld.isEmpty() && updateNotChangedOld.isEmpty();
+        FunctionSet<CalcProperty> changes = CalcProperty.getSet(keep);
+        for(OldProperty<PropertyInterface> old : getSessionEventOldDepends()) {
+            if (CalcProperty.depends(old.property, changes))
+                updateNotChangedOld.put(old, false);
+        }
     }
 
     // вообще если какое-то свойство попало в sessionEventNotChangedOld, а потом изменился источник одного из его зависимых свойств, то в следствие updateSessionEvents "обновленное" изменение попадет в sessionEventChangedOld и "перекроет" изменение в notChanged (по сути последнее никогда использоваться не будет)
@@ -2116,6 +2125,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             recursiveActions.clear();
             return recursiveApply(execRecursiveActions, BL, stack);
         }
+        
+        FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
         long checkedTimestamp;
         if(keepUpProps.isEmpty()) {
@@ -2132,6 +2143,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         registerClassRemove.removed(removedClasses, getTimestamp());
 
         registerClassRemove.checked(checkedTimestamp);
+
+        updateSessionNotChangedEvents(keepProps); // need this to mark that nested props are not changed, not in restart to be out of transaction
 
         return true;
     }
@@ -2479,6 +2492,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         keep = adjustKeep(true, keep);
 
         restart(true, keep);
+
+        updateSessionNotChangedEvents(keep); // need this to mark that nested props are not changed
 
         if (parentSession != null) {
             parentSession.copyDataTo(this, true, keep);

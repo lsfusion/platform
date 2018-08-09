@@ -96,6 +96,24 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             }
         };
     }
+   
+    public static FunctionSet<CalcProperty> getSet(final FunctionSet<SessionDataProperty> set) {
+        if(set.isEmpty())
+            return SetFact.EMPTY();
+        return new FunctionSet<CalcProperty>() {
+            public boolean contains(CalcProperty element) {
+                return element instanceof SessionDataProperty && set.contains((SessionDataProperty) element);
+            }
+
+            public boolean isEmpty() {
+                return set.isEmpty();
+            }
+
+            public boolean isFull() {
+                return false;
+            }
+        };
+    }
 
     public static FunctionSet<CalcProperty> getDependsFromSet(final ImSet<CalcProperty> check) {
         return new FunctionSet<CalcProperty>() {
@@ -117,12 +135,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return property.getRecDepends().contains(check);
     }
 
-    public static boolean depends(CalcProperty<?> property, FunctionSet<? extends CalcProperty> check) {
+    public static boolean depends(CalcProperty<?> property, FunctionSet<CalcProperty> check) {
         return property.getRecDepends().intersect(check);
     }
 
-    public static boolean dependsSet(CalcProperty<?> property, FunctionSet<? extends CalcProperty>... checks) {
-        for(FunctionSet<? extends CalcProperty> check : checks)
+    public static boolean dependsSet(CalcProperty<?> property, FunctionSet<CalcProperty>... checks) {
+        for(FunctionSet<CalcProperty> check : checks)
             if(depends(property, check))
                 return true;
         return false;

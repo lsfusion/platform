@@ -22,6 +22,9 @@ public class IncrementChangeProps extends IncrementProps {
             addNoChange(noUpdate);
     }
 
+    public boolean isEmpty() {
+        return changes.isEmpty();
+    }
     public boolean contains(CalcProperty property) {
         return changes.containsKey(property);
     }
