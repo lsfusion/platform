@@ -407,7 +407,7 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return ((ImSet<K>)set).contains(key);
     }
 
-    public boolean intersect(FunctionSet<K> set) {
+    public boolean intersectFn(FunctionSet<K> set) {
         return set.contains(key);
     }
 

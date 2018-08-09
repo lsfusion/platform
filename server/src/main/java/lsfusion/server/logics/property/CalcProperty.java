@@ -135,7 +135,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public static boolean depends(CalcProperty<?> property, FunctionSet<CalcProperty> check) {
-        return property.getRecDepends().intersect(check);
+        return property.getRecDepends().intersectFn(check);
     }
 
     public static boolean dependsSet(CalcProperty<?> property, FunctionSet<CalcProperty>... checks) {

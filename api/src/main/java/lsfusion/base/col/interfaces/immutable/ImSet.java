@@ -10,7 +10,7 @@ import java.util.*;
 public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
 
     boolean intersect(ImSet<? extends T> set);
-    boolean intersect(FunctionSet<T> set);
+    boolean intersectFn(FunctionSet<T> set);
     boolean disjoint(ImSet<? extends T> col);
     boolean containsAll(ImSet<? extends T> wheres);
 
