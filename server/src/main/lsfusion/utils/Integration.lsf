@@ -10,7 +10,7 @@ END
 
 META defineExternalizable (object, type, prefix)
     prefix###id 'Код' = DATA type (###object) IN recognize INDEXED CHARWIDTH 10;
-    prefix###object (id) = GROUP AGGR (###object object) BY prefix###id (object);
+    prefix###object (id) = GROUP AGGR ###object object BY prefix###id (object);
 END
 
 META defineExternalizableAbstract (object, type)
@@ -19,7 +19,7 @@ END
 
 META defineExternalizableAbstract (object, type, prefix)
     id 'Код' = ABSTRACT type (###object) MATERIALIZED INDEXED CHARWIDTH 10;
-    object (id) = GROUP AGGR (###object object) BY id (object);
+    object (id) = GROUP AGGR ###object object BY id (object);
 END
 
 EXTEND FORM options PROPERTIES() showIDs;
