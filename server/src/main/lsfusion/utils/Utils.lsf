@@ -260,32 +260,6 @@ FORM printBlankPagePortrait;
 
 FORM printBlankPageLandscape;
 
-// --------------------------- Агрегации --------------------------------- //
-
-// -- Агрегации для 1го объекта -- //
-
-META defineAggregationClass (primObject, primClass, aggrObject, aggrClass, aggrProperty)
-    aggrObject = AGGR aggrClass WHERE aggrProperty(primClass primObject) MATERIALIZED INDEXED;
-END
-
-// -- Агрегации для 2х объектов -- //
-
-META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
-    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object) MATERIALIZED INDEXED;
-END
-
-// -- Агрегации для 3х объектов -- //
-
-META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
-    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) MATERIALIZED INDEXED;
-END
-
-// -- Агрегации для 4х объектов -- //   
-
-META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
-    aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) MATERIALIZED INDEXED;
-END
-
 // --------------------------- Ссылки на файлы через FILELINK --------------------------- //
 
 META defineFileLink (caption, fileType, property, class1)
