@@ -9,7 +9,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.Event;
 import org.antlr.runtime.RecognitionException;
 
@@ -38,8 +37,8 @@ public class EvalUtils {
 
         String code = wrapScript(BL, namespace, require, priorities, script, name);
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, code);
-        module.order = BL.getOrderedModules().size() + 1;
-        module.visible = FullFunctionSet.<Version>instance();
+        module.order = BL.getLogicModules().size() + 1;
+        module.visible = FullFunctionSet.instance();
         module.temporary = true;
         if(prevEventScope)
             module.setPrevScope(Event.SESSION);

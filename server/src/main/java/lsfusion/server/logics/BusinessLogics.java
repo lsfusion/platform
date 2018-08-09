@@ -92,8 +92,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -125,13 +123,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public static final List<String> defaultExcludedScriptPaths = Collections.singletonList("/system");
     public static final List<String> defaultIncludedScriptPaths = Collections.singletonList("");
 
-    public static final String[] systemModulesNames = {"System", "Authentication", "Email", "Reflection",
-                                                       "Scheduler", "Security", "Service", "SystemEvents", "Time"};
+    private ModuleList modules = new ModuleList();
     
-    private List<LogicsModule> logicModules = new ArrayList<>();
     private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<>();
-
-    private final Map<String, LogicsModule> nameToModule = new HashMap<>();
 
     private final List<ExternalScreen> externalScreens = new ArrayList<>();
 
@@ -224,7 +218,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
     
     public LogicsModule getSysModule(String name) {
-        return nameToModule.get(name);
+        return modules.get(name);
     }
 
     public ConcreteClass getDataClass(Object object, Type type) {
@@ -287,7 +281,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     protected <M extends LogicsModule> M addModule(M module) {
-        logicModules.add(module);
+        modules.add(module);
         return module;
     }
 
@@ -379,219 +373,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    protected void addModulesFromResource(String... paths) throws IOException {
+    private void addModulesFromResource(String... paths) throws IOException {
         for (String path : paths) {
             addModuleFromResource(path);
         }
     }
 
-    protected ScriptingLogicsModule addModuleFromResource(String path) throws IOException {
+    private void addModuleFromResource(String path) throws IOException {
         InputStream is = getClass().getResourceAsStream(path);
         if (is == null)
             throw new RuntimeException(String.format("[error]:\tmodule '%s' cannot be found", path));
-        return addModule(new ScriptingLogicsModule(is, path, LM, this));
+        addModule(new ScriptingLogicsModule(is, path, LM, this));
     }
-
-    private void fillNameToModules() {
-        for (LogicsModule module : logicModules) {
-            if (nameToModule.containsKey(module.getName())) {
-                throw new RuntimeException(String.format("[error]:\tmodule '%s' has already been added", module.getName()));
-            }
-            nameToModule.put(module.getName(), module);
-        }
-    }
-
-    public Map<String, Set<String>> buildModuleGraph() {
-        Map<String, Set<String>> graph = new HashMap<>();
-        for (LogicsModule module : logicModules) {
-            graph.put(module.getName(), new HashSet<String>());
-        }
-
-        for (LogicsModule module : logicModules) {
-            for (String reqModule : module.getRequiredModules()) {
-                if (graph.get(reqModule) == null) {
-                    throw new RuntimeException(String.format("[error]:\t%s:\trequired module '%s' was not found", module.getName(), reqModule));
-                }
-                graph.get(reqModule).add(module.getName());
-            }
-        }
-        return graph;
-    }
-
-    private String checkCycles(String cur, LinkedList<String> way, Set<String> used, Map<String, Set<String>> graph) {
-        way.add(cur);
-        used.add(cur);
-        for (String next : graph.get(cur)) {
-            if (!used.contains(next)) {
-                String foundCycle = checkCycles(next, way, used, graph);
-                if (foundCycle != null) {
-                    return foundCycle;
-                }
-            } else if (way.contains(next)) {
-                String foundCycle = next;
-                do {
-                    foundCycle = foundCycle + " <- " + way.peekLast();
-                } while (!way.pollLast().equals(next));
-                return foundCycle;
-            }
-        }
-
-        way.removeLast();
-        return null;
-    }
-
-    private void checkCycles(Map<String, Set<String>> graph, String errorMessage) {
-        Set<String> used = new HashSet<>();
-        for (String vertex : graph.keySet()) {
-            if (!used.contains(vertex)) {
-                String foundCycle = checkCycles(vertex, new LinkedList<String>(), used, graph);
-                if (foundCycle != null) {
-                    throw new RuntimeException("[error]:\t" + errorMessage + ": " + foundCycle);
-                }
-            }
-        }
-    }
-
-    // Формирует .dot файл для построения графа иерархии модулей с помощью graphviz
-    private void outDotFile() {
-        try {
-            FileWriter fStream = new FileWriter("D:/lsf/modules.dot");
-            BufferedWriter out = new BufferedWriter(fStream);
-            out.write("digraph Modules {\n");
-            out.write("\tsize=\"6,4\"; ratio = fill;\n");
-            out.write("\tnode [shape=box, fontsize=60, style=filled];\n");
-            out.write("\tedge [arrowsize=2];\n");
-            for (LogicsModule module : logicModules) {
-                for (String name : module.getRequiredModules()) {
-                    out.write("\t" + name + " -> " + module.getName() + ";\n");
-                }
-            }
-            out.write("}\n");
-            out.close();
-        } catch (Exception e) {
-        }
-    }
-
-    private List<LogicsModule> orderModules(String orderDependencies, Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules) {
-//        outDotFile();
-
-        //для обеспечения детерменированности сортируем модули по имени
-        Collections.sort(logicModules, new Comparator<LogicsModule>() {
-            @Override
-            public int compare(LogicsModule m1, LogicsModule m2) {
-                return m1.getName().compareTo(m2.getName());
-            }
-        });
-
-        fillNameToModules();
-
-        Map<String, Set<String>> graph = buildModuleGraph();
-
-        checkCycles(graph, "there is a circular dependency between required modules");
-
-        if (!isRedundantString(orderDependencies)) {
-            addOrderDependencies(orderDependencies, graph);
-            checkCycles(graph, "there is a circular dependency introduced by order dependencies");
-        }
-
-        Map<String, Integer> degree = new HashMap<>();
-        for (LogicsModule module : logicModules) {
-            degree.put(module.getName(), 0);
-        }
-
-        for (Map.Entry<String, Set<String>> e : graph.entrySet()) {
-            for (String nextModule : e.getValue()) {
-                degree.put(nextModule, degree.get(nextModule) + 1);
-            }
-        }
-
-        Set<LogicsModule> usedModules = new LinkedHashSet<>();
-        for (int i = 0; i < logicModules.size(); ++i) {
-            for (LogicsModule module : logicModules) {
-                String moduleName = module.getName();
-                if (degree.get(moduleName) == 0 && !usedModules.contains(module)) {
-                    for (String nextModule : graph.get(moduleName)) {
-                        degree.put(nextModule, degree.get(nextModule) - 1);
-                    }
-                    usedModules.add(module);
-                    
-                    MSet<LogicsModule> mRecDep = SetFact.mSet();
-                    mRecDep.add(module);
-                    for(String depend : module.getRequiredModules())
-                        mRecDep.addAll(recRequiredModules.get(nameToModule.get(depend)));
-                    recRequiredModules.put(module, mRecDep.immutable());    
-                    
-                    break;
-                }
-            }
-        }
-        return new ArrayList<>(usedModules);
-    }
-
-    private void addOrderDependencies(String orderDependencies, Map<String, Set<String>> graph) {
-        for (String dependencyList : orderDependencies.split(";\\s*")) {
-            String dependencies[] = dependencyList.split(",\\s*");
-            for (int i = 0; i < dependencies.length; ++i) {
-                String moduleName2 = dependencies[i];
-                if (graph.get(moduleName2) == null) {
-                    throw new RuntimeException(String.format("[error]:\torder dependencies' module '%s' was not found", moduleName2));
-                }
-
-                if (i > 0) {
-                    String moduleName1 = dependencies[i - 1];
-                    graph.get(moduleName1).add(moduleName2);
-                }
-            }
-        }
-    }
-
-    private LogicsModule getModuleWithCheck(String moduleName) {
-        LogicsModule module = nameToModule.get(moduleName);
-        if (module == null) {
-            throw new RuntimeException(String.format("Module %s not found.", moduleName));
-        }
-        return module;
-    }
-
-    private void overrideModulesList(String startModuleName) {
-        Set<LogicsModule> was = new HashSet<>();
-        Queue<LogicsModule> queue = new LinkedList<>();
-
-        fillNameToModules();
-        
-        // Всегда добавляем сначала системные модули 
-        for (String systemModuleName : systemModulesNames) {
-            was.add(getModuleWithCheck(systemModuleName));    
-        }
-        
-        LogicsModule startModule = getModuleWithCheck(startModuleName);
-        queue.add(startModule);
-        was.add(startModule);
-
-        while (!queue.isEmpty()) {
-            LogicsModule current = queue.poll();
-
-            for (String nextModuleName : current.getRequiredModules()) {
-                LogicsModule nextModule = getModuleWithCheck(nextModuleName);
-                if (!was.contains(nextModule)) {
-                    was.add(nextModule);
-                    queue.add(nextModule);
-                }
-            }
-        }
-
-        logicModules = new ArrayList<>(was);
-        nameToModule.clear();
-    }
-
+    
     public void initObjectClass() {
         LM.baseClass.initObjectClass(LM.getVersion(), CanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);
-    }
-
-    private List<LogicsModule> orderedModules;
-    public List<LogicsModule> getOrderedModules() {
-        return orderedModules;
     }
 
     public void initLocalizer() {
@@ -603,21 +400,40 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initModuleOrders() {
+        modules.fillNameToModules();
         if (!isRedundantString(topModule)) {
-            overrideModulesList(topModule);
+            modules.filterWithTopModule(topModule);
         }
+        modules.setOrderDependencies(orderDependencies);
+        modules.orderModules();
 
-        Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<>();
-        orderedModules = orderModules(orderDependencies, recRequiredModules);
+        fillNamespaceToModules();
+        fillModulesVisibleAndOrder();
+    }
 
-        int moduleNumber = 0;
-        for (LogicsModule module : orderedModules) {
+    private void fillNamespaceToModules() {
+        for (LogicsModule module : modules.all()) {
             String namespace = module.getNamespace();
             if (!namespaceToModules.containsKey(namespace)) {
                 namespaceToModules.put(namespace, new ArrayList<LogicsModule>());
             }
             namespaceToModules.get(namespace).add(module);
-            
+        }
+    }
+    
+    private void fillModulesVisibleAndOrder() {
+        Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<>();
+        
+        for (LogicsModule module : modules.all()) {
+            MSet<LogicsModule> mRecDep = SetFact.mSet();
+            mRecDep.add(module);
+            for (String requiredName : module.getRequiredNames())
+                mRecDep.addAll(recRequiredModules.get(modules.get(requiredName)));
+            recRequiredModules.put(module, mRecDep.immutable());
+        }
+
+        int moduleNumber = 0;
+        for (LogicsModule module : modules.all()) {
             module.visible = recRequiredModules.get(module).mapSetValues(new GetValue<Version, LogicsModule>() {
                 public Version getMapValue(LogicsModule value) {
                     return value.getVersion();
@@ -625,7 +441,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             module.order = (moduleNumber++);
         }
     }
-
+    
     public void initFullSingleTables() {
         for(ImplementTable table : LM.tableFactory.getImplementTables()) {
             if(table.markedFull && !table.isFull())  // для второго условия все и делается, чтобы не создавать лишние св-ва
@@ -1066,7 +882,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
             
-            // issue #1725 Потенциальное совпадение канонических имен различных свойств
+            // issue #47 Потенциальное совпадение канонических имен различных свойств
             // Приходится разделять эти свойства только по имени, а имя приходится создавать из канонического имени 
             // базового свойства, заменив спецсимволы на подчеркивания
             String setupPolicyActionName = (actions ? PropertyCanonicalNameUtils.policyPropPrefix : PropertyCanonicalNameUtils.policyActionPrefix) + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
@@ -1102,7 +918,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public Iterable<LCP<?>> getNamedProperties() {
         List<Iterable<LCP<?>>> namedProperties = new ArrayList<>();
-        for (LogicsModule module : logicModules) {
+        for (LogicsModule module : modules.all()) {
             namedProperties.add(module.getNamedProperties());
         }
         return Iterables.concat(namedProperties);
@@ -1985,7 +1801,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public List<LogicsModule> getLogicModules() {
-        return logicModules;
+        return modules.all();
     }
 
     public void firstRecalculateStats() {
@@ -2339,7 +2155,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
-        for(LogicsModule logicsModule : logicModules) {
+        for(LogicsModule logicsModule : modules.all()) {
             for(FormEntity entry : logicsModule.getNamedForms())
                 mResult.exclAdd(entry);
         }
@@ -2348,7 +2164,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public ImSet<NavigatorElement> getNavigatorElements() {
         MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
-        for(LogicsModule logicsModule : logicModules) {
+        for(LogicsModule logicsModule : modules.all()) {
             for(NavigatorElement entry : logicsModule.getNavigatorElements())
                 mResult.exclAdd(entry);            
         }
@@ -2358,7 +2174,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // в том числе и приватные
     public ImSet<FormEntity> getAllForms() {
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
-        for(LogicsModule logicsModule : logicModules) {
+        for(LogicsModule logicsModule : modules.all()) {
             for(FormEntity entry : logicsModule.getAllModuleForms())
                 mResult.exclAdd(entry);
         }
@@ -2367,7 +2183,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     
     // todo [dale]: Может быть можно заменить на поиск по каноническому имени
     public FormEntity getFormEntityBySID(String formSID){
-        for (LogicsModule logicsModule : logicModules) {
+        for (LogicsModule logicsModule : modules.all()) {
             for (FormEntity element : logicsModule.getNamedForms()) {
                 if (formSID.equals(element.getSID())) {
                     return element;
@@ -2378,7 +2194,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void checkForDuplicateElements() {
-        new DuplicateSystemElementsChecker(logicModules).check();
+        new DuplicateSystemElementsChecker(modules.all()).check();
     }
     
     public DBManager getDbManager() {
