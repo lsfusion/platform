@@ -264,123 +264,26 @@ FORM printBlankPageLandscape;
 
 // -- Агрегации для 1го объекта -- //
 
-META defineAggregationCustom1 (primProperty, primObject, primClass, aggrObject, aggrClass, aggrProperty)
-    aggrObject (primObject) =
-        GROUP AGGR aggrClass aggrObject
-        WHERE aggrObject IS aggrClass BY primObject(aggrObject) MATERIALIZED INDEXED;
-
-    aggrProperty(primClass primObject) => aggrObject(primObject) RESOLVE LEFT;
-
-    is(aggrClass aggrObject) = aggrObject IS aggrClass;
-    is(aggrClass aggrObject) => aggrProperty(primObject(aggrObject)) RESOLVE RIGHT;
-END
-
-META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
-    @defineAggregationCustom1(primProperty, primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
-END
-
 META defineAggregationClass (primObject, primClass, aggrObject, aggrClass, aggrProperty)
-//    primObject = DATA primClass (aggrClass) INDEXED;
-    
     aggrObject = AGGR aggrClass WHERE aggrProperty(primClass primObject) MATERIALIZED INDEXED;
-
-//    @defineAggregationCustom1(primObject###aggrObject, primObject, primClass, aggrObject, aggrClass, aggrProperty);
-END
-
-META defineAggregation (primObject, aggrObject, aggrProperty)
-    @defineAggregationClass(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
 END
 
 // -- Агрегации для 2х объектов -- //
 
-META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
-    aggrObject (prim1Object, prim2Object) =
-        GROUP AGGR aggrClass aggrObject
-        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
-
-    aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT;
-
-    is(aggrClass aggrObject) = aggrObject IS aggrClass;
-    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT;
-END
-
-META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
-    @defineAggregationCustom(prim1Property, prim2Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
-END
-
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty)
-//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
-//    prim2Object = DATA prim2Class (aggrClass) INDEXED;
-
     aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object) MATERIALIZED INDEXED;
-
-//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, aggrObject, aggrClass, aggrProperty);
-END
-
-META defineAggregation (prim1Object, prim2Object, aggrObject, aggrProperty)
-    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
 // -- Агрегации для 3х объектов -- //
 
-META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
-    aggrClass (prim1Object, prim2Object, prim3Object) =
-        GROUP AGGR aggrClass aggrObject
-        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject) MATERIALIZED INDEXED;
-
-    aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) => aggrClass(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
-
-    is(aggrClass aggrObject) = aggrObject IS aggrClass;
-    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject)) RESOLVE RIGHT;
-END
-
-META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
-    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
-END
-
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty)
-//    prim1Object = DATA prim1Class (aggrClass);
-//    prim2Object = DATA prim2Class (aggrClass);
-//    prim3Object = DATA prim3Class (aggrClass);
-
     aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object) MATERIALIZED INDEXED;
-
-//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, aggrObject, aggrClass, aggrProperty);
-END
-
-META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
-    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
 // -- Агрегации для 4х объектов -- //   
-META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
-    aggrObject (prim1Object, prim2Object, prim3Object, prim4Object) =
-        GROUP AGGR aggrClass aggrObject 
-        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject);// MATERIALIZED INDEXED;
-
-    aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) => aggrObject(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE LEFT;
-
-    is(aggrClass aggrObject) = aggrObject IS aggrClass;
-    is(aggrClass aggrObject) => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject), prim3Object(aggrObject), prim4Object(aggrObject)) RESOLVE RIGHT;
-END
-
-META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
-    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
-END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
-//    prim1Object = DATA prim1Class (aggrClass) INDEXED;
-//    prim2Object = DATA prim2Class (aggrClass);
-//    prim3Object = DATA prim3Class (aggrClass);
-//    prim4Object = DATA prim4Class (aggrClass);
-
     aggrObject = AGGR aggrClass WHERE aggrProperty(prim1Class prim1Object, prim2Class prim2Object, prim3Class prim3Object, prim4Class prim4Object) MATERIALIZED INDEXED;
-
-//    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
-END
-
-META defineAggregation (prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
-    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
 // --------------------------- Ссылки на файлы через FILELINK --------------------------- //
