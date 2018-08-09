@@ -39,8 +39,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LCP overrideFocusedCellBackgroundColor;
     public LCP overrideFocusedCellBorderColor;
 
-    public LCP nameReflectionProperty;
-    public LCP overBaseValueReflectionPropertyUserRole;
+    public LCP nameSetting;
+    public LCP overBaseValueSettingUserRole;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
@@ -73,7 +73,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor[]");
         overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor[]");
 
-        nameReflectionProperty = findProperty("name[ReflectionProperty]");
-        overBaseValueReflectionPropertyUserRole = findProperty("overBaseValue[ReflectionProperty, UserRole]");
+        nameSetting = findProperty("name[Setting]");
+        overBaseValueSettingUserRole = findProperty("overBaseValue[Setting, UserRole]");
     }
 }

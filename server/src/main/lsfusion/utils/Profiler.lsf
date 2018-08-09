@@ -211,31 +211,31 @@ initFilters()  {
 toString = FORMULA STRING[100] 'CAST($1 AS character(100))';
 toBoolean(s) = IF s == 'true' THEN TRUE;
 
-changeProfilingSettingsInteger(ReflectionProperty r, INTEGER value)  { 
+changeProfilingSettingsInteger(Setting r, INTEGER value)  { 
    baseValue(r) <- toString(value);
 }
-changeProfilingSettingsBoolean(ReflectionProperty r, BOOLEAN value)  { 
+changeProfilingSettingsBoolean(Setting r, BOOLEAN value)  { 
     baseValue(r) <- IF value THEN 'true' ELSE 'false';
 }
 
 explainNoAnalyze 'Explain No Analyze' = DATA BOOLEAN ();
 WHEN CHANGED(explainNoAnalyze()) DO {
-    changeProfilingSettingsBoolean(reflectionProperty('explainNoAnalyze'), explainNoAnalyze());
+    changeProfilingSettingsBoolean(setting('explainNoAnalyze'), explainNoAnalyze());
 }
 explainJavaStack 'Explain Java Stack' = DATA BOOLEAN ();
 WHEN CHANGED(explainJavaStack()) DO {
-    changeProfilingSettingsBoolean(reflectionProperty('explainJavaStack'), explainJavaStack());
+    changeProfilingSettingsBoolean(setting('explainJavaStack'), explainJavaStack());
 }
 explainCompile 'Explain Compile' = DATA BOOLEAN ();
 WHEN CHANGED(explainCompile()) DO {
-    changeProfilingSettingsBoolean(reflectionProperty('explainCompile'), explainCompile());
+    changeProfilingSettingsBoolean(setting('explainCompile'), explainCompile());
 }
 explainThreshold 'Explain Threshold' = DATA INTEGER ();
 WHEN CHANGED(explainThreshold()) DO {
-    changeProfilingSettingsInteger(reflectionProperty('explainThreshold'), explainThreshold());
+    changeProfilingSettingsInteger(setting('explainThreshold'), explainThreshold());
 }
 
-WHEN CHANGED(value(ReflectionProperty r, NULL)) DO {
+WHEN CHANGED(value(Setting r, NULL)) DO {
     CASE
         WHEN name(r) == 'explainNoAnalyze' THEN 
             explainNoAnalyze() <- toBoolean(value(r, NULL));

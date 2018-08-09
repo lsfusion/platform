@@ -285,36 +285,36 @@ makeHeapDump 'Сделать Heap Dump'  INTERNAL  'lsfusion.server.logics.servi
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
-CLASS ReflectionProperty 'Параметры';
-TABLE reflectionProperty (ReflectionProperty);
+CLASS Setting 'Параметры';
+TABLE setting (Setting);
 
-name 'Имя параметра' = DATA VARISTRING[100] (ReflectionProperty);
-reflectionProperty (name) = GROUP AGGR ReflectionProperty reflectionProperty BY name(reflectionProperty);
-baseValue 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
+name 'Имя параметра' = DATA VARISTRING[100] (Setting);
+setting (name) = GROUP AGGR Setting setting BY name(setting);
+baseValue 'Сохранённое значение' = DATA VARSTRING[100] (Setting);
 
-TABLE reflectionPropertyUserRole(ReflectionProperty, UserRole);
-baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (ReflectionProperty, UserRole);
-overBaseValue 'Сохранённое значение для текущего пользователя' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
-defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
-value 'Значение для роли' (ReflectionProperty p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
+TABLE settingUserRole(Setting, UserRole);
+baseValue 'Сохранённое значение для роли' = DATA VARSTRING[100] (Setting, UserRole);
+overBaseValue 'Сохранённое значение для текущего пользователя' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p);
+defaultValue 'Значение по умолчанию' = DATA VARSTRING[100] (Setting);
+value 'Значение для роли' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 
-pushReflectionPropertyAction 'Перегрузить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PushReflectionPropertyActionProperty' (VARSTRING[100], VARSTRING[100]);
-popReflectionPropertyAction 'Сбросить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PopReflectionPropertyActionProperty' (VARSTRING[100]);
+pushSetting 'Перегрузить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PushSettingActionProperty' (VARSTRING[100], VARSTRING[100]);
+popSetting 'Сбросить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PopSettingActionProperty' (VARSTRING[100]);
 
-writeDefaultReflectionPropertiesAction 'Записать настройки свойств по умолчанию'  INTERNAL  'lsfusion.server.logics.service.reflection.WriteDefaultReflectionPropertiesActionProperty' ();
-saveReflectionProperty 'Сохранить настройку свойства'  INTERNAL  'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty, UserRole);
+writeDefaultSettings 'Записать настройки свойств по умолчанию'  INTERNAL  'lsfusion.server.logics.service.reflection.WriteDefaultSettingsActionProperty' ();
+saveSetting 'Сохранить настройку свойства'  INTERNAL  'lsfusion.server.logics.service.reflection.SaveSettingActionProperty' (Setting, UserRole);
 
 onStarted() + {  
-    writeDefaultReflectionPropertiesAction();
-    FOR baseValue(ReflectionProperty r) DO saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
-    FOR baseValue(ReflectionProperty r, UserRole ur) DO saveReflectionProperty(r, ur);
+    writeDefaultSettings();
+    FOR baseValue(Setting r) DO saveSetting(r, NULL); //системный пользователь и пользователи без роли
+    FOR baseValue(Setting r, UserRole ur) DO saveSetting(r, ur);
 }
 
-WHEN CHANGED (baseValue(ReflectionProperty r)) DO {
-    saveReflectionProperty(r, NULL); //системный пользователь и пользователи без роли
-    FOR overSID(UserRole ur) DO saveReflectionProperty(r, ur);
+WHEN CHANGED (baseValue(Setting r)) DO {
+    saveSetting(r, NULL); //системный пользователь и пользователи без роли
+    FOR overSID(UserRole ur) DO saveSetting(r, ur);
 }
-WHEN CHANGED (baseValue(ReflectionProperty r, UserRole ur)) DO saveReflectionProperty(r, ur);
+WHEN CHANGED (baseValue(Setting r, UserRole ur)) DO saveSetting(r, ur);
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);
@@ -336,7 +336,7 @@ FORM admin 'Настройки'
     OBJECTS uc=User
     PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
     
-    OBJECTS r = ReflectionProperty
+    OBJECTS r = Setting
     PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid 
