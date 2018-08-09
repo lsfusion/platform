@@ -1053,13 +1053,13 @@ END
 // ------------------------- Основной - агрегированный документы ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
-    @defineAggregationClass(primObject, ###primObject, aggrObject, ###aggrObject, aggrProperty);
+    aggrObject = AGGR ###aggrObject WHERE aggrProperty(###primObject primObject) MATERIALIZED INDEXED;
     @defineDocumentAggregationHeaderNote(primObject, aggrObject);
     @defineDocumentAggregationHeaderTime(primObject, aggrObject);
 END
 
 META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
-    @defineAggregationClass(primObject##Detail, ###primObject##Detail, aggrObject##Detail, ###aggrObject##Detail, aggrProperty);
+    aggrObject##Detail = AGGR ###aggrObject##Detail WHERE aggrProperty(###primObject##Detail primObject##Detail) MATERIALIZED INDEXED;
     aggrObject (###aggrObject##Detail detail) = aggrObject(primObject(primObject##Detail(detail)));
 
     @defineDocumentAggregationDetailIndex(primObject, aggrObject);
