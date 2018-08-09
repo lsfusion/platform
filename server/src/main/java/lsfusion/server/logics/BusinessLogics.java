@@ -386,6 +386,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         addModule(new ScriptingLogicsModule(is, path, LM, this));
     }
     
+    public List<LogicsModule> getRootModules() {
+        return modules.getRootModules();
+    }
+    
     public void initObjectClass() {
         LM.baseClass.initObjectClass(LM.getVersion(), CanonicalNameUtils.createCanonicalName(LM.getNamespace(), "CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);

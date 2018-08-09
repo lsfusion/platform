@@ -121,6 +121,10 @@ public class ModuleList {
         out.add(nameToModule.get(curModuleName));
     }
 
+    public List<LogicsModule> getRootModules() {
+        return getRootModules(buildModuleGraphWithOrderDependencies());
+    }
+    
     private List<LogicsModule> getRootModules(Map<String, List<String>> graph) {
         Set<String> rootModuleNames = new HashSet<>(graph.keySet());
         for (String moduleName : graph.keySet()) {
