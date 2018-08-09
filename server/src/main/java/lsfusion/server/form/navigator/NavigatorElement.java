@@ -125,7 +125,7 @@ public abstract class NavigatorElement {
 
         List<String> childrenSids = new ArrayList<>();
         List<ImOrderMap<NavigatorElement, List<String>>> childrenMaps = new ArrayList<>();
-        for (NavigatorElement child : getChildrenIt()) {
+        for (NavigatorElement child : getChildrenList()) {
             ImOrderMap<NavigatorElement, List<String>> childMap = child.getChildrenMap(securityPolicy);
             if (!childMap.isEmpty()) {
                 childrenMaps.add(childMap);
