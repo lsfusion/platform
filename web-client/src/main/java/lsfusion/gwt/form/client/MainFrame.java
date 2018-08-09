@@ -98,6 +98,17 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void onModuleLoad() {
+
+        dispatcher.execute(new CheckApiVersionAction(messages.checkApiVersionMessage()), new ErrorHandlingCallback<StringResult>() {
+            @Override
+            public void success(StringResult result) {
+                final String error = result.get();
+                if(error != null) {
+                    GLogoutMessageManager.start(error);
+                }
+            }
+        });
+
         dispatcher.execute(new RegisterTabAction(tabSID), new ErrorHandlingCallback<VoidResult>());
 
         Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон

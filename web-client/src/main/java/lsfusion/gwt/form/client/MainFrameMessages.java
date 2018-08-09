@@ -89,6 +89,9 @@ public interface MainFrameMessages extends Messages {
     String rmiConnectionLostRelogin();
     String rmiConnectionLostReconnect();
 
+    String checkApiVersionLogout();
+    String checkApiVersionTitle();
+    String checkApiVersionMessage();
 
     class Instance {
         private static final MainFrameMessages instance = (MainFrameMessages) GWT.create(MainFrameMessages.class);

@@ -33,6 +33,7 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new GetRemoteNavigatorActionMessageHandler(this));
         registry.addHandler(new GetRemoteNavigatorActionMessageListHandler(this));
         registry.addHandler(new InterruptNavigatorHandler(this));
+        registry.addHandler(new CheckApiVersionHandler(this));
 
         //form
         registry.addHandler(new CalculateSumHandler(this));
