@@ -45,7 +45,7 @@ public abstract class GroupModuleTask extends GroupSingleTask<LogicsModule> {
 
         ImSet<LogicsModule> result;
         if(isGraph()) {
-            result = SetFact.fromJavaSet(key.getRequiredModules()).mapSetValues(new GetValue<LogicsModule, String>() {
+            result = SetFact.fromJavaSet(key.getRequiredNames()).mapSetValues(new GetValue<LogicsModule, String>() {
                 public LogicsModule getMapValue(String value) {
                     return ((BusinessLogics<?>) getBL()).getSysModule(value);
                 }

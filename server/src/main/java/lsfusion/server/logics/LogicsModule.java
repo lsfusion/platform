@@ -126,16 +126,16 @@ public abstract class LogicsModule {
         resolveManager = new ResolveManager(this);        
     }
 
-    public LogicsModule(String name, String namespace, Set<String> requiredModules) {
+    public LogicsModule(String name, String namespace, LinkedHashSet<String> requiredNames) {
         this();
         this.name = name;
         this.namespace = namespace;
-        this.requiredModules = requiredModules;
+        this.requiredNames = requiredNames;
     }
 
     private String name;
     private String namespace;
-    private Set<String> requiredModules;
+    private LinkedHashSet<String> requiredNames;
     private List<String> namespacePriority;
     private boolean defaultNamespace;
 
@@ -152,9 +152,9 @@ public abstract class LogicsModule {
     }
     
     public String getLogName(int moduleCount, int orderNum) {
-        String result = name;
-        if(order != null)
-            result = "#" + orderNum + " of " + moduleCount + " " + result;
+        String result = "#" + orderNum + " of " + moduleCount + " " + name;
+        if (order != null)
+            result += " (actual: " + (order + 1) + ")";
         return result;
     }
 
@@ -2156,12 +2156,12 @@ public abstract class LogicsModule {
         this.defaultNamespace = defaultNamespace;
     }
 
-    public Set<String> getRequiredModules() {
-        return requiredModules;
+    public Set<String> getRequiredNames() {
+        return requiredNames;
     }
 
-    public void setRequiredModules(Set<String> requiredModules) {
-        this.requiredModules = requiredModules;
+    public void setRequiredNames(LinkedHashSet<String> requiredNames) {
+        this.requiredNames = requiredNames;
     }
 
     public List<String> getNamespacePriority() {
