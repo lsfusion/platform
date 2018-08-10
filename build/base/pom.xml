@@ -129,7 +129,7 @@
     
     <repositories>
         <repository>
-            <id>lsfusion.public</id>
+            <id>lsfusion</id>
             <name>lsFusion Public Repository</name>
             <url>${lsfusion.public.repo}</url>
         </repository>
@@ -138,7 +138,7 @@
     <!-- needed for resolving patched dependency in gwt-maven-plugin-->
     <pluginRepositories>
         <pluginRepository>
-            <id>lsfusion.public</id>
+            <id>lsfusion</id>
             <name>lsFusion Public Repository</name>
             <url>${lsfusion.public.repo}</url>
         </pluginRepository>
