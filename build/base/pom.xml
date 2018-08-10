@@ -9,7 +9,7 @@
     <properties>
         <!-- Repositories properties -->
         <lsfusion.releases.repo>http://repo.lsfusion.org/repository/releases</lsfusion.releases.repo>
-        <lsfusion.public.repo>http://repo.lsfusion.org/repository/public/</lsfusion.public.repo>
+        <lsfusion.public.repo>http://repo.lsfusion.org</lsfusion.public.repo>
         <lsfusion.snapshots.repo>http://repo.lsfusion.org/repository/snapshots</lsfusion.snapshots.repo>
 
         <!-- MAVEN PLUGIN VERSIONS -->
