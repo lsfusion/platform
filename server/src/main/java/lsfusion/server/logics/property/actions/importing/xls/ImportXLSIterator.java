@@ -6,6 +6,7 @@ import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -20,15 +21,14 @@ public abstract class ImportXLSIterator extends ImportIterator {
         this.properties = properties;
     }
 
-    protected String getXLSFieldValue(HSSFRow hssfRow, int cell, String defaultValue) {
+    protected String getXLSFieldValue(HSSFRow hssfRow, int cell, FormulaEvaluator formulaEvaluator, String defaultValue) {
         if (hssfRow != null) {
             HSSFCell hssfCell = hssfRow.getCell(cell);
             if (hssfCell != null) {
                 DateFormat dateFormat = getDateFormat(properties, columns, cell);
+                String result;
                 switch (hssfCell.getCellType()) {
                     case Cell.CELL_TYPE_NUMERIC:
-                    case Cell.CELL_TYPE_FORMULA:
-                        String result;
                         try {
                             if (dateFormat != null) {
                                 result = dateFormat.format(hssfCell.getDateCellValue());
@@ -38,7 +38,29 @@ public abstract class ImportXLSIterator extends ImportIterator {
                         } catch (Exception e) {
                             result = hssfCell.getStringCellValue().isEmpty() ? defaultValue : hssfCell.getStringCellValue();
                         }
-                        return result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
+                        return result != null && result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
+                    case Cell.CELL_TYPE_FORMULA:
+                        try {
+                            if (dateFormat != null) {
+                                result = dateFormat.format(hssfCell.getDateCellValue());
+                            } else {
+                                formulaEvaluator.evaluate(hssfCell);
+                                switch (hssfCell.getCachedFormulaResultType()) {
+                                    case Cell.CELL_TYPE_NUMERIC:
+                                        result = new DecimalFormat("#.#####").format(hssfCell.getNumericCellValue());
+                                        break;
+                                    case Cell.CELL_TYPE_ERROR:
+                                        result = null;
+                                        break;
+                                    default:
+                                        result = hssfCell.getStringCellValue().isEmpty() ? defaultValue : hssfCell.getStringCellValue();
+                                        break;
+                                }
+                            }
+                        } catch (Exception e) {
+                            result = hssfCell.getStringCellValue().isEmpty() ? defaultValue : hssfCell.getStringCellValue();
+                        }
+                        return result != null && result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
                     case Cell.CELL_TYPE_BOOLEAN:
                         return String.valueOf(hssfCell.getBooleanCellValue());
                     case Cell.CELL_TYPE_STRING:
