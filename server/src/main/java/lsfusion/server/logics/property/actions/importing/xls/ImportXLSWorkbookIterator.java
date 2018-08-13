@@ -3,9 +3,11 @@ package lsfusion.server.logics.property.actions.importing.xls;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,6 +16,7 @@ import java.util.List;
 
 public class ImportXLSWorkbookIterator extends ImportXLSIterator {
     private HSSFWorkbook wb;
+    private FormulaEvaluator formulaEvaluator;
     private HSSFSheet currentSheet;
     private int currentSheetIndex;
     private int currentRow;
@@ -23,6 +26,7 @@ public class ImportXLSWorkbookIterator extends ImportXLSIterator {
         super(columns, properties);
 
         wb = new HSSFWorkbook(new ByteArrayInputStream(file));
+        formulaEvaluator = new HSSFFormulaEvaluator(wb);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class ImportXLSWorkbookIterator extends ImportXLSIterator {
                 if (hssfRow != null) {
                     for (Integer column : columns) {
                         try {
-                            listRow.add(getXLSFieldValue(hssfRow, column, null));
+                            listRow.add(getXLSFieldValue(hssfRow, column, formulaEvaluator, null));
                         } catch (Exception e) {
                             throw new RuntimeException(String.format("Error parsing row %s, column %s", currentRow, column + 1), e);
                         }

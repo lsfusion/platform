@@ -5,9 +5,11 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.IncorrectFileException;
 import org.apache.poi.hssf.OldExcelFormatException;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.List;
 public class ImportXLSSheetIterator extends ImportXLSIterator {
     private int current;
     private HSSFSheet sheet;
+    FormulaEvaluator formulaEvaluator;
     private int lastRow;
 
     public ImportXLSSheetIterator(byte[] file, List<Integer> columns, ImOrderSet<LCP> properties, Integer sheetIndex) throws IOException, IncorrectFileException {
@@ -24,6 +27,7 @@ public class ImportXLSSheetIterator extends ImportXLSIterator {
 
         try {
             HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
+            formulaEvaluator = new HSSFFormulaEvaluator(wb);
 
             sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
             lastRow = sheet.getLastRowNum();
@@ -41,7 +45,7 @@ public class ImportXLSSheetIterator extends ImportXLSIterator {
             if (hssfRow != null) {
                 for (Integer column : columns) {
                     try {
-                        listRow.add(getXLSFieldValue(hssfRow, column, null));
+                        listRow.add(getXLSFieldValue(hssfRow, column, formulaEvaluator, null));
                     } catch (Exception e) {
                         throw new RuntimeException(String.format("Error parsing row %s, column %s", current, column+1), e);
                     }
