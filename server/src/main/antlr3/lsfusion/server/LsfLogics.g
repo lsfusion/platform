@@ -2955,7 +2955,6 @@ headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(
 		(',' headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } })*
 	;
 
-
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
     ObjectEntity object = null;
