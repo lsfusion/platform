@@ -19,7 +19,7 @@ public class SaveFileClientAction extends ExecuteClientAction {
     
     public Map<String, byte[]> getFileMap() {
         Map<String, byte[]> result = new HashMap<>();
-        result.put(path, file);
+        result.put(noDialog ? (System.getProperty("user.home") + "/Downloads/" + path) : path, file);
         return result;
     }
 

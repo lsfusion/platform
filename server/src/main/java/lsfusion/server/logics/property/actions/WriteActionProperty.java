@@ -97,8 +97,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
     }
 
     private void processClientRelativePath(ExecutionContext context, byte[] fileBytes, String path) {
-        String filePath = dialog ? path : (System.getProperty("user.home") + "/Downloads/" + path);
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
     }
 
     private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
