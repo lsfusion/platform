@@ -104,7 +104,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
             }
 
             if(!isLeaf(child.second)) {
-                Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterValues = getFilterValues(filters, Collections.singletonList(child.first));
+                Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterValues = getFilterValues(filters, child.first);
                 for(Map.Entry<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterEntry : filterValues.entrySet()) {
                     ImSet<ObjectEntity> filterKey = filterEntry.getKey();
                     Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValue = filterEntry.getValue();
@@ -138,11 +138,11 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     //todo: переосмыслить и упростить
     private Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getFilterValues(
-            Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters, List<String> allowedKeys) {
+            Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters, String currentKey) {
         Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterValuesMap = new HashMap<>();
         for (Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity> filterEntry : filters) {
             Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = new HashMap<>();
-            ImMap<KeyField, DataObject> key = getFilterKeys(filterEntry.first, allowedKeys);
+            ImMap<KeyField, DataObject> key = getFilterKeys(filterEntry.first, currentKey);
             if (!key.isEmpty()) {
                 Map<Property, ObjectValue> properties = dataEntry.get(key);
                 if (properties == null)
@@ -156,18 +156,18 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         return filterValuesMap;
     }
 
-    private ImMap<KeyField, DataObject> getFilterKeys(ImSet<ObjectEntity> keys, List<String> allowedKeys) {
+    private ImMap<KeyField, DataObject> getFilterKeys(ImSet<ObjectEntity> keys, String currentKey) {
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
         boolean skip = true;
         for (ObjectEntity key : keys) {
             if(tagsMap.containsKey(key.getSID())) {
-                if(allowedKeys.contains(key.getSID())) {
+                if(currentKey.equals(key.getSID())) {
                     skip = false;
                 }
                 keyObjects = keyObjects.addExcl(new KeyField(key.getSID(), ImportDataActionProperty.type), new DataObject(tagsMap.get(key.getSID())));
             } else return MapFact.EMPTY();
         }
-        return skip  || keys.size() < allowedKeys.size() ? MapFact.<KeyField, DataObject>EMPTY() : keyObjects;
+        return skip ? MapFact.<KeyField, DataObject>EMPTY() : keyObjects;
     }
 
     private ObjectValue getObjectValue(Object value, ConcreteClass type) {
