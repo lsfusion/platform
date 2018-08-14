@@ -227,8 +227,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         isInTransaction = false;
         
         rollbackInfo.clear();
-        keepUpProps = SetFact.EMPTY();
-        removedClasses.clear();
+        keepUpProps = null;
+        mApplySingleRemovedClassProps = null;
+        mRemovedClasses = null;
 
         cleanOnlyDataModifier();
     }
@@ -491,7 +492,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         ImSet<CalcProperty> changedProps = null;
         if(!cancel) {
-            changedProps = getChangedProps();
+            changedProps = getChangedProps().merge(mApplySingleRemovedClassProps.immutable());
             changes.regChange(changedProps, this);
         }
 
@@ -1700,8 +1701,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     // чтобы не протаскивать через стек сделаем пока field'ами
     private FunctionSet<SessionDataProperty> keepUpProps;
-    private Set<CustomClass> removedClasses = SetFact.mAddRemoveSet();
-    
+    private MSet<CustomClass> mRemovedClasses;
+    private MSet<CalcProperty> mApplySingleRemovedClassProps;
+
     public FunctionSet<SessionDataProperty> getKeepProps() {
         return BaseUtils.merge(recursiveUsed, keepUpProps);
     }
@@ -1845,6 +1847,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         startTransaction(BL, attemptCountMap, deadLockPriority, applyStartTime);
         this.keepUpProps = keepProps;
+        mApplySingleRemovedClassProps = SetFact.mSet();
+        mRemovedClasses = SetFact.mSet();        
 
         try {
             ImSet<DataProperty> updatedClasses = checkDataClasses(null, transactionStartTimestamp); // проверка на изменение классов в базе
@@ -2135,7 +2139,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } else
             checkedTimestamp = transactionStartTimestamp; // // так как keepUpProps проверили только на начало транзакции - берем соответствующий timestamp
 
-        ImSet<CustomClass> removedClasses = SetFact.fromJavaSet(this.removedClasses); // сбросятся в endTransaction
+        ImSet<CustomClass> removedClasses = this.mRemovedClasses.immutable(); // сбросятся в endTransaction
         registerClassRemove.removed(removedClasses, Long.MAX_VALUE); // надо так как между commit'ом и регистрацией изменения может начаться новая транзакция и update conflict'а не будет, поэтому временно включим режим будущего
         
         commitTransaction();
@@ -2150,11 +2154,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void updateAndRemoveClasses(UpdateCurrentClassesSession updateSession, ExecutionStack stack, BusinessLogics BL, boolean onlyRemove) throws SQLException, SQLHandledException {
+        assert isInTransaction();
+        
         if(!onlyRemove) // для singleRemove не надо делать, так как есть dropDataChanges который по идее и так не должен допустить там удалений
             updateDataCurrentClasses(updateSession);
+        else // no need to fill this collection not in single remove, because it will be anyway included in getChangedProps in restart 
+            mApplySingleRemovedClassProps.addAll(updateSession.changes.getChangedProps(baseClass));
         stack.updateCurrentClasses(updateSession);
 
-        SetFact.addJavaAll(removedClasses, updateSession.packRemoveClasses(BL));
+        mRemovedClasses.addAll(updateSession.packRemoveClasses(BL));
     }
 
     private static long getTimestamp() {
