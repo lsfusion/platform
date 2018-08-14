@@ -2148,10 +2148,10 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 	:	'NEWTHREAD' aDB=keepContextFlowActionDefinitionBody[context, dynamic]
 	    (
 	    	(   'CONNECTION' connExpr=propertyExpression[context, dynamic]
-		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, dynamic])? ('DELAY' delayExpr=propertyExpression[context, dynamic])? 
+		    |   'SCHEDULE' ('PERIOD' periodExpr=propertyExpression[context, dynamic])? ('DELAY' delayExpr=propertyExpression[context, dynamic])?
     	    )
     	    ';'
-        )? 
+        )?
 	;
 
 newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
@@ -2182,10 +2182,10 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
 		|	'NESTEDSESSION' { isNested = true; }
-		)	
-		('SINGLE' { singleApply = true; })? 
+		)
+		('SINGLE' { singleApply = true; })?
 		aDB=keepContextFlowActionDefinitionBody[context, dynamic]
-	; 
+	;
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
@@ -2200,9 +2200,9 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 	:	pu=propertyUsage { $propUsage = $pu.propUsage; }
 		(	EQ
 			(	pid=ID { $id = $pid.text; }
-			|	sLiteral=stringLiteral { $id = $sLiteral.val; } 
+			|	sLiteral=stringLiteral { $id = $sLiteral.val; }
 			)
-		)? 
+		)?
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, String separator, boolean noHeader, String charset, Boolean hasListOption, LCPWithParams root, boolean attr]
@@ -2231,7 +2231,7 @@ propertyUsage returns [PropertyUsage propUsage]
 @after {
 	$propUsage = new PropertyUsage($pname.name, classList);
 }
-	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })? 
+	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })?
 	;
 
 inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer> usedContext, boolean ci]
@@ -2241,7 +2241,7 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 }
 @after {
 	if (inPropParseState()) { // not native
-		$property.setExplicitClasses(signature);	
+		$property.setExplicitClasses(signature);
 	}
 }
 	:	'[' EQ	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
@@ -2253,25 +2253,25 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 		']'
 	;
 
-propertyName returns [String name] 
+propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
 propertyOptions[LCP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [PropertySettings ps = new PropertySettings()]
-	:	recursivePropertyOptions[property, propertyName, caption, $ps, context] 
+	:	recursivePropertyOptions[property, propertyName, caption, $ps, context]
 	;
 
 recursivePropertyOptions[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
-	:	semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context]) 
+	:	semiPropertyOption[property, propertyName, caption, ps, context] (';' | recursivePropertyOptions[property, propertyName, caption, ps, context])
 	|	nonSemiPropertyOption[property, propertyName, caption, ps, context] recursivePropertyOptions[property, propertyName, caption, ps, context]?
 	;
 
 actionOptions[LAP property, String propertyName, LocalizedString caption, List<TypedParameter> context, List<ResolveClassSet> signature] returns [ActionSettings ps = new ActionSettings()]
-	:	recursiveActionOptions[property, propertyName, caption, $ps, context] 
+	:	recursiveActionOptions[property, propertyName, caption, $ps, context]
 	;
 
 recursiveActionOptions[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
-	:	semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context]) 
+	:	semiActionOption[property, propertyName, caption, ps, context] (';' | recursiveActionOptions[property, propertyName, caption, ps, context])
 	|	nonSemiActionOption[property, propertyName, caption, ps, context] recursiveActionOptions[property, propertyName, caption, ps, context]?
 	;
 
@@ -2283,7 +2283,7 @@ semiActionOrPropertyOption[LP property, String propertyName, LocalizedString cap
 	|	editKeySetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
-    
+
 semiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
     |   persistentSetting [ps]
@@ -2300,7 +2300,7 @@ semiPropertyOption[LCP property, String propertyName, LocalizedString caption, P
 	|	aggrSetting [property]
 	|	eventIdSetting [property]
     ;
-    
+
 semiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[property, propertyName, caption, ps, context]
     |   imageSetting [property]
@@ -2314,11 +2314,11 @@ nonSemiActionOrPropertyOption[LP property, String propertyName, LocalizedString 
     |	onContextMenuEventSetting [property, context]
     |	onKeyPressEventSetting [property, context]
     ;
-    
+
 nonSemiPropertyOption[LCP property, String propertyName, LocalizedString caption, PropertySettings ps, List<TypedParameter> context]
     :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
     ;
-    
+
 nonSemiActionOption[LAP property, String propertyName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
     :   nonSemiActionOrPropertyOption[property, propertyName, caption, ps, context]
     ;
@@ -2326,23 +2326,23 @@ nonSemiActionOption[LAP property, String propertyName, LocalizedString caption, 
 inSetting [ActionOrPropertySettings ps]
 	:	'IN' name=compoundID { ps.groupName = $name.sid; }
 	;
-	
+
 persistentSetting [PropertySettings ps]
 	:	'MATERIALIZED' { ps.isPersistent = true; }
 	;
-	
+
 complexSetting [PropertySettings ps]
 	:	'COMPLEX' { ps.isComplex = true; }
 	;
-	
+
 noHintSetting [PropertySettings ps]
 	:	'NOHINT' { ps.noHint = true; }
 	;
-	
+
 tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
 	;
-	
+
 loggableSetting [PropertySettings ps]
 	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
@@ -2353,10 +2353,10 @@ aggrSetting [LP property]
 		self.setAggr(property);
 	}
 }
-    :   
+    :
         'AGGR'
     ;
-	
+
 setNotNullSetting [PropertySettings ps]
     :   s=notNullSetting {
 							ps.notNull = new BooleanDebug($s.debugPoint);
@@ -2529,7 +2529,7 @@ onEditEventSetting [LP property, List<TypedParameter> context]
 		self.setScriptedEditAction(property, $et.type, $action.property);
 	}
 }
-	:	'ON' et=formEventType 
+	:	'ON' et=formEventType
 		action=listTopContextDependentActionDefinitionBody[context, false, false]
 	;
 
@@ -2580,10 +2580,10 @@ listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolea
 @after {
     if (inPropParseState()) {
         $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, context, new ArrayList<TypedParameter>(), needFullContext);
-        
+
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
 		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, true, null);
-		
+
         self.topContextActionPropertyDefinitionBodyCreated($property);
     }
 }
@@ -2633,7 +2633,7 @@ actionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modi
 	    )
 	;
 
-// recursive or mixed (in mixed rule there can be semi, but not necessary) 
+// recursive or mixed (in mixed rule there can be semi, but not necessary)
 recursiveContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 	:	(   extDB=recursiveExtendContextActionDB[context, dynamic]	{ $property = $extDB.property; }
 	    |	keepDB=recursiveKeepContextActionDB[context, dynamic]	{ $property = $keepDB.property; }
@@ -2641,7 +2641,7 @@ recursiveContextActionDB[List<TypedParameter> context, boolean dynamic] returns 
 ;
 
 recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
-@init { 
+@init {
 	if (inPropParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
@@ -2661,7 +2661,7 @@ recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] retu
 	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; } // mixed
 	|	ifADB=ifActionDefinitionBody[context, dynamic] { $property = $ifADB.property; }
 	|	caseADB=caseActionDefinitionBody[context, dynamic] { $property = $caseADB.property; }
-	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }	
+	|	multiADB=multiActionDefinitionBody[context, dynamic] { $property = $multiADB.property; }
 	|	applyADB=applyActionDefinitionBody[context, dynamic] { $property = $applyADB.property; }
     |   newThreadADB=newThreadActionDefinitionBody[context, dynamic] { $property = $newThreadADB.property; } // mixed
 	|	newExecutorADB=newExecutorActionDefinitionBody[context, dynamic] { $property = $newExecutorADB.property; } // mixed, recursive but always semi
@@ -2675,7 +2675,7 @@ leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPW
 ;
 
 leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
-@init { 
+@init {
 	if (inPropParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
@@ -2687,7 +2687,7 @@ leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns
 	;
 
 leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
-	:	execADB=execActionDefinitionBody[context, dynamic] { $property = $execADB.property; }	
+	:	execADB=execActionDefinitionBody[context, dynamic] { $property = $execADB.property; }
 	|	termADB=terminalFlowActionDefinitionBody { $property = $termADB.property; }
 	|  	cancelPDB=cancelActionDefinitionBody[context, dynamic] { $property = $cancelPDB.property; }
 	|	formADB=formActionDefinitionBody[context, dynamic] { $property = $formADB.property; }
@@ -2735,7 +2735,7 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
     boolean edit = false;
 }
 	:
-	(   
+	(
 		(	formName=compoundID { if(inPropParseState()) { $form = self.findForm($formName.sid); } }
 			('OBJECTS' list=formActionObjectList[$form, context, newContext, dynamic] { $props = $list.props; })?
 			{
@@ -2767,7 +2767,7 @@ emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	
+
 	Boolean syncType = null;
 	WindowFormType windowType = null;
 
@@ -2808,7 +2808,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 	FormSessionScope formSessionScope = FormSessionScope.OLDSESSION;
 
 	boolean checkOnOk = false;
-	
+
 	boolean readOnly = false;
 }
 @after {
@@ -2828,7 +2828,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 		)*
 		dDB=doInputBody[context, newContext]
 	;
-	
+
 manageSessionClause returns [ManageSessionType result]
     :	'MANAGESESSION' { $result = ManageSessionType.MANAGESESSION; }
 	|	'NOMANAGESESSION' { $result = ManageSessionType.NOMANAGESESSION; }
@@ -2880,7 +2880,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             |	'PDF' { printType = FormPrintType.PDF; }
             |	'DOC'  { printType = FormPrintType.DOC; }
             |	'DOCX' { printType = FormPrintType.DOCX; }
-            ) 
+            )
             ('TO' pUsage=propertyUsage)?
             )
         |   ( // static - rest
@@ -2894,27 +2894,29 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             |   'NOPREVIEW' { printType = FormPrintType.AUTO; }
             )?
 		    (sync = syncTypeLiteral { syncType = $sync.val; })?
-            ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?            
+            ('TO' pe = propertyExpression[context, dynamic] { printerProperty = $pe.property; })?
             )
-        )		
+        )
 	;
-	
+
 exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
 	FormExportType exportType = null;
 	boolean noHeader = false;
     String separator = null;
 	String charset = null;
+	boolean isAttr = false;
+	List<String> attrs = new ArrayList<>();
 	List<String> headerKeys = new ArrayList<>();
 	List<String> headerValues = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, headerKeys, headerValues, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, isAttr ? attrs : null, headerKeys, headerValues, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormExportType.XML; }  ('HEADERS' list=headersList[$mf.form] { headerKeys = $list.headerKeys; headerValues = $list.headerValues; })?
+		(	'XML' { exportType = FormExportType.XML; }  ('ATTR' { isAttr = true; } (attrVal=attrList[$mf.form] { attrs = $attrVal.attrs; })?)? ('HEADERS' list=headersList[$mf.form] { headerKeys = $list.headerKeys; headerValues = $list.headerValues; })?
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
