@@ -6,21 +6,23 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.property.actions.importing.ImportFormHierarchicalDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
+import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataActionProperty<Element> {
-    private boolean attr; //пока не используется, для чтения attributes, а не children
+    private List<String> attrs;
     private Map<String, String> headers;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, boolean attr, Map<String, String> headers) {
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, List<String> attrs, Map<String, String> headers) {
         super(classes, formEntity);
-        this.attr = attr;
+        this.attrs = attrs;
         this.headers = headers;
     }
 
@@ -35,17 +37,18 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
 
     @Override
     public ImportFormIterator getIterator(Pair<String, Object> rootElement) {
-        return new ImportFormXMLIterator(rootElement, headers);
+        return new ImportFormXMLIterator(rootElement, attrs, headers);
     }
 
     @Override
     public String getChildValue(Object child) {
-        return ((Element) child).getText();
+        return child instanceof Attribute ? ((Attribute) child).getValue() : ((Element) child).getText();
     }
 
     @Override
     public boolean isLeaf(Object child) {
-        return ((Element) child).getChildren().isEmpty();
+        boolean isAttr =  attrs != null && (attrs.isEmpty() || (child instanceof Element && attrs.contains(((Element) child).getName())));
+        return child instanceof Attribute || (child instanceof Element && (isAttr ? ((Element) child).getAttributes().isEmpty() : ((Element) child).getChildren().isEmpty()));
     }
 
     private Element findRootNode(Element rootNode, String root) {
