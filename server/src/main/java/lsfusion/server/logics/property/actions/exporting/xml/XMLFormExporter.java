@@ -17,10 +17,12 @@ import java.util.Map;
 
 public class XMLFormExporter extends HierarchicalFormExporter {
     private String charset = "utf-8";
+    private List<String> attrs;
     private Map<String, String> headers;
 
-    public XMLFormExporter(ReportGenerationData reportData, Map<String, String> headers) {
+    public XMLFormExporter(ReportGenerationData reportData, List<String> attrs, Map<String, String> headers) {
         super(reportData);
+        this.attrs = attrs;
         this.headers = headers;
     }
 
@@ -67,13 +69,17 @@ public class XMLFormExporter extends HierarchicalFormExporter {
 
                 for (AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
-                        Element element = new Element(child.getKey());
-                        exportNode(element, childNode);
-                        if (!element.getValue().isEmpty()) {
-                            if (headerElement != null) {
-                                headerElement.addContent(element);
-                            } else {
-                                parentElement.addContent(element);
+                        if (childNode instanceof Leaf && attrs != null && (attrs.isEmpty() || attrs.contains(parentElement.getName()))) {
+                            parentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
+                        } else {
+                            Element element = new Element(child.getKey());
+                            exportNode(element, childNode);
+                            if (!element.getValue().isEmpty() || !element.getAttributes().isEmpty()) {
+                                if (headerElement != null) {
+                                    headerElement.addContent(element);
+                                } else {
+                                    parentElement.addContent(element);
+                                }
                             }
                         }
                     }

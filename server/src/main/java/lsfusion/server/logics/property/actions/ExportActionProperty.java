@@ -30,6 +30,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     private final String charset;
 
     //xml
+    List<String> attrs;
     Map<String, String> headers;
 
     public ExportActionProperty(LocalizedString caption,
@@ -41,12 +42,14 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
                                 boolean noHeader,
                                 String separator,
                                 String charset,
+                                List<String> attrs,
                                 Map<String, String> headers) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile);
         
         this.noHeader = noHeader;
         this.separator = separator;
         this.charset = charset;
+        this.attrs = attrs;
         this.headers = headers;
     }
 
@@ -67,7 +70,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws IOException {
         HierarchicalFormExporter exporter;
         if (staticType == FormExportType.XML) {
-            exporter = new XMLFormExporter(reportData, headers);
+            exporter = new XMLFormExporter(reportData, attrs, headers);
         } else {
             assert staticType == FormExportType.JSON;
             exporter = new JSONFormExporter(reportData);
