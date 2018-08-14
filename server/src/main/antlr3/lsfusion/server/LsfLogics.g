@@ -2929,6 +2929,22 @@ initFilterDefinition returns [String propName, List<String> mapping]
 		)
 	;
 
+attrList[FormEntity form] returns [List<String> attrs = new ArrayList<>()]
+@init {
+    ObjectEntity object = null;
+}
+	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } }
+		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } })*
+	;
+
+headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(), List<String> headerValues = new ArrayList<>()]
+@init {
+    ObjectEntity object = null;
+}
+	:	headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } }
+		(',' headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } })*
+	;
+
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
     ObjectEntity object = null;
