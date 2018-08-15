@@ -96,6 +96,12 @@ public class TableFactory implements FullTablesInterface {
                 if (table != null)
                     return table;
             }
+            
+            for (ImplementTable implementTable : tables.getListIt()) {
+                MapKeysTable<T> table = implementTable.getSingleMapTable(findItem, false);
+                if (table != null)
+                    return table;
+            }
         }
         return getAutoMapTable(findItem);
     }
