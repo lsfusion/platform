@@ -395,18 +395,12 @@ public class ImplementTable extends DBTable { // последний интерф
 
     public <T> MapKeysTable<T> getSingleMapTable(ImOrderMap<T, ValueClass> findItem, boolean auto) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, auto ? findAutoTable : findTable);
-        if(tables.isEmpty())
-            return null;
-        return tables.single();
+        return tables.isEmpty() ? null : tables.single();
     }
 
     public <T> MapKeysTable<T> getClassMapTable(ImOrderMap<T, ValueClass> findItem) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, findClassTable);
-        if(tables.isEmpty())
-            tables = getMapTables(findItem, findTable);
-        if(tables.isEmpty())
-            return null;
-        return tables.single();
+        return tables.isEmpty() ? null : tables.single(); 
     }
 
     public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImOrderMap<T, ValueClass> findItem, ImplementTable skipTable) {
