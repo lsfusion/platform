@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ExportActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormExportType> {
 
@@ -30,7 +31,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     private final String charset;
 
     //xml
-    List<String> attrs;
+    Set<String> attrs;
     Map<String, String> headers;
 
     public ExportActionProperty(LocalizedString caption,
@@ -42,7 +43,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
                                 boolean noHeader,
                                 String separator,
                                 String charset,
-                                List<String> attrs,
+                                Set<String> attrs,
                                 Map<String, String> headers) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile);
         

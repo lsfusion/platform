@@ -3059,7 +3059,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormExportType exportType,
-                                                                            boolean noHeader, String separator, String charset, List<String> attrs,
+                                                                            boolean noHeader, String separator, String charset,
                                                                             List<String> headerKeys, List<String> headerValues,
                                                                             PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         List<O> objects = new ArrayList<>();
@@ -3093,7 +3093,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             headers.put(headerKeys.get(i), headerValues.get(i));
         }
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                exportType, noHeader, separator, charset, attrs, headers, targetProp, getParamsPlainList(propParams).toArray());
+                exportType, noHeader, separator, charset, headers, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);

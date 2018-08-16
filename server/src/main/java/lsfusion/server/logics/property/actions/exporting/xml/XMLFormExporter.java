@@ -14,13 +14,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class XMLFormExporter extends HierarchicalFormExporter {
     private String charset = "utf-8";
-    private List<String> attrs;
+    private Set<String> attrs;
     private Map<String, String> headers;
 
-    public XMLFormExporter(ReportGenerationData reportData, List<String> attrs, Map<String, String> headers) {
+    public XMLFormExporter(ReportGenerationData reportData, Set<String> attrs, Map<String, String> headers) {
         super(reportData);
         this.attrs = attrs;
         this.headers = headers;
@@ -69,7 +70,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
 
                 for (AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
-                        if (childNode instanceof Leaf && attrs != null && (attrs.isEmpty() || attrs.contains(parentElement.getName()))) {
+                        if (childNode instanceof Leaf && attrs.contains(child.getKey())) {
                             parentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
                         } else {
                             Element element = new Element(child.getKey());
