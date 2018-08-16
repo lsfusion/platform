@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
@@ -163,6 +164,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public boolean isSynchronizedApply = false;
 
     public CalcPropertyObjectEntity<?> reportPathProp;
+
+    private ImMap<String, IntegrationOptions> integrationOptions = MapFact.EMPTY();
+
+    public ImMap<String, IntegrationOptions> getIntegrationOptions() {
+        return integrationOptions;
+    }
+
+    public void putIntegrationOptions(String property, IntegrationOptions options) {
+        this.integrationOptions = integrationOptions.override(property, options);
+    }
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
         this(canonicalName, null, caption, null, version);

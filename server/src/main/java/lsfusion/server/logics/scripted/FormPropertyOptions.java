@@ -44,6 +44,9 @@ public class FormPropertyOptions {
     
     private Boolean newSession;
     private Boolean isNested;
+
+    //integration options
+    private Boolean attr;
     
     public void setNewSession(Boolean newSession) {
         this.newSession = newSession;
@@ -288,6 +291,14 @@ public class FormPropertyOptions {
         this.eventId = eventId;
     }
 
+    public Boolean getAttr() {
+        return attr;
+    }
+
+    public void setAttr(Boolean attr) {
+        this.attr = attr;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -314,6 +325,8 @@ public class FormPropertyOptions {
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
+
+        merged.setAttr(nvl(overrides.getAttr(), attr));
         return merged;
     }
     

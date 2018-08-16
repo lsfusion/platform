@@ -667,6 +667,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteral)? prop=formActionPropertyObject { $options.addContextMenuEditAction($c.val, $prop.action); }
 		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionPropertyObject { $options.addKeyPressEditAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
+		|	'ATTR' { $options.setAttr(true); }
 		)*
 	;
 
@@ -2117,8 +2118,6 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
 	String charset = null;
     LCPWithParams root = null;
-	boolean isAttr = false;
-    List<String> attrs = new ArrayList<>();
 	List<String> headerKeys = new ArrayList<>();
     List<String> headerValues = new ArrayList<>();
     FormEntity form = null;
@@ -2130,7 +2129,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     	else if($type.format == ImportSourceFormat.DBF)
         	$property = self.addScriptedImportFormDBFActionProperty(form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty(form, root, isAttr ? attrs : null, headerKeys, headerValues);
+    		$property = self.addScriptedImportFormXMLActionProperty(form, root, headerKeys, headerValues);
     	else if($type.format == ImportSourceFormat.JSON)
     	    $property = self.addScriptedImportFormJSONActionProperty(form, root);
 
@@ -2138,7 +2137,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
-	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; isAttr = $type.isAttr; attrs = $type.attrs;
+	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
 	                                                             charset = $type.charset; root = $type.root; headerKeys = $type.headerKeys; headerValues = $type.headerValues; }
 	;
 
@@ -2224,12 +2223,11 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	;
 
 importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [ImportSourceFormat format, String separator,
-                                                                            boolean noHeader, String charset, LCPWithParams root, boolean isAttr, List<String> attrs = new ArrayList<String>(),
+                                                                            boolean noHeader, String charset, LCPWithParams root,
                                                                             List<String> headerKeys = new ArrayList<String>(), List<String> headerValues = new ArrayList<String>()]
 	:	'DBF'	{ $format = ImportSourceFormat.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $isAttr = true; } (attrVal=attrList[$form] { $attrs = $attrVal.attrs; })?)?
-	                                                  ('HEADERS' list=headersList[$form] { $headerKeys = $list.headerKeys; $headerValues = $list.headerValues; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('HEADERS' list=headersList[$form] { $headerKeys = $list.headerKeys; $headerValues = $list.headerValues; })?
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	;
 

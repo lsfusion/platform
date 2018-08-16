@@ -271,6 +271,12 @@ public class ScriptingFormEntity {
             LocalizedString caption = captions.get(i);
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
+
+            if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
+                form.putIntegrationOptions(alias != null ? alias : ((ScriptingLogicsModule.ActionOrPropertyUsage) pDrawUsage).property.name,
+                        new IntegrationOptions(propertyOptions.getAttr()));
+            }
+
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
             LP property = null;
