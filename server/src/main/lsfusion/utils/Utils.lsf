@@ -112,9 +112,13 @@ onlyDigits (TEXT p1) = FORMULA NULL INTEGER PG 'CASE WHEN trim($1) ~ \'^[0-9]*$\
 
 encode = FORMULA TEXT 'encode(($1),($2))';
 decode = FORMULA RAWFILE 'decode(($1),($2))';
+decodeText = FORMULA TEXT 'decode(($1),($2))';
 
 encodedBase64 = DATA LOCAL TEXT();
 encodeBase64  INTERNAL  'lsfusion.utils.utils.EncodeBase64ActionProperty' (TEXT);
+
+decodedBase64 = DATA LOCAL TEXT();
+decodeBase64  INTERNAL  'lsfusion.utils.utils.DecodeBase64ActionProperty' (TEXT);
 
 // --------------------------------------------- Работа с числами --------------------------------- //
 
