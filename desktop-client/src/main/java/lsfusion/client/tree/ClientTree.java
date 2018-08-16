@@ -269,9 +269,6 @@ public class ClientTree extends JTree {
         }
     }
 
-    private static DataFlavor CLIENTTREENODE_FLAVOR = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType +
-            "; class=lsfusion.client.tree.ClientTreeNode", "ClientTreeNode");
-
     public class NodeTransfer implements Transferable {
         public ClientTreeNode node;
 
@@ -280,11 +277,11 @@ public class ClientTree extends JTree {
         }
 
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{CLIENTTREENODE_FLAVOR};
+            return new DataFlavor[0];
         }
 
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return CLIENTTREENODE_FLAVOR.equals(flavor);
+            return false;
         }
 
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
@@ -309,22 +306,8 @@ public class ClientTree extends JTree {
     }
 
     public static ClientTreeNode getNode(TransferHandler.TransferSupport info) {
-
-        try {
-
-            Object transferData = info.getTransferable().getTransferData(CLIENTTREENODE_FLAVOR);
-            if (!(transferData instanceof ClientTreeNode)) {
-                return null;
-            }
-
-            return (ClientTreeNode) transferData;
-
-        } catch (UnsupportedFlavorException e) {
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        if (!(info.getTransferable() instanceof NodeTransfer)) return null;
+        return ((NodeTransfer)info.getTransferable()).node;
     }
 
     public static int getChildIndex(TransferHandler.TransferSupport info) {
