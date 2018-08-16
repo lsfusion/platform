@@ -40,6 +40,24 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
+                    <!-- multiple inheritance - platform assemble, it's impossible to put it there because in that case platform-assemble will be deployed and nexus refuses to do this-->
+                    <!-- uber jar : install and deploy -->
+                    <execution>
+                        <id>attach-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${assemble.jar}</file>
+                                    <type>${project.packaging}</type>
+                                    <classifier>assembly</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
                     <execution>
                         <goals>
                             <goal>add-source</goal>

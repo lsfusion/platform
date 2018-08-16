@@ -112,8 +112,9 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- uber jar : install and deploy -->
+            <!-- multiple inheritance - platform assemble, it's impossible to put it here because in that case platform-assemble will be deployed and nexus refuses to do this (because of pom and not jar packagind)-->
+            <!-- uber jar : install and deploy -->
+            <!--plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
@@ -134,7 +135,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
         </plugins>
     </build>
 
