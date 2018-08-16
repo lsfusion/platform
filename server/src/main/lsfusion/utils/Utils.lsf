@@ -24,9 +24,9 @@ fileExists 'Проверка существования файла'(VARISTRING[2
 fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[255] path)  { fileExists(path, TRUE); } 
 
 // --------------------------------- STRING -> FILE -> STRING --------------------------------- //
-resultCustomFile = DATA LOCAL FILE ();
+resultFile = DATA LOCAL FILE ();
 //value, charset, extension
-stringToCustomFile 'Запись строки в файл'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
+stringToFile 'Запись строки в файл'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
 
 resultString = DATA LOCAL TEXT ();
 //file, charset
