@@ -13,14 +13,14 @@ import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataActionProperty<Element> {
-    private List<String> attrs;
+    private Set<String> attrs;
     private Map<String, String> headers;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, List<String> attrs, Map<String, String> headers) {
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, Set<String> attrs, Map<String, String> headers) {
         super(classes, formEntity);
         this.attrs = attrs;
         this.headers = headers;
@@ -47,8 +47,7 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
 
     @Override
     public boolean isLeaf(Object child) {
-        boolean isAttr =  attrs != null && (attrs.isEmpty() || (child instanceof Element && attrs.contains(((Element) child).getName())));
-        return child instanceof Attribute || (child instanceof Element && (isAttr ? ((Element) child).getAttributes().isEmpty() : ((Element) child).getChildren().isEmpty()));
+        return child instanceof Attribute || (child instanceof Element && ((Element) child).getChildren().isEmpty() && ((Element) child).getAttributes().isEmpty());
     }
 
     private Element findRootNode(Element rootNode, String root) {

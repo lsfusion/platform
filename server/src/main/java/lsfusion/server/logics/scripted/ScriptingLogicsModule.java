@@ -3442,13 +3442,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ImportFormDBFDataActionProperty(formEntity, charset)), Collections.<LCPWithParams>emptyList());
     }
 
-    public LAPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, LCPWithParams rootProp, List<String> attrs, List<String> headerKeys, List<String> headerValues) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, LCPWithParams rootProp, List<String> headerKeys, List<String> headerValues) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
         Map<String, String> headers = new HashMap<>();
         for(int i = 0; i < headerKeys.size(); i++) {
             headers.put(headerValues.get(i), headerKeys.get(i));
         }
+
+        Set<String> attrs = new HashSet<>();
+        for(String property : formEntity.getIntegrationOptions().keys()) {
+            if(formEntity.getIntegrationOptions().get(property).getAttr() != null)
+                attrs.add(property);
+        }
+
         return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, formEntity, attrs, headers)), params);
     }
 
