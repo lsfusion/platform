@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
@@ -172,7 +173,12 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     private ObjectValue getObjectValue(Object value, ConcreteClass type) {
         try {
-            return isLeaf(value) ? new DataObject(type.getType().parseString(getChildValue(value)), type) : NullValue.instance;
+            if (isLeaf(value)) {
+                value = type instanceof IntegralClass ? getChildValue(value).trim() : getChildValue(value);
+                return new DataObject(type.getType().parseString((String) value), type);
+            } else {
+                return NullValue.instance;
+            }
         } catch (ParseException e) {
             return NullValue.instance;
         }
