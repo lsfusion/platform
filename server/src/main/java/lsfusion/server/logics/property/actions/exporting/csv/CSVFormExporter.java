@@ -2,11 +2,18 @@ package lsfusion.server.logics.property.actions.exporting.csv;
 
 import lsfusion.base.ExternalUtils;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.classes.DateClass;
+import lsfusion.server.classes.DateTimeClass;
+import lsfusion.server.classes.TimeClass;
+import lsfusion.server.logics.property.actions.exporting.FormExporter;
 import lsfusion.server.logics.property.actions.exporting.PlainFormExporter;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class CSVFormExporter extends PlainFormExporter {
@@ -74,7 +81,7 @@ public class CSVFormExporter extends PlainFormExporter {
             for (AbstractNode c : childNode) {
                 if (c instanceof Leaf) {
                     if(((Leaf) c).getType().toDraw.equals(id)) {
-                        values.add(((Leaf) c).getValue());
+                        values.add(getLeafValue((Leaf) c));
                     }
                 } else
                     exportRow((Node) c, childEntry.getKey());
@@ -82,11 +89,28 @@ public class CSVFormExporter extends PlainFormExporter {
         }
         if(!emptyRow(values)) {
             for (int i = 0; i < values.size(); i++) {
-                writer.print((values.get(i) == null ? "" : String.valueOf(values.get(i)).trim()) + (values.size() == (i + 1) ? "" : separator));
+                writer.print((values.get(i) == null ? "" : values.get(i)) + (values.size() == (i + 1) ? "" : separator));
             }
             if(!values.isEmpty())
                 writer.println();
         }
+    }
+
+    private String getLeafValue(FormExporter.Leaf node) {
+        String leafValue = null;
+        Object value = node.getValue();
+        if (value != null) {
+            if (value instanceof java.sql.Date && node.getType().propertyType.equals("DATE")) {
+                leafValue = DateClass.instance.formatString((Date) value);
+            } else if (value instanceof Time && node.getType().propertyType.equals("TIME")) {
+                leafValue = TimeClass.instance.formatString((Time) value);
+            } else if (value instanceof Timestamp && node.getType().propertyType.equals("DATETIME")) {
+                leafValue = DateTimeClass.instance.formatString((Timestamp) value);
+            } else {
+                leafValue = String.valueOf(value);
+            }
+        }
+        return leafValue;
     }
 
     private String getHeaders(Node node, String id) {
