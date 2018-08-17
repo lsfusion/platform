@@ -274,10 +274,7 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
                 if (desiredColumn != null) {
                     currentIndex = desiredColumn;
                 } else {
-                    if(ignoreIncorrectColumns())
-                        currentIndex = previousIndex + 1;
-                    else
-                        throw new RuntimeException("Import error: column " + id + " not found");
+                    currentIndex = previousIndex + 1;
                 }
             }
             columns.add(currentIndex);
@@ -292,10 +289,6 @@ public abstract class ImportDataActionProperty extends SystemActionProperty {
     }
 
     public abstract ImportIterator getIterator(byte[] file, String extension) throws IOException, ParseException, JDOMException, ClassNotFoundException, IncorrectFileException, JSONException;
-
-    protected boolean ignoreIncorrectColumns() {
-        return true;
-    }
 
     @Override
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
