@@ -574,13 +574,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
                 getLCPByUniqueName(namePrefix + "ImageFile"),
                 getLCPByUniqueName(namePrefix + "PdfFile"),
                 getLCPByUniqueName(namePrefix + "RawFile"),
-                getLCPByUniqueName(namePrefix + "CustomFile"),
+                getLCPByUniqueName(namePrefix + "File"),
                 getLCPByUniqueName(namePrefix + "ExcelFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
                 getLCPByUniqueName(namePrefix + "RawLink"),
-                getLCPByUniqueName(namePrefix + "CustomLink"),
+                getLCPByUniqueName(namePrefix + "Link"),
                 getLCPByUniqueName(namePrefix + "ExcelLink")
         );
     }

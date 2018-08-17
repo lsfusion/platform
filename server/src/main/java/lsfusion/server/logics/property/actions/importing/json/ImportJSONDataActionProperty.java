@@ -38,9 +38,4 @@ public class ImportJSONDataActionProperty extends ImportDataActionProperty {
             }
         };
     }
-
-    @Override
-    protected boolean ignoreIncorrectColumns() {
-        return false;
-    }
 }

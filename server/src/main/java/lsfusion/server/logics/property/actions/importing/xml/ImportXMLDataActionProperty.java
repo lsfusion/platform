@@ -40,9 +40,4 @@ public class ImportXMLDataActionProperty extends ImportDataActionProperty {
             }
         };
     }
-
-    @Override
-    protected boolean ignoreIncorrectColumns() {
-        return false;
-    }
 }

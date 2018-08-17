@@ -9,16 +9,15 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenCustomFileActionProperty extends ScriptingActionProperty {
+public class OpenFileActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
     private final ClassPropertyInterface nameInterface;
 
-    public OpenCustomFileActionProperty(BaseLogicsModule LM, ValueClass... classes) {
+    public OpenFileActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

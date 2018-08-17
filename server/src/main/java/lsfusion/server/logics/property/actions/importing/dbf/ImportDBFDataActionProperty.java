@@ -87,11 +87,6 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
         return 1;
     }
 
-    @Override
-    protected boolean ignoreIncorrectColumns() {
-        return false;
-    }
-
     public static Map<String, Integer> getFieldMapping(CustomDbfReader reader) {
         Map<String, Integer> fieldMapping = new HashMap<>();
         int i = 1;
