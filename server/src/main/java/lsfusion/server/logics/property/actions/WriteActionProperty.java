@@ -116,7 +116,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         }
                         //url = appendExtension(url, extension);
                         File file = new File(url);
-                        if (!file.getParentFile().exists())
+                        if (file.getParentFile() == null || !file.getParentFile().exists())
                             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
                         else
                             writeFile(file.getAbsolutePath(), fileBytes, append);
