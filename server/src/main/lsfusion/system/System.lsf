@@ -169,13 +169,13 @@ requestedWordFile = DATA LOCAL NESTED WORDFILE ();
 requestedImageFile = DATA LOCAL NESTED IMAGEFILE ();
 requestedPdfFile = DATA LOCAL NESTED PDFFILE ();
 requestedRawFile = DATA LOCAL NESTED RAWFILE ();
-requestedCustomFile = DATA LOCAL NESTED FILE ();
+requestedFile = DATA LOCAL NESTED FILE ();
 requestedExcelFile = DATA LOCAL NESTED EXCELFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
 requestedRawLink = DATA LOCAL NESTED RAWLINK ();
-requestedCustomLink = DATA LOCAL NESTED LINK ();
+requestedLink = DATA LOCAL NESTED LINK ();
 requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
