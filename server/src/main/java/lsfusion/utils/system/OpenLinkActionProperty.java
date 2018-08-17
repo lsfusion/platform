@@ -11,17 +11,16 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.httpclient.util.URIUtil;
 
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class OpenCustomLinkActionProperty extends ScriptingActionProperty {
+public class OpenLinkActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface sourceInterface;
 
-    public OpenCustomLinkActionProperty(BaseLogicsModule LM, ValueClass... classes) {
+    public OpenLinkActionProperty(BaseLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();

@@ -109,13 +109,13 @@ hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
 open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
 open 'Открыть файл' (VARSTRING[255] source)  { open(source, NULL); }
 //source file, name
-open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenCustomFileActionProperty' (FILE, VARISTRING[255]);
+open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenFileActionProperty' (FILE, VARISTRING[255]);
 open 'Открыть файл' (FILE source)  { open(source, NULL); }
 //source rawFile, name
 open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
 open 'Открыть файл' (RAWFILE source)  { open(source, NULL); }
-//source customLink
-open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenCustomLinkActionProperty' (LINK);
+//source link
+open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenLinkActionProperty' (LINK);
 //source rawLink
 open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
   
