@@ -32,6 +32,10 @@ resultString = DATA LOCAL TEXT ();
 //file, charset
 fileToString 'Запись файла в строку'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
 
+//path, text, charset
+appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[100], TEXT, VARSTRING[10]);
+appendToFile(VARSTRING[100] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
+
 setExtension = FORMULA FILE 'casttocustomfile(($1),$2)';
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
