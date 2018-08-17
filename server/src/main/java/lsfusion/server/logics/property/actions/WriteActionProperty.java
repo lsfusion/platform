@@ -93,11 +93,11 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         if (m.matches()) {
             path = m.group(2);
         }
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, false, !dialog, append));
     }
 
     private void processClientRelativePath(ExecutionContext context, byte[] fileBytes, String path) {
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, true, !dialog, append));
     }
 
     private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
