@@ -3434,17 +3434,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedImportDoClause(hasListOption, doAction, elseAction, oldContext, newContext, props, nulls, importAction);
     }
 
-    public LAPWithParams addScriptedImportFormCSVActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ImportFormCSVDataActionProperty(formEntity, noHeader, charset, separator)), Collections.<LCPWithParams>emptyList());
+    public LAPWithParams addScriptedImportFormCSVActionProperty(PropertyUsage fileProp, FormEntity formEntity, boolean noHeader, String charset, String separator) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
+        return addScriptedJoinAProp(addAProp(new ImportFormCSVDataActionProperty(fileProperty, formEntity, noHeader, charset, separator)), Collections.<LCPWithParams>emptyList());
     }
 
-    public LAPWithParams addScriptedImportFormDBFActionProperty(FormEntity formEntity, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ImportFormDBFDataActionProperty(formEntity, charset)), Collections.<LCPWithParams>emptyList());
+    public LAPWithParams addScriptedImportFormDBFActionProperty(PropertyUsage fileProp, FormEntity formEntity, String charset) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
+        return addScriptedJoinAProp(addAProp(new ImportFormDBFDataActionProperty(fileProperty, formEntity, charset)), Collections.<LCPWithParams>emptyList());
     }
 
-    public LAPWithParams addScriptedImportFormXMLActionProperty(FormEntity formEntity, LCPWithParams rootProp, List<String> headerKeys, List<String> headerValues) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportFormXMLActionProperty(PropertyUsage fileProp, FormEntity formEntity, LCPWithParams rootProp, List<String> headerKeys, List<String> headerValues) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
+        LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
         Map<String, String> headers = new HashMap<>();
         for(int i = 0; i < headerKeys.size(); i++) {
             headers.put(headerValues.get(i), headerKeys.get(i));
@@ -3456,13 +3459,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 attrs.add(property);
         }
 
-        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, formEntity, attrs, headers)), params);
+        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, fileProperty, formEntity, attrs, headers)), params);
     }
 
-    public LAPWithParams addScriptedImportFormJSONActionProperty(FormEntity formEntity, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportFormJSONActionProperty(PropertyUsage fileProp, FormEntity formEntity, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
-        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, formEntity)), params);
+        LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
+        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, fileProperty, formEntity)), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

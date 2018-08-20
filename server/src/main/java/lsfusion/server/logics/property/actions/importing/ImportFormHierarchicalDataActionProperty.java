@@ -18,6 +18,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -41,8 +42,8 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     public abstract boolean isLeaf(Object child);
 
-    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, FormEntity formEntity) {
-        super(valueClasses, formEntity);
+    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
+        super(valueClasses, fileProperty, formEntity);
     }
 
     @Override
@@ -50,7 +51,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
         try {
             root = context.getKeys().isEmpty() ? null : (String) context.getSingleKeyValue().getValue();
-            byte[] file = (byte[]) context.getBL().LM.findProperty("System.importFile[]").read(context);
+            byte[] file = (byte[]) (fileProperty != null ? fileProperty : context.getBL().LM.findProperty("System.importFile[]")).read(context);
             if (file != null) {
                 file = BaseUtils.getFile(file);
                 importData(context, file);

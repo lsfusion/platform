@@ -24,6 +24,7 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -40,10 +41,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 public abstract class ImportFormDataActionProperty extends SystemExplicitActionProperty {
+    protected LCP<?> fileProperty;
     private FormEntity formEntity;
 
-    public ImportFormDataActionProperty(ValueClass[] valueClasses, FormEntity formEntity) {
+    public ImportFormDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
         super(valueClasses);
+        this.fileProperty = fileProperty;
         this.formEntity = formEntity;
     }
 
