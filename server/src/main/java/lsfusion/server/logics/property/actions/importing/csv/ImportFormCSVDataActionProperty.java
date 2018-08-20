@@ -4,6 +4,7 @@ import lsfusion.base.ExternalUtils;
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
 import lsfusion.server.logics.property.actions.importing.ImportFormPlainDataActionProperty;
 
@@ -19,8 +20,8 @@ public class ImportFormCSVDataActionProperty extends ImportFormPlainDataActionPr
     private String charset;
     private String separator;
 
-    public ImportFormCSVDataActionProperty(FormEntity formEntity, boolean noHeader, String charset, String separator) {
-        super(new ValueClass[]{}, formEntity);
+    public ImportFormCSVDataActionProperty(LCP<?> fileProperty, FormEntity formEntity, boolean noHeader, String charset, String separator) {
+        super(new ValueClass[]{}, fileProperty, formEntity);
         this.noHeader = noHeader;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;

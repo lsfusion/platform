@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportFormHierarchicalDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
 import org.jdom.Attribute;
@@ -20,8 +21,8 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
     private Set<String> attrs;
     private Map<String, String> headers;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, FormEntity formEntity, Set<String> attrs, Map<String, String> headers) {
-        super(classes, formEntity);
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity, Set<String> attrs, Map<String, String> headers) {
+        super(classes, fileProperty, formEntity);
         this.attrs = attrs;
         this.headers = headers;
     }

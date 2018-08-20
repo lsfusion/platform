@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.importing.dbf;
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
 import lsfusion.server.logics.property.actions.importing.ImportFormPlainDataActionProperty;
 import net.iryndin.jdbf.reader.DbfReader;
@@ -17,8 +18,8 @@ public class ImportFormDBFDataActionProperty extends ImportFormPlainDataActionPr
 
     private String charset;
 
-    public ImportFormDBFDataActionProperty(FormEntity formEntity, String charset) {
-        super(new ValueClass[]{}, formEntity);
+    public ImportFormDBFDataActionProperty(LCP<?> fileProperty, FormEntity formEntity, String charset) {
+        super(new ValueClass[]{}, fileProperty, formEntity);
         this.charset = charset == null ? "cp1251" : charset;
     }
 

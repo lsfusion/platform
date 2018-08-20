@@ -2125,13 +2125,13 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inPropParseState()) {
 	    if($type.format == ImportSourceFormat.CSV)
-            $property = self.addScriptedImportFormCSVActionProperty(form, noHeader, charset, separator);
+            $property = self.addScriptedImportFormCSVActionProperty($fileProp.propUsage, form, noHeader, charset, separator);
     	else if($type.format == ImportSourceFormat.DBF)
-        	$property = self.addScriptedImportFormDBFActionProperty(form, charset);
+        	$property = self.addScriptedImportFormDBFActionProperty($fileProp.propUsage, form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty(form, root, headerKeys, headerValues);
+    		$property = self.addScriptedImportFormXMLActionProperty($fileProp.propUsage, form, root, headerKeys, headerValues);
     	else if($type.format == ImportSourceFormat.JSON)
-    	    $property = self.addScriptedImportFormJSONActionProperty(form, root);
+    	    $property = self.addScriptedImportFormJSONActionProperty($fileProp.propUsage, form, root);
 
 	}
 }
@@ -2139,6 +2139,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
 	                                                             charset = $type.charset; root = $type.root; headerKeys = $type.headerKeys; headerValues = $type.headerValues; }
+	    ('FROM' fileProp=propertyUsage)?
 	;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]

@@ -21,9 +21,11 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.io.IOException;
@@ -44,8 +46,8 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
 
     public abstract String getChildValue(Object child);
 
-    public ImportFormPlainDataActionProperty(ValueClass[] valueClasses, FormEntity formEntity) {
-        super(valueClasses, formEntity);
+    public ImportFormPlainDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
+        super(valueClasses, fileProperty, formEntity);
     }
 
     @Override
@@ -134,11 +136,13 @@ public abstract class ImportFormPlainDataActionProperty<I> extends ImportFormDat
     private Map<String, byte[]> getFiles(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<String, byte[]> files = new HashMap<>();
 
+        LCP<? extends PropertyInterface> property = fileProperty != null ? fileProperty : context.getBL().LM.findProperty("importFiles[VARSTRING[100]]");
+
         KeyExpr stringExpr = new KeyExpr("string");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("importFiles", context.getBL().LM.findProperty("importFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr));
-        query.and(context.getBL().LM.findProperty("importFiles[VARSTRING[100]]").getExpr(context.getModifier(), stringExpr).getWhere());
+        query.addProperty("importFiles", property.getExpr(context.getModifier(), stringExpr));
+        query.and(property.getExpr(context.getModifier(), stringExpr).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
         for (int i = 0; i < result.size(); i++) {
             String fileKey = (String) result.getKey(i).get("string");

@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportFormHierarchicalDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
 import org.json.JSONArray;
@@ -14,8 +15,8 @@ import java.io.IOException;
 
 public class ImportFormJSONDataActionProperty extends ImportFormHierarchicalDataActionProperty<JSONObject> {
 
-    public ImportFormJSONDataActionProperty(ValueClass[] classes, FormEntity formEntity) {
-        super(classes, formEntity);
+    public ImportFormJSONDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity) {
+        super(classes, fileProperty, formEntity);
     }
 
     @Override
