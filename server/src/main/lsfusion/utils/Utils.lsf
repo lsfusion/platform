@@ -1,8 +1,6 @@
 MODULE Utils;
 
-REQUIRE System;
-
-printToLog 'Записать в лог'  INTERNAL  'lsfusion.utils.utils.PrintToLogActionProperty' (TEXT);
+REQUIRE System, Time;
 
 // --------------------------------------------- Стандартные группы --------------------------------- //
 
@@ -33,10 +31,21 @@ resultString = DATA LOCAL TEXT ();
 fileToString 'Запись файла в строку'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
 
 //path, text, charset
-appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[100], TEXT, VARSTRING[10]);
-appendToFile(VARSTRING[100] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
+appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
+appendToFile(VARSTRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
 setExtension = FORMULA FILE 'casttocustomfile(($1),$2)';
+
+// --------------------------------- Logging --------------------------------- //
+
+printToLog 'Записать в лог'  INTERNAL  'lsfusion.utils.utils.PrintToLogActionProperty' (TEXT);
+logToFile (VARSTRING[1000] file, TEXT message) {
+    appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message)); 
+}
+logToFile (VARSTRING[1000] file, FILE message) {
+    fileToString(message, 'UTF-8');
+    logToFile(file, resultString());
+}
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
 mkdir 'Создать папку'  INTERNAL  'lsfusion.utils.utils.MkdirActionProperty' (VARISTRING[255]);
