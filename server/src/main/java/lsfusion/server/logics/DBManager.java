@@ -28,7 +28,6 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -46,7 +45,6 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.session.ClassChange;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 import lsfusion.server.stack.*;
@@ -87,8 +85,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(dbVersionComparator);
 
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
+    private Map<String, String> finalNavigatorElementNameChanges = new HashMap<>();  
 
     private DataAdapter adapter;
 
@@ -1807,9 +1807,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
     
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
-    private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException, SQLHandledException {
-        // Сохраним изменения имен свойств на форме для reflectionManager
+    private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException {
+        // Сохраним изменения имен свойств на форме и элементов навигатора для reflectionManager
         finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
+        finalNavigatorElementNameChanges = getChangesAfter(oldData.dbVersion, navigatorCNChanges);
         
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
         addLogPropertiesToMigration(oldData, newData.dbVersion);
@@ -1833,23 +1834,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
         DBVersion curVersion = oldVersion;
-        if (!propertyCNChanges.isEmpty() && curVersion.compare(propertyCNChanges.lastKey()) < 0) {
-            curVersion = propertyCNChanges.lastKey();
-        }
-        if (!actionCNChanges.isEmpty() && curVersion.compare(actionCNChanges.lastKey()) < 0) {
-            curVersion = actionCNChanges.lastKey();
-        }
-        if (!classSIDChanges.isEmpty() && curVersion.compare(classSIDChanges.lastKey()) < 0) {
-            curVersion = classSIDChanges.lastKey();
-        }
-        if (!objectSIDChanges.isEmpty() && curVersion.compare(objectSIDChanges.lastKey()) < 0) {
-            curVersion = objectSIDChanges.lastKey();
-        }
-        if (!tableSIDChanges.isEmpty() && curVersion.compare(tableSIDChanges.lastKey()) < 0) {
-            curVersion = tableSIDChanges.lastKey();
-        }
-        if (!propertyDrawNameChanges.isEmpty() && curVersion.compare(propertyDrawNameChanges.lastKey()) < 0) {
-            curVersion = propertyDrawNameChanges.lastKey();
+        List<TreeMap<DBVersion, List<SIDChange>>> changesMaps = Arrays.asList(propertyCNChanges, actionCNChanges, 
+                classSIDChanges, objectSIDChanges, tableSIDChanges, propertyDrawNameChanges, navigatorCNChanges);
+        
+        for (TreeMap<DBVersion, List<SIDChange>> changeMap : changesMaps) {
+            if (!changeMap.isEmpty() && curVersion.compare(changeMap.lastKey()) < 0) {
+                curVersion = changeMap.lastKey();
+            }
         }
         return curVersion;
     }
@@ -1893,6 +1884,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void addPropertyDrawSIDChange(String version, String oldName, String newName) {
         addSIDChange(propertyDrawNameChanges, version, oldName, newName);
     }
+
+    public void addNavigatorElementCNChange(String version, String oldCN, String newCN) {
+        addSIDChange(navigatorCNChanges, version, oldCN, newCN);
+    } 
     
     private String transformUSID(String userSID) {
         return userSID.replaceFirst("\\.", "_");                            
@@ -1908,6 +1903,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public Map<String, String> getPropertyDrawNamesChanges() {
         return finalPropertyDrawNameChanges;
     } 
+    
+    public Map<String, String> getNavigatorElementNameChanges() {
+        return finalNavigatorElementNameChanges;
+    }
     
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
         Map<String, String> resultChanges = new OrderedMap<>();
@@ -2005,7 +2004,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             logger.debug(localize("{logics.info.packing.table}") + " (" + table + ")... ");
             run(session, isolatedTransaction, new RunService() {
                 @Override
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                public void run(SQLSession sql) throws SQLException {
                     sql.packTable(table, OperationOwner.unknown, TableOwner.global);
                 }});
             logger.debug("Done");
@@ -2290,7 +2289,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     
     private class NewDBStructure extends DBStructure<Field> {
         
-        public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
+        public NewDBStructure(DBVersion dbVersion) {
             version = 29;
             this.dbVersion = dbVersion;
 
