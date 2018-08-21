@@ -8,7 +8,12 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -31,7 +36,7 @@ public class BusinessLogicsBootstrap {
 
         boolean instanceCreated = false;
         try {
-            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(System.getProperty("lsfusion.server.settingsPath", "lsfusion-bootstrap.xml"));
+            AbstractXmlApplicationContext springContext = new ClassPathXmlApplicationContext(getSettingsPath());
             logicsInstance = (LogicsInstance) springContext.getBean("logicsInstance");
             instanceCreated = true;
         } catch (Throwable t) {
@@ -56,6 +61,22 @@ public class BusinessLogicsBootstrap {
                 stop();
             }
         }
+    }
+
+    private static String getSettingsPath() throws IOException {
+        String settingsPath = null;
+        InputStream settingsStream = BusinessLogicsBootstrap.class.getResourceAsStream("/lsfusion.properties");
+        if (settingsStream != null) {
+            Scanner scanner = new Scanner(IOUtils.readStreamToString(settingsStream));
+            while (scanner.hasNextLine()) {
+                Pattern p = Pattern.compile("logics\\.lsfusionXMLPath=(.*)");
+                Matcher m = p.matcher(scanner.nextLine());
+                if (m.matches()) {
+                    settingsPath = m.group(1);
+                }
+            }
+        }
+        return settingsPath != null ? settingsPath : "lsfusion-bootstrap.xml";
     }
 
     private static void registerShutdownHook() {
