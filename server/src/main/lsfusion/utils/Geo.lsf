@@ -30,8 +30,8 @@ name 'Название'= ABSTRACT VARISTRING[200] (POI) MATERIALIZED;
 
 nameCountry 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) MATERIALIZED;
 
-mainAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
-additionalAddress 'Адрес' = ABSTRACT VARISTRING[100] (POI) MATERIALIZED;
+mainAddress 'Адрес' = ABSTRACT VARISTRING[150] (POI) MATERIALIZED;
+additionalAddress 'Адрес' = ABSTRACT VARISTRING[150] (POI) MATERIALIZED;
 
 address 'Адрес' (POI poi) = OVERRIDE additionalAddress(poi), mainAddress(poi); 
 
