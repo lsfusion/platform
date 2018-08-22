@@ -512,24 +512,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 
-    public boolean isBusyDialog() throws RemoteException {
-        boolean useBusyDialog = false;
+    public boolean isBusyDialog() {
+        boolean useBusyDialog;
         try (DataSession session = createSession()) {
             useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
-        } catch (SQLException | SQLHandledException ignored) {
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         return useBusyDialog;
     }
 
     @Override
-    public boolean isUseRequestTimeout() throws RemoteException {
+    public boolean isUseRequestTimeout() {
         if(Settings.get().isUseRequestTimeout())
             return true;
         
-        boolean useRequestTimeout = false;
+        boolean useRequestTimeout;
         try (DataSession session = createSession()) {
             useRequestTimeout = businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
-        } catch (SQLException | SQLHandledException ignored) {
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         return useRequestTimeout;
     }
