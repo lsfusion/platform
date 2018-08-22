@@ -515,15 +515,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public ClientSettings getClientSettings() {
-        boolean useBusyDialog = false;
-        boolean useRequestTimeout = false;
-
         try (DataSession session = createSession()) {
-            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
-            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
-        } catch (SQLException | SQLHandledException ignored) {
+            boolean useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.authenticationLM.useBusyDialog.read(session) != null;
+            boolean useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.authenticationLM.useRequestTimeout.read(session) != null;
+            return new ClientSettings(useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout);
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
-        return new ClientSettings(useBusyDialog, Settings.get().getBusyDialogTimeout(), useRequestTimeout);
     }
 
     private void loadLocalePreferences(ExecutionStack stack) {
