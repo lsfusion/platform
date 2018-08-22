@@ -114,13 +114,14 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
     }
 
     public void synchronizeNavigatorElements() {
+        migrateNavigatorElements();
         synchronizeNavigatorElements(reflectionLM.navigatorFolder, false, reflectionLM.isNavigatorFolder);
         synchronizeNavigatorElements(reflectionLM.navigatorAction, true, reflectionLM.isNavigatorAction);
     }
 
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, boolean actions, LCP deleteLP) {
-
         startLogger.info("synchronizeNavigatorElements collecting data started");
+        
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
         ImportField formCNField = null;
@@ -193,6 +194,38 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         }
     }
 
+    private void migrateNavigatorElements() {
+        startLogger.info("migrateNavigatorElements collecting data started");
+        Map<String, String> nameChanges = dbManager.getNavigatorElementNameChanges();
+
+        ImportField oldNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField newNavigatorElementCNField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+
+        ImportKey<?> keyNE = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(oldNavigatorElementCNField));
+
+        try {
+            List<List<Object>> data = new ArrayList<>();
+            for (String oldName : nameChanges.keySet()) {
+                data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
+            }
+
+            startLogger.info("migrateNavigatorElements integration service started");
+            List<ImportProperty<?>> properties = new ArrayList<>();
+            properties.add(new ImportProperty(newNavigatorElementCNField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNE)));
+
+            ImportTable table = new ImportTable(asList(oldNavigatorElementCNField, newNavigatorElementCNField), data);
+
+            try (DataSession session = createSyncSession()) {
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNE), properties);
+                service.synchronize(false, false);
+                session.apply(businessLogics, getStack());
+                startLogger.info("migrateNavigatorElements finished");
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+    
     public void synchronizeForms() {
         startLogger.info("synchronizeForms collecting data started");
         ImportField nameField = new ImportField(reflectionLM.formCanonicalNameClass);

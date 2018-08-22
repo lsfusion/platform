@@ -31,30 +31,34 @@ scope {
 
 statement	
 	:	propertyRename
+	|	actionRename
  	|	classRename
 	|	tableRename
 	|	objectRename
 	|	propertyDrawRename
+	|	navigatorElementRename 
 	;
 
 propertyRename
 @init {
 	boolean stored = false;
-	boolean action = false;
 	String newClasses = null;
 }
-	:	(
-	        ('STORED' { stored = true; })?	'PROPERTY'
-        |
-            ('ACTION') { action = true; }
-        ) 
+@after {
+	self.addPropertyCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses, stored);
+}
+	:	('STORED' { stored = true; })? 'PROPERTY'
 		oldName=compoundID oldSignature=signature '->' newName=compoundID (newSignature=signature { newClasses = $newSignature.result; })?
-		{ 
-		    if(action)
-		        self.addActionCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses);
-		    else 
-		        self.addPropertyCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses, stored);
-        }
+	;
+
+actionRename 
+@init {
+	String newClasses = null;
+}
+@after {
+	self.addActionCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses);
+}
+	:	'ACTION' oldName=compoundID oldSignature=signature '->' newName=compoundID (newSignature=signature { newClasses = $newSignature.result; })?
 	;
 	
 classRename
@@ -63,6 +67,10 @@ classRename
 	
 tableRename
 	:	'TABLE' r=sidRename { self.addTableSIDChange($script::version, $r.from, $r.to); }
+	;
+
+navigatorElementRename
+	:	'NAVIGATOR' r=sidRename { self.addNavigatorElementCNChange($script::version, $r.from, $r.to); }
 	;
 	
 objectRename
