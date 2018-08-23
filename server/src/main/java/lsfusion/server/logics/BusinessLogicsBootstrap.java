@@ -58,7 +58,7 @@ public class BusinessLogicsBootstrap {
 
                 String version = BaseUtils.getPlatformVersion();
                 if(version != null) {
-                    logger.info("Client is available at http://lsfusion.ru/download/client-" + version + ".jnlp");
+                    logger.info("Client is available at http://download.lsfusion.org/" + version + "/lsfusion-client-" + version + ".jnlp");
                 }
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
