@@ -2,10 +2,6 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ApiResourceBundle;
-import lsfusion.base.GlobalObject;
-import lsfusion.base.MultiCauseException;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.context.EventThreadInfo;
@@ -13,14 +9,13 @@ import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.context.ThreadInfo;
 import lsfusion.server.lifecycle.LifecycleManager;
+import lsfusion.server.stack.NestedThreadException;
+import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 public class LogicsInstance implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -195,25 +190,19 @@ public class LogicsInstance implements InitializingBean {
 
             logger.info("Logics instance has successfully started");
         } catch (Throwable throwable) {
-            Throwable[] throwables = throwable instanceof MultiCauseException
-                                     ? ((MultiCauseException) throwable).getCauses()
-                                     : new Throwable[]{throwable};
+            ThrowableWithStack[] throwables = throwable instanceof NestedThreadException // don't need NestedThreadException message+stack (they are always the same / don't matter)
+                                     ? ((NestedThreadException) throwable).getThrowables()
+                                     : new ThrowableWithStack[]{new ThrowableWithStack(throwable)};
             
-            String errorString = "";
-            for (Throwable t : throwables) {
-                errorString += t.getMessage();
-
-                try {
-                    throw t;
-                } catch (ScriptParsingException parsingEx) {
-                    // используем .info, т.к. это контролируемое сообщение для пользователя, а не системная ошибка
-                    logger.info("Parsing error, while starting logics instance: \n" + parsingEx.getMessage());
-                } catch (Throwable otherEx) {
-                    logger.error("Exception while starting business logic: ", otherEx);
-                }
+            for (ThrowableWithStack nestedThrowable : throwables) {
+                Throwable javaThrowable = nestedThrowable.getThrowable();
+                if(javaThrowable instanceof ScriptParsingException) // don't need ScriptParsingException stack (it is always the same  / doesn't matter) 
+                    logger.info("Parsing error, while starting logics instance: \n" + javaThrowable.getMessage());
+                else 
+                    nestedThrowable.log("Exception while starting business logic", logger);
             }
 
-            lifecycle.fireError(errorString);
+            lifecycle.fireError();
 
             Throwables.propagate(throwable);
         }

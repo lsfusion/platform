@@ -2,6 +2,7 @@ package lsfusion.server.logics.tasks;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
+import lsfusion.server.stack.ThrowableWithStack;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -104,9 +105,11 @@ public abstract class Task {
                     taskQueue.ensurePolled(this);
                     proceed(BL, executor, context, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
                 } catch (Throwable t) {
-                    logger.error(ExecutionStackAspect.getExceptionStackString(), t);
+                    ThrowableWithStack throwableWithStack = new ThrowableWithStack(t);
                     if(!ignoreExceptions())
-                        throwableConsumer.consume(t);
+                        throwableConsumer.consume(throwableWithStack);
+                    else
+                        throwableWithStack.log(getCaption(), logger);
                 } finally {
                     taskQueue.removePolled(this);
                     int taskInQueue = taskCount.decrementAndGet();

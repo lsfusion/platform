@@ -24,15 +24,5 @@ public interface ParseInterface {
     // если не isSageType
     Type getType();
 
-    ParseInterface empty = new StringParseInterface() {
-        public boolean isSafeString() {
-            return false;
-        }
-
-        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
-            throw new RuntimeException("not supported");
-        }
-    };
-    
     SessionTable getSessionTable();
 }

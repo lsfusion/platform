@@ -383,7 +383,7 @@ public class RichEditorPane extends JPanel {
         } catch (EmptyStackException e) {
             // падает при редактировании некорректного html текста (в частности когда CSSParser не может распарсить стиль). 
             // игнорируем, т.к. из-за многократных попыток отрисовки бесконечно рисуются диалоги с ошибкой.
-            Log.message("Невозможно отобразить строку для редактирования.\n" + ExceptionUtils.getStackTrace(e.getStackTrace()));
+            Log.message("Невозможно отобразить строку для редактирования.\n" + ExceptionUtils.getStackTrace(e));
         } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }

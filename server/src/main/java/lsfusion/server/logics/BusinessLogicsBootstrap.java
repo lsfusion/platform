@@ -102,7 +102,6 @@ public class BusinessLogicsBootstrap {
                       new int[]{settings.getLRUOftenProceedBucket(), settings.getLRURareProceedBucket()});
     }*/
 
-    public static boolean enableDumpThreadsOnClose = false;
     public synchronized static void stop() {
         if (!stopped) {
             logger.info("Server is stopping...");
@@ -119,29 +118,6 @@ public class BusinessLogicsBootstrap {
             RMIUtils.killRmiThread();
 
             logger.info("Server has stopped...");
-
-            if(enableDumpThreadsOnClose) {
-                final Result<Integer> ticker = new Result<>(0);
-                // форсируем выход в отдельном потоке
-                final Thread dump = new Thread("Dump closing threads...") {
-                    @Override
-                    public void run() {
-                        //убиваемся, если через 5 секунд ещё не вышли
-                        while(true) {
-                            SystemUtils.sleep(1000);
-
-                            ticker.set(ticker.result + 1);
-                            logger.info("TICK <<< : " + ticker.result + ">>>");
-                            Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
-                            for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
-                                logger.info("Thread : " + entry.getKey() + ", State : " + entry.getKey().getState() + '\n' + ExceptionUtils.getStackTrace(entry.getValue()));
-                            }
-                        }
-                    }
-                };
-                dump.setDaemon(true);
-                dump.start();
-            }
 
             // форсируем выход в отдельном потоке
             final Thread closer = new Thread("Closing thread...") {

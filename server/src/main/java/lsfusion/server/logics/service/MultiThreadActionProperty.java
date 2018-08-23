@@ -1,6 +1,5 @@
 package lsfusion.server.logics.service;
 
-import lsfusion.base.MultiCauseException;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
@@ -41,18 +40,15 @@ public abstract class MultiThreadActionProperty extends ScriptingActionProperty 
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
                     propertyTimeout == null ? null : (Integer) propertyTimeout.getValue(), context);
-        } catch (InterruptedException | MultiCauseException e) {
+        } catch (InterruptedException e) {
             errorOccurred = true;
+            
             task.logTimeoutTasks();
-            taskRunner.shutdownNow();
-            ServerLoggers.serviceLogger.error(getCaptionError(), e);
-            if(e instanceof MultiCauseException) {
-                for(Throwable t : ((MultiCauseException) e).getCauses())
-                    ServerLoggers.serviceLogger.error(getCaptionError(), t);
-            }
-            context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getCaptionError()));
+            
+            taskRunner.shutdownNow();            
+            taskRunner.interruptThreadPoolProcesses(context);       
+            
             ThreadUtils.interruptThread(context, Thread.currentThread());
-            taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(createMessageClientAction(task, errorOccurred));
         }

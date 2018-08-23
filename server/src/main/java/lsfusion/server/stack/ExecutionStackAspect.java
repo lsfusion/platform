@@ -274,14 +274,12 @@ public class ExecutionStackAspect {
         return null;
     }
 
-    public static void setStackString(String exceptionStackString) {
+    public static void setExceptionStackString(String exceptionStackString) {
         String stackString = getStackString();
-        if (stackString != null && !stackString.isEmpty()) { // RMI-часть стека тоже добавляем к стеку ошибки, получаемого из ContextAwareThread
-            if (exceptionStackString != null && !exceptionStackString.isEmpty())
-                exceptionStackString += "\n";
-            else 
-                exceptionStackString = "";
-            exceptionStackString += stackString;
+        if (!stackString.isEmpty()) {
+            if (!exceptionStackString.isEmpty())
+                stackString += "\n";
+            exceptionStackString = stackString + exceptionStackString;
         }
         threadLocalExceptionStack.set(exceptionStackString);
     }

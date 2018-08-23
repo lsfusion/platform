@@ -33,10 +33,11 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -828,7 +829,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             result = request.call();
         } catch (Throwable t) {
-            result = t;
+            result = new ThrowableWithStack(t);
         }
 
         if (requestIndex != -1) {
@@ -850,11 +851,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
      * Если result instanceof Throwable, выбрасывает Exception, иначе кастит к T
      */
     private <T> T cachedResult(Object result) throws RemoteException {
-        if (result instanceof Throwable) {
-            Throwable throwable = (Throwable) result;
-
-            Throwables.propagateIfPossible(throwable, RemoteException.class);
-            throw Throwables.propagate(throwable);
+        if (result instanceof ThrowableWithStack) {
+            throw ((ThrowableWithStack) result).propagateRemote();
         } else {
             return (T) result;
         }
@@ -892,7 +890,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
 
             @Override
-            protected ServerResponse handleThrows(Throwable t) throws RemoteException {
+            protected ServerResponse handleThrows(ThrowableWithStack t) throws RemoteException {
                 unlockNextRmiRequest();
                 return super.handleThrows(t);
             }
