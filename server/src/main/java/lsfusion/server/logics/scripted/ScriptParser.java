@@ -1,6 +1,5 @@
 package lsfusion.server.logics.scripted;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.server.LsfLogicsLexer;
@@ -67,7 +66,7 @@ public class ScriptParser {
                 parser.script();
             }
         } catch (Throwable t) {
-            ExecutionStackAspect.setStackString("Error during parsing at : " + parser.getCurrentDebugPoint());
+            ExecutionStackAspect.setExceptionStackString("Error during parsing at : " + parser.getCurrentDebugPoint());
             throw ExceptionUtils.propagate(t, RecognitionException.class);
         }
         parsers.pop();

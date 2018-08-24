@@ -1,8 +1,8 @@
 package lsfusion.server.logics.tasks;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.MultiCauseException;
+import lsfusion.server.stack.NestedThreadException;
+import lsfusion.server.stack.ThrowableWithStack;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -69,14 +69,9 @@ public class TaskRunner {
         }
         executor.shutdown();
         
-        List<Throwable> errors = throwableConsumer.getThrowables();
-        if (!errors.isEmpty()) {
-            if (errors.size() == 1) {
-                throw Throwables.propagate(errors.get(0));
-            } else {
-                throw new MultiCauseException(errors.toArray(new Throwable[errors.size()]));
-            }
-        }
+        List<ThrowableWithStack> errors = throwableConsumer.getThrowables();
+        if (!errors.isEmpty())
+            throw new NestedThreadException(errors.toArray(new ThrowableWithStack[errors.size()]));
     }
 
     public void shutdownNow() {
@@ -102,13 +97,13 @@ public class TaskRunner {
     }
     
     public static class ThrowableConsumer {
-        private List<Throwable> throwables = Collections.synchronizedList(new ArrayList<Throwable>());
+        private List<ThrowableWithStack> throwables = Collections.synchronizedList(new ArrayList<ThrowableWithStack>());
         
-        public final void consume(Throwable t) {
+        public final void consume(ThrowableWithStack t) {
             throwables.add(t);
         }
 
-        public final List<Throwable> getThrowables() {
+        public final List<ThrowableWithStack> getThrowables() {
             return throwables;
         }
     }

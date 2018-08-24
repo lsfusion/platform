@@ -29,6 +29,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
@@ -51,6 +52,7 @@ import lsfusion.server.stack.*;
 
 import javax.swing.*;
 import java.lang.ref.WeakReference;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -2209,27 +2211,42 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return owner;
     }
 
+    private static final ParseInterface empty = new StringParseInterface() {
+        public boolean isSafeString() {
+            return false;
+        }
+
+        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+            throw new RuntimeException("no client context is supported here (for example - currentUser, currentComputer, etc.)");
+        }
+    };
+
     public static QueryEnvironment emptyEnv(final OperationOwner owner) {
         return new QueryEnvironment() {
             public ParseInterface getSQLUser() {
-                return ParseInterface.empty;
+                return empty;
             }
-
+            
             public ParseInterface getIsFullClient() {
-                return ParseInterface.empty;
+                return empty;
             }
 
             public ParseInterface getSQLComputer() {
-                return ParseInterface.empty;
+                return empty;
             }
 
             public ParseInterface getSQLForm() {
-                return ParseInterface.empty;
+                return empty;
             }
 
             @Override
             public ParseInterface getSQLConnection() {
-                return ParseInterface.empty;
+                return empty;
             }
 
             @Override
@@ -2238,7 +2255,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
 
             public ParseInterface getIsServerRestarting() {
-                return ParseInterface.empty;
+                return empty;
             }
 
             public int getTransactTimeout() {

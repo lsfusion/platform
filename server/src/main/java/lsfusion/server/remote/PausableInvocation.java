@@ -1,19 +1,15 @@
 package lsfusion.server.remote;
 
-import com.google.common.base.Throwables;
-import lsfusion.base.Pair;
-import lsfusion.interop.exceptions.RemoteInterruptedException;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.profiler.ExecutionTimeCounter;
 import lsfusion.server.profiler.Profiler;
 import lsfusion.server.stack.ExecutionStackAspect;
+import lsfusion.server.stack.ThrowableWithStack;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class PausableInvocation<T, E extends Exception> implements Callable<T> {
 
@@ -23,9 +19,6 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     private InvocationResult invocationResult;
     private Future<?> invocationFuture;
     
-    // при переходе между потоками передаём также и LSF стек
-    private String lsfStackTrace;
-
     //т.к. это просто вспомогательный объект, то достаточно одного статического
     private final static Object syncObject = new Object();
     private final SynchronousQueue syncMain = new SynchronousQueue();
@@ -55,7 +48,6 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                lsfStackTrace = null;
                 
                 ServerLoggers.pausableLog("Run invocation: " + sid);
 
@@ -65,7 +57,6 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                     ServerLoggers.pausableLog("Invocation " + sid + " finished");
                 } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
-                    lsfStackTrace = ExecutionStackAspect.getExceptionStackString();
                     ServerLoggers.pausableLog("Invocation " + sid + " thrown an exception: ", t);
                 }
 
@@ -95,8 +86,9 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
 
     /**
      * основной поток
+     * @param t
      */
-    protected abstract T handleThrows(Throwable t) throws E;
+    protected abstract T handleThrows(ThrowableWithStack t) throws E;
 
     /**
      * основной поток
@@ -107,13 +99,6 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
      * основной поток
      */
     protected abstract T handlePaused() throws E;
-    
-    protected String getLSFStack() {
-        if (invocationResult.getStatus() == InvocationResult.Status.EXCEPTION_THROWN) {
-            return lsfStackTrace;
-        }
-        return null;
-    }
 
     /**
      * Должно вызываться в основном потоке <br/>

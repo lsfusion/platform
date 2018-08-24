@@ -28,14 +28,10 @@ public class LifecycleManager {
     }
 
     public synchronized void fireLifecycleEvent(String type) {
-        fireLifecycleEvent(type, null);
-    }
-
-    public synchronized void fireLifecycleEvent(String type, Object data) {
         if (listeners.size() == 0) {
             return;
         }
-        LifecycleEvent event = new LifecycleEvent(type, data);
+        LifecycleEvent event = new LifecycleEvent(type);
         for (LifecycleListener listener : listeners) {
             listener.lifecycleEvent(event);
         }
@@ -57,7 +53,7 @@ public class LifecycleManager {
         fireLifecycleEvent(STOPPED);
     }
 
-    public void fireError(String error) {
-        fireLifecycleEvent(ERROR, error);
+    public void fireError() {
+        fireLifecycleEvent(ERROR);
     }
 }
