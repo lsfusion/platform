@@ -75,10 +75,6 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
         return LM.findForm(name);
     }
 
-    protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException, SQLHandledException {
-        return session.apply(context);
-    }
-
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         return ActionDelegationType.IN_DELEGATE;

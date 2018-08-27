@@ -6,6 +6,7 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.RMIManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,6 +26,11 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     private RMIManager rmiManager;
 
     private RemoteLogics remoteLogics;
+
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        return remoteLogics.businessLogics;
+    }
 
     private boolean started = false;
 

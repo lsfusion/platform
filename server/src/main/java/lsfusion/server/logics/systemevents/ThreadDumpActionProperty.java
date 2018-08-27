@@ -30,7 +30,7 @@ public class ThreadDumpActionProperty extends ScriptingActionProperty {
                 ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(session);
                 if(currentConnection instanceof DataObject)
                     findProperty("fileThreadDump[Connection]").change(BaseUtils.mergeFileAndExtension(threadDump, "txt".getBytes()), session, (DataObject) currentConnection);
-                session.apply(context.getBL(), context.stack);
+                session.apply(context);
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);
             }

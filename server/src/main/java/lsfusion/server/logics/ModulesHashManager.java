@@ -17,7 +17,12 @@ public class ModulesHashManager extends LogicsManager implements InitializingBea
     public static final Logger startLogger = ServerLoggers.startLogger;
 
     private BusinessLogics<?> businessLogics;
-    
+
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        return businessLogics;
+    }
+
     private DBManager dbManager;
 
     private PublicTask initTask;

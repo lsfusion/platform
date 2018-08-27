@@ -30,6 +30,11 @@ import static lsfusion.base.BaseUtils.isRedundantString;
 public class RMIManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
 
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        throw new UnsupportedOperationException();
+    }
+    
     public static final String DEFAULT_EXPORT_NAME = "default";
 
     private Registry registry;

@@ -624,9 +624,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
                 }
-                String result = session.applyMessage(businessLogics, stack);
-                if(result != null)
-                    logger.error("UpdateUserLastActivity error: " + result);
+                session.apply(businessLogics, stack);
             }
         } catch (Exception e) {
             logger.error("UpdateUserLastActivity error: ", e);
@@ -652,9 +650,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                         }
                     }
                 }
-                String result = session.applyMessage(businessLogics, stack);
-                if(result != null)
-                    logger.error("UpdatePingInfo error: " + result);
+                session.apply(businessLogics, stack);
             }
         } catch (Exception e) {
             logger.error("UpdatePingInfo error: ", e);

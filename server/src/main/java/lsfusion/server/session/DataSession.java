@@ -29,6 +29,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
@@ -1324,7 +1325,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         ThreadLocalContext.pushLogMessage();
         String logMessage = null;
         try {
-            if (apply(BL, stack, interaction))
+            if (apply(BL, stack, null))
                 return null;
         } finally {
             logMessage = ThreadLocalContext.popLogMessage();
