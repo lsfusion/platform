@@ -57,7 +57,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public boolean apply(BusinessLogics BL, ExecutionContext context, ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
-        return apply(BL, context.stack, context, applyActions, SetFact.<SessionDataProperty>EMPTY(), null);
+        return apply(BL, context.stack, context, applyActions, SetFact.<SessionDataProperty>EMPTY(), context.getSessionEventFormEnv());
     }
 
     public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -72,7 +72,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         ThreadLocalContext.pushLogMessage();
         String logMessage = null;
         try {
-            if (apply(BL, stack, null))
+            if (apply(BL, stack, interaction))
                 return null;
         } finally {
             logMessage = ThreadLocalContext.popLogMessage();
