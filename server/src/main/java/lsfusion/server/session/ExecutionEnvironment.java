@@ -72,7 +72,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         ThreadLocalContext.pushLogMessage();
         String logMessage = null;
         try {
-            if (apply(BL, stack, interaction))
+            if (apply(BL, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null))
                 return null;
         } finally {
             logMessage = ThreadLocalContext.popLogMessage();
