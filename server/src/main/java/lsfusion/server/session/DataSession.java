@@ -1313,27 +1313,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null);
-    }
-
-    public String applyMessage(ExecutionContext context) throws SQLException, SQLHandledException {
-        return applyMessage(context.getBL(), context.stack, context);
-    }
-
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        ThreadLocalContext.pushLogMessage();
-        String logMessage = null;
-        try {
-            if (apply(BL, stack, null))
-                return null;
-        } finally {
-            logMessage = ThreadLocalContext.popLogMessage();
-        }
-        return logMessage;
-//            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
-    }
-
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         return apply(BL, sessionEventFormEnv, stack, interaction, applyActions, keepProperties);
     }
