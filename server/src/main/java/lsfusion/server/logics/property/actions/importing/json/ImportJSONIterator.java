@@ -127,6 +127,13 @@ public abstract class ImportJSONIterator extends ImportIterator {
                 Object object = ((JSONObject) rootNode).get(key);
                 if (object instanceof JSONObject)
                     result.add((JSONObject) object);
+                else if (object instanceof JSONArray) { //array of primitive values
+                    for (int i = 0; i < ((JSONArray) object).length(); i++) {
+                        Object child = ((JSONArray) object).get(i);
+                        if (child instanceof String)
+                            result.add(new JSONObject("{" + key + ":" + child + "}"));
+                    }
+                }
             }
         }
         return result;
