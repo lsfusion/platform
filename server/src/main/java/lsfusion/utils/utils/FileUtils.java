@@ -286,7 +286,7 @@ public class FileUtils {
             ftpClient.enterLocalPassiveMode();
 
             Map<String, Boolean> result = new HashMap<>();
-            if (ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
+            if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
                 FTPFile[] ftpFileList = ftpClient.listFiles();
                 for (FTPFile file : ftpFileList) {
                     result.put(file.getName(), file.isDirectory());
