@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.MutableClosedObject;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -57,6 +58,27 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public boolean apply(BusinessLogics BL, ExecutionContext context, ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
         return apply(BL, context.stack, context, applyActions, SetFact.<SessionDataProperty>EMPTY(), null);
+    }
+
+    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return applyMessage(BL, stack, null);
+    }
+
+    public String applyMessage(ExecutionContext context) throws SQLException, SQLHandledException {
+        return applyMessage(context.getBL(), context.stack, context);
+    }
+
+    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
+        ThreadLocalContext.pushLogMessage();
+        String logMessage = null;
+        try {
+            if (apply(BL, stack, null))
+                return null;
+        } finally {
+            logMessage = ThreadLocalContext.popLogMessage();
+        }
+        return logMessage;
+//            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
     // newsession action calls
