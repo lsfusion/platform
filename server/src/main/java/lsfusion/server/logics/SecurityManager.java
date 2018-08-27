@@ -64,6 +64,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     private BusinessLogics<?> businessLogics;
     private DBManager dbManager;
 
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        return businessLogics;
+    }
+
     private String initialAdminPassword;
 
     private BaseLogicsModule LM;
@@ -177,11 +182,12 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
-        DataSession session = createSession();
-        User user = addUser("admin", initialAdminPassword, session);
-        applySecurityPolicy(user, session);
-        setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
-        session.apply(businessLogics, getStack());
+        try(DataSession session = createSession()) {
+            User user = addUser("admin", initialAdminPassword, session);
+            applySecurityPolicy(user, session);
+            setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
+            apply(session);
+        }
     }
 
     private DataSession createSession() throws SQLException {
@@ -198,7 +204,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                 securityLM.namePolicy.change(policyName, session, addObject);
                 securityLM.descriptionPolicy.change(description, session, addObject);
                 policyID = (Long) addObject.object;
-                session.apply(businessLogics, getStack());
+                apply(session);
             }
         }
 
@@ -215,23 +221,23 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         try {
             //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
-            DataSession session = createSession();
-            Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
-            if (userId != null)
-                return localize("{logics.error.user.duplicate}");
+            try(DataSession session = createSession()) {
+                Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
+                if (userId != null) return localize("{logics.error.user.duplicate}");
 
-            Object emailId = businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
-            if (emailId != null) {
-                return localize("{logics.error.emailContact.duplicate}");
+                Object emailId = businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
+                if (emailId != null) {
+                    return localize("{logics.error.emailContact.duplicate}");
+                }
+
+                DataObject userObject = session.addObject(authenticationLM.customUser);
+                authenticationLM.loginCustomUser.change(username, session, userObject);
+                businessLogics.authenticationLM.emailContact.change(email, session, userObject);
+                authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
+                businessLogics.authenticationLM.firstNameContact.change(firstName, session, userObject);
+                businessLogics.authenticationLM.lastNameContact.change(lastName, session, userObject);
+                apply(session);
             }
-
-            DataObject userObject = session.addObject(authenticationLM.customUser);
-            authenticationLM.loginCustomUser.change(username, session, userObject);
-            businessLogics.authenticationLM.emailContact.change(email, session, userObject);
-            authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", password, UserInfo.salt), session, userObject);
-            businessLogics.authenticationLM.firstNameContact.change(firstName, session, userObject);
-            businessLogics.authenticationLM.lastNameContact.change(lastName, session, userObject);
-            session.apply(businessLogics, stack);
         } catch (SQLException e) {
             return localize("{logics.error.registration}");
         } catch (SQLHandledException e) {

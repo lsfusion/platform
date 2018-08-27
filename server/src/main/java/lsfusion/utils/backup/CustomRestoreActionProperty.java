@@ -224,9 +224,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                     }
 
                     //step3: writeRows
-                    String result = writeRows(context, props, mRows, keys.get(0), table.replaceOnlyNullSet);
-                    if (result != null)
-                        context.requestUserInteraction(new MessageClientAction(result, "Error restoring table " + tableName));
+                    writeRows(context, props, mRows, keys.get(0), table.replaceOnlyNullSet);
                 }
             }
         } catch (Exception e) {
@@ -234,7 +232,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
+    private void writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
                              List<Object> keys, Set<String> replaceOnlyNullSet)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
@@ -275,7 +273,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         } finally {
             importTable.drop(sql, owner);
         }
-        return session.applyMessage(context);
+        session.apply(context);
     }
 
     private DataObject getBooleanObject(Object value) {

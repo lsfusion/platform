@@ -447,14 +447,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return checkApply(getBL());
     }
 
+    // same session action calls (not recommended)
     public boolean apply() throws SQLException, SQLHandledException {
-        return apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER());
+        return apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
-        return apply(applyActions, SetFact.<SessionDataProperty>EMPTY());
-    }
-    
     public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
     }

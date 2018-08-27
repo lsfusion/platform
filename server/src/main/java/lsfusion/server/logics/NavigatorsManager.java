@@ -36,6 +36,11 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     private BusinessLogics<?> businessLogics;
 
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        return businessLogics;
+    }
+
     private BaseLogicsModule<?> baseLM;
 
     private RestartManager restartManager;
@@ -179,7 +184,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
                     businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, connection);
                 } else
                     ServerLoggers.assertLog(false, "SHOULD NOT BE");
-                session.apply(businessLogics, stack);
+                apply(session, stack);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

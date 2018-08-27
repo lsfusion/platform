@@ -48,6 +48,11 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
     private BusinessLogics<?> businessLogics;
 
+    @Override
+    protected BusinessLogics<?> getBusinessLogics() {
+        return businessLogics;
+    }
+
     private DBManager dbManager;
 
     private PublicTask initTask;
@@ -186,7 +191,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, keys, propsNavigatorElement, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeNavigatorElements finished");
             }
         } catch (Exception e) {
@@ -218,7 +223,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             try (DataSession session = createSyncSession()) {
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNE), properties);
                 service.synchronize(false, false);
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("migrateNavigatorElements finished");
             }
         } catch (Exception e) {
@@ -254,7 +259,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyForm), props, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeForms finished");
             }
         } catch (Exception e) {
@@ -285,7 +290,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeParents finished");
             }
         } catch (Exception e) {
@@ -363,7 +368,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             try (DataSession session = createSyncSession()) {
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
                 service.synchronize(false, false);
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("migratePropertyDraws finished");
             }
         } catch (Exception e) {
@@ -415,7 +420,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizePropertyDraws finished");
             }
         } catch (Exception e) {
@@ -461,7 +466,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeGroupObjects finished");
             }
         } catch (Exception e) {
@@ -561,7 +566,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities finished");
             }
         } catch (Exception e) {
@@ -606,7 +611,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Parents finished");
             }
         } catch (Exception e) {
@@ -662,7 +667,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 service = new IntegrationService(session, table2, asList(key, key2), props2);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeGroupProperties finished");
             }
         } catch (Exception e) {
@@ -766,7 +771,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 service.synchronize(true, false);
 
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                apply(session);
                 startLogger.info("synchronizeTables finished");
             }
         } catch (Exception e) {
@@ -781,7 +786,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                         systemEventsLM.connectionStatusConnection.property.interfaces.single(),
                         systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
                 session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
-                session.apply(businessLogics, getStack());
+                apply(session);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -792,7 +797,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         try {
             try (DataSession session = dbManager.createSession()) {
                 LM.onStarted.execute(session, getStack());
-                session.apply(businessLogics, getStack());
+                apply(session);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -807,7 +812,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 systemEventsLM.timeLaunch.change(timeLM.currentDateTime.readClasses(session), session, newLaunch);
                 systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
                 systemEventsLM.currentLaunch.change(newLaunch, session);
-                session.apply(businessLogics, getStack());
+                apply(session);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

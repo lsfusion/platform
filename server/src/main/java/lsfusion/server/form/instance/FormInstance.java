@@ -604,9 +604,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }    
     }
 
-    public String saveUserPreferences(ExecutionStack stack, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) {
+    public void saveUserPreferences(ExecutionStack stack, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) {
         if (!entity.isNamed()) {
-            return null;
+            return;
         }
 
         try (DataSession dataSession = session.createSession()) {
@@ -659,7 +659,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 changeUserGOPreferences(preferences, dataSession, groupObjectObject, userObject);
             }
             
-            return dataSession.applyMessage(BL, stack);
+            dataSession.apply(BL, stack);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -2404,7 +2404,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formApply(ExecutionContext context) throws SQLException, SQLHandledException {
-        if(apply(BL, context))
+        if(apply(BL, context, SetFact.<ActionPropertyValueImplement>EMPTYORDER()))
             environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
     }
 

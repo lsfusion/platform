@@ -39,10 +39,10 @@ public class RecalculateTableStatsActionProperty extends ScriptingActionProperty
         if (!disableStats) {
             ServiceDBActionProperty.run(context, new RunService() {
                         public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                            try (DataSession dataSession = context.getDbManager().createSession()) {
+                            try (DataSession dataSession = context.createSession()) {
                                 context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
                                         disableStatsTableColumnSet, dataSession);
-                                applySession(context, dataSession);
+                                dataSession.apply(context);
                             }
                         }
                     }

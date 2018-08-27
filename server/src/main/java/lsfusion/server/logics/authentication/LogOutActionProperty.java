@@ -33,6 +33,5 @@ public class LogOutActionProperty extends ScriptingActionProperty {
         boolean restart = context.getKeyValue(restartInterface).getValue() != null;
         boolean reconnect = context.getKeyValue(reconnectInterface).getValue() != null;
         context.delayUserInteraction(new LogOutClientAction(restart, reconnect));
-        context.apply();
     }
 }

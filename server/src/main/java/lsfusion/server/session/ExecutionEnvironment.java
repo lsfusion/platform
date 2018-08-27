@@ -50,19 +50,18 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return property.execute(new ExecutionContext<>(change, pushAddObject, this, null, formEnv, stack));
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return apply(BL, stack, null);
+    // inner / external server calls
+    public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+        apply(BL, stack, null);
     }
 
     public boolean apply(BusinessLogics BL, ExecutionContext context, ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
         return apply(BL, context.stack, context, applyActions, SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionContext context) throws SQLException, SQLHandledException {
-        return apply(BL, context.stack, context);
-    }
+    // newsession action calls
     public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {
-        return apply(context.getBL(), context);
+        return apply(context.getBL(), context.stack, context);
     }
 
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {

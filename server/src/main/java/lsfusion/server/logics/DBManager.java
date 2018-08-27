@@ -88,7 +88,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private TreeMap<DBVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(dbVersionComparator);
 
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
-    private Map<String, String> finalNavigatorElementNameChanges = new HashMap<>();  
+    private Map<String, String> finalNavigatorElementNameChanges = new HashMap<>();
 
     private DataAdapter adapter;
 
@@ -116,7 +116,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final ThreadLocal<SQLSession> threadLocalSql;
 
     private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
-    
+
     private String defaultUserLanguage;
     private String defaultUserCountry;
     private String defaultUserTimeZone;
@@ -142,6 +142,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = businessLogics;
+    }
+    
+    public BusinessLogics<?> getBusinessLogics(){
+        return businessLogics;
     }
 
     public void setRestartManager(RestartManager restartManager) {
@@ -428,7 +432,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
                     result = (Long) addObject.object;
-                    session.apply(businessLogics, stack);
+                    apply(session, stack);
                 } else {
                     result = (Long) keys.iterator().next().get("key");
                 }
@@ -454,7 +458,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     DataObject addObject = session.addObject(businessLogics.reflectionLM.form);
                     businessLogics.reflectionLM.formCanonicalName.change(canonicalName, session, addObject);
                     result = (Long) addObject.object;
-                    session.apply(businessLogics, stack);
+                    apply(session, stack);
                 }
                 return result;
             }
@@ -697,7 +701,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             if (!oldDBStructure.isEmpty()) {
                 startLogger.info("Applying migration script (" + oldDBStructure.dbVersion + " -> " + newDBStructure.dbVersion + ")");
 
-                // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
+                // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля
                 alterDBStructure(oldDBStructure, newDBStructure, sql);
             }
 
@@ -905,14 +909,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
             startLogger.info("Filling static objects ids");
-            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
-                throw new RuntimeException("Error while filling static objects ids");
+            fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
 
             if (oldDBStructure.isEmpty()) {
                 startLogger.info("Recalculate class stats");
                 try(DataSession session = createSession(OperationOwner.unknown)) {
                     businessLogics.recalculateClassStats(session, false);
-                    session.apply(businessLogics, getStack());
+                    apply(session);
                 }
             }
 
@@ -924,8 +927,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
 
             startLogger.info("Migrating reflection properties and actions");
-            if(!migrateReflectionProperties(oldDBStructure))
-                throw new RuntimeException("Error while migrating reflection properties and actions");
+            migrateReflectionProperties(oldDBStructure);
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
@@ -964,10 +966,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
                 reflectionLM.revisionDropColumn.change(getRevision(), session, object);
             }
-            session.apply(businessLogics, getStack());
+            apply(session);
+        }
 
-            initSystemUser();
+        initSystemUser();
 
+        try (DataSession session = createSession()) {
             String oldHashModules = (String) businessLogics.LM.findProperty("hashModules[]").read(session);
             hashModules = calculateHashModules();
             return checkHashModulesChanged(oldHashModules, hashModules);
@@ -980,8 +984,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             businessLogics.authenticationLM.defaultCountry.change(defaultUserCountry, session);
             businessLogics.authenticationLM.defaultTimeZone.change(defaultUserTimeZone, session);
             businessLogics.authenticationLM.defaultTwoDigitYearStart.change(defaultTwoDigitYearStart, session);
-            session.apply(businessLogics, getStack());
-        } 
+            apply(session);
+        }
     }
     
     private void updateAggregationStats(List<CalcProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
@@ -1031,7 +1035,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info(String.format("Update Aggregation Stats started: %s", table));
             calculateStatResult = table.recalculateStat(reflectionLM, session, fields, false);
             calculateStatResult = table.recalculateStat(reflectionLM, session, fields, true);
-            session.apply(businessLogics, getStack());
+            apply(session);
             long time = System.currentTimeMillis() - start;
             startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
         }
@@ -1043,19 +1047,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
             startLogger.info("Writing hashModules " + hashModules);
             DataSession session = createSession();
             businessLogics.LM.findProperty("hashModules[]").change(hashModules, session);
-            session.apply(businessLogics, getStack());
+            apply(session);
             startLogger.info("Writing hashModules finished successfully");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure) {
-        if(!migrateReflectionProperties(oldDBStructure, false))
-            return false;
-        return migrateReflectionProperties(oldDBStructure, true);
+    private void migrateReflectionProperties(OldDBStructure oldDBStructure) {
+        migrateReflectionProperties(oldDBStructure, false);
+        migrateReflectionProperties(oldDBStructure, true);
     }
-    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, boolean actions) {
+    private void migrateReflectionProperties(OldDBStructure oldDBStructure, boolean actions) {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
         Map<String, String> nameChanges = getChangesAfter(oldDBVersion, actions ? actionCNChanges : propertyCNChanges);
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
@@ -1080,17 +1083,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
             try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
                 service.synchronize(false, false);
-                return session.apply(businessLogics, getStack());
+                apply(session);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
+    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
-            return session.apply(businessLogics, getStack());
+            session.apply(businessLogics, getStack());
         }
     }
 
@@ -1222,7 +1225,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     if(property instanceof AggregateProperty)
                         recalculateAggregation(dataSession, session, isolatedTransaction, new ProgressBar(localize("{logics.recalculation.aggregations}"), i, total), messageList, maxRecalculateTime, (AggregateProperty) property, logger);
                 }
-                dataSession.apply(businessLogics, stack);
+                apply(dataSession, stack);
             }
         }
         return businessLogics.formatMessageList(messageList);
@@ -1284,7 +1287,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, ExecutionStack stack, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
         try(DataSession dataSession = createSession()) {
             recalculateAggregationWithDependenciesTableColumn(dataSession, session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);
-            dataSession.apply(businessLogics, stack);
+            apply(dataSession, stack);
         }
     }
 
@@ -1856,7 +1859,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
                 if (rows.size() == 0) { // если нету добавим
                     systemUserObject = (Long) session.addObject(businessLogics.authenticationLM.systemUser).object;
-                    session.apply(businessLogics, getStack());
+                    apply(session);
                 } else
                     systemUserObject = (Long) rows.single().get("key");
 
@@ -1867,7 +1870,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
                     systemComputer = (Long) computerObject.object;
                     businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
-                    session.apply(businessLogics, getStack());
+                    apply(session);
                 } else
                     systemComputer = (Long) rows.single().get("key");
 
