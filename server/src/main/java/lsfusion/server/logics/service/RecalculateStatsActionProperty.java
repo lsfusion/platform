@@ -16,8 +16,7 @@ public class RecalculateStatsActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataSession session = context.getSession();
-        context.getBL().recalculateStats(session);
-        session.apply(context);
+        context.getBL().recalculateStats(context.getSession());
+        context.apply();
     }
 }

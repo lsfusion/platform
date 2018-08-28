@@ -10,7 +10,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.Field;
@@ -57,12 +56,10 @@ public class WriteDefaultSettingsActionProperty extends ScriptingActionProperty 
 
             ImportTable table = new ImportTable(fields, data);
 
-            try (DataSession session = context.createSession()) {
-                session.pushVolatileStats("RP_R");
-                IntegrationService service = new IntegrationService(session, table, keys, props);
+            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                IntegrationService service = new IntegrationService(newContext, table, keys, props);
                 service.synchronize(true, false);
-                session.apply(context);
-                session.popVolatileStats();
+                newContext.apply();
             }
 
         } catch (InvocationTargetException | NoSuchMethodException | ScriptingErrorLog.SemanticErrorException | IllegalAccessException e) {

@@ -1349,7 +1349,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             super.updateCurrentClasses(session);
         }
     }
-
+    
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         assert sessionEventFormEnv == null || this == sessionEventFormEnv;
 
@@ -1360,11 +1360,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if(BL.LM.isRequestCanceled(this))
             return false;
 
-        boolean succeeded = session.apply(BL, this, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties);
-
+        boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this);
+        
         if (!succeeded)
             return false;
 
+        environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
+        
         refreshData(); // нужно перечитать ключи в таблицах, и т.п.
         fireOnAfterApply(stack);
 
@@ -2428,8 +2430,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formApply(ExecutionContext context) throws SQLException, SQLHandledException {
-        if(apply(BL, context, SetFact.<ActionPropertyValueImplement>EMPTYORDER()))
-            environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
+        assert context.getEnv() == this;
+
+        context.apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -2463,6 +2466,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formOk(ExecutionContext context) throws SQLException, SQLHandledException {
+        assert context.getEnv() == this;
+        
         if (checkOnOk) {
             if (!checkApply(context.stack, context)) {
                 return;
@@ -2475,7 +2480,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
 
         if (manageSession) {
-            if (!apply(BL, context, getEventsOnOk())) {
+            if (!context.apply(getEventsOnOk(), SetFact.<SessionDataProperty>EMPTY())) {
                 return;
             }
         } else

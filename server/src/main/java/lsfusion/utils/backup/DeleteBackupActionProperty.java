@@ -25,20 +25,20 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try (DataSession session = context.createSession()) {
-            DataObject backupObject = context.getDataKeyValue(backupInterface);
+        try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+            DataObject backupObject = newContext.getDataKeyValue(backupInterface);
 
-            String backupFilePath = (String) findProperty("file[Backup]").read(session, backupObject);
-            String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(session, backupObject);
+            String backupFilePath = (String) findProperty("file[Backup]").read(newContext, backupObject);
+            String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(newContext, backupObject);
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
             if (fLog.exists() && !fLog.delete()) {
                 fLog.deleteOnExit();
             }
             if (!f.exists() || f.delete()) {
-                findProperty("fileDeleted[Backup]").change(true, session, backupObject);
+                findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
             }
-            session.apply(context);
+            newContext.apply();
 
         } catch (Exception e) {
             Throwables.propagate(e);

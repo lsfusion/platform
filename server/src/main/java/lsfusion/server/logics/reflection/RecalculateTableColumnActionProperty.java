@@ -36,13 +36,14 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
         final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
         final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
 
-        try(DataSession dataSession = context.createSession()) {
+        try(ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+            final DataSession dataSession = newContext.getSession();
             ServiceDBActionProperty.run(context, new RunService() {
                 public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                     context.getDbManager().recalculateAggregationTableColumn(dataSession, session, propertyCanonicalName.trim(), isolatedTransaction);
                 }
             });
-            dataSession.apply(context);
+            newContext.apply();
         }
 
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.recalculation.completed}", 

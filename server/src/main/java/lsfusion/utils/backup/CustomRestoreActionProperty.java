@@ -273,7 +273,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         } finally {
             importTable.drop(sql, owner);
         }
-        session.apply(context);
+        context.apply();
     }
 
     private DataObject getBooleanObject(Object value) {

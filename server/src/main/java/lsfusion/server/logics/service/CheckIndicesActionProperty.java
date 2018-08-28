@@ -20,9 +20,7 @@ public class CheckIndicesActionProperty extends ScriptingActionProperty {
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try(DataSession session = context.createSession()) {
-            context.getBL().checkIndices(session.sql);
-        }
+        context.getBL().checkIndices(context.getSession().sql);
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.indices}"))), localize("{logics.checking.indices}")));
     }
 }

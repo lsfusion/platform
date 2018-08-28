@@ -59,7 +59,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             return null;
         }
 
-        DataSession newSession;
+        ExecutionContext.NewSession<PropertyInterface> newContext;
         if(newSQL) {
             SQLSession sql;
             try {
@@ -67,9 +67,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 throw Throwables.propagate(e);
             }
-            newSession = session.createSession(sql);
+            newContext = context.newSession(sql);
         } else {
-            newSession = session.createSession();
+            newContext = context.newSession();
+            DataSession newSession = newContext.getSession();
             if (isNested) {
                 context.executeSessionEvents();
 
@@ -79,7 +80,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             }
         }
 
-        return context.override(newSession);
+        return newContext;
     }
 
     @Override
@@ -107,12 +108,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        DataSession session = innerContext.getSession();
         try {
-            session.close(); // по сути и есть аналог try with resources ()
+            ((ExecutionContext.NewSession<PropertyInterface>)innerContext).close(); // по сути и есть аналог try with resources ()
         } finally {
             if(newSQL) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
-                session.sql.close();
+                innerContext.getSession().sql.close();
         }
     }
 

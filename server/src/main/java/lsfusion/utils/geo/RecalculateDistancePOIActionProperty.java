@@ -15,7 +15,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -71,7 +70,7 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
                 String latLong = latitude + "," + longitude;
 
 
-                try (DataSession session = context.createSession()) {
+                try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
                     String destinations = "";
                     int count = 0;
                     int[] localDistances = new int[size];
@@ -92,11 +91,11 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
                     }
                     for (int i = 0; i < points.size(); i++) {
                         if (points.containsKey(i)) {
-                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], session, poiObject, poiMap.get(i));
-                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], session, poiMap.get(i), poiObject);
+                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiObject, poiMap.get(i));
+                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], newContext, poiMap.get(i), poiObject);
                         }
                     }
-                    session.apply(context);
+                    newContext.apply();
                 }
             }
         } catch (Exception e) {

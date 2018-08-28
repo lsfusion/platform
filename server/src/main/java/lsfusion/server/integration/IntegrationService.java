@@ -21,10 +21,7 @@ import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.CalcPropertyImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.StackMessage;
 
@@ -38,11 +35,19 @@ public class IntegrationService {
     private DataSession session;
     private Collection<ImportDelete> deletes;
 
+    public IntegrationService(ExecutionContext context, ImportTable table, Collection<? extends ImportKey<?>> keys,
+                              Collection<ImportProperty<?>> properties) {
+        this(context.getSession(), table, keys, properties);
+    }
     public IntegrationService(DataSession session, ImportTable table, Collection<? extends ImportKey<?>> keys,
                               Collection<ImportProperty<?>> properties) {
         this(session, table, keys, properties, null);
     }
-
+    
+    public IntegrationService(ExecutionContext context, ImportTable table, Collection<? extends ImportKey<?>> keys,
+                              Collection<ImportProperty<?>> properties, Collection<ImportDelete> deletes) {
+        this(context.getSession(), table, keys, properties, deletes);
+    }
     public IntegrationService(DataSession session, ImportTable table, Collection<? extends ImportKey<?>> keys,
                               Collection<ImportProperty<?>> properties, Collection<ImportDelete> deletes) {
         this.session = session;

@@ -16,7 +16,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 
 import java.sql.Date;
 import java.sql.SQLException;
@@ -29,7 +28,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try (DataSession session = context.createSession()) {
+        try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
 
             boolean saveFirstDay = findProperty("saveFirstDayBackups[]").read(context) != null;
             boolean saveMonday = findProperty("saveMondayBackups[]").read(context) != null;
@@ -45,12 +44,12 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
             ImRevMap<Object, KeyExpr> backupKeys = MapFact.<Object, KeyExpr>singletonRev("Backup", backupExpr);
 
             QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
-            backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr));
-            backupQuery.addProperty("timeBackup", findProperty("time[Backup]").getExpr(session.getModifier(), backupExpr));
-            backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(session.getModifier(), backupExpr).getWhere().not());
-            backupQuery.and(findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr).getWhere());
+            backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr));
+            backupQuery.addProperty("timeBackup", findProperty("time[Backup]").getExpr(newContext.getModifier(), backupExpr));
+            backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere().not());
+            backupQuery.and(findProperty("date[Backup]").getExpr(newContext.getModifier(), backupExpr).getWhere());
 
-            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(session, MapFact.toOrderMap((Object) "dateBackup", true, "timeBackup", true));
+            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(newContext, MapFact.toOrderMap((Object) "dateBackup", true, "timeBackup", true));
 
             int count = 0;
             for (int i = 0; i < backupResult.size(); i++) {
@@ -67,12 +66,12 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
                 //Если старше недели, оставляем только за понедельник и за первое число;
                 //Если старше месяца, только за первое число.
                 if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
-                    findAction("delete[Backup]").execute(session, context.stack, backupObject);
+                    findAction("delete[Backup]").execute(newContext, backupObject);
                 else
                     count++;
             }
 
-            session.apply(context);
+            newContext.apply();
 
         } catch (Exception e) {
             throw Throwables.propagate(e);

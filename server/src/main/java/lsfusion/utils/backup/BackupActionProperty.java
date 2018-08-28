@@ -17,7 +17,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -39,7 +38,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
     }
 
     protected void makeBackup(ExecutionContext context, boolean partial) {
-        try (DataSession session = context.createSession()) {
+        try (ExecutionContext.NewSession newContext = context.newSession()) {
 
             Date currentDate = Calendar.getInstance().getTime();
             long currentTime = currentDate.getTime();
@@ -52,24 +51,24 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 String backupFileLogPath = backupFilePath + ".log";
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
-                DataObject backupObject = session.addObject((ConcreteCustomClass) findClass("Backup"));
-                findProperty("date[Backup]").change(new java.sql.Date(currentTime), session, backupObject);
-                findProperty("time[Backup]").change(new java.sql.Time(currentTime), session, backupObject);
-                findProperty("file[Backup]").change(backupFilePath, session, backupObject);
-                findProperty("name[Backup]").change(backupFileName + backupFileExtension, session, backupObject);
-                findProperty("fileLog[Backup]").change(backupFileLogPath, session, backupObject);
+                DataObject backupObject = newContext.addObject((ConcreteCustomClass) findClass("Backup"));
+                findProperty("date[Backup]").change(new java.sql.Date(currentTime), newContext, backupObject);
+                findProperty("time[Backup]").change(new java.sql.Time(currentTime), newContext, backupObject);
+                findProperty("file[Backup]").change(backupFilePath, newContext, backupObject);
+                findProperty("name[Backup]").change(backupFileName + backupFileExtension, newContext, backupObject);
+                findProperty("fileLog[Backup]").change(backupFileLogPath, newContext, backupObject);
 
                 if(partial) {
-                    findProperty("partial[Backup]").change(true, session, backupObject);
+                    findProperty("partial[Backup]").change(true, newContext, backupObject);
                     for (String excludeTable : excludeTables) {
-                        ObjectValue tableObject = findProperty("table[VARISTRING[100]]").readClasses(session, new DataObject(excludeTable));
+                        ObjectValue tableObject = findProperty("table[VARISTRING[100]]").readClasses(newContext, new DataObject(excludeTable));
                         if (tableObject instanceof DataObject)
-                            findProperty("exclude[Backup,Table]").change(true, session, backupObject, (DataObject) tableObject);
+                            findProperty("exclude[Backup,Table]").change(true, newContext, backupObject, (DataObject) tableObject);
                     }
                 }
 
-                session.apply(context);
-                
+                newContext.apply();
+
                 backupObject = new DataObject((Long)backupObject.object, (ConcreteCustomClass)findClass("Backup")); // обновляем класс после backup
 
                 context.getDbManager().backupDB(context, backupFileName, excludeTables);
@@ -77,8 +76,8 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 findProperty("backupFilePath[]").change(backupFilePath, context.getSession());
                 findProperty("backupFileName[]").change(backupFileName + backupFileExtension, context.getSession());
 
-                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), session, backupObject);
-                session.apply(context);
+                findProperty("log[Backup]").change(readFileToString(backupFileLogPath), newContext, backupObject);
+                newContext.apply();
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

@@ -11,7 +11,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.session.DataSession;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -48,9 +47,9 @@ public class CheckCurrentDateDependsActionProperty extends ScriptingActionProper
                 }
         }
         if (!allow) {
-            try(DataSession session = context.createSession()) {
-                BL.reflectionLM.userLoggableProperty.change((Boolean) null, session, propertyObject);
-                session.apply(context);
+            try(ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                BL.reflectionLM.userLoggableProperty.change((Boolean) null, newContext, propertyObject);
+                newContext.apply();
             }
         }
     }

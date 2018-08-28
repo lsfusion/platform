@@ -17,7 +17,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -86,7 +85,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
 
                         int[][] distances = new int[size][size];
                         for (int i = 0; i < size; i++) {
-                            try (DataSession session = context.createSession()) {
+                            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
                                 int[] localDistances = new int[size];
                                 List<Integer> queryIndices = new ArrayList<>();
                                 String destinations = "";
@@ -122,12 +121,12 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                                         Integer distance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
                                         if (distance == null) {
                                             distance = localDistances[j];
-                                            findProperty("distancePOIPOI[POI,POI]").change(distance, session, poiMap.get(i), poiMap.get(j));
+                                            findProperty("distancePOIPOI[POI,POI]").change(distance, newContext, poiMap.get(i), poiMap.get(j));
                                         }
                                         distances[i][j] = distance;
                                     }
                                 }
-                                session.apply(context);
+                                newContext.apply();
                             }
                         }
 

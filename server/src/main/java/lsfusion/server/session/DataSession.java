@@ -1313,14 +1313,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
-        return apply(BL, sessionEventFormEnv, stack, interaction, applyActions, keepProperties);
-    }
-
     public boolean check(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, sessionEventFormEnv, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+        boolean result = apply(BL, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), sessionEventFormEnv);
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1705,9 +1701,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return classChanges.getMaxDataUsed(prop);
     }
 
+    // inner / external server calls
+    public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+        apply(BL, stack, null);
+    }
+
+    // inner / external server calls
+    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+        return applyMessage(BL, stack, null);
+    }
+
     @AssertSynchronized
-    public boolean apply(final BusinessLogics<?> BL, ExecutionEnvironment sessionEventFormEnv, ExecutionStack stack, UserInteraction interaction,
-                         ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
 
