@@ -19,10 +19,7 @@ public class AnalyzeDBActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        try (DataSession session = context.createSession()) {
-            context.getDbManager().analyzeDB(session.sql);
-            session.apply(context);
-        }
+        context.getDbManager().analyzeDB(context.getSession().sql);
         context.delayUserInterfaction(new MessageClientAction(ThreadLocalContext.localize("{logics.vacuum.analyze.was.completed}"), ThreadLocalContext.localize("{logics.vacuum.analyze}")));
     }
 }

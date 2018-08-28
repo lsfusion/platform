@@ -51,23 +51,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return property.execute(new ExecutionContext<>(change, pushAddObject, this, null, formEnv, stack));
     }
 
-    // inner / external server calls
-    public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        apply(BL, stack, null);
-    }
-
-    public boolean apply(BusinessLogics BL, ExecutionContext context, ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
-        return apply(BL, context.stack, context, applyActions, SetFact.<SessionDataProperty>EMPTY(), context.getSessionEventFormEnv());
-    }
-
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null);
-    }
-
-    public String applyMessage(ExecutionContext context) throws SQLException, SQLHandledException {
-        return applyMessage(context.getBL(), context.stack, context);
-    }
-
     public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
         ThreadLocalContext.pushLogMessage();
         String logMessage = null;
@@ -79,11 +62,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         }
         return logMessage;
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
-    }
-
-    // newsession action calls
-    public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {
-        return apply(context.getBL(), context.stack, context);
     }
 
     public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {

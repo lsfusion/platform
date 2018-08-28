@@ -11,7 +11,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -26,11 +25,11 @@ public class ThreadDumpActionProperty extends ScriptingActionProperty {
 
         byte[] threadDump = (byte[]) context.requestUserInteraction(new ThreadDumpClientAction());
         if (threadDump != null) {
-            try (DataSession session = context.createSession()) {
-                ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(session);
+            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
+                ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(newContext);
                 if(currentConnection instanceof DataObject)
-                    findProperty("fileThreadDump[Connection]").change(BaseUtils.mergeFileAndExtension(threadDump, "txt".getBytes()), session, (DataObject) currentConnection);
-                session.apply(context);
+                    findProperty("fileThreadDump[Connection]").change(BaseUtils.mergeFileAndExtension(threadDump, "txt".getBytes()), newContext, (DataObject) currentConnection);
+                newContext.apply();
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);
             }

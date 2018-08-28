@@ -1177,9 +1177,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public static void runData(SessionCreator creator, boolean runInTransaction, RunServiceData run) throws SQLException, SQLHandledException {
         if(runInTransaction) {
             ExecutionContext context = (ExecutionContext) creator;
-            try(DataSession session = context.createSession()) {
-                run.run(session);
-                session.apply(context);
+            try(ExecutionContext.NewSession newContext = context.newSession()) {
+                run.run(newContext.getSession());
+                newContext.apply();
             }
         } else
             run.run(creator);

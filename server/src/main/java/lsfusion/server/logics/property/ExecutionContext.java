@@ -382,9 +382,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getLogicsInstance().getRmiManager();
     }
 
-    public DataSession createSession() throws SQLException {
-        return getSession().createSession();
-//        return getDbManager().createSession();
+    public static class NewSession<P extends PropertyInterface> extends ExecutionContext<P> implements AutoCloseable {
+
+        public NewSession(ImMap<P, ? extends ObjectValue> keys, DataObject pushedAddObject, DataSession session, ScheduledExecutorService executorService, FormEnvironment<P> form, ExecutionStack stack) {
+            super(keys, pushedAddObject, session, executorService, form, stack);
+        }
+
+        @Override
+        public void close() throws SQLException {
+            ((DataSession)getEnv()).close();
+        }
+    }
+    public NewSession<P> newSession() throws SQLException { // the same as override, bu 
+        return newSession(getSession().sql);
+    }
+    public NewSession<P> newSession(SQLSession sql) throws SQLException { // the same as override, bu 
+        return new NewSession<>(keys, pushedAddObject, getSession().createSession(sql), executorService, form, stack);
     }
 
     public GroupObjectInstance getChangingPropertyToDraw() {
@@ -447,12 +460,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return checkApply(getBL());
     }
 
-    // same session action calls (not recommended)
+    // action calls
     public String applyMessage() throws SQLException, SQLHandledException {
         return getEnv().applyMessage(getBL(), stack, this);
     }
 
-    // same session action calls (not recommended)
+    // action calls
     public boolean apply() throws SQLException, SQLHandledException {
         return getEnv().apply(getBL(), stack, this);
     }
@@ -463,10 +476,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         getEnv().cancel(stack, keep);
-    }
-
-    public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<>(keys, pushedAddObject, newEnv, executorService, form, stack);
     }
 
     public ExecutionContext<P> override(ScheduledExecutorService newExecutorService) {

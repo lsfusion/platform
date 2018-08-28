@@ -51,9 +51,8 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
                     context.delayUserInterfaction(new MessageClientAction(result, localize("{logics.service.db}")));
             }});
 
-        DataSession dataSession = context.getSession();
-        context.getBL().recalculateStats(dataSession);
-        dataSession.apply(context);
+        context.getBL().recalculateStats(context.getSession());
+        context.apply();
 
         context.delayUserInterfaction(new MessageClientAction(localize("{logics.service.db.completed}"), localize("{logics.service.db}")));
     }

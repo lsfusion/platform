@@ -12,7 +12,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.service.ServiceDBActionProperty;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -39,10 +38,10 @@ public class RecalculateTableStatsActionProperty extends ScriptingActionProperty
         if (!disableStats) {
             ServiceDBActionProperty.run(context, new RunService() {
                         public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                            try (DataSession dataSession = context.createSession()) {
+                            try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
                                 context.getBL().LM.tableFactory.getImplementTablesMap().get(tableName).recalculateStat(context.getBL().reflectionLM,
-                                        disableStatsTableColumnSet, dataSession);
-                                dataSession.apply(context);
+                                        disableStatsTableColumnSet, newContext.getSession());
+                                newContext.apply();
                             }
                         }
                     }
