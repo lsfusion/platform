@@ -498,9 +498,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         application = findNavigatorElement("application");
 
-        system = findNavigatorElement("configuration");
+        system = findNavigatorElement("system");
 
-        logs = findNavigatorElement("systemEvents");
+        logs = findNavigatorElement("logs");
     }
 
 

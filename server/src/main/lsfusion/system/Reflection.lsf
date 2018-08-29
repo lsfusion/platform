@@ -517,8 +517,8 @@ DESIGN actions {
 }
 
 NAVIGATOR {
-    configuration {
-        NEW FOLDER metadata '{navigator.metadata}' AFTER systemEvents {
+    system {
+        NEW FOLDER metadata '{navigator.metadata}' AFTER logs {
             NEW Reflection.physicalModel;
             NEW Reflection.navigatorElements;
             NEW Reflection.forms;
