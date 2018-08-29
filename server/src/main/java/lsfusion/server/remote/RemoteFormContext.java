@@ -32,20 +32,17 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.form;
     }
 
-    public String popLogMessage() {
-        return form.getLogMessage();
-    }
-
     @Override
     public LogInfo getLogInfo() {
         return form.getLogInfo();
     }
 
-    public void delayUserInteraction(ClientAction action) {
+    public void aspectDelayUserInteraction(ClientAction action, String message) {
         form.delayUserInteraction(action);
     }
 
-    public Object[] requestUserInteraction(ClientAction... actions) {
+    @Override
+    protected Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
         return form.requestUserInteraction(actions);
     }
 

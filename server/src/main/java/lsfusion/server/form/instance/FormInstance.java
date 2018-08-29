@@ -659,7 +659,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 changeUserGOPreferences(preferences, dataSession, groupObjectObject, userObject);
             }
             
-            dataSession.apply(BL, stack);
+            dataSession.applyException(BL, stack);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -1264,7 +1264,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 if (grouping.propertyGroupings == null) { // признак удаления группировки
                     dataSession.changeClass(groupingObject, null);
-                    dataSession.apply(BL, stack);
+                    dataSession.applyException(BL, stack);
                     return;
                 }
             } else {
@@ -1290,7 +1290,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
                 }
             }
-            dataSession.apply(BL, stack);
+            dataSession.applyException(BL, stack);
         }
     }
 
@@ -1326,7 +1326,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
     
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+    // formApply "injected" in every apply
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
         assert sessionEventFormEnv == null || this == sessionEventFormEnv;
 
         stack = new FormStack(stack);
@@ -1336,7 +1337,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if(BL.LM.isRequestCanceled(this))
             return false;
 
-        boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this);
+        boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage);
         
         if (!succeeded)
             return false;
@@ -2403,12 +2404,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // close делать не надо, так как по умолчанию добавляется обработчик события formOk
     public void formQueryOk(ExecutionStack stack) throws SQLException, SQLHandledException {
         fireQueryOk(stack);
-    }
-
-    public void formApply(ExecutionContext context) throws SQLException, SQLHandledException {
-        assert context.getEnv() == this;
-
-        context.apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {

@@ -54,7 +54,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask<Object> { //
                     getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
                 }
             }
-            session.apply(getBL(), stack);
+            session.applyException(getBL(), stack);
         }
     }
 

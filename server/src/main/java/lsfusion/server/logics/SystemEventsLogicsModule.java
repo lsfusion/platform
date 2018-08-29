@@ -237,7 +237,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             lsfTraceException.change(lsfStack, session, exceptionObject);
             dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
-            session.apply(bl, stack);
+            session.applyException(bl, stack);
         }
     }
 

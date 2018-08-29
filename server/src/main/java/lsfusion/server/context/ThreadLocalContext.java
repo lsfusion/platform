@@ -2,13 +2,13 @@ package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.WrapperContext;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
@@ -207,7 +207,7 @@ public class ThreadLocalContext {
     public static void pushLogMessage() {
         get().pushLogMessage();
     }
-    public static String popLogMessage() {
+    public static ImList<AbstractContext.LogMessage> popLogMessage() {
         return get().popLogMessage();
     }
 
@@ -410,17 +410,6 @@ public class ThreadLocalContext {
     }
     public static void aspectAfterContext() {
         aspectAfter(null, true, ExecutorFactoryThreadInfo.instance);
-    }
-
-    public static Context wrapContext(WrapperContext context) {
-        Context prevContext = get();
-        context.setContext(prevContext);
-        aspectBefore(context, false, ExecutorFactoryThreadInfo.instance, getStack(), SyncType.SYNC);
-        return prevContext;
-    }
-
-    public static void unwrapContext(Context prevContext) {
-        aspectAfter(prevContext, false, ExecutorFactoryThreadInfo.instance);
     }
 
     public static String localize(LocalizedString s) {

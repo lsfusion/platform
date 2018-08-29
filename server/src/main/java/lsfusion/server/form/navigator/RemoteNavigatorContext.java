@@ -26,21 +26,17 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.logicsInstance;
     }
 
-    public String popLogMessage() {
-        return navigator.getLogMessage();
-    }
-
     @Override
     public LogInfo getLogInfo() {
         return navigator.getLogInfo();
     }
 
-    public void delayUserInteraction(ClientAction action) {
+    public void aspectDelayUserInteraction(ClientAction action, String message) {
         navigator.delayUserInteraction(action);
     }
 
     @Override
-    public Object[] requestUserInteraction(final ClientAction... actions) {
+    protected Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
         return navigator.requestUserInteraction(actions);
     }
 

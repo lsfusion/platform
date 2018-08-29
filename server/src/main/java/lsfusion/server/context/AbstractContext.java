@@ -1,15 +1,12 @@
 package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
-import lsfusion.base.col.MapFact;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
-import lsfusion.interop.action.ChooseClassClientAction;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.FormClientAction;
-import lsfusion.interop.action.RequestUserInputClientAction;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.UserInputResult;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
@@ -34,8 +31,6 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.stack.ExecutionStackAspect;
-import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -43,7 +38,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static lsfusion.base.BaseUtils.padLeft;
+import static lsfusion.base.BaseUtils.replicate;
 import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.server.ServerLoggers.systemLogger;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class AbstractContext implements Context {
@@ -108,19 +106,148 @@ public abstract class AbstractContext implements Context {
             throw Throwables.propagate(e);
         }
     }
+    
+    public static class LogMessage {
+        public final long time;
+        public final String message;
+        public final String lsfStackTrace;
+
+        public LogMessage(String message) {
+            this(message, null);
+        }
+
+        public LogMessage(String message, String lsfStackTrace) {
+            this.message = message;
+            this.lsfStackTrace = lsfStackTrace;
+            this.time = System.currentTimeMillis();
+        }
+    }
+
+    private static class MessageLogger {
+        private final List<LogMessage> messages = new ArrayList<>();
+        private final Stack<Integer> startIndexes = new Stack<>();
+        
+        public void add(String message) {
+            messages.add(new LogMessage(message));
+        }
+        
+        public void push() {
+            startIndexes.push(messages.size());
+        }
+
+        public ImList<LogMessage> pop() {
+            int index = startIndexes.pop();
+            return ListFact.fromJavaList(messages.subList(index, messages.size()));
+        }
+        
+        public boolean isEmpty() {
+            return startIndexes.isEmpty();
+        }
+    }
+
+    private ThreadLocal<MessageLogger> logMessage = new ThreadLocal<>();
 
     @Override
     public void pushLogMessage() {
+        MessageLogger logMessages = logMessage.get();
+        if(logMessages == null) {
+            logMessages = new MessageLogger();
+            logMessage.set(logMessages);
+        }
+        logMessages.push();
     }
 
     @Override
-    public String popLogMessage() {
-        throw new UnsupportedOperationException("popLogMessage is not supported");
+    public ImList<LogMessage> popLogMessage() {
+        MessageLogger logMessages = logMessage.get();
+        ImList<LogMessage> result = logMessages.pop();
+        if(logMessages.isEmpty())
+            logMessage.remove();
+        return result;
+    }
+
+    public static String getMessage(ClientAction action) {
+        if (action instanceof LogMessageClientAction) {
+            LogMessageClientAction logAction = (LogMessageClientAction) action;
+            return logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data);
+        } else if (action instanceof MessageClientAction) {
+            MessageClientAction msgAction = (MessageClientAction) action;
+            return msgAction.message;
+        }
+//        else if (action instanceof ConfirmClientAction) {
+//            ConfirmClientAction confirmAction = (ConfirmClientAction) action;
+//            return confirmAction.message;
+//        }
+        return null;
+    }
+
+    public static String errorDataToTextTable(List<String> titles, List<List<String>> data) {
+        if (titles.size() == 0) {
+            return "";
+        }
+
+        int rCount = data.size() + 1;
+        int cCount = titles.size();
+
+        ArrayList<List<String>> all = new ArrayList<>();
+        all.add(titles);
+        all.addAll(data);
+
+        int columnWidths[] = new int[cCount];
+        for (int i = 0; i < rCount; ++i) {
+            List<String> rowData = all.get(i);
+            for (int j = 0; j < cCount; ++j) {
+                String cellText = rowData.get(j);
+                columnWidths[j] = Math.max(columnWidths[j], cellText == null ? 0 : cellText.trim().length());
+            }
+        }
+
+        int tableWidth = cCount + 1; //рамки
+        for (int j = 0; j < cCount; ++j) {
+            tableWidth += columnWidths[j];
+        }
+
+        String br = replicate('-', tableWidth) + "\n";
+
+        StringBuilder result = new StringBuilder(br);
+        for (int i = 0; i < rCount; ++i) {
+            List<String> rowData = all.get(i);
+            result.append("|");
+            for (int j = 0; j < cCount; ++j) {
+                String cellText = rowData.get(j);
+                result.append(padLeft(cellText, columnWidths[j])).append("|");
+            }
+            result.append("\n");
+            if (i == 0) {
+                result.append(br);
+            }
+        }
+        result.append(br);
+
+        return result.toString();
+    }
+
+    private String processClientAction(ClientAction action) {
+        String message = getMessage(action);
+        if(message != null) {
+            MessageLogger messageLogger = logMessage.get();
+            if(messageLogger != null)
+                messageLogger.add(message);
+            return message;
+        }
+        return null;
+    }
+
+    private String[] processClientActions(ClientAction[] actions) {
+        String[] messages = new String[actions.length];
+        for (int i = 0; i < actions.length; i++)
+            messages[i] = processClientAction(actions[i]);
+        return messages;
     }
 
     @Override
     public void delayUserInteraction(ClientAction action) {
-        throw new UnsupportedOperationException("delayUserInteraction is not supported");
+        aspectDelayUserInteraction(action, processClientAction(action));
     }
 
     @Override
@@ -129,13 +256,17 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
-    public boolean canBeProcessed() {
-        return false;
+    public Object[] requestUserInteraction(ClientAction... actions) {
+        return aspectRequestUserInteraction(actions, processClientActions(actions));
     }
 
+    protected abstract void aspectDelayUserInteraction(ClientAction action, String message);
+
+    protected abstract Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages);
+
     @Override
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        throw new UnsupportedOperationException("requestUserInteraction is not supported");
+    public boolean canBeProcessed() {
+        return false;
     }
 
     public abstract SecurityPolicy getSecurityPolicy();

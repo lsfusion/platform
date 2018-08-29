@@ -30,34 +30,26 @@ public class ThreadUtils {
     }
 
     public static void interruptThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
-        interruptThread(dbManager.getStopSql(), thread);
-    }
-
-    public static void interruptThread(DBManager dbManager, Long threadId, Future future) throws SQLException, SQLHandledException {
-        interruptThread(dbManager.getStopSql(), threadId, future);
-    }
-
-    public static void interruptThread(SQLSession sqlSession, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
-            SQLSession.cancelExecutingStatement(sqlSession, thread.getId(), true);
+            SQLSession.cancelExecutingStatement(dbManager, thread.getId(), true);
             thread.interrupt();
         }
     }
 
-    public static void interruptThread(SQLSession sqlSession, Long threadId, Future future) throws SQLException, SQLHandledException {
+    public static void interruptThread(DBManager dbManager, Long threadId, Future future) throws SQLException, SQLHandledException {
         if(threadId != null)
-            SQLSession.cancelExecutingStatement(sqlSession, threadId, true);
+            SQLSession.cancelExecutingStatement(dbManager, threadId, true);
         future.cancel(true);
     }
 
     public static void cancelThread(Context context, Thread thread) throws SQLException, SQLHandledException {
-        cancelThread(context.getLogicsInstance().getDbManager().getStopSql(), thread);
+        cancelThread(context.getLogicsInstance().getDbManager(), thread);
     }
 
-    public static void cancelThread(SQLSession session, Thread thread) throws SQLException, SQLHandledException {
+    public static void cancelThread(DBManager dbManager, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null)
-            SQLSession.cancelExecutingStatement(session, thread.getId(), false);
+            SQLSession.cancelExecutingStatement(dbManager, thread.getId(), false);
     }
     public static ThreadGroup getRootThreadGroup( ) {
         ThreadGroup tg = Thread.currentThread( ).getThreadGroup( );

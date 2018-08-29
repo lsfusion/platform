@@ -225,10 +225,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    String getLogMessage() {
-        return currentInvocation.getLogMessage();
-    }
-
     public LogInfo getLogInfo() {
         try {
             return logInfo;
@@ -538,7 +534,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             country = (String) businessLogics.authenticationLM.userCountry.read(session, user);
             timeZone = (String) businessLogics.authenticationLM.userTimeZone.read(session, user);
             twoDigitYearStart = (Integer) businessLogics.authenticationLM.userTwoDigitYearStart.read(session, user);
-            session.apply(businessLogics, stack);
+            session.applyException(businessLogics, stack);
         } catch (SQLException | SQLHandledException ignored) {
         }
         this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart);
@@ -590,7 +586,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     int count = 1 + nvl((Integer) businessLogics.systemEventsLM.connectionFormCount.read(session, connection, formObject), 0);
                     businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
                 }
-                session.apply(businessLogics, stack);
+                session.applyException(businessLogics, stack);
             }
         } catch (Exception e) {
             logger.error("UpdateOpenFormCount error: ", e);
@@ -612,7 +608,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     businessLogics.authenticationLM.lastComputerCustomUser.change(userActivity.getValue().computer, session, customUserObject);
 
                 }
-                session.apply(businessLogics, stack);
+                session.applyException(businessLogics, stack);
             }
         } catch (Exception e) {
             logger.error("UpdateUserLastActivity error: ", e);
@@ -638,7 +634,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                         }
                     }
                 }
-                session.apply(businessLogics, stack);
+                session.applyException(businessLogics, stack);
             }
         } catch (Exception e) {
             logger.error("UpdatePingInfo error: ", e);
@@ -791,7 +787,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try {
                 try(DataSession session = createSession()) {
                     businessLogics.authenticationLM.deliveredNotificationAction.execute(session, stack, user);
-                    session.apply(businessLogics, stack);
+                    session.applyException(businessLogics, stack);
                 }
                 EnvStackRunnable notification = notificationsMap.getNotification(idNotification);
                 if(notification != null)

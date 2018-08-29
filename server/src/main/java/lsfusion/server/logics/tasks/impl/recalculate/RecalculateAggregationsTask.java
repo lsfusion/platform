@@ -33,7 +33,7 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
                     element.recalculateAggregation(getBL(), session, sql, getBL().LM.baseClass);
                 }
             });
-            session.apply(getBL(), stack);
+            session.applyException(getBL(), stack);
         }
     }
 

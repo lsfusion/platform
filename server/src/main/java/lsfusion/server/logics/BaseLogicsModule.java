@@ -271,6 +271,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityLazy
+    public LCP<?> getApplyMessage() {
+        try {
+            return findProperty("applyMessage[]");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityLazy
     public LAP<?> getEmpty() {
         try {
             return findAction("empty[]");

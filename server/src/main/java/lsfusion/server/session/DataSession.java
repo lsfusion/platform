@@ -20,6 +20,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -29,7 +30,6 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
@@ -1700,19 +1700,24 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return tableUsage.getCount();
         return classChanges.getMaxDataUsed(prop);
     }
-
-    // inner / external server calls
+    
+    // inner / external server calls (not recommended)
     public void apply(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        apply(BL, stack, null);
+        apply(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     // inner / external server calls
     public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        return applyMessage(BL, stack, null);
+        return applyMessage(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
+    }
+
+    // inner / external server calls
+    public void applyException(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+        applyException(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     @AssertSynchronized
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyActions.isEmpty())
             return true;
 
@@ -1755,7 +1760,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         clearDataHints(getOwner()); // важно, что после updateSourceChanges, потому как updateSourceChanges тоже может хинты создать (соответственно нарушится checkSessionCount -> Unique violation)
-        return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
+
+        if(applyMessage != null)
+            ThreadLocalContext.pushLogMessage();
+        try {
+            return transactApply(BL, stack, interaction, new HashMap<String, Integer>(), 0, applyActions, keepProps, false, System.currentTimeMillis());
+        } finally {
+            if(applyMessage != null)
+                applyMessage.set(getLogMessage(ThreadLocalContext.popLogMessage()));
+        }
+    }
+    
+    private static String getLogMessage(ImList<AbstractContext.LogMessage> messages) {
+        StringBuilder logBuilder = new StringBuilder();
+        for(AbstractContext.LogMessage message : messages) {
+            if (logBuilder.length() > 0) 
+                logBuilder.append('\n');
+            logBuilder.append(message.message);
+        }
+        return logBuilder.toString();
     }
 
     public void logSession(BusinessLogics<?> BL, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
@@ -1887,7 +1910,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                                     Thread.sleep((long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000));
                                     ServerLoggers.sqlHandLogger.info("Sleep ended after conflict updates : " + attempts);
                                 } catch (InterruptedException e) {
-                                    ThreadUtils.interruptThread(sql, Thread.currentThread()); // тут SQL
+                                    ThreadUtils.interruptThread(BL.getDbManager(), Thread.currentThread());
                                 }
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {
