@@ -536,7 +536,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
                 if(exception != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(String.valueOf(exception) + "\n" + ExceptionUtils.getStackTrace(exception), ExecutionStackAspect.getExceptionStackString()));
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(String.valueOf(exception) + "\n" + ExceptionUtils.getStackTrace(exception), true, ExecutionStackAspect.getExceptionStackString()));
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
             }
@@ -602,6 +602,8 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             String lsfStack = logMessage.lsfStackTrace;
             if(lsfStack != null)
                 BL.schedulerLM.lsfStackScheduledClientTaskLog.change(lsfStack, session, clientTaskLog);
+            if(logMessage.failed)
+                BL.schedulerLM.failedScheduledClientTaskLog.change(true, session, clientTaskLog);
             BL.schedulerLM.dateScheduledClientTaskLog.change(new Timestamp(logMessage.time), session, clientTaskLog);
         }
     }
