@@ -78,6 +78,7 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
 scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE INDEXED;
 message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
+failed 'Ошибка'= DATA BOOLEAN (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
@@ -140,7 +141,7 @@ FORM scheduledTask 'Задания'
         FILTER 'Ошибка или сообщение' exceptionOccurred(tl) OR isMessages(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
-    PROPERTIES (ctl) READONLY message, lsfStack SHOWIF lsfStack(ctl), date
+    PROPERTIES (ctl) READONLY message, failed, date, lsfStack
     
     OBJECTS dow=DOW
     PROPERTIES (dow) number, staticCaption 

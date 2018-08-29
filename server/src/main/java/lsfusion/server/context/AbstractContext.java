@@ -110,14 +110,16 @@ public abstract class AbstractContext implements Context {
     public static class LogMessage {
         public final long time;
         public final String message;
+        public final boolean failed;
         public final String lsfStackTrace;
 
-        public LogMessage(String message) {
-            this(message, null);
+        public LogMessage(String message, boolean failed) {
+            this(message, failed, null);
         }
 
-        public LogMessage(String message, String lsfStackTrace) {
+        public LogMessage(String message, boolean failed, String lsfStackTrace) {
             this.message = message;
+            this.failed = failed;
             this.lsfStackTrace = lsfStackTrace;
             this.time = System.currentTimeMillis();
         }
@@ -127,8 +129,8 @@ public abstract class AbstractContext implements Context {
         private final List<LogMessage> messages = new ArrayList<>();
         private final Stack<Integer> startIndexes = new Stack<>();
         
-        public void add(String message) {
-            messages.add(new LogMessage(message));
+        public void add(String message, boolean failed) {
+            messages.add(new LogMessage(message, failed));
         }
         
         public void push() {
@@ -232,7 +234,7 @@ public abstract class AbstractContext implements Context {
         if(message != null) {
             MessageLogger messageLogger = logMessage.get();
             if(messageLogger != null)
-                messageLogger.add(message);
+                messageLogger.add(message, action instanceof LogMessageClientAction ? ((LogMessageClientAction) action).failed : false);
             return message;
         }
         return null;
