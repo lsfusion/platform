@@ -1,10 +1,6 @@
 package lsfusion.server.context;
 
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ConfirmClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -19,8 +15,6 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.padLeft;
-import static lsfusion.base.BaseUtils.replicate;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class LogicsInstanceContext extends AbstractContext {

@@ -1,6 +1,6 @@
 package lsfusion.server.logics.tasks.impl.recalculate;
 
-import lsfusion.interop.exceptions.LogMessageLogicsException;
+import lsfusion.interop.exceptions.ApplyCanceledException;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -35,7 +35,7 @@ public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
                 session.resolve(element, stack);
                 session.applyException(getBL(), stack);
             }
-        } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
+        } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
             serviceLogger.info(e.getMessage());
         }
     }

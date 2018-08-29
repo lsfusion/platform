@@ -18,7 +18,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.event.IDaemonTask;
-import lsfusion.interop.exceptions.LogMessageLogicsException;
+import lsfusion.interop.exceptions.ApplyCanceledException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
@@ -1912,7 +1912,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                                 ((DataSession) session).resolve(action, stack);
                             }
                         });
-                    } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
+                    } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
                         serviceLogger.info(e.getMessage());
                     }
                     long time = System.currentTimeMillis() - start;
