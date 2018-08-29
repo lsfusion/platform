@@ -5,10 +5,9 @@ import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.exceptions.LogMessageLogicsException;
+import lsfusion.interop.exceptions.ApplyCanceledException;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.context.ExecutionStack;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.MutableClosedObject;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -76,7 +75,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public void applyException(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         String message = applyMessage(BL, stack, interaction, applyActions, keepProps, sessionEventFormEnv);
         if(message != null)
-            throw new LogMessageLogicsException(message);
+            throw new ApplyCanceledException(message);
     }
 
     // if canceled return message
