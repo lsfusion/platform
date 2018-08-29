@@ -6,6 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ThrowableWithStack;
 
@@ -45,16 +46,6 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     private Object[] actionResults;
     private Throwable clientThrowable;
 
-    public final String getLogMessage() {
-        String result = "";
-        for (ClientAction action : delayedActions) {
-            if (action instanceof LogMessageClientAction) {
-                result = (result.length() == 0 ? "" : result + '\n') + ((LogMessageClientAction) action).message;
-            }
-        }
-        return result;
-    } 
-    
     /**
      * рабочий поток
      */

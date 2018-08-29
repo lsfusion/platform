@@ -20,7 +20,8 @@ GROUP recognize 'Идентифицирующие свойства' : base;
 GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 
-canceled 'Canceled' = DATA LOCAL BOOLEAN ();
+canceled = DATA LOCAL BOOLEAN ();
+applyMessage = DATA LOCAL TEXT ();
 empty()  { };
 empty(Object o)  { };
 

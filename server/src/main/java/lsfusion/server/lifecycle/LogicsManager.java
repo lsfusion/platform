@@ -29,6 +29,6 @@ public abstract class LogicsManager extends LifecycleAdapter {
         apply(session, getStack());
     }
     protected void apply(DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
-        session.apply(getBusinessLogics(), stack);
+        session.applyException(getBusinessLogics(), stack);
     }
 }

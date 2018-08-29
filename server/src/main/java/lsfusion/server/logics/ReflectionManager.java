@@ -802,7 +802,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if(dbManager.needExtraUpdateStats) {
                 try (DataSession session = dbManager.createSession()) {
                     dbManager.updateStats(session.sql);
-                    session.apply(businessLogics, getStack());
+                    session.applyException(businessLogics, getStack());
                 }
             }
 

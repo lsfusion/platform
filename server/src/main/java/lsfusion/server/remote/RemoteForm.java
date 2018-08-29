@@ -1038,10 +1038,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return (Long) form.session.computer.getCurrentComputer().getValue();
     }
 
-    String getLogMessage() {
-        return currentInvocation.getLogMessage();
-    }
-    
     public LogInfo getLogInfo() {
         return form.getLogInfo();
     }

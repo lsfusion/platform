@@ -1,5 +1,6 @@
 package lsfusion.server.context;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
@@ -48,7 +49,7 @@ public interface Context {
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();
-    String popLogMessage();
+    ImList<AbstractContext.LogMessage> popLogMessage();
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);

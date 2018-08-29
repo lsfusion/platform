@@ -42,7 +42,8 @@ public class FormApplyActionProperty extends FormFlowActionProperty {
 
 
     protected void executeForm(FormInstance form, ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        form.formApply(context);
+        assert context.getEnv() == form;
+        context.apply();
     }
 
     @Override

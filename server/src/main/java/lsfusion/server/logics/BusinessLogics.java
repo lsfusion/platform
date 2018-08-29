@@ -1992,7 +1992,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try(DataSession session = getDbManager().createSession()) {
             if(reflectionLM.hasNotNullQuantity.read(session) == null) {
                 recalculateStats(session);
-                session.apply(this, ThreadLocalContext.getStack());
+                session.applyException(this, ThreadLocalContext.getStack());
             }
         } catch (SQLException | SQLHandledException e) {
             ServerLoggers.serviceLogger.error("FirstRecalculateStats Error: ", e);

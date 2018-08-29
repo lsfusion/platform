@@ -33,7 +33,7 @@ public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
         try {
             try (DataSession session = getDbManager().createSession()) {
                 session.resolve(element, stack);
-                session.apply(getBL(), stack);
+                session.applyException(getBL(), stack);
             }
         } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
             serviceLogger.info(e.getMessage());

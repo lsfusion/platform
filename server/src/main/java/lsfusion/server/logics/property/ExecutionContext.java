@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.Processor;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -462,16 +463,37 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     // action calls
     public String applyMessage() throws SQLException, SQLHandledException {
-        return getEnv().applyMessage(getBL(), stack, this);
+        return applyMessage(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
     }
 
     // action calls
     public boolean apply() throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), stack, this);
+        return apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
     }
 
+    // action calls
+    public void applyException() throws SQLException, SQLHandledException {
+        applyException(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
+    }
+
+    // action calls
+    public void applyException(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+        getEnv().applyException(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+    }
+
+    // action calls
+    public String applyMessage(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+        return getEnv().applyMessage(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+    }
+
+    // action calls
     public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv());
+    }
+
+    // action calls
+    public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, Result<String> applyMessage) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), stack, this, applyActions, keepProperties, getSessionEventFormEnv(), applyMessage);
     }
 
     public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {

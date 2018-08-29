@@ -1,9 +1,11 @@
 package lsfusion.server.session;
 
 import lsfusion.base.FunctionSet;
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.context.ThreadLocalContext;
@@ -51,23 +53,6 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return property.execute(new ExecutionContext<>(change, pushAddObject, this, null, formEnv, stack));
     }
 
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        ThreadLocalContext.pushLogMessage();
-        String logMessage = null;
-        try {
-            if (apply(BL, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null))
-                return null;
-        } finally {
-            logMessage = ThreadLocalContext.popLogMessage();
-        }
-        return logMessage;
-//            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
-    }
-
-    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return apply(BL, stack, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
-    }
-
     public void cancel(ExecutionStack stack) throws SQLException, SQLHandledException {
         cancel(stack, SetFact.<SessionDataProperty>EMPTY());
     }
@@ -80,7 +65,27 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
 
-    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv, Result<String> applyMessage) throws SQLException, SQLHandledException;
     
+    // no message needed
+    public boolean apply(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        return apply(BL, stack, interaction, applyActions, keepProperties, sessionEventFormEnv, null);
+    }
+
+    // if canceled throw exception with message
+    public void applyException(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        String message = applyMessage(BL, stack, interaction, applyActions, keepProps, sessionEventFormEnv);
+        if(message != null)
+            throw new LogMessageLogicsException(message);
+    }
+
+    // if canceled return message
+    public String applyMessage(BusinessLogics BL, ExecutionStack stack, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+        Result<String> message = new Result<>();
+        if (!apply(BL, stack, interaction, applyActions, keepProps, sessionEventFormEnv, message))
+            return message.result;
+        return null;
+    }
+
     public abstract void cancel(ExecutionStack stack, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 }

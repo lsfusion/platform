@@ -2134,6 +2134,16 @@ public class Settings implements Cloneable {
         this.closeFormDelay = closeFormDelay;
     }
 
+    private int waitSchedulerCanceledDelay = 5000;
+
+    public int getWaitSchedulerCanceledDelay() {
+        return waitSchedulerCanceledDelay;
+    }
+
+    public void setWaitSchedulerCanceledDelay(int waitSchedulerCanceledDelay) {
+        this.waitSchedulerCanceledDelay = waitSchedulerCanceledDelay;
+    }
+
     private boolean disableAsyncClose = false; // проблема в том что DataSession не синхронизирована (assertion, что синхронизация обеспечивается модальностью вызовов), а unreferenced нарушает этот assertion (и непонятно как ее обойти, да и не понятно имеет ли смысл)
     // та же проблема по идее с unreferenced
 

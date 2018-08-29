@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.FunctionSet;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -23,6 +24,7 @@ import java.sql.SQLException;
 public class ApplyActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> action;
     private final CalcProperty canceled;
+    private final CalcProperty applyMessage;
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
@@ -35,6 +37,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
 
         this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
         this.canceled = LM.getCanceled().property;
+        this.applyMessage = LM.getApplyMessage().property;
         
         finalizeInit();
     }
@@ -73,9 +76,10 @@ public class ApplyActionProperty extends KeepContextActionProperty {
             if (serializable)
                 DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
-            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties))
-                if (canceled != null)
-                    canceled.change(context, true);
+            Result<String> rApplyMessage = new Result<>(); 
+            if (!context.apply(action == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.<ActionPropertyValueImplement>singletonOrder(action.getValueImplement(context.getKeys(), context.getObjectInstances(), context.getFormAspectInstance())), keepSessionProperties, rApplyMessage)) // no need to change canceled property if apply succeeds, because it is not nested and is dropped automatically
+                canceled.change(context, true);
+            applyMessage.change(context, rApplyMessage.result);
         } finally {
             if (serializable)
                 DBManager.popTIL();

@@ -149,7 +149,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return executingStatement == null ? null : executingStatement.toString();
     }
 
-    public static void cancelExecutingStatement(SQLSession sqlSession, long processId, boolean interrupt) throws SQLException, SQLHandledException {
+    public static void cancelExecutingStatement(DBManager dbManager, long processId, boolean interrupt) throws SQLException, SQLHandledException {
+        SQLSession sqlSession = dbManager.getStopSql();
         if(sqlSession != null) {
             Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
             if(sqlProcessId != null) {

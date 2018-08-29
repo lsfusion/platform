@@ -1127,7 +1127,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
                 service.synchronize(true, false);
                 session.popVolatileStats();
-                session.apply(businessLogics, getStack());
+                session.applyException(businessLogics, getStack());
                 startLogger.info("synchronize" + (actions ? "Action" : "Property") + "Entities finished");
             }
         } catch (Exception e) {
@@ -1157,7 +1157,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         try(DataSession session = createSession(OperationOwner.unknown)) {
             KeyExpr keyExpr = new KeyExpr("key");
             session.changeClass(new ClassChange(keyExpr, keyExpr.isClass(businessLogics.reflectionLM.navigatorForm.getUpSet()), businessLogics.reflectionLM.navigatorAction));
-            session.apply(businessLogics, getStack());
+            session.applyException(businessLogics, getStack());
         }
     }
 

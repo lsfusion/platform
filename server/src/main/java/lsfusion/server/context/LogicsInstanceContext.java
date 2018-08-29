@@ -86,113 +86,25 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
-    public void delayUserInteraction(ClientAction action) {
-        if (!processClientAction(action)) {
-            super.delayUserInteraction(action);
+    public void aspectDelayUserInteraction(ClientAction action, String message) {
+        if(message != null)
+            systemLogger.info("Server message: " + message);
+        else
+            throw new UnsupportedOperationException("delayUserInteraction is not supported in server context, action : " + action.getClass());
+    }
+
+    @Override
+    protected Object[] aspectRequestUserInteraction(ClientAction[] actions, String[] messages) {
+        for (int i = 0; i < messages.length; i++) {
+            String message = messages[i];
+            if (message == null)
+                throw new UnsupportedOperationException("requestUserInteraction is not supported in server context, action : " + actions[i].getClass());
         }
+        return new Object[actions.length];
     }
 
     @Override
     public boolean canBeProcessed() {
         return true;
-    }
-
-    @Override
-    public Object[] requestUserInteraction(ClientAction... actions) {
-        for (ClientAction action : actions) {
-            if (!processClientAction(action)) {
-                throw new UnsupportedOperationException("requestUserInteraction is not supported for action" + (action == null ? "" : ": " + action.getClass()));
-            }
-        }
-        return new Object[actions.length];
-    }
-    
-    // так как applyMessage не может вызываться внутри applyMessage, стек не нужен
-    private ThreadLocal<StringBuilder> logMessage = new ThreadLocal<>(); 
-    
-    @Override
-    public void pushLogMessage() {
-        logMessage.set(new StringBuilder());
-    }
-
-    @Override
-    public String popLogMessage() {
-        String result = logMessage.get().toString();
-        logMessage.remove();
-        return result;
-    }
-
-    private boolean processClientAction(ClientAction action) {
-        if (action instanceof LogMessageClientAction) {
-            LogMessageClientAction logAction = (LogMessageClientAction) action;
-            StringBuilder logBuilder = logMessage.get();
-            if(logBuilder != null) {
-                if (logBuilder.length() > 0)
-                    logBuilder.append('\n');
-                logBuilder.append(logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
-            } else {
-                if (logAction.failed) {
-                    throw new LogMessageLogicsException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
-                } else {
-                    logger.error(logAction.message);
-                }
-            }
-            return true;
-        } else if (action instanceof MessageClientAction) {
-            MessageClientAction msgAction = (MessageClientAction) action;
-            systemLogger.info("Server message: " + msgAction.message);
-            return true;
-        } else if (action instanceof ConfirmClientAction) {
-            ConfirmClientAction confirmAction = (ConfirmClientAction) action;
-            systemLogger.info("Server message: " + confirmAction.message);
-            return true;
-        }
-        return false;
-    }
-
-    public static String errorDataToTextTable(List<String> titles, List<List<String>> data) {
-        if (titles.size() == 0) {
-            return "";
-        }
-
-        int rCount = data.size() + 1;
-        int cCount = titles.size();
-
-        ArrayList<List<String>> all = new ArrayList<>();
-        all.add(titles);
-        all.addAll(data);
-
-        int columnWidths[] = new int[cCount];
-        for (int i = 0; i < rCount; ++i) {
-            List<String> rowData = all.get(i);
-            for (int j = 0; j < cCount; ++j) {
-                String cellText = rowData.get(j);
-                columnWidths[j] = Math.max(columnWidths[j], cellText == null ? 0 : cellText.trim().length());
-            }
-        }
-
-        int tableWidth = cCount + 1; //рамки
-        for (int j = 0; j < cCount; ++j) {
-            tableWidth += columnWidths[j];
-        }
-
-        String br = replicate('-', tableWidth) + "\n";
-
-        StringBuilder result = new StringBuilder(br);
-        for (int i = 0; i < rCount; ++i) {
-            List<String> rowData = all.get(i);
-            result.append("|");
-            for (int j = 0; j < cCount; ++j) {
-                String cellText = rowData.get(j);
-                result.append(padLeft(cellText, columnWidths[j])).append("|");
-            }
-            result.append("\n");
-            if (i == 0) {
-                result.append(br);
-            }
-        }
-        result.append(br);
-
-        return result.toString();
     }
 }

@@ -180,7 +180,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
                 if (hashPassword != null &&
                         hashPassword.trim().substring(0, Math.min(hashPassword.trim().length(), minHashLengthValue)).equals(oldHashInput.substring(0, Math.min(oldHashInput.length(), minHashLengthValue)))) {
                     sha256PasswordCustomUser.change(newHashInput, session, userObject);
-                    session.apply(BL, stack);
+                    session.applyException(BL, stack);
                 } else {
                     authenticated = false;
                 }
