@@ -1093,7 +1093,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
-            session.apply(businessLogics, getStack());
+            session.applyException(businessLogics, getStack());
         }
     }
 
