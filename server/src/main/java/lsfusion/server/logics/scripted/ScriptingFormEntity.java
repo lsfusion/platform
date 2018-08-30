@@ -94,10 +94,20 @@ public class ScriptingFormEntity {
             if (groupObject.pageSize != null) {
                 groupObj.pageSize = groupObject.pageSize;
             }
-            
+
             if (groupObject.updateType != null) {
                 groupObj.updateType = groupObject.updateType;
             }
+
+            List<String> formObjectGroups = new ArrayList<>();
+            if (groupObject.formObjectGroup != null) {
+                AbstractGroup parent = LM.findGroup(groupObject.formObjectGroup);
+                while (parent != null && !parent.equals(LM.BL.LM.privateGroup)) {
+                    formObjectGroups.add(parent.getName());
+                    parent = parent.getParent();
+                }
+            }
+            form.putIntegrationObjectOptions(groupName, new IntegrationObjectOptions(formObjectGroups));
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
@@ -150,13 +160,13 @@ public class ScriptingFormEntity {
             return LM.findLCPByNameAndClasses(property.name, property.getSourceName(), classSets);
         }
     }
-    
+
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
         if (neighbour != null && neighbour.isInTree()) {
-            LM.getErrLog().emitGroupObjectInTreeAfterBeforeError(LM.getParser(), neighbour.getSID());    
+            LM.getErrLog().emitGroupObjectInTreeAfterBeforeError(LM.getParser(), neighbour.getSID());
         }
         group.setSID(groupName);
         form.addGroupObject(group,neighbour, isRightNeighbour, version);

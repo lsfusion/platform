@@ -15,19 +15,25 @@ public class ImportFormXMLIterator extends ImportFormIterator {
     private List<Object> children;
     private int i;
 
-    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot, Set<String> attrs) {
+    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot, Map<String, List<List<String>>> formObjectGroups,
+                                 Map<String, List<List<String>>> formPropertyGroups, Set<String> attrs) {
         Element root = keyValueRoot.second instanceof Attribute ? null : (Element) keyValueRoot.second;
         this.attrs = attrs;
         this.children = new ArrayList<>();
 
-        if(root != null) {
+        if (root != null) {
             for (Object child : ((Element) keyValueRoot.second).getChildren()) {
-                if (notLeaf(child)) {
-                    this.children.add(child);
+                List<Element> subChildren = getSubChildren(formObjectGroups, formPropertyGroups, child); //check formObjectGroups & formPropertyGroups
+                if (subChildren != null) {
+                    this.children.addAll(subChildren);
+                } else {
+                    if (notLeaf(child)) {
+                        this.children.add(child);
+                    }
                 }
             }
-            for(Object attribute : root.getAttributes()) {
-                if(attribute instanceof Attribute && attrs.contains(((Attribute) attribute).getName())) {
+            for (Object attribute : root.getAttributes()) {
+                if (attribute instanceof Attribute && attrs.contains(((Attribute) attribute).getName())) {
                     children.add(attribute);
                 }
             }
@@ -57,6 +63,71 @@ public class ImportFormXMLIterator extends ImportFormIterator {
 
     private boolean notLeaf(Object child) {
         return !(child instanceof Element && ((Element) child).getChildren().isEmpty() && attrs.contains(((Element) child).getName()));
+    }
+
+    private List<Element> getSubChildren(Map<String, List<List<String>>> formObjectGroups, Map<String, List<List<String>>> formPropertyGroups, Object child) {
+        //possible trouble if object and property has equal names and not equal groups
+        List<Element> result = null;
+        if (child instanceof Element) {
+            List<List<String>> formObjectGroupList = formObjectGroups.get(((Element) child).getName());
+            if (formObjectGroupList != null) {
+                for (List<String> formObjectGroupEntry : formObjectGroupList) {
+                    List<Element> subChildren = null;
+                    //order is important
+                    for (int i = 0; i < formObjectGroupEntry.size(); i++) {
+                        List<Element> currentSubChildren = new ArrayList<>();
+                        String subGroup = formObjectGroupEntry.get(i);
+                        if (subChildren == null) {
+                            currentSubChildren.addAll(getChildren((Element) child, subGroup));
+                        } else {
+                            for (Object subChild : subChildren) {
+                                currentSubChildren.addAll(getChildren((Element) subChild, subGroup));
+                            }
+                        }
+                        subChildren = currentSubChildren;
+                    }
+                    if (result == null)
+                        result = new ArrayList<>();
+                    if (subChildren != null)
+                        result.addAll(subChildren);
+                }
+            } else {
+                List<List<String>> formPropertyGroupList = formPropertyGroups.get(((Element) child).getName());
+                if (formPropertyGroupList != null) {
+                    for (List<String> formPropertyGroupEntry : formPropertyGroupList) {
+                        List<Element> subChildren = null;
+                        //order is important
+                        for (int i = 0; i < formPropertyGroupEntry.size(); i++) {
+                            List<Element> currentSubChildren = new ArrayList<>();
+                            String subGroup = formPropertyGroupEntry.get(i);
+                            if (subChildren == null) {
+                                currentSubChildren.addAll(getChildren((Element) child, subGroup));
+                            } else {
+                                for (Object subChild : subChildren) {
+                                    currentSubChildren.addAll(getChildren((Element) subChild, subGroup));
+                                }
+                            }
+                            subChildren = currentSubChildren;
+                        }
+                        if (result == null)
+                            result = new ArrayList<>();
+                        if (subChildren != null)
+                            result.addAll(subChildren);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private List<Element> getChildren(Element parent, String childName) {
+        List<Element> result = new ArrayList<>();
+        for (Object child : parent.getChildren()) {
+            if (child instanceof Element && ((Element) child).getName().equals(childName) && notLeaf(child)) {
+                result.add((Element) child);
+            }
+        }
+        return result;
     }
 
 }

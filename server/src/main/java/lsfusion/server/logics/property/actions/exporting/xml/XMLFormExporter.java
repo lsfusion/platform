@@ -19,8 +19,8 @@ import java.util.Set;
 public class XMLFormExporter extends HierarchicalFormExporter {
     private Set<String> attrs;
 
-    public XMLFormExporter(ReportGenerationData reportData, Set<String> attrs) {
-        super(reportData);
+    public XMLFormExporter(ReportGenerationData reportData, Map<String, List<String>> formObjectGroups, Map<String, List<String>> formPropertyGroups, Set<String> attrs) {
+        super(reportData, formObjectGroups, formPropertyGroups);
         this.attrs = attrs;
     }
 
@@ -57,20 +57,55 @@ public class XMLFormExporter extends HierarchicalFormExporter {
             }
         } else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
+                Element subParentElement = null;
                 for (AbstractNode childNode : child.getValue()) {
-                    if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
-                        if (childNode instanceof Leaf && attrs != null && (attrs.isEmpty() || attrs.contains(parentElement.getName()))) {
-                            parentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
+                    boolean isLeaf = childNode instanceof Leaf;
+                    if (!isLeaf || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
+                        List<String> groups = isLeaf ? formPropertyGroups.get(child.getKey()) : formObjectGroups.get(child.getKey());
+                        if(groups != null) {
+                            for (int i = groups.size() - 1; i >= 0; i--) {
+                                Element subElement = findChild(parentElement, groups.get(i));
+                                if (subElement == null) {
+                                    subElement = new Element(groups.get(i));
+                                    if (subParentElement == null) {
+                                        parentElement.addContent(subElement);
+                                    } else {
+                                        subParentElement.addContent(subElement);
+                                    }
+
+                                }
+                                subParentElement = subElement;
+                            }
+                        }
+                        if (isLeaf && attrs.contains(child.getKey())) {
+                            if(subParentElement != null) {
+                                subParentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
+                            } else {
+                                parentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
+                            }
                         } else {
                             Element element = new Element(child.getKey());
                             exportNode(element, childNode);
                             if (!element.getValue().isEmpty() || !element.getAttributes().isEmpty()) {
-                                parentElement.addContent(element);
+                                if(subParentElement != null) {
+                                    subParentElement.addContent(element);
+                                } else {
+                                    parentElement.addContent(element);
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    private Element findChild(Element parent, String child) {
+        Element result = null;
+        for (Object c : parent.getChildren()) {
+            if (((Element) c).getName().equals(child))
+                result = (Element) c;
+        }
+        return result;
     }
 }

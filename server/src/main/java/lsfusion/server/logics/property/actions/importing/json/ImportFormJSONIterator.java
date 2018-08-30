@@ -6,9 +6,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class ImportFormJSONIterator extends ImportFormIterator {
+
+    private Iterator<Pair<String, Object>> subChildrenIterator;
 
     private JSONObject objectRoot;
     private Iterator<String> objectIterator;
@@ -17,11 +22,14 @@ public class ImportFormJSONIterator extends ImportFormIterator {
     private String arrayKey;
     private int i;
 
-    ImportFormJSONIterator(Pair<String, Object> keyValueRoot) {
-        if(keyValueRoot.second instanceof JSONObject) {
-            this.objectRoot = (JSONObject) keyValueRoot.second;
-            objectIterator = ((JSONObject)keyValueRoot.second).keys();
-        } else if(keyValueRoot.second instanceof JSONArray) {
+    ImportFormJSONIterator(Pair<String, Object> keyValueRoot, Map<String, List<List<String>>> formObjectGroups, Map<String, List<List<String>>> formPropertyGroups) {
+        if (keyValueRoot.second instanceof JSONObject) {
+            this.subChildrenIterator = getSubChildrenIterator(formObjectGroups, formPropertyGroups, keyValueRoot.first, (JSONObject) keyValueRoot.second);
+            if (subChildrenIterator == null) {
+                this.objectRoot = (JSONObject) keyValueRoot.second;
+                this.objectIterator = ((JSONObject) keyValueRoot.second).keys();
+            }
+        } else if (keyValueRoot.second instanceof JSONArray) {
             this.arrayRoot = (JSONArray) keyValueRoot.second;
             this.arrayKey = keyValueRoot.first;
             this.i = 0;
@@ -31,7 +39,9 @@ public class ImportFormJSONIterator extends ImportFormIterator {
 
     @Override
     public boolean hasNext() {
-        if (objectRoot != null)
+        if (subChildrenIterator != null)
+            return subChildrenIterator.hasNext();
+        else if (objectRoot != null)
             return objectIterator.hasNext();
         else
             return arrayRoot != null && arrayRoot.length() > i;
@@ -40,7 +50,10 @@ public class ImportFormJSONIterator extends ImportFormIterator {
     @Override
     public Pair<String, Object> next() {
         try {
-            if (objectRoot != null) {
+            if (subChildrenIterator != null) {
+                Pair<String, Object> entry = subChildrenIterator.next();
+                return Pair.create(entry.first, (Object) entry.second);
+            } else if (objectRoot != null) {
                 String key = objectIterator.next();
                 Object value = getChild(objectRoot, key);
                 return Pair.create(key, value);
@@ -64,5 +77,86 @@ public class ImportFormJSONIterator extends ImportFormIterator {
         } catch (JSONException e) {
             return null;
         }
+    }
+
+    private Iterator<Pair<String, Object>> getSubChildrenIterator(Map<String, List<List<String>>> formObjectGroups, Map<String, List<List<String>>> formPropertyGroups, String key, JSONObject child) {
+        //possible trouble if object and property has equal names and not equal groups
+        List<Pair<String, Object>> result = null;
+        List<List<String>> formObjectGroupList = formObjectGroups.get(key);
+        if (formObjectGroupList != null) {
+            for (List<String> formObjectGroupEntry : formObjectGroupList) {
+                List<Pair<String, Object>> subChildren = null;
+                //order is important
+                for (int i = 0; i < formObjectGroupEntry.size(); i++) {
+                    List<Pair<String, Object>> currentSubChildren = new ArrayList<>();
+                    String subGroup = formObjectGroupEntry.get(i);
+                    if (subChildren == null) {
+                        currentSubChildren.addAll(getChildren(child, subGroup));
+                    } else {
+                        for (Object subChild : subChildren) {
+                            currentSubChildren.addAll(getChildren((JSONObject) subChild, subGroup));
+                        }
+                    }
+                    subChildren = currentSubChildren;
+                }
+                if (result == null)
+                    result = new ArrayList<>();
+                if (subChildren != null)
+                    result.addAll(subChildren);
+            }
+        } else {
+            List<List<String>> formPropertyGroupList = formPropertyGroups.get(key);
+            if (formPropertyGroupList != null) {
+                for (List<String> formPropertyGroupEntry : formPropertyGroupList) {
+                    List<Pair<String, Object>> subChildren = null;
+                    //order is important
+                    for (int i = 0; i < formPropertyGroupEntry.size(); i++) {
+                        List<Pair<String, Object>> currentSubChildren = new ArrayList<>();
+                        String subGroup = formPropertyGroupEntry.get(i);
+                        if (subChildren == null) {
+                            currentSubChildren.addAll(getChildren(child, subGroup));
+                        } else {
+                            for (Pair<String, Object> subChild : subChildren) {
+                                if(subChild.second instanceof JSONObject) {
+                                    currentSubChildren.addAll(getChildren((JSONObject) subChild.second, subGroup));
+                                }
+                            }
+                        }
+                        subChildren = currentSubChildren;
+                    }
+                    if (result == null)
+                        result = new ArrayList<>();
+                    if (subChildren != null)
+                        result.addAll(subChildren);
+                }
+            }
+        }
+        return result != null ? result.iterator() : null;
+    }
+
+    private List<Pair<String, Object>> getChildren(JSONObject parent, String childName) {
+        List<Pair<String, Object>> result = new ArrayList<>();
+        Iterator objectIterator = parent.keys();
+        while (objectIterator.hasNext()) {
+            String key = (String) objectIterator.next();
+            Object object = getChild(parent, key);
+            if (key.equals(childName)) {
+                if (object instanceof JSONObject)
+                    result.add(Pair.create(key, object));
+                else if (object instanceof JSONArray) {
+                    for (int i = 0; i < ((JSONArray) object).length(); i++) {
+                        try {
+                            Object child = ((JSONArray) object).get(i);
+                            if (child instanceof JSONObject)
+                                result.add(Pair.create(key, child));
+                        } catch (JSONException ignored) {
+                        }
+                    }
+                } else if(object instanceof String)
+                    result.add(Pair.create(key, object));
+            }
+
+        }
+        return result;
     }
 }

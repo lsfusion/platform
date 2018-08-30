@@ -30,7 +30,6 @@ import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionTableUsage;
@@ -50,14 +49,14 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         this.formEntity = formEntity;
     }
 
-    protected abstract Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object files, Map<String, Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> propertyKeysMap, Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) throws IOException, ParseException;
+    protected abstract Map<ImportFormKeys, ImportFormData> getData(Object files, Map<String, Pair<ImportFormKeys, CalcPropertyObjectEntity>> propertyKeysMap, Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) throws IOException, ParseException;
 
-    protected void importData(ExecutionContext context, Object files) throws IOException, ParseException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    protected void importData(ExecutionContext context, Object files) throws IOException, ParseException, SQLException, SQLHandledException {
 
-        Map<String, Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> propertyKeysMap = new HashMap<>();
-        Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters = new HashSet<>();
+        Map<String, Pair<ImportFormKeys, CalcPropertyObjectEntity>> propertyKeysMap = new HashMap<>();
+        Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters = new HashSet<>();
         Map<String, List<String>> headersMap = new LinkedHashMap<>();
-        Map<ImSet<ObjectEntity>, List<CalcPropertyObjectEntity>> propertiesMap = new HashMap<>();
+        Map<ImportFormKeys, List<CalcPropertyObjectEntity>> propertiesMap = new HashMap<>();
 
         //читаем свойства
         for (PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsList()) {
@@ -65,7 +64,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
             if (toDraw != null && propertyDraw.propertyObject.property instanceof CalcProperty) {
                 CalcPropertyObjectEntity property = (CalcPropertyObjectEntity) propertyDraw.propertyObject;
 
-                ImSet<ObjectEntity> keys = getNeededGroupsForColumnProp(property);
+                ImportFormKeys keys = getNeededGroupsForColumnProp(property);
                 String escapedId = escapeTag(propertyDraw.getSID());
                 propertyKeysMap.put(escapedId, Pair.create(keys, property));
 
@@ -87,13 +86,13 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         for (FilterEntity filter : formEntity.getFixedFilters()) {
             if (filter instanceof NotNullFilterEntity) {
                 CalcPropertyObjectEntity<?> property = ((NotNullFilterEntity) filter).property;
-                    ImSet<ObjectEntity> keys = SetFact.fromJavaSet(new HashSet<>((property.getObjectInstances())));
+                    ImportFormKeys keys = new ImportFormKeys(SetFact.fromJavaSet(new HashSet<>((property.getObjectInstances()))));
                     List<CalcPropertyObjectEntity> propertiesEntry = propertiesMap.get(keys);
                     if (propertiesEntry == null)
                         propertiesEntry = new ArrayList<>();
                     propertiesEntry.add(property);
                     propertiesMap.put(keys, propertiesEntry);
-                    filters.add(Pair.<ImSet<ObjectEntity>, CalcPropertyObjectEntity>create(keys, property));
+                    filters.add(Pair.<ImportFormKeys, CalcPropertyObjectEntity>create(keys, property));
                 }
             }
 
@@ -106,13 +105,13 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
             }
 
             //читаем данные
-            Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> data = getData(files, propertyKeysMap, filters, headersMap);
+            Map<ImportFormKeys, ImportFormData> data = getData(files, propertyKeysMap, filters, headersMap);
 
             // потому как writeRows требует именно NullValue.instance
-            for (Map.Entry<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataEntry : data.entrySet()) {
-                for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : dataEntry.getValue().entrySet()) {
+            for (Map.Entry<ImportFormKeys, ImportFormData> dataEntry : data.entrySet()) {
+                for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : dataEntry.getValue().getData().entrySet()) {
                     // дополняем NullValue.instance там где не все Property (вообще актуально)
-                    for (Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity> propertyEntry : propertyKeysMap.values()) {
+                    for (Pair<ImportFormKeys, CalcPropertyObjectEntity> propertyEntry : propertyKeysMap.values()) {
                         Property property = propertyEntry.second.property;
                         if (dataEntry.getKey().equals(propertyEntry.first) && !entry.getValue().containsKey(property)) {
                             entry.getValue().put(property, NullValue.instance);
@@ -122,22 +121,22 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
             }
 
         //записываем данные
-        for (Map.Entry<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataEntry : data.entrySet()) {
-            ImSet<ObjectEntity> dataKey = dataEntry.getKey();
+        for (Map.Entry<ImportFormKeys, ImportFormData> dataEntry : data.entrySet()) {
+            ImportFormKeys dataKey = dataEntry.getKey();
             List<CalcPropertyObjectEntity> properties = propertiesMap.get(dataKey);
             writeData(context, properties, dataEntry.getValue());
         }
     }
 
-    private ImSet<ObjectEntity> getNeededGroupsForColumnProp(CalcPropertyObjectEntity property) {
-        ImSet<ObjectEntity> result = SetFact.EMPTY();
+    private ImportFormKeys getNeededGroupsForColumnProp(CalcPropertyObjectEntity property) {
+        ImportFormKeys result = new ImportFormKeys();
         for(Object entry : property.mapping.valueIt()) {
-            result = result.addExcl(((ObjectEntity) entry));
+            result.add((ObjectEntity) entry);
         }
         return result;
     }
 
-    private void writeData(ExecutionContext context, List<CalcPropertyObjectEntity> properties, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private void writeData(ExecutionContext context, List<CalcPropertyObjectEntity> properties, ImportFormData data) throws SQLException, SQLHandledException {
 
         //группируем свойства по наборам ключей (может отличаться порядок)
         Map<ImOrderSet<KeyField>, List<CalcPropertyObjectEntity>> keyPropMap = new HashMap<>();
@@ -156,7 +155,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         }
 
         for(Map.Entry<ImOrderSet<KeyField>, List<CalcPropertyObjectEntity>> keyPropEntry : keyPropMap.entrySet()) {
-            writeData(context, keyPropEntry.getKey(), keyPropEntry.getValue(), data);
+            writeData(context, keyPropEntry.getKey(), keyPropEntry.getValue(), data.getData());
         }
     }
 
@@ -237,23 +236,8 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         });
     }
 
-    protected String getKeysId(ImSet<ObjectEntity> keys) {
-        String result = "";
-        for (ObjectEntity key : keys)
-            result += (result.isEmpty() ? "" : "_") + key.getSID();
-        return result;
-    }
-
     private String escapeTag(String value) {
         return value.replace("_", "__").replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
-    }
-
-    private void addToMap(Map<String, List<String>> headersMap, String escapedId, String keysId) {
-        List<String> headersEntry = headersMap.get(keysId);
-        if(headersEntry == null)
-            headersEntry = new ArrayList<>();
-        headersEntry.add(escapedId);
-        headersMap.put(keysId, headersEntry);
     }
 
     protected boolean indexBased() {
@@ -268,5 +252,65 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
     @Override
     protected boolean allowNulls() {
         return false;
+    }
+
+    protected class ImportFormKeys {
+        private ImSet<ObjectEntity> data;
+
+        public ImportFormKeys() {
+            this.data = SetFact.EMPTY();
+        }
+
+        public ImportFormKeys(ImSet<ObjectEntity> data) {
+            this.data = data;
+        }
+
+        public ImSet<ObjectEntity> getData() {
+            return data;
+        }
+
+        public String getKeysId() {
+            String result = "";
+            for (ObjectEntity key : data)
+                result += (result.isEmpty() ? "" : "_") + key.getSID();
+            return result;
+        }
+
+        public void add(ObjectEntity objectEntity) {
+            data = data.addExcl(objectEntity);
+        }
+    }
+
+    protected class ImportFormData {
+        private Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data;
+
+        public ImportFormData() {
+            this.data = new HashMap<>();
+        }
+
+        public Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> getData() {
+            return data;
+        }
+
+        public Map<Property, ObjectValue> get(ImMap<KeyField, DataObject> key) {
+            return data.get(key);
+        }
+
+        public void put(ImMap<KeyField, DataObject> key, Map<Property, ObjectValue> value) {
+            data.put(key, value);
+        }
+
+        public void merge(ImportFormData importFormData) {
+            if (importFormData != null) {
+                for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> importFormDataEntry : importFormData.data.entrySet()) {
+                    ImMap<KeyField, DataObject> key = importFormDataEntry.getKey();
+                    Map<Property, ObjectValue> dataEntry = data.get(key);
+                    if (dataEntry == null)
+                        dataEntry = new HashMap<>();
+                    dataEntry.putAll(importFormDataEntry.getValue());
+                    data.put(key, dataEntry);
+                }
+            }
+        }
     }
 }

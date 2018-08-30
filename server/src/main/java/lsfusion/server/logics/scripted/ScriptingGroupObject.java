@@ -20,6 +20,7 @@ public class ScriptingGroupObject {
     ScriptingLogicsModule.PropertyUsage reportPathPropUsage;
     List<String> reportPathMapping;
     UpdateType updateType;
+    String formObjectGroup;
     
     GroupObjectEntity neighbourGroupObject;
     Boolean isRightNeighbour;
@@ -58,5 +59,9 @@ public class ScriptingGroupObject {
     public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour) {
         this.neighbourGroupObject = neighbourGroupObject;
         this.isRightNeighbour = isRightNeighbour;
+    }
+
+    public void setFormObjectGroup(String formObjectGroup) {
+        this.formObjectGroup = formObjectGroup;
     }
 }

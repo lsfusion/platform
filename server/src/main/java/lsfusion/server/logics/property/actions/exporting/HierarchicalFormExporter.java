@@ -12,11 +12,16 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public abstract class HierarchicalFormExporter extends FormExporter{
+    protected Map<String, List<String>> formObjectGroups;
+    protected Map<String, List<String>> formPropertyGroups;
 
-    public HierarchicalFormExporter(ReportGenerationData reportData) {
+    public HierarchicalFormExporter(ReportGenerationData reportData, Map<String, List<String>> formObjectGroups, Map<String, List<String>> formPropertyGroups) {
         super(reportData);
+        this.formObjectGroups = formObjectGroups;
+        this.formPropertyGroups = formPropertyGroups;
     }
 
     public abstract byte[] exportNodes(List<Node> rootNodes) throws IOException;
