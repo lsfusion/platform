@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -65,9 +66,10 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
                 //Если превышен лимит кол-ва, удаляем;
                 //Если старше недели, оставляем только за понедельник и за первое число;
                 //Если старше месяца, только за первое число.
-                if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
+                if (limit || (delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday)) {
+                    ServerLoggers.systemLogger.info("Decimate Backups: deleting backup " + dateBackup);
                     findAction("delete[Backup]").execute(newContext, backupObject);
-                else
+                } else
                     count++;
             }
 
