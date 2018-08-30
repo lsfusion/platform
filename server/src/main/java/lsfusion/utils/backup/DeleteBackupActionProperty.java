@@ -1,6 +1,8 @@
 package lsfusion.utils.backup;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -36,7 +38,9 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
                 fLog.deleteOnExit();
             }
             if (!f.exists() || f.delete()) {
+                ServerLoggers.systemLogger.info("Deleted backup " + f.getName());
                 findProperty("fileDeleted[Backup]").change(true, newContext, backupObject);
+                context.delayUserInteraction(new MessageClientAction("Deleted backup " + f.getName(), "Deleted backup"));
             }
             newContext.apply();
 
