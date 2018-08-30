@@ -12,13 +12,14 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class JSONFormExporter extends HierarchicalFormExporter {
 
-    public JSONFormExporter(ReportGenerationData reportData) {
-        super(reportData);
+    public JSONFormExporter(ReportGenerationData reportData, Map<String, List<String>> formObjectGroups, Map<String, List<String>> formPropertyGroups) {
+        super(reportData, formObjectGroups, formPropertyGroups);
     }
 
     @Override
@@ -52,12 +53,32 @@ public class JSONFormExporter extends HierarchicalFormExporter {
         } else if(node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
                 JSONArray array = new JSONArray();
+                JSONObject subParentElement = null;
                 for(AbstractNode childNode : child.getValue()) {
-                    if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentId)) {
-                        if (childNode instanceof Leaf) {
-                            exportNode(parentElement, child.getKey(), childNode);
+                    boolean isLeaf = childNode instanceof Leaf;
+
+                    List<String> groups = isLeaf ? formPropertyGroups.get(child.getKey()) : formObjectGroups.get(child.getKey());
+                    if(groups != null && parentElement instanceof JSONObject) {
+                        for (int i = groups.size() - 1; i >= 0; i--) {
+                            JSONObject subElement = findChild((JSONObject) parentElement, groups.get(i));
+                            if (subElement == null) {
+                                subElement = new JSONObject();
+                                if (subParentElement == null) {
+                                    ((JSONObject) parentElement).put(groups.get(i), subElement);
+                                } else {
+                                    subParentElement.put(groups.get(i), subElement);
+                                }
+
+                            }
+                            subParentElement = subElement;
+                        }
+                    }
+
+                    if (!isLeaf || ((Leaf) childNode).getType().toDraw.equals(parentId)) {
+                        if (isLeaf) {
+                            exportNode(subParentElement != null ? subParentElement : parentElement, child.getKey(), childNode);
                         } else if (child.getKey().equals(groupId)) {
-                            exportNode(parentElement, child.getKey(), childNode);
+                            exportNode(subParentElement != null ? subParentElement : parentElement, child.getKey(), childNode);
                         } else {
                             JSONObject object = new JSONOrderObject();
                             exportNode(object, child.getKey(), childNode);
@@ -68,11 +89,23 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                 }
                 if(array.length() > 0) {
                     if(parentElement instanceof JSONObject)
-                        ((JSONObject) parentElement).put(child.getKey(), array);
+                        (subParentElement != null ? subParentElement : ((JSONObject) parentElement)).put(child.getKey(), array);
                     else if(parentElement instanceof JSONArray)
                         ((JSONArray) parentElement).put(array);
                 }
             }
         }
+    }
+
+    private JSONObject findChild(JSONObject parent, String child) throws JSONException {
+        JSONObject result = null;
+        Iterator childIterator = parent.keys();
+        while (childIterator.hasNext()) {
+            String key = (String) childIterator.next();
+            Object value = parent.get(key);
+            if (value instanceof JSONObject && key.equals(child))
+                result = (JSONObject) value;
+        }
+        return result;
     }
 }

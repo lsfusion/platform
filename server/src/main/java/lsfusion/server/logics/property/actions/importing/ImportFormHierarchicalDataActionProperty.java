@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.ValueClass;
@@ -30,6 +29,9 @@ import java.util.*;
 
 public abstract class ImportFormHierarchicalDataActionProperty<E> extends ImportFormDataActionProperty {
 
+    protected Map<String, List<List<String>>> formObjectGroups;
+    protected Map<String, List<List<String>>> formPropertyGroups;
+
     private Map<String, Integer> tagsMap;
 
     protected String root;
@@ -42,8 +44,11 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     public abstract boolean isLeaf(Object child);
 
-    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
+    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity,
+                                                    Map<String, List<List<String>>> formObjectGroups, Map<String, List<List<String>>> formPropertyGroups) {
         super(valueClasses, fileProperty, formEntity);
+        this.formObjectGroups = formObjectGroups;
+        this.formPropertyGroups = formPropertyGroups;
     }
 
     @Override
@@ -63,17 +68,17 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     }
 
     @Override
-    protected Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(Object file, Map<String, Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> propertyKeysMap,
-                                                                                                             Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) {
+    protected Map<ImportFormKeys, ImportFormData> getData(Object file, Map<String, Pair<ImportFormKeys, CalcPropertyObjectEntity>> propertyKeysMap,
+                                                                                                             Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) {
         E rootElement = getRootElement((byte[]) file);
         tagsMap = new HashMap<>();
         return getData(Pair.create((String) null, (Object) rootElement), propertyKeysMap, filters);
     }
 
-    private Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getData(
-            Pair<String, Object> rootElement, Map<String, Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> propertyKeysMap,
-            Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters) {
-        Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> dataMap = new HashMap<>();
+    private Map<ImportFormKeys, ImportFormData> getData(
+            Pair<String, Object> rootElement, Map<String, Pair<ImportFormKeys, CalcPropertyObjectEntity>> propertyKeysMap,
+            Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters) {
+        Map<ImportFormKeys, ImportFormData> dataMap = new HashMap<>();
         ImportFormIterator iterator = getIterator(rootElement);
         while (iterator.hasNext()) {
             Pair<String, Object> child = iterator.next();
@@ -81,11 +86,11 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
             Integer count = tagsMap.get(child.first);
             tagsMap.put(child.first, count == null ? 0 : ++count);
 
-            Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity> entry = propertyKeysMap.get(child.first);
-            if (entry != null && (!getKeysId(entry.first).equals(child.first) || child.second instanceof JSONObject)) {
-                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = dataMap.get(entry.first);
+            Pair<ImportFormKeys, CalcPropertyObjectEntity> entry = propertyKeysMap.get(child.first);
+            if (entry != null && (!entry.first.getKeysId().equals(child.first) || child.second instanceof JSONObject)) {
+                ImportFormData dataEntry = dataMap.get(entry.first);
                 if (dataEntry == null)
-                    dataEntry = new HashMap<>();
+                    dataEntry = new ImportFormData();
                 ImMap<KeyField, DataObject> key = getKeys(entry.first);
                 if(!key.isEmpty()) {
                     Map<Property, ObjectValue> properties = dataEntry.get(key);
@@ -97,23 +102,20 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
                 }
             }
 
-            for (Map.Entry<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> childDataEntry : getData(child, propertyKeysMap, filters).entrySet()) {
-                Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> data = dataMap.get(childDataEntry.getKey());
-                if (data == null)
-                    data = new HashMap<>();
-                data.putAll(childDataEntry.getValue());
-                dataMap.put(childDataEntry.getKey(), data);
+            for (Map.Entry<ImportFormKeys, ImportFormData> childDataEntry : getData(child, propertyKeysMap, filters).entrySet()) {
+                ImportFormData data = dataMap.get(childDataEntry.getKey());
+                dataMap.put(childDataEntry.getKey(), merge(data, childDataEntry.getValue()));
             }
 
             if(!isLeaf(child.second)) {
-                Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterValues = getFilterValues(filters, child.first);
-                for(Map.Entry<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterEntry : filterValues.entrySet()) {
-                    ImSet<ObjectEntity> filterKey = filterEntry.getKey();
-                    Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValue = filterEntry.getValue();
-                    Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = dataMap.get(filterKey);
+                Map<ImportFormKeys, ImportFormData> filterValues = getFilterValues(filters, child.first);
+                for(Map.Entry<ImportFormKeys, ImportFormData> filterEntry : filterValues.entrySet()) {
+                    ImportFormKeys filterKey = filterEntry.getKey();
+                    ImportFormData filterValue = filterEntry.getValue();
+                    ImportFormData dataEntry = dataMap.get(filterKey);
                     if(dataEntry == null)
-                        dataEntry = new HashMap<>();
-                    for(Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValueEntry : filterValue.entrySet()) {
+                        dataEntry = new ImportFormData();
+                    for(Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValueEntry : filterValue.getData().entrySet()) {
                         Map<Property, ObjectValue> innerFilterEntry = dataEntry.get(filterValueEntry.getKey());
                         if(innerFilterEntry == null)
                             innerFilterEntry = new HashMap<>();
@@ -128,9 +130,9 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         return dataMap;
     }
 
-    private ImMap<KeyField, DataObject> getKeys(ImSet<ObjectEntity> keys) {
+    private ImMap<KeyField, DataObject> getKeys(ImportFormKeys keys) {
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
-        for (ObjectEntity key : keys) {
+        for (ObjectEntity key : keys.getData()) {
             if(tagsMap.containsKey(key.getSID())) {
                 keyObjects = keyObjects.addExcl(new KeyField(key.getSID(), ImportDataActionProperty.type), new DataObject(tagsMap.get(key.getSID())));
             }
@@ -139,11 +141,11 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     }
 
     //todo: переосмыслить и упростить
-    private Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> getFilterValues(
-            Set<Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity>> filters, String currentKey) {
-        Map<ImSet<ObjectEntity>, Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>>> filterValuesMap = new HashMap<>();
-        for (Pair<ImSet<ObjectEntity>, CalcPropertyObjectEntity> filterEntry : filters) {
-            Map<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> dataEntry = new HashMap<>();
+    private Map<ImportFormKeys, ImportFormData> getFilterValues(
+            Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters, String currentKey) {
+        Map<ImportFormKeys, ImportFormData> filterValuesMap = new HashMap<>();
+        for (Pair<ImportFormKeys, CalcPropertyObjectEntity> filterEntry : filters) {
+            ImportFormData dataEntry = new ImportFormData();
             ImMap<KeyField, DataObject> key = getFilterKeys(filterEntry.first, currentKey);
             if (!key.isEmpty()) {
                 Map<Property, ObjectValue> properties = dataEntry.get(key);
@@ -158,10 +160,10 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         return filterValuesMap;
     }
 
-    private ImMap<KeyField, DataObject> getFilterKeys(ImSet<ObjectEntity> keys, String currentKey) {
+    private ImMap<KeyField, DataObject> getFilterKeys(ImportFormKeys keys, String currentKey) {
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
         boolean skip = true;
-        for (ObjectEntity key : keys) {
+        for (ObjectEntity key : keys.getData()) {
             if(tagsMap.containsKey(key.getSID())) {
                 if(currentKey.equals(key.getSID())) {
                     skip = false;
@@ -183,5 +185,12 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
         } catch (ParseException e) {
             return NullValue.instance;
         }
+    }
+
+    private ImportFormData merge(ImportFormData data1, ImportFormData data2) {
+        if (data1 != null) {
+            data1.merge(data2);
+            return data1;
+        } else return data2;
     }
 }

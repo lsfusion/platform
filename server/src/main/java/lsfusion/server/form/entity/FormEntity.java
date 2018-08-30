@@ -171,8 +171,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return integrationPropertyOptions;
     }
 
-    public void putIntegrationPropertyOptions(String property, IntegrationPropertyOptions options) {
-        this.integrationPropertyOptions = integrationPropertyOptions.override(property, options);
+    public void putIntegrationPropertyOptions(String formProperty, IntegrationPropertyOptions options) {
+        this.integrationPropertyOptions = integrationPropertyOptions.override(formProperty, options);
+    }
+
+    private ImMap<String, IntegrationObjectOptions> integrationObjectOptions = MapFact.EMPTY();
+
+    public ImMap<String, IntegrationObjectOptions> getIntegrationObjectOptions() {
+        return integrationObjectOptions;
+    }
+
+    public void putIntegrationObjectOptions(String formObject, IntegrationObjectOptions options) {
+        this.integrationObjectOptions = integrationObjectOptions.override(formObject, options);
     }
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {

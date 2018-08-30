@@ -3432,14 +3432,52 @@ public class ScriptingLogicsModule extends LogicsModule {
                 attrs.add(property);
         }
 
-        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, fileProperty, formEntity, attrs)), params);
+        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, fileProperty, formEntity, getImportFormObjectGroups(formEntity),
+                getImportFormPropertyGroups(formEntity), attrs)), params);
     }
 
     public LAPWithParams addScriptedImportFormJSONActionProperty(PropertyUsage fileProp, FormEntity formEntity, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
         LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
-        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, fileProperty, formEntity)), params);
+        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, fileProperty, formEntity, getImportFormObjectGroups(formEntity),
+                getImportFormPropertyGroups(formEntity))), params);
+    }
+
+    private Map<String, List<List<String>>> getImportFormObjectGroups(FormEntity formEntity) {
+        Map<String, List<List<String>>> formObjectGroups = new HashMap<>();
+        for(String formObject : formEntity.getIntegrationObjectOptions().keys()) {
+            List<String> groups = formEntity.getIntegrationObjectOptions().get(formObject).getGroups();
+            if(groups != null && !groups.isEmpty()) {
+                String topGroup = groups.get(groups.size() - 1);
+                groups = groups.subList(0, groups.size() - 1);
+                groups.add(formObject);
+                List<List<String>> entry = formObjectGroups.get(topGroup);
+                if(entry == null)
+                    entry = new ArrayList<>();
+                entry.add(groups);
+                formObjectGroups.put(topGroup, entry);
+            }
+        }
+        return formObjectGroups;
+    }
+
+    private Map<String, List<List<String>>> getImportFormPropertyGroups(FormEntity formEntity) {
+        Map<String, List<List<String>>> formPropertyGroups = new HashMap<>();
+        for(String formProperty : formEntity.getIntegrationPropertyOptions().keys()) {
+            List<String> groups = formEntity.getIntegrationPropertyOptions().get(formProperty).getGroups();
+            if(groups != null && !groups.isEmpty()) {
+                String topGroup = groups.get(groups.size() - 1);
+                groups = groups.subList(0, groups.size() - 1);
+                groups.add(formProperty);
+                List<List<String>> entry = formPropertyGroups.get(topGroup);
+                if(entry == null)
+                    entry = new ArrayList<>();
+                entry.add(groups);
+                formPropertyGroups.put(topGroup, entry);
+            }
+        }
+        return formPropertyGroups;
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

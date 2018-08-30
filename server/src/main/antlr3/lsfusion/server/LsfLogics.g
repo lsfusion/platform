@@ -515,6 +515,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
+		|	group=formGroupObjectGroup { $groupObject.setFormObjectGroup($group.formObjectGroup); }
 		)*
 	;
 
@@ -576,6 +577,10 @@ formGroupObjectUpdate returns [UpdateType updateType]
 	|	'LAST' { $updateType = UpdateType.LAST; }
 	|   'PREV' { $updateType = UpdateType.PREV; }
 	|   'NULL' { $updateType = UpdateType.NULL; }
+	;
+
+formGroupObjectGroup returns [String formObjectGroup]
+	:	'IN' groupName=compoundID { $formObjectGroup = $groupName.sid; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 

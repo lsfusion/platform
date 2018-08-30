@@ -542,13 +542,28 @@ public abstract class LogicsModule {
         if(targetProp == null)
             targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
 
+        Map<String, List<String>> formObjectGroups = new HashMap<>();
+        for(String formObject : form.getStaticForm().getIntegrationObjectOptions().keys()) {
+            List<String> groups = form.getStaticForm().getIntegrationObjectOptions().get(formObject).getGroups();
+            if(groups != null && !groups.isEmpty())
+                formObjectGroups.put(formObject, groups);
+        }
+
+        Map<String, List<String>> formPropertyGroups = new HashMap<>();
+        for(String formProperty : form.getStaticForm().getIntegrationPropertyOptions().keys()) {
+            List<String> groups = form.getStaticForm().getIntegrationPropertyOptions().get(formProperty).getGroups();
+            if(groups != null && !groups.isEmpty())
+                formPropertyGroups.put(formProperty, groups);
+        }
+
         Set<String> attrs = new HashSet<>();
         for(String formProperty : form.getStaticForm().getIntegrationPropertyOptions().keys()) {
             if(form.getStaticForm().getIntegrationPropertyOptions().get(formProperty).getAttr() != null)
                 attrs.add(formProperty);
         }
 
-        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs)));
+        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset,
+                formObjectGroups, formPropertyGroups, attrs)));
     }
 
     // ------------------- Change Class action ----------------- //
