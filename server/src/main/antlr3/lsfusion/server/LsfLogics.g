@@ -2111,8 +2111,6 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
 	String charset = null;
     LCPWithParams root = null;
-	List<String> headerKeys = new ArrayList<>();
-    List<String> headerValues = new ArrayList<>();
     FormEntity form = null;
 }
 @after {
@@ -2122,7 +2120,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     	else if($type.format == ImportSourceFormat.DBF)
         	$property = self.addScriptedImportFormDBFActionProperty($fileProp.propUsage, form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty($fileProp.propUsage, form, root, headerKeys, headerValues);
+    		$property = self.addScriptedImportFormXMLActionProperty($fileProp.propUsage, form, root);
     	else if($type.format == ImportSourceFormat.JSON)
     	    $property = self.addScriptedImportFormJSONActionProperty($fileProp.propUsage, form, root);
 
@@ -2131,7 +2129,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
-	                                                             charset = $type.charset; root = $type.root; headerKeys = $type.headerKeys; headerValues = $type.headerValues; }
+	                                                             charset = $type.charset; root = $type.root; }
 	    ('FROM' fileProp=propertyUsage)?
 	;
 
@@ -2216,11 +2214,10 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	;
 
 importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [ImportSourceFormat format, String separator,
-                                                                            boolean noHeader, String charset, LCPWithParams root,
-                                                                            List<String> headerKeys = new ArrayList<String>(), List<String> headerValues = new ArrayList<String>()]
+                                                                            boolean noHeader, String charset, LCPWithParams root]
 	:	'DBF'	{ $format = ImportSourceFormat.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('HEADERS' list=headersList[$form] { $headerKeys = $list.headerKeys; $headerValues = $list.headerValues; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	;
 
@@ -2905,18 +2902,14 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
     String separator = null;
 	String charset = null;
-	boolean isAttr = false;
-	List<String> attrs = new ArrayList<>();
-	List<String> headerKeys = new ArrayList<>();
-	List<String> headerValues = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, isAttr ? attrs : null, headerKeys, headerValues, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormExportType.XML; }  ('ATTR' { isAttr = true; } (attrVal=attrList[$mf.form] { attrs = $attrVal.attrs; })?)? ('HEADERS' list=headersList[$mf.form] { headerKeys = $list.headerKeys; headerValues = $list.headerValues; })?
+		(	'XML' { exportType = FormExportType.XML; }
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
@@ -2938,15 +2931,6 @@ attrList[FormEntity form] returns [List<String> attrs = new ArrayList<>()]
 	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } }
 		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } })*
 	;
-
-headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(), List<String> headerValues = new ArrayList<>()]
-@init {
-    ObjectEntity object = null;
-}
-	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); }
-		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } } headerVal = stringLiteral { $headerValues.add($headerVal.val); })*
-	;
-
 
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
@@ -3226,7 +3210,7 @@ fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	LCPWithParams fileProp = null;
 	LCPWithParams fileNameProp = null;
 	Boolean syncType = null;
-	
+
 }
 @after {
 	if (inPropParseState()) {

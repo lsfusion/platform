@@ -539,10 +539,17 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
         return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNulls)));
     }
-    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, List<String> attrs, Map<String, String> headers, LCP targetProp, Object... params) {
+    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
             targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
-        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs, headers)));
+
+        Set<String> attrs = new HashSet<>();
+        for(String property : form.getStaticForm().getIntegrationOptions().keys()) {
+            if(form.getStaticForm().getIntegrationOptions().get(property).getAttr() != null)
+                attrs.add(property);
+        }
+
+        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs)));
     }
 
     // ------------------- Change Class action ----------------- //
