@@ -544,9 +544,9 @@ public abstract class LogicsModule {
             targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
 
         Set<String> attrs = new HashSet<>();
-        for(String property : form.getStaticForm().getIntegrationOptions().keys()) {
-            if(form.getStaticForm().getIntegrationOptions().get(property).getAttr() != null)
-                attrs.add(property);
+        for(String formProperty : form.getStaticForm().getIntegrationPropertyOptions().keys()) {
+            if(form.getStaticForm().getIntegrationPropertyOptions().get(formProperty).getAttr() != null)
+                attrs.add(formProperty);
         }
 
         return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs)));

@@ -2924,14 +2924,6 @@ initFilterDefinition returns [String propName, List<String> mapping]
 		)
 	;
 
-attrList[FormEntity form] returns [List<String> attrs = new ArrayList<>()]
-@init {
-    ObjectEntity object = null;
-}
-	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } }
-		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } })*
-	;
-
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
     ObjectEntity object = null;

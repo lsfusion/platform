@@ -3450,8 +3450,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
 
         Set<String> attrs = new HashSet<>();
-        for(String property : formEntity.getIntegrationOptions().keys()) {
-            if(formEntity.getIntegrationOptions().get(property).getAttr() != null)
+        for(String property : formEntity.getIntegrationPropertyOptions().keys()) {
+            if(formEntity.getIntegrationPropertyOptions().get(property).getAttr() != null)
                 attrs.add(property);
         }
 

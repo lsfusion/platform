@@ -22,7 +22,7 @@ public class ImportFormXMLIterator extends ImportFormIterator {
 
         if(root != null) {
             for (Object child : ((Element) keyValueRoot.second).getChildren()) {
-                if (notSkip(child)) {
+                if (notLeaf(child)) {
                     this.children.add(child);
                 }
             }
@@ -55,7 +55,7 @@ public class ImportFormXMLIterator extends ImportFormIterator {
     public void remove() {
     }
 
-    private boolean notSkip(Object child) {
+    private boolean notLeaf(Object child) {
         return !(child instanceof Element && ((Element) child).getChildren().isEmpty() && attrs.contains(((Element) child).getName()));
     }
 

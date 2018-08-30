@@ -168,14 +168,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public CalcPropertyObjectEntity<?> reportPathProp;
 
-    private ImMap<String, IntegrationOptions> integrationOptions = MapFact.EMPTY();
+    private ImMap<String, IntegrationPropertyOptions> integrationPropertyOptions = MapFact.EMPTY();
 
-    public ImMap<String, IntegrationOptions> getIntegrationOptions() {
-        return integrationOptions;
+    public ImMap<String, IntegrationPropertyOptions> getIntegrationPropertyOptions() {
+        return integrationPropertyOptions;
     }
 
-    public void putIntegrationOptions(String property, IntegrationOptions options) {
-        this.integrationOptions = integrationOptions.override(property, options);
+    public void putIntegrationPropertyOptions(String property, IntegrationPropertyOptions options) {
+        this.integrationPropertyOptions = integrationPropertyOptions.override(property, options);
     }
 
     protected FormEntity(String canonicalName, LocalizedString caption, Version version) {
