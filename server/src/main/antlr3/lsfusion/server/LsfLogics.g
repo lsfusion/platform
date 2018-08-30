@@ -2909,16 +2909,14 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
     String separator = null;
 	String charset = null;
-	List<String> headerKeys = new ArrayList<>();
-	List<String> headerValues = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, headerKeys, headerValues, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormExportType.XML; } ('HEADERS' list=headersList[$mf.form] { headerKeys = $list.headerKeys; headerValues = $list.headerValues; })?
+		(	'XML' { exportType = FormExportType.XML; }
 	    |  	'JSON' { exportType = FormExportType.JSON; }
 		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?

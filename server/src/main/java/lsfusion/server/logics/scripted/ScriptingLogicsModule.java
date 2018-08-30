@@ -3086,12 +3086,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsage != null)
             targetProp = findLCPNoParamsByPropertyUsage(propUsage);
 
-        Map<String, String> headers = new HashMap<>();
-        for(int i = 0; i < headerKeys.size(); i++) {
-            headers.put(headerKeys.get(i), headerValues.get(i));
-        }
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, objects, nulls,
-                exportType, noHeader, separator, charset, headers, targetProp, getParamsPlainList(propParams).toArray());
+                exportType, noHeader, separator, charset, targetProp, getParamsPlainList(propParams).toArray());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -3192,7 +3188,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
 
-    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, boolean clientAction, boolean dialog, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = sourcePathProp.getLP().property.getValueClass(ClassType.valuePolicy);
         LCP<?> targetProp = propUsage == null ? baseLM.readFile : findLCPNoParamsByPropertyUsage(propUsage);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, clientAction, dialog)),
