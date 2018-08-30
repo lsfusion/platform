@@ -113,8 +113,8 @@ public abstract class LogicsModule {
 
     private final Set<FormEntity> unnamedForms = new HashSet<>();
     private final Map<LCP<?>, LocalPropertyData> locals = new HashMap<>();
-    
-    
+
+
     protected final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
     
 
@@ -205,7 +205,7 @@ public abstract class LogicsModule {
         }
         moduleMap.get(name).add(lp);
     }
-    
+
     @NFLazy
     protected <P extends PropertyInterface, T extends LP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamingPolicy());
@@ -548,7 +548,7 @@ public abstract class LogicsModule {
                 attrs.add(property);
         }
 
-        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs, headers)));
+        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset, attrs)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -1830,7 +1830,7 @@ public abstract class LogicsModule {
     protected LAP addGOSAProp(GroupObjectEntity object, List<ObjectEntity> objects, UpdateType type, Object... params) {
         return addGOSAProp(null, LocalizedString.NONAME, object, objects, type, params);
     }
-    
+
     protected LAP addGOSAProp(AbstractGroup group, LocalizedString caption, GroupObjectEntity object, List<ObjectEntity> objects, UpdateType type, Object... params) {
         return addJoinAProp(group, caption, addGOSAProp(object, objects, type), params);
     }

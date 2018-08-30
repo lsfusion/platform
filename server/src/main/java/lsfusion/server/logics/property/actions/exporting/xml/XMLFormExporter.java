@@ -17,14 +17,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class XMLFormExporter extends HierarchicalFormExporter {
-    private String charset = "utf-8";
     private Set<String> attrs;
-    private Map<String, String> headers;
 
-    public XMLFormExporter(ReportGenerationData reportData, Set<String> attrs, Map<String, String> headers) {
+    public XMLFormExporter(ReportGenerationData reportData, Set<String> attrs) {
         super(reportData);
         this.attrs = attrs;
-        this.headers = headers;
     }
 
     @Override
@@ -41,7 +38,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
 
             file = File.createTempFile("exportForm", ".xml");
             XMLOutputter xmlOutput = new XMLOutputter();
-            xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset));
+            xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(ExternalUtils.defaultXMLJSONCharset));
             try(PrintWriter fw = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
                 xmlOutput.output(new Document(rootElement), fw);
             }
@@ -60,27 +57,15 @@ public class XMLFormExporter extends HierarchicalFormExporter {
             }
         } else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
-
-                Element headerElement = null;
-                String headerValue = headers.get(child.getKey());
-                if (headerValue != null) {
-                    headerElement = new Element(headerValue);
-                    parentElement.addContent(headerElement);
-                }
-
                 for (AbstractNode childNode : child.getValue()) {
                     if (!(childNode instanceof Leaf) || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
-                        if (childNode instanceof Leaf && attrs.contains(child.getKey())) {
+                        if (childNode instanceof Leaf && attrs != null && (attrs.isEmpty() || attrs.contains(parentElement.getName()))) {
                             parentElement.setAttribute(child.getKey(), getLeafValue((Leaf) childNode));
                         } else {
                             Element element = new Element(child.getKey());
                             exportNode(element, childNode);
                             if (!element.getValue().isEmpty() || !element.getAttributes().isEmpty()) {
-                                if (headerElement != null) {
-                                    headerElement.addContent(element);
-                                } else {
-                                    parentElement.addContent(element);
-                                }
+                                parentElement.addContent(element);
                             }
                         }
                     }

@@ -14,17 +14,14 @@ import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataActionProperty<Element> {
     private Set<String> attrs;
-    private Map<String, String> headers;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity, Set<String> attrs, Map<String, String> headers) {
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity, Set<String> attrs) {
         super(classes, fileProperty, formEntity);
         this.attrs = attrs;
-        this.headers = headers;
     }
 
     @Override
@@ -38,7 +35,7 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
 
     @Override
     public ImportFormIterator getIterator(Pair<String, Object> rootElement) {
-        return new ImportFormXMLIterator(rootElement, attrs, headers);
+        return new ImportFormXMLIterator(rootElement, attrs);
     }
 
     @Override

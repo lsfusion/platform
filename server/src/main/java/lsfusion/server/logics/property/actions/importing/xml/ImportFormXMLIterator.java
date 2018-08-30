@@ -15,23 +15,15 @@ public class ImportFormXMLIterator extends ImportFormIterator {
     private List<Object> children;
     private int i;
 
-    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot, Set<String> attrs, Map<String, String> headers) {
+    public ImportFormXMLIterator(Pair<String, Object> keyValueRoot, Set<String> attrs) {
         Element root = keyValueRoot.second instanceof Attribute ? null : (Element) keyValueRoot.second;
         this.attrs = attrs;
         this.children = new ArrayList<>();
 
         if(root != null) {
             for (Object child : ((Element) keyValueRoot.second).getChildren()) {
-                if (headers.containsKey(((Element) child).getName())) {
-                    for (Object c : ((Element) child).getChildren()) {
-                        if (notSkip(c)) {
-                            this.children.add(c);
-                        }
-                    }
-                } else {
-                    if (notSkip(child)) {
-                        this.children.add(child);
-                    }
+                if (notSkip(child)) {
+                    this.children.add(child);
                 }
             }
             for(Object attribute : root.getAttributes()) {

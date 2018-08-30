@@ -1120,10 +1120,10 @@ scope {
 }
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	List<ResolveClassSet> signature = null; 
+	List<ResolveClassSet> signature = null;
 	boolean dynamic = true;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
-	
+
 	String propertyName = null;
 	LocalizedString caption = null;
 	LP lp = null;
@@ -1143,10 +1143,10 @@ scope {
         { LAP property = null; ActionSettings ps = null; }
         (
             (
-                ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }		
+                ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
                 ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
             )
-        |	
+        |
             (
                 aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
                 (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
@@ -1528,10 +1528,10 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
 	}
 }
 	:	'AGGR'
-	    { classDebugPoint = getEventDebugPoint(); } 
+	    { classDebugPoint = getEventDebugPoint(); }
 	    aggrClass=classId
-	    'WHERE' 
-	    { exprDebugPoint = getEventDebugPoint(); } 
+	    'WHERE'
+	    { exprDebugPoint = getEventDebugPoint(); }
 	    whereExpr=propertyExpression[context, dynamic]
 	;
 	
@@ -1971,7 +1971,7 @@ hasListOptionLiteral returns [boolean val]
 importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
     List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
-    
+
 	ImportSourceFormat format = null;
 	LCPWithParams sheet = null;
 	boolean sheetAll = false;
@@ -1982,7 +1982,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams root = null;
 	Boolean hasListOption = null;
 	boolean attr = false;
-	
+
 	List<String> ids = null;
 }
 @after {
@@ -2011,7 +2011,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
         }
 		(
             'FIELDS' pflist = nonEmptyImportFieldDefinitions[newContext] { ids = $pflist.ids; }
-            | 
+            |
 		    'TO' plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; }
 		)
 		('WHERE' whereExpr=propertyExpression[context, dynamic])?
@@ -2026,21 +2026,21 @@ nonEmptyImportFieldDefinitions[List<TypedParameter> newContext] returns [List<St
 	:	field = importFieldDefinition[newContext] { $ids.add($field.id); $nulls.add($field.nulls); }
 		(',' field = importFieldDefinition[newContext] { $ids.add($field.id); $nulls.add($field.nulls); })*
 	;
-	
+
 importFieldDefinition[List<TypedParameter> newContext] returns [String id, boolean nulls = false]
 @init {
     DataClass dataClass = null;
 }
-    : 
+    :
         ptype=PRIMITIVE_TYPE { if(inPropParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
         (   pid=ID { $id = $pid.text; }
-        |	sLiteral=stringLiteral { $id = $sLiteral.val; } 
+        |	sLiteral=stringLiteral { $id = $sLiteral.val; }
         )
         ('NULL' { $nulls = true; } )?
-        { 
+        {
         	if(inPropParseState())
-                self.getParamIndex(self.new TypedParameter(dataClass, $varID.text != null ? $varID.text : $id), newContext, true, insideRecursion); 
+                self.getParamIndex(self.new TypedParameter(dataClass, $varID.text != null ? $varID.text : $id), newContext, true, insideRecursion);
         }
     ;
 
@@ -2118,8 +2118,6 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noHeader = false;
 	String charset = null;
     LCPWithParams root = null;
-	List<String> headerKeys = new ArrayList<>();
-    List<String> headerValues = new ArrayList<>();
     FormEntity form = null;
 }
 @after {
@@ -2129,7 +2127,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     	else if($type.format == ImportSourceFormat.DBF)
         	$property = self.addScriptedImportFormDBFActionProperty($fileProp.propUsage, form, charset);
 	    else if($type.format == ImportSourceFormat.XML)
-    		$property = self.addScriptedImportFormXMLActionProperty($fileProp.propUsage, form, root, headerKeys, headerValues);
+    		$property = self.addScriptedImportFormXMLActionProperty($fileProp.propUsage, form, root);
     	else if($type.format == ImportSourceFormat.JSON)
     	    $property = self.addScriptedImportFormJSONActionProperty($fileProp.propUsage, form, root);
 
@@ -2138,7 +2136,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
-	                                                             charset = $type.charset; root = $type.root; headerKeys = $type.headerKeys; headerValues = $type.headerValues; }
+	                                                             charset = $type.charset; root = $type.root; }
 	    ('FROM' fileProp=propertyUsage)?
 	;
 
@@ -2224,11 +2222,10 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Impo
 	;
 
 importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [ImportSourceFormat format, String separator,
-                                                                            boolean noHeader, String charset, LCPWithParams root,
-                                                                            List<String> headerKeys = new ArrayList<String>(), List<String> headerValues = new ArrayList<String>()]
+                                                                            boolean noHeader, String charset, LCPWithParams root]
 	:	'DBF'	{ $format = ImportSourceFormat.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('HEADERS' list=headersList[$form] { $headerKeys = $list.headerKeys; $headerValues = $list.headerValues; })?
+	|	'XML'	{ $format = ImportSourceFormat.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'JSON'	{ $format = ImportSourceFormat.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	;
 
@@ -2944,14 +2941,6 @@ attrList[FormEntity form] returns [List<String> attrs = new ArrayList<>()]
 		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $attrs.add(object.getSID()); } })*
 	;
 
-headersList[FormEntity form] returns [List<String> headerKeys = new ArrayList<>(), List<String> headerValues = new ArrayList<>()]
-@init {
-    ObjectEntity object = null;
-}
-	:	headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } }
-		(',' headerVal = stringLiteral { $headerValues.add($headerVal.val); } EQ id=ID { if(inPropParseState()) { object=self.findObjectEntity($form, $id.text); $headerKeys.add(object.getSID()); } })*
-	;
-
 formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [List<ObjectEntity> objects = new ArrayList<>(), List<FormActionProps> props = new ArrayList<>() ]
 @init {
     ObjectEntity object = null;
@@ -3215,7 +3204,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
 }
-	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })? 
+	:	'SEEK' ('FIRST' | 'LAST' { type = UpdateType.LAST; } | 'NULL' { type = UpdateType.NULL; })?
 		(	obj=formObjectID EQ pe=propertyExpression[context, dynamic]
 		|	gobj=formGroupObjectID ('OBJECTS' list=seekObjectsList[context, dynamic] { objNames = $list.objects; lps = $list.values; })?
 		)
@@ -4325,7 +4314,7 @@ metaCodeDeclarationStatement
 	String code;
 	List<String> tokens;
 	List<Pair<Integer, Boolean>> metaTokens;
-	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	if (inInitParseState()) {
@@ -4337,7 +4326,7 @@ metaCodeDeclarationStatement
 		{
 			Pair<List<String>, List<Pair<Integer, Boolean>>> tokensAndMeta = self.grabMetaCode($id.text);
 			tokens = tokensAndMeta.first;
-			metaTokens = tokensAndMeta.second;			
+			metaTokens = tokensAndMeta.second;
 		}
 		'END'
 	;
@@ -4843,7 +4832,7 @@ fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
 fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
-fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+; 
+fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+;
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'ITEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
