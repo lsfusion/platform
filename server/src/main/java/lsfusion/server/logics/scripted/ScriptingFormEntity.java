@@ -33,6 +33,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -272,11 +273,6 @@ public class ScriptingFormEntity {
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
-            if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
-                form.putIntegrationOptions(alias != null ? alias : ((ScriptingLogicsModule.ActionOrPropertyUsage) pDrawUsage).property.name,
-                        new IntegrationOptions(propertyOptions.getAttr()));
-            }
-
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
             LP property = null;
@@ -322,7 +318,18 @@ public class ScriptingFormEntity {
 
             String formPath = points.get(i).toString();
             PropertyDrawEntity propertyDraw = form.addPropertyDraw(property, version, formPath, objects);
-            
+
+            if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
+                List<String> groups = new ArrayList<>();
+                AbstractGroup parent = propertyDraw.propertyObject.property.getParent();
+                while (parent != null && !parent.equals(LM.BL.LM.privateGroup)) {
+                    groups.add(parent.getName());
+                    parent = parent.getParent();
+                }
+                form.putIntegrationPropertyOptions(alias != null ? alias : ((ScriptingLogicsModule.ActionOrPropertyUsage) pDrawUsage).property.name,
+                        new IntegrationPropertyOptions(groups, propertyOptions.getAttr()));
+            }
+
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
