@@ -29,6 +29,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.actions.ImportExportUtils;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
@@ -65,7 +66,7 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                 CalcPropertyObjectEntity property = (CalcPropertyObjectEntity) propertyDraw.propertyObject;
 
                 ImportFormKeys keys = getNeededGroupsForColumnProp(property);
-                String escapedId = escapeTag(propertyDraw.getSID());
+                String escapedId = ImportExportUtils.getPropertyTag(propertyDraw.getSID());
                 propertyKeysMap.put(escapedId, Pair.create(keys, property));
 
                 List<String> headersEntry = headersMap.get(toDraw.getSID());
@@ -234,10 +235,6 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
                 return prevValue;
             }
         });
-    }
-
-    private String escapeTag(String value) {
-        return value.replace("_", "__").replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
     }
 
     protected boolean indexBased() {
