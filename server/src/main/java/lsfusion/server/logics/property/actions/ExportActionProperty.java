@@ -76,7 +76,7 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
     protected byte[] exportHierarchical(ExecutionContext<ClassPropertyInterface> context, ReportGenerationData reportData) throws IOException {
         HierarchicalFormExporter exporter;
         if (staticType == FormExportType.XML) {
-            exporter = new XMLFormExporter(reportData, formObjectGroups, formPropertyGroups, attrs);
+            exporter = new XMLFormExporter(reportData, form.getStaticForm().getName(), formObjectGroups, formPropertyGroups, attrs);
         } else {
             assert staticType == FormExportType.JSON;
             exporter = new JSONFormExporter(reportData, formObjectGroups, formPropertyGroups);
