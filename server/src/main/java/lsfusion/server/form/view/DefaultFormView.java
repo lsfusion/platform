@@ -496,7 +496,7 @@ public class DefaultFormView extends FormView {
             return getPanelPropsContainer(propertyDraw, version);
         }
 
-        if (!currentGroup.createContainer) {
+        if (!currentGroup.createContainer()) {
             return getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
         }
 
