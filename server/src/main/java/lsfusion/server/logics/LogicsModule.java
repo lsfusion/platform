@@ -439,23 +439,23 @@ public abstract class LogicsModule {
 
     // ------------------- Loggable ----------------- //
 
-    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LCP addDCProp(LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
         Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
-        LCP derDataProp = addProperty(group, new LCP<>(dataProperty));
+        LCP derDataProp = addProperty(null, new LCP<>(dataProperty));
 
         derDataProp.setEventChange(derivedProp, whereNum, params);
         return derDataProp;
     }
 
-    protected <D extends PropertyInterface> LCP addLogProp(AbstractGroup group, LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LCP addLogProp(LocalizedString caption, int whereNum, LCP<D> derivedProp, Object... params) {
         Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, whereNum, params);
 
         // выполняем само создание свойства
         StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, LogicalClass.instance);
-        return addProperty(group, new LCP<>(dataProperty));
+        return addProperty(null, new LCP<>(dataProperty));
     }
 
     private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, int whereNum, Object[] params) {
@@ -1438,7 +1438,7 @@ public abstract class LogicsModule {
         
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
         
-        LCP result = addDCProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
+        LCP result = addDCProp(LocalizedString.create("{logics.log}" + " " + lp.property), 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
 
         makePropertyPublic(result, name, signature);
         ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
@@ -1451,7 +1451,7 @@ public abstract class LogicsModule {
         List<ResolveClassSet> signature = getSignatureForLogProperty(lp, systemEventsLM);
 
         LCP equalsProperty = addJProp(baseLM.equals2, 1, systemEventsLM.currentSession);
-        LCP logDropProperty = addLogProp(baseLM.privateGroup, LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
+        LCP logDropProperty = addLogProp(LocalizedString.create("{logics.log}" + " " + lp.property + " {drop}"), 1, lp, add(new Object[]{equalsProperty, lp.listInterfaces.size() + 1}, directLI(lp)));
 
         LCP changedProperty = addCHProp(lp, IncrementType.DROP, PrevScope.EVENT);
         LCP whereProperty = addJProp(false, LocalizedString.NONAME, baseLM.and1, add(directLI(changedProperty), new Object[] {equalsProperty, changedProperty.listInterfaces.size() + 1}));
