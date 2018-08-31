@@ -182,7 +182,7 @@ quantityRemovedClasses 'Количество удалённых классов' 
 quantityChangedClasses 'Количество изменённых классов' = DATA INTEGER (Session);
 changes 'Изменения' = DATA TEXT (Session);
 
-dateTime 'Время' = DATA DATETIME (Session) IN recognize;
+dateTime 'Время' = DATA DATETIME (Session) IN id;
 date 'Дата' (Session s) = DATE(dateTime(s));
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
@@ -190,8 +190,8 @@ form 'Форма сессии' = DATA Form (Session);
 captionForm 'Название формы' (Session session) = caption(form(session));
 
 connection 'Подключение сессии' = DATA Connection(Session) INDEXED;
-hostnameComputerConnection 'Имя компьютера' = hostnameComputer(connection(Session session))IN recognize;
-userLoginConnection 'Логин пользователя' = userLogin(connection(Session session)) IN recognize;
+hostnameComputerConnection 'Имя компьютера' = hostnameComputer(connection(Session session))IN id;
+userLoginConnection 'Логин пользователя' = userLogin(connection(Session session)) IN id;
 
 @defineLog (Session, 'изменений', log, date);
 

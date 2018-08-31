@@ -16,14 +16,14 @@ TABLE numerator (Numerator);
 
 name 'Наименование' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
 
-series 'Серия' = DATA STRING[2] (Numerator) IN recognize CHARWIDTH 3 FIXED;
+series 'Серия' = DATA STRING[2] (Numerator) IN id CHARWIDTH 3 FIXED;
 
-minValue 'Мин. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
-maxValue 'Макс. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
+minValue 'Мин. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
+maxValue 'Макс. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 
 stringLength 'Длина' = DATA INTEGER (Numerator) IN base;
 
-curValue 'Тек. значение' = DATA LONG (Numerator) IN recognize CHARWIDTH 15;
+curValue 'Тек. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
 lpadStringWithZero = FORMULA VARSTRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
@@ -116,7 +116,7 @@ NAVIGATOR {
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
-GROUP numbered 'Нумератор' : recognize;
+GROUP numbered 'Нумератор' : id;
 
 META defineNumberedAbstract(class)
     number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;

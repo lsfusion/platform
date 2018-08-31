@@ -16,7 +16,7 @@ GROUP public 'Пользовательские свойства' : root;
 GROUP private 'Внутренние свойства' : root;
 
 GROUP base 'Атрибуты' : public;
-GROUP recognize 'Идентифицирующие свойства' : base;
+GROUP id 'Идентифицирующие свойства' : base;
 GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 

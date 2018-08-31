@@ -453,7 +453,7 @@ META defineDocumentDetailIndex (object, detailClass)
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1
         ORDER d BY object(d) CHARWIDTH 4;
-    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize;  
+    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN id;  
 END
 
 META defineDocumentDetailIndexPersistent (object, detailClass)
@@ -461,7 +461,7 @@ META defineDocumentDetailIndexPersistent (object, detailClass)
     defaultIndex 'Номер строки (авт.)' (detailClass d) =
         PARTITION SUM 1
         ORDER d BY object(d) CHARWIDTH 4;
-    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN recognize MATERIALIZED;  
+    index 'Номер строки' (detailClass d) = OVERRIDE dataIndex(d), defaultIndex(d) IN id MATERIALIZED;  
 END
 
 META defineDocumentDetailSortOrder (object, detailClass)
@@ -544,8 +544,8 @@ META defineDocumentInterfaceHeaderNumber(objectClass)
 END
 
 META defineDocumentDetailNumber (object, detailClass)
-    number 'Номер' (detailClass d) = number(object(d)) IN recognize CHARWIDTH 7;
-    series 'Серия' (detailClass d) = series(object(d)) IN recognize CHARWIDTH 3 FIXED;
+    number 'Номер' (detailClass d) = number(object(d)) IN id CHARWIDTH 7;
+    series 'Серия' (detailClass d) = series(object(d)) IN id CHARWIDTH 3 FIXED;
     seriesNumber 'Серия/номер' (detailClass d) = seriesNumber(object(d));
 END
 
@@ -1142,8 +1142,8 @@ END
 
 // Number
 META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix)
-    number 'Номер документа' (###aggrObject o) = number(suffix(o)) IN recognize;
-    series 'Серия документа' (###aggrObject o) = series(suffix(o)) IN recognize;
+    number 'Номер документа' (###aggrObject o) = number(suffix(o)) IN id;
+    series 'Серия документа' (###aggrObject o) = series(suffix(o)) IN id;
     seriesNumber 'Серия/номер документ' (###aggrObject o) = seriesNumber(suffix(o));
 END
 
