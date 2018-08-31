@@ -82,7 +82,7 @@ failed 'Ошибка'= DATA BOOLEAN (ScheduledClientTaskLog);
 lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
 date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
-isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [=GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
+isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
 stopScheduler 'Остановить планировщик'  INTERNAL  'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
 stopSchedulerApply 'Остановить планировщик'  { 

@@ -188,7 +188,7 @@ fullForbidChange (User user, ActionOrProperty property) =
 
 cachePropertyPolicy 'Кэшировать политику безопасности для свойств' = DATA BOOLEAN (User);
 updatePropertyPolicyCaches  INTERNAL  'lsfusion.server.logics.security.UpdatePropertyPolicyCachesProperty' (User);
-WHEN [=GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR CHANGED(fullForbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
+WHEN [GROUP SUM 1 IF (CHANGED(fullForbidView(User user, ActionOrProperty actionOrProperty) AND cachePropertyPolicy(user)) OR CHANGED(fullForbidChange(user, actionOrProperty) AND cachePropertyPolicy(user))) BY user](User user) DO
     updatePropertyPolicyCaches(user);
 onStarted() + { 
     FOR cachePropertyPolicy(User user) DO 
