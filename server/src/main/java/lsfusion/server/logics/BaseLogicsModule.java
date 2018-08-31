@@ -334,7 +334,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         baseGroup = findGroup("base");
         baseGroup.createContainer = false;
 
-        recognizeGroup = findGroup("recognize");
+        recognizeGroup = findGroup("id");
         recognizeGroup.createContainer = false;
 
         drillDownGroup = findGroup("drillDown");

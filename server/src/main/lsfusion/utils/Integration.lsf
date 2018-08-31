@@ -9,7 +9,7 @@ META defineExternalizable (object, type)
 END
 
 META defineExternalizable (object, type, prefix)
-    prefix###id 'Код' = DATA type (###object) IN recognize INDEXED CHARWIDTH 10;
+    prefix###id 'Код' = DATA type (###object) IN id INDEXED CHARWIDTH 10;
     prefix###object (id) = GROUP AGGR ###object object BY prefix###id (object);
 END
 
