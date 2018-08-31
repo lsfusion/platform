@@ -17,10 +17,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class XMLFormExporter extends HierarchicalFormExporter {
+    private String formName;
     private Set<String> attrs;
 
-    public XMLFormExporter(ReportGenerationData reportData, Map<String, List<String>> formObjectGroups, Map<String, List<String>> formPropertyGroups, Set<String> attrs) {
+    public XMLFormExporter(ReportGenerationData reportData, String formName, Map<String, List<String>> formObjectGroups, Map<String, List<String>> formPropertyGroups, Set<String> attrs) {
         super(reportData, formObjectGroups, formPropertyGroups);
+        this.formName = formName;
         this.attrs = attrs;
     }
 
@@ -28,7 +30,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
     public byte[] exportNodes(List<Node> rootNodes) throws IOException {
         File file = null;
         try {
-            Element rootElement = new Element("export");
+            Element rootElement = new Element(formName);
             for (Node rootNode : rootNodes) {
                 for(Map.Entry<String, List<AbstractNode>> nodeEntry : rootNode.getChildren()) {
                     for(AbstractNode childNode : nodeEntry.getValue())
@@ -36,7 +38,7 @@ public class XMLFormExporter extends HierarchicalFormExporter {
                 }
             }
 
-            file = File.createTempFile("exportForm", ".xml");
+            file = File.createTempFile(formName, ".xml");
             XMLOutputter xmlOutput = new XMLOutputter();
             xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(ExternalUtils.defaultXMLJSONCharset));
             try(PrintWriter fw = new PrintWriter(file, ExternalUtils.defaultXMLJSONCharset)) {
