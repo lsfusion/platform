@@ -59,14 +59,14 @@ public class XMLFormExporter extends HierarchicalFormExporter {
             }
         } else if (node instanceof Node) {
             for (Map.Entry<String, List<AbstractNode>> child : ((Node) node).getChildren()) {
-                Element subParentElement = null;
                 for (AbstractNode childNode : child.getValue()) {
+                    Element subParentElement = null;
                     boolean isLeaf = childNode instanceof Leaf;
                     if (!isLeaf || ((Leaf) childNode).getType().toDraw.equals(parentElement.getName())) {
                         List<String> groups = isLeaf ? formPropertyGroups.get(child.getKey()) : formObjectGroups.get(child.getKey());
                         if(groups != null) {
                             for (int i = groups.size() - 1; i >= 0; i--) {
-                                Element subElement = findChild(parentElement, groups.get(i));
+                                Element subElement = findChild(subParentElement != null ? subParentElement : parentElement, groups.get(i));
                                 if (subElement == null) {
                                     subElement = new Element(groups.get(i));
                                     if (subParentElement == null) {

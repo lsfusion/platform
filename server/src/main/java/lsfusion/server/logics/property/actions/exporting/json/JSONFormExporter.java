@@ -55,12 +55,13 @@ public class JSONFormExporter extends HierarchicalFormExporter {
                 JSONArray array = new JSONArray();
                 JSONObject subParentElement = null;
                 for(AbstractNode childNode : child.getValue()) {
+                    subParentElement = null;
                     boolean isLeaf = childNode instanceof Leaf;
 
                     List<String> groups = isLeaf ? formPropertyGroups.get(child.getKey()) : formObjectGroups.get(child.getKey());
                     if(groups != null && parentElement instanceof JSONObject) {
                         for (int i = groups.size() - 1; i >= 0; i--) {
-                            JSONObject subElement = findChild((JSONObject) parentElement, groups.get(i));
+                            JSONObject subElement = findChild(subParentElement != null ? subParentElement : (JSONObject) parentElement, groups.get(i));
                             if (subElement == null) {
                                 subElement = new JSONObject();
                                 if (subParentElement == null) {

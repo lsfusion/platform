@@ -9,6 +9,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
+import lsfusion.server.logics.property.actions.ImportExportUtils;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -114,28 +115,10 @@ public abstract class FormExporter {
         return objectElementsMap;
     }
 
-
-    private String escapeTag(String value, boolean ignoreUnderscore) {
-        return (ignoreUnderscore ? value : value.replace("_", "__")).replace("()", "").replaceAll(",|\\(", "_").replace(")", "");
-    }
-
     private Map<String, String> getPropertyTagMap(List<String> propertyNames) {
         Map<String, String> propertyTagMap = new HashMap<>();
-        boolean collision = false;
         for (String property : propertyNames) {
-            String propertyTag = escapeTag(property, true);
-            if (!propertyTagMap.containsKey(propertyTag))
-                propertyTagMap.put(property, propertyTag);
-            else {
-                collision = true;
-                break;
-            }
-        }
-        if (collision) {
-            propertyTagMap = new HashMap<>();
-            for (String property : propertyNames) {
-                propertyTagMap.put(property, escapeTag(property, false));
-            }
+            propertyTagMap.put(property, ImportExportUtils.getPropertyTag(property));
         }
         return propertyTagMap;
     }
