@@ -28,32 +28,32 @@ toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
 
 currentTime 'Тек. время' = toTime(currentDateTime());
 
-sum(DATE date, INTEGER days) = [= FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS INTEGER);
+sum(DATE date, INTEGER days) = [ FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS INTEGER);
 sumMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
 sumYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))', MS 'DATEADD(yy, $2, $1)';
 
 iterate(DATE dt, DATE from, DATE to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sum($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
 
-firstDayOfMonth (DATE date) = [= FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)', MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
-lastDayOfMonth (DATE date) = [= FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)', MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
+firstDayOfMonth (DATE date) = [ FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)', MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
+lastDayOfMonth (DATE date) = [ FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)', MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
 
-subtract(DATE date, LONG days) = [= FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
+subtract(DATE date, LONG days) = [ FORMULA DATE PG '(($1)-($2))', MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
 
-sumSeconds(TIME time, LONG secs) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
-sumMinutes(TIME time, LONG mins) = [= FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
+sumSeconds(TIME time, LONG secs) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](time AS TIME, secs AS LONG);
+sumMinutes(TIME time, LONG mins) = [ FORMULA TIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](time AS TIME, mins AS LONG);
 
-sumDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
-sumMinutes(DATETIME dateTime, LONG mins) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
-sumSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
+sumDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS DATETIME, days AS LONG);
+sumMinutes(DATETIME dateTime, LONG mins) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS DATETIME, mins AS LONG);
+sumSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)+($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, $2, $1)'](dateTime AS DATETIME, secs AS LONG);
 
-subtractSeconds(DATETIME dateTime, LONG secs) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
+subtractSeconds(DATETIME dateTime, LONG secs) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))', MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
 
-subtractDay(DATETIME dateTime, LONG days) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
+subtractDay(DATETIME dateTime, LONG days) = [ FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
 
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')',
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
 
-daysBetweenDates(DATE dateFrom, DATE dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
+daysBetweenDates(DATE dateFrom, DATE dateTo) = [ FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 
 daysInclBetweenDates (DATE date1, DATE date2) = daysBetweenDates(date2, date1) + 1;
 
@@ -97,7 +97,7 @@ onStarted() + {
 
 month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
 
-extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
+extractMonthNumber = [ FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
 extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
 extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
 
@@ -154,7 +154,7 @@ FORM DOWs 'Дни недели'
 
 DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
 
-extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
+extractDOWNumber = [ FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
 extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));
 extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date)) CHARWIDTH 12;
 

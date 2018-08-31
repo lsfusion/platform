@@ -30,7 +30,7 @@ cancel  { CANCEL; }
 onStarted  ABSTRACT LIST ( );
 
 upper = FORMULA 'upper($1)';    
-subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [= FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
+subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
 
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
