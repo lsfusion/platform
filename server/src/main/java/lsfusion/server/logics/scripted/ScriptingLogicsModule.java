@@ -3450,7 +3450,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             List<String> groups = formEntity.getIntegrationObjectOptions().get(formObject).getGroups();
             if(groups != null && !groups.isEmpty()) {
                 String topGroup = groups.get(groups.size() - 1);
-                groups = groups.subList(0, groups.size() - 1);
+                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
                 groups.add(formObject);
                 List<List<String>> entry = formObjectGroups.get(topGroup);
                 if(entry == null)
@@ -3468,7 +3468,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             List<String> groups = formEntity.getIntegrationPropertyOptions().get(formProperty).getGroups();
             if(groups != null && !groups.isEmpty()) {
                 String topGroup = groups.get(groups.size() - 1);
-                groups = groups.subList(0, groups.size() - 1);
+                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
                 groups.add(formProperty);
                 List<List<String>> entry = formPropertyGroups.get(topGroup);
                 if(entry == null)
