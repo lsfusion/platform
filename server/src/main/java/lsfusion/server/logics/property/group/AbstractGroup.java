@@ -33,11 +33,15 @@ public class AbstractGroup extends AbstractNode {
 
     private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
 
-    public boolean createContainer = true;
-
     public AbstractGroup(String canonicalName, LocalizedString caption) {
         this.canonicalName = canonicalName;
         this.caption = caption;
+    }
+
+    public boolean system = false;
+
+    public boolean createContainer() {
+        return !system;
     }
 
     private boolean isSimple;

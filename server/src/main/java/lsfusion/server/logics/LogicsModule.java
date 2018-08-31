@@ -345,7 +345,7 @@ public abstract class LogicsModule {
             if (baseLM.privateGroup != null && !temporary)
                 baseLM.privateGroup.add(group, version);
         }
-        group.createContainer = toCreateContainer;
+        group.system = !toCreateContainer;
         addGroup(group);
         return group;
     }

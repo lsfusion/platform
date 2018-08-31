@@ -322,28 +322,28 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         rootGroup = findGroup("root");
 //        rootGroup.changeChildrenToSimple(version);
-        rootGroup.createContainer = false;
+        rootGroup.system = true;
 
         publicGroup = findGroup("public");
-        publicGroup.createContainer = false;
+        publicGroup.system = true;
 
         privateGroup = findGroup("private");
         privateGroup.changeChildrenToSimple(version); 
-        privateGroup.createContainer = false;
+        privateGroup.system = true;
 
         baseGroup = findGroup("base");
-        baseGroup.createContainer = false;
+        baseGroup.system = true;
 
         recognizeGroup = findGroup("id");
-        recognizeGroup.createContainer = false;
+        recognizeGroup.system = true;
 
         drillDownGroup = findGroup("drillDown");
         drillDownGroup.changeChildrenToSimple(version);
-        drillDownGroup.createContainer = false;
+        drillDownGroup.system = true;
 
         propertyPolicyGroup = findGroup("propertyPolicy");
         propertyPolicyGroup.changeChildrenToSimple(version);
-        propertyPolicyGroup.createContainer = false;
+        propertyPolicyGroup.system = true;
     }
 
     @Override

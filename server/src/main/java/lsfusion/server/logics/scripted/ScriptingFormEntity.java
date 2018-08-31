@@ -99,15 +99,15 @@ public class ScriptingFormEntity {
                 groupObj.updateType = groupObject.updateType;
             }
 
-            List<String> formObjectGroups = new ArrayList<>();
-            if (groupObject.formObjectGroup != null) {
-                AbstractGroup parent = LM.findGroup(groupObject.formObjectGroup);
-                while (parent != null && !parent.equals(LM.BL.LM.privateGroup)) {
-                    formObjectGroups.add(parent.getName());
-                    parent = parent.getParent();
-                }
+        List<String> formObjectGroups = new ArrayList<>();
+        if (groupObject.formObjectGroup != null) {
+            AbstractGroup parent = LM.findGroup(groupObject.formObjectGroup);
+            while (parent != null && !parent.system) {
+                formObjectGroups.add(parent.getName());
+                parent = parent.getParent();
             }
-            form.putIntegrationObjectOptions(groupName, new IntegrationObjectOptions(formObjectGroups));
+        }
+        form.putIntegrationObjectOptions(groupName, new IntegrationObjectOptions(formObjectGroups));
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
@@ -311,7 +311,7 @@ public class ScriptingFormEntity {
             if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
                 List<String> groups = new ArrayList<>();
                 AbstractGroup parent = propertyDraw.propertyObject.property.getParent();
-                while (parent != null && !parent.equals(LM.BL.LM.privateGroup)) {
+                while (parent != null && !parent.system) {
                     groups.add(parent.getName());
                     parent = parent.getParent();
                 }
