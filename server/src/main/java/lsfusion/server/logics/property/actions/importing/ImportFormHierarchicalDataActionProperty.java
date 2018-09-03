@@ -33,6 +33,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     protected Map<String, List<List<String>>> formPropertyGroups;
 
     private Map<String, Integer> tagsMap;
+    private Set<String> formObjects;
 
     protected String root;
 
@@ -72,6 +73,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
                                                                                                              Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) {
         E rootElement = getRootElement((byte[]) file);
         tagsMap = new HashMap<>();
+        formObjects =  getFormObjects(propertyKeysMap.values());
         return getData(Pair.create((String) null, (Object) rootElement), propertyKeysMap, filters);
     }
 
@@ -87,47 +89,60 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
             tagsMap.put(child.first, count == null ? 0 : ++count);
 
             Pair<ImportFormKeys, CalcPropertyObjectEntity> entry = propertyKeysMap.get(child.first);
-            if (entry != null && (!entry.first.getKeysId().equals(child.first) || child.second instanceof JSONObject)) {
-                ImportFormData dataEntry = dataMap.get(entry.first);
-                if (dataEntry == null)
-                    dataEntry = new ImportFormData();
-                ImMap<KeyField, DataObject> key = getKeys(entry.first);
-                if(!key.isEmpty()) {
-                    Map<Property, ObjectValue> properties = dataEntry.get(key);
-                    if (properties == null)
-                        properties = new HashMap<>();
-                    properties.put(entry.second.property, getObjectValue(child.second, (ConcreteClass) entry.second.getType()));
-                    dataEntry.put(key, properties);
-                    dataMap.put(entry.first, dataEntry);
-                }
-            }
-
-            for (Map.Entry<ImportFormKeys, ImportFormData> childDataEntry : getData(child, propertyKeysMap, filters).entrySet()) {
-                ImportFormData data = dataMap.get(childDataEntry.getKey());
-                dataMap.put(childDataEntry.getKey(), merge(data, childDataEntry.getValue()));
-            }
-
-            if(!isLeaf(child.second)) {
-                Map<ImportFormKeys, ImportFormData> filterValues = getFilterValues(filters, child.first);
-                for(Map.Entry<ImportFormKeys, ImportFormData> filterEntry : filterValues.entrySet()) {
-                    ImportFormKeys filterKey = filterEntry.getKey();
-                    ImportFormData filterValue = filterEntry.getValue();
-                    ImportFormData dataEntry = dataMap.get(filterKey);
-                    if(dataEntry == null)
+            //property found OR it's root OR it's form object
+            if(entry != null || rootElement.first == null || formObjects.contains(rootElement.first)) {
+                if (entry != null && (!entry.first.getKeysId().equals(child.first) || child.second instanceof JSONObject)) {
+                    ImportFormData dataEntry = dataMap.get(entry.first);
+                    if (dataEntry == null)
                         dataEntry = new ImportFormData();
-                    for(Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValueEntry : filterValue.getData().entrySet()) {
-                        Map<Property, ObjectValue> innerFilterEntry = dataEntry.get(filterValueEntry.getKey());
-                        if(innerFilterEntry == null)
-                            innerFilterEntry = new HashMap<>();
-                        innerFilterEntry.putAll(filterValueEntry.getValue());
-                        dataEntry.put(filterValueEntry.getKey(), innerFilterEntry);
+                    ImMap<KeyField, DataObject> key = getKeys(entry.first);
+                    if (!key.isEmpty()) {
+                        Map<Property, ObjectValue> properties = dataEntry.get(key);
+                        if (properties == null)
+                            properties = new HashMap<>();
+                        properties.put(entry.second.property, getObjectValue(child.second, (ConcreteClass) entry.second.getType()));
+                        dataEntry.put(key, properties);
+                        dataMap.put(entry.first, dataEntry);
                     }
-                    dataMap.put(filterKey, dataEntry);
+                }
+
+                for (Map.Entry<ImportFormKeys, ImportFormData> childDataEntry : getData(child, propertyKeysMap, filters).entrySet()) {
+                    ImportFormData data = dataMap.get(childDataEntry.getKey());
+                    dataMap.put(childDataEntry.getKey(), merge(data, childDataEntry.getValue()));
+                }
+
+                if (!isLeaf(child.second)) {
+                    Map<ImportFormKeys, ImportFormData> filterValues = getFilterValues(filters, child.first);
+                    for (Map.Entry<ImportFormKeys, ImportFormData> filterEntry : filterValues.entrySet()) {
+                        ImportFormKeys filterKey = filterEntry.getKey();
+                        ImportFormData filterValue = filterEntry.getValue();
+                        ImportFormData dataEntry = dataMap.get(filterKey);
+                        if (dataEntry == null)
+                            dataEntry = new ImportFormData();
+                        for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> filterValueEntry : filterValue.getData().entrySet()) {
+                            Map<Property, ObjectValue> innerFilterEntry = dataEntry.get(filterValueEntry.getKey());
+                            if (innerFilterEntry == null)
+                                innerFilterEntry = new HashMap<>();
+                            innerFilterEntry.putAll(filterValueEntry.getValue());
+                            dataEntry.put(filterValueEntry.getKey(), innerFilterEntry);
+                        }
+                        dataMap.put(filterKey, dataEntry);
+                    }
                 }
             }
 
         }
         return dataMap;
+    }
+
+    private Set<String> getFormObjects(Collection<Pair<ImportFormKeys, CalcPropertyObjectEntity>> properties) {
+        Set<String> result = new HashSet<>();
+        for(Pair<ImportFormKeys, CalcPropertyObjectEntity> property : properties) {
+            for(ObjectEntity objectEntity : property.first.getData()) {
+                result.add(objectEntity.getSID());
+            }
+        }
+        return result;
     }
 
     private ImMap<KeyField, DataObject> getKeys(ImportFormKeys keys) {
