@@ -9,10 +9,7 @@ import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerFactory;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.TreeGroupEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.mutables.Version;
@@ -134,7 +131,8 @@ public class DefaultFormView extends FormView {
             addTreeGroupView(treeNextGroup, version);
 
         for (PropertyDrawView propertyDraw : getNFPropertiesListIt(version)) {
-            addPropertyDrawView(propertyDraw, version);
+            IntegrationPropertyOptions options = formEntity.getIntegrationPropertyOptions().get(propertyDraw.getCaption().getSourceString());
+            addPropertyDrawView(propertyDraw, options != null ? options.getGroup() : null, version);
         }
 
         for (RegularFilterGroupView filterGroup : getNFRegularFiltersListIt(version)) {
@@ -344,7 +342,7 @@ public class DefaultFormView extends FormView {
     }
 
     // добавление в панель по сути, так как добавление в grid происходит уже на живой форме
-    private void addPropertyDrawView(PropertyDrawView propertyDraw, Version version) {
+    private void addPropertyDrawView(PropertyDrawView propertyDraw, AbstractGroup group, Version version) {
         PropertyDrawEntity drawEntity = propertyDraw.entity;
         drawEntity.proceedDefaultDesign(propertyDraw, this);
 
@@ -355,7 +353,7 @@ public class DefaultFormView extends FormView {
         } else {
             // иерархическая структура контейнеров групп: каждый контейнер группы - это CONTAINERH,
             // в который сначала добавляется COLUMNS для свойств этой группы, а затем - контейнеры подгрупп
-            AbstractGroup propertyParentGroup = propertyDraw.entity.propertyObject.property.getNFParent(version);
+            AbstractGroup propertyParentGroup = group != null ? group : propertyDraw.entity.propertyObject.property.getNFParent(version);
             propertyContainer = getPropGroupContainer(drawEntity, propertyParentGroup, version);
         }
 
@@ -379,7 +377,7 @@ public class DefaultFormView extends FormView {
     @Override
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, Version version) {
         PropertyDrawView view = super.addPropertyDraw(propertyDraw, version);
-        addPropertyDrawView(view, version);
+        addPropertyDrawView(view, null, version);
         return view;
     }
 

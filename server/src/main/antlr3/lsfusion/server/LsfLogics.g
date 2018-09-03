@@ -665,6 +665,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'ON' 'KEYPRESS' key=stringLiteral prop=formActionPropertyObject { $options.addKeyPressEditAction($key.val, $prop.action); }
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
+		|   'IN' groupName=compoundID { $options.setFormPropertyGroup($groupName.sid); }
 		)*
 	;
 
