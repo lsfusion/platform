@@ -47,6 +47,7 @@ public class FormPropertyOptions {
 
     //integration options
     private Boolean attr;
+    private String formPropertyGroup;
     
     public void setNewSession(Boolean newSession) {
         this.newSession = newSession;
@@ -299,6 +300,14 @@ public class FormPropertyOptions {
         this.attr = attr;
     }
 
+    public String getFormPropertyGroup() {
+        return formPropertyGroup;
+    }
+
+    public void setFormPropertyGroup(String formPropertyGroup) {
+        this.formPropertyGroup = formPropertyGroup;
+    }
+
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
         FormPropertyOptions merged = new FormPropertyOptions();
 
@@ -327,6 +336,7 @@ public class FormPropertyOptions {
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
 
         merged.setAttr(nvl(overrides.getAttr(), attr));
+        merged.setFormPropertyGroup(nvl(overrides.getFormPropertyGroup(), formPropertyGroup));
         return merged;
     }
     

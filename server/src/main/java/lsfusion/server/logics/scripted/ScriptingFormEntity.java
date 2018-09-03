@@ -331,13 +331,15 @@ public class ScriptingFormEntity {
 
             if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
                 List<String> groups = new ArrayList<>();
-                AbstractGroup parent = propertyDraw.propertyObject.property.getParent();
+                String group = propertyOptions.getFormPropertyGroup();
+                AbstractGroup parent = group != null ? LM.findGroup(group) : propertyDraw.propertyObject.property.getParent();
+                AbstractGroup propertyGroup = parent;
                 while (parent != null && !parent.system) {
                     groups.add(parent.getName());
                     parent = parent.getParent();
                 }
                 form.putIntegrationPropertyOptions(alias != null ? alias : ((ScriptingLogicsModule.ActionOrPropertyUsage) pDrawUsage).property.name,
-                        new IntegrationPropertyOptions(groups, propertyOptions.getAttr()));
+                        new IntegrationPropertyOptions(propertyGroup, groups, propertyOptions.getAttr()));
             }
 
             applyPropertyOptions(propertyDraw, propertyOptions, version);
