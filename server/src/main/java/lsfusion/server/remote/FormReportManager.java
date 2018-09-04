@@ -10,6 +10,7 @@ import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.form.ReportGenerationDataType;
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
@@ -142,7 +143,7 @@ public class FormReportManager<PropertyDraw extends PropertyReaderInstance, Grou
                 reportType.isPrintMessage() ? getPropertyCaptionsMapByteArray(sourceGenerator, reportType, selectTop) :
                         getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports());
     }
 
     public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(Integer groupId) {

@@ -136,6 +136,33 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     };
 
 
+    public final PropertyReaderEntity showIfReader = new PropertyReaderEntity() {
+        @Override
+        public byte getTypeID() {
+            return PropertyReadType.SHOWIF;
+        }
+
+        @Override
+        public int getID() {
+            return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public PropertyType getPropertyType(FormEntity formEntity) {
+            return null;
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return PropertyDrawEntity.this.propertyShowIf;
+        }
+
+        @Override
+        public String toString() {
+            return "SHOWIF" + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+    };
+    
     public PropertyDrawEntity() {
     }
 

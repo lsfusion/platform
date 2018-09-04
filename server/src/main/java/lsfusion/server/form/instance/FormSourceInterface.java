@@ -64,9 +64,11 @@ public interface FormSourceInterface<PropertyDraw extends PropertyReader, GroupO
     CalcPropertyObject getDrawInstance(PropertyDraw propertyDraw);
     CalcPropertyObject getPropertyCaption(PropertyDraw propertyDraw);
     CalcPropertyObject getPropertyFooter(PropertyDraw propertyDraw);
+    CalcPropertyObject getPropertyShowIf(PropertyDraw propertyDraw);
 
     PropertyReader getCaptionReader(PropertyDraw propertyDraw);
     PropertyReader getFooterReader(PropertyDraw propertyDraw);
+    PropertyReader getShowIfReader(PropertyDraw propertyDraw);
 
     int getID(PropertyReader pri);
 }

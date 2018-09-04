@@ -7,7 +7,6 @@ import lsfusion.base.Pair;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.ReportGenerationDataType;
 import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 
 import java.io.DataInputStream;
@@ -53,6 +52,8 @@ public class ClientReportData implements JRDataSource {
                     name += headerSuffix;
                 } else if (type == PropertyReadType.FOOTER) {
                     name += footerSuffix;
+                } else if (type == PropertyReadType.SHOWIF) {
+                    name += showIfSuffix;
                 }
                 propertyNames.add(name);
                 properties.put(name, new ReportPropertyData(type, inStream.readInt(), inStream.readUTF(), inStream.readUTF(), inStream.readInt(), inStream.readInt()));
@@ -122,7 +123,7 @@ public class ClientReportData implements JRDataSource {
         return compositeColumnValues;
     }
 
-    public boolean next() throws JRException {
+    public boolean next() {
         if(!iterator.hasNext()) return false;
         currentKeyRow = iterator.next();
         return true;
@@ -143,7 +144,7 @@ public class ClientReportData implements JRDataSource {
         compositeColumnValues = columnValues; 
     }
 
-    public Object getFieldValue(JRField jrField) throws JRException {
+    public Object getFieldValue(JRField jrField) {
 
         String fieldName = jrField.getName();
         
@@ -161,12 +162,7 @@ public class ClientReportData implements JRDataSource {
                 int index = extractData.first;
                 String realFieldName = extractData.second;
                 if (index != -1) {
-                    String dataFieldName = realFieldName;
-                    if (realFieldName.endsWith(headerSuffix)) {
-                        dataFieldName = realFieldName.substring(0, realFieldName.length() - headerSuffix.length());
-                    } else if (realFieldName.endsWith(footerSuffix)) {
-                        dataFieldName = realFieldName.substring(0, realFieldName.length() - footerSuffix.length());
-                    }
+                    String dataFieldName = ReportGenerator.getBaseFieldName(realFieldName);
                     value = getCompositeFieldValue(dataFieldName, realFieldName, index);
                 }
             }

@@ -227,12 +227,7 @@ public class ReportGenerator {
             int valuesCnt = dataStream.readInt();
             for (int j = 0; j < valuesCnt; j++) {
                 List<Object> values = new ArrayList<>();
-                String dataFieldId = fieldId;
-                if (fieldId.endsWith(headerSuffix)) {
-                    dataFieldId = fieldId.substring(0, fieldId.length() - headerSuffix.length());
-                } else if (fieldId.endsWith(footerSuffix)) {
-                    dataFieldId = fieldId.substring(0, fieldId.length() - footerSuffix.length());
-                }
+                String dataFieldId = getBaseFieldName(fieldId); 
                 int objCnt = output.compositeFieldsObjects.get(dataFieldId).size();
                 for (int k = 0; k < objCnt; k++) {
                     values.add(BaseUtils.deserializeObject(dataStream));
@@ -282,8 +277,10 @@ public class ReportGenerator {
     }
 
     private void transformDesigns(boolean ignorePagination) throws JRException {
-        for (JasperDesign design : designs.values()) {
-            transformDesign(design, ignorePagination);
+        for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+            JasperDesign design = entry.getValue();
+            String subreportID = entry.getKey();
+            transformDesign(design, subreportID, ignorePagination);
             design.setIgnorePagination(ignorePagination);
         }
     }
@@ -294,28 +291,26 @@ public class ReportGenerator {
     
     public static final Pattern fieldPattern = Pattern.compile("\\$F\\{[\\w.\\[\\](),]+\\}");
 
+    // "$F{fieldName}" -> "fieldName"
     private String getFieldName(String fieldString) {
         return fieldString.substring(3, fieldString.length() - 1);
     }
     
     // "fieldName.header" -> "fieldName"
-    private String getBaseFieldNameFromName(String fieldName) {
-        if (fieldName.endsWith(headerSuffix)) {
+    public static String getBaseFieldName(String fieldName) {
+        if (isHeaderFieldName(fieldName)) {
             return fieldName.substring(0, fieldName.length() - headerSuffix.length());
-        } else if (fieldName.endsWith(footerSuffix)) {
+        } else if (isFooterFieldName(fieldName)) {
             return fieldName.substring(0, fieldName.length() - footerSuffix.length());
+        } else if (isShowIfFieldName(fieldName)) {
+            return fieldName.substring(0, fieldName.length() - showIfSuffix.length());
         } else {
             return fieldName;
         }
     }
     
-    // "$F{fieldName.header}" -> "fieldName" 
-    private String getBaseFieldName(String fieldString) {
-        return getBaseFieldNameFromName(getFieldName(fieldString));
-    }
-    
     private boolean isColumnPropertyField(String fieldName) {
-        String baseFieldName = getBaseFieldNameFromName(fieldName);
+        String baseFieldName = getBaseFieldName(fieldName);
         return compositeColumnValues.containsKey(baseFieldName);
     }
     
@@ -379,7 +374,7 @@ public class ReportGenerator {
             if (style instanceof JRDesignStyle) {
                 String fieldName = findFieldNameToSplitStyle(style);
                 if (fieldName != null) {
-                    String baseFieldName = getBaseFieldNameFromName(fieldName);
+                    String baseFieldName = getBaseFieldName(fieldName);
                     styleNames.add(style.getName());
                     for (int i = 0; i < compositeColumnValues.get(baseFieldName).size(); ++i) {
                         JRDesignStyle newStyle = (JRDesignStyle) style.clone();
@@ -425,7 +420,7 @@ public class ReportGenerator {
             if (f instanceof JRDesignField) {
                 JRDesignField field = (JRDesignField) f;
                 String fieldName = field.getName();
-                String baseFieldName = getBaseFieldNameFromName(fieldName);
+                String baseFieldName = getBaseFieldName(fieldName);
                 if (compositeColumnValues.containsKey(baseFieldName)) { 
                     JRField removedField = design.removeField(fieldName);
 
@@ -442,14 +437,194 @@ public class ReportGenerator {
         }
     }
 
-    private void transformDesign(JasperDesign design, boolean ignorePagination) throws JRException {
+    private static class Segment {
+        public int left, right;
+        
+        public Segment(int left, int right) {
+            this.left = left;
+            this.right = right;
+        }
+        
+        public int width() {
+            return right - left;
+        }
+        
+        public void shiftLeft(int distance) {
+            left -= distance;
+            right -= distance;
+        } 
+    }
+
+    public static class FieldXBorder implements Comparable<FieldXBorder> {
+        public int x;
+        public boolean isLeft;
+
+        public FieldXBorder(int x, boolean isLeft) {
+            this.x = x;
+            this.isLeft = isLeft;
+        }
+
+        @Override
+        public int compareTo(FieldXBorder o) {
+            if (x < o.x) return -1;
+            if (x > o.x) return 1;
+            if (!isLeft && o.isLeft) return -1;
+            if (isLeft && !o.isLeft) return 1;
+            return 0;
+        }
+    }
+
+    private void transformDesign(JasperDesign design, String subreportID, boolean ignorePagination) throws JRException {
         Set<String> transformedStyleNames = transformColumnDependentStyles(design);
         transformFields(design);
         for (JRBand band : getBands(design)) {
             transformBand(design, band, ignorePagination, transformedStyleNames);
         }
+        
+        if (generationData.useShowIf) {
+            Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design, subreportID);
+            if (!fieldsToHide.isEmpty()) {
+                cutSegments(design, findCutSegments(fieldsToHide));
+            }
+        }
     }
 
+    private List<Segment> findCutSegments(Collection<JRTextField> fieldsToHide) {
+        List<FieldXBorder> fieldsBorders = createSortedFieldsBordersList(fieldsToHide);
+        return findCutSegments(fieldsBorders);
+    }
+
+    private List<FieldXBorder> createSortedFieldsBordersList(Collection<JRTextField> fieldsToHide) {
+        List<FieldXBorder> borders = new ArrayList<>();
+        for (JRTextField field : fieldsToHide) {
+            borders.add(new FieldXBorder(field.getX(), true));
+            borders.add(new FieldXBorder(field.getX() + field.getWidth(), false));
+        }
+        Collections.sort(borders);
+        return borders;
+    }
+    
+    private List<Segment> findCutSegments(List<FieldXBorder> borders) {
+        List<Segment> segments = new ArrayList<>();
+        int openedSegments = 0;
+        int curLeft = 0;
+        for (FieldXBorder ie : borders) {
+            if (ie.isLeft) {
+                ++openedSegments;
+                if (openedSegments == 1) {
+                    curLeft = ie.x;
+                }
+            } else {
+                --openedSegments;
+                if (openedSegments == 0) {
+                    segments.add(new Segment(curLeft, ie.x));
+                }
+            }
+        }
+        return segments;
+    }
+    
+    private Collection<JRTextField> findTextFieldsToHide(JasperDesign design, String subreportID) {
+        return findTextFieldsToHide(design, getHidingFieldsNames(design, subreportID));
+    }
+
+    private List<JRTextField> findTextFieldsToHide(JasperDesign design, Set<String> hidingFieldsNames) {
+        List<JRTextField> textFieldsToHide = new ArrayList<>();
+        for (JRElement element : getDesignElements(design)) {
+            if (element instanceof JRTextField) {
+                JRTextField textElement = (JRTextField) element;
+                String exprText = textElement.getExpression().getText();
+                if (exprText.startsWith("$F{")) {
+                    String fieldName = getFieldName(exprText);
+                    if (hidingFieldsNames.contains(fieldName)) {
+                        textFieldsToHide.add(textElement);
+                    }
+                }
+            }
+        }
+        return textFieldsToHide;
+    }
+    
+    private Set<String> getHidingFieldsNames(JasperDesign design, String subreportID) {
+        Set<String> hidingFieldsNames = new HashSet<>();
+        for (JRField field : design.getFieldsList()) {
+            if (needToBeHidden(field.getName(), subreportID)) {
+                String baseFieldName = getBaseFieldName(field.getName());
+                hidingFieldsNames.add(baseFieldName);
+            }
+        }
+        return hidingFieldsNames;        
+    }
+    
+    
+    private boolean needToBeHidden(final String fieldName, String subreportID) {
+        if (isShowIfFieldName(fieldName)) {
+            ClientReportData reportData = data.get(subreportID);
+            if (reportData.next()) {
+                JRDesignField field = new JRDesignField();
+                field.setName(fieldName);
+                Object o = reportData.getFieldValue(field);
+                reportData.revert();
+                return o == null;
+            }
+        }
+        return false;
+    }
+
+    private Collection<JRElement> getDesignElements(JasperDesign design) {
+        Collection<JRElement> elements = new ArrayList<>();
+        for (JRBand band : design.getAllBands()) {
+            if (band instanceof JRDesignBand) {
+                elements.addAll(Arrays.asList(band.getElements()));
+            }
+        }
+        return elements;
+    }
+    
+    private void cutSegments(JasperDesign design, List<Segment> segments) {
+        Collection<JRElement> elements = getDesignElements(design);
+        int totalShift = 0;
+        for (Segment segment : segments) {
+            segment.shiftLeft(totalShift);
+            for (JRElement element : elements) {
+                if (element.getX() >= segment.right) {   
+                    element.setX(element.getX() - segment.width());
+                } else if (element.getX() <= segment.left && getRightX(element) > segment.left) { 
+                    element.setWidth(element.getWidth() - Math.min(segment.width(), getRightX(element) - segment.left));
+                } else if (element.getX() > segment.left){
+                    element.setWidth(element.getWidth() - Math.min(element.getWidth(), segment.right - element.getX()));
+                    element.setX(segment.left);
+                }
+                assert element.getWidth() >= 0;
+            }
+            totalShift += segment.width(); 
+        }
+        removeZeroWidthElements(design);
+    }
+
+    private void removeZeroWidthElements(JasperDesign design) {
+        for (JRBand band : design.getAllBands()) {
+            if (band instanceof JRDesignBand) {
+                List<JRDesignElement> removedElements = new ArrayList<>();
+                for (JRElement element : band.getElements()) {
+                    if (element instanceof JRDesignElement) {
+                        JRDesignElement designElement = (JRDesignElement) element;
+                        if (designElement.getWidth() == 0) {
+                            removedElements.add(designElement);
+                        }
+                    }
+                }
+                for (JRDesignElement element : removedElements) {
+                    ((JRDesignBand) band).removeElement(element);
+                }
+            }
+        }
+    }
+
+    private int getRightX(JRElement element) {
+        return element.getX() + element.getWidth();
+    }
+    
     private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination, Set<String> transformedStyleNames) {
         if (band instanceof JRDesignBand) {
             JRDesignBand designBand = (JRDesignBand) band;
@@ -513,7 +688,7 @@ public class ReportGenerator {
         String fieldName = findColumnFieldName(textField.getExpression());
 
         if (fieldName != null) {
-            String baseFieldName = getBaseFieldNameFromName(fieldName);
+            String baseFieldName = getBaseFieldName(fieldName);
             toDelete.add(textField);
             int newFieldsCount = compositeColumnValues.get(baseFieldName).size();
             if (newFieldsCount > 0) {

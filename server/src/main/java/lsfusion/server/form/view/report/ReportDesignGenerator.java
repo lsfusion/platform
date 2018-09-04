@@ -219,14 +219,7 @@ public class ReportDesignGenerator {
             List<ReportDrawField> drawFields = getAllowedGroupDrawFields(group);
             for (ReportDrawField field : drawFields) {
                 hasColumnGroupProperty = hasColumnGroupProperty || field.hasColumnGroupObjects;
-                if (field.hasCaptionProperty) {
-                    String fieldId = field.sID + headerSuffix;
-                    addDesignField(design, fieldId, field.captionClass.getName());
-                }
-                if (field.hasFooterProperty) {
-                    String fieldId = field.sID + footerSuffix;
-                    addDesignField(design, fieldId, field.footerClass.getName());
-                }
+                addSupplementalFields(design, field);
             }
 
             if(groupId == null || groupId.equals(group.getID())) { // don't add any other groups in design when exporting to excel
@@ -300,7 +293,7 @@ public class ReportDesignGenerator {
             GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
-            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && ((CalcProperty) property.entity.propertyObject.property).getInterfaceCount() == 0) {
+            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && property.entity.propertyObject.property.getInterfaceCount() == 0) {
                 ReportDrawField reportField = property.getReportDrawField(charWidth, 1);
                 if (reportField != null) {
                     addDesignField(design, reportField);
@@ -309,14 +302,29 @@ public class ReportDesignGenerator {
         }
     }
 
+    private void addSupplementalFields(JasperDesign design, ReportDrawField field) throws JRException {
+        if (field.hasHeaderProperty) {
+            String fieldId = field.sID + headerSuffix;
+            addDesignField(design, fieldId, field.headerClass.getName());
+        }
+        if (field.hasFooterProperty) {
+            String fieldId = field.sID + footerSuffix;
+            addDesignField(design, fieldId, field.footerClass.getName());
+        }
+        if (field.hasShowIfProperty) {
+            String fieldId = field.sID + showIfSuffix;
+            addDesignField(design, fieldId, field.showIfClass.getName());
+        }
+    }
+    
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {
         String designCaptionText;
-        if (reportField.hasCaptionProperty) {
+        if (reportField.hasHeaderProperty) {
             designCaptionText = ReportUtils.createFieldString(reportField.sID + headerSuffix);
         } else {
             designCaptionText = '"' + reportField.caption + '"';
         }
-        JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.captionClass);
+        JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.headerClass);
         JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
         captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
         captionField.setKey(reportField.columnGroupName == null ? null : reportField.columnGroupName + ".caption");
