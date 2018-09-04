@@ -219,7 +219,7 @@ END
 @applicationForm(integrationData, '{navigator.integration}');
 @applicationForm(migrationData, '{navigator.migration}');
 
-networkPath 'Сетевой путь' = DATA LOCAL NESTED VARSTRING[255] ();
+networkPath 'Сетевой путь' = DATA LOCAL NESTED VARSTRING[500] ();
 loadNetworkPath 'Загрузить'  INTERNAL  'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
 FORM networkPathForm 'Выбор сетевого пути'
     PROPERTIES() networkPath, loadNetworkPath;
