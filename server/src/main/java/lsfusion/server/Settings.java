@@ -269,6 +269,8 @@ public class Settings implements Cloneable {
     
     private boolean logSqlProcesses = false;
 
+    private boolean useShowIfInReports = true;
+    
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -2445,5 +2447,13 @@ public class Settings implements Cloneable {
 
     public void setUpdateSavePointsMaxMultiplier(double updateSavePointsMaxMultiplier) {
         this.updateSavePointsMaxMultiplier = updateSavePointsMaxMultiplier;
+    }
+
+    public boolean isUseShowIfInReports() {
+        return useShowIfInReports;
+    }
+
+    public void setUseShowIfInReports(boolean useShowIfInReports) {
+        this.useShowIfInReports = useShowIfInReports;
     }
 }

@@ -15,6 +15,8 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.*;
 
+import static lsfusion.interop.form.ReportConstants.isHeaderFieldName;
+
 public abstract class FormExporter {
     Map<String, ClientReportData> data;
     Pair<String, Map<String, List<String>>> formHierarchy;
@@ -82,32 +84,32 @@ public abstract class FormExporter {
         Map<Pair<String, ReportPropertyData>, Object> objectElementsMap = new LinkedHashMap<>();
         Map<ReportPropertyData, Object> values = reportData.getRows().get(keys);
         Map<String, String> propertyTagMap = getPropertyTagMap(reportData.getPropertyNames());
-        for (String property : reportData.getPropertyNames()) {
-            String propertyTag = propertyTagMap.get(property);
-            if (!usedProperties.contains(property) && !property.endsWith(ReportConstants.headerSuffix)) {
-                ReportPropertyData propertyType = reportData.getProperties().get(property);
-                if (reportData.getCompositeColumnObjects().containsKey(property)) {
-                    for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(property)) {
-                        List<Integer> columnObjects = reportData.getCompositeColumnObjects().get(property);
+        for (String propertyName : reportData.getPropertyNames()) {
+            String propertyTag = propertyTagMap.get(propertyName);
+            if (!usedProperties.contains(propertyName) && !isHeaderFieldName(propertyName)) {
+                ReportPropertyData propertyType = reportData.getProperties().get(propertyName);
+                if (reportData.getCompositeColumnObjects().containsKey(propertyName)) {
+                    for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(propertyName)) {
+                        List<Integer> columnObjects = reportData.getCompositeColumnObjects().get(propertyName);
 
                         List<Object> cKeys = new ArrayList<>();
-                        for (Integer key : reportData.getCompositeFieldsObjects().get(property)) {
+                        for (Integer key : reportData.getCompositeFieldsObjects().get(propertyName)) {
                             if (columnObjects.contains(key)) {
                                 cKeys.add(columnKeys.get(columnObjects.indexOf(key)));
                             } else {
                                 cKeys.add(keys.get(key));
                             }
                         }
-                        String propertyKey = reportData.getPropertyNames().contains(property + ReportConstants.headerSuffix) ?
-                                String.valueOf(reportData.getCompositeObjectValues().get(property + ReportConstants.headerSuffix).get(cKeys)) :
+                        String propertyKey = reportData.getPropertyNames().contains(propertyName + ReportConstants.headerSuffix) ?
+                                String.valueOf(reportData.getCompositeObjectValues().get(propertyName + ReportConstants.headerSuffix).get(cKeys)) :
                                 propertyTag;
-                        Object value = reportData.getCompositeObjectValues().get(property).get(cKeys);
+                        Object value = reportData.getCompositeObjectValues().get(propertyName).get(cKeys);
                         objectElementsMap.put(Pair.create(propertyKey, propertyType), value);
                     }
                 } else {
                     if (filter(propertyType)) {
                         //проверка values == null для случая, когда keys пустые и создаём пустой файл
-                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values == null ? null : values.get(reportData.getProperties().get(property)));
+                        objectElementsMap.put(Pair.create(propertyTag, propertyType), values == null ? null : values.get(reportData.getProperties().get(propertyName)));
                     }
                 }
             }

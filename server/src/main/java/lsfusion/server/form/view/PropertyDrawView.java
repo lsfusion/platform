@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.Compare;
-import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
@@ -144,9 +143,25 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public ReportDrawField getReportDrawField(int charWidth, int scale) {
-
         ReportDrawField reportField = new ReportDrawField(getPropertyFormName(), getReportCaption(), charWidth);
 
+        setupGeometry(reportField, scale);
+        setupColumnGroupObjects(reportField);
+
+        setupHeader(reportField);
+        setupFooter(reportField);
+        setupShowIf(reportField);
+
+        reportField.pattern = getFormatPattern();
+
+        if (!getType().fillReportDrawField(reportField)) {
+            return null;
+        }
+
+        return reportField;
+    }
+
+    private void setupGeometry(ReportDrawField reportField, int scale) {
         Type type = getType();
 
         reportField.scale = scale;
@@ -156,41 +171,47 @@ public class PropertyDrawView extends ComponentView {
         if (reportCharWidth != 0) {
             reportField.fixedCharWidth = reportCharWidth * scale;
         }
-
-        reportField.hasColumnGroupObjects = !entity.getColumnGroupObjects().isEmpty();
-        if (reportField.hasColumnGroupObjects) {
-            reportField.columnGroupName = entity.columnsName;
-        }
-        reportField.hasCaptionProperty = (entity.propertyCaption != null);
-        reportField.hasFooterProperty = (entity.propertyFooter != null);
-
-        // определяем класс заголовка
-        if (reportField.hasCaptionProperty) {
-            ReportDrawField captionField = new ReportDrawField(getPropertyFormName() + ReportConstants.headerSuffix, "", charWidth);
-            entity.propertyCaption.property.getType().fillReportDrawField(captionField);
-            reportField.captionClass = captionField.valueClass;
-        } else {
-            reportField.captionClass = java.lang.String.class;
-        }
-
-        // определяем класс футера
-        if (reportField.hasFooterProperty) {
-            ReportDrawField footerField = new ReportDrawField(getPropertyFormName() + ReportConstants.footerSuffix, "", charWidth);
-            entity.propertyFooter.property.getType().fillReportDrawField(footerField);
-            reportField.footerClass = footerField.valueClass;
-        } else {
-            reportField.footerClass = java.lang.String.class;
-        }
-
-        reportField.pattern = getFormatPattern();
-        
-        if (!getType().fillReportDrawField(reportField)) {
-            return null;
-        }
-
-        return reportField;
     }
 
+    private void setupColumnGroupObjects(ReportDrawField reportField) {
+        if (!entity.getColumnGroupObjects().isEmpty()) {
+            reportField.hasColumnGroupObjects = true;
+            reportField.columnGroupName = entity.columnsName;
+        }
+    }
+
+    private void setupHeader(ReportDrawField field) {
+        if (entity.propertyCaption != null) {
+            field.hasHeaderProperty = true;
+            field.headerClass = getPropertyClass(entity.propertyCaption);
+        } else {
+            field.headerClass = java.lang.String.class;
+        }
+    }
+
+    private void setupFooter(ReportDrawField field) {
+        if (entity.propertyFooter != null) {
+            field.hasFooterProperty = true;
+            field.footerClass = getPropertyClass(entity.propertyFooter);
+        } else {
+            field.footerClass = java.lang.String.class;
+        }
+    }
+
+    private void setupShowIf(ReportDrawField field) {
+        // At the moment, only showif with no params is passing to the report 
+        if (entity.propertyShowIf != null && entity.propertyShowIf.property.interfaces.size() == 0) {
+            field.hasShowIfProperty = true;
+            field.showIfClass = getPropertyClass(entity.propertyShowIf);
+        }
+    }
+
+    private Class getPropertyClass(CalcPropertyObjectEntity<?> property) {
+        ReportDrawField field = new ReportDrawField("", "", charWidth);
+        property.property.getType().fillReportDrawField(field);
+        return field.valueClass;
+    } 
+    
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);

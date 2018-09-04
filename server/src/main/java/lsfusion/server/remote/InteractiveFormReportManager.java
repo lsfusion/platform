@@ -201,6 +201,11 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             }
 
             @Override
+            public CalcPropertyObjectInstance getPropertyShowIf(PropertyDrawInstance propertyDrawInstance) {
+                return propertyDrawInstance.propertyShowIf;
+            }
+            
+            @Override
             public PropertyReaderInstance getCaptionReader(PropertyDrawInstance propertyDrawInstance) {
                 return propertyDrawInstance.captionReader;
             }
@@ -208,6 +213,11 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             @Override
             public PropertyReaderInstance getFooterReader(PropertyDrawInstance propertyDrawInstance) {
                 return propertyDrawInstance.footerReader;
+            }
+
+            @Override
+            public PropertyReaderInstance getShowIfReader(PropertyDrawInstance propertyDrawInstance) {
+                return propertyDrawInstance.showIfReader;
             }
 
             @Override

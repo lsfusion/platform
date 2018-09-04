@@ -5,9 +5,11 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public String sID;
     public String caption;
+    
     public Class valueClass;
-    public Class captionClass;
+    public Class headerClass;
     public Class footerClass;
+    public Class showIfClass;
 
     public int minimumWidth;
     public int preferredWidth;
@@ -18,10 +20,11 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public String pattern;
 
-    public boolean hasColumnGroupObjects;
+    public boolean hasColumnGroupObjects = false;
     public String columnGroupName;
-    public boolean hasCaptionProperty;
-    public boolean hasFooterProperty;
+    public boolean hasHeaderProperty = false;
+    public boolean hasFooterProperty = false;
+    public boolean hasShowIfProperty = false;
 
     private int charWidth;
 

@@ -17,7 +17,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyType;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.NullValue;
@@ -213,6 +212,11 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             }
 
             @Override
+            public CalcPropertyObjectEntity getPropertyShowIf(PropertyDrawEntity propertyDrawEntity) {
+                return propertyDrawEntity.propertyShowIf;
+            }
+            
+            @Override
             public ImOrderMap<OrderEntity, Boolean> getOrders(GroupObjectEntity groupObjectEntity) {
                 ImOrderMap<OrderEntity, Boolean> orders = ordersMap.get(groupObjectEntity);
                 if(orders == null)
@@ -263,6 +267,11 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             @Override
             public PropertyReaderEntity getFooterReader(final PropertyDrawEntity propertyDrawEntity) {
                 return propertyDrawEntity.footerReader;
+            }
+
+            @Override
+            public PropertyReaderEntity getShowIfReader(PropertyDrawEntity propertyDrawEntity) {
+                return propertyDrawEntity.showIfReader;
             }
 
             @Override

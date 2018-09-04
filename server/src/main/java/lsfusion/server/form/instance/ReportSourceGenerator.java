@@ -5,7 +5,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -144,6 +147,11 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 if (propertyFooter != null) {
                     addProperty(property, propertyFooter, PropertyType.FOOTER, inParent, parentJoin, newQuery, mTypes);
                 }
+                
+                CalcPropertyObject propertyShowIf = formInterface.getPropertyShowIf(property);
+                if (propertyShowIf != null) {
+                    addProperty(property, propertyShowIf, PropertyType.SHOWIF, inParent, parentJoin, newQuery, mTypes);
+                }
             }
         }
         types.set(mTypes.immutable());
@@ -208,6 +216,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 if (formInterface.getPropertyFooter(property) != null) {
                     propertyList.add(new Pair<>(psid, formInterface.getFooterReader(property)));
                 }
+                if (formInterface.getPropertyShowIf(property) != null) {
+                    propertyList.add(new Pair<>(psid, formInterface.getShowIfReader(property)));
+                }
             }
 
             ImOrderSet<Obj> keyList = formInterface.getOrderObjects(groups);
@@ -224,6 +235,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                     }
                     if (formInterface.getPropertyFooter(property) != null) {
                         propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
+                    }
+                    if (formInterface.getPropertyShowIf(property) != null) {
+                        propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.SHOWIF)));
                     }
                 }
 
@@ -313,6 +327,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 Map<List<Object>, Object> data = new HashMap<>();
                 Map<List<Object>, Object> captionData = new HashMap<>();
                 Map<List<Object>, Object> footerData = new HashMap<>();
+                Map<List<Object>, Object> showIfData = new HashMap<>();
                 LinkedHashSet<List<Object>> columnData = new LinkedHashSet<>();
 
                 for (int i=0,size=qResult.size();i<size;i++) {
@@ -333,7 +348,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                     if (formInterface.getPropertyFooter(property) != null) {
                         footerData.put(values, value.get(formInterface.getFooterReader(property)));
                     }
-
+                    if (formInterface.getPropertyShowIf(property) != null) {
+                        showIfData.put(values, value.get(formInterface.getShowIfReader(property)));
+                    }
                     List<Object> columnValues = new ArrayList<>();
                     for (Obj object : formInterface.getOrderObjects(columnGroupObjects)) {
                         if (key.containsKey(object)) {
@@ -355,6 +372,9 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
                 }
                 if (formInterface.getPropertyFooter(property) != null) {
                     resultData.data.put(psid + ReportConstants.footerSuffix, footerData);
+                }
+                if (formInterface.getPropertyShowIf(property) != null) {
+                    resultData.data.put(psid + ReportConstants.showIfSuffix, showIfData);
                 }
                 resultData.columnData.put(psid, columnData);
             }
@@ -397,6 +417,10 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         CalcPropertyObject propertyFooter = formInterface.getPropertyFooter(property);
         if (propertyFooter != null) {
             query.addProperty(formInterface.getFooterReader(property), formInterface.getExpr(propertyFooter, query.getMapExprs()));
+        }
+        CalcPropertyObject propertyShowIf = formInterface.getPropertyShowIf(property);
+        if (propertyShowIf != null) {
+            query.addProperty(formInterface.getShowIfReader(property), formInterface.getExpr(propertyShowIf, query.getMapExprs()));
         }
 
         return query.execute(getSession().sql, mQueryOrders.immutableOrder(), 0, getQueryEnv());
@@ -456,5 +480,5 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
         return formInterface;
     }
 
-    public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND}
+    public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, BACKGROUND, SHOWIF}
 }
