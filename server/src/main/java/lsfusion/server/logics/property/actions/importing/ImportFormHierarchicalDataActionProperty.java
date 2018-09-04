@@ -33,7 +33,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
     protected Map<String, List<List<String>>> formPropertyGroups;
 
     private Map<String, Integer> tagsMap;
-    //private Set<String> formObjects;
+    private Set<String> formObjects;
 
     protected String root;
 
@@ -73,7 +73,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
                                                                                                              Set<Pair<ImportFormKeys, CalcPropertyObjectEntity>> filters, Map<String, List<String>> headersMap) {
         E rootElement = getRootElement((byte[]) file);
         tagsMap = new HashMap<>();
-        //formObjects =  getFormObjects(propertyKeysMap.values());
+        formObjects = getFormObjects(propertyKeysMap.values());
         return getData(Pair.create((String) null, (Object) rootElement), propertyKeysMap, filters);
     }
 
@@ -90,7 +90,7 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
             Pair<ImportFormKeys, CalcPropertyObjectEntity> entry = propertyKeysMap.get(child.first);
             //property found OR it's root OR it's form object
-            //if(entry != null || rootElement.first == null || formObjects.contains(child.first)) {
+            if(entry != null || rootElement.first == null || formObjects.contains(child.first)) {
                 if (entry != null && (!entry.first.getKeysId().equals(child.first) || child.second instanceof JSONObject)) {
                     ImportFormData dataEntry = dataMap.get(entry.first);
                     if (dataEntry == null)
@@ -129,21 +129,21 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
                         dataMap.put(filterKey, dataEntry);
                     }
                 }
-            //}
+            }
 
         }
         return dataMap;
     }
 
-//    private Set<String> getFormObjects(Collection<Pair<ImportFormKeys, CalcPropertyObjectEntity>> properties) {
-//        Set<String> result = new HashSet<>();
-//        for(Pair<ImportFormKeys, CalcPropertyObjectEntity> property : properties) {
-//            for(ObjectEntity objectEntity : property.first.getData()) {
-//                result.add(objectEntity.getSID());
-//            }
-//        }
-//        return result;
-//    }
+    private Set<String> getFormObjects(Collection<Pair<ImportFormKeys, CalcPropertyObjectEntity>> properties) {
+        Set<String> result = new HashSet<>();
+        for(Pair<ImportFormKeys, CalcPropertyObjectEntity> property : properties) {
+            for(ObjectEntity objectEntity : property.first.getData()) {
+                result.add(objectEntity.getSID());
+            }
+        }
+        return result;
+    }
 
     private ImMap<KeyField, DataObject> getKeys(ImportFormKeys keys) {
         ImMap<KeyField, DataObject> keyObjects = MapFact.EMPTY();
