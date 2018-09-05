@@ -533,11 +533,13 @@ public class ReportGenerator {
         for (JRElement element : getDesignElements(design)) {
             if (element instanceof JRTextField) {
                 JRTextField textElement = (JRTextField) element;
-                String exprText = textElement.getExpression().getText();
-                if (exprText.startsWith("$F{")) {
-                    String fieldName = getFieldName(exprText);
-                    if (hidingFieldsNames.contains(fieldName)) {
-                        textFieldsToHide.add(textElement);
+                if (textElement.getExpression() != null) {
+                    String exprText = textElement.getExpression().getText();
+                    if (exprText.startsWith("$F{")) {
+                        String fieldName = getFieldName(exprText);
+                        if (hidingFieldsNames.contains(fieldName)) {
+                            textFieldsToHide.add(textElement);
+                        }
                     }
                 }
             }
