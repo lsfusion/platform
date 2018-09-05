@@ -224,7 +224,7 @@ FORM networkPathForm 'Выбор сетевого пути'
 
 META defineLinkDialog (object, class)
     dialog###object(class o)  { 
-        networkPath() <- VARSTRING[255] (object(o));
+        networkPath() <- VARSTRING[500] (object(o));
         DIALOG networkPathForm DO {
             object(o) <- IMAGELINK (networkPath()); 
         }
@@ -233,7 +233,7 @@ END
 
 META defineLinkDialog (object)
     dialog###object()  { 
-        networkPath() <- VARSTRING[255] (object());
+        networkPath() <- VARSTRING[500] (object());
         DIALOG networkPathForm DO {
             object() <- LINK (networkPath()); 
         }
