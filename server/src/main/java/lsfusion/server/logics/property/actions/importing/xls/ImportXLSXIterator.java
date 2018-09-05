@@ -3,12 +3,14 @@ package lsfusion.server.logics.property.actions.importing.xls;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -94,7 +96,7 @@ public abstract class ImportXLSXIterator extends ImportIterator {
 
     private Date getDateValue(XSSFCell xssfCell) {
         try {
-            return xssfCell.getDateCellValue();
+            return DateUtils.round(xssfCell.getDateCellValue(), Calendar.SECOND);
         } catch (Exception ignored) {
             return null;
         }
