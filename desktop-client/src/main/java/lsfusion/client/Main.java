@@ -203,6 +203,7 @@ public class Main {
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
+                    remoteNavigator = loginAction.getRemoteNavigator();
 
                     String serverVersion = null;
                     String clientVersion = null;
@@ -221,6 +222,7 @@ public class Main {
                     }
                     if(serverVersion != null) {
                         JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "LSFusion", JOptionPane.WARNING_MESSAGE);
+                        remoteNavigator.close();
                         Main.shutdown();
                         return;
                     }
@@ -231,8 +233,6 @@ public class Main {
                     logicsMainIcon = prefs.logicsMainIcon;
                     logicsLogo = prefs.logicsLogo;
                     hideMenu = prefs.hideMenu;
-
-                    remoteNavigator = loginAction.getRemoteNavigator();
 
                     LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
 
