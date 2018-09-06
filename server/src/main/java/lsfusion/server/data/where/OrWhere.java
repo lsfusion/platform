@@ -600,6 +600,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
         AndObjectWhere[] siblings = siblings(wheres, maxWhere, numWheres);
         Where siblingWhere = toWhere(siblings, check);
+        
+        if(numWheres > 5 && Thread.interrupted()) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(new InterruptedException());
+        }
 
         OrObjectWhere[] maxWheres = ((AndWhere)wheres[maxWhere]).wheres.clone();
         for(int i=0;i<maxWheres.length;i++) {
