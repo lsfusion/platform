@@ -533,11 +533,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return classSubsets;
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP property, Version version, PropertyObjectInterfaceEntity... objects) {
+    public PropertyDrawEntity addPropertyDraw(LP property, Version version, ObjectEntity... objects) {
         return addPropertyDraw(property, null, version, objects);
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP property, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
+    public PropertyDrawEntity addPropertyDraw(LP property, Version version, String formPath, ObjectEntity... objects) {
         return addPropertyDraw(property, null, version, formPath, objects);
     }
 
@@ -560,11 +560,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, ObjectEntity... objects) {
         return addPropertyDraw(property, groupObject, version, null, objects);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, String formPath, ObjectEntity... objects) {
         return addPropertyDraw(groupObject, property.createObjectEntity(objects), formPath, property.listInterfaces, version);
     }
 
@@ -594,7 +594,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ? extends PropertyObjectInterfaceEntity> mapping, Version version) {
+    public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ObjectEntity> mapping, Version version) {
         PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
         return addPropertyDraw(null, entity, null, entity.property.getReflectionOrderInterfaces(), version);
     }
@@ -645,39 +645,28 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public PropertyObjectEntity addPropertyObject(LP property, PropertyObjectInterfaceEntity... objects) {
-        if (property instanceof LCP) {
-            return addPropertyObject((LCP<?>) property, objects);
-        } else {
-            return addPropertyObject((LAP<?>) property, objects);
-        }
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImOrderSet<ObjectEntity> objects) {
+        return addPropertyObject(property, objects.toArray(new ObjectEntity[objects.size()]));
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ObjectEntity... objects) {
         return addPropertyObject(property, property.getMap(objects));
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ObjectEntity... objects) {
         return addPropertyObject(property, property.getMap(objects));
     }
 
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
+    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImMap<P, ObjectEntity> objects) {
         return new ActionPropertyObjectEntity<>(property.property, objects, property.getCreationScript(), property.getCreationPath());
     }
-
-    public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        if (property instanceof CalcProperty) {
-            return addPropertyObject((CalcProperty) property, objects);
-        } else {
-            return addPropertyObject((ActionProperty) property, objects);
-        }
+    
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcPropertyImplement<P, ObjectEntity> impl) {
+        return addPropertyObject(impl.property, impl.mapping);
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcProperty<P> property, ImMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property, objects);
-    }
-    public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new ActionPropertyObjectEntity<>(property, objects);
     }
 
     public PropertyDrawEntity<?> getPropertyDraw(int iID) {

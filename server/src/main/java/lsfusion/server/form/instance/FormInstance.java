@@ -35,10 +35,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.entity.filter.NotFilterEntity;
-import lsfusion.server.form.entity.filter.NotNullFilterEntity;
-import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
+import lsfusion.server.form.entity.filter.*;
 import lsfusion.server.form.instance.PropertyDrawInstance.ShowIfReaderInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.RegularFilterGroupInstance;
@@ -157,7 +154,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
-                        ImSet<FilterEntity> contextFilters,
+                        ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps, boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, stack, isSync, noCancel, manageSession, checkOnOk, showDrop, interactive, false, contextFilters, pullProps, showReadOnly, locale);
     }
@@ -169,7 +166,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         ExecutionStack stack,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isFloat,
-                        ImSet<FilterEntity> contextFilters,
+                        ImSet<ContextFilter> contextFilters,
                         ImSet<PullChangeProperty> pullProps,
                         boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
         this.isSync = isSync;
@@ -224,14 +221,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         fillContainerShowIfs(mContainerShowIfs, entity.getRichDesign().mainContainer);
         containerShowIfs = mContainerShowIfs.immutable();
 
-        ImSet<FilterEntity> allFixedFilters = entity.getFixedFilters();
-        if (contextFilters != null)
-            allFixedFilters = allFixedFilters.merge(contextFilters);
-        ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(new GetValue<FilterInstance, FilterEntity>() {
+        ImSet<FilterInstance> allFixedFilters = entity.getFixedFilters().mapSetValues(new GetValue<FilterInstance, FilterEntity>() {
             public FilterInstance getMapValue(FilterEntity value) {
                 return value.getInstance(instanceFactory);
             }
-        }).group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
+        });
+        if (contextFilters != null)
+            allFixedFilters = allFixedFilters.addExcl(contextFilters.mapSetValues(new GetValue<FilterInstance, ContextFilter>() {
+                public FilterInstance getMapValue(ContextFilter value) {
+                    return value.getFilter(instanceFactory);
+                }
+            }));
+        ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.group(new BaseUtils.Group<GroupObjectInstance, FilterInstance>() {
             public GroupObjectInstance group(FilterInstance key) {
                 return key.getApplyObject();
             }
@@ -2132,20 +2133,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new FormData(mResult.immutableOrder());
     }
 
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getEditFixedFilters(ClassFormEntity editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getEditContextFilters(ClassFormEntity editForm, CalcPropertyValueImplement<P> implement, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
         return getContextFilters(editForm.object, implement, selectionGroupObject, pullProps);
     }
 
     // pullProps чтобы запретить hint'ить
-    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getContextFilters(ObjectEntity filterObject, CalcPropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
+    public <P extends PropertyInterface, F extends PropertyInterface> ImSet<ContextFilter> getContextFilters(ObjectEntity filterObject, CalcPropertyValueImplement<P> propValues, GroupObjectInstance selectionGroupObject, Result<ImSet<PullChangeProperty>> pullProps) {
         CalcProperty<P> implementProperty = propValues.property;
 
-        MSet<FilterEntity> mFixedFilters = SetFact.mSet();
+        MSet<ContextFilter> mContextFilters = SetFact.mSet();
         MSet<PullChangeProperty> mPullProps = SetFact.mSet();
         for (MaxChangeProperty<?, P> constrainedProperty : implementProperty.getMaxChangeProperties(BL.getCheckConstrainedProperties(implementProperty))) {
             mPullProps.add(constrainedProperty);
-            mFixedFilters.add(new NotFilterEntity(new NotNullFilterEntity<>(
-                    constrainedProperty.getPropertyObjectEntity(propValues.mapping, filterObject))));
+            mContextFilters.add(constrainedProperty.getContextFilter(propValues.mapping, filterObject));
         }
 
         for (FilterEntity filterEntity : entity.getFixedFilters()) {
@@ -2154,27 +2154,26 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
                     OnChangeProperty<F, P> onChangeProperty = (OnChangeProperty<F, P>) ((CalcProperty) filterImplement.property).getOnChangeProperty((CalcProperty) propValues.property);
                     mPullProps.add(onChangeProperty);
-                    mFixedFilters.add(new NotNullFilterEntity<>(
-                            onChangeProperty.getPropertyObjectEntity((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject)));
+                    mContextFilters.add(onChangeProperty.getContextFilter((ImMap<F, DataObject>) filterImplement.mapping, propValues.mapping, filterObject));
                 }
             }
         }
         if (pullProps != null) {
             pullProps.set(mPullProps.immutable());
         }
-        return mFixedFilters.immutable();
+        return mContextFilters.immutable();
     }
 
-    public ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
-        MSet<FilterEntity> mFixedFilters = SetFact.mSet();
+    public ImSet<ContextFilter> getObjectFixedFilters(ClassFormEntity editForm, GroupObjectInstance selectionGroupObject) {
+        MSet<ContextFilter> mFixedFilters = SetFact.mSet();
         ObjectEntity object = editForm.object;
-        for (FilterEntity filterEntity : entity.getFixedFilters()) {
+        for (FilterEntity<?> filterEntity : entity.getFixedFilters()) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) { // берем фильтры из этой группы
                 for (ObjectEntity filterObject : filterEntity.getObjects()) {
                     //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
                     if (filterObject.baseClass == object.baseClass) {
-                        mFixedFilters.add(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
+                        mFixedFilters.add(filterEntity.getRemappedContextFilter(filterObject, object, instanceFactory));
                         break;
                     }
                 }
@@ -2230,8 +2229,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity formEntity = propertyValues.getDialogClass(session).getDialogForm(BL.LM);
                 Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-                ImSet<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, propertyValues, groupObject, pullProps);
-
+                ImSet<ContextFilter> additionalFilters = getEditContextFilters(formEntity, propertyValues, groupObject, pullProps);
+                
                 dialogObject = formEntity.object;
 
                 PropertyDrawEntity initFilterPropertyDraw = filterProperty == null ? null : formEntity.form.getPropertyDraw(filterProperty, dialogObject);
@@ -2250,7 +2249,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity formEntity = dialogClass.getDialogForm(BL.LM);
-                ImSet<FilterEntity> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
+                ImSet<ContextFilter> additionalFilters = getObjectFixedFilters(formEntity, groupObject);
 
                 dialogObject = formEntity.object;
 
@@ -2263,7 +2262,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
     private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue,
-                                              ImSet<FilterEntity> additionalFilters, PropertyDrawEntity initFilterPropertyDraw,
+                                              ImSet<ContextFilter> additionalFilters, PropertyDrawEntity initFilterPropertyDraw,
                                               ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,
                                 this.session, this.securityPolicy,

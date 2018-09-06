@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.DataObject;
@@ -163,7 +164,7 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         this.creationPath = creationPath;
     }
 
-    public PropertyObjectEntity<T, ?> createObjectEntity(PropertyObjectInterfaceEntity... objects) {
+    public PropertyObjectEntity<T, ?> createObjectEntity(ObjectEntity... objects) {
         return PropertyObjectEntity.create(property, getMap(objects), creationScript, creationPath);
     }
 

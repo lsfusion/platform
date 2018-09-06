@@ -8,9 +8,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.InstanceFactory;
+import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
@@ -23,12 +24,12 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, null, null);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ObjectEntity> mapping) {
+        super(property, mapping, null, null);
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+        super(property, mapping, creationScript, creationPath);
     }
 
     @Override
@@ -36,12 +37,12 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         return instanceFactory.getInstance(this);
     }
 
-    public CalcPropertyObjectEntity<P> getRemappedEntity(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceFactory) {
-        ImMap<P, PropertyObjectInterfaceEntity> nmapping = mapping.mapValues(new GetValue<PropertyObjectInterfaceEntity, PropertyObjectInterfaceEntity>() {
-            public PropertyObjectInterfaceEntity getMapValue(PropertyObjectInterfaceEntity value) {
-                return value.getRemappedEntity(oldObject, newObject, instanceFactory);
+    public CalcPropertyObjectInstance<P> getRemappedInstance(final ObjectEntity oldObject, final ObjectInstance newObject, final InstanceFactory instanceFactory) {
+        ImMap<P, PropertyObjectInterfaceInstance> nmapping = mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, ObjectEntity>() {
+            public PropertyObjectInterfaceInstance getMapValue(ObjectEntity value) {
+                return value.getRemappedInstance(oldObject, newObject, instanceFactory);
             }});
-        return new CalcPropertyObjectEntity<>(property, nmapping, creationScript, creationPath);
+        return new CalcPropertyObjectInstance<>(property, nmapping);
     }
 
     @Override
@@ -56,8 +57,8 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
 
     @Override
     public Expr getExpr(final ImMap<ObjectEntity, ? extends Expr> mapExprs, final Modifier modifier, final ImMap<ObjectEntity, ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        ImMap<P, Expr> joinImplement = mapping.mapValuesEx(new GetExValue<Expr, PropertyObjectInterfaceEntity, SQLException, SQLHandledException>() {
-            public Expr getMapValue(PropertyObjectInterfaceEntity value) throws SQLException, SQLHandledException {
+        ImMap<P, Expr> joinImplement = mapping.mapValuesEx(new GetExValue<Expr, ObjectEntity, SQLException, SQLHandledException>() {
+            public Expr getMapValue(ObjectEntity value) throws SQLException, SQLHandledException {
                 return value.getExpr(mapExprs, modifier, mapObjects);
             }
         });
@@ -65,8 +66,8 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
     }
 
     public Object read(ExecutionEnvironment env, final ImMap<ObjectEntity, ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx(new GetExValue<ObjectValue, PropertyObjectInterfaceEntity, SQLException, SQLHandledException>() {
-            public ObjectValue getMapValue(PropertyObjectInterfaceEntity value) throws SQLException, SQLHandledException {
+        ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx(new GetExValue<ObjectValue, ObjectEntity, SQLException, SQLHandledException>() {
+            public ObjectValue getMapValue(ObjectEntity value) throws SQLException, SQLHandledException {
                 return value.getObjectValue(mapObjects);
             }
         });

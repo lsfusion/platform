@@ -16,7 +16,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ManageSessionType;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.entity.filter.ContextFilter;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -41,7 +41,6 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.padLeft;
 import static lsfusion.base.BaseUtils.replicate;
 import static lsfusion.base.BaseUtils.serializeObject;
-import static lsfusion.server.ServerLoggers.systemLogger;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class AbstractContext implements Context {
@@ -294,7 +293,7 @@ public abstract class AbstractContext implements Context {
         return s.getString(locale, getLogicsInstance().getBusinessLogics().getLocalizer());
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<ContextFilter> contextFilters, ImSet<PullChangeProperty> pullProps, boolean readonly) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),

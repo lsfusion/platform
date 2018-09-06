@@ -14,7 +14,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.WindowFormType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.entity.filter.ContextFilter;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
@@ -120,7 +120,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         ImRevMap<O, ObjectEntity> mapRevResolvedObjects = mapResolvedObjects.reverse();
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
-        ImSet<FilterEntity> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
+        ImSet<ContextFilter> contextFilters = getContextFilters(context, pullProps, mapRevResolvedObjects);
         
         FormInstance newFormInstance = context.createFormInstance(form, mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, contextFilters, pullProps.result, readOnly);
         context.requestFormUserInteraction(newFormInstance, getModalityType(), forbidDuplicate, context.stack);
@@ -147,8 +147,8 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
         }
     }
 
-    private ImSet<FilterEntity> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps, ImRevMap<O, ObjectEntity> mapResolvedObjects) {
-        MSet<FilterEntity> mContextFilters = SetFact.mSet();
+    private ImSet<ContextFilter> getContextFilters(ExecutionContext<ClassPropertyInterface> context, Result<ImSet<PullChangeProperty>> pullProps, ImRevMap<O, ObjectEntity> mapResolvedObjects) {
+        MSet<ContextFilter> mContextFilters = SetFact.mSet();
         ImList<ObjectEntity> resolvedContextObjects = contextObjects.mapList(mapResolvedObjects);
         for(int i=0,size=resolvedContextObjects.size();i<size;i++) {
             ObjectEntity contextObject = resolvedContextObjects.get(i);

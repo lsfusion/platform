@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.form.entity.filter.NotNullFilterEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -24,7 +24,7 @@ public class PropertyFormEntity extends FormEntity {
         Version version = LM.getVersion();
         
         if(messageProperty != null) {
-            addPropertyDraw(messageProperty, MapFact.<X, PropertyObjectInterfaceEntity>EMPTY(), version);
+            addPropertyDraw(messageProperty, MapFact.<X, ObjectEntity>EMPTY(), version);
         }
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
@@ -49,7 +49,7 @@ public class PropertyFormEntity extends FormEntity {
 //            addPropertyDraw(LM.objectValue, false, object);
 //        }
 
-        addFixedFilter(new NotNullFilterEntity<>(new CalcPropertyObjectEntity<>(property, mapObjects)), version);
+        addFixedFilter(new FilterEntity<>(new CalcPropertyObjectEntity<>(property, mapObjects)), version);
 
         finalizeInit(version);
     }

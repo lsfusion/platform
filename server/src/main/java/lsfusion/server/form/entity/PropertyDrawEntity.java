@@ -254,7 +254,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
                 return new ActionPropertyObjectEntity<>(
                         dialogAction,
-                        MapFact.singleton(dialogAction.interfaces.single(), (PropertyObjectInterfaceEntity) objectInstance)
+                        MapFact.singleton(dialogAction.interfaces.single(), objectInstance)
                 );
             }
         }

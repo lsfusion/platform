@@ -15,7 +15,6 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
@@ -39,9 +38,7 @@ import lsfusion.server.session.SessionChanges;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SinglePropertyTableUsage;
 
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Set;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
@@ -281,7 +278,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return SetFact.EMPTY();
     }
 
-    public DataObject getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
         return this;
     }
 

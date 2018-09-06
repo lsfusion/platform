@@ -20,7 +20,6 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
-import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -85,41 +84,41 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
 
         //добавляем фильтры
         for (FilterEntity filter : formEntity.getFixedFilters()) {
-            if (filter instanceof NotNullFilterEntity) {
-                CalcPropertyObjectEntity<?> property = ((NotNullFilterEntity) filter).property;
-                    ImportFormKeys keys = new ImportFormKeys(SetFact.fromJavaSet(new HashSet<>((property.getObjectInstances()))));
-                    List<CalcPropertyObjectEntity> propertiesEntry = propertiesMap.get(keys);
-                    if (propertiesEntry == null)
-                        propertiesEntry = new ArrayList<>();
-                    propertiesEntry.add(property);
-                    propertiesMap.put(keys, propertiesEntry);
-                    filters.add(Pair.<ImportFormKeys, CalcPropertyObjectEntity>create(keys, property));
-                }
+            if (filter instanceof FilterEntity) {
+                CalcPropertyObjectEntity<?> property = ((FilterEntity) filter).getCalcPropertyObjectEntity();
+                ImportFormKeys keys = new ImportFormKeys(property.getSetObjectInstances());
+                List<CalcPropertyObjectEntity> propertiesEntry = propertiesMap.get(keys);
+                if (propertiesEntry == null)
+                    propertiesEntry = new ArrayList<>();
+                propertiesEntry.add(property);
+                propertiesMap.put(keys, propertiesEntry);
+                filters.add(Pair.<ImportFormKeys, CalcPropertyObjectEntity>create(keys, property));
             }
+        }
 
-            //Отменяем все предыдущие изменения в сессии
-            for (List<CalcPropertyObjectEntity> properties : propertiesMap.values()) {
-                for (CalcPropertyObjectEntity property : properties) {
-                    if (property.property instanceof DataProperty)
-                        context.getSession().dropChanges((DataProperty) property.property);
-                }
+        //Отменяем все предыдущие изменения в сессии
+        for (List<CalcPropertyObjectEntity> properties : propertiesMap.values()) {
+            for (CalcPropertyObjectEntity property : properties) {
+                if (property.property instanceof DataProperty)
+                    context.getSession().dropChanges((DataProperty) property.property);
             }
+        }
 
-            //читаем данные
-            Map<ImportFormKeys, ImportFormData> data = getData(files, propertyKeysMap, filters, headersMap);
+        //читаем данные
+        Map<ImportFormKeys, ImportFormData> data = getData(files, propertyKeysMap, filters, headersMap);
 
-            // потому как writeRows требует именно NullValue.instance
-            for (Map.Entry<ImportFormKeys, ImportFormData> dataEntry : data.entrySet()) {
-                for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : dataEntry.getValue().getData().entrySet()) {
-                    // дополняем NullValue.instance там где не все Property (вообще актуально)
-                    for (Pair<ImportFormKeys, CalcPropertyObjectEntity> propertyEntry : propertyKeysMap.values()) {
-                        Property property = propertyEntry.second.property;
-                        if (dataEntry.getKey().equals(propertyEntry.first) && !entry.getValue().containsKey(property)) {
-                            entry.getValue().put(property, NullValue.instance);
-                        }
+        // потому как writeRows требует именно NullValue.instance
+        for (Map.Entry<ImportFormKeys, ImportFormData> dataEntry : data.entrySet()) {
+            for (Map.Entry<ImMap<KeyField, DataObject>, Map<Property, ObjectValue>> entry : dataEntry.getValue().getData().entrySet()) {
+                // дополняем NullValue.instance там где не все Property (вообще актуально)
+                for (Pair<ImportFormKeys, CalcPropertyObjectEntity> propertyEntry : propertyKeysMap.values()) {
+                    Property property = propertyEntry.second.property;
+                    if (dataEntry.getKey().equals(propertyEntry.first) && !entry.getValue().containsKey(property)) {
+                        entry.getValue().put(property, NullValue.instance);
                     }
                 }
             }
+        }
 
         //записываем данные
         for (Map.Entry<ImportFormKeys, ImportFormData> dataEntry : data.entrySet()) {

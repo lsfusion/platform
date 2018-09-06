@@ -14,6 +14,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.InstanceFactory;
+import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -59,7 +60,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         this.baseClass = baseClass;
     }
 
-    public PropertyObjectInterfaceInstance getInstance(InstanceFactory instanceFactory) {
+    public ObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
     }
 
@@ -67,7 +68,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         objects.add(this);
     }
 
-    public PropertyObjectInterfaceEntity getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
+    public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
         return this == oldObject
                 ? newObject
                 : getInstance(instanceFactory).getDataObject();

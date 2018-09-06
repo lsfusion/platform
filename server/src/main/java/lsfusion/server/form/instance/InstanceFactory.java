@@ -86,9 +86,9 @@ public class InstanceFactory {
         return treeInstances.get(entity);
     }
 
-    private <P extends PropertyInterface> ImMap<P, PropertyObjectInterfaceInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
-        return entity.mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity>() {
-            public PropertyObjectInterfaceInstance getMapValue(PropertyObjectInterfaceEntity value) {
+    private <P extends PropertyInterface> ImMap<P, ObjectInstance> getInstanceMap(PropertyObjectEntity<P, ?> entity) {
+        return entity.mapping.mapValues(new GetValue<ObjectInstance, ObjectEntity>() {
+            public ObjectInstance getMapValue(ObjectEntity value) {
                 return value.getInstance(InstanceFactory.this);
             }});
     }
@@ -158,30 +158,6 @@ public class InstanceFactory {
 
     public final PropertyObjectInterfaceInstance computer;
     public DataObject connection;
-
-    public <P extends PropertyInterface> FilterInstance getInstance(CompareFilterEntity<P> entity) {
-        return new CompareFilterInstance<>(getInstance(entity.property), entity.compare, entity.value.getInstance(this), entity.resolveAdd);
-    }
-
-    public <P extends PropertyInterface> FilterInstance getInstance(IsClassFilterEntity<P> entity) {
-        return new IsClassFilterInstance<>(getInstance(entity.property), entity.isClass, entity.resolveAdd);
-    }
-
-    public <P extends PropertyInterface> FilterInstance getInstance(NotNullFilterEntity<P> entity) {
-        return new NotNullFilterInstance<>(getInstance(entity.property), entity.checkChange, entity.resolveAdd);
-    }
-
-    public FilterInstance getInstance(NotFilterEntity entity) {
-        return new NotFilterInstance(entity.filter.getInstance(this));
-    }
-
-    public OrFilterInstance getInstance(OrFilterEntity entity) {
-        return new OrFilterInstance(entity.op1.getInstance(this), entity.op2.getInstance(this));
-    }
-
-    public AndFilterInstance getInstance(AndFilterEntity entity) {
-        return new AndFilterInstance(entity.op1.getInstance(this), entity.op2.getInstance(this));
-    }
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {
 

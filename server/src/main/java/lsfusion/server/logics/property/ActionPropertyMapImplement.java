@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -44,7 +45,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
-    public ActionPropertyObjectEntity<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
+    public ActionPropertyObjectEntity<P> mapObjects(ImMap<T, ObjectEntity> mapObjects) {
         return new ActionPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 

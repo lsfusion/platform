@@ -7,7 +7,7 @@ import lsfusion.interop.Compare;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.filter.CompareFilterEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
@@ -16,6 +16,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,10 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                     //добавляем фильтр для этого объекта и соотв. свойства
                     CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
                     ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
-                    addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, innerObject), version);
+                    
+                    PropertyInterface innerInterface = new PropertyInterface();
+                    CalcPropertyImplement filterProp = DerivedProperty.createCompare(mapImplement, innerInterface, Compare.EQUALS).mapImplement(MapFact.addExcl(interfaceObjects, innerInterface, innerObject));
+                    addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
     
                     //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                     if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasNFChild(mapImplement.property, version)) {
