@@ -313,7 +313,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     }
 
     public int addDrawProperty(ClientFormController form, ClientGroupObject group, ClientPropertyDraw property) {
-        if (properties.indexOf(property) == -1) {
+        if (properties.indexOf(property) == -1 && !property.hide) {
             int ins = BaseUtils.relativePosition(property, form.getPropertyDraws(), properties);
             properties.add(ins, property);
 
