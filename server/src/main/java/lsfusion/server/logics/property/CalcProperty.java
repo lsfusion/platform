@@ -1503,23 +1503,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new CalcPropertyClassImplement<>(this, classes, mapping);
     }
 
-    private LCP logProperty;
-    private LCP logDropProperty;
+    private LCP logValueProperty;
+    private LCP logWhereProperty;
 
-    public LCP getLogProperty() {
-        return logProperty;
+    public LCP getLogValueProperty() {
+        return logValueProperty;
     }
 
-    public void setLogProperty(LCP logProperty) {
-        this.logProperty = logProperty;
+    public void setLogValueProperty(LCP logValueProperty) {
+        this.logValueProperty = logValueProperty;
     }
 
-    public LCP getLogDropProperty() {
-        return logDropProperty;
+    public LCP getLogWhereProperty() {
+        return logWhereProperty;
     }
 
-    public void setLogDropProperty(LCP logDropProperty) {
-        this.logDropProperty = logDropProperty;
+    public void setLogWhereProperty(LCP logWhereProperty) {
+        this.logWhereProperty = logWhereProperty;
     }
 
     public boolean autoset;

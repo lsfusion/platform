@@ -15,12 +15,12 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
         //нужен для десериализации
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping) {
+    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
-        super(property, (ImMap<P,PropertyObjectInterfaceEntity>) mapping, creationScript, creationPath);
+    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+        super(property, mapping, creationScript, creationPath);
     }
 
     public ActionPropertyObjectInstance<P> getInstance(InstanceFactory instanceFactory) {

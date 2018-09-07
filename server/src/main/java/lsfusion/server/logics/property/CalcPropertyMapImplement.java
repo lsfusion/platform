@@ -18,6 +18,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -207,7 +208,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyObjectInstance<>(property, mapping.join(mapObjects));
     }
 
-    public CalcPropertyObjectEntity<P> mapEntityObjects(ImMap<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {
+    public CalcPropertyObjectEntity<P> mapEntityObjects(ImMap<T, ObjectEntity> mapObjects) {
         return new CalcPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 

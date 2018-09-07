@@ -6,6 +6,7 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
@@ -19,7 +20,7 @@ import java.util.Set;
 public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 
     public T property;
-    public ImMap<P, PropertyObjectInterfaceEntity> mapping;
+    public ImMap<P, ObjectEntity> mapping;
 
     protected PropertyObjectEntity() {
         //нужен для десериализации
@@ -39,11 +40,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping) {
-        this(property, mapping, null, null);
-    }
-
-    public PropertyObjectEntity(T property, ImMap<P, PropertyObjectInterfaceEntity> mapping, String creationScript, String creationPath) {
+    public PropertyObjectEntity(T property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
@@ -66,10 +63,11 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     public abstract CalcPropertyObjectEntity<?> getDrawProperty();
 
     public ImCol<ObjectEntity> getColObjectInstances() {
-        return BaseUtils.immutableCast(mapping.values().filterCol(new SFunctionSet<PropertyObjectInterfaceEntity>() {
-            public boolean contains(PropertyObjectInterfaceEntity element) {
-                return element instanceof ObjectEntity;
-            }}));
+        return mapping.values();
+    }
+
+    public ImSet<ObjectEntity> getSetObjectInstances() {
+        return mapping.values().toSet();
     }
 
     public Collection<ObjectEntity> getObjectInstances() {
@@ -91,11 +89,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
     }
     
     public ImMap<P, ObjectEntity> getMapObjectInstances() {
-        return BaseUtils.immutableCast(mapping.filterFnValues(new SFunctionSet<PropertyObjectInterfaceEntity>() {
-            public boolean contains(PropertyObjectInterfaceEntity element) {
-                return element instanceof ObjectEntity;
-            }
-        }));
+        return mapping;
     }
 
     public void fillObjects(Set<ObjectEntity> objects) {
@@ -113,7 +107,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ? extends PropertyObjectInterfaceEntity> map, String creationScript, String creationPath) {
+    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ObjectEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
             return new CalcPropertyObjectEntity<>((CalcProperty<I>) property, map, creationScript, creationPath);
         else

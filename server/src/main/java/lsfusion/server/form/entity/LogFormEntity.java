@@ -1,12 +1,12 @@
 package lsfusion.server.form.entity;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.form.entity.filter.NotNullFilterEntity;
-import lsfusion.server.form.entity.filter.OrFilterEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -20,9 +20,9 @@ import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 
 /// Common usage:
 /// LP<?> property - logging property
-/// LP<?> logProperty = addLProp(property);
+/// LP<?> logValueProperty = addLProp(property);
 /// ...
-/// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logProperty, SomeBusinessLogics.this);
+/// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logValueProperty, SomeBusinessLogics.this);
 /// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);
 
 public class LogFormEntity extends FormEntity {
@@ -30,17 +30,17 @@ public class LogFormEntity extends FormEntity {
     SystemEventsLogicsModule systemEventsLM;
     ObjectEntity[] entities;
     ObjectEntity objSession;
-    LCP<?> logProperty;
-    LCP<?> logDropProperty;
+    LCP<?> logValueProperty;
+    LCP<?> logWhereProperty;
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logProperty, LCP<?> logDropProperty, SystemEventsLogicsModule systemEventsLM) {
+    public LogFormEntity(String canonicalName, LocalizedString caption, LCP<?> property, LCP<?> logValueProperty, LCP<?> logWhereProperty, SystemEventsLogicsModule systemEventsLM) {
         super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
-        this.logProperty = logProperty;
-        this.logDropProperty = logDropProperty;
+        this.logValueProperty = logValueProperty;
+        this.logWhereProperty = logWhereProperty;
         this.property = property;
 
         Version version = getVersion();
@@ -89,7 +89,7 @@ public class LogFormEntity extends FormEntity {
             addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup, true);
         }
 
-        addPropertyDraw(logProperty, version, entities);
+        addPropertyDraw(logValueProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
                 systemEventsLM.baseLM.recognizeGroup.getProperties(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)), true, version);
@@ -97,13 +97,13 @@ public class LogFormEntity extends FormEntity {
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
                 CalcPropertyClassImplement<?> calcImpl = ((CalcPropertyClassImplement)impl);
-                int paramCnt = logProperty.property.interfaces.size();
+                int paramCnt = logValueProperty.property.interfaces.size();
                 ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(paramCnt);
 
                 LCP lpMainProp = new LCP(calcImpl.property);
 
                 Object[] params = new Object[paramCnt + 1];
-                params[0] = logProperty;
+                params[0] = logValueProperty;
                 for (int i = 0; i < paramCnt; i++) {
                     params[i+1] = i+1;
                 }
@@ -115,7 +115,7 @@ public class LogFormEntity extends FormEntity {
             }
         }
 
-        addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(logProperty, entities)), new NotNullFilterEntity(addPropertyObject(logDropProperty, entities))), version);
+        addFixedFilter(new FilterEntity(addPropertyObject(logWhereProperty, SetFact.toOrderExclSet(entities))), version);
 
         setNFEditType(PropertyEditType.READONLY, version);
 

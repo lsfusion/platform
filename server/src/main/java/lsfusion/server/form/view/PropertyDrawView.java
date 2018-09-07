@@ -304,7 +304,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
         ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(ClassType.formPolicy);
-        ImMap<PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = (ImMap<PropertyInterface, PropertyObjectInterfaceEntity>) entity.propertyObject.mapping;
+        ImMap<PropertyInterface, ObjectEntity> interfaceEntities = (ImMap<PropertyInterface, ObjectEntity>) entity.propertyObject.mapping;
         outStream.writeInt(entity.propertyObject.property.interfaces.size());
         for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
             pool.writeString(outStream, interfaceEntities.get(iFace).toString());

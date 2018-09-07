@@ -134,18 +134,18 @@ public class DerivedProperty {
         ImRevMap<CompareFormulaProperty.Interface,T> mapImplement = MapFact.toRevMap(compareProperty.operator1, operator1, compareProperty.operator2, operator2);
         return new CalcPropertyMapImplement<>(compareProperty, mapImplement);
     }
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(LocalizedString caption, ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(LocalizedString caption, ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> propertyA, CalcPropertyInterfaceImplement<T> propertyB, Compare compare) {
         ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
         JoinProperty<CompareFormulaProperty.Interface> joinProperty = new JoinProperty<>(caption,
-                revJoinMap.keys().toOrderSet(), compareJoin(compare, distribute.map(joinMap), previous.map(joinMap)));
+                revJoinMap.keys().toOrderSet(), compareJoin(compare, propertyA.map(joinMap), propertyB.map(joinMap)));
         return new CalcPropertyMapImplement<>(joinProperty, revJoinMap);
     }
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
-        return createCompare(LocalizedString.NONAME, interfaces, distribute, previous, compare);
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(ImSet<T> interfaces, CalcPropertyInterfaceImplement<T> propertyA, CalcPropertyInterfaceImplement<T> propertyB, Compare compare) {
+        return createCompare(LocalizedString.NONAME, interfaces, propertyA, propertyB, compare);
     }
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(CalcPropertyInterfaceImplement<T> distribute, CalcPropertyInterfaceImplement<T> previous, Compare compare) {
-        return createCompare(getUsedInterfaces(SetFact.toSet(distribute, previous)), distribute, previous, compare);
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createCompare(CalcPropertyInterfaceImplement<T> propertyA, CalcPropertyInterfaceImplement<T> propertyB, Compare compare) {
+        return createCompare(getUsedInterfaces(SetFact.toSet(propertyA, propertyB)), propertyA, propertyB, compare);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createNot(ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> implement) {

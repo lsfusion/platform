@@ -1416,14 +1416,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return logicalProperties;
     }
 
-    private boolean isLogical(LP property) {
-        if(property == null)
-            return false;
-
-        Type type = property.property.getType();
-        return type != null && type.equals(LogicalClass.instance);
-    }
-
     private LCPWithParams toLogical(LCPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJProp(and(false), Arrays.asList(new LCPWithParams(baseLM.vtrue), property));
     }

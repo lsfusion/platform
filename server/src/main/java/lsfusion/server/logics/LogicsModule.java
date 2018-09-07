@@ -56,10 +56,7 @@ import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.ResolveManager;
 import lsfusion.server.logics.resolving.ResolvingErrors;
-import lsfusion.server.logics.scripted.EvalActionProperty;
-import lsfusion.server.logics.scripted.LazyActionProperty;
-import lsfusion.server.logics.scripted.MetaCodeFragment;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.*;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -1466,6 +1463,30 @@ public abstract class LogicsModule {
         ((StoredDataProperty)logDropProperty.property).markStored(baseLM.tableFactory);
 
         return logDropProperty;
+    }
+
+    private LCP toLogical(LCP property) {
+        return addJProp(false, LocalizedString.NONAME, baseLM.and1, add(baseLM.vtrue, directLI(property)));
+    }
+
+    private LCP convertToLogical(LCP property) {
+        if (!isLogical(property)) {
+            property = toLogical(property);
+        }
+        return property;
+    }
+
+    protected boolean isLogical(LP property) {
+        if(property == null)
+            return false;
+
+        Type type = property.property.getType();
+        return type != null && type.equals(LogicalClass.instance);
+    }
+
+    public LCP addLWhereProp(LCP logValueProperty, LCP logDropProperty) {
+        return addUProp(null, LocalizedString.NONAME, Union.OVERRIDE, null, null, add(directLI(convertToLogical(logValueProperty)), directLI(logDropProperty)));
+                
     }
 
     // ------------------- CONCAT ----------------- //

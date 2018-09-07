@@ -3,6 +3,8 @@ package lsfusion.server.form.instance;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.OrderEntity;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 

@@ -18,7 +18,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.NotNullFilterEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
@@ -149,7 +149,7 @@ public class ScriptingFormEntity {
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
                     if (pUsage.name != null) {
                         LCP property = findLCPByPropertyUsage(pUsage, groupObj);
-                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects()));
                     }
                 }
 
@@ -286,33 +286,33 @@ public class ScriptingFormEntity {
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
             LP property = null;
-            PropertyObjectInterfaceEntity[] objects = null;
+            ObjectEntity[] objects = null;
             if(pDrawUsage instanceof ScriptingLogicsModule.PredefinedUsage) {
                 ScriptingLogicsModule.PropertyUsage pUsage = ((ScriptingLogicsModule.PredefinedUsage) pDrawUsage).property;
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
                     ObjectEntity obj = getSingleMappingObject(mapping);
                     property = LM.getObjValueProp(form, obj);
-                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                    objects = new ObjectEntity[]{obj};
                 } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
-                    objects = new PropertyObjectInterfaceEntity[]{};
+                    objects = new ObjectEntity[]{};
                 } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
-                    objects = new PropertyObjectInterfaceEntity[]{};
+                    objects = new ObjectEntity[]{};
                 } else if (propertyName.equals("EDIT")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getEditFormAction(obj, explicitClass, scope, version);
-                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                    objects = new ObjectEntity[]{obj};
                 } else if (propertyName.equals("DELETE")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     property = LM.getDeleteAction(obj, scope);
-                    objects = new PropertyObjectInterfaceEntity[]{obj};
+                    objects = new ObjectEntity[]{obj};
                 }
             }            
             if(property == null) {
@@ -537,7 +537,7 @@ public class ScriptingFormEntity {
             LCP property = properties.get(i);
             checkPropertyParameters(property, getMappingObjectsArray(mappings.get(i)));
 
-            form.addFixedFilter(new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true), version);
+            form.addFixedFilter(new FilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true), version);
         }
     }
 
@@ -591,7 +591,7 @@ public class ScriptingFormEntity {
 
             checkPropertyParameters(property, getMappingObjectsArray(mapping));
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {

@@ -7,9 +7,15 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
+import lsfusion.server.form.entity.filter.ContextFilter;
+import lsfusion.server.form.instance.CalcPropertyObjectInstance;
+import lsfusion.server.form.instance.InstanceFactory;
+import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.filter.FilterInstance;
+import lsfusion.server.form.instance.filter.NotFilterInstance;
+import lsfusion.server.form.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
@@ -29,7 +35,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         public abstract Expr getExpr();
 
-        public abstract PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject);
+        public abstract PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject);
     }
 
     public static class KeyInterface<P extends PropertyInterface> extends Interface<P> {
@@ -46,7 +52,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return propertyInterface.getChangeExpr();
         }
 
-        public PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject) {
             return mapValues.get(propertyInterface);
         }
     }
@@ -65,7 +71,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return toChange.getChangeExpr();
         }
 
-        public PropertyObjectInterfaceEntity getInterface(ImMap<P, DataObject> mapValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceInstance getInterface(ImMap<P, DataObject> mapValues, ObjectInstance valueObject) {
             return valueObject;
         }
     }
@@ -100,11 +106,16 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
         return resultExpr;
     }
 
-    public CalcPropertyObjectEntity<Interface<P>> getPropertyObjectEntity(final ImMap<P, DataObject> mapValues, final ObjectEntity valueObject) {
-        ImMap<Interface<P>, PropertyObjectInterfaceEntity> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceEntity, Interface<P>>() {
-            public PropertyObjectInterfaceEntity getMapValue(Interface<P> value) {
-                return value.getInterface(mapValues, valueObject);
-            }});
-        return new CalcPropertyObjectEntity<>(this, interfaceImplement);
+    public ContextFilter getContextFilter(final ImMap<P, DataObject> mapValues, final ObjectEntity valueObject) {
+        return new ContextFilter() {
+            public FilterInstance getFilter(final InstanceFactory factory) {
+                ImMap<Interface<P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceInstance, Interface<P>>() {
+                    public PropertyObjectInterfaceInstance getMapValue(Interface<P> value) {
+                        return value.getInterface(mapValues, valueObject.getInstance(factory));
+                    }});
+                return new NotFilterInstance(new NotNullFilterInstance<>(
+                        new CalcPropertyObjectInstance<>(MaxChangeProperty.this, interfaceImplement)));
+            }
+        };
     }
 }

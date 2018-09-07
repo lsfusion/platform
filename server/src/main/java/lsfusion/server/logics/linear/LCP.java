@@ -11,7 +11,6 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.Time;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -27,7 +26,6 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
-import org.apache.commons.net.ntp.TimeStamp;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -182,14 +180,17 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        if (property.getLogProperty() == null) {
-            property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
-            property.setLogDropProperty(ownerModule.addLDropProp(systemEventsLM, this));
+        if (property.getLogValueProperty() == null) {
+            LCP logValueProperty = ownerModule.addLProp(systemEventsLM, this);
+            LCP logDropProperty = ownerModule.addLDropProp(systemEventsLM, this);
+            
+            property.setLogValueProperty(logValueProperty);
+            property.setLogWhereProperty(ownerModule.addLWhereProp(logValueProperty, logDropProperty));
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity(null,
                                                             LocalizedString.create("{logics.property.log.form}"),
-                                                            this, property.getLogProperty(), property.getLogDropProperty(), systemEventsLM);
+                                                            this, property.getLogValueProperty(), property.getLogWhereProperty(), systemEventsLM);
             systemEventsLM.addFormEntity(logFormEntity);
             property.setLogFormProperty(ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true));
         }

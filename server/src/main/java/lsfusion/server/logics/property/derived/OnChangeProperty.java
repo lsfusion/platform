@@ -10,9 +10,14 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
+import lsfusion.server.form.entity.filter.ContextFilter;
+import lsfusion.server.form.instance.CalcPropertyObjectInstance;
+import lsfusion.server.form.instance.InstanceFactory;
+import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.filter.FilterInstance;
+import lsfusion.server.form.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
@@ -32,7 +37,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
 
         public abstract Expr getExpr();
 
-        public abstract PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject);
+        public abstract PropertyObjectInterfaceInstance getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectInstance valueObject);
     }
 
     public static class KeyOnInterface<T extends PropertyInterface, P extends PropertyInterface> extends Interface<T, P> {
@@ -49,7 +54,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceInstance getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectInstance valueObject) {
             return mapOnValues.get(propertyInterface);
         }
     }
@@ -69,7 +74,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceInstance getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectInstance valueObject) {
             return mapToValues.get(propertyInterface);
         }
     }
@@ -89,7 +94,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         }
 
         @Override
-        public PropertyObjectInterfaceEntity getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectEntity valueObject) {
+        public PropertyObjectInterfaceInstance getInterface(ImMap<T, DataObject> mapOnValues, ImMap<P, DataObject> mapToValues, ObjectInstance valueObject) {
             return valueObject;
         }
     }
@@ -134,11 +139,17 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
         return resultExpr;
     }
 
-    public CalcPropertyObjectEntity<Interface<T, P>> getPropertyObjectEntity(final ImMap<T, DataObject> mapOnValues, final ImMap<P, DataObject> mapToValues, final ObjectEntity valueObject) {
-        ImMap<Interface<T, P>, PropertyObjectInterfaceEntity> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceEntity, Interface<T, P>>() {
-            public PropertyObjectInterfaceEntity getMapValue(Interface<T, P> value) {
-                return value.getInterface(mapOnValues, mapToValues, valueObject);
-            }});
-        return new CalcPropertyObjectEntity<>(this, interfaceImplement);
+    public ContextFilter getContextFilter(final ImMap<T, DataObject> mapOnValues, final ImMap<P, DataObject> mapToValues, final ObjectEntity valueObject) {
+        return new ContextFilter() {
+            public FilterInstance getFilter(final InstanceFactory factory) {
+                ImMap<Interface<T, P>, PropertyObjectInterfaceInstance> interfaceImplement = interfaces.mapValues(new GetValue<PropertyObjectInterfaceInstance, Interface<T, P>>() {
+                    public PropertyObjectInterfaceInstance getMapValue(Interface<T, P> value) {
+                        return value.getInterface(mapOnValues, mapToValues, valueObject.getInstance(factory));
+                    }});
+                return new NotNullFilterInstance<>(
+                        new CalcPropertyObjectInstance<>(OnChangeProperty.this, interfaceImplement));
+            }
+        };
+
     }
 }
