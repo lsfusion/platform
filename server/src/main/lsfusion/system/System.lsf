@@ -150,6 +150,7 @@ loadFont 'Загрузить шрифт' (path)   {
     loadDownloadedFont(path);
 }
 
+applyCanceled() = DATA LOCAL NESTED BOOLEAN ();
 requestCanceled() = DATA LOCAL NESTED BOOLEAN ();
 requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 

@@ -113,6 +113,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP statCustomObjectClass; 
 
     private LCP addedObject;
+    private LCP applyCanceled;
     private LCP requestCanceled;
     private LCP requestPushed;
     private LCP isActiveForm;
@@ -403,6 +404,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         onStarted = findAction("onStarted[]");
         
         addedObject = findProperty("addedObject[]");
+        applyCanceled = findProperty("applyCanceled[]");
         requestCanceled = findProperty("requestCanceled[]");
         requestPushed = findProperty("requestPushed[]");
         isActiveForm = findProperty("isActiveForm[]");
@@ -602,6 +604,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return result.iterator().next();
     }
 
+    public LCP getApplyCanceledProperty() {
+        return applyCanceled;
+    }
+
     public LCP getRequestCanceledProperty() {
         return requestCanceled;
     }
@@ -739,6 +745,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         } finally {
             requestPushed.change(prevValue, env);
         }
+    }
+
+    public boolean isApplyCanceled(ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        return getApplyCanceledProperty().read(env) != null;
     }
 
     public boolean isRequestPushed(ExecutionEnvironment env) throws SQLException, SQLHandledException {
