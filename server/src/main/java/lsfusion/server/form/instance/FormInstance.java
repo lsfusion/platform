@@ -1335,7 +1335,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         BL.LM.dropRequestCanceled(this);        
         fireOnBeforeApply(stack);        
-        if(BL.LM.isRequestCanceled(this))
+        if(BL.LM.isApplyCanceled(this))
             return false;
 
         boolean succeeded = session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage);
