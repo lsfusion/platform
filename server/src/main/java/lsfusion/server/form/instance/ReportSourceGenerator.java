@@ -282,12 +282,11 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
     private List<PropertyDraw> filterProperties(ImSet<GroupObject> filterGroups, ReportGenerationDataType reportType) {
         List<PropertyDraw> resultList = new ArrayList<>();
         for (PropertyDraw property : formInterface.getProperties()) {
-            GroupObject applyGroup = formInterface.getApplyObject(formInterface.getPropertyObject(property));
+            GroupObject applyGroup = formInterface.getDrawApplyObject(property);
             // Отдельно рассматриваем случай свойства без параметров
             GroupObject toDraw = formInterface.getToDraw(property);
-            Property pProperty;
             if (((applyGroup == null || toDraw == applyGroup) && toDraw != null && filterGroups.contains(toDraw) && validForGroupReports(property)) ||
-                (toDraw == null && applyGroup == null && (pProperty = formInterface.getProperty(formInterface.getPropertyObject(property))) instanceof CalcProperty && pProperty.getInterfaceCount() == 0) ||
+                (toDraw == null && applyGroup == null && formInterface.isNoParamCalcProperty(property)) ||
                 (toDraw != applyGroup && !reportType.isPrintJasper())) {
                 boolean add = true;
                 
@@ -428,7 +427,6 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
 
     private ImSet<Obj> getPropertyDependencies(PropertyDraw property) {
         MAddSet<PropertyObject> propertyObjects = SetFact.mAddSet();
-        propertyObjects.add(formInterface.getPropertyObject(property));
         PropertyObject propertyCaption = (PropertyObject) formInterface.getPropertyCaption(property);
         if(propertyCaption != null)
             propertyObjects.add(propertyCaption);
@@ -440,6 +438,7 @@ public class ReportSourceGenerator<PropertyDraw extends PropertyReaderInstance, 
             for (Obj object : formInterface.getPObjects(propertyObjects.get(i))) {
                 mObjects.add(object);
             }
+        mObjects.addAll(formInterface.getDrawObjects(property));
         return mObjects.immutable();
     }
 

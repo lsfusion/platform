@@ -4,6 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -26,9 +27,9 @@ import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 /// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);
 
 public class LogFormEntity extends FormEntity {
-    public ObjectEntity[] params;
+    public ImOrderSet<ObjectEntity> params;
     SystemEventsLogicsModule systemEventsLM;
-    ObjectEntity[] entities;
+    ImOrderSet<ObjectEntity> entities;
     ObjectEntity objSession;
     LCP<?> logValueProperty;
     LCP<?> logWhereProperty;
@@ -46,8 +47,8 @@ public class LogFormEntity extends FormEntity {
         Version version = getVersion();
 
         ValueClass[] classes = getValueClassesList(property);
-        entities = new ObjectEntity[classes.length + 1];
-
+        MOrderExclSet<ObjectEntity> mParams = SetFact.mOrderExclSet(classes.length);
+        
         // не в одном group Object так как при поиске значений может давать "декартово произведение" (не все субд умеют нормально разбирать такие случаи), вообще должно решаться в общем случае, но пока так
         int index = 1;
         for (ValueClass valueClass : classes) {
@@ -57,18 +58,18 @@ public class LogFormEntity extends FormEntity {
             paramGroup.setPanelClassView();
 
             ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass.getCaption());
-            entities[index-1] = obj;
+            mParams.exclAdd(obj);
             paramGroup.add(obj);
             index++;
 
             addGroupObject(paramGroup, version);
         }
 
-        params = Arrays.copyOf(entities, classes.length);
+        params = mParams.immutableOrder();
 
         GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup");
         objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, LocalizedString.create("{form.entity.session}"));
-        entities[classes.length] = objSession;
+        entities = params.addOrderExcl(objSession);
         logGroup.add(objSession);
 
         addGroupObject(logGroup, version);
@@ -115,7 +116,7 @@ public class LogFormEntity extends FormEntity {
             }
         }
 
-        addFixedFilter(new FilterEntity(addPropertyObject(logWhereProperty, SetFact.toOrderExclSet(entities))), version);
+        addFixedFilter(new FilterEntity(addPropertyObject(logWhereProperty, entities)), version);
 
         setNFEditType(PropertyEditType.READONLY, version);
 

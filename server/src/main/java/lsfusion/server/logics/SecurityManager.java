@@ -129,8 +129,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
                         if (editAction != null && editAction.property.ignoreReadOnlyPolicy()) {
                             readOnlyPolicy.property.change.permit(editAction.property); // permits editAction if it doesn't change anything
                         } else {
-                            if (changeEvent.equals(ServerResponse.CHANGE) && propertyDraw.propertyObject.property instanceof ActionProperty) { // hiding actions that cannot be executed 
-                                readOnlyPolicy.property.view.deny(propertyDraw.propertyObject.property);
+                            if (changeEvent.equals(ServerResponse.CHANGE) && !propertyDraw.isCalcProperty()) { // hiding actions that cannot be executed 
+                                propertyDraw.deny(readOnlyPolicy.property.view);
                             }
                         }
                     }

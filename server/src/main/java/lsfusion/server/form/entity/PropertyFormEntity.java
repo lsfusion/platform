@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -24,7 +25,7 @@ public class PropertyFormEntity extends FormEntity {
         Version version = LM.getVersion();
         
         if(messageProperty != null) {
-            addPropertyDraw(messageProperty, MapFact.<X, ObjectEntity>EMPTY(), version);
+            addPropertyDraw(messageProperty, MapFact.<X, ObjectEntity>EMPTYREV(), version);
         }
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
@@ -39,10 +40,10 @@ public class PropertyFormEntity extends FormEntity {
         addGroupObject(groupObject, version);
 
         // добавляем все свойства
-        ImSet<ObjectEntity> objects = groupObject.getObjects();
+        ImOrderSet<ObjectEntity> objects = groupObject.getOrderObjects();
         for(ObjectEntity object : objects)
             addPropertyDraw(LM.getObjValueProp(this, object), version, object);
-        addPropertyDraw(recognizeGroup, prev, true, null, true, version, objects.toList().toArray(new ObjectEntity[objects.size()]));
+        addPropertyDraw(recognizeGroup, prev, true, null, true, version, objects);
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {

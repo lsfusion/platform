@@ -181,7 +181,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return valueClass != null ? valueClass.getType() : null;
     }
 
-    public abstract boolean isSetNotNull();
+    public abstract boolean isNotNull();
 
     public String getDBName() {
         return dbName;
@@ -439,11 +439,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return null;
     }
 
-    @Override
-    public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
-        return groupsList;
-    }
-
     protected boolean finalized = false;
     public void finalizeInit() {
         assert !finalized;
@@ -649,16 +644,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
-            if (entity.shouldBeLast == null)
-                entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
-            if (entity.forceViewType == null)
-                entity.forceViewType = forceViewType;
-            if (entity.askConfirm == null)
-                entity.askConfirm = BaseUtils.nvl(askConfirm, false);
-            if (entity.askConfirmMessage == null)
-                entity.askConfirmMessage = askConfirmMessage;
-            if (entity.eventID == null)
-                entity.eventID = eventID;
+            entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
+            entity.forceViewType = forceViewType;
+            entity.askConfirm = BaseUtils.nvl(askConfirm, false);
+            entity.askConfirmMessage = askConfirmMessage;
+            entity.eventID = eventID;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDraw(entity, form);
@@ -690,6 +680,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 propertyView.regexpMessage = regexpMessage;
             if (propertyView.echoSymbols == null)
                 propertyView.echoSymbols = BaseUtils.nvl(echoSymbols, false);
+            
+            if(propertyView.defaultCompare == null)
+                propertyView.defaultCompare = defaultCompare;
 
             for(DefaultProcessor processor : processors)
                 processor.proceedDefaultDesign(propertyView);

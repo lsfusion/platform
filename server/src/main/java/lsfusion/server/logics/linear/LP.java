@@ -164,8 +164,8 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         this.creationPath = creationPath;
     }
 
-    public PropertyObjectEntity<T, ?> createObjectEntity(ObjectEntity... objects) {
-        return PropertyObjectEntity.create(property, getMap(objects), creationScript, creationPath);
+    public PropertyObjectEntity<T, ?> createObjectEntity(ImOrderSet<ObjectEntity> objects) {
+        return PropertyObjectEntity.create(property, getRevMap(objects), creationScript, creationPath);
     }
 
     public void setExplicitClasses(List<ResolveClassSet> signature) {

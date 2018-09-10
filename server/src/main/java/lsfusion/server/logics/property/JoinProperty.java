@@ -410,12 +410,12 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public boolean isSetNotNull() {
-        if (super.isSetNotNull()) {
+    public boolean isNotNull() {
+        if (super.isNotNull()) {
             return true;
         }
         if (implement.mapping.size() == 1 && implement.mapping instanceof CalcPropertyMapImplement) {
-            return ((CalcPropertyMapImplement) implement.mapping.singleValue()).property.isSetNotNull();    
+            return ((CalcPropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();    
         }
         return false;
     }

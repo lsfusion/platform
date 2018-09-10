@@ -8,10 +8,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.form.view.DefaultFormView;
-import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -47,7 +43,7 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, ClassPropertyInterface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        return new DefaultChangeObjectActionProperty(null, getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
+        return new DefaultChangeObjectActionProperty(getInterface().interfaceClass, object).getImplement(SetFact.singletonOrder(getInterface()));
     }
 
     private ClassPropertyInterface getInterface() {

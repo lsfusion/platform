@@ -474,50 +474,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return null;
     }
 
-    public List<PropertyDrawView> getProperties(AbstractNode group) {
-
-        return getProperties(group, null);
-    }
-
-    public List<PropertyDrawView> getProperties(AbstractNode group, GroupObjectEntity groupObject) {
-
-        List<PropertyDrawView> result = new ArrayList<>();
-
-        for (PropertyDrawView property : getPropertiesList()) {
-            if ((groupObject==null || groupObject.equals(property.entity.getToDraw(entity))) && group.hasChild(property.entity.propertyObject.property)) {
-                result.add(property);
-            }
-        }
-
-        return result;
-    }
-
-    public List<PropertyDrawView> getProperties(Property prop, GroupObjectEntity groupObject) {
-
-        List<PropertyDrawView> result = new ArrayList<>();
-
-        for (PropertyDrawView property : getPropertiesList()) {
-            if (groupObject.equals(property.entity.getToDraw(entity)) && prop.equals(property.entity.propertyObject.property)) {
-                result.add(property);
-            }
-        }
-
-        return result;
-    }
-
-    public List<PropertyDrawView> getProperties(Property prop) {
-
-        List<PropertyDrawView> result = new ArrayList<>();
-
-        for (PropertyDrawView property : getPropertiesIt()) {
-            if (prop.equals(property.entity.propertyObject.property)) {
-                result.add(property);
-            }
-        }
-
-        return result;
-    }
-
     public List<PropertyDrawView> getProperties(GroupObjectEntity groupObject) {
 
         List<PropertyDrawView> result = new ArrayList<>();
@@ -538,46 +494,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
 
-    public void setFont(AbstractGroup group, FontInfo font) {
-
-        for (PropertyDrawView property : getProperties(group)) {
-            setFont(property, font);
-        }
-    }
-
-    public void setFont(AbstractGroup group, FontInfo font, GroupObjectEntity groupObject) {
-        
-        for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setFont(property, font);
-        }
-    }
-
     public void setFont(FontInfo font, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView property : getProperties(groupObject)) {
             setFont(property, font);
-        }
-    }
-
-    public void setFont(LP property, FontInfo font, GroupObjectEntity groupObject) {
-        setFont(property.property, font, groupObject);
-    }
-
-    public void setFont(Property property, FontInfo font, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-            setFont(propertyView, font);
-        }
-    }
-
-    public void setFont(LP property, FontInfo font) {
-        setFont(property.property, font);
-    }
-
-    public void setFont(Property property, FontInfo font) {
-
-        for (PropertyDrawView propertyView : getProperties(property)) {
-            setFont(propertyView, font);
         }
     }
 
@@ -601,66 +521,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.design.setCaptionFont(captionFont);
     }
 
-    public void setBackground(AbstractGroup group, Color background, GroupObjectEntity groupObject) {
-        for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setBackground(property, background);
-        }
-    }
-
-    public void setBackground(LP prop, Color background) {
-        setBackground(prop.property, background);
-    }
-
-    public void setBackground(Color background, GroupObjectEntity groupObject, LP... props) {
-        for(LP prop : props)
-            setBackground(prop.property, groupObject, background);
-    }
-
-    public void setBackground(Property prop, GroupObjectEntity groupObject, Color background) {
-
-        for (PropertyDrawView property : getProperties(prop, groupObject)) {
-            setBackground(property, background);
-        }
-    }
-
-    public void setBackground(Property prop, Color background) {
-
-        for (PropertyDrawView property : getProperties(prop)) {
-            setBackground(property, background);
-        }
-    }
-
     public void setBackground(PropertyDrawView property, Color background) {
         property.design.background = background;
-    }
-
-    public void setFocusable(AbstractGroup group, boolean focusable, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setFocusable(property, focusable);
-        }
-    }
-
-    public void setFocusable(LP property, boolean focusable) {
-        setFocusable(property.property, focusable);
-    }
-
-    public void setFocusable(LP property, boolean focusable, GroupObjectEntity groupObject) {
-        setFocusable(property.property, focusable, groupObject);
-    }
-
-    public void setFocusable(Property property, boolean focusable) {
-
-        for (PropertyDrawView propertyView : getProperties(property)) {
-            setFocusable(propertyView, focusable);
-        }
-    }
-
-    public void setFocusable(Property property, boolean focusable, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-            setFocusable(propertyView, focusable);
-        }
     }
 
     public void setFocusable(boolean focusable, GroupObjectEntity groupObject) {
@@ -680,22 +542,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.focusable = focusable;
     }
 
-    public void setEditOnSingleClick(Boolean editOnSingleClick, Type type) {
-
-        for (PropertyDrawView propertyView : getPropertiesIt()) {
-            if (propertyView.entity.propertyObject.property.getType().equals(type))
-                setEditOnSingleClick(propertyView, editOnSingleClick);
-        }
-    }
-
-    public void setEditOnSingleClick(Boolean editOnSingleClick, GroupObjectEntity groupObject, Type type) {
-
-        for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            if (propertyView.entity.propertyObject.property.getType().equals(type))
-                setEditOnSingleClick(propertyView, editOnSingleClick);
-        }
-    }
-
     public void setEditOnSingleClick(PropertyDrawView property, Boolean editOnSingleClick) {
         property.editOnSingleClick = editOnSingleClick;
     }
@@ -706,31 +552,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void setCaption(LocalizedString caption) {
         this.caption = caption;
-    }
-
-    public void setEnabled(AbstractGroup group, boolean enabled, GroupObjectEntity groupObject) {
-        setFocusable(group, enabled, groupObject);
-        entity.setEditType(group, PropertyEditType.getReadonlyType(!enabled), groupObject);
-    }
-
-    public void setEnabled(LP property, boolean enabled) {
-        setFocusable(property, enabled);
-        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled));
-    }
-
-    public void setEnabled(LP property, boolean enabled, GroupObjectEntity groupObject) {
-        setFocusable(property, enabled, groupObject);
-        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled), groupObject);
-    }
-
-    public void setEnabled(Property property, boolean enabled) {
-        setFocusable(property, enabled);
-        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled));
-    }
-
-    public void setEnabled(Property property, boolean enabled, GroupObjectEntity groupObject) {
-        setFocusable(property, enabled, groupObject);
-        entity.setEditType(property, PropertyEditType.getReadonlyType(!enabled), groupObject);
     }
 
     public void setEnabled(boolean enabled, GroupObjectEntity groupObject) {
@@ -748,44 +569,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         entity.setEditType(property.entity, PropertyEditType.getReadonlyType(!enabled));
     }
 
-    public void setChangeKey(LP property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
-        setChangeKey(property.property, keyStroke, groupObject);
-    }
-
-    public void setChangeKey(LP property, KeyStroke keyStroke) {
-        setChangeKey(property.property, keyStroke);
-    }
-
-    public void setChangeKey(Property property, KeyStroke keyStroke, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView propertyView : getProperties(property, groupObject)) {
-            setChangeKey(propertyView, keyStroke);
-        }
-    }
-
-    public void setChangeKey(Property property, KeyStroke keyStroke) {
-
-        for (PropertyDrawView propertyView : getProperties(property)) {
-            setChangeKey(propertyView, keyStroke);
-        }
-    }
-
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {
         property.changeKey = keyStroke;
-    }
-
-    public void setPanelCaptionAbove(AbstractGroup group, boolean panelCaptionAbove, GroupObjectEntity groupObject) {
-
-        for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setPanelCaptionAbove(property, panelCaptionAbove);
-        }
-    }
-
-    public void setPanelCaptionAbove(AbstractGroup group, boolean panelCaptionAbove) {
-
-        for (PropertyDrawView property : getProperties(group)) {
-            setPanelCaptionAbove(property, panelCaptionAbove);
-        }
     }
 
     public void setPanelCaptionAbove(PropertyDrawView property, boolean panelCaptionAbove) {

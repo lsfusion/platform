@@ -127,25 +127,31 @@ public class AbstractGroup extends AbstractNode {
         }
         return result.immutableOrder();
     }
-
-    public List<AbstractGroup> getParentGroups() {
-        List<AbstractGroup> result = new ArrayList<>();
-        result.add(this);
+    
+    public ImList<AbstractGroup> getParentGroups() {
+        MList<AbstractGroup> mResult = ListFact.mList();
+        fillParentGroups(mResult);
+        return mResult.immutableList();        
+    }
+    public void fillParentGroups(MList<AbstractGroup> mResult) {
+        AbstractGroup parent = getParent();
+        if (parent != null) {
+            parent.fillParentGroups(mResult);
+        }
+        mResult.add(this);
+    }
+    public ImList<AbstractGroup> getChildGroups() {
+        MList<AbstractGroup> mResult = ListFact.mList();
+        fillChildGroups(mResult);
+        return mResult.immutableList();
+    }
+    public void fillChildGroups(MList<AbstractGroup> mResult) {
+        mResult.add(this);
         for (AbstractNode child : getChildrenListIt()) {
             if (child instanceof AbstractGroup) {
-                result.add((AbstractGroup) child);
-            }
-            List<AbstractGroup> childGroups = new ArrayList<>();
-            childGroups = child.fillGroups(childGroups);
-            for (AbstractGroup c : childGroups) {
-                if (!c.getChildren().isEmpty()) {
-                    result.addAll(c.getParentGroups());
-                } else {
-                    result.add((c));
-                }
+                ((AbstractGroup) child).fillChildGroups(mResult);
             }
         }
-        return result;
     }
 
     @Override
@@ -155,16 +161,6 @@ public class AbstractGroup extends AbstractNode {
             mResult.addAll(child.getProperties(valueClasses, mapClasses, useObjSubsets, anyInInterface, version));
         }
         return mResult.immutableList();
-    }
-
-    @Override
-    public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
-        for (AbstractNode child : getChildrenListIt()) {
-            if (child instanceof AbstractGroup) {
-                groupsList.add((AbstractGroup) child);
-            }
-        }
-        return groupsList;
     }
 
     @Override

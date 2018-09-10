@@ -35,7 +35,7 @@ public interface FormSourceInterface<PropertyDraw extends PropertyReader, GroupO
     // interfaces
     ImSet<GroupObject> getGroups();
     int getGroupID(GroupObject groupObject);
-    PropertyObject getPropertyObject(PropertyDraw propertyDraw);
+
     ImCol<Obj> getPObjects(PropertyObject propertyObject);
     GroupObject getGroupTo(Obj obj);
     GroupObject getToDraw(PropertyDraw propertyDraw);
@@ -60,6 +60,10 @@ public interface FormSourceInterface<PropertyDraw extends PropertyReader, GroupO
     ImOrderMap<Order, Boolean> getOrders(GroupObject groupObject);
 
     ObjectValue getObjectValue(Obj obj);
+
+    GroupObject getDrawApplyObject(PropertyDraw propertyDraw);
+    ImSet<Obj> getDrawObjects(PropertyDraw propertyDraw);
+    boolean isNoParamCalcProperty(PropertyDraw propertyDraw);
 
     CalcPropertyObject getDrawInstance(PropertyDraw propertyDraw);
     CalcPropertyObject getPropertyCaption(PropertyDraw propertyDraw);

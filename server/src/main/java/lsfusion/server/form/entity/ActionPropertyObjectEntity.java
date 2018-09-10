@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.instance.ActionPropertyObjectInstance;
 import lsfusion.server.form.instance.InstanceFactory;
@@ -15,11 +16,11 @@ public class ActionPropertyObjectEntity<P extends PropertyInterface> extends Pro
         //нужен для десериализации
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ObjectEntity> mapping) {
+    public ActionPropertyObjectEntity(ActionProperty<P> property, ImRevMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null);
     }
 
-    public ActionPropertyObjectEntity(ActionProperty<P> property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public ActionPropertyObjectEntity(ActionProperty<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 

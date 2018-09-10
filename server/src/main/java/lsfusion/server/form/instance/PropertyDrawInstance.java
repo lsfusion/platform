@@ -29,7 +29,36 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return null;
     }
 
-    public PropertyObjectInstance<P, ?> propertyObject;
+    private PropertyObjectInstance<?, ?> propertyObject;
+    
+    public PropertyObjectInstance<?, ?> getValueProperty() {
+        return propertyObject;
+    }
+
+    public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
+        return getValueProperty().isInInterface(classGroups, any);
+    }
+
+    public OrderInstance getOrder() {
+        return (CalcPropertyObjectInstance) getValueProperty();
+    }
+    
+    public boolean isCalcProperty() {
+        return getValueProperty() instanceof CalcPropertyObjectInstance;
+    }
+
+    public boolean isNoParamCalcProperty() {
+        return isCalcProperty() && getValueProperty().property.getInterfaceCount() == 0;
+    }
+
+    public GroupObjectInstance getApplyObject() {
+        return getValueProperty().getApplyObject();
+    }
+
+    public ImSet<ObjectInstance> getObjectInstances() {
+        return getValueProperty().getSetObjectInstances();
+    }
+
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
@@ -76,7 +105,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public HiddenReaderInstance hiddenReader = new HiddenReaderInstance();
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
-                                PropertyObjectInstance<P, ?> propertyObject,
+                                PropertyObjectInstance<?, ?> propertyObject,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 CalcPropertyObjectInstance<?> propertyCaption,
@@ -102,7 +131,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public CalcPropertyObjectInstance<?> getDrawInstance() {
-        return propertyObject.getDrawProperty();
+        return getValueProperty().getDrawProperty();
     }
 
     public byte getTypeID() {

@@ -1063,8 +1063,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     
     public static final boolean disableImplicitCases = true;
     
-    public List<AbstractGroup> getParentGroups() {
-        return LM.rootGroup.getParentGroups();
+    public ImList<AbstractGroup> getChildGroups() {
+        return LM.rootGroup.getChildGroups();
     }
 
     public ImOrderSet<Property> getPropertyList() {

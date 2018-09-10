@@ -41,7 +41,7 @@ import java.util.*;
 
 public abstract class ImportFormDataActionProperty extends SystemExplicitActionProperty {
     protected LCP<?> fileProperty;
-    private FormEntity formEntity;
+    protected FormEntity formEntity;
 
     public ImportFormDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
         super(valueClasses);
@@ -61,8 +61,8 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
         //читаем свойства
         for (PropertyDrawEntity propertyDraw : formEntity.getPropertyDrawsList()) {
             GroupObjectEntity toDraw = propertyDraw.getToDraw(formEntity);
-            if (toDraw != null && propertyDraw.propertyObject.property instanceof CalcProperty) {
-                CalcPropertyObjectEntity property = (CalcPropertyObjectEntity) propertyDraw.propertyObject;
+            if (toDraw != null && propertyDraw.isCalcProperty()) {
+                CalcPropertyObjectEntity property = propertyDraw.getImportProperty();
 
                 ImportFormKeys keys = getNeededGroupsForColumnProp(property);
                 String escapedId = ImportExportUtils.getPropertyTag(propertyDraw.getSID());
@@ -84,16 +84,14 @@ public abstract class ImportFormDataActionProperty extends SystemExplicitActionP
 
         //добавляем фильтры
         for (FilterEntity filter : formEntity.getFixedFilters()) {
-            if (filter instanceof FilterEntity) {
-                CalcPropertyObjectEntity<?> property = ((FilterEntity) filter).getCalcPropertyObjectEntity();
-                ImportFormKeys keys = new ImportFormKeys(property.getSetObjectInstances());
-                List<CalcPropertyObjectEntity> propertiesEntry = propertiesMap.get(keys);
-                if (propertiesEntry == null)
-                    propertiesEntry = new ArrayList<>();
-                propertiesEntry.add(property);
-                propertiesMap.put(keys, propertiesEntry);
-                filters.add(Pair.<ImportFormKeys, CalcPropertyObjectEntity>create(keys, property));
-            }
+            CalcPropertyObjectEntity<?> property = filter.getImportProperty();
+            ImportFormKeys keys = new ImportFormKeys(property.getSetObjectInstances());
+            List<CalcPropertyObjectEntity> propertiesEntry = propertiesMap.get(keys);
+            if (propertiesEntry == null)
+                propertiesEntry = new ArrayList<>();
+            propertiesEntry.add(property);
+            propertiesMap.put(keys, propertiesEntry);
+            filters.add(Pair.<ImportFormKeys, CalcPropertyObjectEntity>create(keys, property));
         }
 
         //Отменяем все предыдущие изменения в сессии

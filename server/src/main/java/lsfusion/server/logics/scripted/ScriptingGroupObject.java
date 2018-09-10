@@ -3,6 +3,7 @@ package lsfusion.server.logics.scripted;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.UpdateType;
 import lsfusion.server.logics.i18n.LocalizedString;
 
@@ -17,10 +18,8 @@ public class ScriptingGroupObject {
     ClassViewType viewType;
     boolean isInitType;
     Integer pageSize;
-    ScriptingLogicsModule.PropertyUsage reportPathPropUsage;
-    List<String> reportPathMapping;
     UpdateType updateType;
-    String formObjectGroup;
+    String propertyGroupName;
     
     GroupObjectEntity neighbourGroupObject;
     Boolean isRightNeighbour;
@@ -47,11 +46,6 @@ public class ScriptingGroupObject {
         this.pageSize = pageSize;
     }
 
-    public void setReportPathProp(ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) {
-        this.reportPathPropUsage = propUsage;
-        this.reportPathMapping = mapping;
-    }
-    
     public void setUpdateType(UpdateType updateType) {
         this.updateType = updateType; 
     }
@@ -61,7 +55,7 @@ public class ScriptingGroupObject {
         this.isRightNeighbour = isRightNeighbour;
     }
 
-    public void setFormObjectGroup(String formObjectGroup) {
-        this.formObjectGroup = formObjectGroup;
+    public void setPropertyGroupName(String propertyGroupName) {
+        this.propertyGroupName = propertyGroupName;
     }
 }

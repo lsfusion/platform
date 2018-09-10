@@ -445,7 +445,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         logger.trace(String.format("new order: %s", order.toString()));
                     }
 
-                    propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getDrawProperty().getRemappedPropertyObject(keys), Order.deserialize(modiType));
+                    propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.deserialize(modiType));
                 }
             }
         });

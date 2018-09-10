@@ -209,7 +209,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImList<PropertyDrawEntity<?>> propertyDraws = entity.getPropertyDrawsList();
         MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
-            if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property)) {
+            if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
                     propertyDrawInstance.toDraw = instanceFactory.getInstance(propertyDrawEntity.getToDraw(entity));
@@ -299,9 +299,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             Boolean ascending = defaultOrders.getValue(i);
 
             if(toDraw != null) {
-                toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, wasOrder.contains(toDraw) ? ADD : REPLACE);
+                OrderInstance order = property.getOrder();
+                toDraw.changeOrder(order, wasOrder.contains(toDraw) ? ADD : REPLACE);
                 if (!ascending) {
-                    toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, DIR);
+                    toDraw.changeOrder(order, DIR);
                 }
                 wasOrder.add(toDraw);
             }
@@ -700,11 +701,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     protected FunctionSet<CalcProperty> getNoHints() {
-        FunctionSet<CalcProperty> result = entity.getNoHints();
         if (pullProps == null)
-            return result;
+            return SetFact.EMPTY();
 
-        return BaseUtils.merge(result, new FunctionSet<CalcProperty>() {
+        return new FunctionSet<CalcProperty>() {
             public boolean contains(CalcProperty element) {
                 for (PullChangeProperty pullProp : pullProps)
                     if (pullProp.isChangeBetween(element))
@@ -719,7 +719,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             public boolean isFull() {
                 return false;
             }
-        });
+        };
     }
 
     public CustomClass getCustomClass(long classID) {
@@ -796,36 +796,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (property.getsID().equals(sid))
                 return property;
         return null;
-    }
-
-    public PropertyDrawInstance getPropertyDraw(Property<?> property, ObjectInstance object) {
-        for (PropertyDrawInstance propertyDraw : properties)
-            if (property.equals(propertyDraw.propertyObject.property) && propertyDraw.propertyObject.mapping.containsValue(object))
-                return propertyDraw;
-        return null;
-    }
-
-    public PropertyDrawInstance getPropertyDraw(Property<?> property, GroupObjectInstance group) {
-        for (PropertyDrawInstance propertyDraw : properties)
-            if (property.equals(propertyDraw.propertyObject.property) && (group == null || group.equals(propertyDraw.toDraw)))
-                return propertyDraw;
-        return null;
-    }
-
-    public PropertyDrawInstance getPropertyDraw(Property<?> property) {
-        return getPropertyDraw(property, (GroupObjectInstance) null);
-    }
-
-    public PropertyDrawInstance getPropertyDraw(LP property) {
-        return getPropertyDraw(property.property);
-    }
-
-    public PropertyDrawInstance getPropertyDraw(LP property, ObjectInstance object) {
-        return getPropertyDraw(property.property, object);
-    }
-
-    public PropertyDrawInstance getPropertyDraw(LP property, GroupObjectInstance group) {
-        return getPropertyDraw(property.property, group);
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -1795,10 +1765,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             ImSet<GroupObjectInstance> propRowGrids;
             Boolean newInInterface = null;
             if (curClassView.isGrid() && (forceViewType == null || forceViewType.isGrid()) &&
-                    drawProperty.propertyObject.isInInterface(propRowGrids = propRowColumnGrids.addExcl(drawProperty.toDraw), forceViewType != null)) {
+                    drawProperty.isInInterface(propRowGrids = propRowColumnGrids.addExcl(drawProperty.toDraw), forceViewType != null)) {
                 // в grid'е
                 newInInterface = true;
-            } else if (drawProperty.propertyObject.isInInterface(propRowGrids = propRowColumnGrids, false)) {
+            } else if (drawProperty.isInInterface(propRowGrids = propRowColumnGrids, false)) {
                 // в панели
                 newInInterface = false;
             }
@@ -2025,7 +1995,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public ImSet<PropertyDrawInstance> getCalcProperties() {
         return properties.toOrderSet().getSet().filterFn(new SFunctionSet<PropertyDrawInstance>() {
                 public boolean contains(PropertyDrawInstance property) {
-                    return property.propertyObject instanceof CalcPropertyObjectInstance;
+                    return property.isCalcProperty();
                 }
             });
     }
@@ -2168,7 +2138,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
                 ClassFormEntity classForm = objectClass.getDialogForm(BL.LM);
                 dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, null, stack);
+                return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, stack);
             }
         };
     }
@@ -2191,7 +2161,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 //                }
 
                 dialogObject = classForm.object;
-                return createDialogInstance(classForm.form, dialogObject, currentObject, null, null, null, stack);
+                return createDialogInstance(classForm.form, dialogObject, currentObject, null, null, stack);
             }
         };
     }
@@ -2209,18 +2179,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 
                 dialogObject = formEntity.object;
 
-                PropertyDrawEntity initFilterPropertyDraw = filterProperty == null ? null : formEntity.form.getPropertyDraw(filterProperty, dialogObject);
-
-                return createDialogInstance(formEntity.form, dialogObject, propertyValues.readClasses(FormInstance.this), additionalFilters, initFilterPropertyDraw, pullProps.result, stack);
+                return createDialogInstance(formEntity.form, dialogObject, propertyValues.readClasses(FormInstance.this), additionalFilters, pullProps.result, stack);
             }
         };
     }
 
-    public DialogRequest createChangeObjectDialogRequest(final CustomClass dialogClass,
-                                                         final ObjectValue dialogValue,
-                                                         final GroupObjectInstance groupObject,
-                                                         final CalcProperty filterProperty,
-                                                         final ExecutionStack stack) throws SQLException {
+    public DialogRequest createChangeObjectDialogRequest(final CustomClass dialogClass, final ObjectValue dialogValue, final GroupObjectInstance groupObject, final ExecutionStack stack) throws SQLException {
         return new DialogRequestAdapter() {
             @Override
             protected FormInstance doCreateDialog() throws SQLException, SQLHandledException {
@@ -2229,17 +2193,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
                 dialogObject = formEntity.object;
 
-                PropertyDrawEntity initFilterPropertyDraw = filterProperty == null ? null : formEntity.form.getPropertyDraw(filterProperty, dialogObject);
-
-                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, initFilterPropertyDraw, SetFact.<PullChangeProperty>EMPTY(), stack);
+                return createDialogInstance(formEntity.form, dialogObject, dialogValue, additionalFilters, SetFact.<PullChangeProperty>EMPTY(), stack);
             }
         };
     }
 
     // вызов из обработчиков по умолчанию AggChange, DefaultChange, ChangeReadObject
-    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue,
-                                              ImSet<ContextFilter> additionalFilters, PropertyDrawEntity initFilterPropertyDraw,
-                                              ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
+    private FormInstance createDialogInstance(FormEntity entity, ObjectEntity dialogEntity, ObjectValue dialogValue, ImSet<ContextFilter> additionalFilters, ImSet<PullChangeProperty> pullProps, ExecutionStack outerStack) throws SQLException, SQLHandledException {
         return new FormInstance(entity, this.logicsInstance,
                                 this.session, this.securityPolicy,
                                 getFocusListener(), getClassListener(),

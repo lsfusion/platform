@@ -5,17 +5,17 @@ import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ClassViewType;
+import lsfusion.interop.Compare;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.auth.ViewPropertySecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.NumericClass;
@@ -33,6 +33,7 @@ import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
+import lsfusion.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -46,8 +47,8 @@ import static lsfusion.interop.form.ServerResponse.*;
 public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, PropertyReaderEntity {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
-
-    public PropertyObjectEntity<P, ?> propertyObject;
+    
+    private final PropertyObjectEntity<P, ?> propertyObject;
     
     public GroupObjectEntity toDraw;
 
@@ -81,6 +82,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyFooter;
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
+    
+    public AbstractGroup group;
+
+    public boolean attr;
 
     public PropertyDrawEntity quickFilterProperty;
 
@@ -166,9 +171,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return "SHOWIF" + "(" + PropertyDrawEntity.this.toString() + ")";
         }
     };
-    
-    public PropertyDrawEntity() {
-    }
 
     public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
         super(ID);
@@ -184,9 +186,21 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public DataClass getWYSRequestInputType(SecurityPolicy policy) {
         return getRequestInputType(CHANGE_WYS, policy, false);
     }
+    
+    public boolean isCalcProperty() {
+        return getValueProperty() instanceof CalcPropertyObjectEntity;
+    }
+    
+    public boolean isNoParamCalcProperty() {
+        return isCalcProperty() && getValueProperty().property.getInterfaceCount() == 0;
+    }
+    
+    public OrderEntity<?> getOrder() {
+        return (CalcPropertyObjectEntity<?>) getValueProperty();
+    }
 
     public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
-        if (propertyObject instanceof CalcPropertyObjectEntity) { // optimization
+        if (isCalcProperty()) { // optimization
             ActionPropertyObjectEntity<?> changeAction = getEditAction(actionSID, policy);
 
             if (changeAction != null) {
@@ -216,7 +230,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
-            securityProperty = propertyObject.property; // will check property itself 
+            securityProperty = getSecurityProperty(); // will check property itself 
         } else { // menu or key binding
             securityProperty = editAction;
         }
@@ -273,23 +287,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ActionPropertyObjectEntity<?> getSelectorAction(FormEntity entity, Version version) {
-        Property<P> property = propertyObject.property;
-
         GroupObjectEntity groupObject = getNFToDraw(entity, version);
         if(groupObject != null) {
-            ImMap<P, ObjectEntity> groupObjects = propertyObject.mapping.filterValues(groupObject.getObjects()); // берем нижний объект в toDraw
-            for (ObjectEntity objectInstance : groupObjects.valueIt()) {
+            for (ObjectEntity objectInstance : getObjectInstances().filter(groupObject.getObjects())) {
                 if (objectInstance.baseClass instanceof CustomClass) {
-                    ExplicitActionProperty dialogAction = objectInstance.getChangeAction(property);
-                    return new ActionPropertyObjectEntity<>(dialogAction, MapFact.singleton(dialogAction.interfaces.single(), objectInstance));
+                    ExplicitActionProperty dialogAction = objectInstance.getChangeAction();
+                    return new ActionPropertyObjectEntity<>(dialogAction, MapFact.singletonRev(dialogAction.interfaces.single(), objectInstance));
                 }
             }
         }
         return null;
-    }
-
-    public void setPropertyObject(PropertyObjectEntity<P, ?> propertyObject) {
-        this.propertyObject = propertyObject;
     }
 
     public PropertyDrawInstance getInstance(InstanceFactory instanceFactory) {
@@ -327,7 +334,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
 
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = propertyObject.property.getContextMenuBindings();
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getInheritedProperty().getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -355,7 +362,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Map<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = propertyObject.property.getKeyBindings();
+        ImMap<KeyStroke, String> propertyKeyBindings = getInheritedProperty().getKeyBindings();
         if (propertyKeyBindings.isEmpty()) {
             return keyBindings;
         }
@@ -368,7 +375,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : propertyObject.property.getMouseBinding();
+        return mouseBinding != null ? mouseBinding : getInheritedProperty().getMouseBinding();
     }
 
     @LongMutable
@@ -430,7 +437,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
-        propertyObject.property.drawOptions.proceedDefaultDesign(propertyView);
+        getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView);
     }
 
     @Override
@@ -439,11 +446,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null?form.getApplyObject(propertyObject.getObjectInstances()):toDraw;        
+        return toDraw==null?getApplyObject(form):toDraw;        
+    }
+
+    public GroupObjectEntity getApplyObject(FormEntity form) {
+        return form.getApplyObject(getObjectInstances());        
+    }
+    
+    public ImSet<ObjectEntity> getObjectInstances() {
+        return getValueProperty().getSetObjectInstances();
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
-        return toDraw==null?form.getNFApplyObject(propertyObject.getObjectInstances(), version):toDraw;
+        return toDraw==null?form.getNFApplyObject(getObjectInstances(), version):toDraw;
     }
 
     public boolean isToolbar(FormEntity formEntity) {
@@ -480,11 +495,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static <P extends PropertyInterface> String createSID(PropertyObjectEntity<?, ?> property, ImOrderSet<P> interfaces) {
         assert property.property.isNamed();
         List<String> mapping = new ArrayList<>();
-        for (P pi : interfaces) {
-            PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
-            assert obj instanceof ObjectEntity;
-            mapping.add(((ObjectEntity) obj).getSID());
-        }
+        for (P pi : interfaces)
+            mapping.add(property.mapping.getObject(pi).getSID());
         return createSID(property.property.getName(), mapping);
     }
 
@@ -496,12 +508,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.formPath = formPath;
     }
 
-    public String getNamespace() {
-        return propertyObject == null || propertyObject.property == null ? "" : propertyObject.property.getNamespace();
-    }
-
     public CalcPropertyObjectEntity getDrawInstance() {
-        return propertyObject.getDrawProperty();
+        return getValueProperty().getDrawProperty();
     }
 
     @Override
@@ -515,7 +523,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Type getType() {
-        return propertyObject.property.getType();
+        return getValueProperty().property.getType();
+    }
+
+    public LocalizedString getCaption() {
+        return getInheritedProperty().caption;
+    }
+
+    public boolean isNotNull() {
+        return getInheritedProperty().isNotNull();
     }
 
     @Override
@@ -527,5 +543,48 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private String getToDrawSID(FormEntity formEntity) {
         GroupObjectEntity group = getToDraw(formEntity);
         return group != null ? group.getSID() : "nogroup";
+    }
+    
+    public boolean checkPermission(ViewPropertySecurityPolicy policy) {
+        return policy.checkPermission(getSecurityProperty());
+    }
+    public void deny(ViewPropertySecurityPolicy policy) {
+        policy.deny(getSecurityProperty());
+    }
+
+    public String shortSID;
+
+    public void setShortSID(String shortSID) {
+        this.shortSID = shortSID;
+    }
+
+    public String getShortSID() {
+        return shortSID;
+    }
+    
+    public CalcPropertyObjectEntity getImportProperty() {
+        return (CalcPropertyObjectEntity) propertyObject;
+    }
+
+    // for getExpr, getType purposes
+    public PropertyObjectEntity<?, ?> getValueProperty() {
+        return propertyObject;
+    }
+
+    // presentation info, probably should be merged with inheritDrawOptions mechanism
+    public Property getInheritedProperty() {
+        return propertyObject.property;
+    }
+
+    public Property getSecurityProperty() {
+        return getInheritedProperty();
+    }
+
+    // for debug purposes
+    public Property getDebugBindingProperty() {
+        return getInheritedProperty();
+    }
+    public PropertyObjectEntity getDebugProperty() {
+        return propertyObject;
     }
 }

@@ -1,6 +1,9 @@
 package lsfusion.server.form.entity.filter;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
@@ -25,7 +28,7 @@ import java.util.Set;
 public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance> {
 
     public boolean checkChange;    
-    public CalcPropertyObjectEntity<P> property;
+    private CalcPropertyObjectEntity<P> property;
     public boolean resolveAdd;
 
     // нельзя удалять - используется при сериализации
@@ -50,7 +53,7 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         return new NotNullFilterInstance<>(instanceFactory.getInstance(property), checkChange, resolveAdd);
     }
 
-    public CalcPropertyObjectEntity<P> getCalcPropertyObjectEntity() {
+    public CalcPropertyObjectEntity<P> getImportProperty() {
         return property;
     }
     public ContextFilter getRemappedContextFilter(final ObjectEntity oldObject, final ObjectEntity newObject, final InstanceFactory instanceOldFactory) {
@@ -65,14 +68,14 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         return property.getExpr(mapKeys, modifier, mapObjects).getWhere();
     }
 
-    protected void fillObjects(Set<ObjectEntity> objects) {
+    protected void fillObjects(MSet<ObjectEntity> objects) {
         property.fillObjects(objects);
     }
 
-    public Set<ObjectEntity> getObjects() {
-        Set<ObjectEntity> objects = new HashSet<>();
-        fillObjects(objects);
-        return objects;
+    public ImSet<ObjectEntity> getObjects() {
+        MSet<ObjectEntity> mResult = SetFact.mSet();
+        fillObjects(mResult);
+        return mResult.immutable();
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {

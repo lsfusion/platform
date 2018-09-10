@@ -2,8 +2,10 @@ package lsfusion.server.logics.property.actions.importing.xml;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportFormHierarchicalDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportFormIterator;
@@ -14,17 +16,29 @@ import org.jdom.input.SAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataActionProperty<Element> {
     private Set<String> attrs;
 
-    public ImportFormXMLDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity, Map<String, List<List<String>>> formObjectGroups,
-                                           Map<String, List<List<String>>> formPropertyGroups, Set<String> attrs) {
-        super(classes, fileProperty, formEntity, formObjectGroups, formPropertyGroups);
-        this.attrs = attrs;
+    public static Set<String> calcAttrs(FormEntity formEntity) {
+        Set<String> attrs = new HashSet<>();
+        for(PropertyDrawEntity<?> property : formEntity.getPropertyDrawsIt()) {
+            if(property.attr)
+                attrs.add(property.getShortSID());
+        }
+        return attrs;
+    }
+    @ManualLazy
+    private Set<String> getAttrs() {
+        if(attrs == null)
+            attrs = calcAttrs(formEntity);
+        return attrs;
+    }
+
+    public ImportFormXMLDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity) {
+        super(classes, fileProperty, formEntity);
     }
 
     @Override
@@ -38,7 +52,7 @@ public class ImportFormXMLDataActionProperty extends ImportFormHierarchicalDataA
 
     @Override
     public ImportFormIterator getIterator(Pair<String, Object> rootElement) {
-        return new ImportFormXMLIterator(rootElement, formObjectGroups, formPropertyGroups, attrs);
+        return new ImportFormXMLIterator(rootElement, getObjectGroups(), getPropertyGroups(), getAttrs());
     }
 
     @Override

@@ -2,10 +2,12 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
-import lsfusion.base.col.ListFact;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
@@ -31,6 +33,7 @@ import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -101,25 +104,13 @@ public class ScriptingFormEntity {
                 groupObj.updateType = groupObject.updateType;
             }
 
-        List<String> formObjectGroups = new ArrayList<>();
-        if (groupObject.formObjectGroup != null) {
-            AbstractGroup parent = LM.findGroup(groupObject.formObjectGroup);
-            while (parent != null && !parent.system) {
-                formObjectGroups.add(parent.getName());
-                parent = parent.getParent();
-            }
-        }
-        form.putIntegrationObjectOptions(groupName, new IntegrationObjectOptions(formObjectGroups));
+            String propertyGroupName = groupObject.propertyGroupName;
+            AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
+            if(propertyGroup != null)
+                groupObj.propertyGroup = propertyGroup;            
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
-        }
-
-        for (int i = 0; i < groupObjects.size(); i++) {
-            if (groupObjects.get(i).reportPathPropUsage != null) {
-                // todo [dale]: перейти на formPropertyObject?
-                groups.get(i).reportPathProp = addCalcPropertyObject(new ScriptingLogicsModule.CalcPropertyUsage(groupObjects.get(i).reportPathPropUsage), groupObjects.get(i).reportPathMapping);
-            }
         }
         return groups;
     }
@@ -182,14 +173,13 @@ public class ScriptingFormEntity {
         group.add(object);
     }
 
-    private ObjectEntity[] getMappingObjectsArray(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    private ImOrderSet<ObjectEntity> getMappingObjects(ImOrderSet<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return LM.getMappingObjectsArray(form, mapping);
     }
 
     private ObjectEntity getSingleMappingObject(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         checkSingleParam(mapping.size());
-        ObjectEntity[] objects = getMappingObjectsArray(mapping);
-        return objects[0];
+        return getMappingObjects(SetFact.singletonOrder(BaseUtils.single(mapping))).single();
     }
 
     private ObjectEntity getSingleCustomClassMappingObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -251,13 +241,10 @@ public class ScriptingFormEntity {
         return scope;
     }
 
-    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
-        assert properties.size() == mappings.size();
-
+    public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormPropertyUsage> properties, List<String> aliases, List<LocalizedString> captions, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
-            List<String> mapping = mappings.get(i);
             ScriptingLogicsModule.AbstractFormPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
             LocalizedString caption = captions.get(i);
@@ -267,61 +254,56 @@ public class ScriptingFormEntity {
             FormSessionScope scope = override(propertyOptions, FormSessionScope.OLDSESSION);
             
             LP property = null;
-            ObjectEntity[] objects = null;
-            if(pDrawUsage instanceof ScriptingLogicsModule.PredefinedUsage) {
-                ScriptingLogicsModule.PropertyUsage pUsage = ((ScriptingLogicsModule.PredefinedUsage) pDrawUsage).property;
+            ImOrderSet<ObjectEntity> objects = null;
+            if(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) {
+                ScriptingLogicsModule.FormPredefinedUsage prefefUsage = (ScriptingLogicsModule.FormPredefinedUsage) pDrawUsage;
+                ScriptingLogicsModule.PropertyUsage pUsage = prefefUsage.property;
+                List<String> mapping = prefefUsage.mapping;
                 String propertyName = pUsage.name;
                 if (propertyName.equals("VALUE")) {
                     ObjectEntity obj = getSingleMappingObject(mapping);
                     property = LM.getObjValueProp(form, obj);
-                    objects = new ObjectEntity[]{obj};
+                    objects = SetFact.singletonOrder(obj);
                 } else if (propertyName.equals("NEW") && scope == OLDSESSION) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddObjectAction(form, obj, explicitClass);
-                    objects = new ObjectEntity[]{};
+                    objects = SetFact.EMPTYORDER();
                 } else if (propertyName.equals("NEWEDIT") || (propertyName.equals("NEW") && scope != OLDSESSION)) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getAddFormAction(form, obj, explicitClass, scope, version);
-                    objects = new ObjectEntity[]{};
+                    objects = SetFact.EMPTYORDER();
                 } else if (propertyName.equals("EDIT")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     CustomClass explicitClass = getSingleAddClass(pUsage);
                     property = LM.getEditFormAction(obj, explicitClass, scope, version);
-                    objects = new ObjectEntity[]{obj};
+                    objects = SetFact.singletonOrder(obj);
                 } else if (propertyName.equals("DELETE")) {
                     ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                     property = LM.getDeleteAction(obj, scope);
-                    objects = new ObjectEntity[]{obj};
+                    objects = SetFact.singletonOrder(obj);
                 }
-            }            
+            }
+            Result<Pair<Property, String>> inherited = new Result<>();
             if(property == null) {
-                MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, mapping);
+                MappedProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
                 objects = prop.mapping;
 
-                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.LPUsage) {
-                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.LPUsage) pDrawUsage));
+                if (alias != null && pDrawUsage instanceof ScriptingLogicsModule.FormLPUsage) {
+                    property = LM.makeActionOrPropertyPublic(form, alias, ((ScriptingLogicsModule.FormLPUsage) pDrawUsage));
                 }
             }
 
             String formPath = points.get(i).toString();
-            PropertyDrawEntity propertyDraw = form.addPropertyDraw(property, version, formPath, objects);
-
-            if(pDrawUsage instanceof ScriptingLogicsModule.ActionOrPropertyUsage) {
-                List<String> groups = new ArrayList<>();
-                String group = propertyOptions.getFormPropertyGroup();
-                AbstractGroup parent = group != null ? LM.findGroup(group) : propertyDraw.propertyObject.property.getParent();
-                AbstractGroup propertyGroup = parent;
-                while (parent != null && !parent.system) {
-                    groups.add(parent.getName());
-                    parent = parent.getParent();
-                }
-                form.putIntegrationPropertyOptions(alias != null ? alias : ((ScriptingLogicsModule.ActionOrPropertyUsage) pDrawUsage).property.name,
-                        new IntegrationPropertyOptions(propertyGroup, groups, propertyOptions.getAttr()));
-            }
+            PropertyDrawEntity propertyDraw;
+            PropertyObjectEntity propertyObject = property.createObjectEntity(objects);
+            if(inherited.result != null)
+                propertyDraw = form.addPropertyDraw(null, propertyObject, formPath, inherited.result.second, inherited.result.first, version);
+            else
+                propertyDraw = form.addPropertyDraw(null, propertyObject, formPath, property.listInterfaces, version);
 
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
@@ -362,10 +344,9 @@ public class ScriptingFormEntity {
         }
     }
 
-    private <P extends PropertyInterface> void checkPropertyParameters(LP<P, ?> property, PropertyObjectInterfaceEntity[] mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(ListFact.toList(mapping)).mapValues(new GetValue<AndClassSet, PropertyObjectInterfaceEntity>() {
-            @Override
-            public AndClassSet getMapValue(PropertyObjectInterfaceEntity value) {
+    private <P extends PropertyInterface> void checkPropertyParameters(LP<P, ?> property, ImOrderSet<ObjectEntity> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        ImMap<P, AndClassSet> map = property.listInterfaces.mapList(mapping).mapValues(new GetValue<AndClassSet, ObjectEntity>() {
+            public AndClassSet getMapValue(ObjectEntity value) {
                 return value.getAndClassSet();
             }
         });
@@ -412,12 +393,12 @@ public class ScriptingFormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            form.addHintsNoUpdate((CalcProperty) property.propertyObject.property, version);
+            form.addHintsNoUpdate((CalcProperty) property.getValueProperty().property, version);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            form.addHintsIncrementTable(version, (CalcProperty) property.propertyObject.property);
+            form.addHintsIncrementTable(version, (CalcProperty) property.getValueProperty().property);
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();
@@ -458,6 +439,15 @@ public class ScriptingFormEntity {
         String eventID = options.getEventId();
         if (eventID != null)
             property.eventID = eventID;
+
+        String groupName = options.getGroupName();
+        AbstractGroup group = (groupName == null ? null : LM.findGroup(groupName));
+        if(group != null)
+            property.group = group;
+
+        Boolean attr = options.getAttr();
+        if(attr != null)
+            property.attr = attr;
     }
 
     private void movePropertyDraw(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -487,6 +477,8 @@ public class ScriptingFormEntity {
             LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
         }
         property.setSID(newSID);
+        
+        property.setShortSID(alias == null ? property.getShortSID() : alias);
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -512,13 +504,14 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    public void addScriptedFilters(List<LCP> properties, List<List<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedFilters(List<LCP> properties, List<ImOrderSet<String>> mappings, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
             LCP property = properties.get(i);
-            checkPropertyParameters(property, getMappingObjectsArray(mappings.get(i)));
+            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mappings.get(i));
+            checkPropertyParameters(property, mappingObjects);
 
-            form.addFixedFilter(new FilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mappings.get(i))), true), version);
+            form.addFixedFilter(new FilterEntity(form.addPropertyObject(property, mappingObjects), true), version);
         }
     }
 
@@ -567,22 +560,19 @@ public class ScriptingFormEntity {
                 LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), info.keystroke);
             }
 
-            List<String> mapping = info.mapping;
+            ImOrderSet<String> mapping = info.mapping;
             LCP<?> property = info.property;
 
-            checkPropertyParameters(property, getMappingObjectsArray(mapping));
+            ImOrderSet<ObjectEntity> mappingObjects = getMappingObjects(mapping);
+            checkPropertyParameters(property, mappingObjects);
 
-            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new FilterEntity(form.addPropertyObject(property, mappingObjects), true), caption, keyStroke);
             if (extend) {
                 form.addRegularFilter(filterGroup, filter, isDefault, version);
             } else {
                 filterGroup.addFilter(filter, isDefault, version);
             }
         }
-    }
-
-    public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LAPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        return form.addPropertyObject(action.getLP(), getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
     }
 
     public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -598,17 +588,17 @@ public class ScriptingFormEntity {
         }
     }
 
-    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        return addCalcPropertyObject(LM, form, property, mapping);
+    public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.AbstractFormCalcPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+        return addCalcPropertyObject(LM, form, property);
     }
 
-    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractCalcPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
+    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.AbstractFormCalcPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LCP)prop.property, prop.mapping);
     }
 
-    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractActionPropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
+    public ActionPropertyObjectEntity addActionPropertyObject(ScriptingLogicsModule.AbstractFormActionPropertyUsage property) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty prop = LM.getPropertyWithMapping(form, property, null);
         return form.addPropertyObject((LAP)prop.property, prop.mapping);
     }
 
@@ -660,10 +650,10 @@ public class ScriptingFormEntity {
         LocalizedString caption;
         String keystroke;
         LCP property;
-        List<String> mapping;
+        ImOrderSet<String> mapping;
         boolean isDefault;
 
-        public RegularFilterInfo(LocalizedString caption, String keystroke, LCP property, List<String> mapping, boolean isDefault) {
+        public RegularFilterInfo(LocalizedString caption, String keystroke, LCP property, ImOrderSet<String> mapping, boolean isDefault) {
             this.caption = caption;
             this.keystroke = keystroke;
             this.property = property;

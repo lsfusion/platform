@@ -387,7 +387,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                 ImList<PropertyDrawEntity<?>> propertyDraws = formElement.getPropertyDrawsList();
                 for (PropertyDrawEntity drawEntity : propertyDraws) {
                     GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                    dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
+                    dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), (Object) canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
                 }
             }
         }
@@ -630,7 +630,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         List<List<Object>> data = new ArrayList<>();
 
-        for (AbstractGroup group : businessLogics.getParentGroups()) {
+        for (AbstractGroup group : businessLogics.getChildGroups()) {
             data.add(asList(group.getSID(), (Object) group.caption.getSourceString()));
         }
 
@@ -646,7 +646,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
         List<List<Object>> data2 = new ArrayList<>();
 
-        for (AbstractGroup group : businessLogics.getParentGroups()) {
+        for (AbstractGroup group : businessLogics.getChildGroups()) {
             if (group.getParent() != null) {
                 data2.add(asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
             }

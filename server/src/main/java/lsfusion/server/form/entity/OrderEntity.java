@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
@@ -16,7 +17,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 public interface OrderEntity<T extends OrderInstance> extends Instantiable<T> {
-    void fillObjects(Set<ObjectEntity> objects);
+    void fillObjects(MSet<ObjectEntity> objects);
 
     Type getType();
     

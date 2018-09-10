@@ -91,11 +91,6 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             }
 
             @Override
-            public PropertyObjectInstance getPropertyObject(PropertyDrawInstance propertyDrawInstance) {
-                return propertyDrawInstance.propertyObject;
-            }
-
-            @Override
             public ImCol<ObjectInstance> getPObjects(PropertyObjectInstance po) {
                 return ((PropertyObjectInstance<?, ?>)po).getObjectInstances();
             }
@@ -183,6 +178,21 @@ public class InteractiveFormReportManager extends FormReportManager<PropertyDraw
             @Override
             public ObjectValue getObjectValue(ObjectInstance o) {
                 return o.getObjectValue();
+            }
+
+            @Override
+            public GroupObjectInstance getDrawApplyObject(PropertyDrawInstance propertyDrawInstance) {
+                return propertyDrawInstance.getApplyObject();
+            }
+
+            @Override
+            public ImSet<ObjectInstance> getDrawObjects(PropertyDrawInstance propertyDrawInstance) {
+                return propertyDrawInstance.getObjectInstances();
+            }
+
+            @Override
+            public boolean isNoParamCalcProperty(PropertyDrawInstance propertyDrawInstance) {
+                return propertyDrawInstance.isNoParamCalcProperty();
             }
 
             @Override

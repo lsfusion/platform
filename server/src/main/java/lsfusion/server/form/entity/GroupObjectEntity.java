@@ -38,6 +38,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.session.Modifier;
 
 import java.sql.SQLException;
@@ -61,6 +62,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public boolean noClassFilter = false;
 
     public UpdateType updateType;
+    
+    public AbstractGroup propertyGroup; // used for integration (export / import)
 
     private static class UpStaticParamsProcessor implements GroupObjectInstance.FilterProcessor {
         private final GroupObjectInstance groupObject;

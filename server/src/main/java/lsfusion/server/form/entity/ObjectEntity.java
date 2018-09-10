@@ -3,6 +3,7 @@ package lsfusion.server.form.entity;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.IdentityInstanceLazy;
@@ -19,8 +20,6 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 import lsfusion.server.session.Modifier;
@@ -64,7 +63,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return instanceFactory.getInstance(this);
     }
 
-    public void fillObjects(Set<ObjectEntity> objects) {
+    public void fillObjects(MSet<ObjectEntity> objects) {
         objects.add(this);
     }
 
@@ -80,9 +79,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     @IdentityInstanceLazy
-    public ExplicitActionProperty getChangeAction(Property filterProperty) {
+    public ExplicitActionProperty getChangeAction() {
         assert baseClass instanceof CustomClass;
-        return new DefaultChangeObjectActionProperty((CalcProperty) filterProperty, baseClass.getBaseClass(), this);
+        return new DefaultChangeObjectActionProperty(baseClass.getBaseClass(), this);
     }
 
     @Override

@@ -137,7 +137,7 @@ public class ReportDesignGenerator {
     }
 
     private boolean isValidProperty(GroupObjectEntity group, PropertyDrawView property, ColumnUserPreferences pref, Integer groupId) {
-        GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
+        GroupObjectEntity applyGroup = property.entity.getApplyObject(formView.entity);
         GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
         boolean hidden = pref != null && pref.userHide != null && pref.userHide;
@@ -290,10 +290,10 @@ public class ReportDesignGenerator {
         
         // Отдельно добавим design fields для свойств без параметров
         for (PropertyDrawView property : formView.getPropertiesList()) {
-            GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
+            GroupObjectEntity applyGroup = property.entity.getApplyObject(formView.entity);
             GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
 
-            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && property.entity.propertyObject.property.getInterfaceCount() == 0) {
+            if (applyGroup == null && drawGroup == null && property.entity.isNoParamCalcProperty()) {
                 ReportDrawField reportField = property.getReportDrawField(charWidth, 1);
                 if (reportField != null) {
                     addDesignField(design, reportField);
