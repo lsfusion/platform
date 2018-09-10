@@ -2,10 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd"
        default-lazy-init="true">
+
+    <context:property-placeholder ignore-resource-not-found="true" location="classpath:lsfusion.properties,file:conf/settings.properties" system-properties-mode="OVERRIDE"/>
 
     <bean id="settings" class="lsfusion.server.Settings">
         <property name="properties">
@@ -149,8 +153,8 @@
         <property name="dbMaxIdLength" value="${db.maxIdLength:}"/>
         <property name="defaultTwoDigitYearStart" value="${user.twoDigitYearStart:}"/>
         <property name="defaultUserTimeZone" value="${user.timeZone:}"/>
-        <property name="defaultUserLanguage" value="${user.language:}"/>
-        <property name="defaultUserCountry" value="${user.country:}"/>
+        <property name="defaultUserLanguage" value="${user.defaultLanguage:}"/>
+        <property name="defaultUserCountry" value="${user.defaultCountry:}"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.logics.ReflectionManager">
