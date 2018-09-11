@@ -517,7 +517,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
-		|	group=formGroupObjectGroup { $groupObject.setFormObjectGroup($group.formObjectGroup); }
+		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		)*
 	;
 
