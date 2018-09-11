@@ -5,15 +5,14 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -22,6 +21,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.actions.ExportActionProperty;
 import org.json.JSONObject;
 
 import java.sql.SQLException;
@@ -29,8 +29,57 @@ import java.util.*;
 
 public abstract class ImportFormHierarchicalDataActionProperty<E> extends ImportFormDataActionProperty {
 
-    protected Map<String, List<List<String>>> formObjectGroups;
-    protected Map<String, List<List<String>>> formPropertyGroups;
+    private Map<String, List<List<String>>> objectGroups;
+    private Map<String, List<List<String>>> propertyGroups;
+
+    private static Map<String, List<List<String>>> calcObjectGroups(FormEntity formEntity) {
+        Map<String, List<List<String>>> formObjectGroups = new HashMap<>();
+        for(GroupObjectEntity formGroup : formEntity.getGroupsIt()) {
+            List<String> groups = ExportActionProperty.getParentExportGroups(formGroup.propertyGroup);
+            if(!groups.isEmpty()) {
+                String topGroup = groups.get(groups.size() - 1);
+                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
+                groups.add(formGroup.getSID());
+                List<List<String>> entry = formObjectGroups.get(topGroup);
+                if(entry == null)
+                    entry = new ArrayList<>();
+                entry.add(groups);
+                formObjectGroups.put(topGroup, entry);
+            }
+        }
+        return formObjectGroups;
+    }
+
+    private static Map<String, List<List<String>>> calcPropertyGroups(FormEntity formEntity) {
+        Map<String, List<List<String>>> formPropertyGroups = new HashMap<>();
+        for(PropertyDrawEntity<?> formProperty : formEntity.getPropertyDrawsIt()) {
+            List<String> groups = ExportActionProperty.getParentExportGroups(formProperty.group);
+            if(!groups.isEmpty()) {
+                String topGroup = groups.get(groups.size() - 1);
+                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
+                groups.add(formProperty.getShortSID());
+                List<List<String>> entry = formPropertyGroups.get(topGroup);
+                if(entry == null)
+                    entry = new ArrayList<>();
+                entry.add(groups);
+                formPropertyGroups.put(topGroup, entry);
+            }
+        }
+        return formPropertyGroups;
+    }
+
+    @ManualLazy
+    protected Map<String, List<List<String>>> getObjectGroups() {
+        if(objectGroups == null)
+            objectGroups = calcObjectGroups(formEntity);
+        return objectGroups;
+    }
+    @ManualLazy
+    protected Map<String, List<List<String>>> getPropertyGroups() {
+        if(propertyGroups == null)
+            propertyGroups = calcPropertyGroups(formEntity);
+        return propertyGroups;
+    }
 
     private Map<String, Integer> tagsMap;
     private Set<String> formObjects;
@@ -45,11 +94,8 @@ public abstract class ImportFormHierarchicalDataActionProperty<E> extends Import
 
     public abstract boolean isLeaf(Object child);
 
-    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity,
-                                                    Map<String, List<List<String>>> formObjectGroups, Map<String, List<List<String>>> formPropertyGroups) {
+    public ImportFormHierarchicalDataActionProperty(ValueClass[] valueClasses, LCP<?> fileProperty, FormEntity formEntity) {
         super(valueClasses, fileProperty, formEntity);
-        this.formObjectGroups = formObjectGroups;
-        this.formPropertyGroups = formPropertyGroups;
     }
 
     @Override

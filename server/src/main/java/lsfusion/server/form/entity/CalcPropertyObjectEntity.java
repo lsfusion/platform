@@ -1,6 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
@@ -24,11 +25,11 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         //нужен для десериализации
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ObjectEntity> mapping) {
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImRevMap<P, ObjectEntity> mapping) {
         super(property, mapping, null, null);
     }
 
-    public CalcPropertyObjectEntity(CalcProperty<P> property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public CalcPropertyObjectEntity(CalcProperty<P> property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         super(property, mapping, creationScript, creationPath);
     }
 

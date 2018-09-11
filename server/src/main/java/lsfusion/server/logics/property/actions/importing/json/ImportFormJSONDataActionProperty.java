@@ -12,14 +12,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class ImportFormJSONDataActionProperty extends ImportFormHierarchicalDataActionProperty<JSONObject> {
 
-    public ImportFormJSONDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity, Map<String, List<List<String>>> formObjectGroups,
-                                            Map<String, List<List<String>>> formPropertyGroups) {
-        super(classes, fileProperty, formEntity, formObjectGroups, formPropertyGroups);
+    public ImportFormJSONDataActionProperty(ValueClass[] classes, LCP<?> fileProperty, FormEntity formEntity) {
+        super(classes, fileProperty, formEntity);
     }
 
     @Override
@@ -40,7 +37,7 @@ public class ImportFormJSONDataActionProperty extends ImportFormHierarchicalData
 
     @Override
     public ImportFormIterator getIterator(Pair<String, Object> rootElement) {
-        return new ImportFormJSONIterator(rootElement, formObjectGroups, formPropertyGroups);
+        return new ImportFormJSONIterator(rootElement, getObjectGroups(), getPropertyGroups());
     }
 
     @Override

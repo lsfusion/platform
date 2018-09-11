@@ -34,6 +34,7 @@ import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.TableStatKeys;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -1495,7 +1496,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean reflectionNotNull;
 
     @Override
-    public boolean isSetNotNull() {
+    public boolean isNotNull() {
         return setNotNull;
     }
 

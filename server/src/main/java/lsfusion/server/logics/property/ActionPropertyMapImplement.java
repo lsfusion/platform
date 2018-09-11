@@ -45,7 +45,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
-    public ActionPropertyObjectEntity<P> mapObjects(ImMap<T, ObjectEntity> mapObjects) {
+    public ActionPropertyObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {
         return new ActionPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 

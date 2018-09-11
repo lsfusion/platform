@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.linear.LP;
@@ -8,9 +9,9 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public final class MappedProperty {
     public LP<PropertyInterface, ?> property;
-    public ObjectEntity[] mapping;
+    public ImOrderSet<ObjectEntity> mapping;
 
-    public MappedProperty(LP property, ObjectEntity[] mapping) {
+    public MappedProperty(LP property, ImOrderSet<ObjectEntity> mapping) {
         this.property = property;
         this.mapping = mapping;
     }

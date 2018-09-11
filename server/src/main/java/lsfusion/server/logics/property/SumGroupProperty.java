@@ -22,9 +22,6 @@ import lsfusion.server.session.StructChanges;
 
 public class SumGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {
 
-    private CalcPropertyMapImplement<ClassPropertyInterface, Interface<I>> nullImplement;
-    public CalcPropertyMapImplement<?, I> distribute;
-
     public SumGroupProperty(LocalizedString caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
         super(caption, innerInterfaces, groupInterfaces, property);
 
@@ -40,17 +37,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
-    }
-
-    @Override
-    protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
-        if(distribute != null) {
-            MSet<CalcProperty> mImplementDepends = SetFact.mSet();
-            groupProperty.mapFillDepends(mImplementDepends);
-            ImSet<CalcProperty> implementDepends = mImplementDepends.immutable();
-            return SetFact.add(distribute.property.getUsedChanges(propChanges), propChanges.getUsedDataChanges(implementDepends), propChanges.getUsedChanges(implementDepends));
-        } else
-            return super.calculateUsedDataChanges(propChanges);
     }
 
     // такая же помошь компилятору как и при getExpr в GroupProperty
@@ -79,44 +65,8 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
     }
 
     @Override
-    public ImSet<DataProperty> getChangeProps() {
-        if(distribute!=null)
-            return groupProperty.mapChangeProps();
-        return super.getChangeProps();
-    }
-
-    @Override
     protected boolean noIncrement() {
         return false;
-    }
-
-    @Override
-    protected DataChanges calculateDataChanges(PropertyChange<Interface<I>> propertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        if(distribute != null) {
-            // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
-            // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
-
-            Result<ImRevMap<I, KeyExpr>> mapKeys = new Result<>(); Result<ImMap<I, Expr>> mapValueKeys = new Result<>();
-            Where valueWhere = getGroupKeys(propertyChange, mapKeys, mapValueKeys);
-
-            PropertyChanges mapChanges = new PropertyChanges(nullImplement.property, propertyChange.mapChange(nullImplement.mapping));
-
-            Where nullWhere = propertyChange.getWhere(getGroupImplements(mapValueKeys.result, propChanges)).and(groupProperty.mapExpr(mapValueKeys.result, propChanges).getWhere()); // where чтобы за null'ить
-            GroupType type = GroupType.ASSERTSINGLE_CHANGE();
-            if(!nullWhere.isFalse())
-                mapChanges = groupProperty.mapJoinDataChanges(new PropertyChange<>(mapKeys.result, CaseExpr.NULL, nullWhere.and(valueWhere)), type, null, propChanges).add(mapChanges); // все одинаковые
-
-            Expr distributeExpr = distribute.mapExpr(mapValueKeys.result, mapChanges.add(propChanges));
-            DataChanges dataChanges = groupProperty.mapJoinDataChanges(new PropertyChange<I>(mapKeys.result, distributeExpr, distributeExpr.getWhere().or(nullWhere).and(valueWhere)), type, null, propChanges);
-            if(changedWhere!=null) {
-                if (Settings.get().isCalculateGroupDataChanged())
-                    getExpr(propertyChange.getMapExprs(), dataChanges.add(propChanges), changedWhere);
-                else
-                    changedWhere.add(propertyChange.where);
-            }
-            return dataChanges;
-        } else
-            return super.calculateDataChanges(propertyChange, changedWhere, propChanges);
     }
 
     @Override

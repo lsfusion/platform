@@ -10,6 +10,7 @@ import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.ActionClass;
+import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
@@ -20,6 +21,7 @@ import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.serialization.SerializationType;
@@ -95,7 +97,7 @@ public class PropertyDrawView extends ComponentView {
     }
 
     public Type getType() {
-        return entity.propertyObject.property.getType();
+        return entity.getType();
     }
 
     public Type getChangeType(ServerContext context) {
@@ -126,14 +128,14 @@ public class PropertyDrawView extends ComponentView {
         return entity.getAddRemove(context.entity, context.securityPolicy);        
     }
 
-    public LocalizedString getDefaultCaption() {
-        return entity.propertyObject.property.caption;
-    }
-
     public LocalizedString getCaption() {
         return caption != null
                 ? caption
-                : getDefaultCaption();
+                : entity.getCaption();
+    }
+
+    public boolean isNotNull() {
+        return notNull || entity.isNotNull();
     }
 
     //Для Jasper'а экранируем кавычки
@@ -222,7 +224,14 @@ public class PropertyDrawView extends ComponentView {
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
-        serializeCompare(outStream);
+
+        if(defaultCompare != null)
+            defaultCompare.serialize(outStream);
+        else if(Settings.get().isDefaultCompareForStringContains() && getType() instanceof StringClass)
+            Compare.CONTAINS.serialize(outStream);
+        else
+            outStream.writeByte(-1);
+
         outStream.writeInt(getCharWidth());
         pool.writeObject(outStream, getValueSize());
 
@@ -278,9 +287,12 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
 
-        pool.writeString(outStream, entity.getNamespace());
+        PropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
+        Property<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
+        
+        pool.writeString(outStream, debugBinding.getNamespace());
         pool.writeString(outStream, getSID());
-        pool.writeString(outStream, entity.propertyObject.property.getCanonicalName());
+        pool.writeString(outStream, debugBinding.getCanonicalName());
         pool.writeString(outStream, getPropertyFormName());
         pool.writeString(outStream, toolTip);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
@@ -293,20 +305,20 @@ public class PropertyDrawView extends ComponentView {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
-        outStream.writeBoolean(entity.propertyObject.property.checkEquals());
+        outStream.writeBoolean(entity.isCalcProperty());
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 
-        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property instanceof CalcProperty ?
-                        ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
+        MapKeysTable<? extends PropertyInterface> mapTable = entity.isCalcProperty() ?
+                        ((CalcProperty<?>)debugBinding).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(ClassType.formPolicy);
-        ImMap<PropertyInterface, ObjectEntity> interfaceEntities = (ImMap<PropertyInterface, ObjectEntity>) entity.propertyObject.mapping;
-        outStream.writeInt(entity.propertyObject.property.interfaces.size());
-        for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) debug.property.getInterfaceClasses(ClassType.formPolicy);
+        ImMap<PropertyInterface, ObjectEntity> interfaceEntities = (ImMap<PropertyInterface, ObjectEntity>) debug.mapping;
+        outStream.writeInt(debug.property.interfaces.size());
+        for (PropertyInterface iFace : debug.property.interfaces) {
             pool.writeString(outStream, interfaceEntities.get(iFace).toString());
             
             ValueClass paramClass = interfaceClasses.get(iFace);
@@ -316,11 +328,11 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        entity.propertyObject.property.getValueClass(ClassType.formPolicy).serialize(outStream); // только показать пользователю
+        debug.property.getValueClass(ClassType.formPolicy).serialize(outStream); // только показать пользователю
         pool.writeString(outStream, entity.eventID);
 
-        pool.writeString(outStream, entity.propertyObject.getCreationScript());
-        pool.writeString(outStream, entity.propertyObject.getCreationPath());
+        pool.writeString(outStream, debug.getCreationScript());
+        pool.writeString(outStream, debug.getCreationPath());
         pool.writeString(outStream, entity.getFormPath());
 
         pool.writeString(outStream, entity.getMouseBinding());
@@ -343,18 +355,7 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        outStream.writeBoolean(notNull || entity.propertyObject.property.isSetNotNull());
-    }
-
-    private void serializeCompare(DataOutputStream outStream) throws IOException {
-        if(defaultCompare != null)
-            defaultCompare.serialize(outStream);
-        else if(entity.propertyObject.property.drawOptions.getDefaultCompare() != null)
-            entity.propertyObject.property.drawOptions.getDefaultCompare().serialize(outStream);
-        else if(Settings.get().isDefaultCompareForStringContains() && getType() instanceof StringClass)
-            Compare.CONTAINS.serialize(outStream);
-        else
-            outStream.writeByte(-1);
+        outStream.writeBoolean(isNotNull());
     }
 
     private OrderedMap<String, LocalizedString> filterContextMenuItems(OrderedMap<String, LocalizedString> contextMenuBindings, ServerContext context) {
@@ -462,10 +463,10 @@ public class PropertyDrawView extends ComponentView {
             return entity.askConfirmMessage;
         
         LocalizedString msg;
-        if (entity.propertyObject.property.getType() instanceof ActionClass) {
-            msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
-        } else {
+        if (entity.isCalcProperty()) {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
+        } else {
+            msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");
         }
         LocalizedString caption = getCaption();
         if (!caption.isEmpty()) {

@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
@@ -40,7 +41,7 @@ public class FormGroupHierarchyCreator {
         return form.getGroupsList();        
     }
 
-    private static Set<GroupObjectEntity> getGroupsByObjects(Collection<ObjectEntity> objects) {
+    private static Set<GroupObjectEntity> getGroupsByObjects(ImSet<ObjectEntity> objects) {
         Set<GroupObjectEntity> groupsSet = new HashSet<>();
         for (ObjectEntity object : objects) {
             groupsSet.add(object.groupTo);
@@ -57,19 +58,19 @@ public class FormGroupHierarchyCreator {
         ImOrderSet<GroupObjectEntity> groups = getFormGroupsList();
         Iterable<PropertyDrawEntity<?>> propertyDraws = form.getPropertyDrawsIt();
         for (PropertyDrawEntity<?> property : propertyDraws) {
-            if (property.getToDraw(form) == property.propertyObject.getApplyObject(groups)) {
-                Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.propertyObject.getObjectInstances());
+            if (property.getToDraw(form) == property.getApplyObject(form)) {
+                Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances());
                 // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки
                 propObjects.removeAll(property.getColumnGroupObjects().toJavaList());
                 addDependencies(graph, propObjects, true);
 
                 if (property.propertyCaption != null) {
-                    Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getObjectInstances());
+                    Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getSetObjectInstances());
                     addDependencies(graph, captionObjects, true);
                 }
 
                 if (property.propertyFooter != null) {
-                    Set<GroupObjectEntity> footerObjects = getGroupsByObjects(property.propertyFooter.getObjectInstances());
+                    Set<GroupObjectEntity> footerObjects = getGroupsByObjects(property.propertyFooter.getSetObjectInstances());
                     addDependencies(graph, footerObjects, true);
                 }
             }
@@ -77,11 +78,11 @@ public class FormGroupHierarchyCreator {
 
         for (GroupObjectEntity group : groups) {
             if (group.propertyBackground != null) {
-                Set<GroupObjectEntity> backgroundObjects = getGroupsByObjects(group.propertyBackground.getObjectInstances());
+                Set<GroupObjectEntity> backgroundObjects = getGroupsByObjects(group.propertyBackground.getSetObjectInstances());
                 addDependencies(graph, backgroundObjects, true);
             }
             if (group.propertyForeground != null) {
-                Set<GroupObjectEntity> foregroundObjects = getGroupsByObjects(group.propertyForeground.getObjectInstances());
+                Set<GroupObjectEntity> foregroundObjects = getGroupsByObjects(group.propertyForeground.getSetObjectInstances());
                 addDependencies(graph, foregroundObjects, true);
             }
         }
@@ -100,7 +101,7 @@ public class FormGroupHierarchyCreator {
         for (GroupObjectEntity targetGroup : groups) { // перебираем группы в этом порядке, чтобы не пропустить зависимости
             for (PropertyDrawEntity<?> property : propertyDraws) {
                 ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
-                if (property.getToDraw(form) == property.propertyObject.getApplyObject(groups) && !columnGroupObjects.isEmpty()) {
+                if (property.getToDraw(form) == property.getApplyObject(form) && !columnGroupObjects.isEmpty()) {
                     if (targetGroup == property.getToDraw(form)) {
                         for (GroupObjectEntity columnGroup : columnGroupObjects) {
                             graph.get(targetGroup).addAll(graph.get(columnGroup));

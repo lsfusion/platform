@@ -3,10 +3,14 @@ package lsfusion.server.form.entity.drilldown;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -47,15 +51,19 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
         detailsGroup = new GroupObjectEntity(genID(), "");
 
         ImMap<I, ValueClass> innerClasses = property.getInnerInterfaceClasses();
-        MMap<I, ObjectEntity> mInnerObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
+        MRevMap<I, ObjectEntity> mInnerObjects = MapFact.mRevMap();
+        MAddSet<ObjectEntity> usedObjects = SetFact.mAddSet();
+
         for (int i = 0; i < innerClasses.size(); ++i) {
             ValueClass innerIntClass = innerClasses.getValue(i);
             I innerInterface = innerClasses.getKey(i);
 
-            ObjectEntity innerObject;
-            if (byInnerInterfaces.containsKey(innerInterface)) {
-                innerObject = interfaceObjects.get(byInnerInterfaces.get(innerInterface));
-            } else {
+            ObjectEntity innerObject = null;
+            GroupProperty.Interface<I> byInterface = byInnerInterfaces.get(innerInterface);
+            if (byInterface != null) {
+                innerObject = interfaceObjects.get(byInterface);
+            } 
+            if(innerObject == null || usedObjects.add(innerObject)) {
                 innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME);
                 detailsGroup.add(innerObject);
 
@@ -63,18 +71,18 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 addPropertyDraw(LM.recognizeGroup, true, version, innerObject);
             }
 
-            mInnerObjects.add(innerInterface, innerObject);
+            mInnerObjects.revAdd(innerInterface, innerObject);
         }
         addGroupObject(detailsGroup, version);
 
-        ImMap<I, ObjectEntity> innerObjects = mInnerObjects.immutable();
-
+        ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();
+        
         //добавляем основные свойства
         ImList<CalcPropertyInterfaceImplement<I>> groupImplements = property.getProps();
         for (CalcPropertyInterfaceImplement<I> groupImplement : groupImplements) {
             if (groupImplement instanceof CalcPropertyMapImplement) {
                 CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
+                ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
 
                 addFixedFilter(new FilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)), version);
                 if (mapImplement.property.isDrillFull()) {
@@ -89,17 +97,17 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             GroupProperty.Interface<I> groupInterface = mapInterfaces.getKey(i);
             CalcPropertyInterfaceImplement<I> groupImplement = mapInterfaces.getValue(i);
 
-            if (groupImplement instanceof CalcPropertyMapImplement) {
-                CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
-
-                CalcPropertyImplement filterProp = DerivedProperty.createCompare(mapImplement, (PropertyInterface) groupInterface, Compare.EQUALS).mapImplement(MapFact.addExcl(innerObjects, groupInterface, interfaceObjects.get(groupInterface)));
+            if (groupImplement instanceof CalcPropertyMapImplement || !innerObjects.containsKey((I) groupImplement)) {
+                CalcPropertyRevImplement filterProp = DerivedProperty.createCompare(groupImplement, (PropertyInterface) groupInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(innerObjects, groupInterface, interfaceObjects.get(groupInterface)));
                 addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
 
-                //добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
-                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
-                    if (mapImplement.property.isDrillFull()) {
-                        addPropertyDraw(mapImplement.property, mapImplMapping, version);
+                if(groupImplement instanceof CalcPropertyMapImplement) {
+                    CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
+                    ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
+                    if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
+                        if (mapImplement.property.isDrillFull()) {
+                            addPropertyDraw(mapImplement.property, mapImplMapping, version);
+                        }
                     }
                 }
             }
@@ -114,7 +122,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
             OrderEntity orderEntity;
             if (orderImplement instanceof CalcPropertyMapImplement) {
                 CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) orderImplement;
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
+                ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
                 orderEntity = addPropertyObject(mapImplement.property, mapImplMapping);
             } else {
                 I innerInterface = (I) orderImplement;

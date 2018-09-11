@@ -3,10 +3,8 @@ package lsfusion.server.form.entity;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
@@ -20,7 +18,7 @@ import java.util.Set;
 public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 
     public T property;
-    public ImMap<P, ObjectEntity> mapping;
+    public ImRevMap<P, ObjectEntity> mapping;
 
     protected PropertyObjectEntity() {
         //нужен для десериализации
@@ -40,7 +38,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return property.hashCode() * 31 + mapping.hashCode();
     }
 
-    public PropertyObjectEntity(T property, ImMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
+    public PropertyObjectEntity(T property, ImRevMap<P, ObjectEntity> mapping, String creationScript, String creationPath) {
         this.property = property;
         this.mapping = mapping;
         this.creationScript = creationScript==null ? null : creationScript.substring(0, Math.min(10000, creationScript.length()));
@@ -92,8 +90,8 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return mapping;
     }
 
-    public void fillObjects(Set<ObjectEntity> objects) {
-        objects.addAll(getObjectInstances());
+    public void fillObjects(MSet<ObjectEntity> objects) {
+        objects.addAll(getSetObjectInstances());
     }
 
     protected final String creationScript;
@@ -107,7 +105,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return creationPath;
     }
 
-    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImMap<I, ObjectEntity> map, String creationScript, String creationPath) {
+    public static <I extends PropertyInterface, T extends Property<I>> PropertyObjectEntity<I, ?> create(T property, ImRevMap<I, ObjectEntity> map, String creationScript, String creationPath) {
         if(property instanceof CalcProperty)
             return new CalcPropertyObjectEntity<>((CalcProperty<I>) property, map, creationScript, creationPath);
         else

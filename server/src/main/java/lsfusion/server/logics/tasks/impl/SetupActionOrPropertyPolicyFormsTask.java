@@ -1,5 +1,6 @@
 package lsfusion.server.logics.tasks.impl;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -26,7 +27,7 @@ public abstract class SetupActionOrPropertyPolicyFormsTask extends GroupProperti
         BusinessLogics BL = getBL();
         FormEntity formEntity = getForm();
         ObjectEntity obj = formEntity.getObject("p");
-        LAP<?> setupPolicyForm = BL.LM.addMFAProp(LocalizedString.NONAME, formEntity, new ObjectEntity[]{obj}, true);
+        LAP<?> setupPolicyForm = BL.LM.addMFAProp(LocalizedString.NONAME, formEntity, SetFact.singletonOrder(obj), true);
         setupPolicyByCN = BL.LM.addJoinAProp(setupPolicyForm, getCanonicalName(), 1);
         return true;
     }

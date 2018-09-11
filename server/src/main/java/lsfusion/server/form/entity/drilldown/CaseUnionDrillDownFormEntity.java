@@ -2,6 +2,7 @@ package lsfusion.server.form.entity.drilldown;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -42,7 +43,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
                 //добавляем фильтр для этого объекта и соотв. свойства
                 CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
+                ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
@@ -59,7 +60,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
                 //добавляем фильтр для этого объекта и соотв. свойства
                 CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, CaseUnionProperty.Interface>) intImpl;
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
+                ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {

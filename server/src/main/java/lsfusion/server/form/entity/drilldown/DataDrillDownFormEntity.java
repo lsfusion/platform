@@ -3,6 +3,7 @@ package lsfusion.server.form.entity.drilldown;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.ContainerView;
@@ -34,19 +35,11 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
         CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
         ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = where.mapping;
-        MMap<PropertyInterface, ObjectEntity> mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
-        for (PropertyInterface i : whereMapping.keys()) {
-                mapping.add(i, interfaceObjects.get(whereMapping.get(i)));
-        }
-        wherePropertyDraw = addPropertyDraw(where.property, mapping.immutable(), version);
+        wherePropertyDraw = addPropertyDraw(where.property, whereMapping.join(interfaceObjects), version);
 
         CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
         ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = writeFrom.mapping;
-        mapping = MapFact.mMap(MapFact.<PropertyInterface, ObjectEntity>override());
-        for (PropertyInterface i : writeFromMapping.keys()) {
-                mapping.add(i, interfaceObjects.get(writeFromMapping.get(i)));
-        }
-        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, mapping.immutable(), version);
+        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, writeFromMapping.join(interfaceObjects), version);
     }
 
     @Override

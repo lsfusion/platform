@@ -6,10 +6,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -278,12 +275,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public ObjectEntity[] getMappingObjectsArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity[] objects = new ObjectEntity[mapping.size()];
+    public ImOrderSet<ObjectEntity> getMappingObjectsArray(FormEntity form, ImOrderSet<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        MOrderExclSet<ObjectEntity> mObjects = SetFact.mOrderExclSet(mapping.size()); // throwing exception
         for (int i = 0; i < mapping.size(); i++) {
-            objects[i] = getNFObjectEntityByName(form, mapping.get(i));
+            mObjects.exclAdd(getNFObjectEntityByName(form, mapping.get(i)));
         }
-        return objects;
+        return mObjects.immutableOrder();
     }
 
     public List<ResolveClassSet> getMappingClassesArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -311,18 +308,42 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        assert !(pDrawUsage instanceof PredefinedUsage);
+    public MappedProperty getPropertyWithMapping(FormEntity form, AbstractFormPropertyUsage pDrawUsage, Result<Pair<Property, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
+        assert !(pDrawUsage instanceof FormPredefinedUsage);
         LP<?, ?> property;
-        if(pDrawUsage instanceof ActionOrPropertyUsage) {
-            property = findLPByActionOrPropertyUsage((ActionOrPropertyUsage) pDrawUsage, form, mapping);
+        ImOrderSet<String> mapping;
+        if(pDrawUsage instanceof FormActionOrPropertyUsage) {
+            List<String> usageMapping = ((FormActionOrPropertyUsage<?>) pDrawUsage).mapping;
+            LP usageProperty = findLPByActionOrPropertyUsage(((FormActionOrPropertyUsage) pDrawUsage).usage, form, usageMapping);
+            
+            ImList<String> uMapping = ListFact.fromJavaList(usageMapping);
+            mapping = uMapping.toOrderSet();
+            if(mapping.size() == usageMapping.size())
+                property = usageProperty;
+            else {
+                final ImOrderSet<String> fMapping = mapping;
+                ImList<Integer> indexMapping = uMapping.mapListValues(new GetValue<Integer, String>() {
+                    public Integer getMapValue(String value) {
+                        return fMapping.indexOf(value) + 1;
+                    }
+                });
+                if(usageProperty instanceof LCP)
+                    property = addJProp(false, LocalizedString.NONAME, (LCP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
+                else
+                    property = addJoinAProp((LAP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
+                
+                if(inherited != null) {
+                    inherited.set(new Pair<>(usageProperty.property, usageProperty.property.isNamed() ? PropertyDrawEntity.createSID(usageProperty.property.getName(), usageMapping) : null));                    
+                }
+            }
         } else {
-            property = ((LPUsage)pDrawUsage).lp;
+            property = ((FormLPUsage)pDrawUsage).lp;
+            mapping = ((FormLPUsage<?>) pDrawUsage).mapping;
         }
 
-        if (property.property.interfaces.size() != mapping.size()) {
-            getErrLog().emitParamCountError(parser, property, mapping.size());
-        }
+//        if (property.property.interfaces.size() != mapping.size()) {
+//            getErrLog().emitParamCountError(parser, property, mapping.size());
+//        }
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
@@ -962,13 +983,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
 
-    public LPUsage checkPropertyIsNew(LCPUsage property) {
+    public FormLPUsage checkPropertyIsNew(FormLCPUsage property) {
         if(property.lp.property.getSID().equals(lastOptimizedJPropSID))
-            property = new LCPUsage(addJProp(false, LocalizedString.NONAME, property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.signature);
+            property = new FormLCPUsage(addJProp(false, LocalizedString.NONAME, property.lp, BaseUtils.consecutiveList(property.lp.property.interfaces.size(), 1).toArray()), property.mapping, property.signature);
         return property;
     }
 
-    public LP makeActionOrPropertyPublic(FormEntity form, String alias, LPUsage<?> lpUsage) {
+    public LP makeActionOrPropertyPublic(FormEntity form, String alias, FormLPUsage<?> lpUsage) {
         String name = "_FORM_" + form.getCanonicalName().replace('.', '_') + "_" + alias;
         LP property = lpUsage.lp;
         if (property != null && property instanceof LCP && propertyNeedsToBeWrapped((LCP)property)) {
@@ -3290,12 +3311,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(result, resultInterfaces);
     }
 
-    public static List<String> getUsedNames(List<TypedParameter> context, List<Integer> usedParams) {
-        List<String> usedNames = new ArrayList<>();
+    // always from LPWithParams where usedParams is ordered set
+    public static ImOrderSet<String> getUsedNames(List<TypedParameter> context, List<Integer> usedParams) {
+        MOrderExclSet<String> mResult = SetFact.mOrderExclSet(usedParams.size());
         for (int usedIndex : usedParams) {
-            usedNames.add(context.get(usedIndex).paramName);
+            mResult.exclAdd(context.get(usedIndex).paramName);
         }
-        return usedNames;
+        return mResult.immutableOrder();
     }
 
     public static List<ResolveClassSet> getUsedClasses(List<TypedParameter> context, List<Integer> usedParams) {
@@ -3418,58 +3440,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
         LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
 
-        Set<String> attrs = new HashSet<>();
-        for(String property : formEntity.getIntegrationPropertyOptions().keys()) {
-            if(formEntity.getIntegrationPropertyOptions().get(property).getAttr() != null)
-                attrs.add(property);
-        }
-
-        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, fileProperty, formEntity, getImportFormObjectGroups(formEntity),
-                getImportFormPropertyGroups(formEntity), attrs)), params);
+        return addScriptedJoinAProp(addAProp(new ImportFormXMLDataActionProperty(classes, fileProperty, formEntity)), params);
     }
 
     public LAPWithParams addScriptedImportFormJSONActionProperty(PropertyUsage fileProp, FormEntity formEntity, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = rootProp != null ? Collections.singletonList(rootProp) : new ArrayList<LCPWithParams>();
         ValueClass[] classes = rootProp == null ? new ValueClass[]{} : new ValueClass[] {rootProp.getLP().property.getValueClass(ClassType.valuePolicy)};
         LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
-        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, fileProperty, formEntity, getImportFormObjectGroups(formEntity),
-                getImportFormPropertyGroups(formEntity))), params);
-    }
-
-    private Map<String, List<List<String>>> getImportFormObjectGroups(FormEntity formEntity) {
-        Map<String, List<List<String>>> formObjectGroups = new HashMap<>();
-        for(String formObject : formEntity.getIntegrationObjectOptions().keys()) {
-            List<String> groups = formEntity.getIntegrationObjectOptions().get(formObject).getGroups();
-            if(groups != null && !groups.isEmpty()) {
-                String topGroup = groups.get(groups.size() - 1);
-                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
-                groups.add(formObject);
-                List<List<String>> entry = formObjectGroups.get(topGroup);
-                if(entry == null)
-                    entry = new ArrayList<>();
-                entry.add(groups);
-                formObjectGroups.put(topGroup, entry);
-            }
-        }
-        return formObjectGroups;
-    }
-
-    private Map<String, List<List<String>>> getImportFormPropertyGroups(FormEntity formEntity) {
-        Map<String, List<List<String>>> formPropertyGroups = new HashMap<>();
-        for(String formProperty : formEntity.getIntegrationPropertyOptions().keys()) {
-            List<String> groups = formEntity.getIntegrationPropertyOptions().get(formProperty).getGroups();
-            if(groups != null && !groups.isEmpty()) {
-                String topGroup = groups.get(groups.size() - 1);
-                groups = new ArrayList<>(groups.subList(0, groups.size() - 1));
-                groups.add(formProperty);
-                List<List<String>> entry = formPropertyGroups.get(topGroup);
-                if(entry == null)
-                    entry = new ArrayList<>();
-                entry.add(groups);
-                formPropertyGroups.put(topGroup, entry);
-            }
-        }
-        return formPropertyGroups;
+        return addScriptedJoinAProp(addAProp(new ImportFormJSONDataActionProperty(classes, fileProperty, formEntity)), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
@@ -4110,45 +4088,56 @@ public class ScriptingLogicsModule extends LogicsModule {
     public interface AbstractFormPropertyUsage {
     }
 
-    public interface FormPropertyUsage extends AbstractFormPropertyUsage {
+    public static abstract class FormPropertyUsage implements AbstractFormPropertyUsage {
+        public List<String> mapping;
+
+        public FormPropertyUsage(List<String> mapping) {
+            this.mapping = mapping;
+        }
+        
+        public void setMapping(List<String> mapping) { // need this because in formMappedProperty mapping is parsed after usage
+            this.mapping = mapping;
+        }
     }
 
-    public interface AbstractCalcPropertyUsage extends AbstractFormPropertyUsage { // lcp or calc
+    public interface AbstractFormCalcPropertyUsage extends AbstractFormPropertyUsage { // lcp or calc
     }
 
-    public interface AbstractActionPropertyUsage extends AbstractFormPropertyUsage { // lap or calc
+    public interface AbstractFormActionPropertyUsage extends AbstractFormPropertyUsage { // lap or calc
     }
 
-    public static abstract class LPUsage<L extends LP> implements AbstractFormPropertyUsage {
+    public static abstract class FormLPUsage<L extends LP> implements AbstractFormPropertyUsage {
         public final L lp;
         public final List<ResolveClassSet> signature;
+        public final ImOrderSet<String> mapping;
 
-        public LPUsage(L lp) {
-            this(lp, null);
+        public FormLPUsage(L lp, ImOrderSet<String> mapping) {
+            this(lp, mapping, null);            
         }
-        public LPUsage(L lp, List<ResolveClassSet> signature) {
+        public FormLPUsage(L lp, ImOrderSet<String> mapping, List<ResolveClassSet> signature) {
             this.lp = lp;
             this.signature = signature;
+            this.mapping = mapping;
         }
     }
 
-    public static class LCPUsage extends LPUsage<LCP> implements AbstractCalcPropertyUsage {
-        public LCPUsage(LCP lp) {
-            super(lp);
+    public static class FormLCPUsage extends FormLPUsage<LCP> implements AbstractFormCalcPropertyUsage {
+        public FormLCPUsage(LCP lp, ImOrderSet<String> mapping) {
+            super(lp, mapping);
         }
 
-        public LCPUsage(LCP lp, List<ResolveClassSet> signature) {
-            super(lp, signature);
+        public FormLCPUsage(LCP lp, ImOrderSet<String> mapping, List<ResolveClassSet> signature) {
+            super(lp, mapping, signature);
         }
     }
 
-    public static class LAPUsage extends LPUsage<LAP> implements AbstractActionPropertyUsage {
-        public LAPUsage(LAP lp) {
-            super(lp);
+    public static class FormLAPUsage extends FormLPUsage<LAP> implements AbstractFormActionPropertyUsage {
+        public FormLAPUsage(LAP lp, ImOrderSet<String> mapping) {
+            super(lp, mapping);
         }
 
-        public LAPUsage(LAP lp, List<ResolveClassSet> signature) {
-            super(lp, signature);
+        public FormLAPUsage(LAP lp, ImOrderSet<String> mapping, List<ResolveClassSet> signature) {
+            super(lp, mapping, signature);
         }
     }
 
@@ -4184,25 +4173,65 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static class PredefinedUsage implements FormPropertyUsage {
+    public static class FormPredefinedUsage extends FormPropertyUsage {
         public final PropertyUsage property;
 
-        public PredefinedUsage(PropertyUsage property) {
+        public FormPredefinedUsage(PropertyUsage property, List<String> mapping) {
+            super(mapping);
             this.property = property;
         }
     }
+    
+    public abstract static class FormActionOrPropertyUsage<U extends ActionOrPropertyUsage> extends FormPropertyUsage {
+        public final U usage;
 
-    public abstract static class ActionOrPropertyUsage implements FormPropertyUsage {
+        public FormActionOrPropertyUsage(U usage, List<String> mapping) {
+            super(mapping);
+            this.usage = usage;
+        }
+    }
+
+    public static class FormCalcPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormCalcPropertyUsage {
+        public FormCalcPropertyUsage(PropertyUsage property, List<String> mapping) {
+            this(new CalcPropertyUsage(property), mapping);
+        }
+        public FormCalcPropertyUsage(CalcPropertyUsage property, List<String> mapping) {
+            super(property, mapping);
+        }
+    }
+
+    public static class FormPropertyElseActionUsage extends FormActionOrPropertyUsage {
+        public FormPropertyElseActionUsage(PropertyElseActionUsage property, List<String> mapping) {
+            super(property, mapping);
+        }
+    }
+
+    public static class FormActionPropertyUsage extends FormActionOrPropertyUsage implements AbstractFormActionPropertyUsage {
+        public FormActionPropertyUsage(PropertyUsage property, List<String> mapping) {
+            this(new ActionPropertyUsage(property), mapping);
+        }
+        public FormActionPropertyUsage(ActionPropertyUsage property, List<String> mapping) {
+            super(property, mapping);
+        }
+    }
+
+    public abstract static class ActionOrPropertyUsage {
         public final PropertyUsage property;
 
         public ActionOrPropertyUsage(PropertyUsage property) {
             this.property = property;
         }
+        
+        public abstract FormActionOrPropertyUsage createFormUsage(List<String> mapping);
     }
 
-    public static class CalcPropertyUsage extends ActionOrPropertyUsage implements AbstractCalcPropertyUsage {
+    public static class CalcPropertyUsage extends ActionOrPropertyUsage {
         public CalcPropertyUsage(PropertyUsage property) {
             super(property);
+        }
+
+        public FormActionOrPropertyUsage createFormUsage(List<String> mapping) {
+            return new FormCalcPropertyUsage(this, mapping);
         }
     }
 
@@ -4210,11 +4239,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         public PropertyElseActionUsage(PropertyUsage property) {
             super(property);
         }
+
+        public FormActionOrPropertyUsage createFormUsage(List<String> mapping) {
+            return new FormPropertyElseActionUsage(this, mapping);
+        }
     }
 
-    public static class ActionPropertyUsage extends ActionOrPropertyUsage implements AbstractActionPropertyUsage {
+    public static class ActionPropertyUsage extends ActionOrPropertyUsage {
         public ActionPropertyUsage(PropertyUsage property) {
             super(property);
+        }
+
+        @Override
+        public FormActionOrPropertyUsage createFormUsage(List<String> mapping) {
+            return new FormActionPropertyUsage(this, mapping);
         }
     }
 

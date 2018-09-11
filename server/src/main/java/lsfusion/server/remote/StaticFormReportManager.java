@@ -34,7 +34,7 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             
             private ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> ordersMap = BaseUtils.immutableCast(form.getDefaultOrdersList().mapOrderKeyValues(new GetValue<OrderEntity<?>, PropertyDrawEntity<?>>() {
                 public OrderEntity<?> getMapValue(PropertyDrawEntity<?> value) {
-                    return (CalcPropertyObjectEntity<?>) value.propertyObject;
+                    return value.getOrder();
                 }
             }, new GetValue<Boolean, Boolean>() {
                 public Boolean getMapValue(Boolean value) {
@@ -126,11 +126,6 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             @Override
             public ImList<PropertyDrawEntity> getProperties() {
                 return BaseUtils.immutableCast(form.getPropertyDrawsList());
-            }
-
-            @Override
-            public PropertyObjectEntity getPropertyObject(PropertyDrawEntity propertyDrawEntity) {
-                return propertyDrawEntity.propertyObject;
             }
 
             @Override
@@ -227,6 +222,21 @@ public class StaticFormReportManager extends FormReportManager<PropertyDrawEntit
             @Override
             public Type getType(OrderEntity o) {
                 return o.getType();
+            }
+
+            @Override
+            public GroupObjectEntity getDrawApplyObject(PropertyDrawEntity propertyDrawEntity) {
+                return propertyDrawEntity.getApplyObject(form);
+            }
+
+            @Override
+            public ImSet<ObjectEntity> getDrawObjects(PropertyDrawEntity propertyDrawEntity) {
+                return propertyDrawEntity.getObjectInstances();
+            }
+
+            @Override
+            public boolean isNoParamCalcProperty(PropertyDrawEntity propertyDrawEntity) {
+                return propertyDrawEntity.isNoParamCalcProperty();
             }
 
             @Override

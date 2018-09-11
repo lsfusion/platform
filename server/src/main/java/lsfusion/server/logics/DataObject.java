@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
@@ -247,7 +248,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return this;
     }
 
-    public void fillObjects(Set<ObjectEntity> objects) {
+    public void fillObjects(MSet<ObjectEntity> objects) {
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

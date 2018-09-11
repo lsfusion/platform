@@ -42,6 +42,4 @@ public abstract class AbstractNode extends ImmutableObject {
     public ImList<PropertyClassImplement> getProperties(ValueClassWrapper classw, boolean anyInInterface, Version version) {
         return getProperties(SetFact.singleton(classw), false, anyInInterface, version);        
     }
-
-    public abstract List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList);
 }

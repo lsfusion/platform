@@ -124,8 +124,7 @@ public class DefaultFormView extends FormView {
             addTreeGroupView(get(prevTree), version);
 
         for (PropertyDrawView propertyDraw : getNFPropertiesListIt(version)) {
-            IntegrationPropertyOptions options = formEntity.getIntegrationPropertyOptions().get(propertyDraw.getCaption().getSourceString());
-            addPropertyDrawView(propertyDraw, options != null ? options.getGroup() : null, version);
+            addPropertyDrawView(propertyDraw, version);
         }
 
         for (RegularFilterGroupView filterGroup : getNFRegularFiltersListIt(version)) {
@@ -354,7 +353,7 @@ public class DefaultFormView extends FormView {
     }
 
     // добавление в панель по сути, так как добавление в grid происходит уже на живой форме
-    private void addPropertyDrawView(PropertyDrawView propertyDraw, AbstractGroup group, Version version) {
+    private void addPropertyDrawView(PropertyDrawView propertyDraw, Version version) {
         PropertyDrawEntity drawEntity = propertyDraw.entity;
         drawEntity.proceedDefaultDesign(propertyDraw, this);
 
@@ -365,8 +364,7 @@ public class DefaultFormView extends FormView {
         } else {
             // иерархическая структура контейнеров групп: каждый контейнер группы - это CONTAINERH,
             // в который сначала добавляется COLUMNS для свойств этой группы, а затем - контейнеры подгрупп
-            AbstractGroup propertyParentGroup = group != null ? group : propertyDraw.entity.propertyObject.property.getNFParent(version);
-            propertyContainer = getPropGroupContainer(drawEntity, propertyParentGroup, version);
+            propertyContainer = getPropGroupContainer(drawEntity, propertyDraw.entity.group, version);
         }
 
         propertyContainer.add(propertyDraw, version);
@@ -389,7 +387,7 @@ public class DefaultFormView extends FormView {
     @Override
     public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, Version version) {
         PropertyDrawView view = super.addPropertyDraw(propertyDraw, version);
-        addPropertyDrawView(view, null, version);
+        addPropertyDrawView(view, version);
         return view;
     }
 

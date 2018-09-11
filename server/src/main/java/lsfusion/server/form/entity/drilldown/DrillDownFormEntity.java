@@ -1,8 +1,13 @@
 package lsfusion.server.form.entity.drilldown;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.classes.ValueClass;
@@ -22,8 +27,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
     protected final P property;
     protected final LogicsModule LM;
 
-    public final ImMap<I, ObjectEntity> interfaceObjects;
-    public final ObjectEntity[] paramObjects;
+    public final ImRevMap<I, ObjectEntity> interfaceObjects;
+    public final ImOrderSet<ObjectEntity> paramObjects;
 
     public DrillDownFormEntity(String canonicalName, LocalizedString caption, P property, LogicsModule LM) {
         super(canonicalName, caption, LM.getVersion());
@@ -32,8 +37,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         this.LM = LM;
         Version version = LM.getVersion();
 
-        paramObjects = new ObjectEntity[property.interfaces.size()];
-        MMap<I, ObjectEntity> interfaceObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
+        MOrderExclSet<ObjectEntity> mParamObjects = SetFact.mOrderExclSet(property.interfaces.size());
+        MRevMap<I, ObjectEntity> mInterfaceObjects = MapFact.mRevMap();
 
         ImMap<I,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.drillDownPolicy);
         int i = 0;
@@ -42,11 +47,12 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
             addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
             paramObject.groupTo.setPanelClassView();
 
-            interfaceObjects.add(pi, paramObject);
-            paramObjects[i++] = paramObject;
+            mInterfaceObjects.revAdd(pi, paramObject);
+            mParamObjects.exclAdd(paramObject);
         }
 
-        this.interfaceObjects = interfaceObjects.immutable();
+        this.interfaceObjects = mInterfaceObjects.immutableRev();
+        this.paramObjects = mParamObjects.immutableOrder();
 
         setupDrillDownForm();
 

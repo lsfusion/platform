@@ -208,7 +208,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyObjectInstance<>(property, mapping.join(mapObjects));
     }
 
-    public CalcPropertyObjectEntity<P> mapEntityObjects(ImMap<T, ObjectEntity> mapObjects) {
+    public CalcPropertyObjectEntity<P> mapEntityObjects(ImRevMap<T, ObjectEntity> mapObjects) {
         return new CalcPropertyObjectEntity<>(property, mapping.join(mapObjects));
     }
 

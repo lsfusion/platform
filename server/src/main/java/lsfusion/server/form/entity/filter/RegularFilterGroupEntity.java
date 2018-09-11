@@ -1,6 +1,8 @@
 package lsfusion.server.form.entity.filter;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -60,25 +62,25 @@ public class RegularFilterGroupEntity extends IdentityObject {
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
-        Set<ObjectEntity> groupObjects = new HashSet<>();
+        MSet<ObjectEntity> mGroupObjects = SetFact.mSet();
 
         // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
         for (RegularFilterEntity regFilter : getFiltersList()) {
-            groupObjects.addAll(regFilter.filter.getObjects());
+            mGroupObjects.addAll(regFilter.filter.getObjects());
         }
 
-        return form.getApplyObject(groupObjects);
+        return form.getApplyObject(mGroupObjects.immutable());
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
-        Set<ObjectEntity> groupObjects = new HashSet<>();
+        MSet<ObjectEntity> mGroupObjects = SetFact.mSet();
 
         // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
         for (RegularFilterEntity regFilter : filters.getNFOrderSet(version)) {
-            groupObjects.addAll(regFilter.filter.getObjects());
+            mGroupObjects.addAll(regFilter.filter.getObjects());
         }
 
-        return form.getNFApplyObject(groupObjects, version);
+        return form.getNFApplyObject(mGroupObjects.immutable(), version);
     }
 
     public void finalizeAroundInit() {

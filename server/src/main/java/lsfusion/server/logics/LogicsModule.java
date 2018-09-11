@@ -515,11 +515,11 @@ public abstract class LogicsModule {
     }
 
     // loggable, security, drilldown
-    public LAP addMFAProp(LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+    public LAP addMFAProp(LocalizedString caption, FormEntity form, ImOrderSet<ObjectEntity> objectsToSet, boolean newSession) {
         return addMFAProp(null, caption, form, objectsToSet, newSession);
     }
-    public LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        LAP result = addIFAProp(caption, form, BaseUtils.toList(objectsToSet), true, WindowFormType.FLOAT, false);
+    public LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ImOrderSet<ObjectEntity> objectsToSet, boolean newSession) {
+        LAP result = addIFAProp(caption, form, objectsToSet.toJavaList(), true, WindowFormType.FLOAT, false);
         return addSessionScopeAProp(group, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
@@ -538,29 +538,7 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
         if(targetProp == null)
             targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
-
-        Map<String, List<String>> formObjectGroups = new HashMap<>();
-        for(String formObject : form.getStaticForm().getIntegrationObjectOptions().keys()) {
-            List<String> groups = form.getStaticForm().getIntegrationObjectOptions().get(formObject).getGroups();
-            if(groups != null && !groups.isEmpty())
-                formObjectGroups.put(formObject, groups);
-        }
-
-        Map<String, List<String>> formPropertyGroups = new HashMap<>();
-        for(String formProperty : form.getStaticForm().getIntegrationPropertyOptions().keys()) {
-            List<String> groups = form.getStaticForm().getIntegrationPropertyOptions().get(formProperty).getGroups();
-            if(groups != null && !groups.isEmpty())
-                formPropertyGroups.put(formProperty, groups);
-        }
-
-        Set<String> attrs = new HashSet<>();
-        for(String formProperty : form.getStaticForm().getIntegrationPropertyOptions().keys()) {
-            if(form.getStaticForm().getIntegrationPropertyOptions().get(formProperty).getAttr() != null)
-                attrs.add(formProperty);
-        }
-
-        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset,
-                formObjectGroups, formPropertyGroups, attrs)));
+        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -1736,7 +1714,8 @@ public abstract class LogicsModule {
         if(objectEntity != null) {
             property.addProcessor(new Property.DefaultProcessor() {
                 public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
-                    entity.toDraw = objectEntity.groupTo;
+                    if(entity.toDraw == null)
+                        entity.toDraw = objectEntity.groupTo;
                 }
                 public void proceedDefaultDesign(PropertyDrawView propertyView) {
                 }

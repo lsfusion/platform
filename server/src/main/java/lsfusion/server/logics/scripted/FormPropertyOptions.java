@@ -9,6 +9,7 @@ import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.group.AbstractGroup;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ public class FormPropertyOptions {
 
     //integration options
     private Boolean attr;
-    private String formPropertyGroup;
+    private String groupName;
     
     public void setNewSession(Boolean newSession) {
         this.newSession = newSession;
@@ -300,12 +301,12 @@ public class FormPropertyOptions {
         this.attr = attr;
     }
 
-    public String getFormPropertyGroup() {
-        return formPropertyGroup;
+    public String getGroupName() {
+        return groupName;
     }
 
-    public void setFormPropertyGroup(String formPropertyGroup) {
-        this.formPropertyGroup = formPropertyGroup;
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public FormPropertyOptions overrideWith(FormPropertyOptions overrides) {
@@ -336,7 +337,7 @@ public class FormPropertyOptions {
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
 
         merged.setAttr(nvl(overrides.getAttr(), attr));
-        merged.setFormPropertyGroup(nvl(overrides.getFormPropertyGroup(), formPropertyGroup));
+        merged.setGroupName(nvl(overrides.getGroupName(), groupName));
         return merged;
     }
     

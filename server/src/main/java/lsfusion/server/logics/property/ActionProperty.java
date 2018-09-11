@@ -590,7 +590,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     @Override
-    public boolean isSetNotNull() {
+    public boolean isNotNull() {
         return false;
     }
 
