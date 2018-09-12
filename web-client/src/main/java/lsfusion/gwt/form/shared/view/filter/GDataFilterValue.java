@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.filter;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilterValueDTO;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ public class GDataFilterValue extends GFilterValue {
 
     @Override
     public String toString() {
-        return "Значение";
+        return MainFrameMessages.Instance.get().filterDataValue();
     }
 
     @Override

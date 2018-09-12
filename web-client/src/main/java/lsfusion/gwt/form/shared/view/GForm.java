@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view;
 
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 
 import java.io.Serializable;
@@ -133,7 +134,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
                 GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
-                        "<b>Путь:</b> %s<br/>" +
+                        "<b>" + MainFrameMessages.Instance.get().tooltipPath() + ":</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) :
                 GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1><b>%s</b></body></html>", caption);
     }

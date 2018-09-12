@@ -1,8 +1,10 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
+
 public class GWordType extends GFileType {
     @Override
     public String toString() {
-        return "файл Ворд";
+        return MainFrameMessages.Instance.get().typeWordFileCaption();
     }
 }

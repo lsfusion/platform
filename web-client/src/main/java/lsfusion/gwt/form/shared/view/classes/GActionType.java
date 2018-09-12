@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -35,6 +36,6 @@ public class GActionType extends GDataType {
 
     @Override
     public String toString() {
-        return "Класс действия";
+        return MainFrameMessages.Instance.get().typeActionCaption();
     }
 }

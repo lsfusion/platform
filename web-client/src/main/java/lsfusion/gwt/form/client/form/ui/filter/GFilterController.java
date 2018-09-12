@@ -56,7 +56,7 @@ public abstract class GFilterController {
 
         filterView = new GFilterView(this);
 
-        filterDialogHeader = new GFilterDialogHeader("Фильтр") {
+        filterDialogHeader = new GFilterDialogHeader(messages.formFilterDialogHeader()) {
             @Override
             public void collapseButtonPressed() {
                 collapsePressed();
@@ -117,7 +117,7 @@ public abstract class GFilterController {
     private void changeState(State newState) {
         setDialogVisible(newState == State.EXPANDED);
         if (newState == State.EXPANDED && state == State.REMOVED) {
-            filterDialogHeader.setText("Фильтр [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]");
+            filterDialogHeader.setText(messages.formFilterDialogHeader() + " [" + logicsSupplier.getSelectedGroupObject().getCaption() + "]");
             getFilterDialog().center();
         }
 

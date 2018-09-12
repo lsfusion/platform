@@ -63,7 +63,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
             setSelectedPropertyDraw(condition.property);
         }
 
-        negationView = new CheckBox("НЕ");
+        negationView = new CheckBox(messages.formFilterConditionViewNot());
         negationView.addStyleName("checkBoxFilter");
         negationView.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
@@ -128,7 +128,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
 
         junctionView = new GFilterConditionListBox();
         junctionView.addStyleName("customFontPresenter");
-        junctionView.add(new String[]{"И", "ИЛИ"});
+        junctionView.add(new String[]{messages.formFilterConditionViewAnd(), messages.formFilterConditionViewOr()});
         junctionView.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {

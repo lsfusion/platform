@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
@@ -51,6 +52,6 @@ public class GObjectType extends GType {
 
     @Override
     public String toString() {
-        return "Объект";
+        return MainFrameMessages.Instance.get().typeObjectCaption();
     }
 }

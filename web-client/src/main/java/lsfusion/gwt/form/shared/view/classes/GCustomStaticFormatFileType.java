@@ -1,10 +1,11 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.MainFrameMessages;
 
 public class GCustomStaticFormatFileType extends GFileType {
     @Override
     public String toString() {
-        return "Файл с расширением: " + GwtSharedUtils.toString(",", extensions.toArray());
+        return MainFrameMessages.Instance.get().typeCustomStaticFormatFileCaption() + ": " + GwtSharedUtils.toString(",", extensions.toArray());
     }
 }

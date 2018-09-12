@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes.link;
 
-import lsfusion.gwt.form.shared.view.GFont;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.ImageLinkGridCellRenderer;
@@ -13,6 +13,6 @@ public class GImageLinkType extends GLinkType {
 
     @Override
     public String toString() {
-        return "Ссылка на файл картинки";
+        return MainFrameMessages.Instance.get().typeImageLinkCaption();
     }
 }

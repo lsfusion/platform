@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GExtInt;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
@@ -91,6 +91,10 @@ public class GStringType extends GDataType {
 
     @Override
     public String toString() {
-        return "Строка" + (caseInsensitive ? " без регистра" : "") + (blankPadded ? " с паддингом" : "") + (rich ? " rich" : "") + "(" + length + ")";
+        return MainFrameMessages.Instance.get().typeStringCaption() + 
+                (caseInsensitive ? " " + MainFrameMessages.Instance.get().typeStringCaptionRegister() : "") + 
+                (blankPadded ? " " + MainFrameMessages.Instance.get().typeStringCaptionPadding() : "") + 
+                (rich ? " rich" : "") + 
+                "(" + length + ")";
     }
 }

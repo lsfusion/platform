@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import com.google.gwt.i18n.client.LocaleInfo;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -82,6 +83,6 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public String toString() {
-        return "Число" + '[' + length + ',' + precision + ']';
+        return MainFrameMessages.Instance.get().typeNumericCaption() + '[' + length + ',' + precision + ']';
     }
 }

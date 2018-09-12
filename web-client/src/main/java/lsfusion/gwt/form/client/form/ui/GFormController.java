@@ -226,7 +226,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
         final ListBox filterBox = new ListBox();
         filterBox.setMultipleSelect(false);
-        filterBox.addItem("(Все)", "-1");
+        filterBox.addItem("(" + MainFrameMessages.Instance.get().multipleFilterComponentAll() + ")", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {

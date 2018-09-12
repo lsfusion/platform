@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -27,6 +28,6 @@ public class GLongType extends GIntegralType {
 
     @Override
     public String toString() {
-        return "Длинное целое число";
+        return MainFrameMessages.Instance.get().typeLongCaption();
     }
 }

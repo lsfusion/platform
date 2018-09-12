@@ -66,6 +66,13 @@ public interface MainFrameMessages extends Messages {
     String formGridPreferencesFontStyleBold();
     String formGridPreferencesFontStyleItalic();
 
+    String formFilterConditionViewNot();
+    String formFilterConditionViewAnd();
+    String formFilterConditionViewOr();
+    String formFilterDialogHeader();
+    
+    String tooltipPath();
+    
     String busyDialogBreak();
     String busyDialogCancelTransaction();
     String busyDialogCancelTransactionConfirm();
@@ -93,8 +100,63 @@ public interface MainFrameMessages extends Messages {
     String checkApiVersionTitle();
     String checkApiVersionMessage();
 
+    String propertyTooltipCanonicalName();
+    String propertyTooltipTable();
+    String propertyTooltipObjects();
+    String propertyTooltipSignature();
+    String propertyTooltipScript();
+    String propertyTooltipPath();
+    String propertyTooltipFormPropertyName();
+    String propertyTooltipFormPropertyDeclaration();
+    String propertyTooltipHotkey();
+    
+    String propertyEmptyCaption();
+    
+    String typeDateTimeCaption();
+    String typeActionCaption();
+    String typeColorCaption();
+    String typeCustomDynamicFormatFileCaption();
+    String typeCustomStaticFormatFileCaption();
+    String typeDateCaption();
+    String typeDoubleCaption();
+    String typeIntegerCaption();
+    String typeLogicalCaption();
+    String typeLongCaption();
+    String typeNumericCaption();
+    String typeStringCaption();
+    String typeStringCaptionRegister();
+    String typeStringCaptionPadding();
+    String typeObjectCaption();
+    String typeTimeCaption();
+    String typeExcelFileCaption();
+    String typeImageCaption();
+    String typePDFFileCaption();
+    String typeWordFileCaption();
+    String typeStaticFormatLinkCaption();
+    String typeDynamicFormatLinkCaption();
+    String typeExcelFileLinkCaption();
+    String typeImageLinkCaption();
+    String typePDFFileLinkCaption();
+    String typeWordFileLinkCaption();
+
+    String filterCompareStartsWith();
+    String filterCompareContains();
+    String filterCompareEndsWith();
+    String filterDataValue();
+    String filterObjectValue();
+    String filterPropertyValue();
+
+    String fileEditorTitle();
+    String fileEditorChooseFile();
+    String fileEditorChooseFileSuffix();
+    String fileEditorAddFiles();
+    String fileEditorDropFiles();
+    String fileEditorCancel();
+    
+    String multipleFilterComponentAll();
+    
     class Instance {
-        private static final MainFrameMessages instance = (MainFrameMessages) GWT.create(MainFrameMessages.class);
+        private static final MainFrameMessages instance = GWT.create(MainFrameMessages.class);
 
         public static MainFrameMessages get() {
             return instance;
