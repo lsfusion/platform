@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.progressbar.ProgressBar;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
@@ -36,8 +37,10 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private LinkedHashMap<String, String> filePrefixes;
     private HashMap<String, String> fileNames;
 
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    
     public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> extensions) {
-        super(editManager, property, "Загрузка файлов", 500, 150);
+        super(editManager, property, messages.fileEditorTitle(), 500, 150);
         this.multiple = multiple;
         this.storeName = storeName;
         this.extensions = extensions;
@@ -62,7 +65,8 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         newVersionUploader = new Uploader();
 
         newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
-                .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px;\">Выбрать файл" + (multiple ? "ы" : "") + "</button>")
+                .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px;\">" + 
+                        messages.fileEditorChooseFile() + (multiple ? messages.fileEditorChooseFileSuffix() : "") + "</button>")
                 .setButtonWidth(addButtonWidth)
                 .setButtonHeight(addButtonHeight)
                 .setButtonCursor(Uploader.Cursor.HAND)
@@ -153,7 +157,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
 
         if (multiple) {
             addUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
-                    .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px\">Добавить файлы</button>")
+                    .setButtonText("<button type=\"button\" class=\"gwt-Button\" style=\"height: 27px; width: 129px\">" + messages.fileEditorAddFiles() + "</button>")
                     .setButtonWidth(addButtonWidth)
                     .setButtonHeight(addButtonHeight)
                     .setButtonCursor(Uploader.Cursor.HAND)
@@ -190,7 +194,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         }
 
         if (Uploader.isAjaxUploadWithProgressEventsSupported()) {
-            final Label dropFilesLabel = new Label("Перетащите файлы сюда");
+            final Label dropFilesLabel = new Label(messages.fileEditorDropFiles());
             dropFilesLabel.setStyleName("dropFilesLabel");
             dropFilesLabel.addDragOverHandler(new DragOverHandler() {
                 public void onDragOver(DragOverEvent event) {
@@ -244,7 +248,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
         horizontalPanel.setCellWidth(progressBarPanel, "100%");
         horizontalPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
 
-        Button cancelButton = new Button("Отмена");
+        Button cancelButton = new Button(messages.fileEditorCancel());
         cancelButton.setWidth("70px");
         cancelButton.addClickHandler(new ClickHandler() {
             @Override

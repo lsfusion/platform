@@ -2,6 +2,7 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
@@ -58,7 +59,7 @@ public class GDateTimeType extends GFormatType<com.google.gwt.i18n.client.DateTi
 
     @Override
     public String toString() {
-        return "Дата со временем";
+        return MainFrameMessages.Instance.get().typeDateTimeCaption();
     }
 
     @Override

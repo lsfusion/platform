@@ -1,6 +1,8 @@
 package lsfusion.gwt.form.shared.view.filter;
 
 
+import lsfusion.gwt.form.client.MainFrameMessages;
+
 public enum GCompare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, INARRAY;
 
@@ -81,11 +83,11 @@ public enum GCompare {
             case NOT_EQUALS :
                 return "!=";
             case START_WITH :
-                return "Начинается с";
+                return MainFrameMessages.Instance.get().filterCompareStartsWith();
             case CONTAINS:
-                return "Содержит";
+                return MainFrameMessages.Instance.get().filterCompareContains();
             case ENDS_WITH:
-                return "Заканчивается на";
+                return MainFrameMessages.Instance.get().filterCompareEndsWith();
             case LIKE :
                 return "LIKE";
             case INARRAY :

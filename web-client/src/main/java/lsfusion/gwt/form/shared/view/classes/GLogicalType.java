@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
@@ -41,6 +42,6 @@ public class GLogicalType extends GDataType {
 
     @Override
     public String toString() {
-        return "Логический класс";
+        return MainFrameMessages.Instance.get().typeLogicalCaption();
     }
 }

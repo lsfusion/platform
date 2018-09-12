@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
@@ -36,6 +37,6 @@ public class GColorType extends GDataType {
 
     @Override
     public String toString() {
-        return "Цвет";
+        return MainFrameMessages.Instance.get().typeColorCaption();
     }
 }

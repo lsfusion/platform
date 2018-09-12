@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.filter;
 
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilterValueDTO;
 
@@ -8,7 +9,7 @@ public class GPropertyFilterValue extends GFilterValue {
 
     @Override
     public String toString() {
-        return "Свойство";
+        return MainFrameMessages.Instance.get().filterPropertyValue();
     }
 
     @Override

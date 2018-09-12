@@ -4,6 +4,7 @@ import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
+import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.*;
@@ -186,44 +187,51 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
     public String getNotEmptyCaption() {
         if (caption == null || caption.trim().length() == 0) {
-            return "Неопределённое свойство";
+            return getMessages().propertyEmptyCaption();
         } else {
             return caption;
         }
     }
 
+    private static MainFrameMessages getMessages() {
+        return MainFrameMessages.Instance.get();
+    }
+    
     public static final String TOOL_TIP_FORMAT =
             "<html><b>%s</b><br>%s";
 
-    public static final String DETAILED_TOOL_TIP_FORMAT =
-            "<hr>" + 
-            "<b>Каноническое имя:</b> %s<br>" +
-            "<b>Таблица:</b> %s<br>" +
-            "<b>Объекты:</b> %s<br>" +
-            "<b>Сигнатура:</b> %s (%s)<br>" +
-            "<b>Скрипт:</b> %s<br>" +
-            "<b>Путь:</b> %s<br>" +
-            "<hr>" +
-            "<b>Имя на форме:</b> %s<br>" +
-            "<b>Объявление на форме:</b> %s" +
-            "</html>";
-
-    public static final String DETAILED_ACTION_TOOL_TIP_FORMAT =
-            "<hr>" +
-            "<b>sID:</b> %s<br>" +
-            "<b>Объекты:</b> %s<br>" +
-            "<b>Путь:</b> %s<br>" +
-            "<hr>" +
-            "<b>Имя на форме:</b> %s<br>" +
-            "<b>Объявление на форме:</b> %s" +
-            "</html>";
-
-    public static final String EDIT_KEY_TOOL_TIP_FORMAT =
-            "<hr><b>Горячая клавиша:</b> %s<br>";
-
+    public static String getDetailedToolTipFormat() {
+        return  "<hr>" +
+                "<b>" + getMessages().propertyTooltipCanonicalName() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipTable() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipSignature() + ":</b> %s (%s)<br>" +
+                "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
+                "<hr>" +
+                "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "</html>";
+    }  
+    
+    public static String getDetailedActionToolTipFormat() {
+        return  "<hr>" +
+                "<b>sID:</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
+                "<hr>" +
+                "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "</html>";
+    }
+    
+    public static String getEditKeyToolTipFormat() {
+        return "<hr><b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
+    }
+            
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
-        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(EDIT_KEY_TOOL_TIP_FORMAT, editKey.toString());
+        String editKeyText = editKey == null ? "" : GwtSharedUtils.stringFormat(getEditKeyToolTipFormat(), editKey.toString());
 
         if (!MainFrame.configurationAccessAllowed) {
             return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, editKeyText);
@@ -233,7 +241,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
             
             if (baseType instanceof GActionType) {
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedActionToolTipFormat(),
                         propCaption, editKeyText, canonicalName, ifaceObjects, scriptPath, propertyFormName, scriptFormPath);
             } else {
                 String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
@@ -241,7 +249,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
                 String ifaceClasses = GwtSharedUtils.toString(", ", interfacesTypes);
                 String script = creationScript != null ? escapeHTML(creationScript).replace("\n", "<br>") : "";
                 
-                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + getDetailedToolTipFormat(),
                         propCaption, editKeyText, canonicalName, tableName, ifaceObjects, returnClass, ifaceClasses, 
                         script, scriptPath, propertyFormName, scriptFormPath);
             }
