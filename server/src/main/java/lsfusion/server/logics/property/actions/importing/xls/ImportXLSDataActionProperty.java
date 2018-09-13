@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -46,7 +47,13 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
             if (sheetAll) {
                 return new ImportXLSXWorkbookIterator(file, getSourceColumns(XLSColumnsMapping), properties);
             } else {
-                return new ImportXLSXSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+                int minSize = Settings.get().getMinSizeForExcelStreamingReader();
+                boolean hugeFile = minSize > 0 && file.length > minSize;
+                if(hugeFile) {
+                    return new ImportXLSXHugeSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+                } else {
+                    return new ImportXLSXSheetIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
+                }
             }
         } else {
             if (sheetAll) {

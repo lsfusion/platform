@@ -299,5 +299,11 @@
             <artifactId>thumbnailator</artifactId>
             <version>0.4.7</version>
         </dependency>
+        <!--for reading huge xlsx-->
+        <dependency>
+            <groupId>com.monitorjbl</groupId>
+            <artifactId>xlsx-streamer</artifactId>
+            <version>1.2.0</version>
+        </dependency>
     </dependencies>
 </project>
