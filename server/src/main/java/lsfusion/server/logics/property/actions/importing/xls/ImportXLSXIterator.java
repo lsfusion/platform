@@ -77,7 +77,7 @@ public abstract class ImportXLSXIterator extends ImportIterator {
         return result;
     }
 
-    private String getFormulaCellValue(XSSFCell xssfCell) {
+    protected String getFormulaCellValue(Cell xssfCell) {
         String result;
         switch (xssfCell.getCachedFormulaResultType()) {
             case 0:
@@ -94,7 +94,7 @@ public abstract class ImportXLSXIterator extends ImportIterator {
     protected void release() {
     }
 
-    private Date getDateValue(XSSFCell xssfCell) {
+    protected Date getDateValue(Cell xssfCell) {
         try {
             return DateUtils.round(xssfCell.getDateCellValue(), Calendar.SECOND);
         } catch (Exception ignored) {

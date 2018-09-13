@@ -268,7 +268,9 @@ public class Settings implements Cloneable {
     private boolean logSqlProcesses = false;
 
     private boolean useShowIfInReports = true;
-    
+
+    private int minSizeForExcelStreamingReader = -1; //-1 disabled, to enable use for example 50000000 (50 MB)
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -2390,5 +2392,13 @@ public class Settings implements Cloneable {
 
     public void setUseShowIfInReports(boolean useShowIfInReports) {
         this.useShowIfInReports = useShowIfInReports;
+    }
+
+    public int getMinSizeForExcelStreamingReader() {
+        return minSizeForExcelStreamingReader;
+    }
+
+    public void setMinSizeForExcelStreamingReader(int minSizeForExcelStreamingReader) {
+        this.minSizeForExcelStreamingReader = minSizeForExcelStreamingReader;
     }
 }
