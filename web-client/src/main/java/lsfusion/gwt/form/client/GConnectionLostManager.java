@@ -254,7 +254,7 @@ public class GConnectionLostManager {
 
         public void setFatal(boolean fatal) {
             if (this.fatal != fatal) {
-                if (fatal && reconnectWhenFatal)
+                if (fatal && (reconnectWhenFatal || MainFrame.devMode))
                     Window.Location.reload();
                 else {
                     lbMessage.setHTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());

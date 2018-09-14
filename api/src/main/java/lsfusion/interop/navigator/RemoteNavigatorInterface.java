@@ -2,6 +2,7 @@ package lsfusion.interop.navigator;
 
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
@@ -41,8 +42,7 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     // аутентификация
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 
-    // для конфигуратора методы
-    boolean isConfigurationAccessAllowed() throws RemoteException;
+    SecuritySettings getSecuritySettings() throws RemoteException;
 
     ClientSettings getClientSettings() throws RemoteException;
 

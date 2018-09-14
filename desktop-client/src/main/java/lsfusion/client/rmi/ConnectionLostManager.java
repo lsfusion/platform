@@ -44,7 +44,9 @@ public class ConnectionLostManager {
 
     private static PingThread pingThread;
 
-    public static void start(MainFrame frame, ClientCallBackInterface clientCallBack) {
+    private static boolean devMode;
+
+    public static void start(MainFrame frame, ClientCallBackInterface clientCallBack, boolean devMode) {
         SwingUtils.assertDispatchThread();
 
         assert frame != null;
@@ -90,6 +92,8 @@ public class ConnectionLostManager {
                 }
             }
         });
+
+        ConnectionLostManager.devMode = devMode;
     }
 
     public static void connectionLost() {
@@ -359,23 +363,27 @@ public class ConnectionLostManager {
 
         public void setFatal(boolean fatal) {
             if (this.fatal != fatal) {
-                String messageText =
-                        message != null
-                        ? message
-                        : fatal
-                          ? getString("rmi.connectionlost.fatal")
-                          : getString("rmi.connectionlost.nonfatal");
-
-                lbMessage.setText(messageText);
-
-                this.fatal = fatal;
-
-                if (fatal) {
-                    mainPane.remove(progressPanel);
+                if(fatal && devMode) {
+                    Main.reconnect();
                 } else {
-                    mainPane.add(progressPanel, 1);
+                    String messageText =
+                            message != null
+                            ? message
+                            : fatal
+                              ? getString("rmi.connectionlost.fatal")
+                              : getString("rmi.connectionlost.nonfatal");
+
+                    lbMessage.setText(messageText);
+
+                    this.fatal = fatal;
+
+                    if (fatal) {
+                        mainPane.remove(progressPanel);
+                    } else {
+                        mainPane.add(progressPanel, 1);
+                    }
+                    pack();
                 }
-                pack();
             }
         }
 

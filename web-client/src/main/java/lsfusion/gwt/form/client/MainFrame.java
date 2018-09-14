@@ -49,6 +49,7 @@ import java.util.*;
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
+    public static boolean devMode;
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
@@ -202,10 +203,11 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             }
         };
 
-        dispatcher.execute(new IsConfigurationAccessAllowedAction(), new ErrorHandlingCallback<BooleanResult>() {
+        dispatcher.execute(new GetSecuritySettings(), new ErrorHandlingCallback<GetSecuritySettingsResult>() {
             @Override
-            public void success(BooleanResult result) {
-                configurationAccessAllowed = result.value;
+            public void success(GetSecuritySettingsResult result) {
+                devMode = result.devMode;
+                configurationAccessAllowed = result.configurationAccessAllowed;
             }
         });
 

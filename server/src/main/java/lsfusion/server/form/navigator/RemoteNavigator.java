@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
@@ -505,8 +506,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public boolean isConfigurationAccessAllowed() throws RemoteException {
-        return securityPolicy.configurator != null && securityPolicy.configurator;
+    public SecuritySettings getSecuritySettings() {
+        return new SecuritySettings(SystemProperties.inDevMode, securityPolicy.configurator != null && securityPolicy.configurator);
     }
 
     @Override

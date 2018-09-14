@@ -3,6 +3,7 @@ package lsfusion.client.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
+import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -95,8 +96,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public boolean isConfigurationAccessAllowed() throws RemoteException {
-        return target.isConfigurationAccessAllowed();
+    public SecuritySettings getSecuritySettings() throws RemoteException {
+        return target.getSecuritySettings();
     }
 
     @Override

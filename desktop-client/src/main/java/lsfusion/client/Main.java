@@ -251,7 +251,9 @@ public class Main {
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
                     computerId = loginAction.getComputerId();
-                    configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
+
+                    SecuritySettings securitySettings = remoteNavigator.getSecuritySettings();
+                    configurationAccessAllowed = securitySettings.configurationAccessAllowed;
 
                     startSplashScreen();
 
@@ -272,7 +274,7 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
 
-                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack());
+                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), securitySettings.devMode);
 
                     frame.setVisible(true);
 
