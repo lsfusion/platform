@@ -18,6 +18,6 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
     public GetClientSettingsResult executeEx(GetClientSettings action, ExecutionContext context) throws RemoteException {
         ClientSettings clientSettings = getRemoteNavigator(action).getClientSettings();
         return new GetClientSettingsResult(clientSettings.busyDialog, clientSettings.busyDialogTimeout,
-                clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms);
+                clientSettings.devMode, clientSettings.configurationAccessAllowed, clientSettings.forbidDuplicateForms);
     }
 }

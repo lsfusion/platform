@@ -292,7 +292,7 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
 
-                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack());
+                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack(), clientSettings.devMode);
 
                     frame.setVisible(true);
 

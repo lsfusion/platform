@@ -254,17 +254,21 @@ public class GConnectionLostManager {
 
         public void setFatal(boolean fatal, boolean authException) {
             if (this.fatal != fatal) {
-                lbMessage.setHTML(authException ? messages.rmiConnectionLostAuth() : (fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal()));
-                loadingPanel.setVisible(!fatal && !authException);
-                warningPanel.setVisible(!fatal && !authException);
-                errorPanel.setVisible(fatal && !authException);
-                if(authException) {
-                    btnExit.setEnabled(true);
-                    btnRelogin.setEnabled(true);
-                    btnReconnect.setEnabled(true);
+                if(MainFrame.devMode && fatal) {
+                    Window.Location.reload();
+                } else {
+                    lbMessage.setHTML(authException ? messages.rmiConnectionLostAuth() : (fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal()));
+                    loadingPanel.setVisible(!fatal && !authException);
+                    warningPanel.setVisible(!fatal && !authException);
+                    errorPanel.setVisible(fatal && !authException);
+                    if (authException) {
+                        btnExit.setEnabled(true);
+                        btnRelogin.setEnabled(true);
+                        btnReconnect.setEnabled(true);
+                    }
+                    this.fatal = fatal;
+                    center();
                 }
-                this.fatal = fatal;
-                center();
             }
         }
 

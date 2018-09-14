@@ -258,7 +258,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
         boolean configurationAccessAllowed = securityPolicy.configurator != null && securityPolicy.configurator;
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, configurationAccessAllowed, forbidDuplicateForms);
+                useRequestTimeout, SystemProperties.inDevMode, configurationAccessAllowed, forbidDuplicateForms);
     }
 
     public void gainedFocus(FormInstance form) {
