@@ -330,17 +330,6 @@ public class ConnectionLostManager {
         }
 
         private void setupDialogForDevMode() {
-            //сразу уходим на реконнект, без ожидания возможного восстановления соединения...
-            //полезно при частом перестарте сервера
-            if (StartupProperties.autoReconnect) {
-                addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowOpened(WindowEvent e) {
-                        btnReconnect.doClick();
-                    }
-                });
-            }
-
             //чтобы блокер-диалог не забирал фокус
             if (StartupProperties.preventBlockerActivation) {
                 setFocusableWindowState(false);

@@ -32,10 +32,6 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF = "lsfusion.client.blocker.activation.off";
 
-    public static final String LSFUSION_CLIENT_BLOCKER_AUTORECONNECT = "lsfusion.client.blocker.autoreconnect";
-
-    public static final String LSFUSION_CLIENT_ISDEBUG = "lsfusion.client.isdebug";
-    
     public static final String LSFUSION_CLIENT_DECIMAL_SEPARATOR = "lsfusion.client.decimal.separator";
 
     public static final String LSFUSION_CLIENT_ASYNC_TIMEOUT = "lsfusion.client.async.timeout";
@@ -45,10 +41,8 @@ public class StartupProperties {
     public static final int pingDelay = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_PING_DELAY, "3000"));
 
     public static final boolean dotSeparator = ".".equals(System.getProperty(StartupProperties.LSFUSION_CLIENT_DECIMAL_SEPARATOR));
-    
-    public final static boolean autoReconnect = System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_AUTORECONNECT) != null;
 
-    public final static boolean preventBlockerActivation = autoReconnect || System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
+    public final static boolean preventBlockerActivation = System.getProperty(StartupProperties.LSFUSION_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
 
     public final static int rmiTimeout = Integer.valueOf(System.getProperty(LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000"));
 }
