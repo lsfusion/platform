@@ -78,8 +78,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     
     public LAP deliveredNotificationAction;
 
-    public LAP generateLoginPassword;
-
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(AuthenticationLogicsModule.class.getResourceAsStream("/system/Authentication.lsf"), "/system/Authentication.lsf", baseLM, BL);
     }
@@ -159,8 +157,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
-
-        generateLoginPassword = findAction("generateLoginPassword[CustomUser]");
     }
     
     public boolean checkPassword(DataObject userObject, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
