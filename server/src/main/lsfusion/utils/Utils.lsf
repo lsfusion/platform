@@ -80,6 +80,11 @@ cmd 'Выполнить cmd'  INTERNAL  'lsfusion.utils.utils.RunCommandActionPr
 protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
 protectExcel 'Защитить файл Excel паролем'  INTERNAL  'lsfusion.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
 
+// ---------------------------------- Генерация паролей  ---------------------------------- //
+generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
+//length, use at least one digit requirement, use both registers requirement
+generatePassword 'Сгенерировать пароль' INTERNAL 'lsfusion.utils.utils.GeneratePasswordActionProperty' (INTEGER, BOOLEAN, BOOLEAN);
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 lower (TEXT p1) = FORMULA 'lower($1)';
