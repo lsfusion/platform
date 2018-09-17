@@ -44,6 +44,7 @@ SubSection "!${PLATFORM_SECTION_NAME}" SecPlatform
         File /r "deploy-lib"
         File /r "deploy-class"
         ${SFile} install-bin\${SERVER_JAR}
+        ${SFile} install-bin\${SERVER_SOURCES_JAR}
 
         SetOutPath $INSTDIR\bin
         File /oname=lsfusion.exe bin\lsfusion${ARCH}.exe

@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application>
-  <component name="libraryTable">
-    <library name="lsfusion.library.name">
-      <CLASSES>
-        <root url="jar://server.archive!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-  </component>
+    <component name="libraryTable">
+        <library name="lsfusion.library.name">
+            <CLASSES>
+                <root url="jar://server.archive!/"/>
+            </CLASSES>
+            <JAVADOC/>
+            <SOURCES>
+                <root url="jar://server.sources!/"/>
+            </SOURCES>
+        </library>
+    </component>
 </application>
 
