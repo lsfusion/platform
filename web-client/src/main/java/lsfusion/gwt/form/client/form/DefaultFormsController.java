@@ -61,7 +61,7 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public Widget openForm(GForm form, GModalityType modalityType, boolean forbidDuplicate, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        if(forbidDuplicate && formsList.contains(form.sID)) {
+        if(forbidDuplicate && MainFrame.forbidDuplicateForms && formsList.contains(form.sID)) {
             tabsPanel.selectTab(formsList.indexOf(form.sID));
             return null;
         } else {
