@@ -14,7 +14,12 @@ public abstract class CellInstance<E extends IdentityObject> {
         return entity.getID();
     }
 
+    // backward compatibility
+    @Deprecated
     public String getsID() {
+        return getSID();
+    }
+    public String getSID() {
         return entity.getSID();
     }
 }

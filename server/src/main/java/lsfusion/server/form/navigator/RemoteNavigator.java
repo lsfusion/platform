@@ -670,7 +670,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 ObjectInstance object = null;
                 for (GroupObjectInstance group : (ImOrderSet<GroupObjectInstance>) form.form.getOrderGroups()) {
                     for (ObjectInstance obj : group.objects) {
-                        if (obj.getsID().equals(objectSID)) {
+                        if (obj.getSID().equals(objectSID)) {
                             object = obj;
                             groupObject = group;
                             break;

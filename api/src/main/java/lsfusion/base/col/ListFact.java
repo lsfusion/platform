@@ -36,6 +36,12 @@ public class ListFact {
         return consecutiveList(size, 1);
     }
 
+    public static <T> ImList<T> toList(Iterable<T> iterable) {
+        MList<T> mResult = mList();
+        for(T element : iterable)
+            mResult.add(element);
+        return mResult.immutableList();        
+    }
     public static <T> ImList<T> toList(final T... array) {
         return toList(array.length, new GetIndex<T>() {
             public T getMapValue(int i) {
@@ -67,6 +73,10 @@ public class ListFact {
 
     public static <T> ImList<T> add(ImList<? extends T> list1, ImList<? extends T> list2) {
         return ((ImList<T>)list1).addList(list2);
+    }
+
+    public static <T, X extends T, V> ImList<V> mapList(ImList<X> list, ImMap<T, V> map) {
+        return ((ImList<T>)list).mapList(map);
     }
 
     public static <T> ImCol<T> fromJavaCol(Collection<T> col) {
@@ -193,7 +203,7 @@ public class ListFact {
         return new ArrayList<>();
     }
     
-    public static <K> void addJavaAll(ImCol<K> list, Collection<K> mList) {
+    public static <K> void addJavaAll(ImCol<?  extends K> list, Collection<K> mList) {
         for(int i=0,size=list.size();i<size;i++)
             mList.add(list.get(i));
     }

@@ -49,7 +49,7 @@ public class ClientReportUtils {
         public void run() {
             try {
 
-                JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+                JasperPrint print = new ReportGenerator(generationData).createReport();
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();

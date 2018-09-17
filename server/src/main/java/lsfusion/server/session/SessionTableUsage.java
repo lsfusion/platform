@@ -132,6 +132,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return new RemapJoin<>(join, mapProps.reverse());
     }
 
+    public Where getGroupWhere(ImMap<K, ? extends Expr> mapExprs) {
+        if(mapKeys.size() == mapExprs.size()) // optimization
+            return getWhere(mapExprs);
+        
+        ImRevMap<K, KeyExpr> mapKeys = getMapKeys();
+        return GroupExpr.create(mapKeys.filterIncl(mapExprs.keys()), getWhere(mapKeys), mapExprs).getWhere();
+    }
+
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
         return join(mapExprs).getWhere();
     }

@@ -7,23 +7,15 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.CalcPropertyObjectEntity;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.instance.CalcPropertyObjectInstance;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.NotNullFilterInstance;
-import lsfusion.server.form.instance.filter.PropertyFilterInstance;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 
 public class FilterEntity<P extends PropertyInterface> implements Instantiable<FilterInstance> {
 
@@ -64,25 +56,19 @@ public class FilterEntity<P extends PropertyInterface> implements Instantiable<F
         };
     }
 
-    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, ImMap<ObjectEntity, ObjectValue> mapObjects, Modifier modifier) throws SQLException, SQLHandledException {
-        return property.getExpr(mapKeys, modifier, mapObjects).getWhere();
-    }
-
-    protected void fillObjects(MSet<ObjectEntity> objects) {
-        property.fillObjects(objects);
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
+        return property.getEntityExpr(mapKeys, modifier).getWhere();
     }
 
     public ImSet<ObjectEntity> getObjects() {
-        MSet<ObjectEntity> mResult = SetFact.mSet();
-        fillObjects(mResult);
-        return mResult.immutable();
-    }
-
-    public GroupObjectEntity getToDraw(FormEntity form) {
-        return form.getApplyObject(getObjects());
+        return property.getObjectInstances();
     }
 
     public GroupObjectEntity getApplyObject(FormEntity formEntity) {
-        return formEntity.getApplyObject(getObjects());
+        return getApplyObject(formEntity, SetFact.<GroupObjectEntity>EMPTY());
+    }
+
+    public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return formEntity.getApplyObject(getObjects(), excludeGroupObjects);
     }
 }

@@ -384,8 +384,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         for (FormEntity formElement : businessLogics.getFormEntities()) {
             String canonicalName = formElement.getCanonicalName();
             if (canonicalName != null && formElement.needsToBeSynchronized()) {
-                ImList<PropertyDrawEntity<?>> propertyDraws = formElement.getPropertyDrawsList();
-                for (PropertyDrawEntity drawEntity : propertyDraws) {
+                for (PropertyDrawEntity drawEntity : formElement.getPropertyDrawsListIt()) {
                     GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
                     dataPropertyDraws.add(asList(drawEntity.getCaption().toString(), drawEntity.getSID(), (Object) canonicalName, groupObjectEntity == null ? null : groupObjectEntity.getSID()));
                 }
@@ -434,7 +433,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         for (FormEntity formElement : businessLogics.getFormEntities()) {
             String formCanonicalName = formElement.getCanonicalName();
             if (formCanonicalName != null && formElement.needsToBeSynchronized()) { //formSID - sidGroupObject
-                for (PropertyDrawEntity property : formElement.getPropertyDrawsList()) {
+                for (PropertyDrawEntity property : formElement.getPropertyDrawsListIt()) {
                     GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
                     if (groupObjectEntity != null) {
                         dataGroupObjectList.add(

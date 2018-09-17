@@ -151,6 +151,7 @@ public class JDBCTable {
         return new JDBCDataClass(sqlType, metaData.getColumnTypeName(column));
     }
 
+    // not used, TableWriter is used instead
     public static byte[] serialize(boolean singleRow, ImOrderSet<String> fields, Type.Getter<String> fieldTypes, ImList<ImMap<String, Object>> set) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
         DataOutputStream o = new DataOutputStream(b);

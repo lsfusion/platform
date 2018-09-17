@@ -2,6 +2,7 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
@@ -56,17 +57,18 @@ public class CalcPropertyObjectEntity<P extends PropertyInterface> extends Prope
         return property.getType();
     }
 
-    @Override
-    public Expr getExpr(final ImMap<ObjectEntity, ? extends Expr> mapExprs, final Modifier modifier, final ImMap<ObjectEntity, ObjectValue> mapObjects) throws SQLException, SQLHandledException {
-        ImMap<P, Expr> joinImplement = mapping.mapValuesEx(new GetExValue<Expr, ObjectEntity, SQLException, SQLHandledException>() {
-            public Expr getMapValue(ObjectEntity value) throws SQLException, SQLHandledException {
-                return value.getExpr(mapExprs, modifier, mapObjects);
-            }
-        });
-        return property.getExpr(joinImplement, modifier);
+    public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return formEntity.getApplyObject(getObjectInstances(), excludeGroupObjects);
     }
 
-    public Object read(ExecutionEnvironment env, final ImMap<ObjectEntity, ObjectValue> mapObjects) throws SQLException, SQLHandledException {
+    public Expr getExpr(final ImMap<ObjectEntity, ? extends Expr> mapExprs, final Modifier modifier) throws SQLException, SQLHandledException {
+        return property.getExpr(mapping.join(mapExprs), modifier);
+    }
+    public Expr getEntityExpr(final ImMap<ObjectEntity, ? extends Expr> mapExprs, final Modifier modifier) throws SQLException, SQLHandledException {
+        return getExpr(mapExprs, modifier); 
+    }
+
+    public Object read(ExecutionEnvironment env, final ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
         ImMap<P, ObjectValue> joinImplement = mapping.mapValuesEx(new GetExValue<ObjectValue, ObjectEntity, SQLException, SQLHandledException>() {
             public ObjectValue getMapValue(ObjectEntity value) throws SQLException, SQLHandledException {
                 return value.getObjectValue(mapObjects);

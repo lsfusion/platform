@@ -51,10 +51,6 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
             }}));
     }
 
-    public ImSet<ObjectInstance> getSetObjectInstances() {
-        return getObjectInstances().toSet();
-    }
-
     public void fillObjects(MSet<ObjectInstance> objects) {
         objects.addAll(getObjectInstances().toSet());
     }

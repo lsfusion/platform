@@ -356,7 +356,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.toString(new GetKeyValue<String, ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>() {
             public String getMapValue(ImMap<KeyField, DataObject> key, ImMap<PropertyField, ObjectValue> value) {
                 return "(" +
-                        orderedFields.mapOrder(MapFact.addExcl(key, value)).toString(new GetValue<String, ObjectValue>() {
+                        orderedFields.mapList(MapFact.addExcl(key, value)).toString(new GetValue<String, ObjectValue>() {
                             public String getMapValue(ObjectValue value) {
                                 assert value.isSafeString(syntax);
                                 return value.getString(syntax);

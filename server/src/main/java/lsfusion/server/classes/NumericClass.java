@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
@@ -10,6 +11,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFStaticLazy;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -171,6 +173,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     @Override
     public Number getInfiniteValue(boolean min) {
         return new BigDecimal((min ? "-" : "") + BaseUtils.replicate('9', getWhole()) + "." + BaseUtils.replicate('9', getPrecision()));
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'N', Math.min(getWhole(), 253), getPrecision());
     }
 
     @Override

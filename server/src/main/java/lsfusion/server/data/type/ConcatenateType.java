@@ -24,6 +24,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
+import net.iryndin.jdbf.core.DbfRecord;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

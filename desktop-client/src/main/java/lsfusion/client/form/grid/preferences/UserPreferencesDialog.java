@@ -469,6 +469,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setUserColumnSettings(propertyItem.property, propertyItem.getUserCaption(true), propertyItem.getUserPattern(true), propertyOrder, hide);
         initialTable.setUserSort(propertyItem.property, sortDirection != null ? sortIndex : null);
         initialTable.setUserAscendingSort(propertyItem.property, sortDirection);
+        initialTable.setHasUserPreferences(true);
     }
 
     private void resetButtonPressed() {

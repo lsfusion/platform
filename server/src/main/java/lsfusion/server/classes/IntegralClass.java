@@ -2,9 +2,13 @@ package lsfusion.server.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
@@ -109,6 +113,16 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     @Override
     public String formatString(T value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    @Override
+    public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getBigDecimal(fieldName));
+    }
+
+    @Override
+    public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        return readXLS(formulaValue.getNumberValue());
     }
 
     @Override

@@ -8,6 +8,6 @@ public class ClassPropertyInterface extends PropertyInterface<ClassPropertyInter
     public ClassPropertyInterface(int ID, ValueClass interfaceClass) {
         super(ID);
         this.interfaceClass = interfaceClass;
-        assert interfaceClass != null;
+//        assert interfaceClass != null; // ignoreFitClassesCheck
     }
 }

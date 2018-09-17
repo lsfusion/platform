@@ -33,7 +33,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
     private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<P, ? extends ObjectValue> sourceToData = mapSource.join(context.getKeys());
-        return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
+        return (String) source.read(context, source.listInterfaces.mapList(sourceToData).toArray(new ObjectValue[interfaces.size()]));
     }
 
     private ObjectValue[] getParams(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -41,7 +41,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         for(int i = 0; i < params.size(); i++) {
             LCP<P> param = params.get(i);
             ImMap<P, ? extends ObjectValue> paramToData = param.listInterfaces.mapSet(getOrderInterfaces()).join(context.getKeys());
-            result[i] = param.readClasses(context, (DataObject[]) param.listInterfaces.mapOrder(paramToData).toArray(new DataObject[param.listInterfaces.size()]));
+            result[i] = param.readClasses(context, (DataObject[]) param.listInterfaces.mapList(paramToData).toArray(new DataObject[param.listInterfaces.size()]));
         }
         return result;
     }

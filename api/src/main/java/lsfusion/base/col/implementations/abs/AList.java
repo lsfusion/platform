@@ -202,6 +202,15 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return mResult.immutable();
     }
 
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+        MExclMap<MK, MV> mResult = MapFact.mExclMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            K key = get(i);
+            mResult.exclAdd(getterKey.getMapValue(key), getterValue.getMapValue(key));
+        }
+        return mResult.immutable();
+    }
+
     public <MK, MV> ImRevMap<MK, MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
         MRevMap<MK, MV> mResult = MapFact.mRevMap(size());
         for(int i=0,size=size();i<size;i++)
@@ -244,4 +253,22 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
     public K last() {
         return get(size() - 1);
     }
+
+    public <G> ImMap<G, ImList<K>> groupList(BaseUtils.Group<G, K> getter) {
+        MExclMap<G, MList<K>> mResult = MapFact.mExclMapMax(size());
+        for (int i=0,size=size();i<size;i++) {
+            K key = get(i);
+            G group = getter.group(key);
+            if(group!=null) {
+                MList<K> groupList = mResult.get(group);
+                if (groupList == null) {
+                    groupList = ListFact.mListMax(size);
+                    mResult.exclAdd(group, groupList);
+                }
+                groupList.add(key);
+            }
+        }
+        return MapFact.immutableList(mResult);
+    }
+
 }

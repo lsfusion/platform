@@ -281,8 +281,17 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return MapFact.<K, M>singletonOrder(key, getter.getMapValue());
     }
 
+    @Override
+    public <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter) {
+        return MapFact.<M, K>singletonOrder(getter.getMapValue(key), key);
+    }
+
     public <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, K> getter) {
         return MapFact.<K, M>singletonOrder(key, getter.getMapValue(key));
+    }
+
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+        return MapFact.singletonOrder(getterKey.getMapValue(key), getterValue.getMapValue(key));
     }
 
     public <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter) {
@@ -430,6 +439,14 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return MapFact.<G, ImSet<K>>singleton(group, this);
     }
 
+    public <G> ImMap<G, ImOrderSet<K>> groupOrder(BaseUtils.Group<G, K> getter) {
+        G group = getter.group(key);
+        if(group==null)
+            return MapFact.EMPTY();
+
+        return MapFact.<G, ImOrderSet<K>>singleton(group, this);
+    }
+
     public <V> ImCol<V> map(ImMap<K, ? extends V> map) {
         return SetFact.singleton(map.get(key));
     }
@@ -515,9 +532,31 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return SetFact.EMPTY();
     }
 
+    @Override
+    public ImOrderSet<K> removeOrderIncl(ImSet<? extends K> remove) {
+        if(remove.isEmpty())
+            return this;
+        assert BaseUtils.hashEquals(key, remove.single());
+        return SetFact.EMPTYORDER();
+    }
+
     public ImSet<K> removeIncl(K element) {
         assert BaseUtils.hashEquals(key, element);
         return SetFact.EMPTY();
+    }
+
+    @Override
+    public <G> ImMap<G, ImList<K>> groupList(BaseUtils.Group<G, K> getter) {
+        G group = getter.group(key);
+        if(group==null)
+            return MapFact.EMPTY();
+
+        return MapFact.<G, ImList<K>>singleton(group, this);
+    }
+
+    @Override
+    public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+        return MapFact.singleton(getterKey.getMapValue(key), getterValue.getMapValue(key));
     }
 
     public <V> ImMap<K, V> toMap(V value) {

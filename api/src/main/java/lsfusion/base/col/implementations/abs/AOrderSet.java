@@ -76,6 +76,10 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return filterOrder(new NotFunctionSet<>((FunctionSet<K>) ks));
     }
 
+    public ImOrderSet<K> removeOrderIncl(ImSet<? extends K> set) {
+        return removeOrder(set);
+    }
+
     public ImOrderSet<K> removeOrderIncl(K remove) {
         assert contains(remove);
 
@@ -101,11 +105,7 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
     }
 
     public <V> ImOrderSet<V> mapOrder(ImRevMap<? extends K, ? extends V> imRevMap) {
-        return mapOrder((ImMap<? extends K, ? extends V>) imRevMap);
-    }
-
-    public <V> ImOrderSet<V> mapOrder(ImMap<? extends K, ? extends V> imMap) {
-        return mapOrderSetValues(((ImRevMap<K, V>)imMap).fnGetValue());
+        return mapOrderSetValues(((ImRevMap<K, V>) imRevMap).fnGetValue());
     }
 
     public <V> ImOrderMap<K, V> mapOrderMap(ImMap<K, V> map) {
@@ -122,6 +122,23 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         for(int j=from;j<to;j++)
             mResult.exclAdd(get(j));
         return mResult.immutableOrder();
+    }
+
+    public <G> ImMap<G, ImOrderSet<K>> groupOrder(BaseUtils.Group<G, K> getter) {
+        MExclMap<G, MOrderExclSet<K>> mResult = MapFact.mExclMapMax(size());
+        for (int i=0,size=size();i<size;i++) {
+            K key = get(i);
+            G group = getter.group(key);
+            if(group!=null) {
+                MOrderExclSet<K> groupOrderSet = mResult.get(group);
+                if (groupOrderSet == null) {
+                    groupOrderSet = SetFact.mOrderExclSetMax(size);
+                    mResult.exclAdd(group, groupOrderSet);
+                }
+                groupOrderSet.exclAdd(key);
+            }
+        }
+        return MapFact.immutableMapOrder(mResult);
     }
 
     public <M> ImOrderSet<M> mapOrderSetValues(GetValue<M, K> getter) {
@@ -152,11 +169,27 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return mvResult.immutableValueOrder();
     }
 
+    public <MK, MV> ImOrderMap<MK, MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+        MOrderExclMap<MK, MV> mResult = MapFact.mOrderExclMap(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAdd(getterKey.getMapValue(get(i)), getterValue.getMapValue(get(i)));
+        return mResult.immutableOrder();
+    }
+
     public <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter) {
         ImOrderValueMap<K, M> mvResult = mapItOrderValues();
         for(int i=0,size=size();i<size;i++)
             mvResult.mapValue(i, getter.getMapValue());
         return mvResult.immutableValueOrder();
+    }
+
+    public <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter) {
+        MOrderExclMap<M, K> mResult = MapFact.mOrderExclMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            K key = get(i);
+            mResult.exclAdd(getter.getMapValue(key), key);
+        }
+        return mResult.immutableOrder();
     }
 
     public <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter) {

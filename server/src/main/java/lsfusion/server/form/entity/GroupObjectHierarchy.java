@@ -1,161 +1,91 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.form.view.FormView;
 
 import java.util.*;
 
 public class GroupObjectHierarchy {
-    public static final String rootNodeName = "__ROOT__";
 
-    private List<GroupObjectEntity> groups;
-    private Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies;
-    private Set<GroupObjectEntity> markedGroups;
+    private final GroupObjectEntity root;
+    private final Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies; // null key is root
 
-    /// dependencies должны содержать зависимости, образующие лес (набор деревьев)
-    public GroupObjectHierarchy(ImOrderSet<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
-        groups = new ArrayList<>(groupObjects.toJavaList());
-        dependencies = new HashMap<>(depends);
-        markedGroups = new HashSet<>();
-        for (GroupObjectEntity group : groups) {
-            if (!dependencies.containsKey(group) || dependencies.get(group) == null) {
-                dependencies.put(group, new ArrayList<GroupObjectEntity>());
-            }
-        }
-        checkValidity();
+    public GroupObjectHierarchy(GroupObjectEntity root, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies) {
+        this.root = root;
+        this.dependencies = dependencies;
+    }
+    
+    public GroupObjectEntity getRoot() {
+        return root;
+    }
+    
+    public ImOrderSet<GroupObjectEntity> getDependencies(GroupObjectEntity group) {
+        return dependencies.get(group);
     }
 
-    public GroupObjectHierarchy() {
-        groups = new ArrayList<>();
-        dependencies = new HashMap<>();
-        markedGroups = new HashSet<>();
-    }
-
-    public void addDependency(GroupObjectEntity a, GroupObjectEntity b) {
-        assert groups.contains(a) && groups.contains(b);
-        assert !a.equals(b);
-        dependencies.get(a).add(b);
-        checkValidity();
-    }
-
-    public void removeDependency(GroupObjectEntity a, GroupObjectEntity b) {
-        if (groups.contains(a)) {
-            dependencies.get(a).remove(b);
-        }
-    }
-
-    public void addGroup(GroupObjectEntity newGroupObj) {
-        if (!groups.contains(newGroupObj)) {
-            groups.add(newGroupObj);
-            dependencies.put(newGroupObj, new ArrayList<GroupObjectEntity>());
-        }
-    }
-
-    public void addGroups(Collection<GroupObjectEntity> newGroupObjects) {
-        for (GroupObjectEntity group : newGroupObjects) {
-            addGroup(group);
-        }
-    }
-
-    public void removeGroup(GroupObjectEntity group) {
-        for (Map.Entry<GroupObjectEntity, List<GroupObjectEntity>> entry : dependencies.entrySet()) {
-            if (entry.getValue().contains(group)) {
-                entry.getValue().addAll(dependencies.get(group));
-                entry.getValue().remove(group);
-                break;
-            }
-        }
-        dependencies.remove(group);
-        groups.remove(group);
-        markedGroups.remove(group);
-    }
-
-    public void markGroupAsNonJoinable(GroupObjectEntity group) {
-        assert groups.contains(group);
-        markedGroups.add(group);
-    }
-
-    private List<GroupObjectEntity> getRootNodes() {
-        List<GroupObjectEntity> roots = new ArrayList<>();
-        Map<GroupObjectEntity, Integer> inputDegree = getInputDegrees();
-        for (Map.Entry<GroupObjectEntity, Integer> entry : inputDegree.entrySet()) {
-            if (entry.getValue() == 0) {
-                roots.add(entry.getKey());
-            }
-        }
-        return roots;
-    }
-
-    private Map<GroupObjectEntity, Integer> getInputDegrees() {
-        Map<GroupObjectEntity, Integer> degrees = new HashMap<>();
-        for (GroupObjectEntity object : groups) {
-            degrees.put(object, 0);
-        }
-        for (GroupObjectEntity object : groups) {
-            for (GroupObjectEntity dependentObj : dependencies.get(object)) {
-                degrees.put(dependentObj, degrees.get(dependentObj) + 1);
-            }
-        }
-        return degrees;
-    }
-
-    /// Проверка на отсутствие циклов с помощью breadth-first search
-    private boolean isValidForest(Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies) {
-        Set<GroupObjectEntity> was = new HashSet<>();
-        Queue<GroupObjectEntity> queue = new ArrayDeque<>();
-        List<GroupObjectEntity> roots = getRootNodes();
-        for (GroupObjectEntity obj : roots) {
-            queue.add(obj);
-            was.add(obj);
-        }
-
-        while (!queue.isEmpty()) {
-            GroupObjectEntity cur = queue.poll();
-            for (GroupObjectEntity dependentObj : dependencies.get(cur)) {
-                if (was.contains(dependentObj)) {
-                    return false;
-                } else {
-                    was.add(dependentObj);
-                    queue.add(dependentObj);
-                }
-            }
-        }
-        return true;
-    }
-
-    private void checkValidity() {
-        // Проверка на петли + assertы на принадлежность списку групп
-        for (Map.Entry<GroupObjectEntity, List<GroupObjectEntity>> entry : dependencies.entrySet()) {
-            GroupObjectEntity obj = entry.getKey();
-            assert groups.contains(obj);
-            for (GroupObjectEntity dependentObj : entry.getValue()) {
-                assert groups.contains(dependentObj);
-                assert !obj.equals(dependentObj);
-            }
-        }
-        assert isValidForest(dependencies);
+    public GroupObjectEntity getParentGroup(GroupObjectEntity group) {        
+        for(Map.Entry<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependency : dependencies.entrySet())
+            if(dependency.getValue().contains(group))
+                return dependency.getKey();
+        return null; // when hierarchy is not full (i.e. printing one group)
     }
 
     public static final class ReportNode {
         private List<GroupObjectEntity> groups;
-        /// Равен max(groupLevel) потомков + groups.size()
+                
+        /// max children groupLevel + groups.size()
         private int groupLevel;
 
-        private ReportNode(GroupObjectEntity group) {
-            this(Collections.singletonList(group));
+        private ReportNode(List<GroupObjectEntity> groups) {
+            this.groups = groups;
         }
 
-        private ReportNode(List<GroupObjectEntity> groups) {
-            this.groups = new ArrayList<>(groups);
+        private GroupObjectEntity getFirstGroup() {
+            return groups.iterator().next();
         }
 
         public String getID() {
-            assert groups.size() > 0;
-            return groups.iterator().next().getSID();
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return firstGroup == null ? "__ROOT__" : firstGroup.getSID();
+        }
+
+        public String getName(FormView formView) {
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return firstGroup == null ? ThreadLocalContext.localize(formView.caption) : firstGroup.getSID();
+        }
+
+        public String getFileName(String formSID) {
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return formSID + (firstGroup == null ? "" : "_" + firstGroup.getSID()) + ".jrxml";
+        }
+
+        public CalcPropertyObjectEntity getReportPathProp(FormEntity formEntity) {
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return firstGroup == null ? formEntity.reportPathProp : groups.get(0).reportPathProp;
+        }
+
+        public boolean needMargin() {
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return firstGroup == null;
+        }
+
+        public GroupObjectEntity getLastGroup() {
+            return groups.get(groups.size() - 1);
         }
 
         public List<GroupObjectEntity> getGroupList() {
-            return new ArrayList<>(groups);
+            return groups;
+        }
+
+        public int getGroupCount() {
+            return groups.size();
         }
 
         private void merge(ReportNode obj) {
@@ -163,14 +93,6 @@ public class GroupObjectHierarchy {
         }
 
         private boolean isNonJoinable = false;
-
-        public boolean isNonJoinable() {
-            return isNonJoinable;
-        }
-
-        public void setNonJoinable(boolean nonJoinable) {
-            this.isNonJoinable = nonJoinable;
-        }
 
         public int getGroupLevel() {
             return groupLevel;
@@ -186,100 +108,57 @@ public class GroupObjectHierarchy {
         }
     }
 
-    public ReportHierarchy createReportHierarchy(boolean forceGroupNonJoinable) {
-        return new ReportHierarchy(groups, dependencies, markedGroups, forceGroupNonJoinable);
-    }
-
-    /// Для отчета по одной группе оставляем от всей иерархии только путь от нужной нам группы до корневой вершины
-    public ReportHierarchy createSingleGroupReportHierarchy(int groupId, boolean forceGroupNonJoinable) {
-        Map<GroupObjectEntity, GroupObjectEntity> parents = new HashMap<>();
-        GroupObjectEntity targetGroup = null;
-        for (GroupObjectEntity parentGroup : groups) {
-            for (GroupObjectEntity childGroup : dependencies.get(parentGroup)) {
-                parents.put(childGroup, parentGroup);
-            }
-            if (parentGroup.getID() == groupId) {
-                targetGroup = parentGroup;
-            }
-        }
-
-        List<GroupObjectEntity> remainGroups = new ArrayList<>();
-        while (targetGroup != null) {
-            remainGroups.add(targetGroup);
-            targetGroup = parents.get(targetGroup);
-        }
-        Map<GroupObjectEntity, List<GroupObjectEntity>> remainDependencies = new HashMap<>();
-        for (GroupObjectEntity group : remainGroups) {
-            remainDependencies.put(group, BaseUtils.filterList(dependencies.get(group), remainGroups));
-        }
-        return new ReportHierarchy(remainGroups, remainDependencies, new HashSet<GroupObjectEntity>(), forceGroupNonJoinable);
+    @IdentityInstanceLazy
+    public ReportHierarchy getReportHierarchy() {
+        return new ReportHierarchy(root, dependencies);
     }
 
     public static class ReportHierarchy {
-        private List<ReportNode> reportNodes = new ArrayList<>();
-        private Map<ReportNode, List<ReportNode>> dependencies = new HashMap<>();
-        private Map<GroupObjectEntity, ReportNode> groupToReportNode = new HashMap<>();
+        
+        public final ReportNode rootNode;        
+        private final Map<ReportNode, List<ReportNode>> dependencies = new HashMap<>();
+        
+        private ReportNode createNode(GroupObjectEntity group, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> groupDependencies) {
+            List<GroupObjectEntity> groups = new ArrayList<>(); // mutable will be changed in squeeze
+            groups.add(group);
+            ReportNode thisNode = new ReportNode(groups);
 
-        public ReportHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends,
-                               Set<GroupObjectEntity> markedGroups, boolean forceGroupNonJoinable) {
+            ImOrderSet<GroupObjectEntity> childGroups = groupDependencies.get(group);
+            List<ReportNode> childNodes = new ArrayList<>();
+            for(GroupObjectEntity childGroup : childGroups) // mutable will be changed in squeeze
+                childNodes.add(createNode(childGroup, groupDependencies));
 
-            for (GroupObjectEntity group : groupObjects) {
-                ReportNode newReportNode = new ReportNode(group);
-                newReportNode.setNonJoinable(forceGroupNonJoinable || markedGroups.contains(group));
-                reportNodes.add(newReportNode);
-                groupToReportNode.put(group, newReportNode);
-                dependencies.put(newReportNode, new ArrayList<ReportNode>());
-            }
+            dependencies.put(thisNode, childNodes);
+            return thisNode;
+        } 
 
-            for (Map.Entry<GroupObjectEntity, List<GroupObjectEntity>> entry : depends.entrySet()) {
-                ReportNode reportNode = groupToReportNode.get(entry.getKey());
-                for (GroupObjectEntity dependentGroup : entry.getValue()) {
-                    ReportNode dependentReportNode = groupToReportNode.get(dependentGroup);
-                    dependencies.get(reportNode).add(dependentReportNode);
-                }
-            }
+        public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies) {
 
-            squeezeAll();
-            countGroupLevels(null);
+            rootNode = createNode(rootGroup, dependencies);
+            rootNode.isNonJoinable = true;
+//            for(ReportNode topGroup : this.dependencies.get(rootNode))
+//                topGroup.isNonJoinable = true;
+
+            squeeze(rootNode);
+
+            countGroupLevels(rootNode);
         }
 
-        public List<ReportNode> getRootNodes() {
-            List<ReportNode> roots = new ArrayList<>();
-            Set<ReportNode> dependentNodes = new HashSet<>();
-                
-            for (Map.Entry<ReportNode, List<ReportNode>> entry : dependencies.entrySet()) {
-                for (ReportNode node : entry.getValue()) {
-                    dependentNodes.add(node);
-                }
-            }
-
-            for (ReportNode node : reportNodes) {
-                if (!dependentNodes.contains(node)) {
-                    roots.add(node);
-                }
-            }
-            return roots;
+        @IdentityLazy
+        public ImSet<ReportNode> getAllNodes() {
+            MExclSet<ReportNode> mChildren = SetFact.mExclSet();
+            fillAllChildNodes(rootNode, mChildren);
+            return mChildren.immutable();
         }
-
-        public Collection<ReportNode> getAllNodes() {
-            return new ArrayList<>(reportNodes);
+        
+        private void fillAllChildNodes(ReportNode node, MExclSet<ReportNode> mChildren) {
+            mChildren.exclAdd(node);
+            for(ReportNode childNode : getChildNodes(node))
+                fillAllChildNodes(childNode, mChildren);
         }
 
         public List<ReportNode> getChildNodes(ReportNode parent) {
-            return new ArrayList<>(dependencies.get(parent));
-        }
-
-        public ReportNode getParentNode(ReportNode node) {
-            for (Map.Entry<ReportNode, List<ReportNode>> entry : dependencies.entrySet()) {
-                if (entry.getValue().contains(node)) {
-                    return entry.getKey();
-                }
-            }
-            return null;
-        }
-
-        public ReportNode getReportNode(GroupObjectEntity group) {
-            return groupToReportNode.get(group);
+            return dependencies.get(parent);
         }
 
         public boolean isLeaf(ReportNode node) {
@@ -288,41 +167,29 @@ public class GroupObjectHierarchy {
             return children.size() == 0;
         }
 
-        private void squeezeAll() {
-            for (ReportNode treeRoot : getRootNodes()) {
-                squeeze(treeRoot);
-            }
-        }
-
         private void squeeze(ReportNode reportNode) {
             Collection<ReportNode> children = dependencies.get(reportNode);
             for (ReportNode child : children) {
                 squeeze(child);
             }
-            if (children.size() == 1 && !reportNode.isNonJoinable()) {
+            if (children.size() == 1 && !reportNode.isNonJoinable) {
                 ReportNode child = BaseUtils.single(children);
                 dependencies.put(reportNode, dependencies.get(child));
                 dependencies.remove(child);
                 reportNode.merge(child);
-                for (GroupObjectEntity childGroup : child.getGroupList()) {
-                    groupToReportNode.put(childGroup, reportNode);
-                }
-                reportNodes.remove(child);
             }
         }
 
-        private int countGroupLevels(ReportNode parent) {
+        private int countGroupLevels(ReportNode node) {
             int maxChildLevel = 0;
-            List<ReportNode> children = (parent == null ? getRootNodes() : dependencies.get(parent));
-            final int selfChildCount = (parent == null ? 0 : parent.getGroupList().size());
-
+            List<ReportNode> children = dependencies.get(node);
             for (ReportNode child : children) {
                 maxChildLevel = Math.max(maxChildLevel, countGroupLevels(child));
             }
-            if (parent != null) {
-                parent.setGroupLevel(maxChildLevel + selfChildCount);
-            }
-            return maxChildLevel + selfChildCount;
+
+            int level = node.getGroupCount() + maxChildLevel;
+            node.setGroupLevel(level);
+            return level;
         }
 
         public Map<String, List<String>> getReportHierarchyMap() {
@@ -335,13 +202,7 @@ public class GroupObjectHierarchy {
                 }
                 res.put(parentID, childIDs);
             }
-            List<String> rootIDs = new ArrayList<>();
-            for (ReportNode node : getRootNodes()) {
-                rootIDs.add(node.getID());
-            }
-            res.put(rootNodeName, rootIDs);
             return res;
         }
     }
 }
-

@@ -31,7 +31,6 @@ import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -59,7 +58,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public CalcPropertyObjectEntity<?> reportPathProp;
     
-    public boolean noClassFilter = false;
+    public boolean noClasses = false;
 
     public UpdateType updateType;
     
@@ -258,12 +257,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         assert !finalizedObjects;
         finalizedObjects = true;
         this.objects = objects;
+        for(ObjectEntity object : objects)
+            object.groupTo = this;
     }
 
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, boolean noClassFilter) {
+    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, boolean noClasses) {
         this(ID, (String)null);
 
-        this.noClassFilter = noClassFilter; 
+        this.noClasses = noClasses; 
         setObjects(objects);
     }
 
@@ -287,10 +288,10 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return mResult.immutableOrder();
     }
     
-    private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+    private static Where getFilterWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
         Where where = Where.TRUE;
         for(FilterEntity filt : filters)
-            where = where.and(filt.getWhere(mapKeys, mapObjects, modifier));
+            where = where.and(filt.getWhere(mapKeys, modifier));
         return where;
     }
 
@@ -301,15 +302,19 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             }});
     }
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
-        if(noClassFilter)
+        if(noClasses)
             return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
 
-    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
-        return getFilterWhere(mapKeys, modifier, mapObjects, filters).and(getClassWhere(mapKeys, modifier));
+    public Where getWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier, ImSet<FilterEntity> filters) throws SQLException, SQLHandledException {
+        return getFilterWhere(mapKeys, modifier, filters).and(getClassWhere(mapKeys, modifier));
     }
 
-    // хак, так как не все Map'ы поддерживают NULL
-    public static final GroupObjectEntity NULL = new GroupObjectEntity(); 
+    // hack where ImMap used (it does not support null keys)
+    public static final GroupObjectEntity NULL = new GroupObjectEntity();
+
+    public String getIntegrationSID() {
+        return getSID();
+    }
 }

@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
@@ -9,9 +10,12 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import net.iryndin.jdbf.core.DbfRecord;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -343,6 +347,12 @@ public class StringClass extends DataClass<String> {
     @Override
     public boolean fixedSize() {
         return false;
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        ExtInt charLength = getCharLength();
+        return new OverJDBField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
     }
 
     @Override

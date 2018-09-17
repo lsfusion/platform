@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -50,18 +51,23 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(context.getKeys());
         if(checkNulls(dataKeys.keys()))
             proceedNullException();
-        else
-            if(ignoreFitClassesCheck() || IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем
+        else {
+            if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys).removeIncl(getNoClassesInterfaces()))) { // если подходит по классам выполнем
                 if (this instanceof ScriptingActionProperty)
                     ((ScriptingActionProperty) this).commonExecuteCustomDelegate(context);
                 else
                     executeCustom(context);
             }
+        }
         return FlowResult.FINISH;
     }
 
+    protected ImSet<ClassPropertyInterface> getNoClassesInterfaces() {
+        return SetFact.EMPTY();
+    }
+    
     public CalcPropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
-        return IsClassProperty.getProperty(interfaces);
+        return IsClassProperty.getProperty(interfaces.removeIncl(getNoClassesInterfaces()));
     }
 
     protected boolean isSync() {
@@ -74,6 +80,4 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
             return true;
         return super.hasFlow(type);
     }
-
-    protected boolean ignoreFitClassesCheck() { return false; }
 }

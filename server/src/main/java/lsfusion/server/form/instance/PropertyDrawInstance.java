@@ -47,19 +47,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return getValueProperty() instanceof CalcPropertyObjectInstance;
     }
 
-    public boolean isNoParamCalcProperty() {
-        return isCalcProperty() && getValueProperty().property.getInterfaceCount() == 0;
-    }
-
-    public GroupObjectInstance getApplyObject() {
-        return getValueProperty().getApplyObject();
-    }
-
-    public ImSet<ObjectInstance> getObjectInstances() {
-        return getValueProperty().getSetObjectInstances();
-    }
-
-
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
 

@@ -144,7 +144,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
                 // если объекты подошли
                 if (remoteForm != null) {
-                    String filePath = createReportFile(remoteForm, storageType == FormStorageType.INLINE, attachmentFormat, attachmentFiles);
+                    String filePath = createReportFile(remoteForm, storageType == FormStorageType.INLINE, attachmentFormat);
                     if (storageType == FormStorageType.INLINE) {
                         inlineForms.add(filePath);
                     } else {
@@ -304,13 +304,13 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return context.createFormInstance(form, MapFact.fromJavaMap(objectValues));
     }
 
-    private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat, Map<ByteArray, String> attachmentFiles) throws ClassNotFoundException, IOException, JRException, SQLException, SQLHandledException {
+    private String createReportFile(FormInstance remoteForm, boolean inlineForm, AttachmentFormat attachmentFormat) throws ClassNotFoundException, IOException, JRException, SQLException, SQLHandledException {
 
         boolean toExcel = attachmentFormat != null && attachmentFormat.equals(AttachmentFormat.XLSX);
         ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(toExcel);
 
         ReportGenerator report = new ReportGenerator(generationData);
-        JasperPrint print = report.createReport(inlineForm || toExcel, attachmentFiles);
+        JasperPrint print = report.createReport(inlineForm || toExcel);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         try {
             String filePath = File.createTempFile("lsfReport", attachmentFormat != null ? attachmentFormat.getExtension() : null).getAbsolutePath();

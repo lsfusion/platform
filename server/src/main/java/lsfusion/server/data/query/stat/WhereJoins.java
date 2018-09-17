@@ -371,9 +371,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             private final CostStat right;
             private final Stat[] aEdgeStats;
             private final Stat[] bEdgeStats;
-            private final List<? extends Edge> edges;
+            private final ImList<? extends Edge> edges;
 
-            public DebugInfo(CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, List<? extends Edge> edges) {
+            public DebugInfo(CostStat left, CostStat right, Stat[] aEdgeStats, Stat[] bEdgeStats, ImList<? extends Edge> edges) {
                 this.left = left;
                 this.right = right;
                 this.aEdgeStats = aEdgeStats;
@@ -1181,7 +1181,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     Stat aAdjStat = aCostStat.getStat();
                     Stat bAdjStat = bCostStat.getStat();
 
-                    List<Edge<K>> edgesList = null;
+                    ImList<Edge<K>> edgesList = null;
                     Stat[] aEdgeStats = null;
                     Stat[] bEdgeStats = null;
 
@@ -1189,7 +1189,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     if(!edges.iterator().hasNext()) { // оптимизация, как самый самый самый частый случай
                         newStat = aAdjStat.mult(bAdjStat);
                     } else {
-                        edgesList = BaseUtils.toList(edges);
+                        edgesList = ListFact.toList(edges);
                         int size = edgesList.size();
 
                         aEdgeStats = new Stat[size];
@@ -1298,103 +1298,76 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     AddValue<BaseExpr, Stat> minStat = minStat();
 
                     // обрабатываем notNull'ы, важно чтобы идеологически совпадал с getPushedCost
-                    List<Edge<K>> edgesList = BaseUtils.toList(edges);
-                    Stat[] aEdgeStats = new Stat[edgesList.size()];
-                    Stat[] bEdgeStats = new Stat[edgesList.size()];
-                    Stat[] aNotNullStats = new Stat[edgesList.size()];
-                    boolean[] aIsKeys = new boolean[edgesList.size()];
+                    ImList<Edge<K>> edgesList = ListFact.toList(edges);
+                    final int edgesCount = edgesList.size();
+                    Stat[] aEdgeStats = new Stat[edgesCount];
+                    Stat[] bEdgeStats = new Stat[edgesCount];
+                    Stat[] aNotNullStats = new Stat[edgesCount];
+                    boolean[] aIsKeys = new boolean[edgesCount];
                     Stat aAdjStat = aCostStat.getStat();
                     Stat bAdjStat = bCostStat.getStat();
 
-                    MAddExclMap<BaseExpr, Integer> exprs = MapFact.mAddExclMapMax(edgesList.size());
-                    BaseJoin[] keyJoins = new BaseJoin[edgesList.size()];
-                    Object[] keys = new Object[edgesList.size()];
+                    BaseExpr[] exprs = new BaseExpr[edgesCount];
+                    BaseJoin[] keyJoins = new BaseJoin[edgesCount];
+                    Object[] keys = new Object[edgesCount];
 
                     // читаем edge'и
-                    int adjEdges = 0; // с неповторяющимися expr
-                    for (Edge<K> edge : edgesList) {
-                        boolean wasExpr = true;
-                        boolean updateKeyJoin = false;
-                        Integer j = exprs.get(edge.expr);
-                        if (j == null) {
-                            j = adjEdges++;
-                            exprs.exclAdd(edge.expr, j);
-
-                            wasExpr = false;
-                            updateKeyJoin = true;
-                        }
-
-                        boolean aIsKey;
-                        if (wasExpr) {
-                            aIsKey = aIsKeys[j];
-                        } else {
-                            aIsKey = aCostStat.getJoins().contains(edge.getTo()); // A - ключ
-                            aIsKeys[j] = aIsKey;
-                        }
+                    for (int j=0;j<edgesCount;j++) {
+                        Edge<K> edge = edgesList.get(j);
+                        
+                        boolean aIsKey = aCostStat.getJoins().contains(edge.getTo()); // A - ключ
+                        aIsKeys[j] = aIsKey;
+                        exprs[j] = edge.expr;
 
                         if (aIsKey) {
-                            if (!wasExpr) {
-                                PropStat bEdgeStat = bCostStat.getPropStat(edge, exprStats);
-                                if (bEdgeStat.notNull != null)
-                                    bAdjStat = bAdjStat.min(bEdgeStat.notNull);
-                                bEdgeStats[j] = bEdgeStat.distinct;
-                            }
+                            PropStat bEdgeStat = bCostStat.getPropStat(edge, exprStats);
+                            if (bEdgeStat.notNull != null)
+                                bAdjStat = bAdjStat.min(bEdgeStat.notNull);
+                            bEdgeStats[j] = bEdgeStat.distinct;
 
                             Stat aEdgeStat = aCostStat.getKeyStat(edge);
-                            updateKeyJoin = updateKeyJoin || aEdgeStat.less(aEdgeStats[j]);
-                            if(updateKeyJoin)
-                                aEdgeStats[j] = aEdgeStat;
+                            aEdgeStats[j] = aEdgeStat;
                         } else {
-                            if (!wasExpr) {
-                                PropStat aEdgeStat = aCostStat.getPropStat(edge, exprStats);
-                                if (aEdgeStat.notNull != null)
-                                    aAdjStat = aAdjStat.min(aEdgeStat.notNull);
-                                aEdgeStats[j] = aEdgeStat.distinct;
-                                aNotNullStats[j] = aEdgeStat.notNull;
-                            }
+                            PropStat aEdgeStat = aCostStat.getPropStat(edge, exprStats);
+                            if (aEdgeStat.notNull != null)
+                                aAdjStat = aAdjStat.min(aEdgeStat.notNull);
+                            aEdgeStats[j] = aEdgeStat.distinct;
+                            aNotNullStats[j] = aEdgeStat.notNull;
 
                             Stat bEdgeStat = bCostStat.getKeyStat(edge);
-                            updateKeyJoin = updateKeyJoin || bEdgeStat.less(bEdgeStats[j]);
-                            if(updateKeyJoin)
-                                bEdgeStats[j] = bEdgeStat;
+                            bEdgeStats[j] = bEdgeStat;
                         }
 
-                        if(updateKeyJoin) { // "переставляем" edge на элемент с меньшей статистикой
-                            keys[j] = edge.key;
-                            keyJoins[j] = edge.join;
-                        }
+                        keys[j] = edge.key;
+                        keyJoins[j] = edge.join;
                     }
 
                     // PUSH COST (STATS)
                     if(bv != null && (!edgesList.isEmpty() || pushJoin != null)) { // последнее - оптимизация
 
-                        MExclMap<Z, Stat> mKeys = MapFact.mExclMapMax(adjEdges);
-                        MExclMap<Z, Stat> mNotNullKeys = MapFact.mExclMapMax(adjEdges);
-                        MAddExclMap<Z, Integer> keyIndices = MapFact.mAddExclMapMax(adjEdges);
-                        MExclMap<BaseExpr, Stat> mProps = MapFact.mExclMapMax(adjEdges);
-                        MExclSet<BaseExpr> mNotNullProps = compileInfo ? SetFact.<BaseExpr>mExclSetMax(adjEdges) : null;
+                        MExclMap<Z, Stat> mKeys = MapFact.mExclMapMax(edgesCount);
+                        MExclMap<Z, Stat> mNotNullKeys = MapFact.mExclMapMax(edgesCount);
+                        MMap<BaseExpr, Stat> mProps = MapFact.mMapMax(edgesCount, minStat);
+                        MSet<BaseExpr> mNotNullProps = compileInfo ? SetFact.<BaseExpr>mSetMax(edgesCount) : null;
 
-                        for (int k = 0, size = exprs.size(); k < size; k++) {
-                            int i = exprs.getValue(k);
-
+                        for (int i = 0; i < edgesCount; i++) {
                             Stat aEdgeStat = aEdgeStats[i];
                             boolean aIsKey = aIsKeys[i];
 
                             if (aIsKey) {
-                                BaseExpr expr = exprs.getKey(k);
-                                mProps.exclAdd(expr, aEdgeStat);
+                                BaseExpr expr = exprs[i];
+                                mProps.add(expr, aEdgeStat);
 
                                 if(compileInfo) { // по хорошему надо min'ы только брать, но больше не меньше
                                     BaseJoin to = keyJoins[i];
                                     if (to instanceof ExprStatJoin && ((ExprStatJoin) to).notNull)
-                                        mNotNullProps.exclAdd(expr);
+                                        mNotNullProps.add(expr);
                                 }
                             } else {
                                 Z key = (Z)keys[i];
                                 mKeys.exclAdd(key, aEdgeStat);
                                 if(aNotNullStats[i] != null)
                                     mNotNullKeys.exclAdd(key, aNotNullStats[i]);
-                                keyIndices.exclAdd(key, i);
                             }
                         }
 
@@ -1416,8 +1389,9 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             pushedStatKeys = pushedStatKeys.min(bJoinCost.statKeys); // по идее push должен быть меньше, но из-за несовершенства статистики и отсутствия проталкивания в таблицу (pushedJoin присоединятся к маленьким join'ам и может немного увеличивать cost / stat), после "проталкивания в таблицу" можно попробовать вернуть assertion
 //                                assert BaseUtils.hashEquals(pushedStatKeys.min(bJoinCost.statKeys), pushedStatKeys);
 
-                            for(int i=0,size=keyIndices.size();i<size;i++) // обновляем bEdgeStats
-                                bEdgeStats[keyIndices.getValue(i)] = pushedStatKeys.getDistinct(keyIndices.getKey(i));
+                            for(int i=0;i<edgesCount;i++) // обновляем bEdgeStats
+                                if(!aIsKeys[i])
+                                    bEdgeStats[i] = pushedStatKeys.getDistinct((Z)keys[i]);
                             bAdjStat = bAdjStat.min(pushedStatKeys.getRows());
                         } else {
                             Cost pushedCost = bv.getPushedCost(keyStat, type, aCost, aStat, pushKeys, pushNotNullKeys, pushProps, rPushedKeys, rPushedProps); // впоследствие можно убрать aStat добавив predicate pushDown таблицам
@@ -1438,7 +1412,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     // STAT ESTIMATE
                     Result<Stat> rAAdjStat = new Result<>();
                     Result<Stat> rBAdjStat = new Result<>();
-                    Stat newStat = calcEstJoinStat(aAdjStat, bAdjStat, adjEdges, aEdgeStats, bEdgeStats, true, rAAdjStat, rBAdjStat);
+                    Stat newStat = calcEstJoinStat(aAdjStat, bAdjStat, edgesCount, aEdgeStats, bEdgeStats, true, rAAdjStat, rBAdjStat);
                     aAdjStat = rAAdjStat.result;
                     bAdjStat = rBAdjStat.result;
                     Cost newCost = aCost.or(bCostStat.getCost()).or(new Cost(newStat));
@@ -1451,8 +1425,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     ImMap<QueryJoin, PushCost> newPushCosts = pushJoin != null ? CostStat.addPushCosts(aCostStat.pushCosts, bCostStat.pushCosts) : null;
     
                     MMap<BaseExpr, Stat> mPropAdjStats = MapFact.mMap(minStat); // ключи не считаем, так как используются один раз. NotNull'ы не нужны, так как статистика уже редуцировалась
-                    for (int k = 0, size = exprs.size(); k < size; k++) {
-                        int i = exprs.getValue(k);
+                    for (int i = 0 ; i < edgesCount; i++) {
                         Stat aEdgeStat = aEdgeStats[i].min(aAdjStat);
                         Stat bEdgeStat = bEdgeStats[i].min(bAdjStat);
 
@@ -1466,7 +1439,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             propStat = aEdgeStat;
                         }
                         if (keyStat.less(propStat))
-                            mPropAdjStats.add(exprs.getKey(k), keyStat);
+                            mPropAdjStats.add(exprs[i], keyStat);
                     }
                     ImMap<BaseExpr, Stat> newPropStats = aCostStat.getPropStats().addExcl(bCostStat.getPropStats()).merge(mPropAdjStats.immutable(), minStat);
     

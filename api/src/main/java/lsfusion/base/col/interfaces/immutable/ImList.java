@@ -1,5 +1,6 @@
 package lsfusion.base.col.interfaces.immutable;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
@@ -12,6 +13,8 @@ public interface ImList<K> extends Iterable<K> {
     boolean isEmpty();
     K single();
 
+    <G> ImMap<G, ImList<K>> groupList(BaseUtils.Group<G, K> getter);
+    
     K[] toArray(K[] array);
     
     ImCol<K> getCol();
@@ -41,6 +44,7 @@ public interface ImList<K> extends Iterable<K> {
 
     <M> ImMap<M,K> mapListMapValues(GetIndex<M> getterKey);
     <MK, MV> ImMap<MK,MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);
+    <MK, MV> ImMap<MK,MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue);
     <MK, MV> ImRevMap<MK,MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);
 
     String toString(String separator);

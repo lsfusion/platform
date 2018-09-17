@@ -83,7 +83,7 @@ import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
-import lsfusion.server.remote.FormReportManager;
+import lsfusion.server.form.stat.FormReportManager;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;

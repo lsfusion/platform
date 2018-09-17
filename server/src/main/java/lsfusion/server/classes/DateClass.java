@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.base.SystemUtils;
@@ -10,7 +11,12 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -115,10 +121,26 @@ public class DateClass extends DataClass<Date> {
         return dateFormat;
     }
 
+    @Override
+    public Date parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getDate(fieldName));
+    }
+    @Override
+    public Date parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        return readXLS(cell.getDateCellValue());
+    }
+
     public Date parseString(String s) throws ParseException {
         try {
-            DateConverter.assertDateToSql(getDateFormat().parse(s));
-            return DateConverter.safeDateToSql(getDateFormat().parse(s));
+            java.util.Date parse = null;
+            try {
+                parse = getDateFormat().parse(s);
+            } catch (java.text.ParseException e) {
+                parse = DateConverter.smartParse(s);
+            }
+
+            DateConverter.assertDateToSql(parse);
+            return DateConverter.safeDateToSql(parse);
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }
@@ -135,6 +157,11 @@ public class DateClass extends DataClass<Date> {
     @Override
     public Object getInfiniteValue(boolean min) {
         return DateConverter.dateToSql(new java.util.Date(min ? 0 : Long.MAX_VALUE));
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'D', 8, 0);
     }
 
     @Override

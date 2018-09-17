@@ -1,9 +1,14 @@
 package lsfusion.server.data.type;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import net.iryndin.jdbf.core.DbfRecord;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -94,5 +99,26 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         if(value == null)
             return getParseNullValue();
         return formatString(value);
+    }
+
+    @Override
+    public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return parseString(dbfRecord.getString(fieldName, charset));
+    }    
+    @Override
+    public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        return parseString(formulaValue.getStringValue());
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'C', 253, 0);
+    }
+
+    protected T readDBF(Object object) {
+        return read(object);
+    }
+    protected T readXLS(Object object) {
+        return read(object);
     }
 }

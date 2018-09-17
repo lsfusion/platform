@@ -119,7 +119,7 @@ public class AspectStackItem extends ExecutionStackItem {
     }
     
     private static String safeToString(Object o) {
-        String s = o.toString();
+        String s = o == null ? "null" : o.toString();
         if(s.length() <= 1000)
             return s;
         return s.substring(0, 1000) + "...";

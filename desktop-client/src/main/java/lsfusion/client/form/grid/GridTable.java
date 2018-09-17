@@ -470,6 +470,7 @@ public class GridTable extends ClientPropertyTable {
         return properties.contains(property);
     }
 
+    // should be the same as FormInstance.getOrderedVisibleProperties 
     public List<ClientPropertyDraw> getOrderedVisibleProperties(List<ClientPropertyDraw> propertiesList) {
         List<ClientPropertyDraw> result = new ArrayList<>();
 
@@ -1662,6 +1663,7 @@ public class GridTable extends ClientPropertyTable {
 
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
+        currentGridPreferences.setHasUserPreferences(true);
     }
 
     public void setUserOrder(ClientPropertyDraw property, Integer userOrder) {
