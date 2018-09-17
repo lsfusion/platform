@@ -47,9 +47,17 @@
         <replace file="jdk.table.xml" token="java.version" value="${jdk.version}" />
         <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/jdk.table.xml" />
 
-        <replace file="applicationLibraries.xml" token="lsfusion.library.name" value="${lsfusion.library.name}" />
-        <replace file="applicationLibraries.xml" token="server.archive" value="${server.archive}" />
-        <copy file="applicationLibraries.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/applicationLibraries.xml" />
+        <if>
+            <not>
+                <equals arg1="${lsfusion.library.name}" arg2="" />
+            </not>
+            <then>
+                <replace file="applicationLibraries.xml" token="lsfusion.library.name" value="${lsfusion.library.name}" />
+                <replace file="applicationLibraries.xml" token="server.archive" value="${server.archive}" />
+                <replace file="applicationLibraries.xml" token="server.sources" value="${server.sources}" />
+                <copy file="applicationLibraries.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/applicationLibraries.xml" />
+            </then>
+        </if>
 
         <replace file="options.xml" token="db.host" value="${db.host}" />
         <replace file="options.xml" token="db.port" value="${db.port}" />

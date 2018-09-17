@@ -25,6 +25,7 @@ RequestExecutionLevel user
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
 !define SERVER_LIBRARY_NAME "lsfusion-server-${VERSION}"
+!define SERVER_SOURCES_JAR "lsfusion-server-${VERSION}-sources.jar"
 !define WEBCLIENT_WAR "lsfusion-client-${VERSION}.war"
 
 !define INSTBINDIR "$INSTDIR\install-bin"
@@ -395,9 +396,11 @@ Function execAntConfiguration
 
     ${if} ${SectionIsSelected} ${SecIdea}
         DetailPrint "Configuring Intellij IDEA"
-
-        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.archive=" "$INSTDIR\${SERVER_JAR}" $R0
-        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "lsfusion.library.name=" "${SERVER_LIBRARY_NAME}" $R0
+        ${if} ${SectionIsSelected} ${SecServer}
+            ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "lsfusion.library.name=" "${SERVER_LIBRARY_NAME}" $R0
+            ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.archive=" "$INSTDIR\${SERVER_JAR}" $R0
+            ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.sources=" "$INSTDIR\${SERVER_SOURCES_JAR}" $R0
+        ${endIf}
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.majorversion=" "${IDEA_MAJORVERSION}" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.host=" "$pgHost" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.port=" "$pgPort" $R0
