@@ -1,8 +1,9 @@
 package lsfusion.server.form.entity;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
@@ -11,12 +12,17 @@ import java.util.*;
 
 public class FormGroupHierarchyCreator {
     private FormEntity form;
+    
+    private final boolean supportGroupColumns;
 
-    public FormGroupHierarchyCreator(FormEntity form) {
+    public FormGroupHierarchyCreator(FormEntity form, boolean supportGroupColumns) {
         this.form = form;
+        
+        this.supportGroupColumns = supportGroupColumns;
     }
     
-    private void addDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet, boolean reverse) {
+    private boolean addDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet) {
+        boolean changed = false;
         GroupObjectEntity prev = null, cur = null;
         for (GroupObjectEntity group : getFormGroupsIt()) {
             if (groupsSet.contains(group)) {
@@ -24,27 +30,22 @@ public class FormGroupHierarchyCreator {
                 cur = group;
             }
             if (prev != null) {
-                if (reverse) {
-                    graph.get(cur).add(prev);
-                } else {
-                    graph.get(prev).add(cur);
-                }
+                changed = graph.get(cur).add(prev) || changed;
             }
         }
+        return changed;
     }
 
     private Iterable<GroupObjectEntity> getFormGroupsIt() {
         return form.getGroupsIt();
     }
 
-    private ImOrderSet<GroupObjectEntity> getFormGroupsList() {
-        return form.getGroupsList();        
-    }
-
-    private static Set<GroupObjectEntity> getGroupsByObjects(ImSet<ObjectEntity> objects) {
+    public static Set<GroupObjectEntity> getGroupsByObjects(ImSet<ObjectEntity> objects, ImOrderSet<GroupObjectEntity> groups) {
         Set<GroupObjectEntity> groupsSet = new HashSet<>();
         for (ObjectEntity object : objects) {
-            groupsSet.add(object.groupTo);
+            GroupObjectEntity groupObject = object.groupTo;
+            if(groups.contains(groupObject))
+                groupsSet.add(groupObject);
         }
         return groupsSet;
     }
@@ -54,67 +55,52 @@ public class FormGroupHierarchyCreator {
      * Если две группы связаны каким-нибудь свойством, фильтром и т.п., то добавляется ребро от "нижней" группы к "верхней"
      * Порядок групп определяется порядком в form.groups
      */
-    private void addDependenciesToGraph(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
-        ImOrderSet<GroupObjectEntity> groups = getFormGroupsList();
-        Iterable<PropertyDrawEntity<?>> propertyDraws = form.getPropertyDrawsIt();
+    private void addDependenciesToGraph(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        Iterable<PropertyDrawEntity> propertyDraws = form.getPropertyDrawsIt();
         for (PropertyDrawEntity<?> property : propertyDraws) {
-            if (property.getToDraw(form) == property.getApplyObject(form)) {
-                Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances());
-                // Для свойств с группами в колонках не добавляем зависимости от групп, идущих в колонки
+            Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances(), groups);
+            if(supportGroupColumns)
                 propObjects.removeAll(property.getColumnGroupObjects().toJavaList());
-                addDependencies(graph, propObjects, true);
-
-                if (property.propertyCaption != null) {
-                    Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getSetObjectInstances());
-                    addDependencies(graph, captionObjects, true);
-                }
-
-                if (property.propertyFooter != null) {
-                    Set<GroupObjectEntity> footerObjects = getGroupsByObjects(property.propertyFooter.getSetObjectInstances());
-                    addDependencies(graph, footerObjects, true);
-                }
-            }
+            addDependencies(graph, propObjects);
         }
 
         for (GroupObjectEntity group : groups) {
-            if (group.propertyBackground != null) {
-                Set<GroupObjectEntity> backgroundObjects = getGroupsByObjects(group.propertyBackground.getSetObjectInstances());
-                addDependencies(graph, backgroundObjects, true);
-            }
-            if (group.propertyForeground != null) {
-                Set<GroupObjectEntity> foregroundObjects = getGroupsByObjects(group.propertyForeground.getSetObjectInstances());
-                addDependencies(graph, foregroundObjects, true);
-            }
+            if (group.propertyBackground != null)
+                addDependencies(graph, getGroupsByObjects(group.propertyBackground.getObjectInstances(), groups));
+            if (group.propertyForeground != null)
+                addDependencies(graph, getGroupsByObjects(group.propertyForeground.getObjectInstances(), groups));
         }
 
         for (FilterEntity filter : form.getFixedFilters()) {
-            addDependencies(graph, getGroupsByObjects(filter.getObjects()), true);
+            addDependencies(graph, getGroupsByObjects(filter.getObjects(), groups));
         }
 
+        // temporary remove if assertion will not be broken
         for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
             for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
-                addDependencies(graph, getGroupsByObjects(filter.filter.getObjects()), true);
+                boolean changed = addDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
+                assert !changed;
             }
         }
 
-        // добавляем дополнительные зависимости для свойств с группами в колонках
-        for (GroupObjectEntity targetGroup : groups) { // перебираем группы в этом порядке, чтобы не пропустить зависимости
-            for (PropertyDrawEntity<?> property : propertyDraws) {
-                ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
-                if (property.getToDraw(form) == property.getApplyObject(form) && !columnGroupObjects.isEmpty()) {
-                    if (targetGroup == property.getToDraw(form)) {
-                        for (GroupObjectEntity columnGroup : columnGroupObjects) {
-                            graph.get(targetGroup).addAll(graph.get(columnGroup));
-                        }
-                    }
+        if(supportGroupColumns) { // temporary remove if assertion will not be broken
+            for (GroupObjectEntity targetGroup : groups) {
+                for (PropertyDrawEntity<?> property : propertyDraws) {
+                    ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
+                    if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects))
+                        for (GroupObjectEntity columnGroup : columnGroupObjects) 
+                            if(groups.contains(columnGroup)) {
+                                assert graph.get(targetGroup).containsAll(graph.get(columnGroup));
+                                graph.get(targetGroup).addAll(graph.get(columnGroup));
+                            }
                 }
             }
         }
     }
 
-    private Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph() {
+    private static Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph(ImOrderSet<GroupObjectEntity> groups) {
         Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = new HashMap<>();
-        for (GroupObjectEntity group : getFormGroupsIt()) {
+        for (GroupObjectEntity group : groups) {
             graph.put(group, new HashSet<GroupObjectEntity>());
         }
         return graph;
@@ -142,11 +128,9 @@ public class FormGroupHierarchyCreator {
      * @return Результирующий граф зависимостей в виде набора деревьев (в виде списков смежжнсти)
      */
 
-    private Map<GroupObjectEntity, Set<GroupObjectEntity>> formForest(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
-        ImList<GroupObjectEntity> groups = getFormGroupsList();
-
+    private Map<GroupObjectEntity, Set<GroupObjectEntity>> formForest(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
         int groupsCount = groups.size();
-        Map<GroupObjectEntity, Set<GroupObjectEntity>> newGraph = createNewGraph();
+        Map<GroupObjectEntity, Set<GroupObjectEntity>> newGraph = createNewGraph(groups);
 
         int[] parents = new int[groupsCount];
         Arrays.fill(parents, -1);
@@ -202,22 +186,25 @@ public class FormGroupHierarchyCreator {
         return newGraph;
     }
 
-    public GroupObjectHierarchy createHierarchy() {
-        Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = createNewGraph();
-        addDependenciesToGraph(graph);
-        graph = formForest(graph);
-        Map<GroupObjectEntity, List<GroupObjectEntity>> dependencies = new HashMap<>();
-        ImOrderSet<GroupObjectEntity> groups = getFormGroupsList();
-        for (Map.Entry<GroupObjectEntity, Set<GroupObjectEntity>> entry : graph.entrySet()) {
-            List<GroupObjectEntity> edges = new ArrayList<>();
-            for (GroupObjectEntity group : groups) {
-                if (entry.getValue().contains(group)) {
-                    edges.add(group);
-                }
-            }
-            dependencies.put(entry.getKey(), edges);
+    public GroupObjectHierarchy createHierarchy(ImSet<GroupObjectEntity> excludeGroupObjects) {
+        ImOrderSet<GroupObjectEntity> groups = form.getGroupsList().removeOrderIncl(excludeGroupObjects);
+        
+        Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = createNewGraph(groups);
+        addDependenciesToGraph(groups, graph, excludeGroupObjects);
+        graph = formForest(groups, graph);
+        
+        // building list from set
+        Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies = new HashMap<>();
+        MSet<GroupObjectEntity> mDependents = SetFact.mSet();
+        for(GroupObjectEntity group : groups) {
+            Set<GroupObjectEntity> edges = graph.get(group);
+            ImOrderSet<GroupObjectEntity> orderedEdges = edges == null ? SetFact.<GroupObjectEntity>EMPTYORDER() : groups.filterOrderIncl(SetFact.fromJavaSet(edges));
+
+            dependencies.put(group, orderedEdges);
+            mDependents.addAll(orderedEdges.getSet());
         }
-        return new GroupObjectHierarchy(groups, dependencies);
+        dependencies.put(null, groups.removeOrderIncl(mDependents.immutable()));        
+        return new GroupObjectHierarchy(null, dependencies);
     }
 
 }

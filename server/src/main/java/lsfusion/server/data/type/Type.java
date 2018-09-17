@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.BaseClass;
@@ -12,6 +13,10 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import net.iryndin.jdbf.core.DbfRecord;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -61,6 +66,11 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     Stat getTypeStat(boolean forJoin);
 
     ExtInt getCharLength();
+
+    T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException;
+    T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
+
+    OverJDBField formatDBF(String fieldName) throws JDBFException;
 
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 

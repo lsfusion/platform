@@ -28,14 +28,14 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
     boolean negate;
     public Compare compare;
-    public CompareValue value;
+    public CompareInstance value;
 
-    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareValue value) {
+    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareInstance value) {
         this(property, compare, value, false);
     }
 
     // не можем хранить ссылку на Entity, так как этот Instance может создаваться на стороне клиента и не иметь Entity
-    public CompareFilterInstance(CalcPropertyObjectInstance<P> property,Compare compare, CompareValue value, boolean resolve) {
+    public CompareFilterInstance(CalcPropertyObjectInstance<P> property, Compare compare, CompareInstance value, boolean resolve) {
         super(property, resolve);
         this.compare = compare;
         this.value = value;
@@ -49,7 +49,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         junction = inStream.readBoolean();
     }
 
-    private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {
+    private static CompareInstance deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {
         byte type = inStream.readByte();
         switch(type) {
             case 0:

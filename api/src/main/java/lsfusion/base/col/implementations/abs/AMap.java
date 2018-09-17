@@ -210,6 +210,12 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mResult.immutable();
     }
 
+    public ImMap<K, V> addIfNotContains(K key, V value) {
+        if(!containsKey(key))
+            return addExcl(key, value);
+        return this;
+    }
+
     public ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> imMap) {
         if(imMap.isEmpty()) return this;
         

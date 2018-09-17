@@ -35,10 +35,7 @@ import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.GroupObjectProp;
-import lsfusion.server.form.entity.UpdateType;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.filter.AndFilterInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.OrFilterInstance;
@@ -148,7 +145,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.pageSize = Settings.get().getPageSizeDefaultValue();
         }
         
-        this.noClassFilter = entity.noClassFilter;
+        this.noClassFilter = entity.noClasses;
         this.parent = parent;
         this.props = props;
     }
@@ -1029,7 +1026,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         return null; // ничего не изменилось
     }
-
+    
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {

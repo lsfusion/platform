@@ -26,6 +26,9 @@ public class ClassFormSelector implements FormSelector<ClassFormSelector.Virtual
     }
 
     public class VirtualObject implements ObjectSelector {
+        public boolean noClasses() {
+            return false;
+        }
     }
     public final VirtualObject virtualObject = new VirtualObject(); 
 

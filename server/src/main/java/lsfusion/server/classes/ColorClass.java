@@ -5,6 +5,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
+import net.iryndin.jdbf.core.DbfRecord;
 
 import java.awt.*;
 import java.sql.PreparedStatement;

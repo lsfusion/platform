@@ -2128,16 +2128,6 @@ public class Settings implements Cloneable {
         this.extendedSQLConnectionLog = extendedSQLConnectionLog;
     }
 
-    private boolean subReportTableOptimization = true;
-    
-    public boolean isSubReportTableOptimization() {
-        return subReportTableOptimization;
-    }
-
-    public void setSubReportTableOptimization(boolean subReportTableOptimization) {
-        this.subReportTableOptimization = subReportTableOptimization;
-    }
-
     private int closeFormDelay = 5000;
 
     public int getCloseFormDelay() {

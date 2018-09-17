@@ -25,7 +25,7 @@ public class ClientReportDockable extends ClientDockable {
         super(null, dockableManager);
 
         try {
-            final JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+            final JasperPrint print = new ReportGenerator(generationData).createReport();
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
             this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, printerName, editInvoker);

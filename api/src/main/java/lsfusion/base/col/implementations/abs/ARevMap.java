@@ -2,9 +2,7 @@ package lsfusion.base.col.implementations.abs;
 
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MFilterRevMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
@@ -134,6 +132,20 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
 
     public <M> ImRevMap<M, V> mapRevKeys(GetIndex<M> getter) {
         return reverse().mapRevValues(getter).reverse();
+    }
+
+    @Override
+    public ImOrderMap<K, V> mapOrder(ImOrderSet<V> map) {
+        final ImRevMap<V, K> reversed = reverse();
+        return map.mapOrderKeyValues(new GetValue<K, V>() {
+            public K getMapValue(V value) {
+                return reversed.get(value);
+            }
+        }, new GetValue<V, V>() {
+            public V getMapValue(V value) {
+                return value;
+            }
+        });
     }
 
     public <M> ImRevMap<M, V> mapRevKeys(GetValue<M, K> getter) {

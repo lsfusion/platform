@@ -36,7 +36,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
-import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ThrowableWithStack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -60,7 +59,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public final F form;
     private final FormView richDesign;
-    public final InteractiveFormReportManager reportManager;
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
@@ -84,7 +82,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         setContext(new RemoteFormContext<>(this));
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
-        this.reportManager = new InteractiveFormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
@@ -108,7 +105,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
                 }
 
-                return reportManager.getReportData(groupId, toExcel, userPreferences);
+                return new InteractiveFormReportManager(form, groupId, userPreferences).getReportData(toExcel);
             }
         });
     }
@@ -358,7 +355,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace("pasteExternalTable Action");
 
                     for (int i =0; i < propertyIDs.size(); i++) {
-                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getsID(), String.valueOf(columnKeys.get(i))));
+                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
                     }                  
                 }
                 
@@ -385,7 +382,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     for (byte[] bkey : e.getValue()) {
                         
                         if(logger.isTraceEnabled())
-                            logger.trace(String.format("propertyDraw: %s", propertyDraw.getsID()));
+                            logger.trace(String.format("propertyDraw: %s", propertyDraw.getSID()));
                         
                         propKeys.add(deserializePropertyKeys(propertyDraw, bkey), propValue);
                     }
@@ -494,7 +491,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 Object result = form.calculateSum(propertyDraw, keys);
                 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getsID(), result));
+                    logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
                 }
                 
                 return result;
@@ -719,7 +716,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {
@@ -748,7 +745,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 form.executeEditAction(propertyDraw, actionSID, keys, stack);
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {

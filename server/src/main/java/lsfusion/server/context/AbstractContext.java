@@ -216,7 +216,7 @@ public abstract class AbstractContext implements Context {
             result.append("|");
             for (int j = 0; j < cCount; ++j) {
                 String cellText = rowData.get(j);
-                result.append(padLeft(cellText, columnWidths[j])).append("|");
+                result.append(padLeft(cellText == null ? "" : cellText, columnWidths[j])).append("|");
             }
             result.append("\n");
             if (i == 0) {

@@ -20,7 +20,7 @@ public class ReportDialog extends JDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         ReportGenerator report = new ReportGenerator(generationData);
-        JasperPrint print = report.createReport(false, null);
+        JasperPrint print = report.createReport();
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 

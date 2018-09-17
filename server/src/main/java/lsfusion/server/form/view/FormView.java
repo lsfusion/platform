@@ -557,21 +557,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         this.caption = caption;
     }
 
-    public void setEnabled(boolean enabled, GroupObjectEntity groupObject) {
-        setFocusable(enabled, groupObject);
-        entity.setEditType(PropertyEditType.getReadonlyType(!enabled), groupObject);
-    }
-
-    public void setEnabled(ObjectEntity objectEntity, boolean enabled) {
-        setFocusable(objectEntity, enabled);
-        entity.setEditType(objectEntity, PropertyEditType.getReadonlyType(!enabled));
-    }
-
-    public void setEnabled(PropertyDrawView property, boolean enabled) {
-        setFocusable(property, enabled);
-        entity.setEditType(property.entity, PropertyEditType.getReadonlyType(!enabled));
-    }
-
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {
         property.changeKey = keyStroke;
     }

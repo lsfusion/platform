@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -120,9 +121,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP formPageCount;
     public LCP exportFile;
     public LCP exportFiles;
+    public LCP importFile;
+    public LCP importFiles;
     public LCP readFile;
 
-    public LCP imported;
+    public LCP<?> imported;
     public LCP importedString;
 
     public LCP defaultBackgroundColor;
@@ -410,6 +413,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         formPageCount = findProperty("formPageCount[]");
         exportFile = findProperty("exportFile[]");
         exportFiles = findProperty("exportFiles[VARSTRING[100]]");
+        importFile = findProperty("importFile[]");
+        importFiles = findProperty("importFiles[VARSTRING[100]]");
         readFile = findProperty("readFile[]");
 
         imported = findProperty("imported[INTEGER]");
@@ -670,7 +675,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public LAP getFormNavigatorAction(FormEntity form) {
-        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
+        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.<ObjectEntity>EMPTYORDER(), false, WindowFormType.DOCKED, true);
 
         String contextPrefix = getFormPrefix(form);
         String name = "_NAVIGATORFORM" + contextPrefix;

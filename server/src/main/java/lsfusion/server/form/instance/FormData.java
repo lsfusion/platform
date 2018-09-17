@@ -31,14 +31,14 @@ public class FormData {
         ImSet<ObjectInstance> objects = firstRow.keys.keys();
         outStream.writeInt(objects.size());
         for(ObjectInstance object : objects) {
-            outStream.writeUTF(object.getsID());
+            outStream.writeUTF(object.getSID());
             outStream.writeInt(object.getID());
         }
 
         ImSet<PropertyDrawInstance> properties = firstRow.values.keys();
         outStream.writeInt(properties.size());
         for(PropertyDrawInstance propertyView : properties) {
-            outStream.writeUTF(propertyView.getsID());
+            outStream.writeUTF(propertyView.getSID());
             outStream.writeInt(propertyView.getID());
         }
 

@@ -12,5 +12,5 @@ public interface PropertyObjectInterfaceEntity extends OrderEntity<PropertyObjec
 
     AndClassSet getAndClassSet();
 
-    ObjectValue getObjectValue(ImMap<ObjectEntity, ObjectValue> mapObjects);
+    ObjectValue getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects);
 }

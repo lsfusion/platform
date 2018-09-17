@@ -257,7 +257,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         noExclusive = noExclusive || Settings.get().isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
-                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapOrder(query.properties) : SetFact.<Expr>EMPTYORDER());
+                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.<Expr>EMPTYORDER());
         boolean union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             ImMap<V, Type> castTypes = BaseUtils.immutableCast(
@@ -1728,7 +1728,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         ImMap<K, Expr> compiledKeys = keyEqualTranslator.translate(mapKeys);
 
         MCol<String> mWhereSelect = ListFact.mCol();
-        compile.fillInnerJoins(mBaseCost, mOptAdjustLimit, mRows, mWhereSelect, limit, orders.mapOrder(compiledProps), pushPrefix(debugInfoWriter, "STATS"));
+        compile.fillInnerJoins(mBaseCost, mOptAdjustLimit, mRows, mWhereSelect, limit, orders.mapList(compiledProps).toOrderSet(), pushPrefix(debugInfoWriter, "STATS"));
         resultProperty.set(compiledProps.mapValues(compile.<Expr>GETEXPRSOURCE()));
         resultKey.set(compiledKeys.mapValues(compile.<Expr>GETEXPRSOURCE()));
 

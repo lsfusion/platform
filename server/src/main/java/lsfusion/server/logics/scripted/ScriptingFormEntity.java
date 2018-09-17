@@ -342,7 +342,11 @@ public class ScriptingFormEntity {
 
             movePropertyDraw(propertyDraw, propertyOptions, version);
 
-            setFinalPropertyDrawSID(propertyDraw, alias);
+            try {
+                form.setFinalPropertyDrawSID(propertyDraw, alias);
+            } catch (FormEntity.AlreadyDefined alreadyDefined) {
+                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
+            }
         }
     }
 
@@ -493,18 +497,6 @@ public class ScriptingFormEntity {
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));
-    }
-
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws ScriptingErrorLog.SemanticErrorException {
-        String newSID = (alias == null ? property.getSID() : alias);
-        property.setSID(null);
-        PropertyDrawEntity drawEntity;
-        if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
-            LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
-        }
-        property.setSID(newSID);
-        
-        property.setShortSID(alias == null ? property.getShortSID() : alias);
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

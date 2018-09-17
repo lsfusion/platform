@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project name="lsFusion Build Utils">
+    <target name="recursiveCompile">
+        <exec dir="${basedir}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <arg value="--also-make" />
+            <arg value="--projects" />
+            <arg value=":${artifactId}" />
+            <arg value="compile" />
+        </exec>
+    </target>
+
+    <!-- ============================================================================= -->
+
+    <target name="base-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="base"/>
+        </antcall>
+    </target>
+
+    <target name="logics-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="logics"/>
+        </antcall>
+    </target>
+
+    <target name="api-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="api"/>
+        </antcall>
+    </target>
+
+    <target name="report-api-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="report-api"/>
+        </antcall>
+    </target>
+
+    <target name="desktop-client-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="desktop-client"/>
+        </antcall>
+    </target>
+
+    <target name="server-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="server"/>
+        </antcall>
+    </target>
+
+    <target name="web-api-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="web-api"/>
+        </antcall>
+    </target>
+
+    <target name="web-client-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="web-client"/>
+        </antcall>
+    </target>
+</project>

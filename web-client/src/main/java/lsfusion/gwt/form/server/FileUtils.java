@@ -20,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 
 public class FileUtils {
     public static String APP_FOLDER_URL;
@@ -152,7 +151,7 @@ public class FileUtils {
             if (type != null && type.isExcel()) {
                 report = ReportGenerator.exportToExcelByteArray(reportData, type);
             } else {
-                report = JasperExportManager.exportReportToPdf(generator.createReport(false, null));
+                report = JasperExportManager.exportReportToPdf(generator.createReport());
             }
             String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + (type != null ? type.getExtension() : "pdf");
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
@@ -162,8 +161,7 @@ public class FileUtils {
             fos.close();
             return fileName;
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 }

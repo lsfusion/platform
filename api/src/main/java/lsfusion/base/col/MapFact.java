@@ -295,21 +295,28 @@ public class MapFact {
     // MUTABLE
 
     public static <K, V> ImOrderMap<K, ImSet<V>> immutable(MOrderExclMap<K, MSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues(new GetValue<ImSet<V>, MSet<V>>() { // некрасиво конечно, но что поделаешь
+        return mMap.immutableOrder().mapOrderValues(new GetValue<ImSet<V>, MSet<V>>() {
             public ImSet<V> getMapValue(MSet<V> value) {
                 return value.immutable();
             }});
     }
 
     public static <K, V> ImOrderMap<K, ImOrderSet<V>> immutableOrder(MOrderExclMap<K, MOrderExclSet<V>> mMap) {
-        return mMap.immutableOrder().mapOrderValues(new GetValue<ImOrderSet<V>, MOrderExclSet<V>>() { // некрасиво конечно, но что поделаешь
+        return mMap.immutableOrder().mapOrderValues(new GetValue<ImOrderSet<V>, MOrderExclSet<V>>() {
+            public ImOrderSet<V> getMapValue(MOrderExclSet<V> value) {
+                return value.immutableOrder();
+            }});
+    }
+
+    public static <K, V> ImMap<K, ImOrderSet<V>> immutableMapOrder(MExclMap<K, MOrderExclSet<V>> mMap) {
+        return mMap.immutable().mapValues(new GetValue<ImOrderSet<V>, MOrderExclSet<V>>() {
             public ImOrderSet<V> getMapValue(MOrderExclSet<V> value) {
                 return value.immutableOrder();
             }});
     }
 
     public static <K, V> ImMap<K, ImList<V>> immutableList(MExclMap<K, MList<V>> mMap) {
-        return mMap.immutable().mapValues(new GetValue<ImList<V>, MList<V>>() { // некрасиво конечно, но что поделаешь
+        return mMap.immutable().mapValues(new GetValue<ImList<V>, MList<V>>() {
             public ImList<V> getMapValue(MList<V> value) {
                 return value.immutableList();
             }});
@@ -332,6 +339,13 @@ public class MapFact {
     public static <K, V> ImMap<K, ImSet<V>> immutableMap(MExclMap<K, MSet<V>> mMap) {
         return mMap.immutable().mapValues(new GetValue<ImSet<V>, MSet<V>>() {
             public ImSet<V> getMapValue(MSet<V> value) {
+                return value.immutable();
+            }});
+    }
+
+    public static <K, V, M> ImMap<K, ImMap<V, M>> immutableMapExclMap(MExclMap<K, MExclMap<V, M>> mMap) {
+        return mMap.immutable().mapValues(new GetValue<ImMap<V, M>, MExclMap<V, M>>() {
+            public ImMap<V, M> getMapValue(MExclMap<V, M> value) {
                 return value.immutable();
             }});
     }

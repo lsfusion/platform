@@ -67,7 +67,7 @@ public class FormInteractiveActionProperty<O extends ObjectSelector> extends For
 
     public FormInteractiveActionProperty(LocalizedString caption,
                                          FormSelector<O> form,
-                                         final List<O> objectsToSet, final List<Boolean> nulls,
+                                         final ImList<O> objectsToSet, final ImList<Boolean> nulls,
                                          ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls,
                                          ImList<O> contextObjects, ImList<CalcProperty> contextProperties,
                                          ManageSessionType manageSession,

@@ -2,11 +2,10 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.Pair;
 import lsfusion.base.SFunctionSet;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
@@ -18,7 +17,6 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
-import java.util.List;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public abstract class FormActionProperty<O extends ObjectSelector> extends SystemExplicitActionProperty {
@@ -26,7 +24,7 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
     public final FormSelector<O> form;
     public final ImRevMap<O, ClassPropertyInterface> mapObjects;
 
-    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, List<O> objects, Property... extraProps) {
+    private static <O extends ObjectSelector> ValueClass[] getValueClasses(FormSelector<O> form, ImList<O> objects, Property... extraProps) {
         int extraPropInterfaces = 0;
         for(Property extraProp : extraProps)
             if(extraProp != null)
@@ -67,8 +65,8 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
     //getProperties привязаны к форме, содержащей свойство...
     public FormActionProperty(LocalizedString caption,
                               FormSelector<O> form,
-                              final List<O> objectsToSet,
-                              final List<Boolean> nulls, boolean extraNotNull,
+                              final ImList<O> objectsToSet,
+                              final ImList<Boolean> nulls, boolean extraNotNull,
                               Property... extraProps) {
         super(caption, getValueClasses(form, objectsToSet, extraProps));
 
@@ -108,5 +106,15 @@ public abstract class FormActionProperty<O extends ObjectSelector> extends Syste
     @Override
     protected boolean isSync() {
         return true; // тут сложно посчитать что изменяется, поэтому пока просто считаем синхронным, чтобы не компилировался FOR
+    }
+
+    @IdentityLazy
+    @Override    
+    protected ImSet<ClassPropertyInterface> getNoClassesInterfaces() {
+        return mapObjects.filterFnRev(new SFunctionSet<O>() {
+            public boolean contains(O element) {
+                return element.noClasses();
+            }
+        }).valuesSet();
     }
 }

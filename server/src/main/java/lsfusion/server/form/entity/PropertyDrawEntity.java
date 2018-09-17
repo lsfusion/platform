@@ -9,11 +9,13 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ClassViewType;
-import lsfusion.interop.Compare;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.PropertyReadType;
+import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.ViewPropertySecurityPolicy;
 import lsfusion.server.classes.CustomClass;
@@ -82,14 +84,34 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyFooter;
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
+
+    public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
     
     public AbstractGroup group;
 
     public boolean attr;
 
     public PropertyDrawEntity quickFilterProperty;
+    
+    private abstract class PropertyDrawReader implements PropertyReaderEntity {
 
-    public final PropertyReaderEntity captionReader = new PropertyReaderEntity() {
+        public Type getType() {
+            return getPropertyObjectEntity().getType();
+        }
+
+        protected abstract String getReportSuffix();
+
+        public String getReportSID() {
+            return PropertyDrawEntity.this.getReportSID() + getReportSuffix();
+        }
+
+        @Override
+        public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
+            return PropertyDrawEntity.this.getColumnGroupObjects();
+        }
+    }
+
+    public final PropertyReaderEntity captionReader = new PropertyDrawReader() {
         @Override
         public byte getTypeID() {
             return PropertyReadType.CAPTION;
@@ -98,6 +120,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         @Override
         public int getID() {
             return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
         }
 
         @Override
@@ -111,13 +138,28 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
+        public Type getType() {
+            return PropertyDrawEntity.this.propertyCaption.getType();
+        }
+
+        @Override
+        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+            return PropertyDrawEntity.this.propertyCaption;
+        }
+
+        @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.property.caption}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+
+        @Override
+        protected String getReportSuffix() {
+            return ReportConstants.headerSuffix;
         }
     };
     
     
-    public final PropertyReaderEntity footerReader = new PropertyReaderEntity() {
+    public final PropertyReaderEntity footerReader = new PropertyDrawReader() {
         @Override
         public byte getTypeID() {
             return PropertyReadType.FOOTER;
@@ -126,6 +168,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         @Override
         public int getID() {
             return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
         }
 
         @Override
@@ -139,13 +186,23 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
+        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+            return PropertyDrawEntity.this.propertyFooter;
+        }
+
+        @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+
+        @Override
+        protected String getReportSuffix() {
+            return ReportConstants.footerSuffix;
         }
     };
 
 
-    public final PropertyReaderEntity showIfReader = new PropertyReaderEntity() {
+    public final PropertyReaderEntity showIfReader = new PropertyDrawReader() {
         @Override
         public byte getTypeID() {
             return PropertyReadType.SHOWIF;
@@ -154,6 +211,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         @Override
         public int getID() {
             return PropertyDrawEntity.this.getID();
+        }
+
+        @Override
+        public String getSID() {
+            return PropertyDrawEntity.this.getSID();
         }
 
         @Override
@@ -167,8 +229,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
+        public CalcPropertyObjectEntity getPropertyObjectEntity() {
+            return PropertyDrawEntity.this.propertyShowIf;
+        }
+
+        @Override
         public String toString() {
             return "SHOWIF" + "(" + PropertyDrawEntity.this.toString() + ")";
+        }
+
+        @Override
+        protected String getReportSuffix() {
+            return ReportConstants.showIfSuffix;
         }
     };
 
@@ -190,11 +262,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean isCalcProperty() {
         return getValueProperty() instanceof CalcPropertyObjectEntity;
     }
-    
-    public boolean isNoParamCalcProperty() {
-        return isCalcProperty() && getValueProperty().property.getInterfaceCount() == 0;
-    }
-    
+
     public OrderEntity<?> getOrder() {
         return (CalcPropertyObjectEntity<?>) getValueProperty();
     }
@@ -450,11 +518,27 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form) {
-        return form.getApplyObject(getObjectInstances());        
+        return getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY());        
     }
-    
+    public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return form.getApplyObject(getObjectInstances(), excludeGroupObjects);
+    }
+
     public ImSet<ObjectEntity> getObjectInstances() {
-        return getValueProperty().getSetObjectInstances();
+        MAddSet<PropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
+        if(propertyCaption != null)
+            propertyObjects.add(propertyCaption);
+        if(propertyFooter != null)
+            propertyObjects.add(propertyFooter);
+        if(propertyShowIf != null)
+            propertyObjects.add(propertyShowIf);
+        MSet<ObjectEntity> mObjects = SetFact.mSet();
+        for(int i=0,size=propertyObjects.size();i<size;i++)
+            mObjects.addAll(propertyObjects.get(i).getObjectInstances());
+        mObjects.addAll(getValueProperty().getObjectInstances());
+        if(applyObject != null)
+            mObjects.add(applyObject);
+        return mObjects.immutable();
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
@@ -552,14 +636,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         policy.deny(getSecurityProperty());
     }
 
-    public String shortSID;
+    public String integrationSID;
 
-    public void setShortSID(String shortSID) {
-        this.shortSID = shortSID;
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
     }
 
-    public String getShortSID() {
-        return shortSID;
+    public String getIntegrationSID() {
+        return integrationSID;
     }
     
     public CalcPropertyObjectEntity getImportProperty() {
@@ -569,6 +653,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     // for getExpr, getType purposes
     public PropertyObjectEntity<?, ?> getValueProperty() {
         return propertyObject;
+    }
+
+    @Override
+    public CalcPropertyObjectEntity getPropertyObjectEntity() {
+        return (CalcPropertyObjectEntity) getValueProperty();
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism
@@ -586,5 +675,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
     public PropertyObjectEntity getDebugProperty() {
         return propertyObject;
+    }
+
+    @Override
+    public String getReportSID() {
+        return getSID();
     }
 }
