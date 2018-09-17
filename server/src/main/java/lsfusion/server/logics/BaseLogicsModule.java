@@ -648,9 +648,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         ValueClass cls = obj.baseClass;
         LCP result = addProp(new ObjectValueProperty(cls, obj));
-        if (formEntity.getCanonicalName() != null) {
-            // issue #47 Потенциальное совпадение канонических имен различных свойств
-            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+        if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
+            String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID(); // issue #47
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;
