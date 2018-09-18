@@ -190,6 +190,10 @@ round4 (number) = round(number, 4);
 round5 (number) = round(number, 5);
 round6 (number) = round(number, 6);
 
+// ---------------------------------- Работа с датами  ---------------------------------- //
+resultMilliseconds 'Дата-время в миллисекундах' = DATA LOCAL LONG();
+toMilliseconds 'Дата-время в миллисекундах' INTERNAL 'lsfusion.utils.utils.ToMillisecondsActionProperty' (DATETIME);
+
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 
 file = DATA LOCAL FILE ();
