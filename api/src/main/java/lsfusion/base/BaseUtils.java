@@ -42,7 +42,7 @@ public class BaseUtils {
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
-    //minHeapFreeRatio + cherry-picks from master
+    //client auto restart in dev mode + numRowHeight option for property
     public static Integer getApiVersion() {
         return 77;
     }
@@ -2206,7 +2206,7 @@ public class BaseUtils {
                 } else {
                     if(!(multiple || storeName))
                         return rawFileData;
-                    fileBytes = rawFileData.getBytes();                    
+                    fileBytes = rawFileData.getBytes();
                 }
 
                 outStream.writeInt(fileBytes.length);
