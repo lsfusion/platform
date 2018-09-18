@@ -52,8 +52,8 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public int getDefaultHeight(FontMetrics fontMetrics) {
-        return fontMetrics.getHeight() + 1;
+    public int getDefaultHeight(FontMetrics fontMetrics, int numRowHeight) {
+        return fontMetrics.getHeight() * numRowHeight + 1;
     }
 
     public PanelView getPanelView(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

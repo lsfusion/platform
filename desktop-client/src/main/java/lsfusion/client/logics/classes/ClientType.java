@@ -46,5 +46,5 @@ public interface ClientType {
 
     int getDefaultWidth(FontMetrics fontMetrics, ClientPropertyDraw property);
 
-    int getDefaultHeight(FontMetrics fontMetrics);    
+    int getDefaultHeight(FontMetrics fontMetrics, int numRowHeight);
 }

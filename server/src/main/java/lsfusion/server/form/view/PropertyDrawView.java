@@ -55,6 +55,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean noSort;
     public Compare defaultCompare;
 
+    private int numRowHeight;
     public Dimension valueSize;
     private int charWidth;
     private Boolean valueFlex;
@@ -232,6 +233,7 @@ public class PropertyDrawView extends ComponentView {
         else
             outStream.writeByte(-1);
 
+        outStream.writeInt(getNumRowHeight());
         outStream.writeInt(getCharWidth());
         pool.writeObject(outStream, getValueSize());
 
@@ -397,6 +399,7 @@ public class PropertyDrawView extends ComponentView {
         noSort = inStream.readBoolean();
         defaultCompare = Compare.deserialize(inStream);
 
+        setNumRowHeight(inStream.readInt());
         setCharWidth(inStream.readInt());
         setValueSize(pool.<Dimension>readObject(inStream));
 
@@ -425,6 +428,14 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public String toString() {
         return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
+    }
+
+    public int getNumRowHeight() {
+        return numRowHeight;
+    }
+
+    public void setNumRowHeight(int numRowHeight) {
+        this.numRowHeight = numRowHeight;
     }
 
     public int getCharWidth() {

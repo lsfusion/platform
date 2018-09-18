@@ -83,6 +83,11 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
             target.valueSize.width = prefWidth;
         }
     }
+
+    public void setNumRowHeight(int numRowHeight) {
+        target.setNumRowHeight(numRowHeight);
+    }
+
     public void setCharWidth(int charWidth) {
         target.setCharWidth(charWidth);
     }
