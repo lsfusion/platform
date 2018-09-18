@@ -16,6 +16,8 @@ dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
 
 currentYear 'Тек. год' = extractYear (currentDate());
 
+currentTimeText() =  [FORMULA TEXT 'to_char(now(),($1))']('YYYYMMDDHH24MISSMS'); 
+
 toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
 toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(DATE date) = DATETIME(date AS DATE);
