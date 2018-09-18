@@ -706,10 +706,10 @@ END
 
 // -- Quantity
 META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity 'Кол-во'###caption = DATA NUMERIC[16,5] (###detail);
+    prefix###quantity 'Кол-во'###caption = DATA NUMERIC[16,5] (###detail) CHARWIDTH 7;
 END
 META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity 'Кол-во'###caption = ABSTRACT NUMERIC[16,5] (###detail) MATERIALIZED;
+    prefix###quantity 'Кол-во'###caption = ABSTRACT NUMERIC[16,5] (###detail) CHARWIDTH 7 MATERIALIZED;
 END
 META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
@@ -750,7 +750,7 @@ END
 // Итоги
 
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum MATERIALIZED;
+    prefix###quantity###detail 'Кол-во (всего)'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum CHARWIDTH 8 MATERIALIZED;
 END
 META defineDocumentInterfaceHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption);
@@ -783,10 +783,10 @@ END
 
 // -- Price
 META defineDocumentDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = DATA NUMERIC[16,4] (###detail);
+    prefix###price 'Цена'###caption = DATA NUMERIC[16,4] (###detail) CHARWIDTH 7;
 END
 META defineDocumentAbstractDetailPriceCustomPrefix (detail, prefix, caption)
-    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[16,4] (###detail) MATERIALIZED;
+    prefix###price 'Цена'###caption = ABSTRACT NUMERIC[16,4] (###detail) CHARWIDTH 7 MATERIALIZED;
 END
 META defineDocumentInterfaceDetailPriceCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailPriceCustomPrefix(detail, prefix, caption);
@@ -826,10 +826,10 @@ END
 
 // -- Sum
 META defineDocumentDetailSumCustom (detail, currencyProp)
-    sum 'Сумма' (###detail detail) = NUMERIC[18,4](round((quantity(detail) * price(detail)), currencyProp(detail)));
+    sum 'Сумма' (###detail detail) = NUMERIC[18,4](round((quantity(detail) * price(detail)), currencyProp(detail))) CHARWIDTH 9;
 END
 META defineDocumentDetailSumCustomRound (detail, roundProp)
-    sum###detail 'Сумма' (detail) = NUMERIC[18,4](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail)));
+    sum###detail 'Сумма' (detail) = NUMERIC[18,4](round((quantity###detail(detail) * price###detail(detail)), roundProp###detail(detail))) CHARWIDTH 9;
 END
 META defineDocumentDetailSumCustom (detail)
     @defineDocumentDetailSumCustom(detail, currency);
@@ -862,10 +862,10 @@ END
 
 //--
 META defineDocumentDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = DATA NUMERIC[18,4] (###detail);
+    prefix###sum 'Сумма'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 9;
 END
 META defineDocumentAbstractDetailDataSumCustomPrefix (detail, prefix, caption)
-    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[18,4] (###detail) MATERIALIZED;
+    prefix###sum 'Сумма'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 9 MATERIALIZED;
 END
 
 META defineDocumentInterfaceDetailDataSumCustomPrefix (detail, prefix, caption)
@@ -911,7 +911,7 @@ END
 
 // Итоги
 META defineDocumentHeaderSumCustom (object, detail, caption)
-    sum###detail 'Сумма'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) IN documentSum;
+    sum###detail 'Сумма'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustom (object, detail, caption)
     @defineDocumentHeaderSumCustom (object, detail, caption);
@@ -935,7 +935,7 @@ META defineDocumentInterfaceHeaderSum (object)
 END
 
 META defineDocumentHeaderSumCustomPrefix (object, detail, prefix, caption)
-    prefix###sum###detail 'Сумма'###caption (object) = GROUP SUM prefix###sum(###detail idetail) BY object(idetail) IN documentSum;
+    prefix###sum###detail 'Сумма'###caption (object) = GROUP SUM prefix###sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum;
 END
 META defineDocumentInterfaceHeaderSumCustomPrefix (object, detail, prefix, caption)
     @defineDocumentHeaderSumCustomPrefix(object, detail, prefix, caption);
@@ -987,10 +987,10 @@ META defineDocumentInterfaceDetailMarkupPrefix (object, prefix, caption)
 END
 
 META defineDocumentDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[18,4] (###detail);
+    prefix###markupSum 'Сумма надбавки'###caption = DATA NUMERIC[18,4] (###detail) CHARWIDTH 8;
 END
 META defineDocumentAbstractDetailMarkupSumCustomPrefix (detail, prefix, caption)
-    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[18,4] (###detail) MATERIALIZED;
+    prefix###markupSum 'Сумма надбавки'###caption = ABSTRACT NUMERIC[18,4] (###detail) CHARWIDTH 8 MATERIALIZED;
 END
 META defineDocumentInterfaceDetailMarkupSumCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailMarkupSumCustomPrefix(detail, prefix, caption);
