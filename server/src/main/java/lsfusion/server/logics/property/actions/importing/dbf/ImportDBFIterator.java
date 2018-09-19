@@ -58,24 +58,28 @@ public class ImportDBFIterator extends ImportIterator {
             if (!record.isDeleted() && !ignoreRow(record, wheresList)) {
                 for (Integer column : sourceColumns) {
                     ValueClass valueClass = properties.get(sourceColumns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
-                    if (valueClass instanceof DateClass) {
-                        Date date = record.getDate(fieldMapping.get(column));
-                        listRow.add(date == null ? null : DateClass.getDateFormat().format(date));
-                    } else if (valueClass instanceof DateTimeClass) {
-                        Date dateTime = record.getDate(fieldMapping.get(column));
-                        listRow.add(dateTime == null ? null : DateTimeClass.getDateTimeFormat().format(dateTime));
-                    } else if (valueClass instanceof LogicalClass) {
-                        Boolean bool = record.getBoolean(fieldMapping.get(column));
-                        listRow.add(bool == null ? null : String.valueOf(bool));
+                    String field = fieldMapping.get(column);
+                    if(field != null) {
+                        if (valueClass instanceof DateClass) {
+                            Date date = record.getDate(field);
+                            listRow.add(date == null ? null : DateClass.getDateFormat().format(date));
+                        } else if (valueClass instanceof DateTimeClass) {
+                            Date dateTime = record.getDate(field);
+                            listRow.add(dateTime == null ? null : DateTimeClass.getDateTimeFormat().format(dateTime));
+                        } else if (valueClass instanceof LogicalClass) {
+                            Boolean bool = record.getBoolean(field);
+                            listRow.add(bool == null ? null : String.valueOf(bool));
+                        } else {
+                            DbfFieldTypeEnum fieldType = record.getField(field).getType();
+                            if (fieldType == DbfFieldTypeEnum.Double) {
+                                Double d = record.getDouble(field);
+                                listRow.add(d == null ? null : String.valueOf(d));
+                            } else if (fieldType == DbfFieldTypeEnum.Memo) {
+                                listRow.add(record.getMemoAsString(field, Charset.forName(charset)));
+                            } else listRow.add(record.getString(field, charset));
+                        }
                     } else {
-                        DbfFieldTypeEnum fieldType = record.getField(fieldMapping.get(column)).getType();
-                        if (fieldType == DbfFieldTypeEnum.Double) {
-                            Double d = record.getDouble(fieldMapping.get(column));
-                            listRow.add(d == null ? null : String.valueOf(d));
-                        } else if (fieldType == DbfFieldTypeEnum.Memo) {
-                            listRow.add(record.getMemoAsString(fieldMapping.get(column), Charset.forName(charset)));
-                        } else
-                            listRow.add(record.getString(fieldMapping.get(column), charset));
+                        listRow.add(null);
                     }
                 }
                 return listRow;
