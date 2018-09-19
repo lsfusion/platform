@@ -85,11 +85,11 @@ public class ExportActionProperty<O extends ObjectSelector> extends FormStaticAc
         
         return group.getParentGroups().filterList(new SFunctionSet<AbstractGroup>() {
             public boolean contains(AbstractGroup element) {
-                return element.system;
+                return !element.system;
             }
         }).mapListValues(new GetValue<String, AbstractGroup>() {
             public String getMapValue(AbstractGroup value) {
-                return null;
+                return value.getName();
             }
         }).toJavaList();        
     }
