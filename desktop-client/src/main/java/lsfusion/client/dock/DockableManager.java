@@ -101,13 +101,16 @@ public class DockableManager {
     }
 
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page;
+        ClientFormDockable page = null;
         if (MainFrame.forbidDuplicateForms && forbidDuplicate && forms.getFormsList().contains(formSID)) {
-            page = (ClientFormDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
-            if(page != null) {
-                page.toFront();
-                page.requestFocusInWindow();
-            }
+            ClientDockable dockable = (ClientDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
+            if (dockable instanceof ClientFormDockable)
+                page = (ClientFormDockable) dockable; 
+        }
+        
+        if(page != null) {
+            page.toFront();
+            page.requestFocusInWindow();
         } else {
             page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
             openForm(page);
