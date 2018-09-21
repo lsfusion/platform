@@ -74,7 +74,9 @@ unzipped 'Разархивированные файлы' = DATA LOCAL FILE (VARS
 makeUnzipFile 'Разархивировать архив'  INTERNAL  'lsfusion.utils.utils.MakeUnzipFileActionProperty' ();
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd 'Выполнить cmd'  INTERNAL  'lsfusion.utils.utils.RunCommandActionProperty' (TEXT);
+cmd 'Выполнить cmd'  INTERNAL  'lsfusion.utils.utils.RunCommandActionProperty' (TEXT, BOOLEAN);
+cmd 'Выполнить cmd' (TEXT command)  {cmd(command, NULL); }
+cmdClient 'Выполнить cmd (на клиенте)' (TEXT command)  {cmd(command, TRUE); }
 
 // ---------------------------------- Работа с файлами Excel  ---------------------------------- //
 protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
