@@ -1,7 +1,6 @@
 package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
-import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
@@ -32,6 +31,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.TableHeaderUI;
+import javax.swing.plaf.basic.BasicTableHeaderUI;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -44,13 +45,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.String.valueOf;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.SwingUtils.paintRightBottomCornerTriangle;
 import static lsfusion.client.form.ClientFormController.PasteData;
 
 public class GridTable extends ClientPropertyTable {
@@ -209,7 +211,23 @@ public class GridTable extends ClientPropertyTable {
 
         };
 
-        getTableHeader().setUI(new GridTableHeaderUI());
+        TableHeaderUI ui = getTableHeader().getUI();
+        if (ui instanceof BasicTableHeaderUI) {
+            try {
+                // change default CellRendererPane to draw corner triangles
+                Field rendererPaneField = BasicTableHeaderUI.class.getDeclaredField("rendererPane");
+                rendererPaneField.setAccessible(true);
+                GridCellRendererPane newRendererPane = new GridCellRendererPane();
+                rendererPaneField.set(ui, newRendererPane);
+
+                Field headerField = BasicTableHeaderUI.class.getDeclaredField("header");
+                headerField.setAccessible(true);
+                JTableHeader header = (JTableHeader) headerField.get(ui);
+                header.removeAll();
+                header.add(newRendererPane);
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {
+            }
+        }
 
         tableHeader.addMouseListener(sortableHeaderManager);
 
@@ -1842,32 +1860,22 @@ public class GridTable extends ClientPropertyTable {
         }
     }
 
-    private class GridTableHeaderUI extends WindowsTableHeaderUI {
+    private class GridCellRendererPane extends CellRendererPane {
         @Override
-        public void installUI(JComponent c) {
-            super.installUI(c);
+        public void paintComponent(Graphics g, Component c, Container p, int x, int y, int w, int h, boolean shouldValidate) {
+            super.paintComponent(g, c, p, x, y, w, h, shouldValidate);
 
-            header.remove(rendererPane);
-            rendererPane = new CellRendererPane() {
-                @Override
-                public void paintComponent(Graphics g, Component c, Container p, int x, int y, int w, int h, boolean shouldValidate) {
-                    super.paintComponent(g, c, p, x, y, w, h, shouldValidate);
+            int index = columnModel.getColumnIndexAtX(x);
+            if (index >= 0) {
+                int modelIndex = columnModel.getColumn(index).getModelIndex();
 
-                    int index = columnModel.getColumnIndexAtX(x);
-                    if (index == -1) {
-                        return;
-                    }
-                    int modelIndex = columnModel.getColumn(index).getModelIndex();
-
-                    ClientPropertyDraw property = model.getColumnProperty(modelIndex);
-                    if (property.notNull) {
-                        SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 2, -3, w, h); // -2/-3 - не залазим на границы
-                    } else if (property.hasChangeAction) {
-                        SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
-                    }
+                ClientPropertyDraw property = model.getColumnProperty(modelIndex);
+                if (property.notNull) {
+                    paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 2, -3, w, h); // -2/-3 - не залазим на границы
+                } else if (property.hasChangeAction) {
+                    paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
                 }
-            };
-            header.add(rendererPane);
+            }
         }
     }
 
