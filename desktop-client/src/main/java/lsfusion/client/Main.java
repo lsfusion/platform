@@ -19,9 +19,12 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
+import sun.awt.OSInfo;
+import sun.awt.SunToolkit;
+import sun.security.action.GetPropertyAction;
 
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,10 +38,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
+import java.security.AccessController;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.*;
@@ -410,11 +414,27 @@ public class Main {
         ToolTipManager.sharedInstance().setReshowDelay(0);
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel(getSystemLookAndFeelClassName());
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
         // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
         new RichEditorPane();
+    }
+
+    public static String getSystemLookAndFeelClassName() {
+        String systemLAF = AccessController.doPrivileged(new GetPropertyAction("swing.systemlaf"));
+        if (systemLAF != null) {
+            return systemLAF;
+        }
+        if (AccessController.doPrivileged(OSInfo.getOSTypeAction()) != OSInfo.OSType.WINDOWS) {
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            // for non-gnome linux environments
+            if (toolkit instanceof SunToolkit && ((SunToolkit) toolkit).isNativeGTKAvailable()) {
+                return "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+            }
+        }
+
+        return UIManager.getSystemLookAndFeelClassName();
     }
 
     public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
