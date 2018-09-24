@@ -47,9 +47,9 @@ DESIGN computersDialog { BOX { size = (1024, 768); }}
 CLASS ABSTRACT Contact 'Контакт';
 TABLE contact (Contact);
 
-firstName 'Имя' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
-lastName 'Фамилия' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
-name 'Имя' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id;
+firstName '{authentication.first.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
+lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
+name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id;
 
 phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
 postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
@@ -71,10 +71,10 @@ TABLE loginSID (STRING[30], STRING[30]);
 currentUser = NATIVE User ();
 currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
 
-name 'Имя пользователя' (User user) = IF user IS SystemUser 
-                        THEN 'Системный пользователь'
-                        ELSE name[Contact](user);
-name 'Имя пользователя' (CustomUser user) = name[User](user AS CustomUser);
+name '{authentication.name.user}' (User user) = IF user IS SystemUser 
+                        THEN VARSTRING[100]('{authentication.name.user.system}')
+                        ELSE name[Contact](user) CHARWIDTH 10;
+name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
