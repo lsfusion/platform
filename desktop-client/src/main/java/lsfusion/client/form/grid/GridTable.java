@@ -145,12 +145,12 @@ public class GridTable extends ClientPropertyTable {
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel(), iform);
 
-        tableHeader = new GridTableHeader(columnModel) {
+        setTableHeader(new GridTableHeader(columnModel) {
             @Override
             public Dimension getPreferredSize() {
                 return new Dimension(columnModel.getTotalColumnWidth(), getHeaderHeight());
             }
-        };
+        });
 
         gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
