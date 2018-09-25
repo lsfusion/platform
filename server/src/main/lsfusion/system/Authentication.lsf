@@ -44,27 +44,27 @@ DESIGN computersDialog { BOX { size = (1024, 768); }}
 
 // -------------------------- Пользователи ---------------------------- //
 
-CLASS ABSTRACT Contact 'Контакт';
+CLASS ABSTRACT Contact '{authentication.contact}';
 TABLE contact (Contact);
 
 firstName '{authentication.first.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
-lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
+lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 15 IN base;
 name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id;
 
 phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
 postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
 birthday 'День рождения' = DATA DATE (Contact);
 
-email 'E-mail'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>Неверный формат e-mail</html>';
+email '{authentication.email.contact}'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>Неверный формат e-mail</html>';
 contact (email) = GROUP MAX Contact contact BY email(contact);
 
 
-CLASS ABSTRACT User 'Пользователь';
+CLASS ABSTRACT User '{authentication.user}';
 TABLE user (User);
 
-CLASS SystemUser 'Системный пользователь' : User;
+CLASS SystemUser '{authentication.system.user}' : User;
 
-CLASS CustomUser 'Обычный пользователь' : User, Contact;
+CLASS CustomUser '{authentication.custom.user}' : User, Contact;
 TABLE customUser (CustomUser);
 TABLE loginSID (STRING[30], STRING[30]);
 
@@ -72,7 +72,7 @@ currentUser = NATIVE User ();
 currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
 
 name '{authentication.name.user}' (User user) = IF user IS SystemUser 
-                        THEN VARSTRING[100]('{authentication.name.user.system}')
+                        THEN VARSTRING[100]('{authentication.system.user}')
                         ELSE name[Contact](user) CHARWIDTH 10;
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
@@ -80,7 +80,7 @@ currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
 
 isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
-login 'Логин' = DATA STRING[30] (CustomUser);
+login '{authentication.login}' = DATA STRING[30] (CustomUser);
 currentUserLogin 'Логин Тек. Польз.' () = login[CustomUser](currentUser());
 allowExcessAllocatedBytes 'Разрешено превышение allocated bytes' = DATA BOOLEAN (CustomUser);
 currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login[CustomUser](currentUser()) == 'admin';
@@ -110,7 +110,7 @@ restart 'Выйти'  {
     logOut(TRUE, NULL);
 }
 
-relogin 'Сменить пользователя'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
+relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
 generateLoginPassword 'Сгенерировать логин и пароль'  INTERNAL  'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
@@ -179,17 +179,17 @@ unlock(Object object)  {
 
 changeSHA256Password(CustomUser customUser)  { 
     INPUT st=STRING[30] DO {
-        EXEC calculateBase64Hash('SHA-256', st);
+        calculateBase64Hash('SHA-256', st);
         sha256Password(customUser) <- calculatedHash();
     }
 }
 
-FORM customUser 'Пользователь'
+FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) firstName, lastName, login,
-    sha256Password ON CHANGE changeSHA256Password(u), email,
-    isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
-    allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
+                  sha256Password ON CHANGE changeSHA256Password(u), email,
+                  isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
+                  allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
 
     EDIT CustomUser OBJECT u
 ;
@@ -208,73 +208,72 @@ DESIGN customUser {
     }
 }
 
-edit 'Редактировать' (CustomUser u)  { 
-	NEWSESSION {
-        SHOW customUser OBJECTS u = u DOCKED;
-	}
-} IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
-
-FORM customUsers 'Пользователи'
+FORM customUsers '{authentication.users}'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
                   timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
-                  lastActivity, hostnameLastComputer, NEW, edit , DELETE 
+                  lastActivity, hostnameLastComputer, NEW, EDIT, DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
 ;
 
-FORM customUsersDialog 'Пользователи'
+FORM customUsersDialog '{authentication.users}'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
 
     LIST CustomUser OBJECT u
 ;
 
-DESIGN customUsersDialog { BOX { size = (1024, 768); }}
+DESIGN customUsersDialog { BOX { size = (1024, 768); } }
 
 FORM editProfile '{navigator.account.edit.profile}' IMAGE '/images/editReport.png'
-    OBJECTS u=CustomUser PANEL
+    OBJECTS u = CustomUser PANEL
     PROPERTIES(u) login READONLY
-    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email, useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
+    PROPERTIES(u) READONLYIF forbidEditProfile(u) firstName, lastName, email
 
-    FILTERS u==currentUser()
+    FILTERS u = currentUser()
 ;
 
 DESIGN editProfile {
-    BOX {
-        type = CONTAINERH;
+    GROUP(,u) {
+        type = CONTAINERV;
+        PROPERTY(login(u)) { fontSize = 36; }
+        PROPERTY(firstName(u)) { fontSize = 36; }
+        PROPERTY(lastName(u)) { fontSize = 36; }
+        PROPERTY(email(u)) { fontSize = 36; }
     }
 }
 
-// ---------------- Действия по изменению пользователя ------------------- //
+// ---------------- Relogin ------------------- //
 
 userChanged() = DATA LOCAL BOOLEAN();
 
-// Смена пользователя по логину и паролю
-FORM reloginLoginUser 'Сменить пользователя'
-    OBJECTS data = (login = STRING[30], password = STRING[30]) PANEL
+// change by login and password
+FORM reloginLoginUser '{authentication.relogin}'
+    OBJECTS data = (login = STRING[30], password = STRING[30])  PANEL
     PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
 ;
 
 DESIGN reloginLoginUser {
-    BOX {
-        BOX(data) {
-            caption = 'Смена пользователя';
+    BOX(data) {
+        caption = '';
+        GROUP(, data) {
+            type = CONTAINERV;
             PROPERTY(valueLogin){
-                caption = 'Логин';
-                font = 'Tahoma 36';
+                caption = '{authentication.login}';
+                fontSize = 36;
             }
             PROPERTY(valuePassword){
-                caption = 'Пароль';
+                caption = '{authentication.password}';
                 echoSymbols = TRUE;
-                font = 'Tahoma 36';
+                fontSize = 36;
             }
         }
-        REMOVE TOOLBARLEFT;
-        REMOVE PROPERTY(formRefresh());
     }
+    REMOVE TOOLBARLEFT;
+    REMOVE PROPERTY(formRefresh());
 }
 
 reloginLoginUser()  { 
@@ -283,129 +282,126 @@ reloginLoginUser()  {
         user() <- customUser(login);
         IF user() THEN {
             IF isLocked(user()) THEN {
-                MESSAGE 'Данный пользователь заблокирован';
+                MESSAGE '{authentication.relogin.user.locked}';
             } ELSE {
-                EXEC calculateBase64Hash('SHA-256', password);
+                calculateBase64Hash('SHA-256', password);
                 IF sha256Password(user()) == calculatedHash() THEN {
-                    EXEC relogin(user());
+                    relogin(user());
                     IF userChanged() THEN {
-                        MESSAGE 'Пользователь изменён';
+                        MESSAGE '{authentication.relogin.user.changed}';
                     }
                 } ELSE {
-                    MESSAGE 'Неверный пароль (хэш)';
+                    MESSAGE '{authentication.relogin.user.incorrect.password}';
                 }
             }
         } ELSE {
-            MESSAGE 'Пользователь не найден';
+            MESSAGE '{authentication.relogin.user.not.found}';
         }
     }
-    apply();
+    APPLY;
 }
 
-// Смена пользователя по паролю
-FORM reloginPasswordUser 'Сменить пользователя'
+// Change by password
+FORM reloginPasswordUser '{authentication.relogin}'
     OBJECTS password = STRING[30] PANEL
     PROPERTIES valuePassword = VALUE(password)
 ;
 
 DESIGN reloginPasswordUser {
-    BOX {
-        BOX(password) {
-            caption = 'Смена пользователя';
-            PROPERTY(valuePassword){
-                caption = 'Пароль';
-                font = 'Tahoma 36';
-            }
+    BOX(password) {
+        caption = '';
+        PROPERTY(valuePassword){
+            caption = '{authentication.password}';
+            fontSize = 36;
         }
-        REMOVE TOOLBARLEFT;
-        REMOVE PROPERTY(formRefresh());
     }
+    REMOVE TOOLBARLEFT;
+    REMOVE PROPERTY(formRefresh());
 }
 
 reloginPassword(CustomUser customUser)  { 
     DIALOG reloginPasswordUser OBJECTS password INPUT DO {
         IF isLocked(customUser) THEN {
-            MESSAGE 'Данный пользователь заблокирован';
+            MESSAGE '{authentication.relogin.user.locked}';
         }  ELSE {
-                EXEC calculateBase64Hash('SHA-256', password);
+                calculateBase64Hash('SHA-256', password);
                 IF sha256Password(customUser)==calculatedHash() THEN {
-                    EXEC relogin(customUser);
+                    relogin(customUser);
                     IF userChanged() THEN {
-                        MESSAGE 'Пользователь изменён';
+                        MESSAGE '{authentication.relogin.user.changed}';
                     }
                 } ELSE {
-                    MESSAGE 'Неверный пароль (хэш)';
+                    MESSAGE '{authentication.relogin.user.incorrect.password}';
                 }
         }
     }
 }
 
-// ---------------- Действия по изменению даннных пользователя ------------------- //
+// ---------------- Change password ------------------- //
 
-FORM changePasswordUser 'Сменить пароль'
+FORM changePasswordUser '{authentication.change.password}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) READONLY login
 
     OBJECTS passwords = (old = STRING[30], new1 = STRING[30], new2 = STRING[30]) PANEL
     PROPERTIES valueOld = VALUE(old), valueNew1 = VALUE(new1), valueNew2 = VALUE(new2)
 
-    FILTERS u==currentUser()
+    FILTERS u = currentUser()
 ;
 
 DESIGN changePasswordUser {
-    BOX {
-        BOX(passwords) {
-            MOVE PROPERTY(login(u)) FIRST {
-               font = 'Tahoma 36';
-            };
-            PROPERTY(valueOld){
-                caption = 'Старый пароль';
-                echoSymbols = TRUE;
-                font = 'Tahoma 36';
+    OBJECTS {
+        NEW changePassword {
+            MOVE PROPERTY(login(u)) {
+                fontSize = 36;
             }
-            PROPERTY(valueNew1){
-                caption = 'Новый пароль';
+            MOVE PROPERTY(valueOld){
+                caption = '{authentication.change.password.old}';
                 echoSymbols = TRUE;
-                font = 'Tahoma 36';
+                fontSize = 36;
             }
-            PROPERTY(valueNew2){
-                caption = 'Повторите новый пароль';
+            MOVE PROPERTY(valueNew1){
+                caption = '{authentication.change.password.new}';
                 echoSymbols = TRUE;
-                font = 'Tahoma 36';
+                fontSize = 36;
+            }
+            MOVE PROPERTY(valueNew2){
+                caption = '{authentication.change.password.repeat}';
+                echoSymbols = TRUE;
+                fontSize = 36;
             }
         }
-        REMOVE TOOLBARLEFT;
-        REMOVE PROPERTY(formRefresh());
     }
+    REMOVE TOOLBARLEFT;
+    REMOVE PROPERTY(formRefresh());
 }
 
 changePassword(CustomUser customUser)  { 
     DIALOG changePasswordUser OBJECTS old INPUT, new1 INPUT,new2 INPUT DO {
-            EXEC calculateBase64Hash('SHA-256', old);
-            IF  calculatedHash() != sha256Password(customUser) THEN {
-                MESSAGE 'Неверный старый пароль (хэш)';
-                BREAK;
-            }
-
-        IF new1 != new2 THEN {
-            MESSAGE 'Введённые пароли не совпадают';
+        calculateBase64Hash('SHA-256', old);
+        IF calculatedHash() != sha256Password(customUser) THEN {
+            MESSAGE '{authentication.change.password.incorrect.old}';
             BREAK;
         }
-        //passwordCustomUser(customUser) <- chosenString('new1');
-        EXEC calculateBase64Hash('SHA-256', new1);
-        sha256Password(customUser) <- calculatedHash();
-        MESSAGE 'Пароль изменён';
+
+        IF new1 != new2 THEN {
+            MESSAGE '{authentication.change.password.do.not.match}';
+            BREAK;
         }
+        calculateBase64Hash('SHA-256', new1);
+        sha256Password(customUser) <- calculatedHash();
+        APPLY;
+        IF NOT canceled() THEN
+            MESSAGE '{authentication.change.password.complete}';
+    }
 }
 
-changePassword()  { 
-      IF forbidChangePassword(currentUser()) THEN {
-        MESSAGE 'Вы не можете изменить свой пароль';
-      }
-      ELSE {
-            EXEC changePassword(currentUser());
-      }
-      apply();
+changePassword () { 
+    IF forbidChangePassword(currentUser()) THEN {
+        MESSAGE '{authentication.change.password.forbidden}';
+    } ELSE {
+        changePassword(currentUser());
+    }
 }
 
 NAVIGATOR {
