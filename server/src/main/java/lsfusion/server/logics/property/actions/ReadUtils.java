@@ -203,7 +203,7 @@ public class ReadUtils {
                 boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
                 outputStream.close();
                 if (!done) {
-                    throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
+                    throw new RuntimeException("Some error occurred while downloading file from ftp");
                 }
             } catch (IOException e) {
                 throw Throwables.propagate(e);
@@ -218,7 +218,7 @@ public class ReadUtils {
                 }
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file"));
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file");
         }
     }
 
@@ -252,7 +252,7 @@ public class ReadUtils {
                     session.disconnect();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file"));
+            throw new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file");
         }
     }
 
@@ -304,7 +304,7 @@ public class ReadUtils {
             }
 
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect jdbc url. Please use format: connectionString@query"));
+            throw new RuntimeException("Incorrect jdbc url. Please use format: connectionString@query");
         }
     }
 
@@ -353,7 +353,7 @@ public class ReadUtils {
                         String value = where.get(4);
 
                         if (!rowEntry.containsKey(field)) {
-                            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive"));
+                            throw new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are case sensitive");
                         }
                         boolean conditionResult;
                         Object fieldValue = rowEntry.get(field);
@@ -389,7 +389,7 @@ public class ReadUtils {
                     db.close();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]"));
+            throw new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]");
         }
     }
 
@@ -433,7 +433,7 @@ public class ReadUtils {
         try {
             return Integer.parseInt(value);
         } catch (Exception e) {
-            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+            throw new RuntimeException("Incorrect WHERE in mdb url. Invalid value");
         }
     }
 
@@ -478,7 +478,7 @@ public class ReadUtils {
         try {
             return Double.parseDouble(value);
         } catch (Exception e) {
-            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+            throw new RuntimeException("Incorrect WHERE in mdb url. Invalid value");
         }
     }
 
@@ -523,7 +523,7 @@ public class ReadUtils {
         try {
             return DateUtils.parseDate(value, "yyyy-MM-dd");
         } catch (Exception e) {
-            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+            throw new RuntimeException("Incorrect WHERE in mdb url. Invalid value");
         }
     }
 
@@ -568,7 +568,7 @@ public class ReadUtils {
             } catch (Exception ignored) {
             }
             if (values == null)
-                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid \"IN\" condition"));
+                throw new RuntimeException("Incorrect WHERE in mdb url. Invalid \"IN\" condition");
         }
         return values;
     }

@@ -102,7 +102,7 @@ public class ImportDBFIterator extends ImportIterator {
             String value = where.get(4);
 
             if (record.getField(field) == null) {
-                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in IMPORT DBF: no such column"));
+                throw new RuntimeException("Incorrect WHERE in IMPORT DBF: no such column");
             }
             Object fieldValue = record.getString(field, charset);
             boolean conditionResult = fieldValue == null || ignoreRowStringCondition(not, fieldValue, sign, value);
@@ -164,7 +164,7 @@ public class ImportDBFIterator extends ImportIterator {
             } catch (Exception ignored) {
             }
             if (values == null)
-                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in IMPORT. Invalid \"IN\" condition"));
+                throw new RuntimeException("Incorrect WHERE in IMPORT. Invalid \"IN\" condition");
         }
         return values;
     }

@@ -109,7 +109,7 @@ public class FileUtils {
 
             boolean done = ftpClient.deleteFile(properties.remoteFile);
             if (!done) {
-                throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
+                throw new RuntimeException("Some error occurred while deleting file from ftp");
             }
         } catch (IOException e) {
             throw Throwables.propagate(e);

@@ -1,9 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
@@ -13,7 +11,6 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -63,7 +60,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                 targetProp.change(readResult.fileBytes, context);
             }
             if(readResult.error != null)
-                throw Throwables.propagate(new RuntimeException(readResult.error));
+                throw new RuntimeException(readResult.error);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
