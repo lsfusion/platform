@@ -736,8 +736,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     public void updatePropertyValues(GPropertyDraw property, Map<GGroupObjectValue, Object> propValues, boolean updateKeys) {
         if (propValues != null) {
-            if (updateKeys) {
-                values.get(property).putAll(propValues);
+            NativeHashMap<GGroupObjectValue, Object> valuesMap = values.get(property);
+            if (updateKeys && valuesMap != null) {
+                valuesMap.putAll(propValues);
             } else {
                 NativeHashMap<GGroupObjectValue, Object> pvalues = new NativeHashMap<>();
                 pvalues.putAll(propValues);
