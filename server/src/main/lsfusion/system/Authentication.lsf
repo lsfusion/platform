@@ -208,11 +208,11 @@ FORM customUsers '{authentication.users}'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
-                  language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
-                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
+                  clientLanguage, userLanguage, language READONLY, clientCountry, userCountry, country READONLY, useClientLocale, 
+                  userTimeZone, timeZone READONLY, userTwoDigitYearStart, twoDigitYearStart READONLY, isLocked READONLY,
                   lastActivity, hostnameLastComputer, NEW, EDIT, DELETE 
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage READONLY, defaultUserCountry READONLY 
 ;
 
 FORM customUsersDialog '{authentication.users}'
