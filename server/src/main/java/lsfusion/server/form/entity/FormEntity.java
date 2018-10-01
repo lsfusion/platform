@@ -117,7 +117,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<PropertyDrawEntity> getNFPropertyDrawsIt(Version version) {
         return propertyDraws.getNFIt(version);
     }
-    public ImOrderSet<PropertyDrawEntity> getPropertyDrawsList() {
+    public ImList<PropertyDrawEntity> getPropertyDrawsList() {
         return propertyDraws.getOrderSet();        
     }
     public Iterable<PropertyDrawEntity> getPropertyDrawsListIt() {
@@ -361,7 +361,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return getPropertyDrawsList().filterOrder(new SFunctionSet<PropertyDrawEntity>() {
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
             public boolean contains(PropertyDrawEntity element) {
                 return element.isCalcProperty();
             }
