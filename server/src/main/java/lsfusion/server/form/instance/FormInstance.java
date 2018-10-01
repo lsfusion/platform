@@ -204,7 +204,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             instanceFactory.getInstance(treeGroup); // чтобы зарегить ссылки
         }
 
-        ImOrderSet<PropertyDrawEntity> propertyDraws = entity.getPropertyDrawsList();
+        ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
             if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
