@@ -14,6 +14,8 @@ import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -132,8 +134,17 @@ public class LogicalClass extends DataClass<Boolean> {
         return readDBF(dbfRecord.getBoolean(fieldName));
     }
     @Override
+    public Boolean parseJSON(JSONObject object, String key) throws JSONException {
+        return readJSON(object.getBoolean(key));
+    }
+    @Override
     public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         return readXLS(formulaValue.getBooleanValue());
+    }
+
+    @Override
+    public Object formatJSON(Boolean object) {
+        return object != null;
     }
 
     public Boolean parseString(String s) throws ParseException {

@@ -9,6 +9,8 @@ import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
@@ -119,8 +121,18 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
+    public T parseJSON(JSONObject object, String key) throws JSONException {
+        return readJSON(object.get(key));
+    }
+
+    @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         return readXLS(formulaValue.getNumberValue());
+    }
+
+    @Override
+    public Object formatJSON(T object) {
+        return object;
     }
 
     @Override

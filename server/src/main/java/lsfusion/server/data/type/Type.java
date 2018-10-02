@@ -17,6 +17,8 @@ import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.O
 import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -71,7 +73,11 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
+    Object formatJSON(T object);
+    String formatXML(T object);
 
+    T parseNullableString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
+    
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
     String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)
