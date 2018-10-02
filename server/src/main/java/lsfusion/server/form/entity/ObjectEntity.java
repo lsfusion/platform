@@ -40,6 +40,7 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     public ValueClass baseClass;
+    private boolean noClasses;
 
     public ObjectEntity() {
 
@@ -48,12 +49,18 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption) {
         this(ID, null, baseClass, caption);
     }
-
+    public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
+        this(ID, null, baseClass, caption, noClasses);
+    }
     public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption) {
+        this(ID, sID, baseClass, caption, false);
+    }
+    public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
         super(ID);
         this.sID = sID != null ? sID : "obj" + ID;
         this.caption = caption;
         this.baseClass = baseClass;
+        this.noClasses = noClasses;
     }
 
     public ObjectInstance getInstance(InstanceFactory instanceFactory) {
@@ -113,6 +120,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     @Override
     public boolean noClasses() {
-        return groupTo.noClasses;
+        return noClasses;
     }
 }

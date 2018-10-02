@@ -1,6 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -58,8 +59,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public CalcPropertyObjectEntity<?> reportPathProp;
     
-    public boolean noClasses = false;
-
     public UpdateType updateType;
     
     public AbstractGroup propertyGroup; // used for integration (export / import)
@@ -261,10 +260,9 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
             object.groupTo = this;
     }
 
-    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, boolean noClasses) {
+    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects) {
         this(ID, (String)null);
 
-        this.noClasses = noClasses; 
         setObjects(objects);
     }
 
@@ -296,14 +294,16 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     private static ImMap<ObjectEntity, ValueClass> getGridClasses(ImSet<ObjectEntity> objects) {
-        return objects.mapValues(new GetValue<ValueClass, ObjectEntity>() {
+        return objects.filterFn(new SFunctionSet<ObjectEntity>() {
+            public boolean contains(ObjectEntity element) {
+                return !element.noClasses();
+            }
+        }).mapValues(new GetValue<ValueClass, ObjectEntity>() {
             public ValueClass getMapValue(ObjectEntity value) {
                 return value.baseClass;
             }});
     }
     public Where getClassWhere(ImMap<ObjectEntity, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
-        if(noClasses)
-            return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(getObjects()), mapKeys, modifier, null);
     }
 
