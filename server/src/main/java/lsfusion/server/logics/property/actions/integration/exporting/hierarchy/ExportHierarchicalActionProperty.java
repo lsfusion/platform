@@ -19,9 +19,7 @@ import lsfusion.server.logics.property.actions.integration.exporting.StaticExpor
 import lsfusion.server.logics.property.actions.integration.hierarchy.Node;
 import lsfusion.server.logics.property.actions.integration.hierarchy.ParseNode;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.SQLException;
 
 public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O extends ObjectSelector> extends ExportActionProperty<O> {
@@ -42,16 +40,11 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
         T rootNode = createRootNode();
         parseNode.exportNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), exportData);
 
-        File file = File.createTempFile("file", ".exp");
-        try {
-            try (PrintWriter out = new PrintWriter(file, charset)) {
-                writeRootNode(out, rootNode);
-            }
-            writeResult(exportFile, staticType, context, IOUtils.getFileBytes(file));
-        } finally {
-            if(!file.delete())
-                file.deleteOnExit();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {
+            writeRootNode(out, rootNode);
         }
+        writeResult(exportFile, staticType, context, outputStream.toByteArray());
     }
 
     protected abstract T createRootNode();
