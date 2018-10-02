@@ -15,6 +15,7 @@ import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.view.report.ReportDesignGenerator;
@@ -112,8 +113,8 @@ public abstract class FormReportManager extends FormDataManager {
         return getCustomReportPathList(toExcel, reportHierarchy, reportPrefix.result); // обновляем пути
     }
 
-    public Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAutoReportDesigns(boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects) throws JRException {
-        ReportDesignGenerator generator = new ReportDesignGenerator(getFormEntity().getRichDesign(), hierarchy, toExcel, columnGroupObjects, reportInterface);
+    public Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAutoReportDesigns(boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws JRException {
+        ReportDesignGenerator generator = new ReportDesignGenerator(getFormEntity().getRichDesign(), hierarchy, toExcel, columnGroupObjects, types, reportInterface);
         return generator.generate();
     }
 
@@ -139,7 +140,7 @@ public abstract class FormReportManager extends FormDataManager {
         StaticPropertyData<PropertyReaderEntity> propData = sources.second;
 
         // report design
-        Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(toExcel, reportPrefix.result, hierarchy, propData.columnData);
+        Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(toExcel, reportPrefix.result, hierarchy, propData.columnData, propData.types);
 
         // serializing
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
@@ -205,14 +206,14 @@ public abstract class FormReportManager extends FormDataManager {
         return reportNode.getFileName(reportPrefix + getFormEntity().getSID().replace('.', '_'));
     }
 
-    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(boolean toExcel, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects) throws SQLException, SQLHandledException {
+    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(boolean toExcel, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws SQLException, SQLHandledException {
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, hierarchy, reportPrefix);
         if (customDesigns != null) {
             return customDesigns;
         }
 
         try {
-            return getAutoReportDesigns(toExcel, hierarchy, columnGroupObjects);
+            return getAutoReportDesigns(toExcel, hierarchy, columnGroupObjects, types);
         } catch (JRException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
         }
@@ -220,7 +221,7 @@ public abstract class FormReportManager extends FormDataManager {
 
     private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAndSaveAutoReportDesigns(boolean recreateCustom, boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) {
         try {
-            Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getAutoReportDesigns(toExcel, hierarchy, null);
+            Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getAutoReportDesigns(toExcel, hierarchy, null, null);
             saveAutoReportDesigns(designs, hierarchy, recreateCustom, toExcel, reportPrefix);
             return designs;
         } catch (JRException | IOException | SQLException | SQLHandledException e) {

@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.StaticKeyData;
 import lsfusion.server.form.instance.StaticPropertyData;
@@ -50,6 +51,11 @@ public class StaticExportData implements ExportData {
         if(innerRowValues != null)
             return innerRowValues; 
         return ListFact.EMPTY();
+    }
+
+    @Override
+    public Type getType(PropertyDrawEntity<?> entity) {
+        return propData.types.get(entity);
     }
 
     @Override

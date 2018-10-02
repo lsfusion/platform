@@ -20,12 +20,10 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         super(caption);
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     @Override

@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.integration.hierarchy;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 
@@ -30,6 +31,6 @@ public class PropertyParseNode extends ParseNode {
     public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(this.property, upValues);
         if(value != null)
-            node.addValue(node, getKey(), property.attr, property.getType().formatString(value));
+            node.addValue(node, getKey(), property.attr, exportData.getType(property).formatString(value));
     }
 }

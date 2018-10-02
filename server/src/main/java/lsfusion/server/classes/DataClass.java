@@ -193,10 +193,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return 50;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
+    public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getReportJavaClass();
         reportField.alignment = HorizontalAlignEnum.LEFT.getValue();
-        return !reportField.valueClass.isArray();
     }
 
     public ObjectInstance newInstance(ObjectEntity entity) {

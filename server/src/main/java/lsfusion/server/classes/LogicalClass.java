@@ -35,12 +35,10 @@ public class LogicalClass extends DataClass<Boolean> {
         return Boolean.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.CENTER.getValue();
-        return true;
     }
 
     public byte getTypeID() {

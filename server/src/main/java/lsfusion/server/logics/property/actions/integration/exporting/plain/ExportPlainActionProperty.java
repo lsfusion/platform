@@ -91,8 +91,8 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
             }
         });
         ImOrderMap<String, Type> propertyTypes = propertyNames.mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
-            public Type getMapValue(PropertyDrawEntity object) {
-                return object.getType();
+            public Type getMapValue(PropertyDrawEntity property) {
+                return data.getType(property);
             }
         });
 

@@ -8,7 +8,6 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import net.iryndin.jdbf.core.DbfRecord;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -85,8 +84,7 @@ public class ActionClass extends DataClass<Object> {
     }
 
     @Override
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
     }
 
     public Object parseString(String s) throws ParseException {

@@ -207,27 +207,14 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             final Query<ObjectEntity, CompareEntity> query = queryBuilder.getQuery();
 
             // reading types
-            ImMap<ObjectEntity, Type> keyTypes = query.mapKeys.keys().mapValues(new GetValue<Type, ObjectEntity>() {
-                public Type getMapValue(ObjectEntity value) {
-                    Type propertyType = query.getKeyType(value);
-                    if(propertyType != null)
-                        return propertyType;
-                    Type entityType = value.getType();
-                    if(entityType != null)
-                        return entityType;
-                    return AbstractType.getUnknownTypeNull();
-
-                }
-            });
-            ImMap<CompareEntity, Type> propTypes = query.getProperties().mapValues(new GetValue<Type, CompareEntity>() {
-                public Type getMapValue(CompareEntity value) {
-                    Type propertyType = query.getPropertyType(value);
-                    if(propertyType != null)
-                        return propertyType;
-                    Type entityType = value.getType();
-                    if(entityType != null)
-                        return entityType;
-                    return AbstractType.getUnknownTypeNull();
+            ImMap<ObjectEntity, Type> keyTypes = query.getKeyTypes(new Type.Getter<ObjectEntity>(){
+                   public Type getType(ObjectEntity key) {
+                       return key.getType();
+                   }
+               });
+            ImMap<CompareEntity, Type> orderTypes = query.getPropertyTypes(new Type.Getter<CompareEntity>() {
+                public Type getType(CompareEntity key) {
+                    return key.getType();
                 }
             });
 
@@ -236,7 +223,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             QueryEnvironment queryEnv = formInterface.getQueryEnv();
             BaseClass baseClass = formInterface.getBaseClass();
             SQLSession sql = session.sql;
-            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, propTypes, selectTop);
+            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, selectTop);
 
             try {
                 // column groups data
@@ -293,7 +280,14 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     for (SDP queryProp : props)
                         propQueryBuilder.addProperty(queryProp, queryProp.getPropertyObjectEntity().getExpr(mapPropExprs, modifier));
 
-                    final ImOrderMap<ImMap<ObjectEntity, Object>, ImMap<SDP, Object>> propData = propQueryBuilder.getQuery().execute(sql, formInterface.getQueryEnv());
+                    Query<ObjectEntity, SDP> propQuery = propQueryBuilder.getQuery();
+                    final ImOrderMap<ImMap<ObjectEntity, Object>, ImMap<SDP, Object>> propData = propQuery.execute(sql, formInterface.getQueryEnv());
+
+                    ImMap<SDP, Type> propTypes = propQuery.getPropertyTypes(new Type.Getter<SDP>() {
+                        public Type getType(SDP key) {
+                            return key.getType();
+                        }
+                    });
 
                     // converting from row-based to column-based (it's important to keep keys, to reduce footprint)
                     propSources.add(objects, props.mapValues(new GetValue<ImMap<ImMap<ObjectEntity, Object>, Object>, SDP>() {
@@ -304,7 +298,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                                 }
                             });
                         }
-                    }), parentColumnObjects, thisColumnObjects, columnData);
+                    }), propTypes, parentColumnObjects, thisColumnObjects, columnData);
                 }
 
                 if(noColumnGroups)
