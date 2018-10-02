@@ -53,7 +53,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     int getReportMinimumWidth();
     int getReportPreferredWidth();
 
-    boolean fillReportDrawField(ReportDrawField reportField);
+    void fillReportDrawField(ReportDrawField reportField);
     
     boolean isFlex();
 

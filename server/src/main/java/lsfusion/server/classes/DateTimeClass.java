@@ -38,12 +38,10 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return Timestamp.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     public byte getTypeID() {

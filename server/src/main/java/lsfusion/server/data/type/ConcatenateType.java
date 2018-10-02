@@ -24,7 +24,6 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
-import net.iryndin.jdbf.core.DbfRecord;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -211,7 +210,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         throw new RuntimeException("not supported");
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
+    public void fillReportDrawField(ReportDrawField reportField) {
         throw new RuntimeException("not supported");
     }
 

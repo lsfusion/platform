@@ -96,10 +96,9 @@ public class ObjectType extends AbstractType<Long> {
     public int getReportPreferredWidth() { return 45; }
     public int getReportMinimumWidth() { return getReportPreferredWidth(); }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
+    public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Long.class;
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {

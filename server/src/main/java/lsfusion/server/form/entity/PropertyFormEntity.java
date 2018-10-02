@@ -32,7 +32,7 @@ public class PropertyFormEntity extends FormEntity {
         
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
-                return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
+                return new ObjectEntity(genID(), null, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
             }});
         
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet()); 

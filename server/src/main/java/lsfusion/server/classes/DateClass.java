@@ -14,7 +14,6 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
 import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 
@@ -40,12 +39,10 @@ public class DateClass extends DataClass<Date> {
         return java.util.Date.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     public byte getTypeID() {

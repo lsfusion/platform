@@ -11,9 +11,11 @@ import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.entity.PropertyReaderEntity;
 import lsfusion.server.form.stat.StaticDataGenerator;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -67,7 +69,7 @@ public class ReportDesignGenerator {
     
     private Map<ReportNode, JasperDesign> designs = new HashMap<>();
 
-    public ReportDesignGenerator(FormView formView, StaticDataGenerator.ReportHierarchy hierarchy, boolean toExcel, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, FormReportInterface formInterface) {
+    public ReportDesignGenerator(FormView formView, StaticDataGenerator.ReportHierarchy hierarchy, boolean toExcel, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types, FormReportInterface formInterface) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.formInterface = formInterface;
@@ -77,7 +79,7 @@ public class ReportDesignGenerator {
         Map<GroupObjectEntity, ImList<ReportDrawField>> groupFields = new HashMap<>();
         for (ReportNode reportNode : hierarchy.reportHierarchy.getAllNodes())
             for (GroupObjectEntity group : reportNode.getGroupList())
-                groupFields.put(group, getReportDrawFields(group, hierarchy.hierarchy));
+                groupFields.put(group, getReportDrawFields(group, hierarchy.hierarchy, types));
         this.groupFields = groupFields;
 
         pageWidth = calculatePageWidth(toExcel);
@@ -142,10 +144,10 @@ public class ReportDesignGenerator {
         ((JRDesignSection)design.getDetailSection()).addBand(detail);
     }
 
-    private ImList<ReportDrawField> getReportDrawFields(GroupObjectEntity group, StaticDataGenerator.Hierarchy hierarchy) {
+    private ImList<ReportDrawField> getReportDrawFields(GroupObjectEntity group, StaticDataGenerator.Hierarchy hierarchy, final MAddExclMap<PropertyReaderEntity, Type> types) {
         return formInterface.getUserOrder(group, hierarchy.getProperties(group)).mapListValues(new GetValue<ReportDrawField, PropertyDrawEntity>() {
             public ReportDrawField getMapValue(PropertyDrawEntity prop) {
-                ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop));
+                ReportDrawField reportField = formView.get(prop).getReportDrawField(charWidth, getPropGroupColumnsCount(prop), types != null ? types.get(prop) : prop.getType());
 
                 Integer widthUser = formInterface.getUserWidth(prop);
                 if (widthUser != null)
