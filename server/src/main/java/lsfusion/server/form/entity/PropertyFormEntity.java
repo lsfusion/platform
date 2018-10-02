@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.FilterEntity;
@@ -33,10 +32,10 @@ public class PropertyFormEntity extends FormEntity {
         
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
-                return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false));
+                return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
             }});
         
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), true); // так как эвристика может быть неправильной, а классы не нужны (точне они мешают, когда DROPPED, тогда не выводится и текст сообщения)
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet()); 
         addGroupObject(groupObject, version);
 
         // добавляем все свойства

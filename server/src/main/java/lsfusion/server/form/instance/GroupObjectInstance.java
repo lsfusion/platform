@@ -63,7 +63,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public final CalcPropertyObjectInstance propertyBackground;
     public final CalcPropertyObjectInstance propertyForeground;
-    private final boolean noClassFilter;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
@@ -145,7 +144,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.pageSize = Settings.get().getPageSizeDefaultValue();
         }
         
-        this.noClassFilter = entity.noClasses;
         this.parent = parent;
         this.props = props;
     }
@@ -396,14 +394,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public static ImMap<ObjectInstance, ValueClass> getGridClasses(ImSet<ObjectInstance> objects) {
-        return objects.mapValues(new GetValue<ValueClass, ObjectInstance>() {
+        return objects.filterFn(new SFunctionSet<ObjectInstance>() {
+            @Override
+            public boolean contains(ObjectInstance element) {
+                return !element.noClasses;
+            }
+        }).mapValues(new GetValue<ValueClass, ObjectInstance>() {
             public ValueClass getMapValue(ObjectInstance value) {
                 return value.getGridClass();
             }});
     }
     public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        if(noClassFilter)
-            return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
     }
 

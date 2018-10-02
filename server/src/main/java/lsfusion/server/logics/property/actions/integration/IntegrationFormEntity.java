@@ -20,7 +20,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, final ValueClass interfaceClass, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super("Export.export", LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
@@ -33,16 +33,16 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
         mapObjects = innerInterfaces.mapOrderRevValues(new GetIndexValue<ObjectEntity, P>() {
             public ObjectEntity getMapValue(int i, P value) {
                 ValueClass interfaceClass = interfaceClasses.get(value);
-                return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME);
+                return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME, interfaceClass == null);
             }});
 
         if(!valueInterfaces.isEmpty()) {
-            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects), true); // we don't know parameter classes
+            GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
             addGroupObject(valueGroupObject, version);
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
-            groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects), interfaceClass == null); // we don't know parameter classes
+            groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
             groupObject.setSID("value"); // for JSON
             addGroupObject(groupObject, version);
         } else

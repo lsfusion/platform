@@ -38,9 +38,12 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
         return entity.getCaption();
     }
 
+    public boolean noClasses = false;
+
     public ObjectInstance(ObjectEntity entity) {
         super(entity);
         this.entity = entity;
+        this.noClasses = entity.noClasses();
     }
 
     public String toString() {
