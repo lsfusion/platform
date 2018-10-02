@@ -2,13 +2,18 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.FormStaticType;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormSelector;
-import lsfusion.server.form.entity.ObjectSelector;
+import lsfusion.server.form.entity.*;
+import lsfusion.server.form.stat.AbstractFormDataInterface;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -47,4 +52,31 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
             exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, staticType.getExtension().getBytes()), context, params);
         }
     }
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
+        FormEntity formEntity = form.getStaticForm();
+        if(formEntity != null) {
+            MSet<CalcProperty> mProps = SetFact.mSet();
+            boolean isReport = this instanceof PrintActionProperty;
+            ImSet<GroupObjectEntity> valueGroupObjects;
+            if(isReport)
+                valueGroupObjects = SetFact.EMPTY();
+            else
+                valueGroupObjects = AbstractFormDataInterface.getValueGroupObjects(BaseUtils.<ImSet<ObjectEntity>>immutableCast(mapObjects.keys()));
+            for (ImOrderSet<PropertyDrawEntity> propertyDraws : formEntity.getGroupProperties(valueGroupObjects).valueIt())
+                for (PropertyDrawEntity propertyDraw : propertyDraws) {
+                    if(isReport) {
+                        MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
+                        propertyDraw.fillQueryProps(mReaders);
+                        for(PropertyReaderEntity reader : mReaders.immutable())
+                            mProps.add((CalcProperty) reader.getPropertyObjectEntity().property);
+                    } else
+                        mProps.add((CalcProperty) propertyDraw.getValueProperty().property);                     
+                }
+            return mProps.immutable().toMap(false);
+        }
+        return super.aspectChangeExtProps();
+    }
+
 }

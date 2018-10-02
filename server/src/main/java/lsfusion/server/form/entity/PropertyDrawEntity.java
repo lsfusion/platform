@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
@@ -92,7 +93,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public boolean attr;
 
     public PropertyDrawEntity quickFilterProperty;
-    
+
+    public void fillQueryProps(MExclSet<PropertyReaderEntity> mResult) {
+        mResult.exclAdd(this);
+
+        if (propertyCaption != null)
+            mResult.exclAdd(captionReader);
+
+        if (propertyFooter != null)
+            mResult.exclAdd(footerReader);
+
+        if (propertyShowIf != null)
+            mResult.exclAdd(showIfReader);
+    }
+
     private abstract class PropertyDrawReader implements PropertyReaderEntity {
 
         public Type getType() {

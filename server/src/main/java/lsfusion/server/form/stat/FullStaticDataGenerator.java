@@ -13,15 +13,6 @@ public class FullStaticDataGenerator extends StaticDataGenerator<PropertyReaderE
 
     @Override
     protected void fillQueryProps(PropertyDrawEntity property, MExclSet<PropertyReaderEntity> mResult) {
-        super.fillQueryProps(property, mResult);
-
-        if (property.propertyCaption != null)
-            mResult.exclAdd(property.captionReader);
-
-        if (property.propertyFooter != null)
-            mResult.exclAdd(property.footerReader);
-
-        if (property.propertyShowIf != null)
-            mResult.exclAdd(property.showIfReader);
+        property.fillQueryProps(mResult);
     }
 }
