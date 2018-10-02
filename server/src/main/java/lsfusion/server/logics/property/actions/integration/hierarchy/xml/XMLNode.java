@@ -3,6 +3,8 @@ package lsfusion.server.logics.property.actions.integration.hierarchy.xml;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.hierarchy.Node;
 import org.jdom.Element;
 
@@ -21,10 +23,13 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     @Override
-    public String getValue(String key, boolean attr) {
+    public Object getValue(String key, boolean attr, Type type) throws ParseException {
+        String stringValue;;
         if(attr)
-            return element.getAttributeValue(key);
-        return element.getChild(key).getText();
+            stringValue = element.getAttributeValue(key);
+        else
+            stringValue = element.getChild(key).getText();
+        return type.parseXML(stringValue);
     }
 
     @Override
@@ -52,12 +57,13 @@ public class XMLNode implements Node<XMLNode> {
         node.element.addContent(childNode.element);
     }
 
-    public void addValue(XMLNode node, String key, boolean attr, String value) {
+    public void addValue(XMLNode node, String key, boolean attr, Object value, Type type) {
+        String stringValue = type.formatXML(value);
         if(attr) {
-            node.element.setAttribute(key, value);
+            node.element.setAttribute(key, stringValue);
         } else {
             Element addElement = new Element(key);
-            addElement.setText(value);
+            addElement.setText(stringValue);
 
             node.element.addContent(addElement);
         }
