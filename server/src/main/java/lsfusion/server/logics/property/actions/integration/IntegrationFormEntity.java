@@ -11,10 +11,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 
 import java.util.List;
 
@@ -25,10 +22,18 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
             
     public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, final ValueClass interfaceClass, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super("Export.export", LocalizedString.NONAME, version);
-        
+
+        final ImMap<P, ValueClass> interfaceClasses;
+        if(where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where
+            CalcPropertyMapImplement<M, P> mapWhere = (CalcPropertyMapImplement<M, P>) where;
+            interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
+        } else
+            interfaceClasses = MapFact.EMPTY();
+
         mapObjects = innerInterfaces.mapOrderRevValues(new GetIndexValue<ObjectEntity, P>() {
             public ObjectEntity getMapValue(int i, P value) {
-                return new ObjectEntity(genID(), i>=valueInterfaces.size() ? interfaceClass : null, LocalizedString.NONAME);
+                ValueClass interfaceClass = interfaceClasses.get(value);
+                return new ObjectEntity(genID(), interfaceClass, LocalizedString.NONAME);
             }});
 
         if(!valueInterfaces.isEmpty()) {
