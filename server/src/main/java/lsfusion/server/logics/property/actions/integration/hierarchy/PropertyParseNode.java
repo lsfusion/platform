@@ -21,7 +21,7 @@ public class PropertyParseNode extends ParseNode {
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData) {
         Object propertyValue;
         try {
-            propertyValue = property.getType().parseString(node.getValue(getKey(), property.attr));
+            propertyValue = node.getValue(getKey(), property.attr, property.getType());
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
@@ -31,6 +31,6 @@ public class PropertyParseNode extends ParseNode {
     public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {
         Object value = exportData.getProperty(this.property, upValues);
         if(value != null)
-            node.addValue(node, getKey(), property.attr, exportData.getType(property).formatString(value));
+            node.addValue(node, getKey(), property.attr, value, exportData.getType(property));
     }
 }
