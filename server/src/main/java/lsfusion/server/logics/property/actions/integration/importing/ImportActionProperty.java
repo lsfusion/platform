@@ -6,10 +6,12 @@ import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
@@ -180,5 +182,14 @@ public abstract class ImportActionProperty extends SystemActionProperty {
         } finally {
             importTable.drop(session.sql, session.getOwner());
         }
+    }
+
+    @Override
+    protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
+        MSet<CalcProperty> mProps = SetFact.mSet();
+        for(ImOrderSet<PropertyDrawEntity> propertyDraws : formEntity.getGroupProperties(SetFact.<GroupObjectEntity>EMPTY()).valueIt())
+            for(PropertyDrawEntity propertyDraw : propertyDraws)
+                mProps.add((CalcProperty) propertyDraw.getImportProperty().property);
+        return mProps.immutable().toMap(false);
     }
 }
