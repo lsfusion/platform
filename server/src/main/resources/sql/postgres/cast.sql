@@ -16,3 +16,10 @@ BEGIN
 	RETURN substring(file, (get_byte(file, 0) + 2)); -- index in substring is 1-based
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION get_extension(file bytea) RETURNS VARCHAR AS 
+$$
+BEGIN
+	RETURN convert_from(substring(file, 2, get_byte(file, 0)), 'UTF-8');  -- index in substring is 1-based
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
