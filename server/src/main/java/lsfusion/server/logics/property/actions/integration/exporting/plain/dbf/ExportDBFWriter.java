@@ -6,6 +6,7 @@ import com.hexiong.jdbf.JDBFException;
 import jasperapi.ReportPropertyData;
 import lsfusion.base.IOUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -25,7 +26,8 @@ public class ExportDBFWriter extends ExportPlainWriter {
     public ExportDBFWriter(ImOrderMap<String, Type> fieldTypes, String charset) throws IOException, JDBFException {
         super(fieldTypes);
 
-        writer = new DBFWriter(file.getAbsolutePath(), getFields(), charset);
+        writer = new DBFWriter(outputStream, getFields());
+        ReflectionUtils.setPrivateFieldValue(DBFWriter.class, writer, "dbfEncoding", charset);
     }
 
     public void writeLine(ImMap<String, Object> row) {

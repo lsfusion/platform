@@ -23,7 +23,7 @@ public class ExportTableWriter extends ExportPlainWriter {
         super(fieldTypes);
         this.singleRow = singleRow;
 
-        o = new DataOutputStream(new FileOutputStream(file));
+        o = new DataOutputStream(outputStream);
         o.writeBoolean(singleRow); //singleRow
 
         o.writeInt(fieldTypes.size());

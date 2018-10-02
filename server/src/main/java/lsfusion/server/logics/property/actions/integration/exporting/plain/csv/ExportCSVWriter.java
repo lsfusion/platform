@@ -27,7 +27,7 @@ public class ExportCSVWriter extends ExportPlainWriter {
 
         this.csvEscaper = new CsvEscaper(noEscape, separator);
         this.separator = separator;
-        writer = new PrintWriter(file, charset) {
+        writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset))) {
             @Override
             public void println() {
                 write("\r\n");
