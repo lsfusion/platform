@@ -110,8 +110,16 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
-        return parseString(dbfRecord.getString(fieldName, charset));
-    }    
+        return parseNullableString(dbfRecord.getString(fieldName, charset));
+    }
+    @Override
+    public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
+        return parseNullableString(object.getString(key));
+    }
+    @Override
+    public T parseXML(String value) throws ParseException {
+        return parseNullableString(value);
+    }
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
         return parseNullableString(formulaValue != null ? formulaValue.getStringValue() : cell.getStringCellValue());

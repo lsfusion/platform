@@ -127,7 +127,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return readXLS(formulaValue.getNumberValue());
+        return readXLS(formulaValue != null ? formulaValue.getNumberValue() : cell.getNumericCellValue());
     }
 
     @Override

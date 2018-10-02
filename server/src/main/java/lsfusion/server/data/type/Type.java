@@ -70,6 +70,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     ExtInt getCharLength();
 
     T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException;
+    T parseJSON(JSONObject object, String key) throws ParseException, JSONException;
+    T parseXML(String value) throws ParseException;
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
