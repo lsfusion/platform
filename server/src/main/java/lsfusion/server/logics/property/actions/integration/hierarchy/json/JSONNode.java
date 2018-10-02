@@ -45,9 +45,9 @@ public class JSONNode implements Node<JSONNode> {
     }
 
     @Override
-    public String getValue(String key, boolean attr) {
+    public Object getValue(String key, boolean attr, Type type) throws ParseException {
         try {
-            return (String) element.get(key);
+            return type.parseJSON(element, key);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
@@ -82,7 +82,7 @@ public class JSONNode implements Node<JSONNode> {
 
     public void addValue(JSONNode node, String key, boolean attr, String value) {
         try {
-            node.element.put(key, value);
+            node.element.put(key, type.formatJSON(value));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }

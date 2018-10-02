@@ -9,6 +9,8 @@ import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.O
 import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -101,21 +103,38 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return formatString(value);
     }
 
+    public T parseNullableString(String string) throws ParseException {
+        if(string == null)
+            return null;
+        return parseString(string);
+    }
     @Override
     public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
         return parseString(dbfRecord.getString(fieldName, charset));
     }    
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return parseString(formulaValue != null ? formulaValue.getStringValue() : cell.getStringCellValue());
+        return parseNullableString(formulaValue != null ? formulaValue.getStringValue() : cell.getStringCellValue());
     }
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         return new OverJDBField(fieldName, 'C', 253, 0);
     }
+    @Override
+    public Object formatJSON(T object) {
+        return formatString(object);
+    }
+
+    @Override
+    public String formatXML(T object) {
+        return formatString(object);
+    }
 
     protected T readDBF(Object object) {
+        return read(object);
+    }
+    protected T readJSON(Object object) {
         return read(object);
     }
     protected T readXLS(Object object) {

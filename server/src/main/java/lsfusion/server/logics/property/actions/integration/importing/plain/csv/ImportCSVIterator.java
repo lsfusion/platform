@@ -84,9 +84,6 @@ public class ImportCSVIterator extends ImportPlainIterator {
 
     @Override
     protected Object getPropValue(String name, Type type) throws ParseException, java.text.ParseException {
-        String stringValue = line.get(fieldIndexes.get(name));
-        if(stringValue == null)
-            return null;
-        return type.parseString(stringValue);
+        return type.parseNullableString(line.get(fieldIndexes.get(name)));
     }
 }
