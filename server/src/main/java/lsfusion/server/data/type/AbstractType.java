@@ -107,7 +107,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }    
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return parseString(formulaValue.getStringValue());
+        return parseString(formulaValue != null ? formulaValue.getStringValue() : cell.getStringCellValue());
     }
 
     @Override
