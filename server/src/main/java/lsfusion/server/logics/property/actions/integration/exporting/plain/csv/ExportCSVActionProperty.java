@@ -19,17 +19,19 @@ public class ExportCSVActionProperty<O extends ObjectSelector> extends ExportPla
     
     // csv
     private final boolean noHeader;
+    private final boolean noEscape;
     private final String separator;
 
-    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, String charset) {
+    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, boolean noEscape, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
         
         this.noHeader = noHeader;
+        this.noEscape = noEscape;
         this.separator = separator;
     }
 
     @Override
     protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
-        return new ExportCSVWriter(fieldTypes, noHeader, false, separator, charset);
+        return new ExportCSVWriter(fieldTypes, noHeader, noEscape, separator, charset);
     }
 }

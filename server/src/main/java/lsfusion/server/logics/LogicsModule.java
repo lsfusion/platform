@@ -50,7 +50,6 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
-import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.IntegrationFormEntity;
 import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.json.ExportJSONActionProperty;
@@ -551,7 +550,7 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
         return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNulls)));
     }
-    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
+    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
         ExportActionProperty<O> exportAction;
         switch(staticType) {
             case XML:
@@ -561,7 +560,7 @@ public abstract class LogicsModule {
                 exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, noHeader, separator, charset);
+                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, noHeader, separator, noEscape, charset);
                 break;
             case DBF:
                 exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
@@ -667,7 +666,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, charset, singleExportFile, exportFiles);
+        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, singleExportFile, exportFiles);
     }
 
     protected LAP addImportPropertyAProp(LocalizedString caption, FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
