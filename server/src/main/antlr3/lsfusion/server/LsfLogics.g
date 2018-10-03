@@ -13,7 +13,6 @@ grammar LsfLogics;
 	import lsfusion.interop.form.ServerResponse;
 	import lsfusion.interop.FormEventType;
 	import lsfusion.interop.FormPrintType;
-	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
 	import lsfusion.interop.WindowFormType;
 	import lsfusion.interop.ReflectionPropertyType;
@@ -36,7 +35,7 @@ grammar LsfLogics;
 	import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.server.logics.property.ExternalFormat;
 	import lsfusion.server.logics.property.Cycle;
-	import lsfusion.server.logics.property.FormImportType;
+	import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 	import lsfusion.server.logics.scripted.*;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LCPContextIndependent;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType;
@@ -1969,7 +1968,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @init {
     List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 
-	FormImportType format = null;
+	FormIntegrationType format = null;
 	LCPWithParams sheet = null;
 	boolean sheetAll = false;
 	LCPWithParams memo = null;
@@ -2036,7 +2035,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @init {
 	List<TypedParameter> newContext = new ArrayList<>(context); 
 
-	FormExportType exportType = null;
+	FormIntegrationType exportType = null;
 
     List<LCPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
@@ -2058,13 +2057,12 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormExportType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
-	    |  	'JSON' { exportType = FormExportType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
-		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
+		(	'XML' { exportType = FormIntegrationType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
+	    |  	'JSON' { exportType = FormIntegrationType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
+		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
 		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'LIST' { exportType = FormExportType.LIST; }
-	    |  	'TABLE' { exportType = FormExportType.TABLE; }
+	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+	    |  	'TABLE' { exportType = FormIntegrationType.TABLE; }
 		)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
@@ -2101,7 +2099,7 @@ aliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns
 
 importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	FormImportType format = null;
+	FormIntegrationType format = null;
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
@@ -2191,22 +2189,22 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, PropertyU
 		)?
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormImportType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, String separator, boolean noHeader, String charset, Boolean hasListOption, LCPWithParams root, boolean attr]
-	:	'XLS' 	{ $format = FormImportType.XLS; } ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
-	|	'DBF'	{ $format = FormImportType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'CSV'	{ $format = FormImportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = FormImportType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })? ('ATTR' { $attr = true; })?
-	|	'JSON'	{ $format = FormImportType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
-	|	'TABLE'	{ $format = FormImportType.TABLE; }
-//	|	'MDB'	{ $format = FormImportType.MDB; }
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, String separator, boolean noHeader, String charset, Boolean hasListOption, LCPWithParams root, boolean attr]
+	:	'XLS' 	{ $format = FormIntegrationType.XLS; } ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+	|	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })? ('ATTR' { $attr = true; })?
+	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
+	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
+//	|	'MDB'	{ $format = FormIntegrationType.MDB; }
 	;
 
-importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [FormImportType format, String separator,
+importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [FormIntegrationType format, String separator,
                                                                             boolean noHeader, String charset, LCPWithParams root]
-	:	'DBF'	{ $format = FormImportType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'CSV'	{ $format = FormImportType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML'	{ $format = FormImportType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
-	|	'JSON'	{ $format = FormImportType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	:	'DBF'	{ $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	;
 
 propertyUsage returns [PropertyUsage propUsage]
@@ -2886,7 +2884,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	FormExportType exportType = null;
+	FormIntegrationType exportType = null;
 	boolean noHeader = false;
     String separator = null;
 	String charset = null;
@@ -2897,10 +2895,10 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormExportType.XML; }
-	    |  	'JSON' { exportType = FormExportType.JSON; }
-		|  	'CSV' { exportType = FormExportType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'DBF' { exportType = FormExportType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+		(	'XML' { exportType = FormIntegrationType.XML; }
+	    |  	'JSON' { exportType = FormIntegrationType.JSON; }
+		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 		)?
 		('TO' pUsage=propertyUsage)?
 	;

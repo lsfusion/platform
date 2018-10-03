@@ -5,9 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.interop.FormExportType;
 import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.LongClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
@@ -18,6 +16,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.StaticExportData;
 import lsfusion.server.logics.property.actions.integration.hierarchy.ExportData;
@@ -35,7 +34,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
     protected final LCP<?> singleExportFile; // nullable, temporary will be removed
     protected final ImMap<GroupObjectEntity, LCP> exportFiles;
     
-    public ExportPlainActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
+    public ExportPlainActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
         super(caption, form, objectsToSet, nulls, staticType);
         
         this.charset = charset;
@@ -65,7 +64,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
         }
     }
 
-    protected abstract ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes) throws IOException;
+    protected abstract ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException;
 
     private void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, byte[]> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
         
@@ -96,7 +95,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
             }
         });
 
-        ExportPlainWriter exporter = getWriter(parentTypes.addOrderExcl(propertyTypes));
+        ExportPlainWriter exporter = getWriter(parentTypes.addOrderExcl(propertyTypes), currentGroup == null);
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = data.getRows(currentGroup);
         exporter.writeCount(allRows.size());
         for(int i=0,size=allRows.size();i<size;i++) {

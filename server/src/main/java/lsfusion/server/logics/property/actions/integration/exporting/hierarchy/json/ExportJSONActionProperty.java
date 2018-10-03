@@ -2,7 +2,7 @@ package lsfusion.server.logics.property.actions.integration.exporting.hierarchy.
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 
 public class ExportJSONActionProperty<O extends ObjectSelector> extends ExportHierarchicalActionProperty<JSONNode, O> {
 
-    public ExportJSONActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP exportFile, String charset) {
+    public ExportJSONActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, charset);
     }
 

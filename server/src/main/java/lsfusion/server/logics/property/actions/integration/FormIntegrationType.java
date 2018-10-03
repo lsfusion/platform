@@ -1,7 +1,13 @@
-package lsfusion.server.logics.property;
+package lsfusion.server.logics.property.actions.integration;
 
-public enum FormImportType {
+import lsfusion.interop.FormStaticType;
+
+public enum FormIntegrationType implements FormStaticType {
     XLS, XLSX, DBF, CSV, XML, JSON, TABLE;//, MDB;
+
+    public boolean isCustom() {
+        return true;
+    }
 
     public String getExtension() {
         switch (this) {

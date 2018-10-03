@@ -5,7 +5,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -19,12 +19,12 @@ import java.io.IOException;
 
 public class ExportDBFActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
 
-    public ExportDBFActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
+    public ExportDBFActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
     }
 
     @Override
-    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes) throws IOException {
+    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
         try {
             return new ExportDBFWriter(fieldTypes, charset);
         } catch (JDBFException e) {
