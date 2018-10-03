@@ -89,6 +89,8 @@ public class ImportXLSIterator extends ImportPlainIterator {
     @Override
     protected Object getPropValue(String name, Type type) throws lsfusion.server.data.type.ParseException, ParseException {
         Cell cell = row.getCell(fieldIndexes.get(name));
+        if(cell == null)
+            return null;
         return type.parseXLS(cell, formulaEvaluator.evaluate(cell));
     }
 
