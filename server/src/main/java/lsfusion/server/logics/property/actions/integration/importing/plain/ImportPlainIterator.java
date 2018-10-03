@@ -1,13 +1,13 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.TimeClass;
@@ -27,9 +27,38 @@ public abstract class ImportPlainIterator {
         this.fieldTypes = fieldTypes;
     }
     
+    private static Pair<String, Integer> findActualField(String field, ImOrderSet<String> fileFields, boolean isCI) {
+        String actualField = null;
+        Integer actualIndex = null;
+        if(isCI) {
+            String lowerField = field.toLowerCase();
+            for(int i=0,size=fileFields.size();i<size;i++) {
+                String fieldName = fileFields.get(i);
+                if(lowerField.equals(fieldName.toLowerCase())) {
+                    actualField = fieldName;
+                    actualIndex = i;
+                    break;
+                }                    
+            }
+        } else {  // optimization
+            if (fileFields.contains(field)) {
+                actualField = field;
+                actualIndex = fileFields.indexOf(field);
+            }
+        }
+        if(actualField != null)
+            return new Pair<>(actualField, actualIndex);
+        return null;
+    }
+    
+    protected boolean isFieldCI() {
+        return false;
+    }
+    
     protected void finalizeInit() {
         ImOrderSet<String> fileFields = readFields();
         int f = 0;
+        boolean fieldCI = isFieldCI();
 
         ImOrderSet<String> keys = fieldTypes.keyOrderSet();
         ImOrderValueMap<String, String> mMapping = keys.mapItOrderValues();
@@ -39,14 +68,12 @@ public abstract class ImportPlainIterator {
             if(fileFields == null) { // hierarchical
                 actualField = field;
             } else {
-                if (fileFields.contains(field)) {
-                    actualField = field;
-                    f = fileFields.indexOf(field);
-                } else {
-//                    while (keys.contains(fileFields.get(f))) // looking for next not used 
-//                        f++;
+                Pair<String, Integer> actual = findActualField(field, fileFields, fieldCI);
+                if (actual != null) {
+                    actualField = actual.first;
+                    f = actual.second;
+                } else
                     actualField = fileFields.get(f);
-                }
                 f++;
             }
             mMapping.mapValue(i, actualField);
