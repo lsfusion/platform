@@ -678,11 +678,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public void addScriptedGroup(String groupName, LocalizedString captionStr, String parentName) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateGroup(groupName);
         LocalizedString caption = (captionStr == null ? LocalizedString.create(groupName) : captionStr);
         AbstractGroup parentGroup = (parentName == null ? null : findGroup(parentName));
-        addAbstractGroup(groupName, caption, parentGroup);
+        AbstractGroup group = addAbstractGroup(groupName, caption, parentGroup);
+        group.setIntegrationSID(integrationSID);
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,

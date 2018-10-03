@@ -123,7 +123,7 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
                 if(groupSID.equals("root"))
                     group = null;
                 else
-                    group = formEntity.getGroupObject(groupSID);
+                    group = formEntity.getGroupObjectIntegration(groupSID);
                 
                 files.put(group, readFile(property, (byte[]) result.getValue(i).get("importFiles")));                
             }

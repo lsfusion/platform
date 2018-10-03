@@ -9,7 +9,7 @@ public class PropertyGroupParseNode extends GroupParseNode {
     private final AbstractGroup group;
 
     protected String getKey() {
-        return group.getName();
+        return group.getIntegrationSID();
     }
 
     public PropertyGroupParseNode(ImSet<ParseNode> children, AbstractGroup group) {
