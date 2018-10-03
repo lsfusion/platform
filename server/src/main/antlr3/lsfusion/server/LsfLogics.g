@@ -2198,7 +2198,7 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Form
 	|	'XML'	{ $format = FormImportType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })? ('ATTR' { $attr = true; })?
 	|	'JSON'	{ $format = FormImportType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? (listOptionVal = hasListOptionLiteral { $hasListOption = $listOptionVal.val; })?
 	|	'TABLE'	{ $format = FormImportType.TABLE; }
-	|	'MDB'	{ $format = FormImportType.MDB; }
+//	|	'MDB'	{ $format = FormImportType.MDB; }
 	;
 
 importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [FormImportType format, String separator,

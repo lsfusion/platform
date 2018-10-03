@@ -133,6 +133,9 @@ importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 readFile = DATA LOCAL FILE ();
 
+getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
+getExtension = getFileExtension(FILE(file));
+
 ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
 downloadFile 'Скопировать файл на клиент'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
