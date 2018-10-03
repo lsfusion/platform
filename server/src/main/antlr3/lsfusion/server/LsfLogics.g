@@ -366,8 +366,8 @@ groupStatement
 	}
 }
 	:	'GROUP' groupNameCaption=simpleNameWithCaption
-		(':' parentName=compoundID { parent = $parentName.sid; })?
 		('EXTID' extID=stringLiteral)?
+		(':' parentName=compoundID { parent = $parentName.sid; })?
 		';'
 	;
 
