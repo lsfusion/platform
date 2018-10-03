@@ -33,6 +33,11 @@ public class ImportDBFIterator extends ImportPlainIterator {
     private String charset;
     private List<List<String>> wheresList;
 
+    @Override
+    protected boolean isFieldCI() {
+        return true;
+    }
+
     public ImportDBFIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, String charset, byte[] memo, List<List<String>> wheresList) throws IOException {
         super(fieldTypes);
 
