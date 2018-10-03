@@ -50,7 +50,6 @@ import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
-import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.derived.AggregateGroupProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -3143,7 +3142,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = (exportType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
 
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, charset, targetProp, MapFact.<GroupObjectEntity, LCP>EMPTY());
+                exportType, noHeader, separator, false, charset, targetProp, MapFact.<GroupObjectEntity, LCP>EMPTY());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
