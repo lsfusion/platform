@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
@@ -30,22 +31,27 @@ public abstract class ImportPlainIterator {
         ImOrderSet<String> fileFields = readFields();
         int f = 0;
 
-        ImSet<String> keys = fieldTypes.keys();
-        ImValueMap<String, String> mMapping = keys.mapItValues();
+        ImOrderSet<String> keys = fieldTypes.keyOrderSet();
+        ImOrderValueMap<String, String> mMapping = keys.mapItOrderValues();
         for(int i = 0, size = keys.size(); i<size; i++) {
             String field = keys.get(i);
             String actualField;
-            if(fileFields == null || fileFields.contains(field))
+            if(fileFields == null) { // hierarchical
                 actualField = field;
-            else {
-                while (keys.contains(fileFields.get(f))) // looking for next not used 
-                    f++;
-                actualField = fileFields.get(f);
+            } else {
+                if (fileFields.contains(field)) {
+                    actualField = field;
+                    f = fileFields.indexOf(field);
+                } else {
+//                    while (keys.contains(fileFields.get(f))) // looking for next not used 
+//                        f++;
+                    actualField = fileFields.get(f);
+                }
                 f++;
             }
             mMapping.mapValue(i, actualField);
         }
-        mapping = mMapping.immutableValue();
+        mapping = mMapping.immutableValueOrder().getMap();
     }
 
     protected abstract ImOrderSet<String> readFields();
