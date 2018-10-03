@@ -1,12 +1,9 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
@@ -19,14 +16,12 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ImportXLSIterator extends ImportPlainIterator {
 
     private final Workbook wb; 
     private FormulaEvaluator formulaEvaluator;
-    private int lastRow;
+    private int rowsCount;
     private Integer lastSheet;
     
     public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, Integer singleSheetIndex) throws IOException {
@@ -67,8 +62,7 @@ public class ImportXLSIterator extends ImportPlainIterator {
             return false;
         
         sheet = wb.getSheetAt(currentSheet++);
-        lastRow = sheet.getLastRowNum();
-        lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
+        rowsCount = sheet.getLastRowNum() + 1;
         return true;
     }
     
@@ -76,13 +70,15 @@ public class ImportXLSIterator extends ImportPlainIterator {
     private Row row;
     @Override
     protected boolean nextRow() throws IOException {
-        if (sheet == null || currentRow > lastRow) {
+        if (sheet == null || currentRow >= rowsCount) {
             if(!nextSheet())
                 return false;
             currentRow = 0;
         }
         
         row = sheet.getRow(currentRow++);
+        if(row == null)
+            return nextRow();
         return true;
     }
 
