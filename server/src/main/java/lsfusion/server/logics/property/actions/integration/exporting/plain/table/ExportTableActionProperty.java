@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.actions.integration.exporting.plain.tabl
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -17,16 +17,12 @@ import java.io.IOException;
 
 public class ExportTableActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
 
-    private boolean singleRow;
-
-    public ExportTableActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean singleRow) {
+    public ExportTableActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
-        
-        this.singleRow = singleRow;
     }
 
     @Override
-    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes) throws IOException {
+    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
         return new ExportTableWriter(fieldTypes, singleRow);
     }
 }

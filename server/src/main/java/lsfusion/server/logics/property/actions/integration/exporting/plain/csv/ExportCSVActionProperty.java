@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.actions.integration.exporting.plain.csv;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -21,7 +21,7 @@ public class ExportCSVActionProperty<O extends ObjectSelector> extends ExportPla
     private final boolean noHeader;
     private final String separator;
 
-    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, String charset) {
+    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
         
         this.noHeader = noHeader;
@@ -29,7 +29,7 @@ public class ExportCSVActionProperty<O extends ObjectSelector> extends ExportPla
     }
 
     @Override
-    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes) throws IOException {
+    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
         return new ExportCSVWriter(fieldTypes, noHeader, false, separator, charset);
     }
 }

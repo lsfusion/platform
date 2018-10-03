@@ -49,6 +49,8 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.IntegrationFormEntity;
 import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.json.ExportJSONActionProperty;
@@ -82,7 +84,6 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.add;
-import static lsfusion.interop.FormExportType.LIST;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
@@ -550,7 +551,7 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
         return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNulls)));
     }
-    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
+    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
         ExportActionProperty<O> exportAction;
         switch(staticType) {
             case XML:
@@ -566,8 +567,7 @@ public abstract class LogicsModule {
                 exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
                 break;
             case TABLE:
-            case LIST:
-                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, staticType.equals(LIST));
+                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                
@@ -584,7 +584,7 @@ public abstract class LogicsModule {
         // }
         
         Object[] cases = new Object[0];
-        for(FormImportType importType : FormImportType.values()) {
+        for(FormIntegrationType importType : FormIntegrationType.values()) {
             cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
             directLI(addImportFAProp(null, importType, formEntity, paramsCount, fileProp, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
         }        
@@ -595,7 +595,7 @@ public abstract class LogicsModule {
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
-    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormImportType format, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
         ImportActionProperty importAction;
         
         if(format == null)
@@ -645,7 +645,7 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Export property action ----------------- //
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImSet<String> ignoreExport, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImSet<String> ignoreExport, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
@@ -670,7 +670,7 @@ public abstract class LogicsModule {
         return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, charset, singleExportFile, exportFiles);
     }
 
-    protected LAP addImportPropertyAProp(LocalizedString caption, FormImportType type, int paramsCount, List<String> aliases, List<Boolean> literals, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+    protected LAP addImportPropertyAProp(LocalizedString caption, FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 

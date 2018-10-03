@@ -1,11 +1,10 @@
 package lsfusion.server.logics.property.actions.integration.exporting.hierarchy;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.stat.StaticDataGenerator;
@@ -28,7 +27,7 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
 
     protected final String charset; 
             
-    public ExportHierarchicalActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP exportFile, String charset) {
+    public ExportHierarchicalActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, String charset) {
         super(caption, form, objectsToSet, nulls, staticType);
         this.charset = charset == null ? ExternalUtils.defaultXMLJSONCharset : charset;
         

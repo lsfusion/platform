@@ -1,9 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.exporting.hierarchy.xml;
 
-import lsfusion.base.ExternalUtils;
-import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.interop.FormExportType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
@@ -15,14 +13,12 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 public class ExportXMLActionProperty<O extends ObjectSelector> extends ExportHierarchicalActionProperty<XMLNode, O> {
     
-    public ExportXMLActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormExportType staticType, LCP exportFile, String charset) {
+    public ExportXMLActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, String charset) {
         super(caption, form, objectsToSet, nulls, staticType, exportFile, charset);
     }
 

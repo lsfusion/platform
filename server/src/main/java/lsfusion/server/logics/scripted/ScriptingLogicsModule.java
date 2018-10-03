@@ -49,6 +49,8 @@ import lsfusion.server.logics.property.actions.file.WriteActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.derived.AggregateGroupProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -3091,10 +3093,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormExportType exportType,
+    public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                             boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
-            exportType = FormExportType.JSON;
+            exportType = FormIntegrationType.JSON;
 
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());
@@ -3244,7 +3246,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormExportType type, final List<String> ids, List<Boolean> literals, List<LCPWithParams> exprs, LCPWithParams whereProperty,
+    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals, List<LCPWithParams> exprs, LCPWithParams whereProperty,
                                                         PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                          List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
@@ -3274,7 +3276,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         boolean extendContext = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props);
         if(type == null)
-            type = extendContext ? FormExportType.JSON : FormExportType.LIST;
+            type = extendContext ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -3377,7 +3379,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mProps.immutableList();
     }
     
-    public LAPWithParams addScriptedImportActionProperty(FormImportType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, Boolean hasListOption, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, Boolean hasListOption, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
             fileProp = new LCPWithParams(baseLM.importFile);
@@ -3407,7 +3409,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedImportDoClause(hasListOption, doAction, elseAction, context, newContext, props, nulls, addScriptedJoinAProp(importAction, params));
     }
 
-    public LAPWithParams addScriptedImportFormActionProperty(FormImportType format, PropertyUsage fileProp, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, PropertyUsage fileProp, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
         if(fileProperty == null)
             fileProperty = (format.isPlain() ? baseLM.importFiles : baseLM.importFile);
