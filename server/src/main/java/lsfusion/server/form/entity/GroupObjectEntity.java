@@ -63,6 +63,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     
     public AbstractGroup propertyGroup; // used for integration (export / import)
 
+    private String integrationSID;
+    
     private static class UpStaticParamsProcessor implements GroupObjectInstance.FilterProcessor {
         private final GroupObjectInstance groupObject;
 
@@ -230,6 +232,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return true;
     }
 
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getSID();
+    }   
+
     private boolean finalizedObjects;
     private Object objects = SetFact.mOrderExclSet();
 
@@ -313,8 +323,4 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     // hack where ImMap used (it does not support null keys)
     public static final GroupObjectEntity NULL = new GroupObjectEntity();
-
-    public String getIntegrationSID() {
-        return getSID();
-    }
 }

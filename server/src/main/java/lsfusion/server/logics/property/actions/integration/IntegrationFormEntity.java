@@ -67,13 +67,6 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
             }
 
             propertyDraw = addPropertyDraw(addProperty, addMapping, version);
-            propertyDraw.group = null; // without group 
-
-            if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
-                propertyDraw.applyObject = groupObject.getOrderObjects().get(0);
-
-            if(attr)
-                propertyDraw.attr = true;
             
             String alias = aliases.get(i);
             if(alias != null) {
@@ -84,6 +77,14 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
                 mapAliases.exclAdd(alias, propertyDraw);
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
+
+            propertyDraw.group = null; // without group 
+
+            if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
+                propertyDraw.applyObject = groupObject.getOrderObjects().get(0);
+
+            if(attr)
+                propertyDraw.attr = true;
         }
 
         if(where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where

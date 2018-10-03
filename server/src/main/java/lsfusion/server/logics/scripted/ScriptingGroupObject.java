@@ -10,19 +10,21 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import java.util.List;
 
 public class ScriptingGroupObject {
-    String groupName;
-    List<String> objects;
-    List<String> classes;
-    List<LocalizedString> captions;
-    List<ActionPropertyObjectEntity> events;
-    ClassViewType viewType;
-    boolean isInitType;
-    Integer pageSize;
-    UpdateType updateType;
-    String propertyGroupName;
-    
-    GroupObjectEntity neighbourGroupObject;
-    Boolean isRightNeighbour;
+    public String groupName;
+    public List<String> objects;
+    public List<String> classes;
+    public List<LocalizedString> captions;
+    public List<ActionPropertyObjectEntity> events;
+    public ClassViewType viewType;
+    public boolean isInitType;
+    public Integer pageSize;
+    public UpdateType updateType;
+    public String propertyGroupName;
+
+    public String integrationSID;
+
+    public GroupObjectEntity neighbourGroupObject;
+    public Boolean isRightNeighbour;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
@@ -57,5 +59,9 @@ public class ScriptingGroupObject {
 
     public void setPropertyGroupName(String propertyGroupName) {
         this.propertyGroupName = propertyGroupName;
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
     }
 }

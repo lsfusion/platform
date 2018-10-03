@@ -249,6 +249,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
+    public GroupObjectEntity getGroupObjectIntegration(String sID) {
+        for (GroupObjectEntity group : getGroupsIt()) {
+            if (group.getIntegrationSID().equals(sID)) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     public GroupObjectEntity getNFGroupObject(String sID, Version version) {
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
             if (group.getSID().equals(sID)) {

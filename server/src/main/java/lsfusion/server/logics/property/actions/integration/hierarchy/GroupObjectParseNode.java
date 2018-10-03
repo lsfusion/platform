@@ -14,7 +14,7 @@ public class GroupObjectParseNode extends GroupParseNode {
     private final GroupObjectEntity group;
 
     protected String getKey() {
-        return group.getSID();
+        return group.getIntegrationSID();
     }
 
     public GroupObjectParseNode(ImSet<ParseNode> children, GroupObjectEntity group) {

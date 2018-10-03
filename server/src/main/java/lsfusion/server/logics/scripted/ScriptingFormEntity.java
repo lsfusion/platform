@@ -107,7 +107,10 @@ public class ScriptingFormEntity {
             String propertyGroupName = groupObject.propertyGroupName;
             AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
             if(propertyGroup != null)
-                groupObj.propertyGroup = propertyGroup;            
+                groupObj.propertyGroup = propertyGroup;
+            
+            if(groupObject.integrationSID != null)
+                groupObj.setIntegrationSID(groupObject.integrationSID);
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
@@ -305,6 +308,12 @@ public class ScriptingFormEntity {
             else
                 propertyDraw = form.addPropertyDraw(null, propertyObject, formPath, property.listInterfaces, version);
 
+            try {
+                form.setFinalPropertyDrawSID(propertyDraw, alias);
+            } catch (FormEntity.AlreadyDefined alreadyDefined) {
+                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
+            }
+
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
@@ -315,12 +324,6 @@ public class ScriptingFormEntity {
                 propertyDraw.initCaption = caption; 
 
             movePropertyDraw(propertyDraw, propertyOptions, version);
-
-            try {
-                form.setFinalPropertyDrawSID(propertyDraw, alias);
-            } catch (FormEntity.AlreadyDefined alreadyDefined) {
-                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
-            }
         }
     }
 
@@ -444,6 +447,10 @@ public class ScriptingFormEntity {
         if (eventID != null)
             property.eventID = eventID;
 
+        String integrationSID = options.getIntegrationSID();
+        if (integrationSID != null)
+            property.setIntegrationSID(integrationSID);
+        
         String groupName = options.getGroupName();
         AbstractGroup group = (groupName == null ? null : LM.findGroup(groupName));
         if(group != null)

@@ -362,11 +362,12 @@ groupStatement
 }
 @after {
 	if (inGroupParseState()) {
-		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, parent);
+		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
 	}
 }
 	:	'GROUP' groupNameCaption=simpleNameWithCaption
 		(':' parentName=compoundID { parent = $parentName.sid; })?
+		('EXTID' extID=stringLiteral)?
 		';'
 	;
 
@@ -517,6 +518,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
+		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		)*
 	;
 
@@ -577,6 +579,10 @@ formGroupObjectUpdate returns [UpdateType updateType]
 
 formGroupObjectGroup returns [String formObjectGroup]
 	:	'IN' groupName=compoundID { $formObjectGroup = $groupName.sid; }
+	;
+
+formExtID returns [String extID]
+	:	'EXTID' id=stringLiteral { $extID = $id.val; } 
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
@@ -667,6 +673,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
+		|   'EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); }
 		)*
 	;
 
