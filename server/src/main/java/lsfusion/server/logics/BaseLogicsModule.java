@@ -125,6 +125,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP importFiles;
     public LCP readFile;
 
+    public LCP getExtension;
+    
     public LCP<?> imported;
     public LCP importedString;
 
@@ -158,6 +160,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
+    
+    // need to implement next methods this way, because they are used in super.initProperties, and can not be initialized before super.initProperties
 
     @IdentityLazy
     public LAP getFormEditReport() {
@@ -432,7 +436,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         objectClassName = findProperty("objectClassName[Object]");
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");
-        
+
+        getExtension = findProperty("getExtension[?]");
+
         // Настройка отчетов
         reportRowHeight = findProperty("reportRowHeight[]");
         reportCharWidth = findProperty("reportCharWidth[]");
