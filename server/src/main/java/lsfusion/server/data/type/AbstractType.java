@@ -8,12 +8,15 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
 import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -122,7 +125,18 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return parseNullableString(formulaValue != null ? formulaValue.getStringValue() : cell.getStringCellValue());
+        String cellValue;
+        switch (formulaValue.getCellTypeEnum()) {
+            case STRING:
+                cellValue = formulaValue.getStringValue();
+                break;
+            case NUMERIC:
+                cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
+                break;        
+            default:
+                cellValue = formulaValue.formatAsString();
+        }
+        return parseNullableString(cellValue);
     }
 
     @Override

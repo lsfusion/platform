@@ -87,7 +87,10 @@ public class ImportXLSIterator extends ImportPlainIterator {
         Cell cell = row.getCell(fieldIndexes.get(name));
         if(cell == null)
             return null;
-        return type.parseXLS(cell, formulaEvaluator.evaluate(cell));
+        CellValue cellValue = formulaEvaluator.evaluate(cell);
+        if(cellValue == null)
+            return null;
+        return type.parseXLS(cell, cellValue);
     }
 
     @Override

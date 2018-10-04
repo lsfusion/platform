@@ -13,6 +13,7 @@ import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.O
 import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,7 +140,9 @@ public class LogicalClass extends DataClass<Boolean> {
     }
     @Override
     public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return readXLS(formulaValue.getBooleanValue());
+        if(formulaValue.getCellTypeEnum().equals(CellType.BOOLEAN))
+            return readXLS(formulaValue.getBooleanValue());
+        return super.parseXLS(cell, formulaValue);
     }
 
     @Override
