@@ -117,7 +117,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
-        return parseNullableString(object.getString(key));
+        Object o = object.get(key);
+        if(o == JSONObject.NULL)
+            o = null;
+        return parseNullableString((String)o);
     }
     @Override
     public T parseXML(String value) throws ParseException {
