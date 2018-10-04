@@ -8,6 +8,7 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import net.iryndin.jdbf.core.DbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -127,7 +128,9 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return readXLS(formulaValue != null ? formulaValue.getNumberValue() : cell.getNumericCellValue());
+        if(formulaValue.getCellTypeEnum().equals(CellType.NUMERIC))
+            return readXLS(formulaValue.getNumberValue());
+        return super.parseXLS(cell, formulaValue); 
     }
 
     @Override

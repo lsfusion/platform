@@ -117,7 +117,13 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
     @Override
     public Timestamp parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        return readXLS(cell.getDateCellValue());
+        java.util.Date cellValue;
+        try {
+            cellValue = cell.getDateCellValue();
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue);
+        }
+        return readXLS(cellValue);
     }
 
     public Timestamp parseString(String s) throws ParseException {
