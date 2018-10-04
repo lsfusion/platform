@@ -13,21 +13,21 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportFilePlainWriter;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportPlainWriter;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public class ExportDBFWriter extends ExportPlainWriter {
+public class ExportDBFWriter extends ExportFilePlainWriter {
 
     private final DBFWriter writer; 
 
     public ExportDBFWriter(ImOrderMap<String, Type> fieldTypes, String charset) throws IOException, JDBFException {
         super(fieldTypes);
 
-        writer = new DBFWriter(outputStream, getFields());
-        ReflectionUtils.setPrivateFieldValue(DBFWriter.class, writer, "dbfEncoding", charset);
+        writer = new DBFWriter(file.getAbsolutePath(), getFields(), charset);
     }
 
     public void writeLine(ImMap<String, Object> row) {

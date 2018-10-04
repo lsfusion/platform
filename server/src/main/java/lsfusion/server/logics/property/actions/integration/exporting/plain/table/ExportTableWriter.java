@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportByteArrayPlainWriter;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportPlainWriter;
 
 import java.io.ByteArrayOutputStream;
@@ -13,7 +14,7 @@ import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class ExportTableWriter extends ExportPlainWriter {
+public class ExportTableWriter extends ExportByteArrayPlainWriter {
     
     private final boolean singleRow;
 
@@ -39,7 +40,7 @@ public class ExportTableWriter extends ExportPlainWriter {
         o.writeInt(count);
     }
 
-    int count = 0;
+    private int count = 0;
     @Override
     public void writeLine(ImMap<String, Object> row) throws IOException {
         if(singleRow && count++ > 0)

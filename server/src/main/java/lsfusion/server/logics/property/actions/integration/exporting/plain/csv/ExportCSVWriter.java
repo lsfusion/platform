@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportByteArrayPlainWriter;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportPlainWriter;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +14,7 @@ import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.*;
 
-public class ExportCSVWriter extends ExportPlainWriter {
+public class ExportCSVWriter extends ExportByteArrayPlainWriter {
     CsvEscaper csvEscaper;
     private String separator;
 

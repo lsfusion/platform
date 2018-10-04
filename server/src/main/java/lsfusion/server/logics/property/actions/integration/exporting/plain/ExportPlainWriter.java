@@ -19,21 +19,13 @@ public abstract class ExportPlainWriter {
 
     protected final ImOrderMap<String, Type> fieldTypes;
     
-    protected final ByteArrayOutputStream outputStream;
-
     public ExportPlainWriter(ImOrderMap<String, Type> fieldTypes) throws IOException {
         this.fieldTypes = fieldTypes;
-        outputStream = new ByteArrayOutputStream();
     }
+
+    public abstract byte[] release() throws IOException;
 
     public void writeCount(int count) throws IOException { // if needed        
     } 
     public abstract void writeLine(ImMap<String, Object> row) throws IOException; // fields needed if there are no headers, and import uses format's field ordering
-
-    public byte[] release() throws IOException {
-        closeWriter();
-        return outputStream.toByteArray();
-    }
-    
-    protected abstract void closeWriter() throws IOException;
 }
