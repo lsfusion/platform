@@ -3,15 +3,16 @@ package lsfusion.server.logics.property.actions.integration.hierarchy;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.type.ParseException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 
 public class PropertyParseNode extends ParseNode {
     private final PropertyDrawEntity<?> property;
+    private final boolean isExclusive;
 
-    public PropertyParseNode(PropertyDrawEntity<?> property) {
+    public PropertyParseNode(PropertyDrawEntity<?> property, boolean isExclusive) {
         this.property = property;
+        this.isExclusive = isExclusive;
     }
 
     protected String getKey() {
@@ -25,7 +26,7 @@ public class PropertyParseNode extends ParseNode {
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
-        importData.addProperty(property, upValues, propertyValue);
+        importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     
     public <T extends Node<T>> void exportNode(T node, ImMap<ObjectEntity, Object> upValues, ExportData exportData) {

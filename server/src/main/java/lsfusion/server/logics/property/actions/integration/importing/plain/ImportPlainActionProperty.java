@@ -4,14 +4,12 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.stat.StaticDataGenerator;
@@ -61,23 +59,22 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         byte[] file = files.get(currentGroup);
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = null;
         if(file != null) {
-            MOrderExclSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderExclSet();
-
             ImOrderMap<String, Type> fieldTypes = MapFact.EMPTYORDER();
             if(!parentGroups.isEmpty())
                 fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
 
             // index or key object access
             ObjectEntity object = null;
-            String objectSID = null;
             boolean isIndex = false;
+            ImRevMap<ObjectEntity, String> mapFields = null;
             if(currentGroup != null) {
                 isIndex = currentGroup.isIndex();
-                object = currentGroup.getObjects().single();
 
-                if(!isIndex) {
-                    objectSID = currentGroup.getIntegrationSID();
-                    fieldTypes = fieldTypes.addOrderExcl(MapFact.singletonOrder(objectSID, (Type)object.baseClass));
+                if(isIndex)
+                    object = currentGroup.getObjects().single();
+                else {
+                    mapFields = ImportPlainActionProperty.getFields(currentGroup);
+                    fieldTypes = fieldTypes.addOrderExcl(ImportPlainActionProperty.getFieldTypes(currentGroup, mapFields));
                 }
             }
 
@@ -91,6 +88,8 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
                     return object.getType();
                 }}));
 
+            MOrderSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderSet(isIndex);
+
             ImportPlainIterator iterator = getIterator(file, fieldTypes, context);
             ImMap<String, Object> row;
             while ((row = iterator.next()) != null) {
@@ -99,25 +98,22 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
                     objectValues = parentRows.get((Integer)row.get(PlainConstants.parentFieldName));
                 if(currentGroup != null) {
                     // getting object value
-                    Object objectValue;
                     try {
                         if (isIndex)
-                            objectValue = data.genObject(object);
+                            objectValues = objectValues.addExcl(object, data.genObject(object));
                         else
-                            objectValue = row.get(objectSID);
+                            objectValues = objectValues.addExcl(mapFields.join(row));
                     } catch (SQLException e) {
                         throw Throwables.propagate(e);
                     }
-
-                    objectValues = objectValues.addExcl(object, objectValue);
                 }
-                mAllRows.exclAdd(objectValues);
+                mAllRows.add(objectValues);
 
-                data.addObject(currentGroup, objectValues);
+                data.addObject(currentGroup, objectValues, isIndex);
 
                 ImMap<PropertyDrawEntity, Object> propertyValues = propertyNames.join(row);
                 for(int i=0,size=propertyValues.size();i<size;i++)
-                    data.addProperty(propertyValues.getKey(i), objectValues, propertyValues.getValue(i)); 
+                    data.addProperty(propertyValues.getKey(i), objectValues, propertyValues.getValue(i), isIndex);
             }
             
             allRows = mAllRows.immutableOrder();
@@ -128,7 +124,22 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         for(GroupObjectEntity childGroup : hierarchy.getDependencies(currentGroup))
             importGroupData(childGroup, parentGroups, hierarchy, files, data, context, allRows);
     }
-    
+
+    public static ImRevMap<ObjectEntity, String> getFields(GroupObjectEntity currentGroup) {
+        return currentGroup.getObjects().mapRevValues(new GetValue<String, ObjectEntity>() {
+            public String getMapValue(ObjectEntity value) {
+                return value.getIntegrationSID();
+            }
+        });
+    }
+    public static ImOrderMap<String, Type> getFieldTypes(GroupObjectEntity currentGroup, final ImRevMap<ObjectEntity, String> fields) {
+        return currentGroup.getOrderObjects().mapOrderValues(new GetValue<Type, ObjectEntity>() {
+            public Type getMapValue(ObjectEntity value) {
+                return value.getType();
+            }
+        }).map(fields);
+    }
+
     private Map<GroupObjectEntity, byte[]> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<GroupObjectEntity, byte[]> files = new HashMap<>();
 

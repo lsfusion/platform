@@ -80,6 +80,10 @@ public class ScriptingFormEntity {
                 if (groupObject.events.get(j) != null) {
                     form.addActionsOnEvent(obj, version, groupObject.events.get(j));
                 }
+
+                if (groupObject.integrationSIDs.get(j) != null) {
+                    obj.setIntegrationSID(groupObject.integrationSIDs.get(j));
+                }
             }
 
             String groupName = groupObject.groupName;
@@ -108,9 +112,16 @@ public class ScriptingFormEntity {
             AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
             if(propertyGroup != null)
                 groupObj.propertyGroup = propertyGroup;
-            
-            if(groupObject.integrationSID != null)
-                groupObj.setIntegrationSID(groupObject.integrationSID);
+
+            String integrationSID = groupObject.integrationSID;
+            if(integrationSID == null && groupObject.groupName == null) {
+                integrationSID = "";
+                for (ObjectEntity obj : groupObj.getOrderObjects()) {
+                    integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+                }
+            }
+            if(integrationSID != null)
+                groupObj.setIntegrationSID(integrationSID);
 
             groupObj.setIntegrationKey(groupObject.integrationKey);
 

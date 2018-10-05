@@ -1,14 +1,12 @@
 package lsfusion.server.logics.property.actions.integration.hierarchy;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ExtInt;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -54,7 +52,7 @@ public class GroupObjectParseNode extends GroupParseNode {
 
             ImMap<ObjectEntity, Object> newUpValues = upValues.addExcl(object, objectValue);
 
-            importData.addObject(group, newUpValues);
+            importData.addObject(group, newUpValues, isIndex);
             importChildrenNodes(data.second, newUpValues, importData);
         }
     }

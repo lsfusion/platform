@@ -20,6 +20,7 @@ import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.StaticExportData;
 import lsfusion.server.logics.property.actions.integration.hierarchy.ExportData;
+import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainActionProperty;
 import lsfusion.server.logics.property.actions.integration.plain.PlainConstants;
 
 import java.io.IOException;
@@ -85,16 +86,14 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
         }
 
         // index or key object access
-        ObjectEntity object = null;
-        String objectSID = null;
         boolean isIndex = false;
+        ImRevMap<ObjectEntity, String> mapFields = null;
         if(currentGroup != null) {
             isIndex = currentGroup.isIndex();
 
             if(!isIndex) {
-                object = currentGroup.getObjects().single();
-                objectSID = currentGroup.getIntegrationSID();
-                fieldTypes = fieldTypes.addOrderExcl(MapFact.singletonOrder(objectSID, (Type)object.baseClass));
+                mapFields = ImportPlainActionProperty.getFields(currentGroup);
+                fieldTypes = fieldTypes.addOrderExcl(ImportPlainActionProperty.getFieldTypes(currentGroup, mapFields));
             }
         }
 
@@ -124,7 +123,8 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
                 fieldValues = fieldValues.addExcl(PlainConstants.parentFieldName, parentIndexes.get(currentRow.filterIncl(parentObjects)));
 
             if(currentGroup != null)
-                fieldValues = fieldValues.addExcl(objectSID, currentRow.get(object));
+                if(!isIndex)
+                    fieldValues = fieldValues.addExcl(mapFields.crossJoin(currentRow));
             
             exporter.writeLine(fieldValues);
         }
