@@ -172,11 +172,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     };
 
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
+    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject) {
         super(ID);
         setSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
-        this.toDraw = toDraw;
     }
 
     public DataClass getRequestInputType(SecurityPolicy policy) {
@@ -446,7 +445,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null?getApplyObject(form):toDraw;        
+        return toDraw==null?getApplyObject(form):toDraw;
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form) {

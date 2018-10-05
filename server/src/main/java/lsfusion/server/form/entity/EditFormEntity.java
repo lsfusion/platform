@@ -15,8 +15,6 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
 
         object.groupTo.setPanelClassView();
 
-        objectValue.setEditType(PropertyEditType.READONLY);
-
         finalizeInit(LM.getVersion());
     }
 

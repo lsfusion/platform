@@ -22,9 +22,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyClassImplement;
 import lsfusion.server.logics.property.ValueClassWrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AbstractGroup extends AbstractNode {
 
     private final String canonicalName;
@@ -155,10 +152,10 @@ public class AbstractGroup extends AbstractNode {
     }
 
     @Override
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
+    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         MList<PropertyClassImplement> mResult = ListFact.mList();
         for (AbstractNode child : getNFChildrenListIt(version)) {
-            mResult.addAll(child.getProperties(valueClasses, mapClasses, useObjSubsets, anyInInterface, version));
+            mResult.addAll(child.getProperties(valueClasses, mapClasses, version));
         }
         return mResult.immutableList();
     }

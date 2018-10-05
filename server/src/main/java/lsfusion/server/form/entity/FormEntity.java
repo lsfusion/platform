@@ -40,6 +40,7 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
+import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -374,8 +375,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         groupObject.add(object);
         addGroupObject(groupObject, version);
 
-        addPropertyDraw(groups, false, version, object);
-
         return object;
     }
 
@@ -422,48 +421,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addGroupObject(group, null, null, version);
     }
 
-    public void addPropertyDraw(ObjectEntity object, Version version, Object... groups) {
-        addPropertyDraw(groups, false, version, object);
+    public void addPropertyDraw(ObjectEntity object, Version version, AbstractGroup group) {
+        addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
     }
 
-    public void addPropertyDraw(Object[] groups, boolean useObjSubsets, Version version, ObjectEntity object) {
-
-        for (int i = 0; i < groups.length; i++) {
-
-            Object group = groups[i];
-            if (group instanceof Boolean) {
-//                continue;
-            } else if (group instanceof AbstractNode) {
-                boolean upClasses = false;
-                if ((i + 1) < groups.length && groups[i + 1] instanceof Boolean) {
-                    upClasses = (Boolean) groups[i + 1];
-                }
-                addPropertyDraw((AbstractNode) group, upClasses, useObjSubsets, version, object);
-            } else if (group instanceof LP) {
-                this.addPropertyDraw((LP) group, version, object);
-            } else if (group instanceof LP[]) {
-                this.addPropertyDraw((LP[]) group, version, object);
-            }
-        }
-    }
-
-    public List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, Version version, ObjectEntity object) {
-        return addPropertyDraw(group, upClasses, null, false, version, object);
-    }
-
-    public void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, Version version, ObjectEntity object) {
-        addPropertyDraw(group, false, upClasses, null, useObjSubsets, version, object);
-    }
-
-    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, Version version, ObjectEntity object) {
-        return addPropertyDraw(group, false, upClasses, groupObject, useObjSubsets, version, object);
-    }
-
-    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean prev, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, Version version, ObjectEntity object) {
-        return addPropertyDraw(group, prev, upClasses, groupObject, useObjSubsets, version, SetFact.singletonOrder(object));
-    }
-    
-    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean prev, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, Version version, ImOrderSet<ObjectEntity> objects) {
+    protected void addPropertyDraw(AbstractNode group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
         ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = objects.getSet().mapRevValues(new GetValue<ValueClassWrapper, ObjectEntity>() {
             public ValueClassWrapper getMapValue(ObjectEntity value) {
                 return new ValueClassWrapper(value.baseClass);
@@ -471,20 +433,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
         ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
 
-        List<PropertyDrawEntity> propertyDraws = new ArrayList<>();
-
         ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
-        for (PropertyClassImplement implement : group.getProperties(valueClasses, useObjSubsets, upClasses, version)) {
-            ImSet<ValueClassWrapper> wrapers = implement.mapping.valuesSet();
-            ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrapers).keys());
-            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers), prev), groupObject, version, filterObjects));
+        for (PropertyClassImplement implement : group.getProperties(valueClasses, version)) {
+            ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
+            ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
+            addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);
         }
-
-        return propertyDraws;
     }
 
-    public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses, boolean useObjSubsets) {
-        if(!useObjSubsets)
+    public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses) {
+        if(valueClasses.size() == 1) // optimization
             return SetFact.singleton(valueClasses);
             
         ImCol<ImSet<ValueClassWrapper>> classSubsets;MCol<ImSet<ValueClassWrapper>> mClassSubsets = ListFact.mCol();
@@ -497,9 +455,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return classSubsets;
     }
 
-    public PropertyDrawEntity addPropertyDraw(LP property, Version version, ImOrderSet<ObjectEntity> objects) {
-        return addPropertyDraw(property, null, version, objects);
-    }
     public PropertyDrawEntity addPropertyDraw(LP property, Version version, ObjectEntity object) {
         return addPropertyDraw(property, version, SetFact.singletonOrder(object));
     }
@@ -513,8 +468,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, ImOrderSet<ObjectEntity> objects) {
-        return addPropertyDraw(groupObject, property.createObjectEntity(objects), null, property.listInterfaces, version);
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, Version version, ImOrderSet<ObjectEntity> objects) {
+        return addPropertyDraw(property.createObjectEntity(objects), null, property.listInterfaces, version);
     }
 
     public GroupObjectEntity getNFApplyObject(ImSet<ObjectEntity> objects, Version version) {
@@ -545,17 +500,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
         PropertyObjectEntity<I, ?> entity = PropertyObjectEntity.create(property, mapping, null, null);
-        return addPropertyDraw(null, entity, null, entity.property.getReflectionOrderInterfaces(), version);
+        return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), version);
     }
 
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, ImOrderSet<P> interfaces, Version version) {
         String propertySID = null;
         if (propertyImplement.property.isNamed()) 
             propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);
-        return addPropertyDraw(groupObject, propertyImplement, formPath, propertySID, null, version);        
+        return addPropertyDraw(propertyImplement, formPath, propertySID, null, version);
     }
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, Property inheritedProperty, Version version) {
-        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement, groupObject);
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(PropertyObjectEntity<P, ?> propertyImplement, String formPath, String propertySID, Property inheritedProperty, Version version) {
+        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertyImplement);
 
         if(inheritedProperty == null)
             inheritedProperty = propertyImplement.property;

@@ -14,8 +14,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
-import java.util.Arrays;
-
 import static lsfusion.server.logics.PropertyUtils.mapCalcImplement;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
 
@@ -87,13 +85,13 @@ public class LogFormEntity extends FormEntity {
         Version version = getVersion();
 
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup, true);
+            addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup);
         }
 
         addPropertyDraw(logValueProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.recognizeGroup.getProperties(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)), true, version);
+                systemEventsLM.baseLM.recognizeGroup.getProperties(property.property.getValueClass(ClassType.logPolicy), version);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
