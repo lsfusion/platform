@@ -79,9 +79,17 @@ public class ClientPropertyData {
 
     public int getColumnsCount(String fieldName, Result<Integer> minColumnsCount) {
         String baseFieldName = ReportGenerator.getBaseFieldName(fieldName);
+
+        Map<Map<Integer, Object>, List<Map<Integer, Object>>> fieldColumnData = columnData.get(baseFieldName);
+        if(fieldColumnData == null) { // unknown field
+            if(minColumnsCount != null)
+                minColumnsCount.set(1);
+            return 1;
+        }
+        
         int max = 0;
         int min = Integer.MAX_VALUE;
-        for(List<Map<Integer, Object>> columns : columnData.get(baseFieldName).values()) {
+        for(List<Map<Integer, Object>> columns : fieldColumnData.values()) {
             int columnsCount = columns.size();
             max = BaseUtils.max(max, columnsCount);
             min = BaseUtils.min(min, columnsCount);
@@ -90,15 +98,15 @@ public class ClientPropertyData {
             minColumnsCount.set(min);
         return max;
     }
-    private Map<Map<Integer, Object>, List<Map<Integer, Object>>> getColumns(String fieldName) {
-        String baseFieldName = ReportGenerator.getBaseFieldName(fieldName);
-        return columnData.get(baseFieldName);
-    }
 
     private List<Map<Integer, Object>> getColumns(String fieldName, Map<Integer, Object> currentKeyRow) {
         String baseFieldName = ReportGenerator.getBaseFieldName(fieldName);
-        List<Map<Integer, Object>> columns = columnData.get(baseFieldName).get(BaseUtils.filterInclKeys(currentKeyRow, columnParentObjects.get(baseFieldName)));
-        if(columns == null)
+
+        Map<Map<Integer, Object>, List<Map<Integer, Object>>> fieldColumnData = columnData.get(baseFieldName);
+        if(fieldColumnData == null) // unknown field
+            return Collections.emptyList();
+        List<Map<Integer, Object>> columns = fieldColumnData.get(BaseUtils.filterInclKeys(currentKeyRow, columnParentObjects.get(baseFieldName)));
+        if(columns == null) // group without columns (it's not guaranteed on server that groups in all parent groups exist) 
             return Collections.emptyList();
         return columns;
     }
@@ -116,8 +124,11 @@ public class ClientPropertyData {
         if(columnIndex >= columns.size())
             return null;
         Map<Integer, Object> columnRow = columns.get(columnIndex);
-        currentKeyRow = BaseUtils.merge(currentKeyRow, columnRow);
+        currentKeyRow = BaseUtils.override(currentKeyRow, columnRow); // override because group columns can contain this group 
 
-        return data.get(fieldName).get(BaseUtils.filterInclKeys(currentKeyRow, objects.get(fieldName)));
+        Map<Map<Integer, Object>, Object> fieldData = data.get(fieldName);
+        if(fieldData == null) // unknown field
+            return null;
+        return fieldData.get(BaseUtils.filterInclKeys(currentKeyRow, objects.get(fieldName)));
     }
 }

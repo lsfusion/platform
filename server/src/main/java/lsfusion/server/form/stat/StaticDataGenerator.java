@@ -172,7 +172,12 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         for(int g=0,sizeG=columnGroupObjectProps.size();g<sizeG;g++) {
             ImOrderSet<GroupObjectEntity> columnGroupObjects = columnGroupObjectProps.getKey(g);
             final ImOrderSet<GroupObjectEntity> allColumnGroupObjects = getParentColumnGroupObjects(columnGroupObjects);
-            ImOrderSet<GroupObjectEntity> thisGroups = allColumnGroupObjects.removeOrder(parentGroups.getSet());
+            
+            ImSet<GroupObjectEntity> parentGroupsAndThisGroup = parentGroups.getSet();
+            if(thisGroup != null)
+                parentGroupsAndThisGroup = parentGroupsAndThisGroup.addExcl(thisGroup);
+            
+            ImOrderSet<GroupObjectEntity> thisGroups = allColumnGroupObjects.removeOrder(parentGroupsAndThisGroup);
             if(thisGroup != null)
                 thisGroups = thisGroups.addOrderExcl(thisGroup);
 
@@ -241,7 +246,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                     parentColumnObjects = SetFact.EMPTY();
                     columnData = MapFact.singleton(MapFact.<ObjectEntity, Object>EMPTY(), SetFact.singletonOrder(MapFact.<ObjectEntity, Object>EMPTY()));
                 } else {
-                    ImSet<GroupObjectEntity> parentColumnGroupObjects = allColumnGroupObjects.getSet().filter(parentGroups.getSet()).remove(columnGroupObjects.getSet());
+                    ImSet<GroupObjectEntity> parentColumnGroupObjects = allColumnGroupObjects.getSet().filter(parentGroupsAndThisGroup).remove(columnGroupObjects.getSet());
 
                     thisColumnObjects = GroupObjectEntity.getObjects(columnGroupObjects.getSet());
                     parentColumnObjects = GroupObjectEntity.getObjects(parentColumnGroupObjects);

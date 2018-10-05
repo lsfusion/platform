@@ -1,5 +1,6 @@
 package lsfusion.server.form.entity;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -90,8 +91,8 @@ public class FormGroupHierarchyCreator {
                     if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects))
                         for (GroupObjectEntity columnGroup : columnGroupObjects) 
                             if(groups.contains(columnGroup)) {
-                                assert graph.get(targetGroup).containsAll(graph.get(columnGroup));
-                                graph.get(targetGroup).addAll(graph.get(columnGroup));
+                                assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));
+//                                graph.get(targetGroup).addAll(graph.get(columnGroup));
                             }
                 }
             }
