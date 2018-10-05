@@ -87,7 +87,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyForeground;
 
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
-    
+
     public AbstractGroup group;
 
     public boolean attr;
@@ -243,12 +243,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     };
 
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
+    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject) {
         super(ID);
         setSID("propertyDraw" + ID);
         setIntegrationSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
-        this.toDraw = toDraw;
     }
 
     public DataClass getRequestInputType(SecurityPolicy policy) {
@@ -515,7 +514,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // interactive
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;        
+        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {

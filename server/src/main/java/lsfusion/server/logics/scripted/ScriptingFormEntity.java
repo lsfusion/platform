@@ -343,9 +343,9 @@ public class ScriptingFormEntity {
             PropertyDrawEntity propertyDraw;
             PropertyObjectEntity propertyObject = property.createObjectEntity(objects);
             if(inherited.result != null)
-                propertyDraw = form.addPropertyDraw(null, propertyObject, formPath, inherited.result.second, inherited.result.first, version);
+                propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, version);
             else
-                propertyDraw = form.addPropertyDraw(null, propertyObject, formPath, property.listInterfaces, version);
+                propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, version);
 
             try {
                 form.setFinalPropertyDrawSID(propertyDraw, alias);

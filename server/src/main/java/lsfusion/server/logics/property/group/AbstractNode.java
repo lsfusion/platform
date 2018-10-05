@@ -12,8 +12,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyClassImplement;
 import lsfusion.server.logics.property.ValueClassWrapper;
 
-import java.util.List;
-
 public abstract class AbstractNode extends ImmutableObject {
 
     NFProperty<AbstractGroup> parent = NFFact.property(true);
@@ -30,16 +28,16 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract ImOrderSet<Property> getProperties();
     
-    protected abstract ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version);
+    protected abstract ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version);
     
-    public ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, boolean useObjSubsets, boolean anyInInterface, Version version) {
+    public ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classLists, Version version) {
         return getProperties(classLists, classLists.group(new BaseUtils.Group<ValueClass, ValueClassWrapper>() { // для "кэширования" mapClasses так как очень часто вызывается
             public ValueClass group(ValueClassWrapper key) {
                 return key.valueClass;
-            }}), useObjSubsets, anyInInterface, version);
+            }}), version);
     }
     
-    public ImList<PropertyClassImplement> getProperties(ValueClassWrapper classw, boolean anyInInterface, Version version) {
-        return getProperties(SetFact.singleton(classw), false, anyInInterface, version);        
+    public ImList<PropertyClassImplement> getProperties(ValueClass valueClass, Version version) {
+        return getProperties(SetFact.singleton(new ValueClassWrapper(valueClass)), version);
     }
 }

@@ -28,7 +28,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -38,8 +37,6 @@ import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
-import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractPropertyNode;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
@@ -330,20 +327,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     private static class CacheEntry {
         private final Property property;
         private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
-        private final boolean useObjSets;
-        private final boolean anyInInterface;
-        
+
         private ImList<PropertyClassImplement> result;
         
-        public CacheEntry(Property property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSets, boolean anyInInterface) {
+        public CacheEntry(Property property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
             this.property = property;
             this.mapClasses = mapClasses;
-            this.useObjSets = useObjSets;
-            this.anyInInterface = anyInInterface;
         }
 
         public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
-            if(!(useObjSets == entry.useObjSets && anyInInterface == entry.anyInInterface && mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(property, entry.property)))
+            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(property, entry.property)))
                 return null;
 
             MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
@@ -364,20 +357,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                 result += mapClasses.getKey(i).hashCode() ^ mapClasses.getValue(i).size();
             }
             
-            return 31 * (31 * ( 31 * result + (useObjSets ? 1 : 0)) + (anyInInterface ? 1 : 0)) + property.hashCode(); 
+            return 31 * result + property.hashCode();
         }
     }    
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
     // вся оптимизация в общем то для drillDown
-    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, boolean useObjSubsets, boolean anyInInterface, Version version) {
+    protected ImList<PropertyClassImplement> getProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
         if(valueClasses.size() == 1) { // доп оптимизация для DrillDown
-            if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), anyInInterface))
+            if(interfaces.size() == 1 && isInInterface(MapFact.singleton(interfaces.single(), valueClasses.single().valueClass.getUpSet()), true))
                 return ListFact.<PropertyClassImplement>singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
-        }            
-            
-        CacheEntry entry = new CacheEntry(this, mapClasses, useObjSubsets, anyInInterface); // кэширование
+        }
+
+        CacheEntry entry = new CacheEntry(this, mapClasses); // кэширование
         int hash = entry.hash();
         MAddCol<CacheEntry> col = hashProps.get(hash);
         if(col == null) {
@@ -398,7 +391,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
             }
         }
         
-        ImList<PropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses, useObjSubsets), anyInInterface); 
+        ImList<PropertyClassImplement> result = getProperties(FormEntity.getSubsets(valueClasses));
         
         entry.result = result;
         synchronized (col) {
@@ -408,7 +401,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         return result;
     }
     
-    private ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
+    private ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
@@ -418,7 +411,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
                         public AndClassSet getMapValue(int i, T value) {
                             return orderClasses.get(i).valueClass.getUpSet();
                         }});
-                    if (isInInterface(propertyInterface, anyInInterface)) {
+                    if (isInInterface(propertyInterface, true)) {
                         mResultList.add(createClassImplement(orderClasses, mapping));
                     }
                 }

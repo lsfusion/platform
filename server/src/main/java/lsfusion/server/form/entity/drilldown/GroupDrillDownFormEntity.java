@@ -68,7 +68,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 detailsGroup.add(innerObject);
 
                 addPropertyDraw(LM.baseLM.getObjValueProp(this, innerObject), version, innerObject);
-                addPropertyDraw(LM.recognizeGroup, true, version, innerObject);
+                addPropertyDraw(innerObject, version, LM.recognizeGroup);
             }
 
             mInnerObjects.revAdd(innerInterface, innerObject);
