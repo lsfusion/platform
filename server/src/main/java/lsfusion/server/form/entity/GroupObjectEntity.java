@@ -69,7 +69,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     private boolean integrationKey; // key (key in JSON, tag in XML, fields in plain formats) or index (array in JSON, multiple object name tags in xml, order in plain formats)
 
     public boolean isIndex() {
-        return integrationKey;
+        return !integrationKey;
     }
 
     public void setIntegrationKey(boolean integrationKey) {
