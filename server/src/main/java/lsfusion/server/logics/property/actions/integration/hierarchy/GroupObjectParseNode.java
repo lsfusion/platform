@@ -1,14 +1,19 @@
 package lsfusion.server.logics.property.actions.integration.hierarchy;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ExtInt;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+
+import java.sql.SQLException;
 
 public class GroupObjectParseNode extends GroupParseNode {
     private final GroupObjectEntity group;
@@ -27,40 +32,31 @@ public class GroupObjectParseNode extends GroupParseNode {
     }
 
     private boolean isIndex() {
-        if(group.getObjects().size() != 1)
-            return true;
-
-        ObjectEntity singleObject = getSingleObject();
-        if(singleObject.noClasses())
-            return true;
-
-        return !singleObject.baseClass.isCompatibleParent(StringClass.get(ExtInt.UNLIMITED));
+        return group.isIndex();
     }
     
     @Override
     public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData) {
         boolean isIndex = isIndex();
-
         ObjectEntity object = getSingleObject();
-        Integer index = null;
-        Integer count = null;
-        if(isIndex) {
-            index = importData.getIndex(object);
-            count = 0;
-        }
+
         for (Pair<Object, T> data : node.getMap(getKey(), isIndex)) {
-            Object objectValue = data.first;
-            if(isIndex) {
-                objectValue = ((Integer)objectValue) + index;
-                count++;
+            // getting object value
+            Object objectValue;
+            try {
+                if (isIndex)
+                    objectValue = importData.genObject(object);
+                else
+                    objectValue = ((DataClass) object.baseClass).parseString((String) data.first);
+            } catch (SQLException | ParseException e) {
+                throw Throwables.propagate(e);
             }
+
             ImMap<ObjectEntity, Object> newUpValues = upValues.addExcl(object, objectValue);
 
             importData.addObject(group, newUpValues);
             importChildrenNodes(data.second, newUpValues, importData);
         }
-        if(isIndex)
-            importData.shiftIndex(object, count);
     }
 
     @Override
@@ -72,8 +68,17 @@ public class GroupObjectParseNode extends GroupParseNode {
         for (ImMap<ObjectEntity, Object> data : exportData.getObjects(group, upValues)) {
             T newNode = node.createNode();
             exportChildrenNodes(newNode, data, exportData);
-            
-            mMap.add(new Pair<Object, T>(isIndex?i++:(String)data.get(getSingleObject()), newNode));
+
+            // getting object value
+            Object objectValue;
+            if (isIndex)
+                objectValue = i++;
+            else {
+                ObjectEntity object = getSingleObject();
+                objectValue = ((DataClass) object.baseClass).formatString(data.get(object));
+            }
+
+            mMap.add(new Pair<Object, T>(objectValue, newNode));
         }
         node.addMap(node, getKey(), isIndex, mMap.immutableList());
     }

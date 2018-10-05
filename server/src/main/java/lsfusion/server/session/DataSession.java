@@ -527,9 +527,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataObject addObject() throws SQLException {
-        return new DataObject(IDTable.instance.generateID(idSession, IDTable.OBJECT),baseClass.unknown);
+        return new DataObject(generateID(),baseClass.unknown);
     }
-    
+
+    public long generateID() throws SQLException {
+        return IDTable.instance.generateID(idSession, IDTable.OBJECT);
+    }
+
     public <P extends PropertyInterface> DataObject addObjectAutoSet(ConcreteCustomClass customClass, DataObject object, BusinessLogics BL, CustomClassListener classListener) throws SQLException, SQLHandledException {
         DataObject dataObject = addObject(customClass, object);
         BL.resolveAutoSet(this, customClass, dataObject, classListener);

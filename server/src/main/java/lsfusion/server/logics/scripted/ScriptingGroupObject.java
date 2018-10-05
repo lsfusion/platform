@@ -22,6 +22,7 @@ public class ScriptingGroupObject {
     public String propertyGroupName;
 
     public String integrationSID;
+    public boolean integrationKey;
 
     public GroupObjectEntity neighbourGroupObject;
     public Boolean isRightNeighbour;
@@ -63,5 +64,9 @@ public class ScriptingGroupObject {
 
     public void setIntegrationSID(String integrationSID) {
         this.integrationSID = integrationSID;
+    }
+
+    public void setIntegrationKey(boolean integrationKey) {
+        this.integrationKey = integrationKey;
     }
 }

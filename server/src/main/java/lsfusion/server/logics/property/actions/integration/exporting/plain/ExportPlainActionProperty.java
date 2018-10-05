@@ -70,11 +70,11 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
         
         ImOrderSet<PropertyDrawEntity> childProperties = hierarchy.getProperties(currentGroup);
 
-        ImOrderMap<String, Type> parentTypes = MapFact.EMPTYORDER();
+        ImOrderMap<String, Type> fieldTypes = MapFact.EMPTYORDER();
         ImSet<ObjectEntity> parentObjects = null;
         ImMap<ImMap<ObjectEntity, Object>, Integer> parentIndexes = null; // optimization, a lot faster then indexof
         if(!parentGroups.isEmpty()) {
-            parentTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
+            fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
             parentObjects = GroupObjectEntity.getObjects(parentGroups);
 
             parentIndexes = parentRows.mapOrderValues(new GetIndex<Integer>() {
@@ -83,19 +83,33 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
                 }
             });
         }
-        
+
+        // index or key object access
+        ObjectEntity object = null;
+        String objectSID = null;
+        boolean isIndex = false;
+        if(currentGroup != null) {
+            isIndex = currentGroup.isIndex();
+
+            if(!isIndex) {
+                object = currentGroup.getObjects().single();
+                objectSID = currentGroup.getIntegrationSID();
+                fieldTypes = fieldTypes.addOrderExcl(MapFact.singletonOrder(objectSID, (Type)object.baseClass));
+            }
+        }
+
         ImRevMap<String, PropertyDrawEntity> propertyNames = childProperties.getSet().mapRevKeys(new GetValue<String, PropertyDrawEntity>() {
             public String getMapValue(PropertyDrawEntity property) {
                 return property.getIntegrationSID();
             }
         });
-        ImOrderMap<String, Type> propertyTypes = propertyNames.mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
+        fieldTypes = fieldTypes.addOrderExcl(propertyNames.mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
             public Type getMapValue(PropertyDrawEntity property) {
                 return data.getType(property);
             }
-        });
+        }));
 
-        ExportPlainWriter exporter = getWriter(parentTypes.addOrderExcl(propertyTypes), currentGroup == null);
+        ExportPlainWriter exporter = getWriter(fieldTypes, currentGroup == null);
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = data.getRows(currentGroup);
         exporter.writeCount(allRows.size());
         for(int i=0,size=allRows.size();i<size;i++) {
@@ -108,6 +122,9 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
             
             if(!parentGroups.isEmpty())
                 fieldValues = fieldValues.addExcl(PlainConstants.parentFieldName, parentIndexes.get(currentRow.filterIncl(parentObjects)));
+
+            if(currentGroup != null)
+                fieldValues = fieldValues.addExcl(objectSID, currentRow.get(object));
             
             exporter.writeLine(fieldValues);
         }

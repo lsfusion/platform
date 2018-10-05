@@ -123,12 +123,14 @@ public class ScriptingFormEntity {
         String propertyGroupName = groupObject.propertyGroupName;
         AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
         if(propertyGroup != null)
-            groupObj.propertyGroup = propertyGroup;            
+            groupObj.propertyGroup = propertyGroup;
             
         if(groupObject.integrationSID != null)
             groupObj.setIntegrationSID(groupObject.integrationSID);
 
-        addGroupObjectEntity(groupName, groupObj, neighbour, isRightNeighbour, version);
+        groupObj.setIntegrationKey(groupObject.integrationKey);
+        addGroupObjectEntity(groupName, groupObj, neighbour,isRightNeighbour, version);
+
         return groupObj;
     }
 

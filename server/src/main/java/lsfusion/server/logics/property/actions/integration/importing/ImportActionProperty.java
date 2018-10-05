@@ -17,11 +17,13 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.interop.FormStaticType;
 import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.DataObject;
@@ -33,9 +35,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SessionTableUsage;
+import lsfusion.server.session.*;
 import lsfusion.server.stack.StackProgress;
 
 import java.io.IOException;
@@ -76,11 +76,13 @@ public abstract class ImportActionProperty extends SystemActionProperty {
     protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException;
 
     @Override
-    protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+    protected FlowResult aspectExecute(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<CalcPropertyObjectEntity, ImMap<ImMap<ObjectEntity, Object>, Object>> result;
+        ImMap<ObjectEntity, ImSet<Long>> addedObjects;
         try {
             FormImportData data = getData(context);
             result = data.result();
+            addedObjects = data.resultAddedObjects();
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
@@ -90,6 +92,16 @@ public abstract class ImportActionProperty extends SystemActionProperty {
             for(DataProperty changeProp : property.property.getChangeProps())
                context.getSession().dropChanges(changeProp);
         }
+
+        MExclMap<DataObject, ObjectValue> mAddedObjects = MapFact.mExclMap();
+        for(int i=0,size=addedObjects.size();i<size;i++) {
+            // convert to DataObject / ObjectValue
+            ConcreteCustomClass customClass = (ConcreteCustomClass)addedObjects.getKey(i).baseClass;
+            DataObject classObject = customClass.getClassObject();
+            for(Long object : addedObjects.getValue(i))
+                mAddedObjects.exclAdd(new DataObject(object, context.getSession().baseClass.unknown), classObject);
+        }
+        writeClassData(context, mAddedObjects.immutable());
 
         // group by used objects
         ImMap<ImSet<ObjectEntity>, ImSet<CalcPropertyObjectEntity>> groupedProps = result.keys().group(new BaseUtils.Group<ImSet<ObjectEntity>, CalcPropertyObjectEntity>() {
@@ -112,7 +124,7 @@ public abstract class ImportActionProperty extends SystemActionProperty {
                     // convert to DataObject / ObjectValue
                     ImMap<ObjectEntity, DataObject> keys = propValues.getKey(j).mapValues(new GetKeyValue<DataObject, ObjectEntity, Object>() {
                         public DataObject getMapValue(ObjectEntity key, Object value) {
-                            return new DataObject(value, (ConcreteClass) key.baseClass);
+                            return new DataObject(value, key.baseClass instanceof ConcreteCustomClass ? context.getSession().baseClass.unknown : (DataClass) key.baseClass);
                         }
                     });
                     ObjectValue value = ObjectValue.getValue(propValues.getValue(j), (DataClass)prop.getType());
@@ -132,11 +144,16 @@ public abstract class ImportActionProperty extends SystemActionProperty {
         return FlowResult.FINISH;
     }
 
-    private void writeData(ExecutionContext context, ImSet<ObjectEntity> keySet, ImSet<CalcPropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
+    private interface DataWriter<K, V> {
+
+        void writeBatch(ImMap<K, V> data, ProgressBar progress) throws SQLException, SQLHandledException;
+    }
+
+    private <K, V> void writeData(ImMap<K, V> data, DataWriter<K, V> writer) throws SQLException, SQLHandledException {
         int batchSize = data.size();
-        
-        ImFilterValueMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> mPremap = data.mapFilterValues();
-        
+
+        ImFilterValueMap<K, V> mPremap = data.mapFilterValues();
+
         int batchCounter = 0;
         int batchQuantity = (int) Math.ceil((double) data.size() / batchSize);
         int batchNumber = 1;
@@ -147,17 +164,48 @@ public abstract class ImportActionProperty extends SystemActionProperty {
             batchCounter++;
 
             if (batchCounter == batchSize) {
-                writeBatch(keySet, properties, mPremap.immutableValue(), context, new ProgressBar("ImportForm", batchNumber, batchQuantity));
+                writer.writeBatch(mPremap.immutableValue(), new ProgressBar("ImportForm", batchNumber, batchQuantity));
                 batchNumber++;
                 mPremap = data.mapFilterValues();
                 batchCounter = 0;
             }
         }
         if (batchCounter > 0) {
-            writeBatch(keySet, properties, mPremap.immutableValue(), context, new ProgressBar("ImportForm", batchNumber, batchQuantity));
+            writer.writeBatch(mPremap.immutableValue(), new ProgressBar("ImportForm", batchNumber, batchQuantity));
         }
+
     }
 
+    private void writeClassData(final ExecutionContext context, ImMap<DataObject, ObjectValue> data) throws SQLException, SQLHandledException {
+        writeData(data, new DataWriter<DataObject, ObjectValue>() {
+            @Override
+            public void writeBatch(ImMap<DataObject, ObjectValue> data, ProgressBar progress) throws SQLException, SQLHandledException {
+                writeClassBatch(data, context, progress);
+            }
+        });
+    }
+
+    private void writeData(final ExecutionContext context, final ImSet<ObjectEntity> keySet, final ImSet<CalcPropertyObjectEntity> properties, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data) throws SQLException, SQLHandledException {
+        writeData(data, new DataWriter<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>>() {
+            public void writeBatch(ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data, ProgressBar progress) throws SQLException, SQLHandledException {
+                ImportActionProperty.this.writeBatch(keySet, properties, data, context, progress);
+            }
+        });
+    }
+
+    @StackProgress
+    private <T extends PropertyInterface> void writeClassBatch(ImMap<DataObject, ObjectValue> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
+        SingleKeyPropertyUsage importTable = ClassChanges.createChangeTable("impformclassdata");
+
+        DataSession session = context.getSession();
+        importTable.writeRows(session.sql, session.getOwner(), data);
+
+        try {
+            context.changeClass(importTable.getChange());
+        } finally {
+            importTable.drop(session.sql, session.getOwner());
+        }
+    }
     @StackProgress
     private <T extends PropertyInterface> void writeBatch(ImSet<ObjectEntity> keySet, ImSet<CalcPropertyObjectEntity> props, ImMap<ImMap<ObjectEntity, DataObject>, ImMap<CalcPropertyObjectEntity, ObjectValue>> data, ExecutionContext context, @StackProgress ProgressBar progress) throws SQLException, SQLHandledException {
         SessionTableUsage<ObjectEntity, CalcPropertyObjectEntity> importTable =

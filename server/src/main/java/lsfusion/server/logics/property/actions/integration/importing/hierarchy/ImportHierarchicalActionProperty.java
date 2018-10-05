@@ -45,7 +45,7 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
             file = readFile(context.getKeyValue(fileInterface));
 
         ParseNode parseNode = formEntity.getImportHierarchy().getIntegrationHierarchy();
-        FormImportData importData = new FormImportData(formEntity);
+        FormImportData importData = new FormImportData(formEntity, context);
         if(file != null) {
             T rootNode = getRootNode(file, root);
             parseNode.importNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), importData);
