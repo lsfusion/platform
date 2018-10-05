@@ -532,7 +532,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             } finally {
                 ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
                 if(exception != null)
-                    logMessages = logMessages.addList(new AbstractContext.LogMessage(String.valueOf(exception) + "\n" + ExceptionUtils.getStackTrace(exception), true, ExecutionStackAspect.getExceptionStackTrace()));
+                    logMessages = logMessages.addList(new AbstractContext.LogMessage(ExceptionUtils.toString(exception), true, ExecutionStackAspect.getExceptionStackTrace()));
                 if(taskLogId != null)
                     logClientTasks(logMessages, taskLogId, taskCaption, stack);
             }

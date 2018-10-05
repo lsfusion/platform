@@ -26,7 +26,13 @@ public class ExceptionUtils {
         return getStackTrace(new Exception());
     }
 
+    public static String toString(Throwable e) {
+        e = ExceptionUtils.getRootCause(e);
+        return e.getMessage() + '\n' + getStackTrace(e);
+    }
+
     public static String getStackTrace(Throwable e) {
+        assert e.getCause() == null;
         return getStackTrace(e.getStackTrace());
     }
     
