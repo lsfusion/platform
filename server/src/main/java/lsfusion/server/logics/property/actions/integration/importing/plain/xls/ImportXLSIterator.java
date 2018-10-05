@@ -90,7 +90,11 @@ public class ImportXLSIterator extends ImportPlainIterator {
         CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
-        return type.parseXLS(cell, cellValue);
+        try {
+            return type.parseXLS(cell, cellValue);
+        } catch (lsfusion.server.data.type.ParseException e) {
+            return null; // xls is really unpredictable format, so will return null if something is going wrong
+        }
     }
 
     @Override
@@ -99,7 +103,7 @@ public class ImportXLSIterator extends ImportPlainIterator {
             wb.close();
     }
 
-    private final static ImOrderMap<String, Integer> XLSColumnsMapping = ListFact.consecutiveList(256).mapOrderKeys(new GetValue<String, Integer>() {
+    private final static ImOrderMap<String, Integer> XLSColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
         public String getMapValue(Integer value) {
             return XLSColumnByIndex(value);
         }
