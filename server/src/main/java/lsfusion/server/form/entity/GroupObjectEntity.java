@@ -1,6 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ExtInt;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -18,6 +19,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.StaticParamNullableExpr;
@@ -64,7 +66,16 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public AbstractGroup propertyGroup; // used for integration (export / import)
 
     private String integrationSID;
-    
+    private boolean integrationKey; // key (key in JSON, tag in XML, field on plain formats) or index (array in JSON, multiple object name tags in xml)
+
+    public boolean isIndex() {
+        return !(getObjects().size() == 1 && integrationKey);
+    }
+
+    public void setIntegrationKey(boolean integrationKey) {
+        this.integrationKey = integrationKey;
+    }
+
     private static class UpStaticParamsProcessor implements GroupObjectInstance.FilterProcessor {
         private final GroupObjectInstance groupObject;
 

@@ -53,7 +53,7 @@ public class EvalUtils {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }                
             }
-            
+
             module.initProperties();
 
             errString = module.getErrorsDescription();

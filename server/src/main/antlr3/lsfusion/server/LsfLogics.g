@@ -519,6 +519,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
+		|   formExtKey { $groupObject.setIntegrationKey(true); }
 		)*
 	;
 
@@ -583,6 +584,10 @@ formGroupObjectGroup returns [String formObjectGroup]
 
 formExtID returns [String extID]
 	:	'EXTID' id=stringLiteral { $extID = $id.val; } 
+	;
+
+formExtKey
+	:	'EXTKEY'
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
@@ -2212,6 +2217,7 @@ importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntit
 	|	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	|	'XLS'	{ $format = FormIntegrationType.XLS; }
 	;
 
 propertyUsage returns [PropertyUsage propUsage]

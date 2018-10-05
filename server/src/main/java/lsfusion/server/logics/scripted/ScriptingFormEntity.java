@@ -112,6 +112,8 @@ public class ScriptingFormEntity {
             if(groupObject.integrationSID != null)
                 groupObj.setIntegrationSID(groupObject.integrationSID);
 
+            groupObj.setIntegrationKey(groupObject.integrationKey);
+
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
         }

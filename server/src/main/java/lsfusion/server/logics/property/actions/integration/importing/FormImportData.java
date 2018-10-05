@@ -1,23 +1,35 @@
 package lsfusion.server.logics.property.actions.integration.importing;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.hierarchy.ImportData;
+import lsfusion.server.session.DataSession;
+
+import java.sql.SQLException;
 
 public class FormImportData implements ImportData {
 
     private ImMap<GroupObjectEntity, ImSet<FilterEntity>> groupFixedFilters;
+    private final DataSession session; // to add objects
 
-    public FormImportData(FormEntity form) {
+    public FormImportData(FormEntity form, ExecutionContext<PropertyInterface> context) {
         groupFixedFilters = form.getImportFixedFilters();
+        session = context.getSession();
     }
 
     private final MExclMap<CalcPropertyObjectEntity, MMap<ImMap<ObjectEntity, Object>, Object>> properties = MapFact.mExclMap();
@@ -54,20 +66,33 @@ public class FormImportData implements ImportData {
         propertyValues.add(paramObjects, value);
     }
     
-    private final MAddMap<ObjectEntity, Integer> indexes = MapFact.mAddMap(new SymmAddValue<ObjectEntity, Integer>() {
-        public Integer addValue(ObjectEntity key, Integer prevValue, Integer newValue) {
-            return prevValue + newValue;
-        }
-    }); // end-to-end numeration
+    private final MAddMap<ObjectEntity, Integer> indexes = MapFact.mAddMap(MapFact.<ObjectEntity, Integer>override()); // end-to-end numeration
 
-    @Override
-    public int getIndex(ObjectEntity object) {
-        Integer result = indexes.get(object);
-        return result == null ? 0 : result;
+    private final MExclMap<ObjectEntity, MExclSet<Long>> addedObjects = MapFact.mExclMap();
+
+    public ImMap<ObjectEntity, ImSet<Long>> resultAddedObjects() {
+        return MapFact.immutableMapExcl(addedObjects);
     }
 
     @Override
-    public void shiftIndex(ObjectEntity object, int count) {
-        indexes.add(object, count);
+    public Object genObject(ObjectEntity object) throws SQLException {
+        // object
+        if(object.baseClass instanceof ConcreteCustomClass) {
+            long addedObject = session.generateID();
+
+            MExclSet<Long> objects = addedObjects.get(object);
+            if(objects == null) {
+                objects = SetFact.mExclSet();
+                addedObjects.exclAdd(object, objects);
+            }
+            objects.exclAdd(addedObject);
+
+            return addedObject;
+        }
+
+        // integer
+        int result = BaseUtils.nvl(indexes.get(object), 0);
+        indexes.add(object, result + 1);
+        return ((DataClass)object.baseClass).read(result);
     }
 }

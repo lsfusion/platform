@@ -145,7 +145,7 @@ public class DateClass extends DataClass<Date> {
             DateConverter.assertDateToSql(parse);
             return DateConverter.safeDateToSql(parse);
         } catch (Exception e) {
-            throw new ParseException("error parsing date", e);
+            throw new ParseException("error parsing date : " + s, e);
         }
     }
 

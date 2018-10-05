@@ -1,17 +1,17 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain;
 
-import lsfusion.base.BaseUtils;
+import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.LongClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.stat.StaticDataGenerator;
@@ -46,7 +46,7 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
     protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, byte[]> files = getFiles(context);
         
-        FormImportData importData = new FormImportData(formEntity);
+        FormImportData importData = new FormImportData(formEntity, context);
         
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();        
         importGroupData(hierarchy.getRoot(), SetFact.<GroupObjectEntity>EMPTY(), hierarchy, files, importData, context, null);
@@ -63,28 +63,54 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         if(file != null) {
             MOrderExclSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderExclSet();
 
-            ImOrderMap<String, Type> parentTypes = MapFact.EMPTYORDER();
+            ImOrderMap<String, Type> fieldTypes = MapFact.EMPTYORDER();
             if(!parentGroups.isEmpty())
-                parentTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
+                fieldTypes = MapFact.singletonOrder(PlainConstants.parentFieldName, (Type) IntegerClass.instance);
+
+            // index or key object access
+            ObjectEntity object = null;
+            String objectSID = null;
+            boolean isIndex = false;
+            if(currentGroup != null) {
+                isIndex = currentGroup.isIndex();
+                object = currentGroup.getObjects().single();
+
+                if(!isIndex) {
+                    objectSID = currentGroup.getIntegrationSID();
+                    fieldTypes = fieldTypes.addOrderExcl(MapFact.singletonOrder(objectSID, (Type)object.baseClass));
+                }
+            }
 
             ImRevMap<PropertyDrawEntity, String> propertyNames = childProperties.getSet().mapRevValues(new GetValue<String, PropertyDrawEntity>() {
                 public String getMapValue(PropertyDrawEntity property) {
                     return property.getIntegrationSID();
                 }});
 
-            ImOrderMap<String, Type> propertyTypes = propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
+            fieldTypes = fieldTypes.addOrderExcl(propertyNames.reverse().mapOrder(childProperties).mapOrderValues(new GetValue<Type, PropertyDrawEntity>() {
                 public Type getMapValue(PropertyDrawEntity object) {
                     return object.getType();
-                }});
+                }}));
 
-            ImportPlainIterator iterator = getIterator(file, parentTypes.addOrderExcl(propertyTypes), context);
+            ImportPlainIterator iterator = getIterator(file, fieldTypes, context);
             ImMap<String, Object> row;
             while ((row = iterator.next()) != null) {
                 ImMap<ObjectEntity, Object> objectValues = MapFact.EMPTY();
                 if(!parentGroups.isEmpty())
                     objectValues = parentRows.get((Integer)row.get(PlainConstants.parentFieldName));
-                if(currentGroup != null)
-                    objectValues = objectValues.addExcl(currentGroup.getObjects().single(), mAllRows.size());
+                if(currentGroup != null) {
+                    // getting object value
+                    Object objectValue;
+                    try {
+                        if (isIndex)
+                            objectValue = data.genObject(object);
+                        else
+                            objectValue = row.get(objectSID);
+                    } catch (SQLException e) {
+                        throw Throwables.propagate(e);
+                    }
+
+                    objectValues = objectValues.addExcl(object, objectValue);
+                }
                 mAllRows.exclAdd(objectValues);
 
                 data.addObject(currentGroup, objectValues);
