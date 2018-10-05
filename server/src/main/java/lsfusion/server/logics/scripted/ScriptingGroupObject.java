@@ -15,6 +15,7 @@ public class ScriptingGroupObject {
     public List<String> classes;
     public List<LocalizedString> captions;
     public List<ActionPropertyObjectEntity> events;
+    public List<String> integrationSIDs;
     public ClassViewType viewType;
     public boolean isInitType;
     public Integer pageSize;
@@ -27,7 +28,7 @@ public class ScriptingGroupObject {
     public GroupObjectEntity neighbourGroupObject;
     public Boolean isRightNeighbour;
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events) {
+    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
         groupName = name;
@@ -35,6 +36,7 @@ public class ScriptingGroupObject {
         this.classes = classes;
         this.captions = captions;
         this.events = events;
+        this.integrationSIDs = integrationSIDs;
     }
 
     public void setViewType(ClassViewType viewType) {

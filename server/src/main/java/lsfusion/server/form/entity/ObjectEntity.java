@@ -42,6 +42,8 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public ValueClass baseClass;
     private boolean noClasses;
 
+    public String integrationSID;
+
     public ObjectEntity() {
 
     }
@@ -116,6 +118,14 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @Override
     public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return groupTo;
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getSID();
     }
 
     @Override

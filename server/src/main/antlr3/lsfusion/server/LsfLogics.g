@@ -547,11 +547,11 @@ treeGroupParentDeclaration returns [List<PropertyUsage> properties = new ArrayLi
 formCommonGroupObject returns [ScriptingGroupObject groupObject]
 	:	sdecl=formSingleGroupObjectDeclaration
 		{
-			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event));
+			$groupObject = new ScriptingGroupObject(null, asList($sdecl.name), asList($sdecl.className), asList($sdecl.caption), asList($sdecl.event), asList($sdecl.extID));
 		}
 	|	mdecl=formMultiGroupObjectDeclaration
 		{
-			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events);
+			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events, $mdecl.extIDs);
 		}
 	;
 
@@ -597,29 +597,33 @@ formExtKey
 	:	'EXTKEY'
 	;
 
-formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event] 
-	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; }
+formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event, String extID]
+	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; $caption = $foDecl.caption; $event = $foDecl.event; $extID = $foDecl.extID; }
 	;
 
-formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events]
+formMultiGroupObjectDeclaration returns [String groupName, List<String> objectNames, List<String> classNames, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, List<String> extIDs]
 @init {
 	$objectNames = new ArrayList<>();
 	$classNames = new ArrayList<>();
 	$captions = new ArrayList<>();
 	$events = new ArrayList<>();
+	$extIDs = new ArrayList<>();
 }
 	:	(gname=ID { $groupName = $gname.text; } EQ)?
 		'('
-			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); }
-			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); })*
+			objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); }
+			(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classNames.add($objDecl.className); $captions.add($objDecl.caption); $events.add($objDecl.event); $extIDs.add($objDecl.extID); })*
 		')'
 	;
 
 
-formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event]
+formObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event, String extID]
 	:	((objectName=ID { $name = $objectName.text; })? (c=localizedStringLiteral { $caption = $c.val; })? EQ)?
 		id=classId { $className = $id.sid; }
-		('ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; })?
+		(
+		    'ON' 'CHANGE' faprop=formActionPropertyObject { $event = $faprop.action; }
+		|   'EXTID' eid=stringLiteral { $extID = $eid.val; }
+		)*
 	; 
 	
 formPropertiesList

@@ -9,9 +9,9 @@ import java.sql.SQLException;
 
 public interface ImportData {
     
-    void addObject(GroupObjectEntity group, ImMap<ObjectEntity, Object> upKeyValues);
+    void addObject(GroupObjectEntity group, ImMap<ObjectEntity, Object> upKeyValues, boolean isExclusive);
 
-    void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value);
+    void addProperty(PropertyDrawEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive);
     
     Object genObject(ObjectEntity object) throws SQLException;
 }

@@ -312,6 +312,27 @@ public class SetFact {
         return new HOrderSet<>(size);
     }
 
+    public static <K> MOrderSet<K> mOrderSet(boolean isExclusive) {
+        if(!isExclusive)
+            return mOrderSet();
+        final MOrderExclSet<K> mExclSet = mOrderExclSet();
+        return new MOrderSet<K>() {
+            public boolean add(K key) {
+                mExclSet.exclAdd(key);
+                return false;
+            }
+
+            public void addAll(ImOrderSet<? extends K> set) {
+                mExclSet.exclAddAll(set);
+            }
+
+            @Override
+            public ImOrderSet<K> immutableOrder() {
+                return mExclSet.immutableOrder();
+            }
+        };
+    }
+
     public static <K> MOrderFilterSet<K> mOrderFilter(ImOrderSet<K> filter) { // assert что в том же порядке
         int size = filter.size();
 //        if(filter instanceof ArOrderIndexedSet) keep сложнее поддерживать

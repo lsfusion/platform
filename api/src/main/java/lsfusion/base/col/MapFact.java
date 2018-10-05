@@ -523,6 +523,35 @@ public class MapFact {
         return mMap;
     }
 
+    public static <K, V> MMap<K, V> mMap(boolean isExclusive) {
+        if(!isExclusive)
+            return mMap(MapFact.<K, V>override());
+        final MExclMap<K, V> mExclMap = MapFact.mExclMap();
+        return new MMap<K, V>() {
+            public boolean add(K key, V value) {
+                mExclMap.exclAdd(key, value);
+                return true;
+            }
+
+            public boolean addAll(ImMap<? extends K, ? extends V> map) {
+                mExclMap.exclAddAll(map);
+                return true;
+            }
+
+            public V get(K key) {
+                return mExclMap.get(key);
+            }
+
+            public ImMap<K, V> immutable() {
+                return mExclMap.immutable();
+            }
+
+            public ImMap<K, V> immutableCopy() {
+                return mExclMap.immutableCopy();
+            }
+        };
+    }
+
     public static <K, V> MFilterMap<K, V> mFilter(ImMap<K, V> map) {
         int size = map.size();
         if(map instanceof ArIndexedMap)
