@@ -535,7 +535,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY());        
     }
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return form.getApplyObject(getObjectInstances(), excludeGroupObjects);
+        return form.getApplyObject(getObjectInstances(), excludeGroupObjects.merge(getColumnGroupObjects().getSet()));
     }
 
     public ImSet<ObjectEntity> getObjectInstances() {
