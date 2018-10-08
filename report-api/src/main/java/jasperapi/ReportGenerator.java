@@ -84,12 +84,6 @@ public class ReportGenerator {
         return getColumnsCount(fieldName, subreportID, null); 
     }
     public int getColumnsCount(String fieldName, String subreportID, Result<Integer> minColumnsCount) {
-        if(fieldName == null) { // just in case (just like in ReportDataSource.getFieldValue)
-            if(minColumnsCount != null)
-                minColumnsCount.set(1);
-            return 1;
-        }
-
         Integer columnsCount = keyData.get(subreportID).getColumnsCount(fieldName, minColumnsCount);
         if(columnsCount != null)
             return columnsCount;
@@ -350,7 +344,7 @@ public class ReportGenerator {
             if (f instanceof JRDesignField) {
                 JRDesignField field = (JRDesignField) f;
                 String fieldName = field.getName();
-                if (hasColumns(fieldName, subreportID)) { 
+                if (fieldName != null && hasColumns(fieldName, subreportID)) { 
                     JRField removedField = design.removeField(fieldName);
 
                     for (int i = 0, size = getColumnsCount(fieldName, subreportID); i < size; ++i) {
@@ -611,8 +605,8 @@ public class ReportGenerator {
 
         if (fieldName != null) {
             toDelete.add(textField);
-            int newFieldsCount = getColumnsCount(fieldName, subreportID);
-            if (newFieldsCount > 0) {
+            if (hasColumns(fieldName, subreportID)) {
+                int newFieldsCount = getColumnsCount(fieldName, subreportID);
                 List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
                 String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
 
