@@ -19,7 +19,10 @@ public class XMLNode implements Node<XMLNode> {
 
     @Override
     public XMLNode getNode(String key) {
-        return new XMLNode(element.getChild(key));
+        Element childElement = element.getChild(key);
+        if(childElement == null)
+            return null;
+        return new XMLNode(childElement);
     }
 
     @Override
@@ -27,8 +30,10 @@ public class XMLNode implements Node<XMLNode> {
         String stringValue;;
         if(attr)
             stringValue = element.getAttributeValue(key);
-        else
-            stringValue = element.getChild(key).getText();
+        else {
+            Element childElement = element.getChild(key);
+            stringValue = childElement != null ? childElement.getText() : null;
+        }
         return type.parseXML(stringValue);
     }
 
@@ -41,8 +46,9 @@ public class XMLNode implements Node<XMLNode> {
                 mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
         } else {
             Element child = element.getChild(key);
-            for(Object value : child.getChildren())
-                mResult.add(new Pair<Object, XMLNode>(((Element)value).getName(), new XMLNode((Element)value)));
+            if(child != null)
+                for(Object value : child.getChildren())
+                    mResult.add(new Pair<Object, XMLNode>(((Element)value).getName(), new XMLNode((Element)value)));
         }
         return mResult.immutableList();
     }
