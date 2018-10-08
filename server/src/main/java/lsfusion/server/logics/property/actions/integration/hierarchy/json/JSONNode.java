@@ -32,7 +32,10 @@ public class JSONNode implements Node<JSONNode> {
     @Override
     public JSONNode getNode(String key) {
         try {
-            return getJSONNode(element.get(key), false); // no need to convert value for property group
+            Object childElement = element.opt(key);
+            if(childElement == null)
+                return null;
+            return getJSONNode(childElement, false); // no need to convert value for property group
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
@@ -59,16 +62,18 @@ public class JSONNode implements Node<JSONNode> {
     public Iterable<Pair<Object, JSONNode>> getMap(String key, boolean isIndex) {
         try {
             MList<Pair<Object, JSONNode>> mResult = ListFact.mList();
-            Object child = element.get(key);
-            if(isIndex) {
-                JSONArray array = (JSONArray) child;
-                for(int i=0,size=array.length();i<size;i++)
-                    mResult.add(new Pair<Object, JSONNode>(i, getJSONNode(array.get(i), true)));
-            } else {
-                JSONObject object = (JSONObject) child;
-                for (Iterator it = object.keys(); it.hasNext(); ) {
-                    String objectKey = (String) it.next();
-                    mResult.add(new Pair<Object, JSONNode>(objectKey, getJSONNode(object.get(objectKey), true)));
+            Object child = element.opt(key);
+            if(child != null) {
+                if (isIndex) {
+                    JSONArray array = (JSONArray) child;
+                    for (int i = 0, size = array.length(); i < size; i++)
+                        mResult.add(new Pair<Object, JSONNode>(i, getJSONNode(array.get(i), true)));
+                } else {
+                    JSONObject object = (JSONObject) child;
+                    for (Iterator it = object.keys(); it.hasNext(); ) {
+                        String objectKey = (String) it.next();
+                        mResult.add(new Pair<Object, JSONNode>(objectKey, getJSONNode(object.get(objectKey), true)));
+                    }
                 }
             }
             return mResult.immutableList();

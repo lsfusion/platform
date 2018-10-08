@@ -68,7 +68,7 @@ public class JSONReader {
     }
 
     public static JSONObject toJSONObject(Object object, boolean convertValue) throws JSONException {
-        if(object instanceof JSONObject)
+        if(object instanceof JSONObject || !convertValue)
             return (JSONObject) object;
         
         JSONObject virtObject = new JSONObject();
@@ -77,11 +77,13 @@ public class JSONReader {
     }
 
     public static Object fromJSONObject(JSONObject object, boolean convertValue) throws JSONException {
-        Iterator keys = object.keys();
-        if(keys.hasNext()) {
-            String next = (String)keys.next();
-            if(!keys.hasNext() && next.equals("value"))
-                return object.get(next);
+        if(convertValue) {
+            Iterator keys = object.keys();
+            if (keys.hasNext()) {
+                String next = (String) keys.next();
+                if (!keys.hasNext() && next.equals("value")) 
+                    return object.get(next);
+            }
         }
         return object;
     }

@@ -123,7 +123,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseJSON(JSONObject object, String key) throws JSONException {
-        return readJSON((Number)object.get(key));
+        return readJSON((Number)object.opt(key));
     }
 
     @Override
