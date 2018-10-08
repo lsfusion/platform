@@ -177,7 +177,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'N', Math.min(getWhole(), 253), getPrecision());
+        return new OverJDBField(fieldName, 'N', Math.min(getLength(), 253), getPrecision());
     }
 
     @Override
