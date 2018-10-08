@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
+import lsfusion.server.logics.property.actions.integration.importing.plain.xls.ImportXLSIterator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,25 +38,22 @@ public class ImportCSVIterator extends ImportPlainIterator {
     private ImMap<String, Integer> fieldIndexes;
     @Override
     protected ImOrderSet<String> readFields() {
-        ImOrderSet<String> fields;
         if(!noHeader) {
             ImList<String> line = readLine();
             if(line == null)
                 return SetFact.EMPTYORDER();
-            fields = line.toOrderExclSet();
-        } else
-            fields = SetFact.toOrderExclSet(fieldTypes.size(), new GetIndex<String>() {
-                public String getMapValue(int i) {
-                    return String.valueOf(i);
+            ImOrderSet<String> fields = line.toOrderExclSet();
+            fieldIndexes = fields.mapOrderValues(new GetIndex<Integer>() {
+                public Integer getMapValue(int i) {
+                    return i;
                 }
             });
-        
-        fieldIndexes = fields.mapOrderValues(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i;
-            }
-        });
-        return fields;
+            return fields;
+        } else {
+            ImOrderMap<String, Integer> sourceMap = ImportXLSIterator.nameToIndexColumnsMapping;
+            fieldIndexes = sourceMap.getMap();
+            return sourceMap.keyOrderSet();
+        }
     }
 
     private ImList<String> line;

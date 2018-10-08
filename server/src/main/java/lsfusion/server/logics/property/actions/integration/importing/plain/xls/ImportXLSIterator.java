@@ -50,7 +50,7 @@ public class ImportXLSIterator extends ImportPlainIterator {
 
     @Override
     protected ImOrderSet<String> readFields() {
-        ImOrderMap<String, Integer> sourceMap = XLSColumnsMapping;
+        ImOrderMap<String, Integer> sourceMap = nameToIndexColumnsMapping;
         fieldIndexes = sourceMap.getMap();
         return sourceMap.keyOrderSet();
     }
@@ -103,13 +103,13 @@ public class ImportXLSIterator extends ImportPlainIterator {
             wb.close();
     }
 
-    private final static ImOrderMap<String, Integer> XLSColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
+    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
         public String getMapValue(Integer value) {
-            return XLSColumnByIndex(value);
+            return nameToIndex(value);
         }
     });
 
-    private static String XLSColumnByIndex(int index) {
+    private static String nameToIndex(int index) {
         String columnName = "";
         int resultLen = 1;
         final int LETTERS_CNT = 26;
