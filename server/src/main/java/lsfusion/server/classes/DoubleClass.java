@@ -107,7 +107,7 @@ public class DoubleClass extends IntegralClass<Double> {
 
     @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
-        return new OverJDBField(fieldName, 'F', 10, 3);
+        return new OverJDBField(fieldName, 'F', 13, 3);
     }
 
     @Override
