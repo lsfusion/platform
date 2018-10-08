@@ -81,6 +81,7 @@ public class ReportGenerator {
         return !minColumnsCount.result.equals(1);
     }
     public int getColumnsCount(String fieldName, String subreportID) {
+        assert hasColumns(fieldName, subreportID);
         return getColumnsCount(fieldName, subreportID, null); 
     }
     public int getColumnsCount(String fieldName, String subreportID, Result<Integer> minColumnsCount) {
