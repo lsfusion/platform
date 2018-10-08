@@ -105,7 +105,7 @@ onStarted() + {
     
     in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
 
-    status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m);
+    status(Message m, CustomUser u) <- MessageStatus.seen WHERE system(m) AND overIn(chat(m), u);
 
 }
 
