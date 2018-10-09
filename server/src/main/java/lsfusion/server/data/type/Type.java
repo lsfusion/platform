@@ -71,14 +71,16 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException;
     T parseJSON(JSONObject object, String key) throws ParseException, JSONException;
+    T parseCSV(String value) throws ParseException;
     T parseXML(String value) throws ParseException;
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
     Object formatJSON(T object);
+    String formatCSV(T object);
     String formatXML(T object);
 
-    T parseNullableString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
+    T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - not null (файлы decode'ся base64)
     
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 

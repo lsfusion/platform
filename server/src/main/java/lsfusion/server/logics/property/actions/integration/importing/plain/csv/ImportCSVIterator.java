@@ -82,6 +82,6 @@ public class ImportCSVIterator extends ImportPlainIterator {
 
     @Override
     protected Object getPropValue(String name, Type type) throws ParseException, java.text.ParseException {
-        return type.parseNullableString(line.get(fieldIndexes.get(name)));
+        return type.parseCSV(line.get(fieldIndexes.get(name)));
     }
 }

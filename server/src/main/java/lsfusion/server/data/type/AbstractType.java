@@ -8,9 +8,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
 import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -106,25 +104,29 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return formatString(value);
     }
 
-    public T parseNullableString(String string) throws ParseException {
-        if(string == null)
+    public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {
+        if(string == null || (emptyIsNull && string.isEmpty()))
             return null;
         return parseString(string);
     }
     @Override
     public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
-        return parseNullableString(dbfRecord.getString(fieldName, charset));
+        return parseNullableString(dbfRecord.getString(fieldName, charset), false); // dbf supports nulls
     }
     @Override
     public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
         Object o = object.opt(key);
         if(o == JSONObject.NULL)
             o = null;
-        return parseNullableString((String)o);
+        return parseNullableString((String)o, false); // json supports nulls
+    }
+    @Override
+    public T parseCSV(String value) throws ParseException {
+        return parseNullableString(value, true);
     }
     @Override
     public T parseXML(String value) throws ParseException {
-        return parseNullableString(value);
+        return parseNullableString(value, true);
     }
     @Override
     public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
@@ -139,7 +141,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             default:
                 cellValue = formulaValue.formatAsString();
         }
-        return parseNullableString(cellValue);
+        return parseNullableString(cellValue, false); // there is parseexception check anyway
     }
 
     @Override
@@ -148,6 +150,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public Object formatJSON(T object) {
+        return formatString(object);
+    }
+
+    @Override
+    public String formatCSV(T object) {
         return formatString(object);
     }
 
