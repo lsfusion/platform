@@ -91,29 +91,33 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
             MOrderSet<ImMap<ObjectEntity, Object>> mAllRows = SetFact.mOrderSet(isIndex);
 
             ImportPlainIterator iterator = getIterator(file, fieldTypes, context);
-            ImMap<String, Object> row;
-            while ((row = iterator.next()) != null) {
-                ImMap<ObjectEntity, Object> objectValues = MapFact.EMPTY();
-                if(!parentGroups.isEmpty())
-                    objectValues = parentRows.get((Integer)row.get(PlainConstants.parentFieldName));
-                if(currentGroup != null) {
-                    // getting object value
-                    try {
-                        if (isIndex)
-                            objectValues = objectValues.addExcl(object, data.genObject(object));
-                        else
-                            objectValues = objectValues.addExcl(mapFields.join(row));
-                    } catch (SQLException e) {
-                        throw Throwables.propagate(e);
+            try {
+                ImMap<String, Object> row;
+                while ((row = iterator.next()) != null) {
+                    ImMap<ObjectEntity, Object> objectValues = MapFact.EMPTY();
+                    if (!parentGroups.isEmpty()) 
+                        objectValues = parentRows.get((Integer) row.get(PlainConstants.parentFieldName));
+                    if (currentGroup != null) {
+                        // getting object value
+                        try {
+                            if (isIndex) 
+                                objectValues = objectValues.addExcl(object, data.genObject(object));
+                            else 
+                                objectValues = objectValues.addExcl(mapFields.join(row));
+                        } catch (SQLException e) {
+                            throw Throwables.propagate(e);
+                        }
                     }
+                    mAllRows.add(objectValues);
+
+                    data.addObject(currentGroup, objectValues, isIndex);
+
+                    ImMap<PropertyDrawEntity, Object> propertyValues = propertyNames.join(row);
+                    for (int i = 0, size = propertyValues.size(); i < size; i++)
+                        data.addProperty(propertyValues.getKey(i), objectValues, propertyValues.getValue(i), isIndex);
                 }
-                mAllRows.add(objectValues);
-
-                data.addObject(currentGroup, objectValues, isIndex);
-
-                ImMap<PropertyDrawEntity, Object> propertyValues = propertyNames.join(row);
-                for(int i=0,size=propertyValues.size();i<size;i++)
-                    data.addProperty(propertyValues.getKey(i), objectValues, propertyValues.getValue(i), isIndex);
+            } finally {
+                iterator.release();
             }
             
             allRows = mAllRows.immutableOrder();
