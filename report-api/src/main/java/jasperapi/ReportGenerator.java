@@ -392,8 +392,8 @@ public class ReportGenerator {
         public int compareTo(FieldXBorder o) {
             if (x < o.x) return -1;
             if (x > o.x) return 1;
-            if (!isLeft && o.isLeft) return -1;
-            if (isLeft && !o.isLeft) return 1;
+            if (isLeft && !o.isLeft) return -1;
+            if (!isLeft && o.isLeft) return 1;
             return 0;
         }
     }
