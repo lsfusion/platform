@@ -108,28 +108,32 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
             }
         }));
 
-        ExportPlainWriter exporter = getWriter(fieldTypes, currentGroup == null);
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = data.getRows(currentGroup);
-        exporter.writeCount(allRows.size());
-        for(int i=0,size=allRows.size();i<size;i++) {
-            final ImMap<ObjectEntity, Object> currentRow = allRows.get(i);
 
-            ImMap<String, Object> fieldValues = propertyNames.mapValues(new GetValue<Object, PropertyDrawEntity>() {
-                public Object getMapValue(PropertyDrawEntity value) {
-                    return data.getProperty(value, currentRow);
-                }});
-            
-            if(!parentGroups.isEmpty())
-                fieldValues = fieldValues.addExcl(PlainConstants.parentFieldName, parentIndexes.get(currentRow.filterIncl(parentObjects)));
+        byte[] resultFile;
+        ExportPlainWriter exporter = getWriter(fieldTypes, currentGroup == null);
+        try {
+            exporter.writeCount(allRows.size());
+            for (int i = 0, size = allRows.size(); i < size; i++) {
+                final ImMap<ObjectEntity, Object> currentRow = allRows.get(i);
 
-            if(currentGroup != null)
-                if(!isIndex)
-                    fieldValues = fieldValues.addExcl(mapFields.crossJoin(currentRow));
-            
-            exporter.writeLine(fieldValues);
+                ImMap<String, Object> fieldValues = propertyNames.mapValues(new GetValue<Object, PropertyDrawEntity>() {
+                    public Object getMapValue(PropertyDrawEntity value) {
+                        return data.getProperty(value, currentRow);
+                    }
+                });
+
+                if (!parentGroups.isEmpty()) fieldValues = fieldValues.addExcl(PlainConstants.parentFieldName, parentIndexes.get(currentRow.filterIncl(parentObjects)));
+
+                if (currentGroup != null) if (!isIndex) fieldValues = fieldValues.addExcl(mapFields.crossJoin(currentRow));
+
+                exporter.writeLine(fieldValues);
+            }
+        } finally {
+            resultFile = exporter.release();
         }
 
-        files.put(currentGroup, exporter.release());
+        files.put(currentGroup, resultFile);
 
         if(currentGroup != null)
             parentGroups = parentGroups.addExcl(currentGroup);
