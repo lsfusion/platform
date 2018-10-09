@@ -550,8 +550,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());
         mObjects.addAll(getValueProperty().getObjectInstances());
-        if(applyObject != null)
-            mObjects.add(applyObject);
+        if(toDraw != null)
+            mObjects.add(toDraw.getOrderObjects().get(0));
         return mObjects.immutable();
     }
 

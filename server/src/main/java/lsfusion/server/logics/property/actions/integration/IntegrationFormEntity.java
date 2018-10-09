@@ -81,7 +81,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
             propertyDraw.group = null; // without group 
 
             if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
-                propertyDraw.applyObject = groupObject.getOrderObjects().get(0);
+                propertyDraw.toDraw = groupObject;
 
             if(attr)
                 propertyDraw.attr = true;
