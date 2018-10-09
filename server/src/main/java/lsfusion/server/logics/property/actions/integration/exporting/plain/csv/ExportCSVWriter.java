@@ -44,7 +44,7 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
         writer.println(fieldTypes.mapOrderValues(new GetKeyValue<Object, String, Type>() {
             @Override
             public Object getMapValue(String key, Type value) {
-                return csvEscaper.translate(value.formatString(row.get(key)));
+                return csvEscaper.translate(value.formatCSV(row.get(key)));
             }
         }).valuesList().toString(separator));
     }
