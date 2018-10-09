@@ -70,7 +70,7 @@ public class ImportCSVIterator extends ImportPlainIterator {
             //cut BOM
             if (!line.isEmpty() && line.charAt(0) == '\uFEFF')
                 line = line.substring(1);
-            return ListFact.toList(line.split(Pattern.quote(separator)));
+            return ListFact.toList(line.split(Pattern.quote(separator),-1));
         } else return null;
     }
 
