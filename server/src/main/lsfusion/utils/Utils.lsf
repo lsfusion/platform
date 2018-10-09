@@ -50,7 +50,10 @@ logToFile (VARSTRING[1000] file, FILE message) {
 }
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
-mkdir 'Создать папку'  INTERNAL  'lsfusion.utils.utils.MkdirActionProperty' (VARISTRING[500]);
+//path, isClient
+mkdir 'Создать папку'  INTERNAL  'lsfusion.utils.utils.MkdirActionProperty' (VARISTRING[500], BOOLEAN);
+mkdir 'Создать папку' (VARISTRING[500] path)  { mkdir(path, NULL); }
+mkdirClient 'Создать папку (на клиенте)' (VARISTRING[500] path)  { mkdir(path, TRUE); }
 //path, isClient
 delete 'Удалить файл'  INTERNAL  'lsfusion.utils.utils.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
 delete 'Удалить файл' (VARISTRING[500] path)  { delete(path, NULL); }

@@ -47,6 +47,10 @@ public class FileClientAction implements ClientAction {
                 }
                 return result;
             }
+            case 4: { //Mkdir
+                File file = new File(source);
+                return file.exists() || file.mkdirs();
+            }
             default:
                 return null;
         }

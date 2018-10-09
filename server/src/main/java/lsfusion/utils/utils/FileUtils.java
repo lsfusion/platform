@@ -151,25 +151,35 @@ public class FileUtils {
         }
     }
 
-    public static void mkdir(String directory) throws SftpException, JSchException, IOException {
-        Path path = parsePath(directory, false);
-
-        String result = null;
-        switch (path.type) {
-            case "file":
-                if (!new File(path.path).exists() && !new File(path.path).mkdirs())
-                    result = "Failed to create directory '" + directory + "'";
-                break;
-            case "ftp":
-                result = mkdirFTP(path.path);
-                break;
-            case "sftp":
-                if (!mkdirSFTP(path.path))
-                    result = "Failed to create directory '" + directory + "'";
-                break;
+    public static void mkdir(ExecutionContext context, String directory, boolean isClient) throws SftpException, JSchException, IOException {
+        Path path = parsePath(directory, isClient);
+        if (isClient) {
+            boolean result = (boolean) context.requestUserInteraction(new FileClientAction(4, path.path));
+            if (!result) {
+                throw new RuntimeException(String.format("Failed to create directory '%s'", directory));
+            }
+        } else {
+            String result = null;
+            switch (path.type) {
+                case "file":
+                    File file = new File(path.path);
+                    if (!file.exists() && !file.mkdirs()) {
+                        result = "Failed to create directory '" + directory + "'";
+                    }
+                    break;
+                case "ftp":
+                    result = mkdirFTP(path.path);
+                    break;
+                case "sftp":
+                    if (!mkdirSFTP(path.path)) {
+                        result = "Failed to create directory '" + directory + "'";
+                    }
+                    break;
+            }
+            if (result != null) {
+                throw new RuntimeException(result);
+            }
         }
-        if (result != null)
-            throw new RuntimeException(result);
     }
 
     private static String mkdirFTP(String path) throws IOException {
