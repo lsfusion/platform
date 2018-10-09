@@ -24,7 +24,7 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
         setNFEditType(PropertyEditType.READONLY, version);
 
         if (!cls.dialogReadOnly)
-            LM.addFormActions(this, object, FormSessionScope.OLDSESSION);
+            LM.addFormActions(this, object, FormSessionScope.NEWSESSION);
 
         finalizeInit(version);
     }
