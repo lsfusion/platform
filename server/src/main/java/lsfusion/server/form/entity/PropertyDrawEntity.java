@@ -19,6 +19,8 @@ import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.ViewPropertySecurityPolicy;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.NumericClass;
@@ -539,6 +541,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return form.getApplyObject(getObjectInstances(), excludeGroupObjects.merge(getColumnGroupObjects().getSet()));
     }
 
+    @IdentityStartLazy
     public ImSet<ObjectEntity> getObjectInstances() {
         MAddSet<PropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
         if(propertyCaption != null)
