@@ -3124,7 +3124,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             targetProp = (exportType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
 
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, false, charset, targetProp, MapFact.<GroupObjectEntity, LCP>EMPTY());
+                exportType, noHeader, separator, true, charset, targetProp, MapFact.<GroupObjectEntity, LCP>EMPTY());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
