@@ -712,6 +712,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
+    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sid, Version version) {
+        if (sid == null) {
+            return null;
+        }
+        for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
+            if (sid.equals(propertyDraw.getIntegrationSID())) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
+
     public boolean noClasses() {
         return false;
     }
@@ -737,7 +750,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
         property.setSID(newSID);
 
-        property.setIntegrationSID(alias == null ? property.getIntegrationSID() : alias);
+        String newIntegrationSID = (alias == null ? property.getIntegrationSID() : alias);
+        property.setIntegrationSID(null);
+        if ((drawEntity = getPropertyDrawIntegration(newIntegrationSID, Version.CURRENT)) != null) {
+            throw new AlreadyDefined(getCanonicalName(), newIntegrationSID, drawEntity.getFormPath());
+        }
+        property.setIntegrationSID(newIntegrationSID);
     }
 
 
