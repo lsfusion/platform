@@ -111,6 +111,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             return null;
         return parseString(string);
     }
+
+    protected String formatNullableString(T object, boolean nullIsEmpty) {
+        if(nullIsEmpty && object == null)
+            return "";            
+        return formatString(object);
+    }
+
     @Override
     public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
         String string;
@@ -157,17 +164,17 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public Object formatJSON(T object) {
-        return formatString(object);
+        return formatNullableString(object, false); // json supports nulls
     }
 
     @Override
     public String formatCSV(T object) {
-        return formatString(object);
+        return formatNullableString(object, true);
     }
 
     @Override
     public String formatXML(T object) {
-        return formatString(object);
+        return formatNullableString(object, true);
     }
 
     protected T readDBF(Object object) {
