@@ -720,7 +720,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             return null;
         }
         for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
-            if (BaseUtils.nullEquals(propertyDraw.getApplyObject(this), applyObject) && sid.equals(propertyDraw.getIntegrationSID())) {
+            if (sid.equals(propertyDraw.getIntegrationSID()) && BaseUtils.nullEquals(propertyDraw.getApplyObject(this), applyObject)) {
                 return propertyDraw;
             }
         }
