@@ -1572,7 +1572,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return properties.filterList(new SFunctionSet<PropertyDrawInstance>() {
             public boolean contains(PropertyDrawInstance property) {
                 Boolean isShownValue = isShown.get(property);
-                return isShownValue != null && isShownValue && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
+                return isShownValue != null && isShownValue && property.isCalcProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
             }
         }).toOrderExclSet().mapOrderSetValues(new GetValue<PropertyDrawEntity, PropertyDrawInstance>() {
             @Override
