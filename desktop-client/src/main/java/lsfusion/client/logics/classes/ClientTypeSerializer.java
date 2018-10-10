@@ -71,6 +71,10 @@ public class ClientTypeSerializer {
         if (type == Data.IMAGE) return new ClientImageClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.WORD) return new ClientWordClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.EXCEL) return new ClientExcelClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.CSV) return new ClientCSVClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
 
@@ -78,6 +82,10 @@ public class ClientTypeSerializer {
         if (type == Data.IMAGELINK) return new ClientImageLinkClass(inStream.readBoolean());
         if (type == Data.WORDLINK) return new ClientWordLinkClass(inStream.readBoolean());
         if (type == Data.EXCELLINK) return new ClientExcelLinkClass(inStream.readBoolean());
+        if (type == Data.CSVLINK) return new ClientCSVLinkClass(inStream.readBoolean());
+        if (type == Data.HTMLLINK) return new ClientHTMLLinkClass(inStream.readBoolean());
+        if (type == Data.JSONLINK) return new ClientJSONLinkClass(inStream.readBoolean());
+        if (type == Data.XMLLINK) return new ClientXMLLinkClass(inStream.readBoolean());
         if (type == Data.DYNAMICFORMATLINK) return new ClientDynamicFormatLinkClass(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) return ClientCustomStaticFormatLinkClass.deserialize(inStream);
 

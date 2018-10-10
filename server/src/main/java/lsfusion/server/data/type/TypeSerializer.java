@@ -4,7 +4,6 @@ import lsfusion.base.ExtInt;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Data;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
@@ -81,6 +80,10 @@ public class TypeSerializer {
         if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.CSV) return CSVClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) {
             boolean multiple = inStream.readBoolean();
             boolean storeName = inStream.readBoolean();
@@ -104,6 +107,10 @@ public class TypeSerializer {
         if (type == Data.IMAGELINK) return ImageLinkClass.get(inStream.readBoolean());
         if (type == Data.WORDLINK) return WordLinkClass.get(inStream.readBoolean());
         if (type == Data.EXCELLINK) return ExcelLinkClass.get(inStream.readBoolean());
+        if (type == Data.CSVLINK) return CSVLinkClass.get(inStream.readBoolean());
+        if (type == Data.HTMLLINK) return HTMLLinkClass.get(inStream.readBoolean());
+        if (type == Data.JSONLINK) return JSONLinkClass.get(inStream.readBoolean());
+        if (type == Data.XMLLINK) return XMLLinkClass.get(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) {
             boolean multiple = inStream.readBoolean();
             String filterDescription = inStream.readUTF();
@@ -147,6 +154,10 @@ public class TypeSerializer {
         if (type == Data.WORD) return WordClass.get(false, false);
         if (type == Data.EXCEL) return ExcelClass.get(false, false);
         if (type == Data.PDF) return PDFClass.get(false, false);
+        if (type == Data.CSV) return CSVClass.get(false, false);
+        if (type == Data.HTML) return HTMLClass.get(false, false);
+        if (type == Data.JSON) return JSONClass.get(false, false);
+        if (type == Data.XML) return XMLClass.get(false, false);
         //todo:!!
         if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get(false, false, "", "");
 
@@ -154,6 +165,10 @@ public class TypeSerializer {
         if (type == Data.WORDLINK) return WordLinkClass.get(false);
         if (type == Data.EXCELLINK) return ExcelLinkClass.get(false);
         if (type == Data.PDFLINK) return PDFLinkClass.get(false);
+        if (type == Data.CSVLINK) return CSVLinkClass.get(false);
+        if (type == Data.HTMLLINK) return HTMLLinkClass.get(false);
+        if (type == Data.JSONLINK) return JSONLinkClass.get(false);
+        if (type == Data.XMLLINK) return XMLLinkClass.get(false);
         //todo:!!
         if (type == Data.CUSTOMSTATICFORMATLINK) return CustomStaticFormatLinkClass.get(false, "", "");
 

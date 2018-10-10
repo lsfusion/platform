@@ -600,13 +600,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
                 getLCPByUniqueName(namePrefix + "RawFile"),
                 getLCPByUniqueName(namePrefix + "File"),
                 getLCPByUniqueName(namePrefix + "ExcelFile"),
+                getLCPByUniqueName(namePrefix + "CsvFile"),
+                getLCPByUniqueName(namePrefix + "HtmlFile"),
+                getLCPByUniqueName(namePrefix + "JsonFile"),
+                getLCPByUniqueName(namePrefix + "XmlFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
                 getLCPByUniqueName(namePrefix + "RawLink"),
                 getLCPByUniqueName(namePrefix + "Link"),
-                getLCPByUniqueName(namePrefix + "ExcelLink")
-        );
+                getLCPByUniqueName(namePrefix + "ExcelLink"),
+                getLCPByUniqueName(namePrefix + "CsvLink"),
+                getLCPByUniqueName(namePrefix + "HtmlLink"),
+                getLCPByUniqueName(namePrefix + "JsonLink"),
+                getLCPByUniqueName(namePrefix + "XmlLink")
+                );
     }
 
     protected LCP<?> getLCPByUniqueName(String name) {
