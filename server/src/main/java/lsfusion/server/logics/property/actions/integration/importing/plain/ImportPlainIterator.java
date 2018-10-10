@@ -85,7 +85,7 @@ public abstract class ImportPlainIterator {
 
     protected abstract boolean nextRow() throws IOException;
     
-    protected abstract Object getPropValue(String name, Type type) throws lsfusion.server.data.type.ParseException, ParseException;
+    protected abstract Object getPropValue(String name, Type type) throws lsfusion.server.data.type.ParseException, ParseException, IOException;
     
     public ImMap<String, Object> next() {
         try {
@@ -95,7 +95,7 @@ public abstract class ImportPlainIterator {
                 public Object getMapValue(String key, String value) {
                     try {
                         return getPropValue(value, fieldTypes.get(key));
-                    } catch (lsfusion.server.data.type.ParseException | java.text.ParseException e) {
+                    } catch (lsfusion.server.data.type.ParseException | java.text.ParseException | IOException e) {
                         throw Throwables.propagate(e);
                     }
                 }

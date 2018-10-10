@@ -27,7 +27,10 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
     public ExportDBFWriter(ImOrderMap<String, Type> fieldTypes, String charset) throws IOException, JDBFException {
         super(fieldTypes);
 
-        writer = new DBFWriter(file.getAbsolutePath(), getFields(), charset);
+        OverJDBField[] fields = getFields();
+        if(fields.length == 0) // dbf format (with 13 terminator) just does not support no fields  
+            throw new RuntimeException("Export Error: DBF file cannot have no fields");
+        writer = new DBFWriter(file.getAbsolutePath(), fields, charset);
     }
 
     public void writeLine(ImMap<String, Object> row) {

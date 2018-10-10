@@ -73,8 +73,8 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
                 if(literals.get(i)) {
                     propertyDraw.setIntegrationSID(alias);
                     alias = null;
-                }
-                mapAliases.exclAdd(alias, propertyDraw);
+                } else
+                    mapAliases.exclAdd(alias, propertyDraw);
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 

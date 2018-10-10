@@ -6,7 +6,9 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
-import net.iryndin.jdbf.core.DbfRecord;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
+import net.iryndin.jdbf.core.DbfField;
+import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
@@ -110,8 +112,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return parseString(string);
     }
     @Override
-    public T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
-        return parseNullableString(dbfRecord.getString(fieldName, charset), false); // dbf supports nulls
+    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
+        String string;
+        if(dbfRecord.getField(fieldName).getType() == DbfFieldTypeEnum.Memo)
+            string = dbfRecord.getMemoAsString(fieldName, Charset.forName(charset));
+        else
+            string = dbfRecord.getString(fieldName, charset);
+        return parseNullableString(string, false); // dbf supports nulls
     }
     @Override
     public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
