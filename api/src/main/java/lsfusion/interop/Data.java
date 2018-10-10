@@ -32,4 +32,12 @@ public class Data {
     public final static byte EXCELLINK = 28;
     public final static byte DYNAMICFORMATLINK = 29;
     public final static byte CUSTOMSTATICFORMATLINK = 30;
+    public final static byte CSV = 31;
+    public final static byte CSVLINK = 32;
+    public final static byte HTML = 33;
+    public final static byte HTMLLINK = 34;
+    public final static byte JSON = 35;
+    public final static byte JSONLINK = 36;
+    public final static byte XML = 37;
+    public final static byte XMLLINK = 38;
 }

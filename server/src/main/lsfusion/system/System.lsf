@@ -174,12 +174,20 @@ requestedPdfFile = DATA LOCAL NESTED PDFFILE ();
 requestedRawFile = DATA LOCAL NESTED RAWFILE ();
 requestedFile = DATA LOCAL NESTED FILE ();
 requestedExcelFile = DATA LOCAL NESTED EXCELFILE ();
+requestedCsvFile = DATA LOCAL NESTED CSVFILE ();
+requestedHtmlFile = DATA LOCAL NESTED HTMLFILE ();
+requestedJsonFile = DATA LOCAL NESTED JSONFILE ();
+requestedXmlFile = DATA LOCAL NESTED XMLFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
 requestedRawLink = DATA LOCAL NESTED RAWLINK ();
 requestedLink = DATA LOCAL NESTED LINK ();
 requestedExcelLink = DATA LOCAL NESTED EXCELLINK ();    
+requestedCsvLink = DATA LOCAL NESTED CSVLINK ();    
+requestedHtmlLink = DATA LOCAL NESTED HTMLLINK ();    
+requestedJsonLink = DATA LOCAL NESTED JSONLINK ();    
+requestedXmlLink = DATA LOCAL NESTED XMLLINK ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

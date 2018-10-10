@@ -8,7 +8,6 @@ import lsfusion.interop.Compare;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
 import java.text.ParseException;
 
 import static lsfusion.interop.Compare.EQUALS;
@@ -35,7 +34,7 @@ public abstract class ClientLinkClass extends ClientDataClass implements ClientT
     }
 
     public Object parseString(String s) throws ParseException {
-        throw new RuntimeException("not supported");
+        return s;
     }
 
     @Override

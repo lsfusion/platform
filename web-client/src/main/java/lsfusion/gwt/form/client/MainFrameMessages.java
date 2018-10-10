@@ -132,12 +132,20 @@ public interface MainFrameMessages extends Messages {
     String typeImageCaption();
     String typePDFFileCaption();
     String typeWordFileCaption();
+    String typeCSVFileCaption();
+    String typeHTMLFileCaption();
+    String typeJSONFileCaption();
+    String typeXMLFileCaption();
     String typeStaticFormatLinkCaption();
     String typeDynamicFormatLinkCaption();
     String typeExcelFileLinkCaption();
     String typeImageLinkCaption();
     String typePDFFileLinkCaption();
     String typeWordFileLinkCaption();
+    String typeCSVFileLinkCaption();
+    String typeHTMLFileLinkCaption();
+    String typeJSONFileLinkCaption();
+    String typeXMLFileLinkCaption();
 
     String filterCompareStartsWith();
     String filterCompareContains();

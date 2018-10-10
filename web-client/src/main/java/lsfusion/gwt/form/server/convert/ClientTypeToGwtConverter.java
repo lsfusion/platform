@@ -112,6 +112,26 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return initializeFileClass(excelClass, new GExcelType());
     }
 
+    @Converter(from = ClientCSVClass.class)
+    public GCSVType convertCSVClass(ClientCSVClass csvClass) {
+        return initializeFileClass(csvClass, new GCSVType());
+    }
+
+    @Converter(from = ClientHTMLClass.class)
+    public GHTMLType convertHTMLClass(ClientHTMLClass htmlClass) {
+        return initializeFileClass(htmlClass, new GHTMLType());
+    }
+    
+    @Converter(from = ClientJSONClass.class)
+    public GJSONType convertJSONClass(ClientJSONClass jsonClass) {
+        return initializeFileClass(jsonClass, new GJSONType());
+    }
+
+    @Converter(from = ClientXMLClass.class)
+    public GXMLType convertExcelClass(ClientXMLClass xmlClass) {
+        return initializeFileClass(xmlClass, new GXMLType());
+    }
+
     @Converter(from = ClientCustomStaticFormatFileClass.class)
     public GCustomStaticFormatFileType convertCustomStaticFormatFileClass(ClientCustomStaticFormatFileClass customClass) {
         GCustomStaticFormatFileType customFormatFileType = initializeFileClass(customClass, new GCustomStaticFormatFileType());
@@ -140,8 +160,28 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientExcelLinkClass.class)
-    public GExcelLinkType convertExcelClass(ClientExcelLinkClass excelClass) {
+    public GExcelLinkType convertExcelLinkClass(ClientExcelLinkClass excelClass) {
         return initializeLinkClass(excelClass, new GExcelLinkType());
+    }
+
+    @Converter(from = ClientCSVLinkClass.class)
+    public GCSVLinkType convertCSVLinkClass(ClientCSVLinkClass csvClass) {
+        return initializeLinkClass(csvClass, new GCSVLinkType());
+    }
+
+    @Converter(from = ClientHTMLLinkClass.class)
+    public GHTMLLinkType convertHTMLLinkClass(ClientHTMLLinkClass htmlClass) {
+        return initializeLinkClass(htmlClass, new GHTMLLinkType());
+    }
+
+    @Converter(from = ClientJSONLinkClass.class)
+    public GJSONLinkType convertJSONLinkClass(ClientJSONLinkClass jsonClass) {
+        return initializeLinkClass(jsonClass, new GJSONLinkType());
+    }
+
+    @Converter(from = ClientXMLLinkClass.class)
+    public GXMLLinkType convertXMLLinkClass(ClientXMLLinkClass xmlClass) {
+        return initializeLinkClass(xmlClass, new GXMLLinkType());
     }
 
     @Converter(from = ClientCustomStaticFormatLinkClass.class)

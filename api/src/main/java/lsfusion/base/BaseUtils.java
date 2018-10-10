@@ -30,8 +30,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -47,7 +47,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + numRowHeight option for property
     public static Integer getApiVersion() {
-        return 73;
+        return 74;
     }
 
     public static String getPlatformVersion() {

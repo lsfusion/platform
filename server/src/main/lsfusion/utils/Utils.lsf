@@ -36,7 +36,7 @@ linkToString 'Приведение ссылки к строке' INTERNAL 'lsfus
 appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
 appendToFile(VARSTRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
-setExtension = FORMULA FILE 'casttocustomfile(($1),$2)';
+setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)';
 
 // --------------------------------- Logging --------------------------------- //
 
@@ -207,6 +207,10 @@ imageFile = DATA LOCAL IMAGEFILE ();
 pdfFile = DATA LOCAL PDFFILE ();
 rawFile = DATA LOCAL RAWFILE ();
 excelFile = DATA LOCAL EXCELFILE();
+csvFile = DATA LOCAL CSVFILE();
+htmlFile = DATA LOCAL HTMLFILE();
+jsonFile = DATA LOCAL JSONFILE();
+xmlFile = DATA LOCAL XMLFILE();
 
 // --------------------------------------------- Yes/No --------------------------------- //
 CLASS YesNo 'Логическое' {
