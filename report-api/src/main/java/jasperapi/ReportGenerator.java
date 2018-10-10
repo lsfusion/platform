@@ -608,16 +608,18 @@ public class ReportGenerator {
             toDelete.add(textField);
             if (hasColumns(fieldName, subreportID)) {
                 int newFieldsCount = getColumnsCount(fieldName, subreportID);
-                List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
-                String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
+                if(newFieldsCount > 0) { // optimization + otherwise where will be division by zero in makeTextFieldPartition
+                    List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
+                    String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
 
-                for (int i = 0; i < newFieldsCount; i++) {
-                    transformTextFieldExpressions(textField, subFields.get(i), i, subreportID);
-                    if (oldStyleName != null && transformedStyleNames.contains(oldStyleName)) {
-                        subFields.get(i).setStyle(design.getStylesMap().get(oldStyleName + indexSuffix(i)));
+                    for (int i = 0; i < newFieldsCount; i++) {
+                        transformTextFieldExpressions(textField, subFields.get(i), i, subreportID);
+                        if (oldStyleName != null && transformedStyleNames.contains(oldStyleName)) {
+                            subFields.get(i).setStyle(design.getStylesMap().get(oldStyleName + indexSuffix(i)));
+                        }
                     }
+                    toAdd.addAll(subFields);
                 }
-                toAdd.addAll(subFields);
             }
         }
         if (textField.getPattern() == null) {
