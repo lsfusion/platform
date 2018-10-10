@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
 import com.google.common.base.Throwables;
+import com.hexiong.jdbf.DBFReader;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -29,7 +30,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
     private static final String LT = "<";
     private static final String IN = " IN ";
 
-    private DbfReader reader;
+    private CustomDbfReader reader;
     private String charset;
     private List<List<String>> wheresList;
 
@@ -41,7 +42,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
     public ImportDBFIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, String charset, byte[] memo, List<List<String>> wheresList) throws IOException {
         super(fieldTypes);
 
-        this.reader = memo != null ? new DbfReader(new ByteArrayInputStream(file), new ByteArrayInputStream(memo)) : new DbfReader(new ByteArrayInputStream(file));
+        this.reader = new CustomDbfReader(file, memo);
         this.charset = charset;
         this.wheresList = wheresList;
         
@@ -57,7 +58,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
         return mResult.immutableOrder();
     }
         
-    private DbfRecord record;
+    private CustomDbfRecord record;
     @Override
     protected boolean nextRow() throws IOException {
         do {
@@ -68,11 +69,11 @@ public class ImportDBFIterator extends ImportPlainIterator {
     }
 
     @Override
-    protected Object getPropValue(String name, Type type) throws ParseException, java.text.ParseException {
+    protected Object getPropValue(String name, Type type) throws ParseException, java.text.ParseException, IOException {
         return type.parseDBF(record, name, charset);
     }
 
-    private boolean ignoreRow(DbfRecord record, List<List<String>> wheresList) {
+    private boolean ignoreRow(CustomDbfRecord record, List<List<String>> wheresList) {
         boolean ignoreRow = false;
         for (List<String> where : wheresList) {
             String condition = where.get(0);

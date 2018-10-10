@@ -7,6 +7,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.iryndin.jdbf.core.DbfRecord;
 
 import java.nio.charset.Charset;
@@ -103,6 +104,11 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public String getSID() {
         return "DOUBLE";
+    }
+
+    @Override
+    public Double parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getDouble(fieldName));
     }
 
     @Override

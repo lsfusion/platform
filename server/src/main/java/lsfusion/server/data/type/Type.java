@@ -14,12 +14,13 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
-import net.iryndin.jdbf.core.DbfRecord;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -69,7 +70,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     ExtInt getCharLength();
 
-    T parseDBF(DbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException;
+    T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
     T parseJSON(JSONObject object, String key) throws ParseException, JSONException;
     T parseCSV(String value) throws ParseException;
     T parseXML(String value) throws ParseException;
