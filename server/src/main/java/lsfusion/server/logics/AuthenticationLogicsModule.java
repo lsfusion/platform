@@ -76,6 +76,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP defaultTimeZone;
     public LCP defaultTwoDigitYearStart;
     
+    public LCP userFontSize;
+    
     public LAP deliveredNotificationAction;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
@@ -155,6 +157,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         defaultCountry = findProperty("defaultUserCountry[]");
         defaultTimeZone = findProperty("defaultUserTimeZone[]");
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
+        
+        userFontSize = findProperty("fontSize[CustomUser]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
     }

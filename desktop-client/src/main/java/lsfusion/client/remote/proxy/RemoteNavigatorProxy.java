@@ -4,15 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.SecuritySettings;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
-import lsfusion.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends RemoteObjectProxy<T> implements RemoteNavigatorInterface {
@@ -108,6 +104,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     @Override
     public LocalePreferences getLocalePreferences() throws RemoteException {
         return target.getLocalePreferences();
+    }
+
+    @Override
+    public Integer getFontSize() throws RemoteException {
+        return target.getFontSize();
     }
 
     @Override

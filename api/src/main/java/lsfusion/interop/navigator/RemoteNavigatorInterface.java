@@ -3,13 +3,11 @@ package lsfusion.interop.navigator;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.SecuritySettings;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
-import java.util.Map;
 
 public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
@@ -47,4 +45,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     ClientSettings getClientSettings() throws RemoteException;
 
     LocalePreferences getLocalePreferences() throws RemoteException;
+    
+    Integer getFontSize() throws RemoteException;
 }

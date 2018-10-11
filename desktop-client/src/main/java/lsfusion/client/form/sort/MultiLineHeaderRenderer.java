@@ -50,7 +50,7 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
             } else {
                 label.setIcon(null);
             }
-            label.setFont(label.getFont().deriveFont(Font.PLAIN, 10));
+            label.setFont(label.getFont().deriveFont(Font.PLAIN, Main.getUIFontSize(10)));
         }
         return comp;
     }
@@ -95,7 +95,7 @@ public class MultiLineHeaderRenderer implements TableCellRenderer {
 
             textArea.setForeground(renderer.getForeground());
             textArea.setBackground(renderer.getBackground());
-            textArea.setFont(renderer.getFont().deriveFont(Font.PLAIN, 10));
+            textArea.setFont(renderer.getFont().deriveFont(Font.PLAIN, Main.getIntUIFontSize(10)));
             textArea.setText(value.toString());
 
             if (renderer instanceof JComponent) {

@@ -1,5 +1,6 @@
 package lsfusion.client.form.renderer;
 
+import lsfusion.client.Main;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.rich.RichEditorKit;
 import lsfusion.client.form.editor.rich.RichEditorPane;
@@ -24,7 +25,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
         this.rich = rich;
 
         getComponent().setOpaque(true);
-        getComponent().setFont(new Font("Tahoma", Font.PLAIN, 10));
+        getComponent().setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(10)));
         getComponent().setEditable(false);
         getComponent().setEditorKitForContentType("text/html", new RichEditorKit());
 

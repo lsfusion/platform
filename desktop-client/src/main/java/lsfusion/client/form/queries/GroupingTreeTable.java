@@ -20,8 +20,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -63,7 +63,7 @@ public class GroupingTreeTable extends JXTreeTable {
         
         JTableHeader header = getTableHeader();
         header.setReorderingAllowed(false);
-        header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), 10));
+        header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), Main.getUIFontSize(10)));
         header.addMouseListener(new ColumnListener());  //для сортировки
 
         addMouseListener(new MouseAdapter() {
@@ -102,12 +102,9 @@ public class GroupingTreeTable extends JXTreeTable {
             if (property != null && (property.baseType instanceof ClientImageClass || property.baseType instanceof ClientImageLinkClass)) {
                 needToExpandRows = true;
             }
-        }    
-        if (needToExpandRows) { // специально для картинок увеличиваем высоту рядов
-            setRowHeight(EXPANDED_ROW_HEIGHT);
-        } else {
-            setRowHeight(DEFAULT_ROW_HEIGHT);
         }
+        // специально для картинок увеличиваем высоту рядов
+        setRowHeight(Main.getIntUIFontSize(needToExpandRows ? EXPANDED_ROW_HEIGHT : DEFAULT_ROW_HEIGHT));
     }
     
     private void setDefaultOrder(java.util.List<ClientPropertyDraw> columnProperties) {
@@ -175,7 +172,7 @@ public class GroupingTreeTable extends JXTreeTable {
         List<ClientPropertyDraw> columnProperties;
         java.util.List<String> columnNames;
         Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<>();
-        int keyColumnsQuantity = 0;
+        int keyColumnsQuantity;
         int levelCount;
         int lastLevelRowCount;
 
@@ -239,8 +236,7 @@ public class GroupingTreeTable extends JXTreeTable {
             Map<java.util.List<Object>, java.util.List<Object>> map = sources.get(index);
             for (java.util.List<Object> keys : map.keySet()) {
                 if (parentKeys == null || containsAll(parentKeys, keys)) {
-                    java.util.List<Object> row = new ArrayList<>();
-                    row.addAll(keys);
+                    List<Object> row = new ArrayList<>(keys);
                     for (int i = 0; i < keyColumnsQuantity - keys.size(); i++) {
                         row.add(null);
                     }
@@ -258,8 +254,6 @@ public class GroupingTreeTable extends JXTreeTable {
                                 convertedValue = value != null && (Boolean) value;
                             } else if (columnProperty.baseType instanceof ClientImageLinkClass && value instanceof String) {
                                 convertedValue = ImageLinkPropertyRenderer.readImage(columnProperty, (String) value);
-                            } else {
-                                convertedValue = value;
                             }
                         }
                         if (convertedValue instanceof String) {

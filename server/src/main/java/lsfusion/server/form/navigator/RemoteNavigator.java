@@ -7,14 +7,12 @@ import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClientSettings;
 import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.SecuritySettings;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.EnvStackRunnable;
@@ -33,17 +31,12 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ManageSessionType;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.GroupObjectInstance;
-import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.remote.*;
@@ -551,6 +544,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return new Locale(pref.language, pref.country == null ? "" : pref.country);
         }
         return Locale.getDefault();
+    }
+    
+    @Override
+    public Integer getFontSize() {
+        try {
+            return (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void gainedFocus(FormInstance<T> form) {
