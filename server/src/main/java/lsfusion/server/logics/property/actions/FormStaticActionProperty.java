@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -23,8 +22,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 
 public abstract class FormStaticActionProperty<O extends ObjectSelector, T extends FormStaticType> extends FormActionProperty<O> {
 
@@ -59,21 +56,15 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         if(formEntity != null) {
             MSet<CalcProperty> mProps = SetFact.mSet();
             boolean isReport = this instanceof PrintActionProperty;
-            ImSet<GroupObjectEntity> valueGroupObjects;
-            if(isReport)
-                valueGroupObjects = SetFact.EMPTY();
-            else
-                valueGroupObjects = AbstractFormDataInterface.getValueGroupObjects(BaseUtils.<ImSet<ObjectEntity>>immutableCast(mapObjects.keys()));
-            for (ImOrderSet<PropertyDrawEntity> propertyDraws : formEntity.getGroupProperties(valueGroupObjects).valueIt())
-                for (PropertyDrawEntity propertyDraw : propertyDraws) {
-                    if(isReport) {
-                        MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
-                        propertyDraw.fillQueryProps(mReaders);
-                        for(PropertyReaderEntity reader : mReaders.immutable())
-                            mProps.add((CalcProperty) reader.getPropertyObjectEntity().property);
-                    } else
-                        mProps.add((CalcProperty) propertyDraw.getValueProperty().property);                     
-                }
+            for (PropertyDrawEntity propertyDraw : formEntity.getCalcPropertyDrawsList()) {
+                if (isReport) {
+                    MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
+                    propertyDraw.fillQueryProps(mReaders);
+                    for (PropertyReaderEntity reader : mReaders.immutable())
+                        mProps.add((CalcProperty) reader.getPropertyObjectEntity().property);
+                } else 
+                    mProps.add((CalcProperty) propertyDraw.getValueProperty().property);
+            }
             return mProps.immutable().toMap(false);
         }
         return super.aspectChangeExtProps();

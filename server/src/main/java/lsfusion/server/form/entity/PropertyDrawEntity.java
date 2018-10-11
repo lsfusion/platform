@@ -19,11 +19,9 @@ import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.ViewPropertySecurityPolicy;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.NumericClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
@@ -144,11 +142,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
-        @Override
         public Object getProfiledObject() {
             return PropertyDrawEntity.this.propertyCaption;
         }
@@ -192,11 +185,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
-        @Override
         public Object getProfiledObject() {
             return PropertyDrawEntity.this.propertyFooter;
         }
@@ -232,11 +220,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         @Override
         public String getSID() {
             return PropertyDrawEntity.this.getSID();
-        }
-
-        @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override
@@ -530,15 +513,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
     }
 
+    // interactive
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null?getApplyObject(form):toDraw;        
+        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;        
     }
 
-    public GroupObjectEntity getApplyObject(FormEntity form) {
-        return getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY());        
-    }
-    public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects) {
-        return form.getApplyObject(getObjectInstances(), excludeGroupObjects.merge(getColumnGroupObjects().getSet()));
+    public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {
+        if(supportGroupColumns)
+            excludeGroupObjects = excludeGroupObjects.merge(getColumnGroupObjects().getSet());
+        return form.getApplyObject(getObjectInstances(), excludeGroupObjects);
     }
 
     @IdentityStartLazy
@@ -636,17 +619,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getInheritedProperty().isNotNull();
     }
 
-    @Override
-    public PropertyType getPropertyType(FormEntity formEntity) {
-        Type type = getType();
-        return new PropertyType(type.getSID(), getToDrawSID(formEntity), type.getCharLength().value, type instanceof NumericClass ? ((NumericClass) type).getPrecision() : 0);
-    }
-
-    private String getToDrawSID(FormEntity formEntity) {
-        GroupObjectEntity group = getToDraw(formEntity);
-        return group != null ? group.getSID() : "nogroup";
-    }
-    
     public boolean checkPermission(ViewPropertySecurityPolicy policy) {
         return policy.checkPermission(getSecurityProperty());
     }

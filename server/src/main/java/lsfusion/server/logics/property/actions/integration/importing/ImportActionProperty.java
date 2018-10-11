@@ -15,15 +15,12 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.interop.FormStaticType;
-import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.DataObject;
@@ -235,9 +232,8 @@ public abstract class ImportActionProperty extends SystemActionProperty {
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         MSet<CalcProperty> mProps = SetFact.mSet();
-        for(ImOrderSet<PropertyDrawEntity> propertyDraws : formEntity.getGroupProperties(SetFact.<GroupObjectEntity>EMPTY()).valueIt())
-            for(PropertyDrawEntity propertyDraw : propertyDraws)
-                mProps.add((CalcProperty) propertyDraw.getImportProperty().property);
+        for(PropertyDrawEntity propertyDraw : formEntity.getCalcPropertyDrawsList())
+            mProps.add((CalcProperty) propertyDraw.getImportProperty().property);
         return mProps.immutable().toMap(false);
     }
 }

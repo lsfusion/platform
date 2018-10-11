@@ -88,7 +88,7 @@ public class FormGroupHierarchyCreator {
             for (GroupObjectEntity targetGroup : groups) {
                 for (PropertyDrawEntity<?> property : propertyDraws) {
                     ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
-                    if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects))
+                    if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects, supportGroupColumns))
                         for (GroupObjectEntity columnGroup : columnGroupObjects) 
                             if(groups.contains(columnGroup)) {
                                 assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));

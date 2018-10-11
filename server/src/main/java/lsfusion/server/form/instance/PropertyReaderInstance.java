@@ -11,5 +11,4 @@ public interface PropertyReaderInstance extends ProfiledObject {
 
     int getID(); // ID в рамках Type
 
-    PropertyType getPropertyType(FormEntity formEntity);
 }
