@@ -29,7 +29,6 @@ public class ImportXLSIterator extends ImportPlainIterator {
     private final Workbook wb;
     private File wbFile;
     private FormulaEvaluator formulaEvaluator;
-    private int rowsCount;
     private Integer lastSheet;
     
     public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, Integer singleSheetIndex) throws IOException {
@@ -84,45 +83,29 @@ public class ImportXLSIterator extends ImportPlainIterator {
         if (currentSheet > lastSheet) {
             return false;
         }
+        sheet = wb.getSheetAt(currentSheet++);
         if (useStreamingReader) {
-            rowIterator = wb.getSheetAt(currentSheet++).iterator();
             firstRow = true;
-        } else {
-            sheet = wb.getSheetAt(currentSheet++);
-            rowsCount = sheet.getLastRowNum() + 1;
         }
         return true;
     }
-    
-    private int currentRow = 0;
+
     private Row row;
     @Override
     protected boolean nextRow() {
-        if(useStreamingReader) {
-            if (rowIterator != null && rowIterator.hasNext()) {
-                row = rowIterator.next();
-                if (row.getRowNum() == 0 && !firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
-                    return nextRow();
-                } else {
-                    firstRow = false;
-                }
+        if (sheet == null || !rowIterator.hasNext()) {
+            if (!nextSheet())
+                return false;
+            rowIterator = sheet.rowIterator();
+            return nextRow();
+        }
+        row = rowIterator.next();
+        if (useStreamingReader && row.getRowNum() == 0) {
+            if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
+                firstRow = false;
             } else {
-                if (nextSheet()) {
-                    return nextRow();
-                } else {
-                    return false;
-                }
-            }
-        } else {
-            if (sheet == null || currentRow >= rowsCount) {
-                if (!nextSheet())
-                    return false;
-                currentRow = 0;
-            }
-
-            row = sheet.getRow(currentRow++);
-            if (row == null)
                 return nextRow();
+            }
         }
         return true;
     }
