@@ -45,6 +45,12 @@ public class IOUtils {
         }
     }
 
+    public static byte[] getFileBytes(String filePath) throws IOException {
+        try (InputStream in = new FileInputStream(filePath)) {
+            return readBytesFromStream(in);
+        }
+    }
+
     public static void putFileBytes(File file, byte[] array) throws IOException {
         putFileBytes(file, array, 0, array.length);
     }
