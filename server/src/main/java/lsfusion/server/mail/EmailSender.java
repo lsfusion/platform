@@ -3,6 +3,7 @@ package lsfusion.server.mail;
 
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
@@ -249,6 +250,62 @@ public class EmailSender {
             return Integer.parseInt(port);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    @Deprecated
+    public static class AttachmentProperties {
+        public String fileName;
+        public String attachmentName;
+        public AttachmentFormat format;
+
+        public AttachmentProperties(String fileName, String attachmentName, AttachmentFormat format) {
+            this.fileName = fileName;
+            this.attachmentName = attachmentName;
+            this.format = format;
+        }
+    }
+
+    @Deprecated
+    public void sendSimpleMail(ExecutionContext context, String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
+        assert attachments != null;
+
+        Multipart mp = new MimeMultipart();
+        setMessageHeading(subject);
+
+        for (AttachmentProperties attachment : attachments) {
+            attachFile(mp, new AttachmentFile(IOUtils.getFileBytes(attachment.fileName), attachment.attachmentName, attachment.format.getExtension()));
+        }
+        message.setContent(mp);
+
+        String messageInfo = subject.trim();
+        try {
+            Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
+            if (addressesTo == null || addressesTo.length == 0) {
+                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
+            }
+            messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
+        } catch (MessagingException me) {
+            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
+        }
+
+        boolean send = false;
+        try {
+            sendMessage(message, smtpHost, smtpPort, userName, password);
+            send = true;
+        } catch (MessagingException e) {
+            throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo, e);
+        } finally {
+            try {
+                if (context != null) {
+                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
+                    if(emailSent != null)
+                        emailSent.change(send ? true : null, context.getSession());
+                }
+            } catch (Exception e) {
+                logger.error("emailSent writing error", e);
+            }
         }
     }
 }
