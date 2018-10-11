@@ -158,7 +158,7 @@ public final class Log {
         }
 
         JTextArea taErrorText = new JTextArea(trace, 7, 60);
-        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12)));
         taErrorText.setForeground(Color.RED);
 
         JPanel textWithLine = new JPanel();

@@ -8,7 +8,6 @@ import lsfusion.interop.FormGrouping;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,65 +29,61 @@ public abstract class GroupingButton extends ToolbarGridButton {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            dialog = new GroupingDialog(Main.frame, grid, readGroupings(), grid.getForm().hasCanonicalName()) {
+                        dialog = new GroupingDialog(Main.frame, grid, readGroupings(), grid.getForm().hasCanonicalName()) {
 
-                                @Override
-                                protected void savePressed(FormGrouping grouping) {
-                                    GroupingButton.this.savePressed(grouping);
+                            @Override
+                            protected void savePressed(FormGrouping grouping) {
+                                GroupingButton.this.savePressed(grouping);
+                            }
+
+                            @Override
+                            public void updatePressed() {
+                                updateData(false);
+                            }
+
+                            @Override
+                            public void pivotPressed() {
+                                updateData(true);
+                                try {
+                                    dialog.exportToExcelPivot(false);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
                                 }
+                            }
 
-                                @Override
-                                public void updatePressed() {
-                                    updateData(false);
+                            @Override
+                            public void pivotXLSXPressed() {
+                                updateData(true);
+                                try {
+                                    dialog.exportToExcelPivot(true);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
                                 }
+                            }
 
-                                @Override
-                                public void pivotPressed() {
-                                    updateData(true);
-                                    try {
-                                        dialog.exportToExcelPivot(false);
-                                    } catch (Exception e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
+                            private void updateData(boolean isPivot) {
+                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                                boolean onlyNotNull = dialog.onlyNotNull();
 
-                                @Override
-                                public void pivotXLSXPressed() {
-                                    updateData(true);
-                                    try {
-                                        dialog.exportToExcelPivot(true);
-                                    } catch (Exception e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
+                                List<Map<List<Object>, List<Object>>> result = new ArrayList<>();
 
-                                private void updateData(boolean isPivot) {
-                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                    Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                    boolean onlyNotNull = dialog.onlyNotNull();
-
-                                    List<Map<List<Object>, List<Object>>> result = new ArrayList<>();
-
-                                    for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
-                                        if (!level.isEmpty()) {
-                                            Map<List<Object>, List<Object>> groupData = groupData(level, sumMap, maxMap, onlyNotNull);
-                                            if (groupData != null) {
-                                                if (isPivot && !result.isEmpty()) {
-                                                    if (result.get(0).size() < groupData.size()) {
-                                                        result.set(0, groupData);
-                                                    }
-                                                } else
-                                                    result.add(groupData);
-                                            }
+                                for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
+                                    if (!level.isEmpty()) {
+                                        Map<List<Object>, List<Object>> groupData = groupData(level, sumMap, maxMap, onlyNotNull);
+                                        if (groupData != null) {
+                                            if (isPivot && !result.isEmpty()) {
+                                                if (result.get(0).size() < groupData.size()) {
+                                                    result.set(0, groupData);
+                                                }
+                                            } else
+                                                result.add(groupData);
                                         }
                                     }
-                                    dialog.update(result);
                                 }
-                            };
-                        } catch (IOException ex) {
-                            throw new RuntimeException(ex);
-                        }
+                                dialog.update(result);
+                            }
+                        };
 
                         dialog.updatePressed();
                         dialog.setVisible(true);

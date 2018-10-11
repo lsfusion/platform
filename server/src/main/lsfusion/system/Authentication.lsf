@@ -150,6 +150,8 @@ country 'Страна локали' (CustomUser user) = IF useClientLocale(user)
 timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
 twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
 
+fontSize 'Размер шрифта, %' = DATA INTEGER (CustomUser); 
+
 deliveredNotificationAction  ABSTRACT LIST ( CustomUser);
 
 locked = DATA User (Object);
@@ -189,7 +191,8 @@ FORM customUser '{authentication.custom.user}'
     PROPERTIES(u) firstName, lastName, login,
                   sha256Password ON CHANGE changeSHA256Password(u), email,
                   isLocked, lastActivity, hostnameLastComputer, ignorePrintTypeCustom, useBusyDialogCustom, useRequestTimeout,
-                  allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, clientLanguage, clientCountry, useClientLocale
+                  allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, 
+                  clientLanguage, clientCountry, useClientLocale, fontSize
 
     EDIT CustomUser OBJECT u
 ;
@@ -213,7 +216,7 @@ FORM customUsers '{authentication.users}'
     PROPERTIES(u) READONLY name[Contact], login, email
     PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
                   language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
-                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, isLocked READONLY,
+                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, fontSize, isLocked READONLY,
                   lastActivity, hostnameLastComputer, NEW, EDIT, DELETE 
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry

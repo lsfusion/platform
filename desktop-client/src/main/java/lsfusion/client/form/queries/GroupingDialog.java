@@ -51,10 +51,12 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.Main.getIntUIFontSize;
+import static lsfusion.client.Main.getUIFontSize;
 
 public abstract class GroupingDialog extends JDialog {
     private final int RECORD_QUANTITY_ID = -1;
@@ -83,7 +85,7 @@ public abstract class GroupingDialog extends JDialog {
     private GroupingTreeTable treeTable;
     private JPanel expandButtonsPanel = new JPanel();
 
-    private DefaultComboBoxModel groupsModel = new DefaultComboBoxModel();
+    private DefaultComboBoxModel<String> groupsModel = new DefaultComboBoxModel<>();
 
     private ChangeListener spinnerListener = new ChangeListener() {
         public void stateChanged(ChangeEvent ce) {
@@ -91,7 +93,7 @@ public abstract class GroupingDialog extends JDialog {
         }
     };
 
-    public GroupingDialog(Frame owner, final GridTable initialTable, final List<FormGrouping> savedGroupings, boolean canBeSaved) throws IOException {
+    public GroupingDialog(Frame owner, final GridTable initialTable, final List<FormGrouping> savedGroupings, boolean canBeSaved) {
         super(owner, getString("form.queries.grouping"), true);
         this.initialTable = initialTable;
         this.savedGroupings = savedGroupings;
@@ -178,8 +180,6 @@ public abstract class GroupingDialog extends JDialog {
             groupPivotChecks.put(columnKey, pivotCheckBox);
             
             JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
-            spinner.setMinimumSize(new Dimension(35, 19));
-            spinner.setPreferredSize(new Dimension(35, 19));
             spinner.addChangeListener(spinnerListener);
             groupSpinners.put(columnKey, spinner);
 
@@ -188,8 +188,6 @@ public abstract class GroupingDialog extends JDialog {
             }
 
             JSpinner extraSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
-            extraSpinner.setMinimumSize(new Dimension(35, 19));
-            extraSpinner.setPreferredSize(new Dimension(35, 19));
             extraSpinner.addChangeListener(spinnerListener);
             groupExtraSpinners.put(columnKey, extraSpinner);
             extraSpinner.setVisible(false);
@@ -262,7 +260,7 @@ public abstract class GroupingDialog extends JDialog {
             }
         });
 
-        final JComboBox savedGroupsList = new JComboBox(groupsModel);
+        final JComboBox<String> savedGroupsList = new JComboBox<>(groupsModel);
         
         // используется с целью обновления состояния при повторном выборе текущей группировки
         savedGroupsList.addPopupMenuListener(new PopupMenuListener() {
@@ -296,8 +294,7 @@ public abstract class GroupingDialog extends JDialog {
         });
 
         refreshGroupingListModel(null);
-        savedGroupsList.setMaximumSize(new Dimension(200, 20));
-        savedGroupsList.setPreferredSize(new Dimension(200, 20));
+        savedGroupsList.setPreferredSize(new Dimension(200, savedGroupsList.getPreferredSize().height));
         
         removeCurrentGroupingButton.addActionListener(new ActionListener() {
             @Override
@@ -497,19 +494,26 @@ public abstract class GroupingDialog extends JDialog {
         if (quantityCheck.isSelected()) {
             selectedSumMap.put(RECORD_QUANTITY_ID, null);
         }
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : sumChecks.entrySet()) {
+        return getSelectedMap(selectedSumMap, sumChecks);
+    }
+
+    public Map<Integer, List<byte[]>> getSelectedMaxMap() {
+        return getSelectedMap(new LinkedHashMap<Integer, List<byte[]>>(), maxChecks);
+    }
+
+    private Map<Integer, List<byte[]>> getSelectedMap(Map<Integer, List<byte[]>> selectedMap, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> checks) {
+        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : checks.entrySet()) {
             if (entry.getValue().isSelected()) {
                 int propertyID = entry.getKey().first.getID();
-                List<byte[]> list = selectedSumMap.get(propertyID);
+                List<byte[]> list = selectedMap.get(propertyID);
                 if (list == null) {
                     list = new ArrayList<>();
                 }
                 list.add(entry.getKey().second.serialize());
-                selectedSumMap.put(propertyID, list);
+                selectedMap.put(propertyID, list);
             }
         }
-        
-        return selectedSumMap;
+        return selectedMap;
     }
 
     public LinkedHashMap<Integer, PivotColumn> getSelectedPivotColumns() {
@@ -553,22 +557,6 @@ public abstract class GroupingDialog extends JDialog {
             }
         }
         return count;
-    }
-
-    public Map<Integer, List<byte[]>> getSelectedMaxMap() {
-        Map<Integer, List<byte[]>> selectedMaxMap = new LinkedHashMap<>();
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                int propertyID = entry.getKey().first.getID();
-                List<byte[]> list = selectedMaxMap.get(propertyID);
-                if (list == null) {
-                    list = new ArrayList<>();
-                }
-                list.add(entry.getKey().second.serialize());
-                selectedMaxMap.put(propertyID, list);
-            }
-        }
-        return selectedMaxMap;
     }
 
     public boolean onlyNotNull() {
@@ -730,8 +718,8 @@ public abstract class GroupingDialog extends JDialog {
             button.setContentAreaFilled(false);
             button.setOpaque(true);
             button.setFocusable(false);
-            Dimension buttonSize = new Dimension(14, 14);
-            button.setFont(button.getFont().deriveFont(button.getFont().getStyle(), 8));
+            Dimension buttonSize = new Dimension(getIntUIFontSize(14), getIntUIFontSize(14));
+            button.setFont(button.getFont().deriveFont(button.getFont().getStyle(), getUIFontSize(8)));
             button.setMaximumSize(buttonSize);
             button.setPreferredSize(buttonSize);
             button.addActionListener(new ActionListener() {
@@ -782,17 +770,10 @@ public abstract class GroupingDialog extends JDialog {
         addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot(), new int[treeTable.getColumnCount()]);
 
         for (int i = 0; i < treeTable.getColumnCount(); i++) {
-            String columnName = treeTable.getColumnName(i);
-            if (i != 0) {
-                columnName = columnName.substring(columnName.indexOf('>') + 1, columnName.lastIndexOf('<'));
-                if (columnName.contains("↑") || columnName.contains("↓")) {
-                    columnName = columnName.substring(0, columnName.lastIndexOf(' '));
-                }
-            }
             WritableCellFormat cellFormat = createCellFormat(null, true);
             cellFormat.setWrap(true);
             cellFormat.setVerticalAlignment(jxl.format.VerticalAlignment.CENTRE);
-            sheet.addCell(new jxl.write.Label(i, 0, columnName, cellFormat));
+            sheet.addCell(new jxl.write.Label(i, 0, getColumnName(i), cellFormat));
         }
                
         workbook.write();
@@ -804,7 +785,7 @@ public abstract class GroupingDialog extends JDialog {
         return file;
     }
 
-    private File exportToXLSX(boolean isPivot) throws IOException, WriteException {
+    private File exportToXLSX(boolean isPivot) throws IOException {
         cellStyleMap = new HashMap<>();
         File file = File.createTempFile("tableContents", ".xlsx");
         WorkbookSettings ws = new WorkbookSettings();
@@ -816,15 +797,8 @@ public abstract class GroupingDialog extends JDialog {
 
             XSSFCellStyle headerCellStyle = getOrCreateCellStyle(workbook, null, true);
             for (int i = 0; i < treeTable.getColumnCount(); i++) {
-                String columnName = treeTable.getColumnName(i);
-                if (i != 0) {
-                    columnName = columnName.substring(columnName.indexOf('>') + 1, columnName.lastIndexOf('<'));
-                    if (columnName.contains("↑") || columnName.contains("↓")) {
-                        columnName = columnName.substring(0, columnName.lastIndexOf(' '));
-                    }
-                }
                 XSSFCell cell = getOrCreateCell(sheet, 0, i, headerCellStyle);
-                cell.setCellValue(columnName);
+                cell.setCellValue(getColumnName(i));
                 sheet.autoSizeColumn(i);
             }
             workbook.write(new FileOutputStream(file));
@@ -834,6 +808,17 @@ public abstract class GroupingDialog extends JDialog {
             Runtime.getRuntime().exec("cmd.exe /c start " + file);
 
         return file;
+    }
+
+    private String getColumnName(int i) {
+        String columnName = treeTable.getColumnName(i);
+        if (i != 0) {
+            columnName = columnName.substring(columnName.indexOf('>') + 1, columnName.lastIndexOf('<'));
+            if (columnName.contains("↑") || columnName.contains("↓")) {
+                columnName = columnName.substring(0, columnName.lastIndexOf(' '));
+            }
+        }
+        return columnName;
     }
 
     private XSSFCellStyle getOrCreateCellStyle(XSSFWorkbook workbook, String format) {
@@ -1074,7 +1059,7 @@ public abstract class GroupingDialog extends JDialog {
         return currentRow;
     }
 
-    private int addExcelSubrows(XSSFWorkbook workbook, XSSFSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent, int[] maxWidth) throws WriteException {
+    private int addExcelSubrows(XSSFWorkbook workbook, XSSFSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent, int[] maxWidth) {
         if (parent.getParent() != null) {
             List<Object> row = treeTable.getRow(parent);
             for (int column = 0; column <= row.size(); column++) {
@@ -1146,7 +1131,7 @@ public abstract class GroupingDialog extends JDialog {
         JPanel mainPanel = new JPanel(new BorderLayout());
         
         JLabel enterName = new JLabel(getString("form.queries.grouping.save.choose.name"));
-        final JComboBox nameBox = new JComboBox();
+        final JComboBox<String> nameBox = new JComboBox<>();
         for (int i = 1; i < groupsModel.getSize(); i++) {
             nameBox.addItem(groupsModel.getElementAt(i));
         }

@@ -3,6 +3,7 @@ package lsfusion.client.form.editor.rich;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.client.Log;
+import lsfusion.client.Main;
 import lsfusion.client.form.showtype.ShowTypeView;
 import net.atlanticbb.tantlinger.ui.DefaultAction;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
@@ -67,8 +68,6 @@ public class RichEditorPane extends JPanel {
     }
     
     private static final String INVALID_TAGS[] = {"html", "head", "body", "title", "o", "/o", "!--EndFragment--", "!--StartFragment--"};
-
-    private static final Font comboFont = new Font("Dialog", Font.PLAIN, 12);
 
     private static final String[] fontSizeLabels = new String[] {"default", "xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"};
     private static final int[] fontSizes = new int[] {-1, 8, 10, 12, 14, 18, 24, 36};
@@ -182,21 +181,23 @@ public class RichEditorPane extends JPanel {
 //        addActionToToolbar(new SpecialCharAction(););
         addActionToToolbar(new HTMLImageAction(), Icons.image);
 
+        Font comboFont = new Font("Dialog", Font.PLAIN, Main.getIntUIFontSize(12));
+
 //        toolbar.addSeparator();
-//        createParagraphCombo();
+//        createParagraphCombo(comboFont);
 //        toolbar.add(paragraphCombo);
 
         toolbar.addSeparator();
-        createFontsCombo();
+        createFontsCombo(comboFont);
         toolbar.add(fontCombo);
 
         toolbar.addSeparator();
-        createFontSizeCombo();
+        createFontSizeCombo(comboFont);
         toolbar.add(fontSizeCombo);
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    private void createParagraphCombo() {
+    private void createParagraphCombo(Font comboFont) {
         ActionList paragraphActions = new ActionList("paragraphActions");
         //HTMLBlockAction юзает ElementWriter, поэтому не будет работать нормально...
         paragraphActions.addAll(HTMLEditorActionFactory.createBlockElementActionList());
@@ -231,7 +232,7 @@ public class RichEditorPane extends JPanel {
         paragraphCombo.setRenderer(new ActionComboRenderer());
     }
 
-    private void createFontsCombo() {
+    private void createFontsCombo(Font comboFont) {
         Vector fonts = new Vector();
         fonts.add("Default");
         fonts.add("serif");
@@ -249,7 +250,7 @@ public class RichEditorPane extends JPanel {
         fontCombo.addActionListener(fontComboHandler);
     }
     
-    private void createFontSizeCombo() {
+    private void createFontSizeCombo(Font comboFont) {
         ActionList fontSizeActions = HTMLEditorActionFactory.createFontSizeActionList();
         allActions.addAll(fontSizeActions);
         

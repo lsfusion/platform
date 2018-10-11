@@ -156,6 +156,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public Integer getFontSize() throws RemoteException {
+        return target.getFontSize();
+    }
+
+    @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(navigatorActionSID, type);
     }

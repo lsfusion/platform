@@ -40,8 +40,8 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.remote.*;
@@ -562,6 +562,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             return new Locale(pref.language, pref.country == null ? "" : pref.country);
         }
         return Locale.getDefault();
+    }
+    
+    @Override
+    public Integer getFontSize() {
+        try {
+            return (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void gainedFocus(FormInstance<T> form) {

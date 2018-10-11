@@ -50,4 +50,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     boolean isUseRequestTimeout() throws RemoteException;
 
     LocalePreferences getLocalePreferences() throws RemoteException;
+    
+    Integer getFontSize() throws RemoteException;
 }

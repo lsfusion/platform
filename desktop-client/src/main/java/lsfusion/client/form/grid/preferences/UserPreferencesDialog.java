@@ -49,10 +49,6 @@ public abstract class UserPreferencesDialog extends JDialog {
         this.initialTable = initialTable;
         this.goController = goController;
 
-        setMinimumSize(new Dimension(500, 500));
-        setBounds(new Rectangle(100, 100, 500, 500));
-        setLocationRelativeTo(owner);
-
         ActionListener escListener = new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 setVisible(false);
@@ -74,7 +70,8 @@ public abstract class UserPreferencesDialog extends JDialog {
         JPanel columnsPanel = new JPanel();
         columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.X_AXIS));
         columnsPanel.add(visiblePanel);
-        columnsPanel.add(createArrowsPanel(), BoxLayout.Y_AXIS);
+        JPanel arrowsPanel = createArrowsPanel();
+        columnsPanel.add(arrowsPanel, BoxLayout.Y_AXIS);
         columnsPanel.add(invisiblePanel);
 
         columnCaptionField = new JTextField();
@@ -195,11 +192,9 @@ public abstract class UserPreferencesDialog extends JDialog {
         if (canBeSaved) {
             JPanel saveResetButtonsPanel = new JPanel(new BorderLayout());
             final JButton saveButton = new JButton(getString("form.grid.preferences.save"));
-            saveButton.setPreferredSize(new Dimension(saveButton.getPreferredSize().width, 20));
             saveButton.addActionListener(createSaveResetButtonListener(true));
 
             final JButton resetButton = new JButton(getString("form.grid.preferences.reset"));
-            resetButton.setPreferredSize(new Dimension(resetButton.getPreferredSize().width, 20));
             resetButton.addActionListener(createSaveResetButtonListener(false));
 
             JPanel buttonsPanel = new JPanel();
@@ -239,6 +234,9 @@ public abstract class UserPreferencesDialog extends JDialog {
         setLayout(new BorderLayout());
         add(columnsPanel, BorderLayout.CENTER);
         add(settingsOkCancelPanel, BorderLayout.SOUTH);
+
+        setMinimumSize(new Dimension(500, arrowsPanel.getMinimumSize().height + settingsOkCancelPanel.getMinimumSize().height + 70));
+        setLocationRelativeTo(owner);
         
         refreshValues(mergeFont());
     }
@@ -553,7 +551,8 @@ public abstract class UserPreferencesDialog extends JDialog {
     private Font getInitialFont() {
         FontInfo designFont = initialTable.getDesignFont();
         if (designFont == null) {
-            return new Font(initialTable.getFont().getFontName(), Font.PLAIN, FontInfo.DEFAULT_FONT_SIZE);
+            int defaultTableFontSize = new JTable().getFont().getSize();
+            return new Font(initialTable.getFont().getFontName(), Font.PLAIN, defaultTableFontSize);
         }
         return new Font(designFont.fontFamily, designFont.getStyle(), designFont.fontSize);
     }
