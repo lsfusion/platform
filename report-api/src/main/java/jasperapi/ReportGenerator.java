@@ -1,5 +1,6 @@
 package jasperapi;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
@@ -7,6 +8,7 @@ import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
@@ -99,11 +101,7 @@ public class ReportGenerator {
         JRVirtualizationHelper.setThreadVirtualizer(virtualizer);
     }
 
-    public JasperPrint createReport() throws ClassNotFoundException, IOException, JRException {
-        return createReport(false);
-    }
-
-    public JasperPrint createReport(boolean ignorePagination) throws ClassNotFoundException, IOException, JRException {
+    public JasperPrint createReport(FormPrintType printType) throws ClassNotFoundException, IOException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(generationData.reportHierarchyData);
         rootID = hpair.first;
         hierarchy = hpair.second;
@@ -114,7 +112,7 @@ public class ReportGenerator {
         keyData = output.first;
         propData = output.second;
 
-        transformDesigns(ignorePagination);
+        transformDesigns(printType.ignorePagination());
 
         Map<String, Object> params = new HashMap<>();
         iterateChildReport(rootID, params, virtualizer);
@@ -709,10 +707,6 @@ public class ReportGenerator {
         }
     }
 
-    public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, FormPrintType.XLSX);
-    }
-
     private static JRAbstractExporter getExporter(FormPrintType printType) {
         switch (printType) {
             case XLS:
@@ -725,24 +719,24 @@ public class ReportGenerator {
                 return new JRDocxExporter();
             case DOCX:
                 return new JRDocxExporter();
+            case RTF:
+                return new JRRtfExporter();
+            case HTML:
+                return new ReportHTMLExporter();
         }
         throw new UnsupportedOperationException();
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, type, null, null);
-    }
-    
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) throws ClassNotFoundException, IOException, JRException {
-        JRAbstractExporter exporter = getExporter(type);
         String extension = type.getExtension();
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
 
-        JasperPrint print = report.createReport(type.isExcel());
+        JasperPrint print = report.createReport(type);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
+        JRAbstractExporter exporter = getExporter(type);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         exporter.exportReport();
@@ -795,18 +789,19 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static byte[] exportToExcelByteArray(ReportGenerationData generationData, FormPrintType type) {
+    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type) {
+        return exportToFileByteArray(generationData, type, null, null);
+    }
+    
+    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
-            assert type.isExcel();
-            File tempFile = exportToFile(generationData, FormPrintType.XLS);
-            FileInputStream fis = new FileInputStream(tempFile);
-            byte[] array = new byte[(int) tempFile.length()];
-            //noinspection ResultOfMethodCallIgnored
-            fis.read(array);
-            JRVirtualizationHelper.clearThreadVirtualizer();
-            return array;
+            try {
+                return IOUtils.getFileBytes(exportToFile(generationData, type, sheetName, password));
+            } finally {
+                JRVirtualizationHelper.clearThreadVirtualizer();
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в Excel", e);
+            throw Throwables.propagate(e);
         }
     }
 }

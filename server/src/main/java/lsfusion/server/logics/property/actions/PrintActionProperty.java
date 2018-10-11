@@ -1,8 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
-import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
-import lsfusion.base.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -25,9 +23,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.form.stat.StaticFormDataManager;
 import lsfusion.server.form.stat.StaticFormReportManager;
-import net.sf.jasperreports.engine.JRException;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -96,22 +92,17 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
                 context.delayUserInteraction(action);
         } else {
             // getting data
-            boolean isExcel = staticType.isExcel();
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context);
-            ReportGenerationData reportData = formReportManager.getReportData(isExcel, selectTop);
+            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop);
 
             // proceeding data
             String password = passwordProperty == null ? null : (String) passwordProperty.read(context, context.getKeys());
             String sheetName = sheetNameProperty == null ? null : (String) sheetNameProperty.read(context);
-            if (exportFile != null) {
-                try {
-                    writeResult(exportFile, staticType, context, IOUtils.getFileBytes(ReportGenerator.exportToFile(reportData, staticType, sheetName, password)));
-                } catch (JRException | IOException | ClassNotFoundException e) {
-                    throw Throwables.propagate(e);
-                }
-            } else {
+            if (exportFile != null)
+                writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password));
+            else {
                 String pName = printerProperty == null ? null : (String) printerProperty.read(context, context.getKeys());
-                List<ReportPath> customReportPathList = SystemProperties.inDevMode ? formReportManager.getCustomReportPathList(isExcel, null) : new ArrayList<ReportPath>();
+                List<ReportPath> customReportPathList = SystemProperties.inDevMode ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<ReportPath>();
                 Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, form.getSID(), syncType, reportData, staticType, pName, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);
             }

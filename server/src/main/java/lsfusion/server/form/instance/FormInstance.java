@@ -2542,11 +2542,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
-        return newFormManager.getCustomReportPathList(false, null);
+        return newFormManager.getCustomReportPathList(FormPrintType.PRINT);
     }
 
     public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
-        return newFormManager.saveAndGetCustomReportPathList(false, null, recreate);
+        return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
     }
 }

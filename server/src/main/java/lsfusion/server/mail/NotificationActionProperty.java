@@ -1,6 +1,5 @@
 package lsfusion.server.mail;
 
-import lsfusion.base.ByteArray;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
@@ -123,9 +122,6 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
                     }
                 }
 
-                List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<>();
-                Map<ByteArray, String> attachmentFiles = new HashMap<>();
-
                 String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);
                 String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, defaultAccount);
                 String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, defaultAccount);
@@ -139,7 +135,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
                 } else {
                     EmailSender sender = new EmailSender(nullTrim(smtpHostAccount), nullTrim(smtpPortAccount), nullTrim(encryptedConnectionType), nullTrim(emailFromNotification), nullTrim(nameAccount), nullTrim(password), recipientEmails);
                     try {
-                        sender.sendPlainMail(context, subjectNotification, currentText, attachmentForms, attachmentFiles);
+                        sender.sendPlainMail(context, subjectNotification, currentText);
                     } catch (Exception e) {
                         String errorMessage = localize("{mail.failed.to.send.mail}") + " : " + e.toString();
                         logger.error(errorMessage);
