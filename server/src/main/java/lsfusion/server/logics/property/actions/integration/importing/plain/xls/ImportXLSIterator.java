@@ -76,27 +76,27 @@ public class ImportXLSIterator extends ImportPlainIterator {
 
     private int currentSheet = 0;
     private Sheet sheet = null;
-    private Iterator<Row> rowIterator = null;
-    private boolean firstRow;
 
     private boolean nextSheet() {
         if (currentSheet > lastSheet) {
             return false;
         }
         sheet = wb.getSheetAt(currentSheet++);
-        if (useStreamingReader) {
-            firstRow = true;
-        }
         return true;
     }
 
+    private Iterator<Row> rowIterator = null;
+    private boolean firstRow;
     private Row row;
+
     @Override
     protected boolean nextRow() {
         if (sheet == null || !rowIterator.hasNext()) {
             if (!nextSheet())
                 return false;
             rowIterator = sheet.rowIterator();
+            if (useStreamingReader)
+                firstRow = true;
             return nextRow();
         }
         row = rowIterator.next();
