@@ -369,16 +369,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     
     @IdentityLazy
-    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects) {
+    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
+        return getCalcPropertyDrawsList().groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
+            public GroupObjectEntity group(PropertyDrawEntity key) {
+                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+            }});
+    }
+
+    public ImOrderSet<PropertyDrawEntity> getCalcPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
             public boolean contains(PropertyDrawEntity element) {
                 return element.isCalcProperty();
             }
-        }).groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
-            public GroupObjectEntity group(PropertyDrawEntity key) {
-                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
-                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
-            }});
+        });
     }
 
     @IdentityLazy
@@ -828,7 +832,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filter) {
-        ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups);
+        ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
         if(filter != null)
             groupProperties = groupProperties.mapValues(filter);
         return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, valueGroups), groupProperties, valueGroups);
@@ -884,8 +888,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property, boolean grid) {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
-        if(grid) {
-            GroupObjectEntity toDraw = property.getToDraw(this);
+        GroupObjectEntity toDraw;
+        if(grid && (toDraw = property.getToDraw(this)) != null) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else

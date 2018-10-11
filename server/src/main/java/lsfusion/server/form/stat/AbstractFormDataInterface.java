@@ -12,7 +12,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -49,10 +48,7 @@ public abstract class AbstractFormDataInterface implements FormDataInterface {
     
     // group objects, that will be removed from hierarchy
     private ImSet<GroupObjectEntity> getValueGroupObjects() {
-        return getValueGroupObjects(getValueObjects());
-    }
-    public static ImSet<GroupObjectEntity> getValueGroupObjects(ImSet<ObjectEntity> valueObjects) {
-        return valueObjects.group(new BaseUtils.Group<GroupObjectEntity, ObjectEntity>() {
+        return getValueObjects().group(new BaseUtils.Group<GroupObjectEntity, ObjectEntity>() {
             public GroupObjectEntity group(ObjectEntity key) {
                 return key.groupTo;
             }

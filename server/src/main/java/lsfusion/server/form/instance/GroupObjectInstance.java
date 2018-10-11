@@ -1253,11 +1253,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
-        @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.background} (") + GroupObjectInstance.this.toString() + ")";
         }
@@ -1279,11 +1274,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         public int getID() {
             return GroupObjectInstance.this.getID();
-        }
-
-        @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override
