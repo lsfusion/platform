@@ -65,15 +65,15 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return property.readClasses(session, mapValues, modifier, env);
     }
 
-    public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+    public ObjectValue readClasses(ExecutionContext context, ObjectValue... objects) throws SQLException, SQLHandledException {
         return readClasses(context.getEnv(), objects);
     }
 
-    public ObjectValue readClasses(ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
+    public ObjectValue readClasses(ExecutionEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         return readClasses(env.getSession(), env.getModifier(), env.getQueryEnv(), objects);
     }
 
-    public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    public ObjectValue readClasses(DataSession session, ObjectValue... objects) throws SQLException, SQLHandledException {
         return readClasses(session, session.getModifier(), session.env, objects);
     }
 

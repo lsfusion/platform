@@ -2,7 +2,7 @@ package lsfusion.interop.form;
 
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormGrouping;
-import lsfusion.interop.action.ReportPath;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
@@ -85,7 +85,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // отчеты
 
-    ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, boolean toExcel, FormUserPreferences userPreferences) throws RemoteException;
+    ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, Integer groupId, FormPrintType printType, FormUserPreferences userPreferences) throws RemoteException;
 
     // быстрая информация
 

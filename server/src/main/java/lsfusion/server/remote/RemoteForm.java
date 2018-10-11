@@ -13,10 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FormGrouping;
-import lsfusion.interop.Order;
-import lsfusion.interop.Scroll;
+import lsfusion.interop.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
@@ -96,7 +93,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return weakRemoteFormListener.get();
     }
 
-    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final boolean toExcel, final FormUserPreferences userPreferences) throws RemoteException {
+    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<ReportGenerationData>() {
             @Override
             public ReportGenerationData call(ExecutionStack stack) throws Exception {
@@ -105,7 +102,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
                 }
 
-                return new InteractiveFormReportManager(form, groupId, userPreferences).getReportData(toExcel);
+                return new InteractiveFormReportManager(form, groupId, userPreferences).getReportData(printType);
             }
         });
     }

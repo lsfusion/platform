@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.Result;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
@@ -22,7 +23,7 @@ public class InteractiveFormReportManager extends FormReportManager {
 
     // backward compatibility
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences preferences) throws SQLException, SQLHandledException {
-        return new InteractiveFormReportManager(((InteractiveFormReportInterface)reportInterface).getForm(), groupId, preferences).getReportData(toExcel);
+        return new InteractiveFormReportManager(((InteractiveFormReportInterface)reportInterface).getForm(), groupId, preferences).getReportData(toExcel ? FormPrintType.XLS : FormPrintType.PRINT);
     }
 
 }

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
@@ -50,14 +51,14 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     // only for development / debug
-    public List<ReportPath> getCustomReportPathList(final boolean toExcel, final Integer groupId) throws SQLException, SQLHandledException {
+    public List<ReportPath> getCustomReportPathList(final FormPrintType printType) throws SQLException, SQLHandledException {
         Result<String> reportPrefix = new Result<>();
-        return getCustomReportPathList(toExcel, getReportHierarchy(reportPrefix), reportPrefix.result);
+        return getCustomReportPathList(getReportHierarchy(reportPrefix), printType, reportPrefix.result);
     }
-    public List<ReportPath> getCustomReportPathList(final boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) throws SQLException, SQLHandledException {
+    public List<ReportPath> getCustomReportPathList(StaticDataGenerator.ReportHierarchy hierarchy, final FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
         List<ReportPath> ret = new ArrayList<>();
 
-        ImMap<GroupObjectHierarchy.ReportNode, String> reportsFileNames = getCustomReportFileNames(toExcel, hierarchy, reportPrefix);
+        ImMap<GroupObjectHierarchy.ReportNode, String> reportsFileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
         for (String customReportDesignName : reportsFileNames.valueIt()) {
             if(customReportDesignName != null) {
                 ret.add(getCustomReportPath(customReportDesignName));
@@ -105,21 +106,21 @@ public abstract class FormReportManager extends FormDataManager {
         return new ReportPath(Paths.get(projDir,"src/main/lsfusion/", fileName).toString(), Paths.get(target, fileName).toString());
     }
 
-    public List<ReportPath> saveAndGetCustomReportPathList(final boolean toExcel, final Integer groupId, boolean recreate) throws SQLException, SQLHandledException {
+    public List<ReportPath> saveAndGetCustomReportPathList(final FormPrintType printType, boolean recreate) throws SQLException, SQLHandledException {
         Result<String> reportPrefix = new Result<>();
         StaticDataGenerator.ReportHierarchy reportHierarchy = getReportHierarchy(reportPrefix);
-        
-        getAndSaveAutoReportDesigns(recreate, toExcel, reportHierarchy, reportPrefix.result);
-        return getCustomReportPathList(toExcel, reportHierarchy, reportPrefix.result); // обновляем пути
+
+        getAndSaveAutoReportDesigns(recreate, printType, reportHierarchy, reportPrefix.result);
+        return getCustomReportPathList(reportHierarchy, printType, reportPrefix.result); // обновляем пути
     }
 
-    public Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAutoReportDesigns(boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws JRException {
-        ReportDesignGenerator generator = new ReportDesignGenerator(getFormEntity().getRichDesign(), hierarchy, toExcel, columnGroupObjects, types, reportInterface);
+    public Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAutoReportDesigns(FormPrintType printType, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws JRException {
+        ReportDesignGenerator generator = new ReportDesignGenerator(getFormEntity().getRichDesign(), hierarchy, printType, columnGroupObjects, types, reportInterface);
         return generator.generate();
     }
 
-    public ReportGenerationData getReportData(boolean toExcel) throws SQLException, SQLHandledException {
-        return getReportData(toExcel, 0);
+    public ReportGenerationData getReportData(FormPrintType printType) throws SQLException, SQLHandledException {
+        return getReportData(printType, 0);
     }
 
     // backward compatibility
@@ -128,7 +129,7 @@ public abstract class FormReportManager extends FormDataManager {
         throw new UnsupportedOperationException();
     }
 
-    public ReportGenerationData getReportData(boolean toExcel, int selectTop) throws SQLException, SQLHandledException {
+    public ReportGenerationData getReportData(FormPrintType printType, int selectTop) throws SQLException, SQLHandledException {
         // report hierarchy and design prefix
         Result<String> reportPrefix = new Result<>();
         StaticDataGenerator.ReportHierarchy hierarchy = getReportHierarchy(reportPrefix);
@@ -140,7 +141,7 @@ public abstract class FormReportManager extends FormDataManager {
         StaticPropertyData<PropertyReaderEntity> propData = sources.second;
 
         // report design
-        Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(toExcel, reportPrefix.result, hierarchy, propData.columnData, propData.types);
+        Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(printType, reportPrefix.result, hierarchy, propData.columnData, propData.types);
 
         // serializing
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
@@ -181,13 +182,6 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    private static final String xlsPrefix = "xls_";
-
-    private String getExcelPrefix(boolean toExcel, String reportPrefix) {
-        String prefix = (toExcel ? xlsPrefix : "");
-        return prefix + reportPrefix;
-    }
-
     public final static String reportsDir = ""; // "reports/" 
     
     private String findCustomReportFileName(String fileName) {
@@ -206,23 +200,23 @@ public abstract class FormReportManager extends FormDataManager {
         return reportNode.getFileName(reportPrefix + getFormEntity().getSID().replace('.', '_'));
     }
 
-    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(boolean toExcel, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws SQLException, SQLHandledException {
-        Map<GroupObjectHierarchy.ReportNode, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, hierarchy, reportPrefix);
+    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getReportDesigns(FormPrintType printType, String reportPrefix, StaticDataGenerator.ReportHierarchy hierarchy, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types) throws SQLException, SQLHandledException {
+        Map<GroupObjectHierarchy.ReportNode, JasperDesign> customDesigns = getCustomReportDesigns(hierarchy, printType, reportPrefix);
         if (customDesigns != null) {
             return customDesigns;
         }
 
         try {
-            return getAutoReportDesigns(toExcel, hierarchy, columnGroupObjects, types);
+            return getAutoReportDesigns(printType, hierarchy, columnGroupObjects, types);
         } catch (JRException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
         }
     }
 
-    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAndSaveAutoReportDesigns(boolean recreateCustom, boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) {
+    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getAndSaveAutoReportDesigns(boolean recreateCustom, FormPrintType printType, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) {
         try {
-            Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getAutoReportDesigns(toExcel, hierarchy, null, null);
-            saveAutoReportDesigns(designs, hierarchy, recreateCustom, toExcel, reportPrefix);
+            Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getAutoReportDesigns(printType, hierarchy, null, null);
+            saveAutoReportDesigns(designs, hierarchy, recreateCustom, printType, reportPrefix);
             return designs;
         } catch (JRException | IOException | SQLException | SQLHandledException e) {
             throw new RuntimeException(localize("{form.instance.error.creating.design}"), e);
@@ -230,17 +224,17 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     // актуально только для разработки
-    private void saveAutoReportDesigns(Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs, StaticDataGenerator.ReportHierarchy hierarchy, boolean recreateCustom, boolean toExcel, String reportPrefix) throws JRException, IOException, SQLException, SQLHandledException {
+    private void saveAutoReportDesigns(Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs, StaticDataGenerator.ReportHierarchy hierarchy, boolean recreateCustom, FormPrintType printType, String reportPrefix) throws JRException, IOException, SQLException, SQLHandledException {
 
         ImMap<GroupObjectHierarchy.ReportNode, String> customReportFileNames = null;
         if(recreateCustom) {
-            customReportFileNames = getCustomReportFileNames(toExcel, hierarchy, reportPrefix);
+            customReportFileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
         }
             
         for (Map.Entry<GroupObjectHierarchy.ReportNode, JasperDesign> entry : designs.entrySet()) {
             GroupObjectHierarchy.ReportNode node = entry.getKey();
             ReportPath defaultCustomReportPath = recreateCustom ? getCustomReportPath(customReportFileNames.get(node)) : 
-                                                                    getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, getExcelPrefix(toExcel, reportPrefix)));
+                                                                    getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
             String reportName = defaultCustomReportPath.customPath;
             
             new File(reportName).getParentFile().mkdirs();
@@ -261,16 +255,17 @@ public abstract class FormReportManager extends FormDataManager {
         return null;
     }
     
-    private ImMap<GroupObjectHierarchy.ReportNode, String> getCustomReportFileNames(boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) throws SQLException, SQLHandledException {
+    private ImMap<GroupObjectHierarchy.ReportNode, String> getCustomReportFileNames(StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
         ImSet<GroupObjectHierarchy.ReportNode> reportNodes = hierarchy.reportHierarchy.getAllNodes();
         ImValueMap<GroupObjectHierarchy.ReportNode, String> mResult = reportNodes.mapItValues();
         for (int i=0,size=reportNodes.size();i<size;i++) {
             GroupObjectHierarchy.ReportNode reportNode = reportNodes.get(i);
-            // Если не нашли custom design для xls, пробуем найти обычный
-            String fileName = getCustomReportFileName(reportNode, getExcelPrefix(toExcel, reportPrefix));
-            if (toExcel && fileName == null) {
+            String fileName = null;
+            String formatPrefix = printType.getFormatPrefix();
+            if(!formatPrefix.isEmpty()) // optimization
+                fileName = getCustomReportFileName(reportNode, formatPrefix + reportPrefix);
+            if (fileName == null)
                 fileName = getCustomReportFileName(reportNode, reportPrefix);
-            }
             mResult.mapValue(i, fileName);
         }
         return mResult.immutableValue();
@@ -284,10 +279,10 @@ public abstract class FormReportManager extends FormDataManager {
         return resourceName;
     }
 
-    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getCustomReportDesigns(boolean toExcel, StaticDataGenerator.ReportHierarchy hierarchy, String reportPrefix) throws SQLException, SQLHandledException {
+    private Map<GroupObjectHierarchy.ReportNode, JasperDesign> getCustomReportDesigns(StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
         try {
             Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = new HashMap<>();
-            ImMap<GroupObjectHierarchy.ReportNode, String> fileNames = getCustomReportFileNames(toExcel, hierarchy, reportPrefix);
+            ImMap<GroupObjectHierarchy.ReportNode, String> fileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
             for(int i=0,size=fileNames.size();i<size;i++) {
                 String fileName = fileNames.getValue(i);
                 if(fileName == null) // если какого-то не хватает считаем что custom design'а нет

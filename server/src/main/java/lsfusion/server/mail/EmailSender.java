@@ -3,8 +3,6 @@ package lsfusion.server.mail;
 
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ByteArray;
-import lsfusion.base.Pair;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
@@ -15,8 +13,6 @@ import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -25,16 +21,10 @@ import javax.mail.util.ByteArrayDataSource;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
@@ -50,15 +40,15 @@ public class EmailSender {
     String fromAddress;
     Map<String, Message.RecipientType> emails = new HashMap<>();
 
-    public static class AttachmentProperties {
-        public String fileName;
+    public static class AttachmentFile {
+        public byte[] file;
         public String attachmentName;
-        public AttachmentFormat format;
+        public String extension;
 
-        public AttachmentProperties(String fileName, String attachmentName, AttachmentFormat format) {
-            this.fileName = fileName;
+        public AttachmentFile(byte[] file, String attachmentName, String extension) {
+            this.file = file;
             this.attachmentName = attachmentName;
-            this.format = format;
+            this.extension = extension;
         }
     }
 
@@ -120,159 +110,53 @@ public class EmailSender {
         mp.addBodyPart(textPart);
     }
 
-    private String getMimeType(AttachmentFormat format) {
-        switch (format) {
-            case PDF:
+    private String getMimeType(String extension) {
+        switch (extension) {
+            case "pdf":
                 return "application/pdf; charset=utf-8";
-            case DOCX:
+            case "docx":
                 return "application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8";
-            case RTF:
+            case "rtf":
                 return "text/rtf; charset=utf-8";
-            case XLSX:
+            case "xls":
+            case "xlsx":
                 return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8";
-            case DBF:
+            case "dbf":
                 return "application/dbf; charset=utf-8";
+            case "csv":
+                return "text/csv; charset=utf-8";
             default:
                 return "text/html; charset=utf-8";
         }
     }
-    
-    private String getMimeType(String extension) {
-        switch (extension) {
-            case "csv":
-                return "text/csv; charset=utf-8";
-            default:
-                return "text/html; charset=utf-8"; 
-        }
-    }
 
-    public void attachFile(Multipart mp, AttachmentProperties attachment) throws MessagingException, IOException {
-        FileDataSource fds = new FileDataSource(attachment.fileName);
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(fds.getInputStream(), getMimeType(attachment.format));
-        attachFile(mp, dataSource, attachment.attachmentName);
-    }
-
-    public void attachFile(Multipart mp, byte[] buf, String attachmentName) throws MessagingException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(AttachmentFormat.PDF));
-        attachFile(mp, dataSource, attachmentName);
-    }
-    
-    public void attachFile(Multipart mp, byte[] buf, String name , String extension) throws MessagingException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(extension));
-        attachFile(mp, dataSource, name);
-    }
-
-    private void attachFile(Multipart mp, DataSource source, String attachmentName) throws MessagingException {
+    public void attachFile(Multipart mp, AttachmentFile attachment) throws MessagingException, IOException {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(new ByteArrayInputStream(attachment.file), getMimeType(attachment.extension));
         MimeBodyPart filePart = new MimeBodyPart();
-        filePart.setDataHandler(new DataHandler(source));
-        filePart.setFileName(attachmentName);
+        filePart.setDataHandler(new DataHandler(dataSource));
+        filePart.setFileName(attachment.attachmentName);
         filePart.setHeader("Content-Transfer-Encoding", "base64");
         mp.addBodyPart(filePart);
     }
 
-    private String convertFilesToUtf(List<String> files) throws IOException {
-        String result = "";
-        for (String path : files) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf-8"));
-            while (in.ready()) {
-                result += in.readLine();
-            }
-        }
-        return result;
-    }
-    
-    private String createInlinePart(List<String> inlineFiles) throws IOException {
-        String result = convertFilesToUtf(inlineFiles);
-        if (result.equals("")) {
-            result = localize("{mail.you.have.received.reports}");
-        }
-        return result;
-    }
-
-    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments, List<String> inlineTexts) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        assert inlineFiles != null && attachments != null && files != null && inlineTexts != null;
-
+    public void sendMail(ExecutionContext context, String subject, List<byte[]> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
-        for(String inlineText : inlineTexts)
-            setText(mp, inlineText);
-        if(!inlineFiles.isEmpty())
-            setText(mp, createInlinePart(inlineFiles));
+        if(inlineFiles.isEmpty())
+            inlineFiles = Collections.singletonList(localize("{mail.you.have.received.reports}").getBytes());
+        for(byte[] inlineFile : inlineFiles)
+            setText(mp, new String(inlineFile));
 
-        for (AttachmentProperties attachment : attachments) {
+        for (AttachmentFile attachment : attachments)
             attachFile(mp, attachment);
-        }
-        for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
-            attachFile(mp, entry.getKey().array, entry.getValue());
-        }
-        for (Map.Entry<ByteArray, Pair<String, String>> entry : customAttachments.entrySet()) {
-            attachFile(mp, entry.getKey().array, entry.getValue().first, entry.getValue().second);
-        }
 
         message.setContent(mp);
         sendMail(context, message, subject);
     }
 
-    public void sendSimpleMail(ExecutionContext context, String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
-        assert attachments != null;
-
-        Multipart mp = new MimeMultipart();
-        setMessageHeading(subject);
-
-        for (AttachmentProperties attachment : attachments) {
-            attachFile(mp, attachment);
-        }
-        message.setContent(mp);
-        
-        String messageInfo = subject.trim();
-        try {
-            Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
-            if (addressesTo == null || addressesTo.length == 0) {
-                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-            }
-            messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
-        } catch (MessagingException me) {
-            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
-        }
-
-        boolean send = false;
-        try {
-            sendMessage(message, smtpHost, smtpPort, userName, password);
-            send = true;
-        } catch (MessagingException e) {
-            throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo, e);
-        } finally {
-            try {
-                if (context != null) {
-                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
-                    if(emailSent != null)
-                        emailSent.change(send ? true : null, context.getSession());
-                }
-            } catch (Exception e) {
-                logger.error("emailSent writing error", e);
-            }
-        }
-    }
-
-    public void sendPlainMail(ExecutionContext context, String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        assert inlineForms != null && attachments != null && files != null;
-
-        Multipart mp = new MimeMultipart();
-        setMessageHeading(subject);
-
-        setText(mp, inlineForms);
-
-        for (AttachmentProperties attachment : attachments) {
-            attachFile(mp, attachment);
-        }
-        for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
-            attachFile(mp, entry.getKey().array, entry.getValue());
-        }
-
-        message.setContent(mp);
-        sendMail(context, message, subject);
+    public void sendPlainMail(ExecutionContext context, String subject, String inlineText) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+        sendMail(context, subject, Collections.singletonList(inlineText.getBytes()), Collections.<AttachmentFile>emptyList());
     }
 
     private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {

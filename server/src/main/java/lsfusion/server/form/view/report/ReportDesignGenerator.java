@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.FontInfo;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
@@ -69,7 +70,7 @@ public class ReportDesignGenerator {
     
     private Map<ReportNode, JasperDesign> designs = new HashMap<>();
 
-    public ReportDesignGenerator(FormView formView, StaticDataGenerator.ReportHierarchy hierarchy, boolean toExcel, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types, FormReportInterface formInterface) {
+    public ReportDesignGenerator(FormView formView, StaticDataGenerator.ReportHierarchy hierarchy, FormPrintType printType, MAddExclMap<PropertyDrawEntity, ImMap<ImMap<ObjectEntity, Object>, ImOrderSet<ImMap<ObjectEntity, Object>>>> columnGroupObjects, MAddExclMap<PropertyReaderEntity, Type> types, FormReportInterface formInterface) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.formInterface = formInterface;
@@ -82,22 +83,21 @@ public class ReportDesignGenerator {
                 groupFields.put(group, getReportDrawFields(group, hierarchy.hierarchy, types));
         this.groupFields = groupFields;
 
-        pageWidth = calculatePageWidth(toExcel);
+        pageWidth = calculatePageWidth(printType);
         pageUsableWidth = pageWidth - defaultPageMargin * 2;
     }
 
-    private int calculatePageWidth(boolean toExcel) {
-        if (formView.overridePageWidth != null) {
+    private int calculatePageWidth(FormPrintType printType) {
+        if (formView.overridePageWidth != null)
             return formView.overridePageWidth;
-        } else if (!toExcel) {
-            return defaultPageWidth;
-        } else {
-            int maxGroupWidth = defaultPageWidth;
+
+        int maxGroupWidth = defaultPageWidth;
+        if(printType.ignorePagination()) {
             for (ImList<ReportDrawField> fields : groupFields.values()) {
                 maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(fields));
             }
-            return maxGroupWidth;
         }
+        return maxGroupWidth;
     }
 
     public Map<ReportNode, JasperDesign> generate() throws JRException {

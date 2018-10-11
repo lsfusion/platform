@@ -146,14 +146,9 @@ public class FileUtils {
 
     public static String exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
-            ReportGenerator generator = new ReportGenerator(reportData);
-            byte[] report;
-            if (type != null && type.isExcel()) {
-                report = ReportGenerator.exportToExcelByteArray(reportData, type);
-            } else {
-                report = JasperExportManager.exportReportToPdf(generator.createReport());
-            }
-            String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + (type != null ? type.getExtension() : "pdf");
+            byte[] report = ReportGenerator.exportToFileByteArray(reportData, type);;
+            
+            String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + type.getExtension();
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(report);

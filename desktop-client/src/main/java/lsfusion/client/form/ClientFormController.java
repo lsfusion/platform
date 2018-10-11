@@ -25,10 +25,7 @@ import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FormGrouping;
-import lsfusion.interop.Order;
-import lsfusion.interop.Scroll;
+import lsfusion.interop.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
@@ -1390,7 +1387,7 @@ public class ClientFormController implements AsyncListener {
             rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupReport") {
                 @Override
                 protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), false, getUserPreferences());
+                    return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.PRINT, getUserPreferences());
                 }
 
                 @Override
@@ -1410,7 +1407,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new RmiCheckNullFormRequest<ReportGenerationData>("runSingleGroupXlsExport") {
             @Override
             protected ReportGenerationData doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), true, getUserPreferences());
+                return remoteForm.getReportData(requestIndex, lastReceivedRequestIndex, groupController.getGroupObject().getID(), FormPrintType.XLSX, getUserPreferences());
             }
 
             @Override
