@@ -715,12 +715,12 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
-    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sid, GroupObjectEntity applyObject, Version version) {
+    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sid, PropertyDrawEntity checkProperty, Version version) {
         if (sid == null) {
             return null;
         }
         for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
-            if (sid.equals(propertyDraw.getIntegrationSID()) && BaseUtils.nullEquals(propertyDraw.getApplyObject(this), applyObject)) {
+            if (sid.equals(propertyDraw.getIntegrationSID()) && BaseUtils.nullEquals(propertyDraw.getNFToDraw(this, version), checkProperty.getNFToDraw(this, version))) {
                 return propertyDraw;
             }
         }
@@ -753,12 +753,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
         property.setSID(newSID);
 
-        String newIntegrationSID = (alias == null ? property.getIntegrationSID() : alias);
-        property.setIntegrationSID(null);
-        if ((drawEntity = getPropertyDrawIntegration(newIntegrationSID, property.getApplyObject(this), Version.CURRENT)) != null) {
-            throw new AlreadyDefined(getCanonicalName(), newIntegrationSID, drawEntity.getFormPath());
-        }
-        property.setIntegrationSID(newIntegrationSID);
+        // has to be done somewhere in open operator, because interactive forms can have properties with the same name 
+//        String newIntegrationSID = (alias == null ? property.getIntegrationSID() : alias);
+//        property.setIntegrationSID(null);
+//        if ((drawEntity = getPropertyDrawIntegration(newIntegrationSID, property, Version.CURRENT)) != null) {
+//            throw new AlreadyDefined(getCanonicalName(), newIntegrationSID, drawEntity.getFormPath());
+//        }
+//        property.setIntegrationSID(newIntegrationSID);
+        if(alias != null)
+            property.setIntegrationSID(alias);
     }
 
 
