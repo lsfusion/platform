@@ -1,10 +1,14 @@
 package lsfusion.server.logics.scripted;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.debug.WatchActionProperty;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -14,6 +18,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -57,16 +62,17 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             if (runAction != null)
                 runAction.execute(context, getParams(context));
         } catch (EvalUtils.EvaluationException | RecognitionException e) {
-            context.delayUserInteraction(new MessageClientAction(getMessage(e), "Parse error"));
-            throw new RuntimeException(e);
-        } catch (Throwable e) {
-            context.delayUserInteraction(new MessageClientAction(getMessage(e), "Execution error"));
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
     @Override
     public boolean hasFlow(ChangeFlowType type) {
         return true;
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.IN_DELEGATE; // execute just like EXEC operator
     }
 
     private String getMessage(Throwable e) {

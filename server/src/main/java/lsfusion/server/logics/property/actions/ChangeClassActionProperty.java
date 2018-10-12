@@ -217,6 +217,6 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE;
+        return ActionDelegationType.IN_DELEGATE; // need this for class breakpoints
     }
 }

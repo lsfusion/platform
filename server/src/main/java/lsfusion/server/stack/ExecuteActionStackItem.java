@@ -41,6 +41,10 @@ public class ExecuteActionStackItem extends ExecutionStackItem {
     public boolean isInDelegate() {
         return getDelegationType() == ActionDelegationType.IN_DELEGATE;
     }
+
+    public boolean hasNoDebugInfo() {
+        return property.getDebugInfo() == null && !property.isNamed();
+    }
     
     @Override
     public String toString() {

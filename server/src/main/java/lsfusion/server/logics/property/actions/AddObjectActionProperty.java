@@ -180,6 +180,6 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE;
+        return ActionDelegationType.IN_DELEGATE; // need this for class breakpoints
     }
 }
