@@ -590,7 +590,7 @@ formGroupObjectGroup returns [String formObjectGroup]
 	;
 
 formExtID returns [String extID]
-	:	'EXTID' id=stringLiteral { $extID = $id.val; } 
+	:	'EXTID' id=stringLiteral { $extID = $id.val; }
 	;
 
 formExtKey
@@ -2103,8 +2103,8 @@ nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dyna
     String alias;
 }
     :
-        expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); }    
-		(',' expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); } )*	
+        expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); }
+		(',' expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); } )*
 	;
 
 aliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LCPWithParams property]
@@ -3023,7 +3023,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp($type.conStr, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalHTTPActionProp($type.conStr, $type.headers, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, $type.action, params, context, $tl.propUsages);
       }
@@ -3035,9 +3035,9 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LCPWithParams conStr, LCPWithParams exec, boolean eval = false, boolean action = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LCPWithParams conStr, LCPWithParams exec, PropertyUsage headers, boolean eval = false, boolean action = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
-	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | ('EVAL' { $eval = true; } ('ACTION' { $action = true; })? )) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
@@ -4826,7 +4826,7 @@ fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGM
 fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+;
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TEXT'  | 'ITEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
-				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'WORDLINK' | 'IMAGELINK' 
+				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'WORDLINK' | 'IMAGELINK'
 				|   'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']'
 				|	'VARSTRING[' DIGITS ']' | 'VARISTRING[' DIGITS ']' | 'NUMERIC[' DIGITS ',' DIGITS ']' | 'COLOR';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';

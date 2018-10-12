@@ -1608,15 +1608,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAPWithParams addScriptedExternalHTTPActionProp(LCPWithParams connectionString, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList))),
+    public LAPWithParams addScriptedExternalHTTPActionProp(LCPWithParams connectionString, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        LCP headersProperty = headers != null ? findLCPByPropertyUsage(headers) : null;
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty)),
                 BaseUtils.addList(connectionString, params));
     }
 
     public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams actionLCP, boolean eval, boolean action, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
-                BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
+                null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
     private ImList<LCP> findLCPsNoParamsByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -3102,7 +3103,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<O> allObjects = mapped.objects;
         MList<O> mObjects = ListFact.mList(allObjects.size());
         List<LCPWithParams> mapping = new ArrayList<>();
-        MList<Boolean> mNulls = ListFact.mList(allObjects.size());        
+        MList<Boolean> mNulls = ListFact.mList(allObjects.size());
         for (int i = 0; i < allObjects.size(); i++) {
             O object = allObjects.get(i);
             FormActionProps objectProp = allObjectProps.get(i);
@@ -3379,17 +3380,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return mProps.immutableList();
     }
-    
+
     public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, Boolean hasListOption, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
             fileProp = new LCPWithParams(baseLM.importFile);
-        
+
         if(hasListOption == null)
             hasListOption = false;
 
         ImList<LCP> props = findLPsForImport(propUsages, hasListOption, context, newContext);
-        
+
         List<LCPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(root != null)
