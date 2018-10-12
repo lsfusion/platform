@@ -1609,7 +1609,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExternalHTTPActionProp(LCPWithParams connectionString, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        LCP headersProperty = headers != null ? findLCPByPropertyUsage(headers) : null;
+        LCP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty)),
                 BaseUtils.addList(connectionString, params));
     }
@@ -3379,6 +3379,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             mProps.add(lcp);
         }
         return mProps.immutableList();
+    }
+
+    private LCP findLCPStringParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        if (propUsage.classNames == null) {
+            propUsage.classNames = Collections.singletonList("TEXT");
+        }
+        LCP<?> lcp = findLCPByPropertyUsage(propUsage);
+        ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
+        if (paramClasses.length != 1 || !(paramClasses[0].getType() instanceof StringClass)) {
+            errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, StringClass.text.getParsedName());
+        }
+        return lcp;
     }
 
     public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, Boolean hasListOption, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {

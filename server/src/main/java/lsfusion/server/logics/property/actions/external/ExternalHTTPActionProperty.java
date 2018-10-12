@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
@@ -131,8 +132,9 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             KeyExpr stringExpr = new KeyExpr("string");
             ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
             QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("header", headersProperty.getExpr(context.getModifier(), stringExpr));
-            query.and(headersProperty.getExpr(context.getModifier(), stringExpr).getWhere());
+            Expr headersExpr = headersProperty.getExpr(context.getModifier(), stringExpr);
+            query.addProperty("header", headersExpr);
+            query.and(headersExpr.getWhere());
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
             for (int i = 0; i < result.size(); i++) {
                 headers.put(((String) result.getKey(i).get("string")).trim(), ((String) result.getValue(i).get("header")).trim());
