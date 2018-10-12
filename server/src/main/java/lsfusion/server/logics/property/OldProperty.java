@@ -20,6 +20,8 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
 
     public OldProperty(CalcProperty<T> property, PrevScope scope) {
         super(LocalizedString.concat("(" + scope.getSID() + ",в БД) ", property.localizedToString()), property, scope);
+        
+        drawOptions.inheritDrawOptions(property.drawOptions);
     }
 
 /*    @Override
