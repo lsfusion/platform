@@ -1598,7 +1598,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedExternalHTTPActionProp(LCPWithParams connectionString, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        LCP headersProperty = headers != null ? findLCPByPropertyUsage(headers) : null;
+        LCP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
         return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty)),
                 BaseUtils.addList(connectionString, params));
     }
@@ -3406,6 +3406,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             mProps.exclAdd(lcp);
         }
         return mProps.immutableOrder();
+    }
+
+    private LCP findLCPStringParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        if (propUsage.classNames == null) {
+            propUsage.classNames = Collections.singletonList("TEXT");
+        }
+        LCP<?> lcp = findLCPByPropertyUsage(propUsage);
+        ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
+        if (paramClasses.length != 1 || !(paramClasses[0].getType() instanceof StringClass)) {
+            errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, StringClass.text.getParsedName());
+        }
+        return lcp;
     }
 
     public LAPWithParams addScriptedImportExcelActionProperty(LCPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, LCPWithParams sheetIndex, boolean sheetAll) throws ScriptingErrorLog.SemanticErrorException {
