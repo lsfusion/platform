@@ -49,7 +49,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
                 }
             });
 
-            run(sql, new RunService() {
+            run(sql, new DBManager.RunService() {
                 @Override
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
@@ -64,27 +64,8 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask<Object> { 
         }
     }
 
-    public interface RunService {
-        void run(SQLSession sql) throws SQLException, SQLHandledException;
-    }
-
-    public static void run(SQLSession session, RunService run) throws SQLException, SQLHandledException {
-        run(session, run, 0);
-    }
-
-    private static void run(SQLSession session, RunService run, int attempts) throws SQLException, SQLHandledException {
-        session.startTransaction(RECALC_TIL, OperationOwner.unknown);
-        try {
-            run.run(session);
-            session.commitTransaction();
-        } catch (Throwable t) {
-            session.rollbackTransaction();
-            if (t instanceof SQLHandledException && ((SQLHandledException) t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
-                run(session, run, attempts + 1);
-                return;
-            }
-            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
-        }
+    public static void run(SQLSession session, DBManager.RunService run) throws SQLException, SQLHandledException {
+        DBManager.run(session, true, run);
     }
 
     @Override

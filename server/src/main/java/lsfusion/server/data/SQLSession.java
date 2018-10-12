@@ -530,7 +530,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 this.useDeadLockPriority = useDeadLockPriority;
                 this.applyStartTime = applyStartTime;
-            }
+            } else 
+                assert false;
         } catch (SQLException e) {
             throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
         }
@@ -555,7 +556,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         privateConnection.sql.setTransactionIsolation(prevIsolation);
                         prevIsolation = null;
                     }
-                }
+                } else
+                    assert false;
 
                 transactionCounter = null;
                 transactionTables.clear();
@@ -627,7 +629,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                         privateConnection.sql.rollback();
                     }}, firstException);
             problemInTransaction = null;
-        }
+        } else 
+            assert false;
 
 //        fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 
