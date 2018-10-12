@@ -1663,6 +1663,7 @@ public class GridTable extends ClientPropertyTable {
 
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
+        setHasUserPreferences(true);
     }
 
     public void setUserOrder(ClientPropertyDraw property, Integer userOrder) {
