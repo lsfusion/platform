@@ -289,7 +289,8 @@ public class EmailSender {
                         logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
                         throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
                     }
-                    messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
+                    messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
+                    messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
                 } catch (MessagingException me) {
                     messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
                 }
