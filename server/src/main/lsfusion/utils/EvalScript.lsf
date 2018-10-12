@@ -22,39 +22,31 @@ preRunScript(Script s)  {
 }
 
 scriptExecution 'Выполнить скрипт' (Script s)  { 
-    TRY { 
-        preRunScript(s); 
-        NEWSESSION { 
-            EVAL text(s); 
-        } 
+    preRunScript(s); 
+    NEWSESSION { 
+        EVAL text(s); 
     } 
 }
 
 actionBodyExecution 'Выполнить действие' (Script s)  { 
-    TRY { 
-        preRunScript(s);
-        NEWSESSION {
-            EVAL CONCAT ' ', 'run() \{', text(s), ';\n\};';
-        }
-    } 
+    preRunScript(s);
+    NEWSESSION {
+        EVAL CONCAT ' ', 'run() \{', text(s), ';\n\};';
+    }
 }
 
 formExecution 'Показать форму' (Script s)  { 
-    TRY { 
-        preRunScript(s);
-        NEWSESSION {
-            EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() \{ SHOW form NOWAIT; \}';
-        }
-    } 
+    preRunScript(s);
+    NEWSESSION {
+        EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() \{ SHOW form NOWAIT; \}';
+    }
 }
 
 javaActionBodyExecution 'Выполнить Java-код' (Script s)  { 
-    TRY {
-        preRunScript(s);
-        NEWSESSION {
-            EVAL CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
-        }
-    } 
+    preRunScript(s);
+    NEWSESSION {
+        EVAL CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
+    }
 }
 
 // Универсальная таблица для последующего импорта

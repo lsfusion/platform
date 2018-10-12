@@ -97,7 +97,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE; // важно, чтобы можно было нормально STEPOUT из событий делать
+        return ActionDelegationType.IN_DELEGATE; // need this because events are called (and we need step out)
     }
 
     @Override

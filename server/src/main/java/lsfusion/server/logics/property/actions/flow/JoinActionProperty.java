@@ -130,7 +130,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         if(action.property instanceof WatchActionProperty)
             return super.getDelegationType(modifyContext);
-        return ActionDelegationType.IN_DELEGATE;
+        return ActionDelegationType.IN_DELEGATE; // jump to another LSF
     }
 
     @Override

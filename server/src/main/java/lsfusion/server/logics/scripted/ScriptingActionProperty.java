@@ -77,7 +77,7 @@ public abstract class ScriptingActionProperty extends ExplicitActionProperty {
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE;
+        return ActionDelegationType.IN_DELEGATE; // jump to java code
     }
 
     @Override
