@@ -8,7 +8,6 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.PropertyCanonicalNameUtils;
@@ -50,12 +49,6 @@ public class ScriptingLogicsModuleChecks {
     public void checkClass(ValueClass cls, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (cls == null) {
             errLog.emitClassNotFoundError(parser, name);
-        }
-    }
-
-    public void checkComponent(ComponentView component, String name) throws ScriptingErrorLog.SemanticErrorException {
-        if (component == null) {
-            errLog.emitComponentNotFoundError(parser, name);
         }
     }
 
@@ -155,7 +148,7 @@ public class ScriptingLogicsModuleChecks {
         checkDuplicateElement(tableName, "table", new ModuleTableFinder());
     }
 
-    public <E, P> void checkDuplicateElement(String elementName, String type, ModuleFinder<E, P> finder) throws ScriptingErrorLog.SemanticErrorException {
+    private <E, P> void checkDuplicateElement(String elementName, String type, ModuleFinder<E, P> finder) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateElement(elementName, type, finder, null);
     }
 
@@ -167,7 +160,7 @@ public class ScriptingLogicsModuleChecks {
         checkDuplicateElement(propName, "action", new ModuleEqualLAPFinder(), signature);
     }
 
-    public <E, P> void checkDuplicateElement(String elementName, String type, ModuleFinder<E, P> finder, P param) throws ScriptingErrorLog.SemanticErrorException {
+    private <E, P> void checkDuplicateElement(String elementName, String type, ModuleFinder<E, P> finder, P param) throws ScriptingErrorLog.SemanticErrorException {
         NamespaceElementFinder<E, P> nsFinder = new NamespaceElementFinder<>(finder, LM.getRequiredModules(LM.getNamespace()));
         List<NamespaceElementFinder.FoundItem<E>> foundItems = nsFinder.findInNamespace(LM.getNamespace(), elementName, param);
         if (!foundItems.isEmpty()) {
@@ -186,7 +179,7 @@ public class ScriptingLogicsModuleChecks {
                 return;
             Property prop2 = lp2.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
-                errLog.emitIncompatibleTypes(parser, errMsgPropType);
+                errLog.emitIncompatibleTypesError(parser, errMsgPropType);
             }
         }
     }
@@ -224,31 +217,25 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkCIInExpr(ScriptingLogicsModule.LCPContextIndependent lcp) throws ScriptingErrorLog.SemanticErrorException {
         if (lcp != null) {
-            errLog.emitCIInExpr(parser);
+            errLog.emitCIInExprError(parser);
         }
     }
 
     public void checkFormulaClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
-            errLog.emitFormulaReturnClassError(parser);
-        }
-    }
-
-    public void checkFormDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(cls instanceof DataClass)) {
-            errLog.emitFormDataClassError(parser);
+            errLog.emitFormulaReturnClassError(parser, cls.getParsedName());
         }
     }
 
     public void checkInputDataClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof DataClass)) {
-            errLog.emitInputDataClassError(parser);
+            errLog.emitInputDataClassError(parser, cls.getParsedName());
         }
     }
 
-    public void checkChangeClassActionClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkChangeClassActionClass(ValueClass cls, String className) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof ConcreteCustomClass)) {
-            errLog.emitChangeClassActionClassError(parser);
+            errLog.emitChangeClassActionClassError(parser, className);
         }
     }
 
@@ -270,8 +257,9 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkNamedParams(LP property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property.interfaces.size() != namedParams.size() && !namedParams.isEmpty()) {
-            errLog.emitNamedParamsError(parser);
+        int interfaceCnt = property.property.interfaces.size();
+        if (interfaceCnt != namedParams.size() && !namedParams.isEmpty()) {
+            errLog.emitNamedParamsError(parser, namedParams, interfaceCnt);
         }
     }
 
@@ -282,7 +270,7 @@ public class ScriptingLogicsModuleChecks {
                 ValueClass paramClass = params.get(i).cls;
                 String paramName = params.get(i).paramName;
                 if (paramClass != null && !SignatureMatcher.isClassesSoftCompatible(paramClass.getResolveSet(), signature.get(i))) {
-                    errLog.emitWrongPropertyParameterError(parser, paramName, paramClass.toString(), signature.get(i).toString());
+                    errLog.emitWrongPropertyParameterError(parser, paramName, paramClass.getParsedName(), signature.get(i).toString());
                 }
             }
         }
@@ -346,31 +334,25 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkNavigatorAction(LAP<?> property) throws ScriptingErrorLog.SemanticErrorException {
         if (property.listInterfaces.size() > 0) {
-            errLog.emitWrongNavigatorAction(parser);
+            errLog.emitWrongNavigatorActionError(parser);
         }
     }
 
-    public void checkAddActionsClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAddActionsClass(ValueClass cls, String className) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
-            errLog.emitAddActionsClassError(parser);
+            errLog.emitAddActionsClassError(parser, className);
         }
     }
 
-    public void checkAggrClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAggrClass(ValueClass cls, String className) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
-            errLog.emitAggrClassError(parser);
-        }
-    }
-
-    public void checkCustomClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
-        if (!(cls instanceof CustomClass)) {
-            errLog.emitCustomClassExpectedError(parser);
+            errLog.emitAggrClassError(parser, className);
         }
     }
 
     public void checkSessionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof SessionDataProperty)) {
-            errLog.emitNotSessionOrLocalPropertyError(parser);
+            errLog.emitNotSessionOrLocalPropertyError(parser, property.getCreationScript());
         }
     }
 
@@ -509,7 +491,7 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkNoInline(boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         if (innerPD) {
-            errLog.emitNoInline(parser);
+            errLog.emitNoInlineError(parser);
         }
     }
 
@@ -565,32 +547,32 @@ public class ScriptingLogicsModuleChecks {
     public void checkNavigatorElementMoveOperation(NavigatorElement element, NavigatorElement parentElement, 
                                                    NavigatorElement anchorElement, boolean isEditOperation, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (parentElement.isLeafElement()) {
-            errLog.emitIllegalParentNavigatorElement(parser, parentElement.getCanonicalName());
+            errLog.emitIllegalParentNavigatorElementError(parser, parentElement.getCanonicalName());
         }
 
         // если редактирование существующего элемента, и происходит перемещение элемента, то оно должно происходить только внутри своего уровня 
         if (isEditOperation && !parentElement.equals(element.getNFParent(version))) {
-            errLog.emitIllegalNavigatorElementMove(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+            errLog.emitIllegalNavigatorElementMoveError(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
 
         if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
-            errLog.emitIllegalInsertBeforeAfterElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
+            errLog.emitIllegalInsertBeforeAfterElementError(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
         }
 
         if (element.isAncestorOf(parentElement, version)) {
-            errLog.emitIllegalAddNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+            errLog.emitIllegalAddNavigatorToSubnavigatorError(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
     } 
     
     public void checkAssignProperty(LCPWithParams fromProperty, LCPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
         LCP<?> toLCP = toProperty.getLP();
         if (!(toLCP.property instanceof DataProperty || toLCP.property instanceof CaseUnionProperty || toLCP.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами
-            errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toLCP.property.getName());
+            errLog.emitOnlyDataOrCasePropertyIsAllowedError(parser, toLCP.property.getName());
         }
 
         if (fromProperty.getLP() != null && fromProperty.getLP().property.getType() != null &&
                 toLCP.property.getType().getCompatible(fromProperty.getLP().property.getType()) == null) {
-            errLog.emitIncompatibleTypes(parser, "ASSIGN");
+            errLog.emitIncompatibleTypesError(parser, "ASSIGN");
         }
     }
 

@@ -58,11 +58,11 @@ public class ScriptingErrorLog {
         }
     }
     
-    public String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
+    private String getSemanticRecognitionErrorText(String msg, ScriptParser parser, RecognitionException e) {
         return getRecognitionErrorText(parser, "error", getErrorMessage(parser.getCurrentParser(), msg, e), e) + "Subsequent errors (if any) could not be found.";
     }
 
-    public String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
+    private String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {
         String path = parser.getCurrentScriptPath(moduleName, e.line, "\n\t\t\t");
         String hdr = path + ":" + (e.charPositionInLine + 1);
         return "[" + errorType + "]:\t" + hdr + " " + msg;
@@ -83,7 +83,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNotFoundError(ScriptParser parser, String objectName, String name) throws SemanticErrorException {
-        emitSimpleError(parser, format("%s '%s' not found", objectName, name));
+        emitSimpleError(parser, format("%s '%s' is not found", objectName, name));
     }
 
     public void emitClassNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
@@ -142,32 +142,32 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "filter group", name);
     }
 
-    public void emitIllegalAddNavigatorToSubnavigator(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
+    public void emitIllegalAddNavigatorToSubnavigatorError(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't add navigator element '%s' to it's subelement '%s'", addedElement, addedToElement));
     }
 
-    public void emitWrongNavigatorAction(ScriptParser parser) throws SemanticErrorException {
+    public void emitWrongNavigatorActionError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "navigator action should not have arguments");
     }
     
-    public void emitIllegalInsertBeforeAfterElement(ScriptParser parser, String element, String parentElement, String anchorElement) throws SemanticErrorException {
+    public void emitIllegalInsertBeforeAfterElementError(ScriptParser parser, String element, String parentElement, String anchorElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't insert '%s' after or before '%s' in '%s'", element, anchorElement, parentElement));
     }
 
-    public void emitIllegalNavigatorElementMove(ScriptParser parser, String element, String parentElement) throws SemanticErrorException {
+    public void emitIllegalNavigatorElementMoveError(ScriptParser parser, String element, String parentElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move '%s' because it's not a direct child of '%s'", element, parentElement));
     }
 
-    public void emitIllegalParentNavigatorElement(ScriptParser parser, String parentElement) throws SemanticErrorException {
+    public void emitIllegalParentNavigatorElementError(ScriptParser parser, String parentElement) throws SemanticErrorException {
         emitSimpleError(parser, format("element '%s' can't be a parent element because it's not a navigator folder", parentElement));
     }
     
-    public void emitGroupObjectInTreeAfterNotLastError(ScriptParser parser, String groupObject) throws SemanticErrorException {
-        emitSimpleError(parser, "'" + groupObject + "' is not last in tree group - can't use it in AFTER");
+    public void emitGroupObjectInTreeAfterNotLastError(ScriptParser parser, String groupObjectName) throws SemanticErrorException {
+        emitSimpleError(parser, format("'%s' is not last in tree group - can't use it in AFTER", groupObjectName));
     }
 
-    public void emitGroupObjectInTreeBeforeNotFirstError(ScriptParser parser, String groupObject) throws SemanticErrorException {
-        emitSimpleError(parser, "'" + groupObject + "' is not first in tree group - can't use it in BEFORE");
+    public void emitGroupObjectInTreeBeforeNotFirstError(ScriptParser parser, String groupObjectName) throws SemanticErrorException {
+        emitSimpleError(parser, format("'%s' is not first in tree group - can't use it in BEFORE", groupObjectName));
     }
 
     public void emitComponentParentError(ScriptParser parser, String compName) throws SemanticErrorException {
@@ -178,7 +178,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("component '%s' must be a container", componentName));
     }
 
-    public void emitIllegalMoveComponentToSubcomponent(ScriptParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
+    public void emitIllegalMoveComponentToSubcomponentError(ScriptParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move component '%s' to it's subcomponent '%s'", movingComponent, movedToComponent));
     }
 
@@ -187,24 +187,24 @@ public class ScriptingErrorLog {
     }
 
     public void emitUnableToSetPropertyError(ScriptParser parser, String propertyName, String cause) throws SemanticErrorException {
-        emitSimpleError(parser, "unable to set property '" + propertyName + "'. Cause: " + cause);
+        emitSimpleError(parser, format("unable to set property '%s'. Cause: %s", propertyName, cause));
     }
 
-    public void emitWrongKeyStrokeFormat(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
-        emitSimpleError(parser, "can't create keystroke from string '" + ksLiteral + "'");
+    public void emitWrongKeyStrokeFormatError(ScriptParser parser, String ksLiteral) throws SemanticErrorException {
+        emitSimpleError(parser, format("can't create keystroke from string '%s'", ksLiteral));
     }
 
-    public void emitWindowPositionNotSpecified(ScriptParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "position ( POSITION(x, y, width, height) ) isn't specified for window '" + sid + "'");
+    public void emitWindowPositionNotSpecifiedError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, format("position ( POSITION(x, y, width, height) ) isn't specified for window '%s'", name));
     }
 
-    public void emitWindowPositionConflict(ScriptParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, widht, height)) are specified for window '" + sid + "', " +
-                                "only one of those should be used");
+    public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" + 
+                format("are specified for window '%s', only one of those should be used", name));
     }
 
-    public void emitAddToSystemWindowError(ScriptParser parser, String sid) throws SemanticErrorException {
-        emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'");
+    public void emitAddToSystemWindowError(ScriptParser parser, String neName, String windowName) throws SemanticErrorException {
+        emitSimpleError(parser, format("it's illegal to add navigator element '%s' to system window '%s'", neName, windowName));
     }
 
     public void emitFormulaParamIndexError(ScriptParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
@@ -218,15 +218,19 @@ public class ScriptingErrorLog {
     }
 
     public void emitFormulaMultipleImplementationError(ScriptParser parser, SQLSyntaxType type) throws SemanticErrorException {
-        emitSimpleError(parser, "two implementations for syntax " + (type == null ? "DEFAULT" : type));
+        emitSimpleError(parser, format("two implementations for syntax %s", (type == null ? "DEFAULT" : type)));
     }
 
-    public void emitFormulaDifferentParamCountError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "implementations have different number of parameters");
+    public void emitFormulaDifferentParamCountError(ScriptParser parser, String implementation1, String implementation2) throws SemanticErrorException {
+        String errText = "formula property implementations:";
+        errText += format("\n\t%s", implementation1);
+        errText += format("\n\t%s", implementation2);
+        errText += "\nhave different number of parameters";
+        emitSimpleError(parser, errText);
     }
     
-    public void emitParamClassRedefinitionError(ScriptParser parser, String paramName) throws SemanticErrorException {
-        emitSimpleError(parser, format("class of parameter '%s' was already defined", paramName));
+    public void emitParamClassRedefinitionError(ScriptParser parser, String paramName, String oldClassName) throws SemanticErrorException {
+        emitSimpleError(parser, format("class of parameter '%s' was already defined as '%s'", paramName, oldClassName));
     }
 
     public void emitParamClassNonDeclarationError(ScriptParser parser, String paramName) throws SemanticErrorException {
@@ -238,11 +242,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitBuiltInClassFormSetupError(ScriptParser parser, String className) throws SemanticErrorException {
-        emitSimpleError(parser, "can't set custom form for built-in class '" + className + "'");
-    }
-
-    public void emitCustomClassExpectedError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "custom class expected");
+        emitSimpleError(parser, format("can't set custom form for built-in class '%s'", className));
     }
 
     public void emitCustomClassExpectedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
@@ -288,31 +288,28 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, formatStringBuilder.toString());
     }
 
-    public void emitAlreadyDefinedPropertyDraw(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
+    public void emitAlreadyDefinedPropertyDrawError(ScriptParser parser, String formName, String propertyDrawName, String oldPosition) throws SemanticErrorException {
         emitSimpleError(parser, format("property '%s' in form '%s' was already defined at %s", propertyDrawName, formName, oldPosition));
     }
 
-    public void emitNamedParamsError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
+    public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
+        emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",
+                actualParameters, paramNames.size(), paramNames.toString()));
     }
 
-    public void emitFormulaReturnClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "formula return class must be a built-in class");
+    public void emitFormulaReturnClassError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, format("formula return class must be a built-in class, '%s' provided", className));
     }
 
-    public void emitCIInExpr(ScriptParser parser) throws SemanticErrorException {
+    public void emitCIInExprError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "BY clause in GROUP operator cannot be used in expressions");
     }
 
-    public void emitFormDataClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "form class must be a built-in class");
+    public void emitInputDataClassError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, format("input class must be a built-in class, '%s' class is given", className));
     }
 
-    public void emitInputDataClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Input class must be a built-in class");
-    }
-
-    public void emitIncompatibleTypes(ScriptParser parser, String propType) throws SemanticErrorException {
+    public void emitIncompatibleTypesError(ScriptParser parser, String propType) throws SemanticErrorException {
         emitSimpleError(parser, format("%s's arguments' types don't match", propType));
     }
 
@@ -321,7 +318,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitJavaCodeNotEndedError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "java code does not end with END keyword");
+        emitSimpleError(parser, "java code does not end with '}>' sequence");
     }
 
     public void emitDistinctParamNamesError(ScriptParser parser) throws SemanticErrorException {
@@ -352,24 +349,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("WHERE clause is forbidden with '%s' grouping type", groupType));
     }
 
-    public void emitDifferentObjsNPropsQuantity(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "number of properties specified after PARENT should be equal to number of objects");
+    public void emitDifferentObjsNPropsQuantityError(ScriptParser parser, int numberOfObjects) throws SemanticErrorException {
+        emitSimpleError(parser, format("number of properties specified after PARENT should be equal to number of objects (%d)", numberOfObjects));
     }
 
     public void emitCreatingClassInstanceError(ScriptParser parser, String exceptionMessage, String className) throws SemanticErrorException {
         emitSimpleError(parser, String.format("error '%s' occurred during creation of %s instance", exceptionMessage, className));
     }
 
-    public void emitNotActionPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "should be an action here");
-    }
-
-    public void emitNotCalculationPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "should be a property here");
-    }
-
-    public void emitNotSessionOrLocalPropertyError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "should be a session or local property here");
+    public void emitNotSessionOrLocalPropertyError(ScriptParser parser, String creationString) throws SemanticErrorException {
+        emitSimpleError(parser, format("should be a session or local property instead of '%s'", creationString));
     }
 
     public void emitExtendActionContextError(ScriptParser parser) throws SemanticErrorException {
@@ -392,12 +381,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("there is no '%s' inside RECURSION", paramName));
     }
 
-    public void emitAddActionsClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "built-in class cannot be used in NEW actions");
+    public void emitAddActionsClassError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, format("built-in class '%s' cannot be used in NEW actions", className));
     }
 
-    public void emitAggrClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "built-in class cannot be used in AGGR operator");
+    public void emitAggrClassError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, format("built-in class '%s' cannot be used in AGGR operator", className));
     }
 
     public void emitNecessaryPropertyError(ScriptParser parser) throws SemanticErrorException {
@@ -406,34 +395,34 @@ public class ScriptingErrorLog {
 
     public void emitDeconcatIndexError(ScriptParser parser, int index, int size) throws SemanticErrorException {
         if (index == 0) {
-            emitSimpleError(parser, "indices are one-based");
+            emitSimpleError(parser, format("wrong index '%d', indices are one-based", index));
         } else if (index > size) {
-            emitSimpleError(parser, format("wrong index, should be at most %d", size));
+            emitSimpleError(parser, format("wrong index '%d', should be at most %d", index, size));
         }
     }
 
     public void emitDeconcatError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "expression is not a list");
+        emitSimpleError(parser, "expression does not return a list");
     }
 
     public void emitIllegalWindowPartitionError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "WINDOW allowed only in SUM and PREV types of PARTITION");
+        emitSimpleError(parser, "WINDOW is allowed only with SUM and PREV types in PARTITION");
     }
 
     public void emitUngroupParamsCntPartitionError(ScriptParser parser, int groupPropCnt) throws SemanticErrorException {
         emitSimpleError(parser, format("UNGROUP property should have %d parameter(s)", groupPropCnt));
     }
 
-    public void emitChangeClassActionClassError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "class cannot be built-in or abstract");
+    public void emitChangeClassActionClassError(ScriptParser parser, String className) throws SemanticErrorException {
+        emitSimpleError(parser, format("cannot change class to built-in or abstract class ('%s' class in given)", className));
     }
 
-    public void emitNoInline(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "operators DATA/AGGR cannot be used in [= ]");
+    public void emitNoInlineError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "DATA or AGGR operators cannot be used inside [ ]");
     }
 
-    public void emitWrongClassesForTable(ScriptParser parser, String property, String table) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' can't be included into '%s' table: wrong classes", property, table));
+    public void emitWrongClassesForTableError(ScriptParser parser, String property, String table) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' can't be included into table '%s': wrong classes", property, table));
     }
 
     public void emitNotAbstractPropertyError(ScriptParser parser, String propName) throws SemanticErrorException {
@@ -442,10 +431,6 @@ public class ScriptingErrorLog {
 
     public void emitNotAbstractActionError(ScriptParser parser, String propName) throws SemanticErrorException {
         emitSimpleError(parser, format("action '%s' is not ABSTRACT", propName));
-    }
-
-    public void emitRequestUserInputDataTypeError(ScriptParser parser, String typeName) throws SemanticErrorException {
-        emitSimpleError(parser, format("type '%s' cannot be used with INPUT option", typeName));
     }
 
     public void emitOwnNamespacePriorityError(ScriptParser parser, String namespaceName) throws SemanticErrorException {
@@ -500,7 +485,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitEvalExpressionError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "ACTION EVAL expression should be string");
+        emitSimpleError(parser, "ACTION EVAL expression should be a string");
     }
 
     public void emitChangeClassWhereError(ScriptParser parser, String paramName) throws SemanticErrorException {
@@ -516,19 +501,15 @@ public class ScriptingErrorLog {
     }
 
     public void emitWrongPropertyParameterError(ScriptParser parser, String paramName, String paramClass, String actualParamClass) throws SemanticErrorException {
-        emitSimpleError(parser, format("parameter '%s' of class %s has actual class %s", paramName, paramClass, actualParamClass));
+        emitSimpleError(parser, format("parameter '%s' of class '%s' has actual class '%s'", paramName, paramClass, actualParamClass));
     }
     
-    public void emitOnlyDataCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
+    public void emitOnlyDataOrCasePropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("'%s' is only allowed to be DATA/MULTI/CASE property", propertyName));
     }
 
     public void emitOnlyDataPropertyIsAllowedError(ScriptParser parser, String propertyName) throws SemanticErrorException {
         emitSimpleError(parser, format("'%s' is only allowed to be DATA property", propertyName));
-    }
-
-    public void emitStrLiteralEscapeSequenceError(ScriptParser parser, char ch) throws SemanticErrorException {
-        emitSimpleError(parser, format("wrong escape sequence: '\\%c'", ch));
     }
 
     public void emitColorComponentValueError(ScriptParser parser) throws SemanticErrorException {
@@ -539,16 +520,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("%s is out of range (%d-%d)", valueType, lbound, rbound));
     }
 
-    public void emitIntegerValueError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "absolute value of INTEGER constant should be less than 2147483648 (2^31), use LONG or NUMERIC instead");
+    public void emitIntegerValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
+        emitSimpleError(parser, format("absolute value of INTEGER constant '%s' should be less than 2147483648 (2^31), use LONG or NUMERIC instead", literalText));
     }
 
-    public void emitLongValueError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "absolute value of LONG constant should be less than 2^63, use NUMERIC instead");
+    public void emitLongValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
+        emitSimpleError(parser, format("absolute value of LONG constant '%s' should be less than 2^63, use NUMERIC instead", literalText));
     }
 
-    public void emitDoubleValueError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "double constant is out of range");
+    public void emitDoubleValueError(ScriptParser parser, String literalText) throws SemanticErrorException {
+        emitSimpleError(parser, format("double constant '%s' is out of range", literalText));
     }
 
     public void emitDateDayError(ScriptParser parser, int y, int m, int d) throws SemanticErrorException {
@@ -576,7 +557,7 @@ public class ScriptingErrorLog {
     }
      
     public void emitShouldBeStoredError(ScriptParser parser, String propertyName) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' should be persistent", propertyName));
+        emitSimpleError(parser, format("property '%s' should be materialized", propertyName));
     }
 
     public void emitIndexPropertiesDifferentTablesError(ScriptParser parser, String firstPropName, String secondPropName) throws SemanticErrorException {
@@ -587,20 +568,16 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("group object '%s' does not contain object '%s'", groupObjName, objName));
     }
     
-    public void emitImportNonIntegralSheetError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
-    } 
-    
     public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "Navigator folder name should be defined");
+        emitSimpleError(parser, "navigator folder name should be defined");
     }
 
     public void emitImportFromWrongClassError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "FROM expression should return FILE value");
     }
 
-    public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
-        emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
+    public void emitPropertyWithParamsExpectedError(ScriptParser parser, String propertyName, String paramClasses) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' is expected to have [%s] signature", propertyName, paramClasses));
     }
 
     public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {

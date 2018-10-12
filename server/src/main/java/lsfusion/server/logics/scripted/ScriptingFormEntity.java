@@ -154,7 +154,7 @@ public class ScriptingFormEntity {
             List<ScriptingLogicsModule.PropertyUsage> properties = parentProperties.get(groupObjects.indexOf(groupObject));
 
             if (properties != null && groupObject.objects.size() != properties.size()) {
-                LM.getErrLog().emitDifferentObjsNPropsQuantity(LM.getParser());
+                LM.getErrLog().emitDifferentObjsNPropsQuantityError(LM.getParser(), groupObject.objects.size());
             }
             if (properties != null) {
                 GroupObjectEntity groupObj = groups.get(groupObjects.indexOf(groupObject));
@@ -256,7 +256,7 @@ public class ScriptingFormEntity {
         return groupObject;
     }
     
-    public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) {
         if (groupObject != null) {
             groupObject.reportPathProp = property;
         } else {
@@ -595,7 +595,7 @@ public class ScriptingFormEntity {
             boolean isDefault = info.isDefault;
 
             if (info.keystroke != null && keyStroke == null) {
-                LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), info.keystroke);
+                LM.getErrLog().emitWrongKeyStrokeFormatError(LM.getParser(), info.keystroke);
             }
 
             ImOrderSet<String> mapping = info.mapping;
@@ -640,7 +640,7 @@ public class ScriptingFormEntity {
         return form.addPropertyObject((LAP)prop.property, prop.mapping);
     }
 
-    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedDefaultOrder(List<PropertyDrawEntity> properties, List<Boolean> orders, Version version) {
         for (int i = 0; i < properties.size(); ++i) {
             form.addDefaultOrder(properties.get(i), orders.get(i), version);
             form.addDefaultOrderView(properties.get(i), orders.get(i), version);

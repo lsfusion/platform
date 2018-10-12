@@ -148,20 +148,6 @@ public class ScriptParser {
         return new Pair<>(tokens, tokenTypes);
     }
 
-    public List<String> grabJavaCode() throws ScriptingErrorLog.SemanticErrorException {
-        List<String> code = new ArrayList<>();
-        Parser curParser = getCurrentParser();
-        while (!curParser.input.LT(1).getText().equals("}>")) {
-            if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
-                errLog.emitJavaCodeNotEndedError(this);
-            }
-            String token = curParser.input.LT(1).getText();
-            code.add(token);
-            curParser.input.consume();
-        }
-        return code;
-    }
-
     public boolean enterGeneratedMetaState() {
         if (!insideGeneratedMeta && currentState != State.INIT) {
             insideGeneratedMeta = true;

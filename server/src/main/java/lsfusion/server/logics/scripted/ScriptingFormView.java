@@ -75,13 +75,13 @@ public class ScriptingFormView {
         ContainerView parent = (ContainerView) parentComponent;
 
         if (anchorComponent != null && !parent.equals(anchorComponent.getNFContainer(version))) {
-            errLog.emitIllegalInsertBeforeAfterElement(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
+            errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
         }
 
         if (component instanceof ContainerView) {
             ContainerView container = (ContainerView) component;
             if (container.isNFAncestorOf(parent, version)) {
-                errLog.emitIllegalMoveComponentToSubcomponent(parser, container.getSID(), parent.getSID());
+                errLog.emitIllegalMoveComponentToSubcomponentError(parser, container.getSID(), parent.getSID());
             }
         }
 
