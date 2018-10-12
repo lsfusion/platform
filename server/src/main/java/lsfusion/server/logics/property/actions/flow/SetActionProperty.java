@@ -156,6 +156,6 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
     @Override
     public ActionDelegationType getDelegationType(boolean modifyContext) {
-        return ActionDelegationType.IN_DELEGATE; // поменяли во время добавления дебага изменения data свойств, чтобы в стеке дебаггера отображались
+        return ActionDelegationType.IN_DELEGATE; // need this for property breakpoints
     }
 }

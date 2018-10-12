@@ -37,14 +37,19 @@ public class ExecutionStackAspect {
                 result.add(true);
 
             // игнорируем lsf элементы стека, которые не создают новый стек выполнения и не являются последними (предполагается что их можно понять из нижнего элемента)
-            boolean isLSF = stackItem instanceof ExecuteActionStackItem;
-            if(!(lastLSFActionFound && isLSF && !((ExecuteActionStackItem) stackItem).isInDelegate())) {
-                if(isLSF)
+            if(stackItem instanceof ExecuteActionStackItem) {
+                ExecuteActionStackItem actionStackItem = (ExecuteActionStackItem) stackItem;
+                if(actionStackItem.hasNoDebugInfo()) // ignore system actions (that have no debugInfo)
+                    continue;
+                if(lastLSFActionFound) {
+                    if (!actionStackItem.isInDelegate()) // need actions only with "stack jumps" (EXEC, EVAL, APPLY, etc.), others can be figured out of last lsf action
+                        continue;
+                } else
                     lastLSFActionFound = true;
-
-                ProgressBar progress = stackItem.getProgress();
-                result.add(progress != null ? progress : stackItem.toString());
             }
+                
+            ProgressBar progress = stackItem.getProgress();
+            result.add(progress != null ? progress : stackItem.toString());
         }
         return result;
     }

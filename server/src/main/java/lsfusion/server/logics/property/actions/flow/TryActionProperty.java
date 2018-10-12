@@ -8,12 +8,14 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.sql.SQLException;
 
@@ -95,6 +97,7 @@ public class TryActionProperty extends KeepContextActionProperty {
         } catch(Throwable e) {
             //ignore exception if finallyAction == null
             if (finallyAction == null) {
+                ExecutionStackAspect.getExceptionStackString(); // drop exception stack string
                 result = FlowResult.FINISH;
             } else {
                 throw Throwables.propagate(e);
