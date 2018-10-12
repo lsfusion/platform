@@ -9,10 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.PackInterface;
@@ -447,26 +444,26 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             current.add(entry);
         }
 
-        // бежим по оставшимся, разворачиваем по парам до множества исходных элементов для всех делаем or (A orMeans X), это и будет результат
-        return new GroupJoinsWheres(SetFact.fromJavaSet(current).mapKeyValues(new GetValue<WhereJoins, CEntry>() {
-            public WhereJoins getMapValue(CEntry value) {
-                return value.where;
-            }}, new GetValue<Value, CEntry>() {
-            public Value getMapValue(CEntry entry) {
-                if(entry instanceof COriginal) // оптимизация
-                    return get(entry.where);
+        MMap<WhereJoins, Value> mResult = MapFact.mMap(getAddValue());
+        for(CEntry entry : current)
+            mResult.add(entry.where, getValue(entry));
+        return new GroupJoinsWheres(mResult.immutable(), noWhere);
+    }
 
-                MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
-                entry.fillOriginal(mOrigs);
-                
-                Value resultValue = new Value(new UpWheres<>(SetFact.toExclSet(entry.where.wheres).toMap(UpWheres.FALSE)), Where.FALSE);
-                for(WhereJoins orig : mOrigs.immutable()) {
-                    assert orig.means(entry.where);
-                    Value origValue = get(orig);
-                    resultValue = resultValue.orMeans(entry.where, orig, origValue, noWhere);
-                }                
-                return resultValue;
-            }}), noWhere);
+    public Value getValue(CEntry entry) {
+        if(entry instanceof COriginal) // оптимизация
+            return get(entry.where);
+
+        MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
+        entry.fillOriginal(mOrigs);
+
+        Value resultValue = new Value(new UpWheres<>(SetFact.toExclSet(entry.where.wheres).toMap(UpWheres.FALSE)), Where.FALSE);
+        for(WhereJoins orig : mOrigs.immutable()) {
+            assert orig.means(entry.where);
+            Value origValue = get(orig);
+            resultValue = resultValue.orMeans(entry.where, orig, origValue, noWhere);
+        }
+        return resultValue;
     }
 
     public void toList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col, ImOrderSet<Expr> orderTop) {
