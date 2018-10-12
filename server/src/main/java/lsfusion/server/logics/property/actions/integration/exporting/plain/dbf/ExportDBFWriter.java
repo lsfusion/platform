@@ -29,13 +29,16 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
 
         OverJDBField[] fields = getFields();
         if(fields.length == 0) // dbf format (with 13 terminator) just does not support no fields  
-            throw new RuntimeException("Export Error: DBF file cannot have no fields");
+            fields = new OverJDBField[] {new OverJDBField("dumb", 'N', 1, 0) };
         writer = new DBFWriter(file.getAbsolutePath(), fields, charset);
     }
 
     public void writeLine(ImMap<String, Object> row) {
         try {
-            writer.addRecord(fieldTypes.keyOrderSet().mapList(row).toArray(new Object[row.size()]));
+            Object[] record = fieldTypes.keyOrderSet().mapList(row).toArray(new Object[row.size()]);
+            if(record.length == 0)
+                record = new Object[] {0};
+            writer.addRecord(record);
         } catch (JDBFException e) {
             throw Throwables.propagate(e);
         }
