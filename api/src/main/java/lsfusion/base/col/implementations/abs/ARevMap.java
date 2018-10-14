@@ -42,6 +42,8 @@ public abstract class ARevMap<K, V> extends AMap<K, V> implements ImRevMap<K, V>
     }
 
     public <M> ImRevMap<K, M> rightJoin(ImRevMap<V, M> joinMap) {
+        assert values().toSet().containsAll(joinMap.keys());
+
         MRevMap<K, M> mResult = MapFact.mRevMap(joinMap.size());
         for(int i=0,size=size();i<size;i++) {
             V value = getValue(i);

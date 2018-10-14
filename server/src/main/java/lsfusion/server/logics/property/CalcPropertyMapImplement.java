@@ -45,10 +45,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public DataChanges mapJoinDataChanges(PropertyChange<T> change, GroupType type, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        PropertyChange<P> mappedChange = change.mapChange(mapping);
-        if(change.getMapKeys().size() == mappedChange.getMapKeys().size() && change.getMapValues().size() == mappedChange.getMapValues().size()) // оптимизация
-            return property.getDataChanges(mappedChange, propChanges, changedWhere);
-        return property.getJoinDataChanges(mappedChange.getMapExprs(), mappedChange.expr, mappedChange.where, type, propChanges, changedWhere);
+        ImMap<T, Expr> mapExprs = change.getMapExprs();
+        if(mapExprs.size() == mapping.size()) // optimization
+            return property.getDataChanges(change.mapChange(mapping), propChanges, changedWhere);
+        return property.getJoinDataChanges(mapping.join(mapExprs), change.expr, change.where, type, propChanges, changedWhere);
     }
 
     public CalcPropertyMapImplement<P, T> mapOld(PrevScope event) {
