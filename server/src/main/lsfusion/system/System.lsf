@@ -5,7 +5,7 @@ NAMESPACE System;
 CLASS NATIVE Object;
 
 CLASS NATIVE StaticObject;
-//TABLE staticObject (StaticObject);
+TABLE staticObject (StaticObject) NODEFAULT;
 
 CLASS NATIVE CustomObjectClass : StaticObject;
 TABLE customObjectClass (CustomObjectClass);
@@ -78,11 +78,11 @@ executeLocalEvents  INTERNAL  'lsfusion.server.logics.property.actions.ExecuteLo
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
 staticName 'Статическое имя' = DATA STRING[250] (Object); // temporary for migration
-staticName 'Статическое имя' (StaticObject object) = staticName[Object](object) MATERIALIZED;
+staticName 'Статическое имя' (StaticObject object) = staticName[Object](object) MATERIALIZED TABLE staticObject;
 nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
 
 staticCaption 'Статическое имя' = DATA ISTRING[100] (Object); // temporary for migration
-staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED;
+staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject;
 
 objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));

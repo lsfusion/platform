@@ -392,7 +392,7 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
+    protected ImplementTable addTable(String name, boolean isFull, boolean isExplicit, ValueClass... classes) {
         String canonicalName = elementCanonicalName(name);
         ImplementTable table = baseLM.tableFactory.include(CanonicalNameUtils.toSID(canonicalName), getVersion(), classes);
         table.setCanonicalName(canonicalName);
@@ -403,7 +403,8 @@ public abstract class LogicsModule {
                 table.markedFull = true;
             else
                 markFull(table, classes);
-        }
+        } else
+            table.markedExplicit = isExplicit;
         return table;
     }
 

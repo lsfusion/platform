@@ -3874,13 +3874,14 @@ aspectStatement
 tableStatement 
 @init {
 	boolean isFull = false;
+	boolean isNoDefault = false;
 }
 @after {
 	if (inTableParseState()) {
-		self.addScriptedTable($name.text, $list.ids, isFull);
+		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
 	}
 }
-	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;})? ';';
+	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// LOGGABLE STATEMENT /////////////////////////////
