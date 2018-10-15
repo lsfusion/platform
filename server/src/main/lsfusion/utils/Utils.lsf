@@ -109,6 +109,8 @@ replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 charLength (TEXT p1) = FORMULA INTEGER PG 'char_length($1)', MS 'len($1)';
 length = FORMULA LONG 'length($1)';
 
+strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
+
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
