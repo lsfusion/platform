@@ -2291,7 +2291,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(DBVersion dbVersion) {
-            version = 29;
+            version = 30; // need this for migration (to remove staticName[Object])
             this.dbVersion = dbVersion;
 
             tables.putAll(getIndicesMap());

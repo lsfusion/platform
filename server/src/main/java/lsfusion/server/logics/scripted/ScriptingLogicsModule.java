@@ -466,6 +466,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LocalizedString> captions = instCaptions;
         if (!isAbstract) {
             ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions, version);
+            
+            if(!instNames.isEmpty())
+                cls.addParentClass(baseClass.staticObjectClass, version);
+            
             names = ((ConcreteCustomClass) cls).getNFStaticObjectsNames(version);
             captions = ((ConcreteCustomClass) cls).getNFStaticObjectsCaptions(version);
         }

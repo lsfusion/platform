@@ -351,9 +351,10 @@ public abstract class LogicsModule {
         addModuleClass(customClass);
     }
 
-    protected BaseClass addBaseClass(String canonicalName, LocalizedString caption) {
-        BaseClass baseClass = new BaseClass(canonicalName, caption, getVersion());
+    protected BaseClass addBaseClass(String canonicalName, LocalizedString caption, String staticCanonicalName, LocalizedString staticCanonicalCaption) {
+        BaseClass baseClass = new BaseClass(canonicalName, caption, staticCanonicalName, staticCanonicalCaption, getVersion());
         storeCustomClass(baseClass);
+        storeCustomClass(baseClass.staticObjectClass);
         return baseClass;
     }
 
