@@ -81,7 +81,7 @@ staticName 'Статическое имя' = DATA STRING[250] (Object); // tempo
 staticName 'Статическое имя' (StaticObject object) = staticName[Object](object) MATERIALIZED;
 nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
 
-staticCaption 'Статическое имя' = DATA STRING[250] (Object); // temporary for migration
+staticCaption 'Статическое имя' = DATA ISTRING[100] (Object); // temporary for migration
 staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED;
 
 objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
