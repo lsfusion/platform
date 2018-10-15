@@ -30,9 +30,9 @@ public class ClientExceptionManager {
                 }
                 if (remote instanceof RemoteServerException) {
                     if(remote instanceof RemoteInternalException) {
-                        Log.error(remote.getMessage() + "\nОбратитесь к администратору.", e);
+                        Log.error(remote.getMessage() + "\nОбратитесь к администратору.", remote, ((RemoteInternalException) remote).lsfStack);
                     } else {
-                        Log.error(remote.getMessage(), e);
+                        Log.error(remote.getMessage(), remote);
                     }
                     reportServerRemoteThrowable((RemoteServerException) remote);
                 }

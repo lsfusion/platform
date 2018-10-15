@@ -190,12 +190,11 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         onClientStarted = findAction("onClientStarted[]");
     }
 
-    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
+    public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, String lsfStack, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {
         @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         String message = replaceNonUTFCharacters(Throwables.getRootCause(t).getLocalizedMessage());
         String errorType = t.getClass().getName();
         String erTrace = replaceNonUTFCharacters(ExceptionUtils.getStackTraceString(t));
-        String lsfStack = ExecutionStackAspect.getExceptionStackString();
 
         try (DataSession session = createSession()) {
             DataObject exceptionObject;

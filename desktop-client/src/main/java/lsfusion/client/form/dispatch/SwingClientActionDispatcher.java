@@ -403,7 +403,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(LogMessageClientAction action) {
         if (action.failed) {
-            Log.error(action.message, action.titles, action.data, true);
+            Log.messageWarning(action.message, action.titles, action.data);
         } else {
             Log.message(action.message);
         }
