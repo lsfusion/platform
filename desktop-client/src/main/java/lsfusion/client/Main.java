@@ -298,7 +298,7 @@ public class Main {
                             task.start();
                         } catch (Exception e) {
                             logger.error(getString("client.error.application.initialization"), e);
-                            Log.error(getString("client.error.application.initialization"), e, true);
+                            Log.error(getString("client.error.application.initialization"), e);
                         }
                     }
 
@@ -313,7 +313,7 @@ public class Main {
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error(getString("client.error.application.initialization"), e);
-                    Log.error(getString("client.error.application.initialization"), e, true);
+                    Log.error(getString("client.error.application.initialization"), e);
                     Main.restart();
                 }
             }

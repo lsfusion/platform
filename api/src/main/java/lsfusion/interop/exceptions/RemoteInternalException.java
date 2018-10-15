@@ -4,7 +4,11 @@ import static lsfusion.base.ApiResourceBundle.getString;
 
 public class RemoteInternalException extends RemoteServerException {
 
-    public RemoteInternalException(String message) {
+    public final String lsfStack;
+    
+    public RemoteInternalException(String message, String lsfStack) {
         super(getString("exceptions.internal.server.error", message));
+        
+        this.lsfStack = lsfStack;
     }
 }
