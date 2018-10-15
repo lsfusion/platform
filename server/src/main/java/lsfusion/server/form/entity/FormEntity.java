@@ -373,17 +373,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     @IdentityLazy
     public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
-        return getCalcPropertyDrawsList().groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
+        return getStaticPropertyDrawsList().groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
             public GroupObjectEntity group(PropertyDrawEntity key) {
                 GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
                 return applyObject == null ? GroupObjectEntity.NULL : applyObject;
             }});
     }
 
-    public ImOrderSet<PropertyDrawEntity> getCalcPropertyDrawsList() {
+    public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
         return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
             public boolean contains(PropertyDrawEntity element) {
-                return element.isCalcProperty();
+                return element.isCalcProperty() && element.getIntegrationSID() != null;
             }
         });
     }
