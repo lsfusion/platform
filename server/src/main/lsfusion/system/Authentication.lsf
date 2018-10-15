@@ -49,7 +49,7 @@ TABLE contact (Contact);
 
 firstName '{authentication.first.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 10 IN base;
 lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 15 IN base;
-name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id;
+name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id CHARWIDTH 20;
 
 phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
 postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
