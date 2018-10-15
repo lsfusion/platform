@@ -577,7 +577,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitPropertyWithParamsExpectedError(ScriptParser parser, String propertyName, String paramClasses) throws SemanticErrorException {
-        emitSimpleError(parser, format("property '%s' is expected to have [%s] signature", propertyName, paramClasses));
+        emitSimpleError(parser, format("property '%s' is expected to have %s signature", propertyName, paramClasses));
     }
 
     public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {

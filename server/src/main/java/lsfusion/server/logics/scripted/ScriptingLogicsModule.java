@@ -591,20 +591,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP<?> lap = findLAPByPropertyUsage(pUsage);
         ValueClass[] paramClasses = lap.getInterfaceClasses(ClassType.signaturePolicy);
         if (paramClasses.length != 0) {
-            errLog.emitPropertyWithParamsExpectedError(getParser(), pUsage.name, "");
+            errLog.emitPropertyWithParamsExpectedError(getParser(), pUsage.name, "[]");
         }
         return lap;
     }
+
     public LCP<?> findLCPNoParamsByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        if (pUsage.classNames == null) {
-            pUsage.classNames = Collections.emptyList();
-        }
-        LCP<?> lap = findLCPByPropertyUsage(pUsage);
-        ValueClass[] paramClasses = lap.getInterfaceClasses(ClassType.signaturePolicy);
-        if (paramClasses.length != 0) {
-            errLog.emitPropertyWithParamsExpectedError(getParser(), pUsage.name, "");
-        }
-        return lap;
+        return findLCPParamByPropertyUsage(pUsage, Collections.<ValueClass>emptyList());
     }
 
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -3369,30 +3362,48 @@ public class ScriptingLogicsModule extends LogicsModule {
     private ImList<LCP> findLCPsIntegerParamByPropertyUsage(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         MList<LCP> mProps = ListFact.mList(propUsages.size());
         for (PropertyUsage propUsage : propUsages) {
-            if (propUsage.classNames == null) {
-                propUsage.classNames = Collections.singletonList("INTEGER");
-            }
-            LCP<?> lcp = findLCPByPropertyUsage(propUsage);
-            ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-            IntegerClass type = IntegerClass.instance;
-            if (paramClasses.length != 1 || paramClasses[0].getType() != type) {
-                errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, type.getParsedName());
-            }
-            mProps.add(lcp);
+            mProps.add(findLCPIntegerParamByPropertyUsage(propUsage));
         }
         return mProps.immutableList();
     }
 
+    private LCP findLCPIntegerParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPParamByPropertyUsage(propUsage, Collections.singletonList((ValueClass) IntegerClass.instance));
+    }
+
     private LCP findLCPStringParamByPropertyUsage(PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return findLCPParamByPropertyUsage(propUsage, Collections.singletonList((ValueClass) StringClass.text));
+    }
+
+    private LCP findLCPParamByPropertyUsage(PropertyUsage propUsage, List<ValueClass> valueClasses) throws ScriptingErrorLog.SemanticErrorException {
         if (propUsage.classNames == null) {
-            propUsage.classNames = Collections.singletonList("TEXT");
+            propUsage.classNames = new ArrayList<>();
+            for (ValueClass valueClass : valueClasses) {
+                propUsage.classNames.add(valueClass.getParsedName());
+            }
         }
         LCP<?> lcp = findLCPByPropertyUsage(propUsage);
         ValueClass[] paramClasses = lcp.getInterfaceClasses(ClassType.signaturePolicy);
-        if (paramClasses.length != 1 || !(paramClasses[0].getType() instanceof StringClass)) {
-            errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, StringClass.text.getParsedName());
+        if (paramClasses.length != valueClasses.size()) {
+            errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getParamClasses(valueClasses));
+        } else {
+            for (int i = 0; i < paramClasses.length; i++) {
+                ValueClass paramClass = paramClasses[i];
+                ValueClass valueClass = valueClasses.get(i);
+                if (!valueClass.isCompatibleParent(paramClass)) {
+                    errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getParamClasses(valueClasses));
+                }
+            }
         }
         return lcp;
+    }
+
+    private String getParamClasses(List<ValueClass> valueClasses) {
+        List<ResolveClassSet> signature = new ArrayList<>();
+        for(ValueClass valueClass : valueClasses) {
+            signature.add(valueClass.getResolveSet());
+        }
+        return PropertyCanonicalNameUtils.createSignature(signature);
     }
 
     public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, Boolean hasListOption, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {

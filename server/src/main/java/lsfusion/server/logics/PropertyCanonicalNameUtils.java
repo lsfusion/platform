@@ -39,7 +39,7 @@ public final class PropertyCanonicalNameUtils {
         }
         builder.append(name);
         if (signature != null) {
-            appendSignature(builder, signature);
+            builder.append(createSignature(signature));
         }
         return builder.toString();
     }
@@ -48,8 +48,9 @@ public final class PropertyCanonicalNameUtils {
         builder.append(namespace);
         builder.append(CanonicalNameUtils.DELIMITER);
     }
-    
-    static private void appendSignature(StringBuilder builder, List<ResolveClassSet> signature) {
+
+    static public String createSignature(List<ResolveClassSet> signature) {
+        StringBuilder builder = new StringBuilder();
         builder.append(signatureLBracket);
         boolean isFirst = true;
         for (ResolveClassSet cs : signature) {
@@ -68,6 +69,7 @@ public final class PropertyCanonicalNameUtils {
             }
         }
         builder.append(signatureRBracket);
+        return builder.toString();
     }
     
     static public String makeSafeName(String s) {
