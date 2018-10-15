@@ -78,7 +78,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
-            propertyDraw.group = null; // without group 
+            propertyDraw.group = null; // without group
 
             if(groupObject != null && !addMapping.valuesSet().intersect(groupObject.getObjects()))
                 propertyDraw.toDraw = groupObject;
@@ -93,7 +93,9 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
         }
         
         for(int i=0,size=orders.size();i<size;i++) {
-            addDefaultOrder(mapAliases.get(orders.getKey(i)), orders.getValue(i), version);
+            PropertyDrawEntity property = mapAliases.get(orders.getKey(i));
+            property.setIntegrationSID(null);
+            addDefaultOrder(property, orders.getValue(i), version);
         }
     }
 

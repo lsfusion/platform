@@ -2094,8 +2094,8 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		('TO' pUsage=propertyUsage)?
 	;
 
-propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, boolean order = false]
-	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $order = true; })?
+propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, boolean order = true]
+	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $order = false; })?
 	;
 
 nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<>(), List<Boolean> literals = new ArrayList<>(), List<LCPWithParams> properties = new ArrayList<>()]

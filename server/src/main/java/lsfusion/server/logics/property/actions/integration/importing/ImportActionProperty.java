@@ -6,7 +6,6 @@ import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
@@ -232,7 +231,7 @@ public abstract class ImportActionProperty extends SystemActionProperty {
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         MSet<CalcProperty> mProps = SetFact.mSet();
-        for(PropertyDrawEntity propertyDraw : formEntity.getCalcPropertyDrawsList())
+        for(PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList())
             mProps.add((CalcProperty) propertyDraw.getImportProperty().property);
         return mProps.immutable().toMap(false);
     }

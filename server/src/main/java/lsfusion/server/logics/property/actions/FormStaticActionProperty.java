@@ -4,15 +4,12 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.FormStaticType;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.stat.AbstractFormDataInterface;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
@@ -56,7 +53,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         if(formEntity != null) {
             MSet<CalcProperty> mProps = SetFact.mSet();
             boolean isReport = this instanceof PrintActionProperty;
-            for (PropertyDrawEntity propertyDraw : formEntity.getCalcPropertyDrawsList()) {
+            for (PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList()) {
                 if (isReport) {
                     MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
                     propertyDraw.fillQueryProps(mReaders);
