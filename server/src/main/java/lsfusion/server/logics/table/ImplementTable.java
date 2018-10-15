@@ -72,6 +72,7 @@ public class ImplementTable extends DBTable { // последний интерф
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
 
     public boolean markedFull;
+    public boolean markedExplicit; // if true assert !markedFull
 
     private String canonicalName;
     
@@ -323,7 +324,7 @@ public class ImplementTable extends DBTable { // последний интерф
         }
 
         public boolean skipResult(ImplementTable table) {
-            return false;
+            return table.markedExplicit;
         }
 
         public boolean onlyFirstParent(ImplementTable table) {
@@ -356,7 +357,7 @@ public class ImplementTable extends DBTable { // последний интерф
         }
 
         public boolean skipResult(ImplementTable table) {
-            return false;
+            return table.markedExplicit;
         }
 
         public boolean onlyFirstParent(ImplementTable table) {
