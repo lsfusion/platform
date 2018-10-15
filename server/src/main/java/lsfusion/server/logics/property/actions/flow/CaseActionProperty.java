@@ -256,9 +256,11 @@ public class CaseActionProperty extends ListCaseActionProperty {
             if (type == null) {
                 type = actionRequestType;
             } else {
-                type = type.getCompatible(actionRequestType);
-                if (type == null) {
-                    return null;
+                if(actionRequestType != null) {
+                    type = type.getCompatible(actionRequestType);
+                    if (type == null) {
+                        return null;
+                    }
                 }
             }
         }

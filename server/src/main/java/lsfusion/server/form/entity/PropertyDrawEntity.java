@@ -183,7 +183,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getWYSRequestInputType(SecurityPolicy policy) {
-        return getRequestInputType(CHANGE_WYS, policy, false);
+        return getRequestInputType(CHANGE_WYS, policy, true); // wys is optimistic by default
     }
     
     public boolean isCalcProperty() {
@@ -275,9 +275,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (editAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
                     return editAction.getGroupChange();
-                else {
+                else { // if CHANGE action requests DataClass, then use this action
                     assert CHANGE_WYS.equals(actionId);
-                    if (editAction.property.getSimpleRequestInputType(optimisticAsync) != null) // if CHANGE action requests DataClass, then use this action 
+                    if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default 
                         return editAction;
                 }
             }
