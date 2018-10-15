@@ -575,8 +575,8 @@ public class ScriptingErrorLog {
     
     public void emitImportNonIntegralSheetError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
-    } 
-    
+    }
+
     public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "Navigator folder name should be defined");
     }
@@ -585,8 +585,8 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "FROM expression should return FILE value");
     }
 
-    public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
-        emitSimpleError(parser, format("expected property with (%s) param classes: %s", paramClasses, property));
+    public void emitPropertyWithParamsExpectedError(ScriptParser parser, String propertyName, String paramClasses) throws SemanticErrorException {
+        emitSimpleError(parser, format("property '%s' is expected to have %s signature", propertyName, paramClasses));
     }
 
     public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {
@@ -596,7 +596,7 @@ public class ScriptingErrorLog {
     public void emitRelationalOperatorClassCommpatibilityError(ScriptParser parser, String leftClassName, String rightClassName) throws SemanticErrorException {
         emitSimpleError(parser, format("value of class '%s' is not comparable with value of class '%s'", leftClassName, rightClassName));
     }
-    
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
