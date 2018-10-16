@@ -1646,7 +1646,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<AttachmentFormat> attachFormats,
                                              List<LCPWithParams> attachFileNames,
                                              List<LCPWithParams> attachFiles,
-                                             List<LCPWithParams> inlineTexts) throws ScriptingErrorLog.SemanticErrorException {
+                                             List<LCPWithParams> inlineTexts,
+                                             List<LCPWithParams> inlineFiles) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> allProps = new ArrayList<>();
 
@@ -1678,6 +1679,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         allProps.addAll(inlineTexts);
+        allProps.addAll(inlineFiles);
 
         formObjects.addAll(Collections.<ObjectEntity>nCopies(allProps.size() - formObjects.size(), null));
 
@@ -1729,6 +1731,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for(int j = 0; j < inlineTexts.size(); j++)
             eaProp.addInlineText(allImplements.get(i++));
+
+        for(int j = 0; j < inlineFiles.size(); j++)
+            eaProp.addInlineFile(allImplements.get(i++));
 
         return new LAPWithParams(eaPropLP, mergeAllParams(allProps));
     }

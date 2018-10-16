@@ -8,6 +8,7 @@ import lsfusion.interop.FormPrintType;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -65,6 +66,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> inlineTexts = new ArrayList<>(); // deprecated
+    private final List<CalcPropertyInterfaceImplement> inlineFiles = new ArrayList<>();
 
     public SendEmailActionProperty(LocalizedString caption, ValueClass[] classes) {
         super(caption, classes);
@@ -114,6 +116,10 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
     public void addInlineText(CalcPropertyInterfaceImplement inlineText) {
         inlineTexts.add(inlineText);
+    }
+
+    public void addInlineFile(CalcPropertyInterfaceImplement file) {
+        inlineFiles.add(file);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -252,11 +258,21 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 attachments.add(new EmailSender.AttachmentFile(file, name + "." + extension, extension));
             }
         }
-        // todo: add inlineFiles here
         for(CalcPropertyInterfaceImplement inlineText : this.inlineTexts) {
             String text = (String) inlineText.read(context, context.getKeys());
             if(text != null)
                 customInlines.add(text.getBytes());
+        }
+
+        for (CalcPropertyInterfaceImplement inlineFile : this.inlineFiles) {
+            ObjectValue fileObject = inlineFile.readClasses(context, context.getKeys());
+            byte[] file = (byte[]) fileObject.getValue();
+            if (fileObject instanceof DataObject) {
+                if (((DataObject) fileObject).getType() instanceof DynamicFormatFileClass) {
+                    file = BaseUtils.getFile(file);
+                }
+                customInlines.add(file);
+            }
         }
     }
 
