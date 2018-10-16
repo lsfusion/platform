@@ -3088,10 +3088,11 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	List<LCPWithParams> attachFileNames = new ArrayList<>();
 	List<LCPWithParams> attachFiles = new ArrayList<>();
 	List<LCPWithParams> inlineTexts = new ArrayList<>();
+	List<LCPWithParams> inlineFiles = new ArrayList<>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats, attachFileNames, attachFiles, inlineTexts);
+		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats, attachFileNames, attachFiles, inlineTexts, inlineFiles);
 	}
 }
 	:	'EMAIL'
@@ -3106,6 +3107,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
 			)
 		|   (	'INLINE' 'HTML' inlineText=propertyExpression[context, dynamic] { inlineTexts.add($inlineText.property); })
+		|   (	'INLINE' 'PROPERTY' inlineFile=propertyExpression[context, dynamic] { inlineFiles.add($inlineFile.property); })
 		|	(	'ATTACH' { formTypes.add(FormStorageType.ATTACH); }
 				format=emailAttachFormat { attachFormats.add($format.val); }
 				
