@@ -5,10 +5,8 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ThreadUtils;
@@ -22,16 +20,19 @@ import java.sql.SQLException;
 public class TryActionProperty extends KeepContextActionProperty {
 
     private final ActionPropertyMapImplement<?, PropertyInterface> tryAction;
+    private final ActionPropertyMapImplement<?, PropertyInterface> catchAction;
     private final ActionPropertyMapImplement<?, PropertyInterface> finallyAction;
 
 
     public <I extends PropertyInterface> TryActionProperty(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                            ActionPropertyMapImplement<?, I> tryAction,
+                                                           ActionPropertyMapImplement<?, I> catchAction,
                                                            ActionPropertyMapImplement<?, I> finallyAction) {
         super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.tryAction = tryAction.map(mapInterfaces);
+        this.catchAction = catchAction == null ? null : catchAction.map(mapInterfaces);
         this.finallyAction = finallyAction == null ? null : finallyAction.map(mapInterfaces);
 
         finalizeInit();
@@ -42,6 +43,8 @@ public class TryActionProperty extends KeepContextActionProperty {
 
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         actions.add(tryAction);
+        if(catchAction != null)
+            actions.add(catchAction);
         if(finallyAction != null)
             actions.add(finallyAction);
         
@@ -58,6 +61,9 @@ public class TryActionProperty extends KeepContextActionProperty {
         ImSet<ActionProperty> result = SetFact.EMPTY();
         result = result.merge(tryAction.property);
 
+        if (catchAction != null) {
+            result = result.merge(catchAction.property);
+        }
         if (finallyAction != null) {
             result = result.merge(finallyAction.property);
         }
@@ -69,10 +75,14 @@ public class TryActionProperty extends KeepContextActionProperty {
     @Override
     public Type getFlowSimpleRequestInputType(boolean optimistic, boolean inRequest) {
         Type tryType = tryAction.property.getSimpleRequestInputType(optimistic, inRequest);
+        Type catchType = catchAction == null ? null : catchAction.property.getSimpleRequestInputType(optimistic, inRequest);
         Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic, inRequest);
 
         if (!optimistic) {
             if (tryType == null) {
+                return null;
+            }
+            if (catchAction != null && catchType == null) {
                 return null;
             }
             if (finallyAction != null && finallyType == null) {
@@ -80,21 +90,25 @@ public class TryActionProperty extends KeepContextActionProperty {
             }
         }
 
-        return tryType == null
-               ? finallyType
-               : finallyType == null
-                 ? tryType
-                 : tryType.getCompatible(finallyType);
+        Type type = tryType == null ? catchType : (catchType == null ? tryType : tryType.getCompatible(catchType));
+        return type == null ? finallyType : (finallyType == null ? type : type.getCompatible(finallyType));
     }
 
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         
-        FlowResult result = null;
+        FlowResult result;
 
         try {
             result = tryAction.execute(context);
         } catch(Throwable e) {
+            if(catchAction != null) {
+                context.getBL().LM.messageCaughtException.change(String.valueOf(e), context);
+                context.getBL().LM.javaStackTraceCaughtException.change(String.valueOf(e) + "\n" + ThreadUtils.getJavaStack(e.getStackTrace()), context);
+                context.getBL().LM.lsfStackTraceCaughtException.change(ExecutionStackAspect.getStackString(Thread.currentThread(), true, true), context);
+                catchAction.execute(context);
+            }
+
             //ignore exception if finallyAction == null
             if (finallyAction == null) {
                 ExecutionStackAspect.getExceptionStackString(); // drop exception stack string
@@ -103,6 +117,12 @@ public class TryActionProperty extends KeepContextActionProperty {
                 throw Throwables.propagate(e);
             }
         } finally {
+            if(catchAction != null) {
+                context.getBL().LM.messageCaughtException.change((Object) null, context);
+                context.getBL().LM.javaStackTraceCaughtException.change((Object) null, context);
+                context.getBL().LM.lsfStackTraceCaughtException.change((Object) null, context);
+            }
+
             if (finallyAction != null) {
                 ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {

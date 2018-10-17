@@ -650,13 +650,15 @@ public abstract class LogicsModule {
 
     // ------------------- Try action ----------------- //
 
-    protected LAP addTryAProp(AbstractGroup group, LocalizedString caption, Object... params) {
+    protected LAP addTryAProp(AbstractGroup group, LocalizedString caption, boolean hasCatch, boolean hasFinally, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        assert readImplements.size() >= 1 && readImplements.size() <= 2;
+        assert readImplements.size() >= 1 && readImplements.size() <= 3;
 
-        return addProperty(group, new LAP<>(new TryActionProperty(caption, listInterfaces, (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
-                readImplements.size() == 2 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1) : null)));
+        ActionPropertyMapImplement<?, PropertyInterface> tryAction = (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0);
+        ActionPropertyMapImplement<?, PropertyInterface> catchAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasCatch ? readImplements.get(1) : null);
+        ActionPropertyMapImplement<?, PropertyInterface> finallyAction = (ActionPropertyMapImplement<?, PropertyInterface>) (hasFinally ? (readImplements.get(hasCatch ? 2 : 1)) : null);
+        return addProperty(group, new LAP<>(new TryActionProperty(caption, listInterfaces, tryAction, catchAction, finallyAction)));
     }
     
     // ------------------- If action ----------------- //

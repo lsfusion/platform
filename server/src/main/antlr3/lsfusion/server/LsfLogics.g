@@ -3437,10 +3437,11 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedTryAProp($tryADB.property, $finallyADB.property);
+		$property = self.addScriptedTryAProp($tryADB.property, $catchADB.property, $finallyADB.property);
 	}
 }
 	:	'TRY' tryADB=keepContextFlowActionDefinitionBody[context, dynamic]
+	    ( 'CATCH' catchADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 		( 'FINALLY' finallyADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 	;
 

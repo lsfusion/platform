@@ -97,6 +97,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP<?> canceled;
     public LAP<?> onStarted;
 
+    public LCP messageCaughtException;
+    public LCP javaStackTraceCaughtException;
+    public LCP lsfStackTraceCaughtException;
+
     public LAP<?> empty;
 
     public LAP flowBreak;
@@ -402,7 +406,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         cancel = findAction("cancel[]");
 
         onStarted = findAction("onStarted[]");
-        
+
+        messageCaughtException = findProperty("messageCaughtException[]");
+        javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
+        lsfStackTraceCaughtException = findProperty("lsfStackTraceCaughtException[]");
+
         addedObject = findProperty("addedObject[]");
         applyCanceled = findProperty("applyCanceled[]");
         requestCanceled = findProperty("requestCanceled[]");
