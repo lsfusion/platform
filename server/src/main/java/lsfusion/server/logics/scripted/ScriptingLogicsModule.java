@@ -2194,15 +2194,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(result, allParams);
     }
 
-    public LAPWithParams addScriptedTryAProp(LAPWithParams tryAction, LAPWithParams finallyAction) {
+    public LAPWithParams addScriptedTryAProp(LAPWithParams tryAction, LAPWithParams catchAction, LAPWithParams finallyAction) {
         List<LPWithParams> propParams = new ArrayList<>();
         propParams.add(tryAction);
-        if (finallyAction != null) {
+        if (catchAction != null) {
+            propParams.add(catchAction);
+        }if (finallyAction != null) {
             propParams.add(finallyAction);
         }
 
         List<Integer> allParams = mergeAllParams(propParams);
-        LAP result = addTryAProp(null, LocalizedString.NONAME, getParamsPlainList(propParams).toArray());
+        LAP result = addTryAProp(null, LocalizedString.NONAME, catchAction != null, finallyAction != null, getParamsPlainList(propParams).toArray());
         return new LAPWithParams(result, allParams);
     }
 
