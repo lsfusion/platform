@@ -178,7 +178,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         try {
             sync.put(syncObject); // тут по идее release должен сразу выйти и ничего не ждать (может быть проблема если interrupt'ся take, но непонятно что с этим в принципе делать)
         } catch (InterruptedException e) {
-            ServerLoggers.assertLog(false, "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
+            ServerLoggers.assertLog(invocationsExecutor != null && invocationsExecutor.isShutdown(), "SHOULD NOT BE INTERRUPTED"); // shouldn't be interrupted because it will break main - invocation synchronization
             throw e;
         }
     }

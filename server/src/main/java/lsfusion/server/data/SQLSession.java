@@ -2580,8 +2580,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if(wCurrentOwner == null || (currentOwner = wCurrentOwner.get()) == null) {
             if(owner != TableOwner.none)
                 ServerLoggers.assertLog(false, "UPDATED RETURNED TABLE : " + table + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
-        } else
-            ServerLoggers.assertLog(currentOwner == owner, "UPDATED FOREIGN TABLE : " + table + " " + currentOwner + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
+        } else {
+            if(currentOwner != owner)
+                ServerLoggers.assertLog(false, "UPDATED FOREIGN TABLE : " + table + " " + currentOwner + " " + owner + ", DEBUG INFO : " + sessionDebugInfo.get(table));
+        }
     }
     private void checkTableOwner(Table table, TableOwner owner) {
         if(table instanceof SessionTable)
