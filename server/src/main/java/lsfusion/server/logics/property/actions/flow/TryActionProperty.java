@@ -117,12 +117,6 @@ public class TryActionProperty extends KeepContextActionProperty {
                 throw Throwables.propagate(e);
             }
         } finally {
-            if(catchAction != null) {
-                context.getBL().LM.messageCaughtException.change((Object) null, context);
-                context.getBL().LM.javaStackTraceCaughtException.change((Object) null, context);
-                context.getBL().LM.lsfStackTraceCaughtException.change((Object) null, context);
-            }
-
             if (finallyAction != null) {
                 ThreadUtils.setFinallyMode(Thread.currentThread(), true);
                 try {
