@@ -114,7 +114,7 @@ model/vrml vrlm wrl
 text/calendar ics ifb
 text/css css
 text/html htm html HTML HTM
-text/plain asc cmd bat chh csv java cc cxx cpp ini c h txt text TXT TEXT
+text/plain asc cmd bat chh java cc cxx cpp ini c h text TEXT
 text/richtext rtx
 text/rtf rtf
 text/sgml sgml sgm
@@ -131,4 +131,6 @@ video/x-msvideo avi
 video/x-ms-wmv wmv
 video/x-sgi-movie movie
 x-conference/x-cooltalk ice
+*.csv csv
 *.dbf dbf
+*.txt txt TXT
