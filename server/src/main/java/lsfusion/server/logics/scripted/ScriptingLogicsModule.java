@@ -1361,11 +1361,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public LCPWithParams addScriptedEqualityProp(String op, LCPWithParams leftProp, LCPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LCPWithParams addScriptedEqualityProp(String op, LCPWithParams leftProp, LCPWithParams rightProp, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkComparisonCompatibility(leftProp, rightProp, context);
         return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
-    public LCPWithParams addScriptedRelationalProp(String op, LCPWithParams leftProp, LCPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LCPWithParams addScriptedRelationalProp(String op, LCPWithParams leftProp, LCPWithParams rightProp, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        checks.checkComparisonCompatibility(leftProp, rightProp, context);
         return addScriptedJProp(getRelationProp(op), asList(leftProp, rightProp));
     }
 
@@ -3035,7 +3037,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LCP resultProp = resultProps.get(paramNum - paramOld);
                 LCPWithParams resultLP = isLastParamRow ? new LCPWithParams(resultProp, paramOld - 1) : new LCPWithParams(resultProp);
 
-                doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP), new ArrayList<LCPWithParams>(), doAction,
+                doAction = addScriptedForAProp(removedContext, addScriptedEqualityProp("==", paramLP, resultLP, currentContext), new ArrayList<LCPWithParams>(), doAction,
                         nullExec, null, null, false, false, false, isLastParamRow ? Collections.<LCPWithParams>emptyList() : null, false);
             }
 

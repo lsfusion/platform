@@ -1292,7 +1292,7 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 }
 @after {
 	if (inPropParseState() && op != null) {
-		$property = self.addScriptedEqualityProp(op, leftProp, rightProp);
+		$property = self.addScriptedEqualityProp(op, leftProp, rightProp, context);
 	} else {
 		$property = leftProp;
 	}
@@ -1315,7 +1315,7 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	if (inPropParseState())
 	{
 		if (op != null) {
-			$property = self.addScriptedRelationalProp(op, leftProp, rightProp);
+			$property = self.addScriptedRelationalProp(op, leftProp, rightProp, context);
 		} else {
 			$property = leftProp;
 		}
