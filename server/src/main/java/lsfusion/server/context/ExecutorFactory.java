@@ -539,9 +539,16 @@ public class ExecutorFactory {
             @Override
             public void run() {
                 super.run();
+                
                 LogicsInstance logicsInstance = wLogicsInstance.get();
-                if(logicsInstance != null)
-                    logicsInstance.getDbManager().closeThreadLocalSql();
+                if(logicsInstance != null) {
+                    ThreadLocalContext.aspectBeforeLifecycle(logicsInstance, ExecutorFactoryThreadInfo.instance);
+                    try {
+                        logicsInstance.getDbManager().closeThreadLocalSql();
+                    } finally {
+                        ThreadLocalContext.aspectAfterLifecycle(ExecutorFactoryThreadInfo.instance);
+                    }
+                }
             }
         }
     }
