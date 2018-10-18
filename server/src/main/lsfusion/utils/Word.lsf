@@ -29,7 +29,7 @@ TABLE templateEntry(TemplateEntry);
 template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
-value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
 // Таблица
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);

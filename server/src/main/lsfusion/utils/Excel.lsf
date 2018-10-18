@@ -29,7 +29,7 @@ key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 isNumeric 'Числовые данные' = DATA BOOLEAN (TemplateEntry);
 format 'Формат' = DATA VARSTRING[20] (TemplateEntry);
-value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
 dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
