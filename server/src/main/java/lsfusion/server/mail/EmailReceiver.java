@@ -490,6 +490,14 @@ public class EmailReceiver {
                     else {
                         String fileName = ze.getName();
                         outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                        File parentDir = outputFile.getParentFile();
+                        if(!parentDir.exists()) {
+                            if (parentDir.mkdirs()) {
+                                dirList.add(parentDir);
+                            } else {
+                                throw new RuntimeException("Unable to unpack archive" + inputFile.getName());
+                            }
+                        }
                         FileOutputStream outputStream = new FileOutputStream(outputFile);
                         int len;
                         while ((len = inputStream.read(buffer)) > 0) {
