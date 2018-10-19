@@ -739,6 +739,10 @@ public class DerivedProperty {
         return actionProperty.getImplement(listInterfaces);
     }
 
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createEmptyAction() {
+        return createListAction(SetFact.<L>EMPTY(), ListFact.<ActionPropertyMapImplement<?, L>>EMPTY());
+    }
+    
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionPropertyMapImplement<?, L>> actions) {
         return createListAction(innerInterfaces, actions, SetFact.<SessionDataProperty>EMPTY());
     }
