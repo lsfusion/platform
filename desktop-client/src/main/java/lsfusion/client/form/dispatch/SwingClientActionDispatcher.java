@@ -338,7 +338,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             if (!action.extended) {
                 JTextPane textPane = new JTextPane();
-                textPane.setText(action.message);
+                textPane.setText(String.valueOf(action.message)); //message can be null
                 textPane.setEditable(false);
                 int width = (int) (Main.frame.getRootPane().getWidth() * 0.3);
                 textPane.setSize(new Dimension(width, 10));

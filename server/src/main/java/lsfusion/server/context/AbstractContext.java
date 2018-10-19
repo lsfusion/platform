@@ -173,7 +173,7 @@ public abstract class AbstractContext implements Context {
             return logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data);
         } else if (action instanceof MessageClientAction) {
             MessageClientAction msgAction = (MessageClientAction) action;
-            return msgAction.message;
+            return String.valueOf(msgAction.message); //message can be null
         }
 //        else if (action instanceof ConfirmClientAction) {
 //            ConfirmClientAction confirmAction = (ConfirmClientAction) action;
