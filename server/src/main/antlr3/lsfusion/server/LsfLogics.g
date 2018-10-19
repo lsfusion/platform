@@ -2664,6 +2664,7 @@ recursiveKeepContextActionDB[List<TypedParameter> context, boolean dynamic] retu
 	|	importADB=importActionDefinitionBody[context, dynamic] { $property = $importADB.property; } // mixed
 	|	newSessionADB=newSessionActionDefinitionBody[context, dynamic] { $property = $newSessionADB.property; }
 	|	requestADB=requestActionDefinitionBody[context, dynamic] { $property = $requestADB.property; }
+	|	throwADB=throwActionDefinitionBody[context, dynamic] { $property = $throwADB.property; }
 	|	tryADB=tryActionDefinitionBody[context, dynamic] { $property = $tryADB.property; } // mixed
 	|	ifADB=ifActionDefinitionBody[context, dynamic] { $property = $ifADB.property; }
 	|	caseADB=caseActionDefinitionBody[context, dynamic] { $property = $caseADB.property; }
@@ -3426,6 +3427,15 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 		expr=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left side
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
+	;
+
+throwActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedThrowAProp($pe.property);
+	}
+}
+	:	'THROW' pe=propertyExpression[context, dynamic]
 	;
 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
