@@ -648,6 +648,16 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP<>(new ListActionProperty(LocalizedString.NONAME, isChecked, isLast, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
+    // ------------------- Throw action ----------------- //
+
+    protected LAP addThrowAProp(AbstractGroup group, LocalizedString caption, Object... params) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
+        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
+
+        CalcPropertyMapImplement<?, PropertyInterface> messageProp = (CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(0);
+        return addProperty(group, new LAP<>(new ThrowActionProperty(caption, listInterfaces, messageProp)));
+    }
+
     // ------------------- Try action ----------------- //
 
     protected LAP addTryAProp(AbstractGroup group, LocalizedString caption, boolean hasCatch, boolean hasFinally, Object... params) {
