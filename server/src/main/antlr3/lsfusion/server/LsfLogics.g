@@ -678,7 +678,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formCalcPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formCalcPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formCalcPropertyObject { $options.setFooter($propObj.property); }
-		|	'FORCE'? viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
