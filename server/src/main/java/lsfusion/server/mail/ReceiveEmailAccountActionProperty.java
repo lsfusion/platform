@@ -64,8 +64,8 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
                         isPop3Account, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
             } catch (Exception e) {
-                logError(context, localize("{mail.failed.to.receive.mail}") + " : " + e.toString());
-                e.printStackTrace();
+                logger.error(localize("{mail.failed.to.receive.mail}"), e);
+                context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e.toString(), localize("{mail.receiving}")));
             }
         } else {
             logger.info("Email Server disabled, change serverComputer() to enable");
