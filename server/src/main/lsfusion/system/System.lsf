@@ -62,6 +62,8 @@ applyOnlyCheck  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyChec
 applyOnlyData  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
 applyAll  INTERNAL  'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
+throwException  INTERNAL  'lsfusion.server.logics.property.actions.ThrowExceptionActionProperty' (TEXT);
+
 setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>;
 dropNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(false); }>;
 
