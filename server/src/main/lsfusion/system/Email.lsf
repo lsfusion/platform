@@ -62,11 +62,12 @@ receiveAccountType 'Тип учётной записи' = DATA ReceiveAccountTyp
 nameReceiveAccountType 'Тип учётной записи' (Account account) = staticCaption(receiveAccountType(account));
 blindCarbonCopy 'Копия (BCC)'= DATA VARSTRING[50](Account);
 deleteMessages 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
-lastDays 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
-maxMessages 'Загружать последних писем' = DATA INTEGER(Account);
+lastDays 'Загружать письма не старше (дней)' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
+maxMessages 'Загружать последних писем' = DATA INTEGER(Account) CHARWIDTH 10 FIXED;
 disable 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
 enable 'Включить отсылку и получение почты' (Account account) = NOT disable(account) AND account IS Account;
 unpack 'Распаковывать архивы' = DATA BOOLEAN (Account);
+ignoreExceptions 'Игнорировать ошибки при приёме почты' = DATA BOOLEAN (Account);
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
 nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
@@ -97,7 +98,7 @@ FORM account 'E-mail аккаунт'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
-                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack
+                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions
     EDIT Account OBJECT a
 ;
 
@@ -106,7 +107,7 @@ FORM accounts 'E-mail аккаунты'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultNotification, disable, unpack
+                  maxMessages, isDefaultNotification, disable, unpack, ignoreExceptions
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
@@ -150,9 +151,8 @@ FORM mail 'Почта'
     OBJECTS a=Account
 
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
-                  fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack
-    PROPERTIES(a)  NEW, DELETE 
+                  fromAddress, password, blindCarbonCopy, NEW, DELETE               
+    PROPERTIES(a) PANEL  deleteMessages, lastDays, maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions 
     
     OBJECTS e=Email LAST
   
@@ -228,6 +228,17 @@ DESIGN mail {
                         }
                     }
                 }
+                NEW settingsContainer {
+                    caption = 'Настройки аккаунта';
+                    MOVE PROPERTY(deleteMessages(a));
+                    MOVE PROPERTY(lastDays(a));
+                    MOVE PROPERTY(maxMessages(a));
+                    MOVE PROPERTY(isDefaultNotification(a));
+                    MOVE PROPERTY(isDefaultInbox(a));
+                    MOVE PROPERTY(disable(a));
+                    MOVE PROPERTY(unpack(a)); 
+                    MOVE PROPERTY(ignoreExceptions(a));
+                }             
             }
             MOVE TOOLBARBOX;
         }
