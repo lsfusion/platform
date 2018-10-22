@@ -67,6 +67,7 @@ maxMessages 'Загружать последних писем' = DATA INTEGER(Ac
 disable 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
 enable 'Включить отсылку и получение почты' (Account account) = NOT disable(account) AND account IS Account;
 unpack 'Распаковывать архивы' = DATA BOOLEAN (Account);
+ignoreExceptions 'Игнорировать ошибки при приёме почты' = DATA BOOLEAN (Account);
 
 encryptedConnectionType 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
 nameEncryptedConnectionType 'Тип шифрованного подключения' (Account account) = staticCaption(encryptedConnectionType(account)) CHARWIDTH 3;
@@ -97,7 +98,7 @@ FORM account 'E-mail аккаунт'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays, 
-                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack
+                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions
     EDIT Account OBJECT a
 ;
 
@@ -106,7 +107,7 @@ FORM accounts 'E-mail аккаунты'
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, password, fromAddress, smtpHost, smtpPort, nameReceiveAccountType, receiveHost,
                   receivePort, nameEncryptedConnectionType, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultNotification, disable, unpack
+                  maxMessages, isDefaultNotification, disable, unpack, ignoreExceptions
     PROPERTIES(a) NEWSESSION NEW, EDIT, DELETE 
 
     LIST Account OBJECT a
@@ -151,7 +152,7 @@ FORM mail 'Почта'
 
     PROPERTIES(a) name, smtpHost, smtpPort, nameReceiveAccountType, receiveHost, receivePort, nameEncryptedConnectionType,
                   fromAddress, password, blindCarbonCopy, deleteMessages, lastDays,
-                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack
+                  maxMessages, isDefaultNotification, isDefaultInbox, disable, unpack, ignoreExceptions
     PROPERTIES(a)  NEW, DELETE 
     
     OBJECTS e=Email LAST
