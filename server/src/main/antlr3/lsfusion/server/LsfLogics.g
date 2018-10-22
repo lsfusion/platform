@@ -671,7 +671,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'FOREGROUND' propObj=formCalcPropertyObject { $options.setForeground($propObj.property); }
 		|	'HEADER' propObj=formCalcPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formCalcPropertyObject { $options.setFooter($propObj.property); }
-		|	'FORCE'? viewType=classViewType { $options.setForceViewType($viewType.type); }
+		|	viewType=classViewType { $options.setForceViewType($viewType.type); }
 		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
@@ -1285,7 +1285,7 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 }
 @after {
 	if (inPropParseState() && op != null) {
-		$property = self.addScriptedEqualityProp(op, leftProp, rightProp);
+		$property = self.addScriptedEqualityProp(op, leftProp, rightProp, context);
 	} else {
 		$property = leftProp;
 	}
@@ -1308,7 +1308,7 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	if (inPropParseState())
 	{
 		if (op != null) {
-			$property = self.addScriptedRelationalProp(op, leftProp, rightProp);
+			$property = self.addScriptedRelationalProp(op, leftProp, rightProp, context);
 		} else {
 			$property = leftProp;
 		}
@@ -3018,7 +3018,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp($type.conStr, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalHTTPActionProp($type.conStr, $type.headers, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, params, context, $tl.propUsages);
       }
@@ -3030,9 +3030,9 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LCPWithParams conStr, LCPWithParams exec, boolean eval = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LCPWithParams conStr, LCPWithParams exec, PropertyUsage headers, boolean eval = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
-	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | 'EVAL' { $eval = true; } ) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
@@ -3438,10 +3438,11 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedTryAProp($tryADB.property, $finallyADB.property);
+		$property = self.addScriptedTryAProp($tryADB.property, $catchADB.property, $finallyADB.property);
 	}
 }
 	:	'TRY' tryADB=keepContextFlowActionDefinitionBody[context, dynamic]
+	    ( 'CATCH' catchADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 		( 'FINALLY' finallyADB=keepContextFlowActionDefinitionBody[context, dynamic] )?
 	;
 
@@ -3875,13 +3876,14 @@ aspectStatement
 tableStatement 
 @init {
 	boolean isFull = false;
+	boolean isNoDefault = false;
 }
 @after {
 	if (inTableParseState()) {
-		self.addScriptedTable($name.text, $list.ids, isFull);
+		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
 	}
 }
-	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;})? ';';
+	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// LOGGABLE STATEMENT /////////////////////////////

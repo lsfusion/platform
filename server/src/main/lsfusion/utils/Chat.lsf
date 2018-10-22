@@ -89,6 +89,7 @@ newMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
 editingMessage 'Редактируемое сообщение' = DATA LOCAL Message(Chat);
 noEditingMessage (Chat chat) = NOT editingMessage(chat);
 notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
+defaultNotificate = DATA LOCAL NESTED BOOLEAN ();
 
 attachment 'Вложение' = DATA LOCAL NESTED FILE (Chat);
 loadAttachment 'Прикрепить вложение' (Chat c)  { INPUT =attachment(c) CHANGE; }
@@ -202,6 +203,15 @@ saveNewMessage(Chat c)  {
         }
     }    
 }  
+
+saveNotificate(Chat c)  { 
+    INPUT t=BOOLEAN DO {
+        notificate(c) <- t;
+        IF chatNotFound() THEN {
+            defaultNotificate() <- notificate(c);
+        }
+    }  
+}  
   
 includeUserInChat (CustomUser u, Chat c)  { 
     in(c, u) <- TRUE;
@@ -288,7 +298,7 @@ FORM fullChat 'Чат'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON CONTEXTMENU editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
-    PROPERTIES(c) READONLYIF readonlyFullChat(c) PANEL newMessage ON CHANGE saveNewMessage(c), notificate, 
+    PROPERTIES(c) READONLYIF readonlyFullChat(c) PANEL newMessage ON CHANGE saveNewMessage(c), notificate ON CHANGE saveNotificate(c), 
                   loadAttachment SHOWIF showLoadAttachment(c), deleteAttachment SHOWIF showDeleteAttachment(c)
     
     EVENTS ON INIT markSeenOnChange(c)
@@ -415,6 +425,7 @@ sendMessage 'Написать пользователю' (CustomUser user)  {
             in(chat, user) <- TRUE;
             in(chat, currentUser) <- TRUE WHERE currentUser == currentUser();
             newMessage(chat) <- defaultNewMessage();
+            notificate(chat) <- defaultNotificate();
             sendMessage(chat);
             SEEK fullChat.c = chat;
         } 

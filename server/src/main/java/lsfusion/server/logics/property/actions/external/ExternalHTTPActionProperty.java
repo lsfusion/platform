@@ -3,11 +3,13 @@ package lsfusion.server.logics.property.actions.external;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.Result;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.NullValue;
@@ -31,15 +33,19 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private PropertyInterface query;
+    private LCP headersProperty;
 
-    public ExternalHTTPActionProperty(ImList<Type> params, ImList<LCP> targetPropList) {
+    public ExternalHTTPActionProperty(ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty) {
         super(1, params, targetPropList);
 
         this.query = getOrderInterfaces().get(0);
+        this.headersProperty = headersProperty;
     }
 
     @Override
@@ -48,7 +54,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
             String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
-            HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result);
+            Map<String, String> headers = getHeaders(context);
+            HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result, headers);
             HttpEntity responseEntity = response.getEntity();
 
             if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
@@ -64,7 +71,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return FlowResult.FINISH;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, ImOrderSet<PropertyInterface> bodyParams) throws IOException {
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, ImOrderSet<PropertyInterface> bodyParams, Map<String, String> headers) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().build();
 
         List<Object> paramList = new ArrayList<>();
@@ -77,10 +84,17 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
             HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
             httpPost.addHeader("Content-type", entity.getContentType().getValue());
+            for(Map.Entry<String, String> header : headers.entrySet()) {
+                httpPost.addHeader(header.getKey(), header.getValue());
+            }
             httpPost.setEntity(entity);
             return httpClient.execute(httpPost);
         } else {
-            return httpClient.execute(new HttpGet(connectionString));
+            HttpGet httpGet = new HttpGet(connectionString);
+            for(Map.Entry<String, String> header : headers.entrySet()) {
+                httpGet.addHeader(header.getKey(), header.getValue());
+            }
+            return httpClient.execute(httpGet);
         }
     }
 
@@ -110,6 +124,23 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
             targetProp.change(value == null ? null : targetProp.property.getType().parseHTTP(value, charset), context);
         }
+    }
+
+    private Map<String, String> getHeaders(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        Map<String, String> headers = new HashMap<>();
+        if(headersProperty != null) {
+            KeyExpr stringExpr = new KeyExpr("string");
+            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
+            QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+            Expr headersExpr = headersProperty.getExpr(context.getModifier(), stringExpr);
+            query.addProperty("header", headersExpr);
+            query.and(headersExpr.getWhere());
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
+            for (int i = 0; i < result.size(); i++) {
+                headers.put(((String) result.getKey(i).get("string")).trim(), ((String) result.getValue(i).get("header")).trim());
+            }
+        }
+        return headers;
     }
 
 }

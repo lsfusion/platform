@@ -23,12 +23,15 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.*;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule.GroupingType;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule.LCPWithParams;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule.TypedParameter;
 import lsfusion.server.logics.table.ImplementTable;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static lsfusion.server.logics.resolving.SignatureMatcher.isClassesSoftCompatible;
 
 public class ScriptingLogicsModuleChecks {
     private ScriptingLogicsModule LM;
@@ -275,13 +278,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkParamsClasses(List<ScriptingLogicsModule.TypedParameter> params, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkParamsClasses(List<TypedParameter> params, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
         if (!params.isEmpty()) {
             assert params.size() == signature.size();
             for (int i = 0; i < params.size(); ++i) {
                 ValueClass paramClass = params.get(i).cls;
                 String paramName = params.get(i).paramName;
-                if (paramClass != null && !SignatureMatcher.isClassesSoftCompatible(paramClass.getResolveSet(), signature.get(i))) {
+                if (paramClass != null && !isClassesSoftCompatible(paramClass.getResolveSet(), signature.get(i))) {
                     errLog.emitWrongPropertyParameterError(parser, paramName, paramClass.toString(), signature.get(i).toString());
                 }
             }
@@ -519,7 +522,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkChangeClassWhere(boolean contextExtended, LCPWithParams param, LCPWithParams where, List<ScriptingLogicsModule.TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkChangeClassWhere(boolean contextExtended, LCPWithParams param, LCPWithParams where, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if (contextExtended && (where == null || !where.usedParams.contains(param.usedParams.get(0)))) {
             errLog.emitChangeClassWhereError(parser, newContext.get(newContext.size() - 1).paramName);
         }
@@ -599,4 +602,22 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitImportFromWrongClassError(parser);    
         }
     }
+
+    public void checkComparisonCompatibility(LCPWithParams leftProp, LCPWithParams rightProp, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        if (rightProp != null) {
+            ValueClass leftClass = getValueClass(leftProp, context);
+            ValueClass rightClass = getValueClass(rightProp, context);
+            if (leftClass != null && rightClass != null && !isClassesSoftCompatible(leftClass.getResolveSet(), rightClass.getResolveSet())) {
+                errLog.emitRelationalOperatorClassCommpatibilityError(parser, leftClass.getParsedName(), rightClass.getParsedName());
+            }
+        }
+    }
+    
+    private ValueClass getValueClass(LCPWithParams prop, List<TypedParameter> context) {
+        if (prop.getLP() == null) {
+            return context.get(prop.usedParams.get(0)).cls;
+        } else {
+            return prop.getLP().property.getValueClass(ClassType.valuePolicy);
+        }
+    }  
 }

@@ -41,6 +41,7 @@ public class BaseClass extends AbstractCustomClass {
 
     public final UnknownClass unknown;
 
+    public final AbstractCustomClass staticObjectClass;
     public ConcreteCustomClass objectClass;
 
     public FullTablesInterface fullTables;
@@ -48,9 +49,10 @@ public class BaseClass extends AbstractCustomClass {
         this.fullTables = fullTables;
     }
 
-    public BaseClass(String canonicalName, LocalizedString caption, Version version) {
+    public BaseClass(String canonicalName, LocalizedString caption, String staticCanonicalName, LocalizedString staticCanonicalCaption, Version version) {
         super(canonicalName, caption, version);
         unknown = new UnknownClass(this);
+        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, this);
     }
 
     @Override
@@ -88,7 +90,7 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void initObjectClass(Version version, String canonicalName) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, this);
+        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, this, staticObjectClass);
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 

@@ -98,6 +98,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP<?> canceled;
     public LAP<?> onStarted;
 
+    public LCP messageCaughtException;
+    public LCP javaStackTraceCaughtException;
+    public LCP lsfStackTraceCaughtException;
+
     public LAP<?> empty;
 
     public LAP flowBreak;
@@ -127,7 +131,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP readFile;
 
     public LCP getExtension;
-    
+
     public LCP<?> imported;
     public LCP importedString;
 
@@ -161,7 +165,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
-    
+
     // need to implement next methods this way, because they are used in super.initProperties, and can not be initialized before super.initProperties
 
     @IdentityLazy
@@ -317,7 +321,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"));
+        baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"), elementCanonicalName("StaticObject"), LocalizedString.create("{classes.static.object.class}"));
         
         super.initClasses();
     }
@@ -409,7 +413,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         cancel = findAction("cancel[]");
 
         onStarted = findAction("onStarted[]");
-        
+
+        messageCaughtException = findProperty("messageCaughtException[]");
+        javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
+        lsfStackTraceCaughtException = findProperty("lsfStackTraceCaughtException[]");
+
         addedObject = findProperty("addedObject[]");
         applyCanceled = findProperty("applyCanceled[]");
         requestCanceled = findProperty("requestCanceled[]");

@@ -15,6 +15,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -41,6 +42,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static lsfusion.server.context.ThreadLocalContext.localize;
 
 public class EmailReceiver {
     EmailLogicsModule LM;
@@ -74,7 +77,8 @@ public class EmailReceiver {
     public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
-        List<List<List<Object>>> data = downloadEmailList(getSkipEmails(context), unpack);
+        boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
+        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context), unpack, ignoreExceptions);
 
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
@@ -196,7 +200,7 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList(Set<String> skipEmails, boolean unpack) throws MessagingException, SQLException, IOException, GeneralSecurityException {
+    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Set<String> skipEmails, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
@@ -234,35 +238,39 @@ public class EmailReceiver {
             int messageCount = emailFolder.getMessageCount();
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
             while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
-                Message message = emailFolder.getMessage(messageCount - count);
-                Timestamp dateTimeSentEmail = getSentDate(message);
-                if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
-                    String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-                    String subjectEmail = message.getSubject();
-                    String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
-                    if (!skipEmails.contains(idEmail)) {
-                        message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
-                        Object messageContent = getEmailContent(message);
-                        MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) :
-                                messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) :
-                                        messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
-                        if (messageEmail == null) {
-                            messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                            ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
-                        }
-                        byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
-                        dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
-                                fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
-                        int counter = 1;
-                        if (messageEmail.attachments != null) {
-                            for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
-                                dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
-                                counter++;
+                try {
+                    Message message = emailFolder.getMessage(messageCount - count);
+                    Timestamp dateTimeSentEmail = getSentDate(message);
+                    if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
+                        String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                        String subjectEmail = message.getSubject();
+                        String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail);
+                        if (!skipEmails.contains(idEmail)) {
+                            message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                            Object messageContent = getEmailContent(message);
+                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                            if (messageEmail == null) {
+                                messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                                ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                            }
+                            byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
+                            dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                            int counter = 1;
+                            if (messageEmail.attachments != null) {
+                                for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                                    counter++;
+                                }
                             }
                         }
                     }
+                    count++;
+                } catch (Exception e) {
+                    if(ignoreExceptions) {
+                        ServerLoggers.mailLogger.error("Ignored exception :", e);
+                        context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
+                    } else throw e;
                 }
-                count++;
             }
 
             emailFolder.close(true);
@@ -490,6 +498,14 @@ public class EmailReceiver {
                     else {
                         String fileName = ze.getName();
                         outputFile = new File(outputDirectory.getPath() + "/" + fileName);
+                        File parentDir = outputFile.getParentFile();
+                        if(!parentDir.exists()) {
+                            if (parentDir.mkdirs()) {
+                                dirList.add(parentDir);
+                            } else {
+                                throw new RuntimeException("Unable to unpack archive" + inputFile.getName());
+                            }
+                        }
                         FileOutputStream outputStream = new FileOutputStream(outputFile);
                         int len;
                         while ((len = inputStream.read(buffer)) > 0) {

@@ -369,12 +369,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return getForm(LM);
 
             assert concreteClass.isChild(CustomClass.this);
-            ClassFormEntity recPolyForm = getFormHolder(concreteClass).getRecPolyForm(CustomClass.this);
-            if(recPolyForm == null) { // нет формы, запускаем эвристику с определением default
-                if(getFormHolder(concreteClass).hasDefaultForm(LM))
-                    return getForm(LM);
-            }
-            return recPolyForm;
+            ClassFormEntity result = getFormHolder(concreteClass).getRecPolyForm(CustomClass.this);
+            if(result == null)
+                result = getFormHolder(concreteClass).getRecDefaultForm(CustomClass.this, LM);
+            return result;
         }
         
         protected abstract LAP<?> getPolyAction(BaseLogicsModule LM);
@@ -393,21 +391,27 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
         
         @IdentityLazy
-        protected boolean hasDefaultForm(BaseLogicsModule LM) {
-            if(isUsed)
-                return !hasImplementation(LM); // выходим сразу, так как если есть implementation то и у остальных isUsed будет 
+        protected ClassFormEntity getRecDefaultForm(CustomClass baseClass, BaseLogicsModule LM) {
+            if(isUsed) { // this heuristics is needed because if we have abstract A and concrete B with specified edit form / action, we don't want to show edit form for A because it's definitely not what developer meant 
+                if(hasImplementation(LM))
+                    return null; // optimization, exiting because if this class has implementation, isUsed parents will also have it
+                return getFormHolder(CustomClass.this).getForm(LM);
+            }
             
-            for(CustomClass child : getParentsIt())
-                if(getFormHolder(child).hasDefaultForm(LM))
-                    return true;
+            for(CustomClass parentClass : getParentsIt()) 
+                if(parentClass.isChild(baseClass)) {
+                    ClassFormEntity parentForm = getFormHolder(parentClass).getRecDefaultForm(baseClass, LM);
+                    if(parentForm != null)
+                        return parentForm;
+                }
             
-            return false;            
+            return null;            
         }
         
         @IdentityLazy
         protected boolean hasPolyForm() { // есть ли у child'ов хоть одна определенная форма
             ClassFormEntity setForm = form.get(); // хотя с default'ом все равно есть опасность для верхних классов у которых изменится логика polyForm, лучше отдельно кэш сделать
-            if(setForm != null && !(setForm.form instanceof BaseClassFormEntity)) // вторая проверка временно до удаления миграции
+            if(setForm != null)
                 return true;
             
             for(CustomClass child : getChildrenIt())
@@ -422,7 +426,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         @IdentityLazy
         private ClassFormEntity getRecPolyForm(CustomClass baseClass) {
             ClassFormEntity polyForm = form.get();  // хотя с default'ом все равно есть опасность для верхних классов у которых изменится логика polyForm, лучше отдельно кэш сделать
-            if(polyForm != null && !(polyForm.form instanceof BaseClassFormEntity)) // вторая проверка временно до удаления миграции
+            if(polyForm != null)
                 return polyForm;
 
             if(BaseUtils.hashEquals(CustomClass.this, baseClass)) // оптимизация
@@ -656,13 +660,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         return map;
-    }
-
-    public boolean hasStaticObjects() {
-        for(ConcreteCustomClass child : getUpSet().getSetConcreteChildren())
-            if(child.hasConcreteStaticObjects())
-                return true;
-        return false;
     }
 
     public boolean isComplex;

@@ -591,7 +591,11 @@ public class ScriptingErrorLog {
 
     public void emitRecursiveImplementError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "recursive implement");
-    }    
+    }
+
+    public void emitRelationalOperatorClassCommpatibilityError(ScriptParser parser, String leftClassName, String rightClassName) throws SemanticErrorException {
+        emitSimpleError(parser, format("value of class '%s' is not comparable with value of class '%s'", leftClassName, rightClassName));
+    }
     
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {

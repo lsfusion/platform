@@ -3,9 +3,14 @@ MODULE System;
 NAMESPACE System;
 
 CLASS NATIVE Object;
-CLASS NATIVE CustomObjectClass;
+
+CLASS NATIVE StaticObject;
+TABLE staticObject (StaticObject) NODEFAULT;
+
+CLASS NATIVE CustomObjectClass : StaticObject;
 TABLE customObjectClass (CustomObjectClass);
 objectClass = NATIVE CustomObjectClass (Object);
+
 random = NATIVE DOUBLE ();
 //watch = NATIVE (); 
 
@@ -28,6 +33,10 @@ empty(Object o)  { };
 apply  { APPLY; }
 cancel  { CANCEL; }
 onStarted  ABSTRACT LIST ( );
+
+messageCaughtException = DATA LOCAL TEXT();
+javaStackTraceCaughtException = DATA LOCAL TEXT();
+lsfStackTraceCaughtException = DATA LOCAL TEXT();
 
 upper = FORMULA 'upper($1)';    
 subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER PG 'extract (\'epoch\' from (($1)-($2)))', MS 'DATEDIFF(s, $2, $1)'](dateTimeTo AS DATETIME, dateTimeFrom AS DATETIME);
@@ -53,6 +62,8 @@ applyOnlyCheck  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyChec
 applyOnlyData  INTERNAL  'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
 applyAll  INTERNAL  'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
+throwException  INTERNAL  'lsfusion.server.logics.property.actions.ThrowExceptionActionProperty' (TEXT);
+
 setNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(true); }>;
 dropNoCancelInTransaction()  INTERNAL  <{ context.getSession().setNoCancelInTransaction(false); }>;
 
@@ -72,10 +83,12 @@ check()  {
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
-staticName 'Статическое имя' = DATA STRING[250] (Object);
-nameStatic (name) = GROUP MAX Object object BY staticName(object);
+staticName 'Статическое имя' = DATA STRING[250] (Object); // temporary for migration
+staticName 'Статическое имя' (StaticObject object) = staticName[Object](object) MATERIALIZED TABLE staticObject;
+nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
 
-staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
+staticCaption 'Статическое имя' = DATA ISTRING[100] (Object); // temporary for migration
+staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject IN id;
 
 objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
 prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));

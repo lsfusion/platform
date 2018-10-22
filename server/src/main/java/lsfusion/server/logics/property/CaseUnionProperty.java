@@ -3,9 +3,11 @@ package lsfusion.server.logics.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.SFunctionSet;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
@@ -251,22 +253,37 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionPropertyMapImplement<?, Interface> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         // нужно создать List - if(where[classes]) {getEditAction(); return;}
-        ActionPropertyMapImplement<?, Interface> result = null;
-        for(CalcCase<Interface> propCase : getCases().reverseList()) {
+        int lastNotNullAction = 0;
+        ImList<CalcCase<Interface>> cases = getCases();
+        MList<ActionCase<Interface>> mActionCases = ListFact.mList();
+        for(CalcCase<Interface> propCase : cases) {
             ActionPropertyMapImplement<?, Interface> editAction = propCase.implement.mapEditAction(editActionSID, filterProperty);
-            if (editAction != null) {
-                boolean simpleCase = propCase.isSimple();
-                if (result == null && simpleCase) {
-                    result = editAction;
-                } else {
-                    CalcPropertyMapImplement<?, Interface> where = (CalcPropertyMapImplement<?, Interface>) propCase.where;
-                    if(simpleCase)
-                        where = (CalcPropertyMapImplement<?, Interface>) where.mapClassProperty();
-                    result = DerivedProperty.createIfAction(interfaces, where, editAction, result);
-                }
+            if(isExclusive) {
+                if(editAction == null)
+                    continue;                                
+            } else {
+                if(editAction == null)
+                    editAction = DerivedProperty.createEmptyAction();                    
+                else
+                    lastNotNullAction = mActionCases.size() + 1;
             }
+
+            CalcPropertyMapImplement<?, Interface> where;
+            if(propCase.isSimple())
+                where = ((CalcPropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
+            else
+                where = (CalcPropertyMapImplement<?, Interface>) propCase.where;
+            mActionCases.add(new ActionCase<>(where, editAction));
         }
-        return result;
+        ImList<ActionCase<Interface>> actionCases = mActionCases.immutableList();
+        
+        if(!isExclusive && lastNotNullAction < actionCases.size()) // optimization, cutting nulls in the end
+            actionCases = actionCases.subList(0, lastNotNullAction);
+            
+        if(actionCases.isEmpty())
+            return null;
+
+        return DerivedProperty.createCaseAction(interfaces, isExclusive, actionCases);
     }
 
     @Override

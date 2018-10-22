@@ -101,12 +101,7 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
         }
         if(rNotUsedParams != null)
             rNotUsedParams.set(mNotUsedParams.immutableOrder());
-        try {
-            return URIUtil.encodeQuery(connectionString, "UTF-8");
-        } catch (URIException e) {
-            ServerLoggers.systemLogger.error("ReplaceParams error: ", e);
-            return connectionString;
-        }
+        return connectionString;
     }
 
     public static ImMap<CalcProperty, Boolean> getChangeExtProps(ImList<LCP> props) {

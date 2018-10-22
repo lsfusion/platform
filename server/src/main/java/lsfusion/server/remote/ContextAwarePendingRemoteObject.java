@@ -126,8 +126,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     // явная очистка ресурсов, которые поддерживаются через weak ref'ы
     protected void onClose() {
-        if (pausablesExecutor != null)
-            pausablesExecutor.shutdown();
     }
 
     public boolean isDeactivated() {
@@ -155,6 +153,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     protected void onDeactivate() {
         unexport();
+
+        if (pausablesExecutor != null)
+            pausablesExecutor.shutdown();
 
         synchronized (threads) {
             for (Thread thread : threads) {

@@ -87,7 +87,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public CalcPropertyObjectEntity<?> propertyForeground;
 
     public ObjectEntity applyObject; // virtual object to change apply object (now used only EXPORT FROM plain formats)
-    
+
     public AbstractGroup group;
 
     public boolean attr;
@@ -243,12 +243,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
     };
 
-    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject, GroupObjectEntity toDraw) {
+    public PropertyDrawEntity(int ID, PropertyObjectEntity<P, ?> propertyObject) {
         super(ID);
         setSID("propertyDraw" + ID);
         setIntegrationSID("propertyDraw" + ID);
         this.propertyObject = propertyObject;
-        this.toDraw = toDraw;
     }
 
     public DataClass getRequestInputType(SecurityPolicy policy) {
@@ -256,7 +255,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public DataClass getWYSRequestInputType(SecurityPolicy policy) {
-        return getRequestInputType(CHANGE_WYS, policy, false);
+        return getRequestInputType(CHANGE_WYS, policy, true); // wys is optimistic by default
     }
     
     public boolean isCalcProperty() {
@@ -344,9 +343,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             if (editAction != null) {
                 if (GROUP_CHANGE.equals(actionId)) // if there is no group change, then generate one
                     return editAction.getGroupChange();
-                else {
+                else { // if CHANGE action requests DataClass, then use this action
                     assert CHANGE_WYS.equals(actionId);
-                    if (editAction.property.getSimpleRequestInputType(optimisticAsync) != null) // if CHANGE action requests DataClass, then use this action 
+                    if (editAction.property.getSimpleRequestInputType(true) != null) // wys is optimistic by default
                         return editAction;
                 }
             }
@@ -515,7 +514,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // interactive
     public GroupObjectEntity getToDraw(FormEntity form) {
-        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;        
+        return toDraw==null? getApplyObject(form, SetFact.<GroupObjectEntity>EMPTY(), true) :toDraw;
     }
 
     public GroupObjectEntity getApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns) {
