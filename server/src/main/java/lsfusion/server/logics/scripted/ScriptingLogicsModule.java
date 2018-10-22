@@ -2196,11 +2196,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(result, allParams);
     }
 
-    public LAPWithParams addScriptedThrowAProp(LCPWithParams property) {
-        LAP<?> res = addThrowAProp(null, LocalizedString.NONAME, getParamsPlainList(Collections.singletonList(property)).toArray());
-        return new LAPWithParams(res, property.usedParams);
-    }
-
     public LAPWithParams addScriptedTryAProp(LAPWithParams tryAction, LAPWithParams catchAction, LAPWithParams finallyAction) {
         List<LPWithParams> propParams = new ArrayList<>();
         propParams.add(tryAction);
