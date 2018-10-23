@@ -32,7 +32,7 @@ public class SeekScriptingActionProperty extends ScriptingActionProperty {
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        FormInstance<?> form = context.getFormInstance(false, true);
+        FormInstance form = context.getFormInstance(false, true);
 
         ImSet<ObjectInstance> objects;
         ObjectValue value;

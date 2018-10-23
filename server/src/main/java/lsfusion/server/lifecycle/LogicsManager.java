@@ -23,7 +23,7 @@ public abstract class LogicsManager extends LifecycleAdapter {
         super(order);
     }
 
-    protected abstract BusinessLogics<?> getBusinessLogics();
+    protected abstract BusinessLogics getBusinessLogics();
 
     protected void apply(DataSession session) throws SQLException, SQLHandledException {
         apply(session, getStack());

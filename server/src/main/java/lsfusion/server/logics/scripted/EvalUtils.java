@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.Event;
 import org.antlr.runtime.RecognitionException;
@@ -77,7 +76,7 @@ public class EvalUtils {
         return module;
     }
 
-    private static String wrapScript(BusinessLogics<?> BL, String namespace, String require, String priorities, String script, String name) {
+    private static String wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);

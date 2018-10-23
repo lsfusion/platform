@@ -113,7 +113,7 @@ import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCanonicalName;
 import static lsfusion.server.logics.BusinessLogicsResolvingUtils.findElementByCompoundName;
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
+public abstract class BusinessLogics extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger sqlLogger = ServerLoggers.sqlLogger;
     protected final static Logger startLogger = ServerLoggers.startLogger;
@@ -131,7 +131,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private final Map<Long, Integer> excessAllocatedBytesMap = new HashMap<>();
 
-    public BaseLogicsModule<T> LM;
+    public BaseLogicsModule LM;
     public ServiceLogicsModule serviceLM;
     public ReflectionLogicsModule reflectionLM;
     public AuthenticationLogicsModule authenticationLM;
@@ -1603,8 +1603,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // используется не в task'ах
-    public List<CalcProperty> getAggregateStoredProperties(boolean ignoreCheck) {
-        List<CalcProperty> result = new ArrayList<>();
+    public List<AggregateProperty> getAggregateStoredProperties(boolean ignoreCheck) {
+        List<AggregateProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {

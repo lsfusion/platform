@@ -66,7 +66,7 @@ import static lsfusion.base.BaseUtils.nvl;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener {
+public class RemoteNavigator extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
     protected final static Logger logger = ServerLoggers.systemLogger;
 
     private static NotificationsMap notificationsMap = new NotificationsMap();
@@ -564,7 +564,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return Locale.getDefault();
     }
 
-    public void gainedFocus(FormInstance<T> form) {
+    public void gainedFocus(FormInstance form) {
         //todo: не нужно, так что позже можно удалить
     }
 

@@ -1,13 +1,10 @@
 package lsfusion.server.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
-import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -16,10 +13,10 @@ public class ModulesHashManager extends LogicsManager implements InitializingBea
 
     public static final Logger startLogger = ServerLoggers.startLogger;
 
-    private BusinessLogics<?> businessLogics;
+    private BusinessLogics businessLogics;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         return businessLogics;
     }
 
@@ -27,7 +24,7 @@ public class ModulesHashManager extends LogicsManager implements InitializingBea
 
     private PublicTask initTask;
 
-    public void setBusinessLogics(BusinessLogics<?> businessLogics) {
+    public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = businessLogics;
     }
 
@@ -39,7 +36,7 @@ public class ModulesHashManager extends LogicsManager implements InitializingBea
         this.initTask = initTask;
     }
 
-    private BaseLogicsModule<?> LM;
+    private BaseLogicsModule LM;
 
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(initTask, "initTask must be specified");

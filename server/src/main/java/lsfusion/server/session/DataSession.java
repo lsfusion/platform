@@ -180,7 +180,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(BusinessLogics<?> BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
+    private void startTransaction(BusinessLogics BL, Map<String, Integer> attemptCountMap, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
         ServerLoggers.assertLog(!isInSessionEvent(), "CANNOT START TRANSACTION IN SESSION EVENT");
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
@@ -1279,13 +1279,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // узнает список изменений произошедших без него у других сессий
-    public ChangedData updateExternal(FormInstance<?> form) throws SQLException {
+    public ChangedData updateExternal(FormInstance form) throws SQLException {
         assert this == form.session;
         return new ChangedData(changes.update(this, form));
     }
 
     // узнает список изменений произошедших без него
-    public ChangedData update(FormInstance<?> form) throws SQLException {
+    public ChangedData update(FormInstance form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         assert activeForms.containsKey(form);
 
@@ -1391,7 +1391,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     public final EmptyModifier emptyModifier = new EmptyModifier();
 
-    private <T extends PropertyInterface, D extends PropertyInterface> PropertyChangeTableUsage<T> splitApplySingleStored(String debugInfo, ApplyStoredEvent event, PropertyChangeTableUsage<T> changeTable, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private <T extends PropertyInterface, D extends PropertyInterface> PropertyChangeTableUsage<T> splitApplySingleStored(String debugInfo, ApplyStoredEvent event, PropertyChangeTableUsage<T> changeTable, BusinessLogics BL) throws SQLException, SQLHandledException {
         CalcProperty<T> property = event.property;
         assert !(property instanceof ClassDataProperty);
         
@@ -1404,7 +1404,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         return split.second;
     }
-    private void executeRemoveClassesEvent(ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void executeRemoveClassesEvent(ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         if(event.property.hasChanges(getModifier()))
             executeRemoveClassesEventWithChanges(event, stack, BL);
@@ -1417,7 +1417,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     };
 
     @StackMessage("{logics.remove.objects.classes}")
-    private void executeRemoveClassesEventWithChanges(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void executeRemoveClassesEventWithChanges(@ParamMessage ApplyRemoveClassesEvent event, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         assert isInTransaction;
 
         Pair<Pair<ImMap<ClassDataProperty, SingleKeyPropertyUsage>, ImMap<ClassDataProperty, ChangedDataClasses>>, ImMap<CalcProperty, UpdateResult>> split = classChanges.splitSingleApplyRemove(event.getIsClassProperty(), baseClass, sql, env, checkTransaction);
@@ -1431,7 +1431,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateProperties(split.second, null); // здесь updateSessionEvents нет, так как уже транзакция и локальные события игнорируются (хотя потенциально это опасное поведение)
     }
 
-    private void applySingleRemoveClasses(ApplyRemoveClassesEvent event, ImMap<ClassDataProperty, SingleKeyPropertyUsage> news, ImMap<ClassDataProperty, ChangedDataClasses> changedClasses, ExecutionStack stack, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void applySingleRemoveClasses(ApplyRemoveClassesEvent event, ImMap<ClassDataProperty, SingleKeyPropertyUsage> news, ImMap<ClassDataProperty, ChangedDataClasses> changedClasses, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         ClassChanges removeClassChanges = new ClassChanges(news, changedClasses);
         UpdateCurrentClassesSession updateClasses = new UpdateCurrentClassesSession(removeClassChanges, null, sql, env, baseClass, rollbackInfo, this);
         SessionModifier removeClassModifier = (SessionModifier) updateClasses.modifier;
@@ -1450,7 +1450,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @StackMessage("logics.save.objects.remove.classes")
-    private void saveRemoveClasses(@ParamMessage ApplyRemoveClassesEvent event, UpdateCurrentClassesSession updateClasses, ExecutionStack stack, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void saveRemoveClasses(@ParamMessage ApplyRemoveClassesEvent event, UpdateCurrentClassesSession updateClasses, ExecutionStack stack, BusinessLogics BL) throws SQLException, SQLHandledException {
         // обновляем классы у уже подсчитанных prev'ов в updateApplyStart, только те до которых по depends можно дойти (хотя это допоптимизация)
         updateDependApplyStartCurrentClasses(event, updateClasses, BL);
 
@@ -1459,7 +1459,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateAndRemoveClasses(updateClasses, stack, BL, true);
     }
 
-    private <T extends PropertyInterface> void applySingleStored(ApplyStoredEvent storedEvent, PropertyChangeTableUsage<T> change, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private <T extends PropertyInterface> void applySingleStored(ApplyStoredEvent storedEvent, PropertyChangeTableUsage<T> change, BusinessLogics BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
 
         CalcProperty<T> property = storedEvent.property;
@@ -1483,7 +1483,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private <T extends PropertyInterface, D extends PropertyInterface> void applyDependSingleApplyStored(ApplyCalcEvent singleEvent, SessionModifier baseModifier, BusinessLogics<?> BL, PropertyChangeTableUsage<T> change) throws SQLException, SQLHandledException {
+    private <T extends PropertyInterface, D extends PropertyInterface> void applyDependSingleApplyStored(ApplyCalcEvent singleEvent, SessionModifier baseModifier, BusinessLogics BL, PropertyChangeTableUsage<T> change) throws SQLException, SQLHandledException {
         ImOrderSet<ApplySingleEvent> dependEvents = BL.getSingleApplyDependFrom(singleEvent, this); // !!! важно в лексикографическом порядке должно быть
 
         if (neededProps != null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
@@ -1532,13 +1532,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     
 
-    private void updateDependApplyStartCurrentClasses(ApplyCalcEvent event, UpdateCurrentClassesSession session, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void updateDependApplyStartCurrentClasses(ApplyCalcEvent event, UpdateCurrentClassesSession session, BusinessLogics BL) throws SQLException, SQLHandledException {
         MAddSet<OldProperty> oldProps = SetFact.mAddSet();
         fillDependApplyStartCurrentClasses(event, oldProps, BL);
         for(OldProperty oldProp : oldProps)
             updateApplyStartCurrentClasses(session, oldProp);
     }
-    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) throws SQLException, SQLHandledException {
         ImOrderSet<ApplySingleEvent> dependProps = BL.getSingleApplyDependFrom(event, this); // !!! важно в лексикографическом порядке должно быть
 
         // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
@@ -1707,12 +1707,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // inner / external server calls
-    public String applyMessage(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public String applyMessage(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         return applyMessage(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     // inner / external server calls
-    public void applyException(BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void applyException(BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         applyException(BL, stack, null, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
@@ -1781,7 +1781,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return logBuilder.toString();
     }
 
-    public void logSession(BusinessLogics<?> BL, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
+    public void logSession(BusinessLogics BL, ExecutionEnvironment sessionEventFormEnv) throws SQLException, SQLHandledException {
         Integer changed = data.size();
         String dataChanged = "";
         for(Map.Entry<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
@@ -1847,7 +1847,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     long transactionStartTimestamp;
             
-    private boolean transactApply(BusinessLogics<?> BL, ExecutionStack stack,
+    private boolean transactApply(BusinessLogics BL, ExecutionStack stack,
                                   UserInteraction interaction,
                                   Map<String, Integer> attemptCountMap, int autoAttemptCount,
                                   ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps, boolean deadLockPriority, long applyStartTime) throws SQLException, SQLHandledException {
@@ -1956,7 +1956,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private interface Cleaner extends ExceptionRunnable<SQLException> {
     }
 
-    public void unregisterForm(FormInstance<?> form) throws SQLException {
+    public void unregisterForm(FormInstance form) throws SQLException {
         changes.unregisterForm(form); // synced
 
         dropFormCaches();
@@ -1965,7 +1965,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         Cleaner cleaner = new Cleaner() {
             @Override
             public void run() throws SQLException {
-                FormInstance<?> form = wForm.get();
+                FormInstance form = wForm.get();
                 if(form == null) // уже все очистилось само
                     return;
 
@@ -2082,7 +2082,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics<?> BL, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<ApplyEvent> execActions = SetFact.addOrderExcl(actions, BL.getApplyEvents(this));
         for (int i = 0, size = execActions.size(); i < size; i++) {
@@ -2190,14 +2190,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateCurrentClasses(session, filterSessionData(getKeepProps()).values());
     }
 
-    private <P extends PropertyInterface> void executeStoredEvent(ApplyStoredEvent event, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> void executeStoredEvent(ApplyStoredEvent event, BusinessLogics BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         if(event.property.hasChanges(getModifier()))
             executeStoredEventWithChanges(event, BL);
     }
 
     @StackMessage("{message.session.apply.write}")
-    private <P extends PropertyInterface> void executeStoredEventWithChanges(@ParamMessage ApplyStoredEvent event, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> void executeStoredEventWithChanges(@ParamMessage ApplyStoredEvent event, BusinessLogics BL) throws SQLException, SQLHandledException {
         CalcProperty<P> property = event.property;
         PropertyChangeTableUsage<P> changeTable = property.readChangeTable("rswc", sql, getModifier(), baseClass, env);
         

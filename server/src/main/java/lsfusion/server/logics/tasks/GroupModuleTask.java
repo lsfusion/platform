@@ -21,7 +21,7 @@ public abstract class GroupModuleTask extends GroupSingleTask<LogicsModule> {
     }
 
     protected List<LogicsModule> getElements() {
-        BusinessLogics<?> bl = (BusinessLogics<?>) getBL();
+        BusinessLogics bl = getBL();
         assert getDependElements(bl.LM).isEmpty();
         return bl.getLogicModules();
     }
@@ -39,7 +39,7 @@ public abstract class GroupModuleTask extends GroupSingleTask<LogicsModule> {
     }
 
     protected ImSet<LogicsModule> getDependElements(LogicsModule key) {
-        BaseLogicsModule<? extends BusinessLogics<?>> rootElement = ((BusinessLogics<?>) getBL()).LM;
+        BaseLogicsModule rootElement = getBL().LM;
         if(key.equals(rootElement))
             return SetFact.EMPTY();
 
@@ -47,7 +47,7 @@ public abstract class GroupModuleTask extends GroupSingleTask<LogicsModule> {
         if(isGraph()) {
             result = SetFact.fromJavaSet(key.getRequiredNames()).mapSetValues(new GetValue<LogicsModule, String>() {
                 public LogicsModule getMapValue(String value) {
-                    return ((BusinessLogics<?>) getBL()).getSysModule(value);
+                    return getBL().getSysModule(value);
                 }
             });
         } else

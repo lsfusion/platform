@@ -30,8 +30,6 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
@@ -61,11 +59,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public SecurityPolicy readOnlyPolicy;
     public SecurityPolicy allowConfiguratorPolicy;
 
-    private BusinessLogics<?> businessLogics;
+    private BusinessLogics businessLogics;
     private DBManager dbManager;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         return businessLogics;
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLogics> {
+public class ScriptingBusinessLogics extends BusinessLogics {
     private List<String> scriptFilePaths;
     private List<String> excludedScriptFilePaths;
 

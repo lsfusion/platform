@@ -51,7 +51,7 @@ import java.util.Collections;
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
 
-public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogicsModule {
+public class BaseLogicsModule extends ScriptingLogicsModule {
     // classes
     // classes
     public BaseClass baseClass;
@@ -150,9 +150,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
-    private final T BL;
+    private final BusinessLogics BL;
 
-    public BaseLogicsModule(T BL, DBNamingPolicy DBNamingPolicy) throws IOException {
+    public BaseLogicsModule(BusinessLogics BL, DBNamingPolicy DBNamingPolicy) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/system/System.lsf"), "/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;

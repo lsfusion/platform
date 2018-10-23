@@ -96,7 +96,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private RestartManager restartManager;
 
-    private BusinessLogics<?> businessLogics;
+    private BusinessLogics businessLogics;
 
     private boolean ignoreMigration;
     private boolean migrationScriptWasRead = false;
@@ -110,7 +110,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public boolean needExtraUpdateStats = false;
 
-    private BaseLogicsModule<?> LM;
+    private BaseLogicsModule LM;
 
     private ReflectionLogicsModule reflectionLM;
 
@@ -148,7 +148,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.businessLogics = businessLogics;
     }
     
-    public BusinessLogics<?> getBusinessLogics(){
+    public BusinessLogics getBusinessLogics(){
         return businessLogics;
     }
 
@@ -1366,12 +1366,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        List<CalcProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
+        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties(false);
         String message = "";
         for (int i = 0; i < checkProperties.size(); i++) {
             CalcProperty property = checkProperties.get(i);
-            if(property instanceof AggregateProperty)
-            message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.getSID()));
+            if(property != null)
+                message += ((AggregateProperty) property).checkAggregation(session, LM.baseClass, new ProgressBar(localize("{logics.info.checking.aggregated.property}"), i, checkProperties.size(), property.getSID()));
         }
         return message;
     }
@@ -1482,7 +1482,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             run.run(session);
     }
 
-    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(ExecutionStack stack, SQLSession session, final List<? extends CalcProperty> recalculateProperties, boolean isolatedTransaction, Logger logger) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();

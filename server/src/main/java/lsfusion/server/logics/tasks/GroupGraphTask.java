@@ -10,7 +10,7 @@ public abstract class GroupGraphTask<T> extends GroupPropertiesSingleTask<T> {
 
     private Graph<T> graph;
 
-    protected abstract Graph<T> getGraph(BusinessLogics<?> BL);
+    protected abstract Graph<T> getGraph(BusinessLogics BL);
 
     @Override
     protected List<T> getElements() {

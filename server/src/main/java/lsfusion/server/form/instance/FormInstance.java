@@ -20,7 +20,6 @@ import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
@@ -35,7 +34,9 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.*;
+import lsfusion.server.form.entity.filter.ContextFilter;
+import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.PropertyDrawInstance.ShowIfReaderInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.RegularFilterGroupInstance;
@@ -47,7 +48,6 @@ import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
@@ -83,7 +83,7 @@ import static lsfusion.server.form.instance.GroupObjectInstance.*;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
+public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
     private final static GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
             new GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance>() {
@@ -104,7 +104,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final LogicsInstance logicsInstance;
 
-    public final T BL;
+    public final BusinessLogics BL;
 
     public final FormEntity entity;
 
@@ -149,7 +149,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь 
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener<T> focusListener, CustomClassListener classListener,
+                        FocusListener focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack, boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
@@ -160,7 +160,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener<T> focusListener, CustomClassListener classListener,
+                        FocusListener focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         ExecutionStack stack,
@@ -176,7 +176,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.session = session;
         this.entity = entity;
         this.logicsInstance = logicsInstance;
-        this.BL = (T) logicsInstance.getBusinessLogics();
+        this.BL = logicsInstance.getBusinessLogics();
         this.securityPolicy = securityPolicy;
 
         this.pullProps = pullProps;
@@ -728,14 +728,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public final DataSession session;
 
-    private final WeakReference<FocusListener<T>> weakFocusListener;
+    private final WeakReference<FocusListener> weakFocusListener;
 
-    public FocusListener<T> getFocusListener() {
+    public FocusListener getFocusListener() {
         return weakFocusListener.get();
     }
     
     public LogInfo getLogInfo() {
-        FocusListener<T> focusListener = getFocusListener();
+        FocusListener focusListener = getFocusListener();
         if(focusListener != null)
             return focusListener.getLogInfo();
 
@@ -1353,7 +1353,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void gainedFocus(ExecutionStack stack) {
         dataChanged = true;
-        FocusListener<T> focusListener = getFocusListener();
+        FocusListener focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
         if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(entity.getCanonicalName())) {
