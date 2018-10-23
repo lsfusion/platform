@@ -1626,14 +1626,16 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(connectionString, params));
     }
 
-    public LAPWithParams addScriptedExternalHTTPActionProp(LCPWithParams connectionString, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedExternalHTTPActionProp(ExternalHttpMethod method, LCPWithParams connectionString, PropertyUsage headers, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LCP headersProperty = headers != null ? findLCPStringParamByPropertyUsage(headers) : null;
-        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty)),
+        return addScriptedJoinAProp(addAProp(new ExternalHTTPActionProperty(method != null ? method : ExternalHttpMethod.POST,
+                        getTypesForExternalProp(params, context), findLCPsNoParamsByPropertyUsage(toPropertyUsageList), headersProperty)),
                 BaseUtils.addList(connectionString, params));
     }
 
     public LAPWithParams addScriptedExternalLSFActionProp(LCPWithParams connectionString, LCPWithParams action, boolean eval, List<LCPWithParams> params, List<TypedParameter> context, List<PropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedExternalHTTPActionProp(addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false))))),
+        return addScriptedExternalHTTPActionProp(ExternalHttpMethod.POST,
+                addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LCPWithParams(addCProp(StringClass.text, LocalizedString.create(eval ? "eval" : "/exec?action=$" + (params.size()+1), false))))),
                 null, BaseUtils.add(params, action), context, toPropertyUsageList);
     }
 

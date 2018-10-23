@@ -18,14 +18,14 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.ExternalHttpMethod;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.session.DataSession;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -38,12 +38,14 @@ import java.util.List;
 import java.util.Map;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
+    private ExternalHttpMethod method;
     private PropertyInterface query;
     private LCP headersProperty;
 
-    public ExternalHTTPActionProperty(ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty) {
+    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty) {
         super(1, params, targetPropList);
 
+        this.method = method;
         this.query = getOrderInterfaces().get(0);
         this.headersProperty = headersProperty;
     }
@@ -79,23 +81,29 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             paramList.add(format(context, i, null)); // пока в body ничего не кодируем (так как content-type'ы другие)
         }
 
-        if (!paramList.isEmpty()) {
-            HttpPost httpPost = new HttpPost(connectionString);
-
-            HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
-            httpPost.addHeader("Content-type", entity.getContentType().getValue());
-            for(Map.Entry<String, String> header : headers.entrySet()) {
-                httpPost.addHeader(header.getKey(), header.getValue());
-            }
-            httpPost.setEntity(entity);
-            return httpClient.execute(httpPost);
-        } else {
-            HttpGet httpGet = new HttpGet(connectionString);
-            for(Map.Entry<String, String> header : headers.entrySet()) {
-                httpGet.addHeader(header.getKey(), header.getValue());
-            }
-            return httpClient.execute(httpGet);
+        HttpUriRequest httpRequest;
+        switch (method) {
+            case GET:
+                httpRequest = new HttpGet(connectionString);
+                break;
+            case DELETE:
+                httpRequest = new HttpDelete(connectionString);
+                break;
+            case PUT:
+                httpRequest = new HttpPut(connectionString);
+                break;
+            case POST:
+            default:
+                httpRequest = new HttpPost(connectionString);
+                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
+                httpRequest.addHeader("Content-type", entity.getContentType().getValue());
+                ((HttpPost)httpRequest).setEntity(entity);
+                break;
         }
+        for(Map.Entry<String, String> header : headers.entrySet()) {
+            httpRequest.addHeader(header.getKey(), header.getValue());
+        }
+        return httpClient.execute(httpRequest);
     }
 
     public static ObjectValue[] getParams(DataSession session, LP property, Object[] params, Charset charset) throws ParseException, SQLException, SQLHandledException {

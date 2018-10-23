@@ -34,6 +34,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.linear.LCP;
 	import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.server.logics.property.ExternalFormat;
+    import lsfusion.server.logics.property.ExternalHttpMethod;
 	import lsfusion.server.logics.property.Cycle;
 	import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 	import lsfusion.server.logics.scripted.*;
@@ -3018,7 +3019,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
       } else if($type.format == ExternalFormat.JAVA) {
         $property = self.addScriptedExternalJavaActionProp(params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.HTTP) {
-        $property = self.addScriptedExternalHTTPActionProp($type.conStr, $type.headers, params, context, $tl.propUsages);
+        $property = self.addScriptedExternalHTTPActionProp($type.method, $type.conStr, $type.headers, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.LSF) {
         $property = self.addScriptedExternalLSFActionProp($type.conStr, $type.exec, $type.eval, params, context, $tl.propUsages);
       }
@@ -3030,12 +3031,19 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
 	    ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
-externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, LCPWithParams conStr, LCPWithParams exec, PropertyUsage headers, boolean eval = false, String charset]
+externalFormat [List<TypedParameter> context, boolean dynamic] returns [ExternalFormat format, ExternalHttpMethod method, LCPWithParams conStr, LCPWithParams exec, PropertyUsage headers, boolean eval = false, String charset]
 	:	'SQL'	{ $format = ExternalFormat.DB; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'EXEC' execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
-	|	'HTTP'	{ $format = ExternalFormat.HTTP; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
+	|	'HTTP'	{ $format = ExternalFormat.HTTP; } (methodVal = externalHttpMethod { $method = $methodVal.method; })? conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('HEADERS' headersVal = propertyUsage { $headers = $headersVal.propUsage; })?
 	|	'DBF'	{ $format = ExternalFormat.DBF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } 'APPEND' ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'LSF'	{ $format = ExternalFormat.LSF; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; } ('EXEC' | 'EVAL' { $eval = true; } ) execVal = propertyExpression[context, dynamic] { $exec = $execVal.property; }
 	|   'JAVA' 	{ $format = ExternalFormat.JAVA; } conStrVal = propertyExpression[context, dynamic] { $conStr = $conStrVal.property; }
+	;
+
+externalHttpMethod returns [ExternalHttpMethod method]
+	:	'DELETE' { $method = ExternalHttpMethod.DELETE; }
+	|	'GET'    { $method = ExternalHttpMethod.GET; }
+	|	'POST'	 { $method = ExternalHttpMethod.POST; }
+	|	'PUT'    { $method = ExternalHttpMethod.PUT; }
 	;
 
 newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams property]
