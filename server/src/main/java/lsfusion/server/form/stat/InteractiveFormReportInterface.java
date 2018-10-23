@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public class InteractiveFormReportInterface extends InteractiveFormDataInterface implements FormReportInterface {
 
-    public InteractiveFormReportInterface(FormInstance<?> form, Integer groupId, FormUserPreferences preferences) {
+    public InteractiveFormReportInterface(FormInstance form, Integer groupId, FormUserPreferences preferences) {
         super(form, groupId, preferences);
     }
     
