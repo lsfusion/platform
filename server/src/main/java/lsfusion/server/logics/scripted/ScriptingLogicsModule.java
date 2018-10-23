@@ -94,7 +94,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private static final Logger systemLogger = ServerLoggers.systemLogger;
 
-    protected final BusinessLogics<?> BL;
+    protected final BusinessLogics BL;
 
     private String code = null;
     private String filename = null;
@@ -112,27 +112,27 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    public ScriptingLogicsModule(String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
+    public ScriptingLogicsModule(String filename, BaseLogicsModule baseModule, BusinessLogics BL) {
         this(baseModule, BL);
         this.filename = filename;
     }
 
-    public ScriptingLogicsModule(InputStream stream, String path, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+    public ScriptingLogicsModule(InputStream stream, String path, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
         this(stream, path, "utf-8", baseModule, BL);
     }
 
-    public ScriptingLogicsModule(InputStream stream, String path, String charsetName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+    public ScriptingLogicsModule(InputStream stream, String path, String charsetName, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
         this(baseModule, BL);
         this.code = IOUtils.readStreamToString(stream, charsetName);
         this.path = path;
     }
 
-    public ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL, String code) {
+    public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String code) {
         this(baseModule, BL);
         this.code = code;
     }
 
-    private ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
+    private ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL) {
         setBaseLogicsModule(baseModule);
         this.BL = BL;
         errLog = new ScriptingErrorLog("");

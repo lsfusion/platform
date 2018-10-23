@@ -28,7 +28,7 @@ public class DefaultChangeObjectActionProperty extends SystemExplicitActionPrope
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        final FormInstance<?> formInstance = context.getFormFlowInstance();
+        final FormInstance formInstance = context.getFormFlowInstance();
         ObjectInstance objectInstance = formInstance.instanceFactory.getInstance(object);
         if (objectInstance.groupTo.curClassView.isPanel()) { // в grid'е диалог не имеет смысла
             final ObjectValue oldValue = objectInstance.getObjectValue();

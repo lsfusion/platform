@@ -30,7 +30,7 @@ public class ActivateActionProperty extends SystemExplicitActionProperty {
                 context.delayUserInteraction(new ActivateFormClientAction(requestedForm.getCanonicalName()));
             } else {
                 //activate tab
-                FormInstance<?> formInstance = context.getFormInstance(false, true);
+                FormInstance formInstance = context.getFormInstance(false, true);
                 formInstance.activateTab(requestedTab);
             }
         }

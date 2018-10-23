@@ -35,7 +35,7 @@ public class OutFormSelector<P extends PropertyInterface> implements FormSelecto
     }
 
     @Override
-    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule<?> LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
+    public Pair<FormEntity, ImRevMap<ObjectEntity, ObjectSelector>> getForm(BaseLogicsModule LM, DataSession session, ImMap<ObjectSelector, ? extends ObjectValue> mapObjectValues) throws SQLException, SQLHandledException {
         return new Pair<>((FormEntity)LM.getLogForm(property, messageProperty), MapFact.<ObjectEntity, ObjectSelector>EMPTYREV());
     }
 }

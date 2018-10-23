@@ -76,7 +76,7 @@ public class EvalUtils {
         return module;
     }
 
-    private static String wrapScript(BusinessLogics<?> BL, String namespace, String require, String priorities, String script, String name) {
+    private static String wrapScript(BusinessLogics BL, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);

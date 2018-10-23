@@ -9,17 +9,15 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 
 import java.util.Locale;
-import java.util.Set;
 
-public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstance<T>> extends AbstractContext {
-    private final RemoteForm<T, F> form;
+public class RemoteFormContext<F extends FormInstance> extends AbstractContext {
+    private final RemoteForm<F> form;
 
-    public RemoteFormContext(RemoteForm<T, F> form) {
+    public RemoteFormContext(RemoteForm<F> form) {
         this.form = form;
     }
 

@@ -17,7 +17,7 @@ public class FocusActionProperty extends SystemExplicitActionProperty {
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        FormInstance<?> formInstance = context.getFormInstance(false, true);
+        FormInstance formInstance = context.getFormInstance(false, true);
         formInstance.activateProperty(property);
     }
 }

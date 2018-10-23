@@ -110,7 +110,7 @@ public abstract class LogicsModule {
 
     public String getErrorsDescription() { return "";}
 
-    public BaseLogicsModule<?> baseLM;
+    public BaseLogicsModule baseLM;
 
     protected Map<String, List<LCP<?>>> namedProperties = new HashMap<>();
     protected Map<String, List<LAP<?>>> namedActions = new HashMap<>();
@@ -303,7 +303,7 @@ public abstract class LogicsModule {
     public AbstractGroup baseGroup;
     public AbstractGroup recognizeGroup;
 
-    protected void setBaseLogicsModule(BaseLogicsModule<?> baseLM) {
+    protected void setBaseLogicsModule(BaseLogicsModule baseLM) {
         this.baseLM = baseLM;
     }
 

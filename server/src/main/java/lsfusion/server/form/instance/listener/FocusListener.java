@@ -2,11 +2,10 @@ package lsfusion.server.form.instance.listener;
 
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.LogInfo;
-import lsfusion.server.logics.BusinessLogics;
 
-public interface FocusListener<T extends BusinessLogics<T>> {
+public interface FocusListener {
 
-    void gainedFocus(FormInstance<T> form);
+    void gainedFocus(FormInstance form);
 
     LogInfo getLogInfo();    
 }

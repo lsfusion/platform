@@ -17,7 +17,7 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 public class RecalculateFollowsTask extends GroupGraphTask<ActionProperty> {
 
     @Override
-    protected Graph<ActionProperty> getGraph(BusinessLogics<?> BL) {
+    protected Graph<ActionProperty> getGraph(BusinessLogics BL) {
         return BL.getRecalculateFollowsGraph();
     }
 

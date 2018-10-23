@@ -6,7 +6,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
@@ -83,7 +82,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
 
         ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();
         Modifier modifier = context.getModifier();
-        final FormInstance<?> formInstance = context.getFormFlowInstance();
+        final FormInstance formInstance = context.getFormFlowInstance();
 
         final CalcPropertyValueImplement<P> propertyValues = implement.mapValues(keys);
 

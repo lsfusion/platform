@@ -19,7 +19,10 @@ import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.context.*;
+import lsfusion.server.context.EExecutionStackCallable;
+import lsfusion.server.context.EExecutionStackRunnable;
+import lsfusion.server.context.ExecutionStack;
+import lsfusion.server.context.SyncType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
@@ -27,7 +30,6 @@ import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.serialization.SerializationType;
@@ -51,7 +53,7 @@ import static com.google.common.base.Optional.fromNullable;
 import static lsfusion.base.BaseUtils.deserializeObject;
 
 // фасад для работы с клиентом
-public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends ContextAwarePendingRemoteObject implements RemoteFormInterface {
+public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemoteObject implements RemoteFormInterface {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
     public final F form;

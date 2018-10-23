@@ -4,12 +4,11 @@ import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.mutables.Version;
 
-public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
+public class DialogFormEntity extends BaseClassFormEntity {
 
-    public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+    public DialogFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, null, cls.caption);
 
         object.groupTo.setGridClassView();

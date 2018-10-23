@@ -1,16 +1,14 @@
 package lsfusion.server.form.entity;
 
-import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.mutables.Version;
 
-public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
+public class EditFormEntity extends BaseClassFormEntity {
 
-    public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+    public EditFormEntity(BaseLogicsModule LM, CustomClass cls) {
         super(LM, cls, null, cls.caption);
 
         object.groupTo.setPanelClassView();

@@ -39,7 +39,7 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
     }
 
     @Override
-    protected ImSet<String> getObjects(BusinessLogics<?> BL) {
+    protected ImSet<String> getObjects(BusinessLogics BL) {
         return groupDelegates.keys();
     }
 

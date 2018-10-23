@@ -3,7 +3,6 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LogicsManager;
 import org.apache.log4j.Logger;
@@ -31,7 +30,7 @@ public class RMIManager extends LogicsManager implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         throw new UnsupportedOperationException();
     }
     

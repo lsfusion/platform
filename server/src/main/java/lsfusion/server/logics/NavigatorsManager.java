@@ -34,14 +34,14 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
 
     private LogicsInstance logicsInstance;
 
-    private BusinessLogics<?> businessLogics;
+    private BusinessLogics businessLogics;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         return businessLogics;
     }
 
-    private BaseLogicsModule<?> baseLM;
+    private BaseLogicsModule baseLM;
 
     private RestartManager restartManager;
 
@@ -65,7 +65,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         this.logicsInstance = logicsInstance;
     }
 
-    public void setBusinessLogics(BusinessLogics<?> businessLogics) {
+    public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = businessLogics;
     }
 
