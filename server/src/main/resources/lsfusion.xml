@@ -241,28 +241,10 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initModuleRestTask" class="lsfusion.server.logics.tasks.impl.InitModuleRestTask">
+    <bean id="initMetaGroupsAndClassesTask" class="lsfusion.server.logics.tasks.impl.InitMetaGroupsAndClassesTask">
         <property name="dependencies">
             <set>
-                <ref bean="initModuleOrderTask"/>
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
-    <bean id="initGroupsTask" class="lsfusion.server.logics.tasks.impl.InitGroupsTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="initModuleRestTask"/> <!-- нужны метакоды и namespace'ы -->
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
-    <bean id="initClassesTask" class="lsfusion.server.logics.tasks.impl.InitClassesTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="initGroupsTask"/> <!-- потому как parser не thread safe, поэтому initModuleRestTask -->
+                <ref bean="initModuleOrderTask"/> <!-- потому как parser не thread safe, поэтому initModuleRestTask -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -271,7 +253,7 @@
     <bean id="initObjectClassTask" class="lsfusion.server.logics.tasks.impl.InitObjectClassTask">
         <property name="dependencies">
             <set>
-                <ref bean="initClassesTask"/>
+                <ref bean="initMetaGroupsAndClassesTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
