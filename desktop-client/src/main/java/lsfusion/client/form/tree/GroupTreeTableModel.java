@@ -1,7 +1,5 @@
 package lsfusion.client.form.tree;
 
-import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
-import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
@@ -9,11 +7,13 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 class GroupTreeTableModel extends DefaultTreeTableModel {
     private final Map<ClientGroupObject, Set<TreeGroupNode>> groupNodes = new HashMap<>();
@@ -59,7 +59,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     @Override
     public Object getValueAt(Object node, int column) {
         if (column == 0) {
-            return plainTreeMode ? node.toString() : "";
+            return plainTreeMode ? node.toString() : "\u200b"; // zero width space. in GTK LAF tree controls are not shown when value is null or empty. 
         }
 
         if (node instanceof TreeGroupNode) {

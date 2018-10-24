@@ -122,7 +122,7 @@ public abstract class ClientNavigatorElement {
 
     public String getTooltip() {
         return Main.configurationAccessAllowed && creationPath != null ?
-                String.format("<html><body bgcolor=#FFFFE1>" +
+                String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
                         "<b>Путь:</b> %s<br/>" +
