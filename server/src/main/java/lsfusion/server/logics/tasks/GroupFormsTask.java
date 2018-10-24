@@ -7,7 +7,7 @@ import lsfusion.server.logics.BusinessLogics;
 public abstract class GroupFormsTask extends GroupSingleSplitTask<FormEntity> {
 
     @Override
-    protected ImSet<FormEntity> getObjects(BusinessLogics<?> BL) {
+    protected ImSet<FormEntity> getObjects(BusinessLogics BL) {
         return BL.getAllForms();
     }
 }

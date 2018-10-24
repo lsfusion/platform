@@ -38,7 +38,7 @@ public class RecalculateAggregationsTask extends GroupGraphTask<AggregatePropert
     }
 
     @Override
-    protected Graph<AggregateProperty> getGraph(BusinessLogics<?> BL) {
+    protected Graph<AggregateProperty> getGraph(BusinessLogics BL) {
         return BL.getRecalculateAggregateStoredGraph();
     }
 

@@ -28,7 +28,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private final FunctionSet<SessionDataProperty> keepSessionProperties;
     private final boolean serializable;
 
-    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule<?> LM, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
                                                              LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                              FunctionSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());

@@ -6,7 +6,7 @@ import lsfusion.server.logics.property.Property;
 
 public abstract class GroupPropertiesTask extends GroupSingleSplitTask<Property> {
 
-    protected ImSet<Property> getObjects(BusinessLogics<?> BL) {
+    protected ImSet<Property> getObjects(BusinessLogics BL) {
         return BL.getOrderProperties().getSet();
     }
 

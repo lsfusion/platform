@@ -325,7 +325,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return getFormInstance(false, false);
     }
 
-    public FormInstance<?> getFormInstance(boolean sameSession, boolean assertExists) {
+    public FormInstance getFormInstance(boolean sameSession, boolean assertExists) {
         FormInstance formInstance = form != null ? form.getInstance() : null;
         FormInstance formExecEnv = env.getFormInstance();
         
@@ -359,7 +359,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return ThreadLocalContext.getClassListener();
     }
 
-    public BusinessLogics<?> getBL() {
+    public BusinessLogics getBL() {
         return getLogicsInstance().getBusinessLogics();
     }
 
@@ -441,7 +441,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public DataObject formAddObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
-        FormInstance<?> form = getFormFlowInstance();
+        FormInstance form = getFormFlowInstance();
         return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject, stack);
     }
 

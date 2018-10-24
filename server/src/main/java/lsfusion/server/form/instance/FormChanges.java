@@ -1,12 +1,10 @@
 package lsfusion.server.form.instance;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.logics.DataObject;
@@ -64,7 +62,7 @@ public class FormChanges {
         this.activateProps = activateProps;
     }
 
-    void out(FormInstance<?> bv) {
+    void out(FormInstance bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
         for (GroupObjectInstance group : bv.getGroups()) {
             ImList<ImMap<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
@@ -211,7 +209,7 @@ public class FormChanges {
         }
     }
 
-    public void logChanges(FormInstance<?> bv, Logger logger) {
+    public void logChanges(FormInstance bv, Logger logger) {
         logger.trace("getFormChanges:");
         logger.trace("  GROUPOBJECTS ---------------");
         for (GroupObjectInstance group : bv.getGroups()) {

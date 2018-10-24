@@ -28,7 +28,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     private RemoteLogics remoteLogics;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         return remoteLogics.businessLogics;
     }
 

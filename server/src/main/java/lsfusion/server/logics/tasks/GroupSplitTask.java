@@ -15,7 +15,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
 
     protected abstract void runGroupTask(ImSet<T> objSet, Logger logger);
     
-    protected abstract ImSet<T> getObjects(BusinessLogics<?> BL);
+    protected abstract ImSet<T> getObjects(BusinessLogics BL);
     
     protected int getSplitCount() {
         return 1000;        
@@ -23,7 +23,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
     
     @Override
     protected Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks() {
-        BusinessLogics<?> BL = (BusinessLogics<?>) getBL();
+        BusinessLogics BL = getBL();
         final int splitCount = getSplitCount();
         MCol<SingleProgramTask> mTasks = ListFact.mCol();
         ImMap<Integer, ImSet<T>> groupProps = getObjects(BL).mapValues(new GetIndex<Integer>() {

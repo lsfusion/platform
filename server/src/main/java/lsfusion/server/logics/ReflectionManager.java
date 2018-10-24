@@ -46,10 +46,10 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
     public static final Logger startLogger = ServerLoggers.startLogger;
 
-    private BusinessLogics<?> businessLogics;
+    private BusinessLogics businessLogics;
 
     @Override
-    protected BusinessLogics<?> getBusinessLogics() {
+    protected BusinessLogics getBusinessLogics() {
         return businessLogics;
     }
 
@@ -57,7 +57,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
 
     private PublicTask initTask;
 
-    public void setBusinessLogics(BusinessLogics<?> businessLogics) {
+    public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = businessLogics;
     }
 
@@ -69,7 +69,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         this.initTask = initTask;
     }
 
-    private BaseLogicsModule<?> LM;
+    private BaseLogicsModule LM;
     private ReflectionLogicsModule reflectionLM;
     private SystemEventsLogicsModule systemEventsLM;
     private TimeLogicsModule timeLM;

@@ -84,8 +84,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     
     private String clientHideMenu;
 
-    public void setBusinessLogics(BusinessLogics businessLogics) {
-        this.businessLogics = (T) businessLogics;
+    public void setBusinessLogics(T businessLogics) {
+        this.businessLogics = businessLogics;
     }
 
     public void setLogicsInstance(LogicsInstance logicsInstance) {
@@ -293,7 +293,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public byte[] readFile(String canonicalName, String... params) throws RemoteException {
-        LCP<PropertyInterface> property = businessLogics.findProperty(canonicalName);
+        LCP<PropertyInterface> property = (LCP<PropertyInterface>)businessLogics.findProperty(canonicalName);
         if (property != null) {
             if (!(property.property.getType() instanceof FileClass)) {
                 throw new RuntimeException("Property type is distinct from FileClass");

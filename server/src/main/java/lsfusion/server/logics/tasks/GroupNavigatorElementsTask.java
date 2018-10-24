@@ -7,7 +7,7 @@ import lsfusion.server.logics.BusinessLogics;
 public abstract class GroupNavigatorElementsTask extends GroupSingleSplitTask<NavigatorElement> {
 
     @Override
-    protected ImSet<NavigatorElement> getObjects(BusinessLogics<?> BL) {
+    protected ImSet<NavigatorElement> getObjects(BusinessLogics BL) {
         return BL.getNavigatorElements();
     }
 }
