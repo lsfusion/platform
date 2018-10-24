@@ -2,7 +2,6 @@ package lsfusion.client.form.tree;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
@@ -30,6 +29,8 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -41,9 +42,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.max;
 import static java.util.Collections.singletonList;
@@ -264,7 +267,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2 && !editPerformed) {
                         final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
-                        if (path != null && !((TreeGroupTreeUI) getHierarhicalColumnRenderer().getUI()).isLocationInExpandControl(path, e.getX(), e.getY())) {
+                        if (path != null && !isLocationInExpandControl(getHierarhicalColumnRenderer().getUI(), path, e.getX(), e.getY())) {
                             final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
 
                             if (node.isExpandable() && node.group != null) {
@@ -288,8 +291,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 }
             });
         }
-
-        getHierarhicalColumnRenderer().setUI(new TreeGroupTreeUI());
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
@@ -1100,12 +1101,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
         return null;
     }
-    
-    class TreeGroupTreeUI extends WindowsTreeUI {
-        @Override
-        protected boolean isLocationInExpandControl(TreePath path, int mouseX, int mouseY) {
-            return super.isLocationInExpandControl(path, mouseX, mouseY);
+
+    protected boolean isLocationInExpandControl(TreeUI ui, TreePath path, int mouseX, int mouseY) {
+        if (ui instanceof BasicTreeUI) {
+            try {
+                Method declaredMethod = BasicTreeUI.class.getDeclaredMethod("isLocationInExpandControl", TreePath.class, int.class, int.class);
+                declaredMethod.setAccessible(true);
+                Object result = declaredMethod.invoke(ui, path, mouseX, mouseY);
+                if (result != null) {
+                    return (Boolean) result;
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+            }
         }
+        return false;
     }
 
     public Dimension getMaxPreferredSize(Dimension preferredSize) {

@@ -158,12 +158,12 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
     public String getTooltip() {
         return Main.configurationAccessAllowed ?
-                String.format("<html><body bgcolor=#FFFFE1>" +
+                String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
                         "<b>Путь:</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) :
-                String.format("<html><body bgcolor=#FFFFE1><b>%s</b></body></html>", caption);
+                String.format("<html><body><b>%s</b></body></html>", caption);
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {

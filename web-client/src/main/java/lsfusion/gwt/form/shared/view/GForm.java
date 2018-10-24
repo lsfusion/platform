@@ -134,11 +134,11 @@ public class GForm implements Serializable, GWidthStringProcessor {
 
     public String getTooltip() {
         return MainFrame.configurationAccessAllowed ?
-                GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1>" +
+                GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
                         "<b>" + MainFrameMessages.Instance.get().tooltipPath() + ":</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) :
-                GwtSharedUtils.stringFormat("<html><body bgcolor=#FFFFE1><b>%s</b></body></html>", caption);
+                GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", caption);
     }
 }

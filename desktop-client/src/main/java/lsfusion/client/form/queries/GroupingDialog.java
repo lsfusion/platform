@@ -51,8 +51,8 @@ import java.math.BigDecimal;
 import java.sql.Time;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -181,6 +181,7 @@ public abstract class GroupingDialog extends JDialog {
             spinner.setMinimumSize(new Dimension(35, 19));
             spinner.setPreferredSize(new Dimension(35, 19));
             spinner.addChangeListener(spinnerListener);
+            spinner.setMaximumSize(new Dimension(50, spinner.getMaximumSize().height));
             groupSpinners.put(columnKey, spinner);
 
             if (i != initialTable.getSelectedColumn()) {
@@ -195,13 +196,13 @@ public abstract class GroupingDialog extends JDialog {
             extraSpinner.setVisible(false);
 
             JPanel fieldPanel = new JPanel();
-            fieldPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+            fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.X_AXIS));
+            fieldPanel.setAlignmentX(LEFT_ALIGNMENT);
             fieldPanel.add(checkBox);
             fieldPanel.add(spinner);
             if(SystemUtils.IS_OS_WINDOWS)
                 fieldPanel.add(pivotCheckBox);
             fieldPanel.add(extraSpinner);
-            fieldPanel.setPreferredSize(new Dimension(fieldPanel.getPreferredSize().width + spinner.getPreferredSize().width, checkBox.getPreferredSize().height + 3));
             allFieldsPanel.add(fieldPanel);
 
             
