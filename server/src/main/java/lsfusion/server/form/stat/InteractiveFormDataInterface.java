@@ -25,12 +25,12 @@ import java.sql.SQLException;
 
 public class InteractiveFormDataInterface extends AbstractFormDataInterface {
 
-    protected final FormInstance<?> form;
+    protected final FormInstance form;
     protected final Integer groupId;
 
     protected final FormUserPreferences preferences; // now it is not stored on the server, so we need to pass it from the client 
 
-    public InteractiveFormDataInterface(FormInstance<?> form, Integer groupId, FormUserPreferences preferences) {
+    public InteractiveFormDataInterface(FormInstance form, Integer groupId, FormUserPreferences preferences) {
         this.form = form;
         this.groupId = groupId;
         this.preferences = preferences;
@@ -61,19 +61,19 @@ public class InteractiveFormDataInterface extends AbstractFormDataInterface {
         return form.getModifier();
     }
 
-    protected GroupObjectInstance getInstance(GroupObjectEntity groupObject, FormInstance<?> form) {
+    protected GroupObjectInstance getInstance(GroupObjectEntity groupObject, FormInstance form) {
         return form.instanceFactory.getInstance(groupObject);
     }
 
-    protected ObjectInstance getInstance(ObjectEntity value, FormInstance<?> form) {
+    protected ObjectInstance getInstance(ObjectEntity value, FormInstance form) {
         return form.instanceFactory.getInstance(value);
     }
 
-    protected PropertyDrawInstance getInstance(PropertyDrawEntity value, FormInstance<?> form) {
+    protected PropertyDrawInstance getInstance(PropertyDrawEntity value, FormInstance form) {
         return form.instanceFactory.getInstance(value);
     }
 
-    protected CalcPropertyObjectInstance getInstance(CalcPropertyObjectEntity value, FormInstance<?> form) {
+    protected CalcPropertyObjectInstance getInstance(CalcPropertyObjectEntity value, FormInstance form) {
         return form.instanceFactory.getInstance(value);
     }
 

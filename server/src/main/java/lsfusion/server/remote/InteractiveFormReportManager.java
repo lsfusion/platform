@@ -1,23 +1,21 @@
 package lsfusion.server.remote;
 
-import lsfusion.base.Result;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.instance.*;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.stat.FormReportManager;
 import lsfusion.server.form.stat.InteractiveFormReportInterface;
-import lsfusion.server.form.stat.StaticDataGenerator;
 
 import java.sql.SQLException;
 
 public class InteractiveFormReportManager extends FormReportManager {
     
-    public InteractiveFormReportManager(FormInstance<?> form) {
+    public InteractiveFormReportManager(FormInstance form) {
         this(form, null, null);
     }
-    public InteractiveFormReportManager(FormInstance<?> form, Integer groupId, FormUserPreferences preferences) {
+    public InteractiveFormReportManager(FormInstance form, Integer groupId, FormUserPreferences preferences) {
         super(new InteractiveFormReportInterface(form, groupId, preferences));
     }
 
