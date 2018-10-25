@@ -279,17 +279,20 @@ public class SwingUtils {
         if (icons.containsKey(extension)) {
             return icons.get(extension);
         } else {
+            Icon icon = null;
             File file = null;
             try {
                 file = File.createTempFile("icon", "." + extension);
+                FileSystemView view = FileSystemView.getFileSystemView();
+                icon = view.getSystemIcon(file);
+                icons.put(extension, icon);
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                if(file != null && !file.delete()) {
+                    file.deleteOnExit();
+                }
             }
-            FileSystemView view = FileSystemView.getFileSystemView();
-            Icon icon = view.getSystemIcon(file);
-            icons.put(extension, icon);
-            //Delete the temporary file
-            file.delete();
             return icon;
         }
     }

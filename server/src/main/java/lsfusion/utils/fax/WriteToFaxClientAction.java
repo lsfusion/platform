@@ -30,32 +30,38 @@ public class WriteToFaxClientAction implements ClientAction {
             //create a new fax job
             FaxJob faxJob = faxClient.createFaxJob();
 
-            File file = File.createTempFile("fax", ".txt");
-            PrintWriter writer = new PrintWriter(file);
-            writer.println(text);
-            writer.close();
+            File file = null;
+            try {
+                file = File.createTempFile("fax", ".txt");
+                PrintWriter writer = new PrintWriter(file);
+                writer.println(text);
+                writer.close();
 
-            //set fax job values
-            faxJob.setFile(file);
-            faxJob.setPriority(FaxJob.FaxJobPriority.HIGH_PRIORITY);
-            faxJob.setTargetAddress(faxNumber);
-            faxJob.setTargetName("YourName");
-            faxJob.setSenderEmail("myemail@mycompany.com");
-            faxJob.setSenderName("MyName");
+                //set fax job values
+                faxJob.setFile(file);
+                faxJob.setPriority(FaxJob.FaxJobPriority.HIGH_PRIORITY);
+                faxJob.setTargetAddress(faxNumber);
+                faxJob.setTargetName("YourName");
+                faxJob.setSenderEmail("myemail@mycompany.com");
+                faxJob.setSenderName("MyName");
 
-            //submit fax job
-            faxClient.submitFaxJob(faxJob);
+                //submit fax job
+                faxClient.submitFaxJob(faxJob);
 
-            while (faxClient.getFaxJobStatus(faxJob) == FaxJobStatus.PENDING) {
-                try {
-                    Thread.sleep(100);
-                    System.out.println("sending fax...");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                while (faxClient.getFaxJobStatus(faxJob) == FaxJobStatus.PENDING) {
+                    try {
+                        Thread.sleep(100);
+                        System.out.println("sending fax...");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println("status: " + faxClient.getFaxJobStatus(faxJob));
+            } finally {
+                if (file != null && !file.delete()) {
+                    file.deleteOnExit();
                 }
             }
-            System.out.println("status: " + faxClient.getFaxJobStatus(faxJob));
-            file.delete();
         }
         return null;
     }
