@@ -2084,6 +2084,8 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	    |  	'JSON' { exportType = FormIntegrationType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
 		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
 		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+	    |  	'XLS' { exportType = FormIntegrationType.XLS; }
+	    |  	'XLSX' { exportType = FormIntegrationType.XLSX; }
 	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'TABLE' { exportType = FormIntegrationType.TABLE; }
 		)?

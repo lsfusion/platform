@@ -80,6 +80,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     Object formatJSON(T object);
     String formatCSV(T object);
     String formatXML(T object);
+    Object formatXLS(T object);
 
     T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - not null (файлы decode'ся base64)
     

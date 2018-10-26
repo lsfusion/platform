@@ -168,6 +168,11 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
+    public Object formatXLS(Date object) {
+        return object;
+    }
+
+    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }

@@ -58,6 +58,7 @@ import lsfusion.server.logics.property.actions.integration.exporting.plain.csv.E
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.ExportDBFActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.table.ExportTableActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.ImportJSONActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.xml.ImportXMLActionProperty;
@@ -563,6 +564,12 @@ public abstract class LogicsModule {
                 break;
             case CSV:
                 exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, noHeader, separator, noEscape, charset);
+                break;
+            case XLS:
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, false);
+                break;
+            case XLSX:
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, true);
                 break;
             case DBF:
                 exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);

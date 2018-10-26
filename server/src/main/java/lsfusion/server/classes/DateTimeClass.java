@@ -174,6 +174,11 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
+    public Object formatXLS(Timestamp object) {
+        return object;
+    }
+
+    @Override
     public boolean useIndexedJoin() {
         return true;
     }

@@ -150,6 +150,11 @@ public class LogicalClass extends DataClass<Boolean> {
         return object != null;
     }
 
+    @Override
+    public Object formatXLS(Boolean object) {
+        return object != null;
+    }
+
     public Boolean parseString(String s) throws ParseException {
         try {
             boolean b = Boolean.parseBoolean(s);

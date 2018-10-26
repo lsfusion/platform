@@ -27,5 +27,5 @@ public abstract class ExportPlainWriter {
 
     public void writeCount(int count) throws IOException { // if needed        
     } 
-    public abstract void writeLine(ImMap<String, Object> row) throws IOException; // fields needed if there are no headers, and import uses format's field ordering
+    public abstract void writeLine(int rowNum, ImMap<String, Object> row) throws IOException; // fields needed if there are no headers, and import uses format's field ordering
 }

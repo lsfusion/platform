@@ -1,25 +1,31 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain.csv;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportByteArrayPlainWriter;
-import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportPlainWriter;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExportCSVWriter extends ExportByteArrayPlainWriter {
-    CsvEscaper csvEscaper;
+    private boolean noHeader;
+    private CsvEscaper csvEscaper;
     private String separator;
 
     public ExportCSVWriter(ImOrderMap<String, Type> fieldTypes, boolean noHeader, boolean noEscape, String separator, String charset) throws IOException {
         super(fieldTypes);
+
+        this.noHeader = noHeader;
         
         if(separator == null)
             separator = ExternalUtils.defaultCSVSeparator;
@@ -40,13 +46,44 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
 
     private PrintWriter writer;
     @Override
-    public void writeLine(final ImMap<String, Object> row) {
-        writer.println(fieldTypes.mapOrderValues(new GetKeyValue<Object, String, Type>() {
-            @Override
-            public Object getMapValue(String key, Type value) {
-                return csvEscaper.translate(value.formatCSV(row.get(key)));
+    public void writeLine(int rowNum, final ImMap<String, Object> row) {
+        if (noHeader) {
+            int prevIndex = 0;
+            final Map<Integer, String> fieldIndexMap = new HashMap<>();
+            for (String field : fieldTypes.keyOrderSet()) {
+                Integer index = nameToIndex(field);
+                if (index == null) {
+                    index = ++prevIndex;
+                } else {
+                    prevIndex = index;
+                }
+                fieldIndexMap.put(index, field);
             }
-        }).valuesList().toString(separator));
+
+            writer.println(ListFact.consecutiveList(fieldIndexMap.isEmpty() ? 0 : (Collections.max(fieldIndexMap.keySet()) + 1), 0).mapListValues(new GetValue<Object, Integer>() {
+                public Object getMapValue(Integer i) {
+                    String field = fieldIndexMap.get(i);
+                    return field != null ? csvEscaper.translate(fieldTypes.get(field).formatCSV(row.get(field))) : "";
+                }
+            }).toString(separator));
+        } else {
+            writer.println(fieldTypes.mapOrderValues(new GetKeyValue<Object, String, Type>() {
+                @Override
+                public Object getMapValue(String key, Type value) {
+                    return csvEscaper.translate(value.formatCSV(row.get(key)));
+                }
+            }).valuesList().toString(separator));
+        }
+    }
+
+    private static Integer nameToIndex(String name) {
+        Integer number = null;
+        if(name.equals(name.toUpperCase())) {
+            for (int i = 0; i < name.length(); i++) {
+                number = (number== null ? 0 : number * 26) + (name.charAt(i) - ('A' - 1));
+            }
+        }
+        return number != null ? (number - 1) : null;
     }
 
     //modified from StringEscapeUtils

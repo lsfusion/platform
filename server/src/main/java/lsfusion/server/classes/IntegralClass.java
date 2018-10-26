@@ -139,6 +139,11 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
+    public Object formatXLS(T object) {
+        return object == null ? null : object.doubleValue();
+    }
+
+    @Override
     public boolean isFlex() {
         return true;
     }

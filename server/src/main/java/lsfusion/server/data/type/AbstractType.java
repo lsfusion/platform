@@ -177,6 +177,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return formatNullableString(object, true);
     }
 
+    @Override
+    public Object formatXLS(T object) {
+        return formatNullableString(object, false); // xls supports nulls
+    }
+
     protected T readDBF(Object object) {
         return read(object);
     }
