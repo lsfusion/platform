@@ -33,7 +33,7 @@ public class ExportDBFWriter extends ExportFilePlainWriter {
         writer = new DBFWriter(file.getAbsolutePath(), fields, charset);
     }
 
-    public void writeLine(ImMap<String, Object> row) {
+    public void writeLine(int rowNum, ImMap<String, Object> row) {
         try {
             Object[] record = fieldTypes.keyOrderSet().mapList(row).toArray(new Object[row.size()]);
             if(record.length == 0)

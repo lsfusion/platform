@@ -139,6 +139,11 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
+    public Object formatXLS(Time object) {
+        return object;
+    }
+
+    @Override
     public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
         return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
     }

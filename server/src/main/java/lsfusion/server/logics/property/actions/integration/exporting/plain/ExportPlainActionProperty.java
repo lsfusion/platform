@@ -127,7 +127,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
                 if (currentGroup != null) if (!isIndex) fieldValues = fieldValues.addExcl(mapFields.crossJoin(currentRow));
 
-                exporter.writeLine(fieldValues);
+                exporter.writeLine(i, fieldValues);
             }
         } finally {
             resultFile = exporter.release();

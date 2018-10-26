@@ -42,7 +42,7 @@ public class ExportTableWriter extends ExportByteArrayPlainWriter {
 
     private int count = 0;
     @Override
-    public void writeLine(ImMap<String, Object> row) throws IOException {
+    public void writeLine(int rowNum, ImMap<String, Object> row) throws IOException {
         if(singleRow && count++ > 0)
             return;
 
