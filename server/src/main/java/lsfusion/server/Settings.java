@@ -127,6 +127,8 @@ public class Settings implements Cloneable {
 
     private boolean busyDialog = true;
 
+    private long busyDialogTimeout = 1000;
+
     private boolean safeCheckFileExistence = true;
 
     public int getLimitWhereJoinsDegree() {
@@ -617,6 +619,14 @@ public class Settings implements Cloneable {
 
     public void setBusyDialog(boolean busyDialog) {
         this.busyDialog = busyDialog;
+    }
+
+    public long getBusyDialogTimeout() {
+        return busyDialogTimeout;
+    }
+
+    public void setBusyDialogTimeout(long busyDialogTimeout) {
+        this.busyDialogTimeout = busyDialogTimeout;
     }
 
     public boolean isSafeCheckFileExistence() {
