@@ -68,13 +68,15 @@ public abstract class GroupingButton extends ToolbarGridButton {
 
                                 List<Map<List<Object>, List<Object>>> result = new ArrayList<>();
 
+                                boolean replace = false;
                                 for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
                                     if (!level.isEmpty()) {
                                         Map<List<Object>, List<Object>> groupData = groupData(level, sumMap, maxMap, onlyNotNull);
                                         if (groupData != null) {
                                             if (isPivot && !result.isEmpty()) {
-                                                if (result.get(0).size() < groupData.size()) {
+                                                if (replace ||result.get(0).size() < groupData.size()) {
                                                     result.set(0, groupData);
+                                                    replace = true;
                                                 }
                                             } else
                                                 result.add(groupData);
