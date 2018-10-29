@@ -545,7 +545,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
         return Locale.getDefault();
     }
-    
+
     @Override
     public Integer getFontSize() {
         try {

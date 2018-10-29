@@ -45,6 +45,6 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     ClientSettings getClientSettings() throws RemoteException;
 
     LocalePreferences getLocalePreferences() throws RemoteException;
-    
+
     Integer getFontSize() throws RemoteException;
 }

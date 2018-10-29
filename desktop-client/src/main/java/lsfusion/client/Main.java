@@ -102,7 +102,7 @@ public class Main {
     public static boolean useRequestTimeout;
     
     public static long timeDiffServerClientLog = 1000;
-    
+
     public static Integer fontSize;
     private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
