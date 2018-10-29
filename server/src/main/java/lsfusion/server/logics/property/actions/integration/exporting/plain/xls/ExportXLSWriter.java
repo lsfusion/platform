@@ -24,6 +24,7 @@ public class ExportXLSWriter extends ExportByteArrayPlainWriter {
     private boolean xlsx;
     private Workbook workbook;
     private Sheet sheet;
+    private int rowNum = 0;
 
     CellStyle dateStyle;
     CellStyle timeStyle;
@@ -49,7 +50,7 @@ public class ExportXLSWriter extends ExportByteArrayPlainWriter {
 
 
     @Override
-    public void writeLine(int rowNum, final ImMap<String, Object> row) {
+    public void writeLine(final ImMap<String, Object> row) {
 
         ImOrderMap<String, Object> rowValues = fieldTypes.mapOrderValues(new GetKeyValue<Object, String, Type>() {
             @Override
@@ -58,7 +59,7 @@ public class ExportXLSWriter extends ExportByteArrayPlainWriter {
             }
         });
 
-        Row currentRow = sheet.createRow(rowNum);
+        Row currentRow = sheet.createRow(rowNum++);
         Integer prevIndex = 0;
         for (String field : fieldTypes.keyOrderSet()) {
 

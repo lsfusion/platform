@@ -18,14 +18,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExportCSVWriter extends ExportByteArrayPlainWriter {
-    private boolean noHeader;
     private CsvEscaper csvEscaper;
     private String separator;
+    private Map<Integer, String> fieldIndexMap = null;
 
     public ExportCSVWriter(ImOrderMap<String, Type> fieldTypes, boolean noHeader, boolean noEscape, String separator, String charset) throws IOException {
         super(fieldTypes);
-
-        this.noHeader = noHeader;
         
         if(separator == null)
             separator = ExternalUtils.defaultCSVSeparator;
@@ -40,26 +38,17 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
                 write("\r\n");
             }
         };
-        if(!noHeader)
+        if(noHeader) {
+            fieldIndexMap = getFieldIndexMap();
+        } else {
             writer.println(fieldTypes.keyOrderSet().toString(this.separator));
+        }
     }
 
     private PrintWriter writer;
     @Override
-    public void writeLine(int rowNum, final ImMap<String, Object> row) {
-        if (noHeader) {
-            int prevIndex = 0;
-            final Map<Integer, String> fieldIndexMap = new HashMap<>();
-            for (String field : fieldTypes.keyOrderSet()) {
-                Integer index = nameToIndex(field);
-                if (index == null) {
-                    index = ++prevIndex;
-                } else {
-                    prevIndex = index;
-                }
-                fieldIndexMap.put(index, field);
-            }
-
+    public void writeLine(final ImMap<String, Object> row) {
+        if (fieldIndexMap != null) {
             writer.println(ListFact.consecutiveList(fieldIndexMap.isEmpty() ? 0 : (Collections.max(fieldIndexMap.keySet()) + 1), 0).mapListValues(new GetValue<Object, Integer>() {
                 public Object getMapValue(Integer i) {
                     String field = fieldIndexMap.get(i);
@@ -74,6 +63,21 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
                 }
             }).valuesList().toString(separator));
         }
+    }
+
+    private Map<Integer, String> getFieldIndexMap() {
+        int prevIndex = 0;
+        final Map<Integer, String> fieldIndexMap = new HashMap<>();
+        for (String field : fieldTypes.keyOrderSet()) {
+            Integer index = nameToIndex(field);
+            if (index == null) {
+                index = ++prevIndex;
+            } else {
+                prevIndex = index;
+            }
+            fieldIndexMap.put(index, field);
+        }
+        return fieldIndexMap;
     }
 
     private static Integer nameToIndex(String name) {
