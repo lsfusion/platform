@@ -1,12 +1,22 @@
 package lsfusion.server.data.type;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
+import net.iryndin.jdbf.core.DbfField;
+import net.iryndin.jdbf.core.DbfFieldTypeEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -94,5 +104,91 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         if(value == null)
             return getParseNullValue();
         return formatString(value);
+    }
+
+    public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {
+        if(string == null || (emptyIsNull && string.isEmpty()))
+            return null;
+        return parseString(string);
+    }
+
+    protected String formatNullableString(T object, boolean nullIsEmpty) {
+        if(nullIsEmpty && object == null)
+            return "";            
+        return formatString(object);
+    }
+
+    @Override
+    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException {
+        String string;
+        if(dbfRecord.getField(fieldName).getType() == DbfFieldTypeEnum.Memo)
+            string = dbfRecord.getMemoAsString(fieldName, Charset.forName(charset));
+        else
+            string = dbfRecord.getString(fieldName, charset);
+        return parseNullableString(string, false); // dbf supports nulls
+    }
+    @Override
+    public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
+        Object o = object.opt(key);
+        if(o == JSONObject.NULL)
+            o = null;
+        return parseNullableString((String)o, false); // json supports nulls
+    }
+    @Override
+    public T parseCSV(String value) throws ParseException {
+        return parseNullableString(value, true);
+    }
+    @Override
+    public T parseXML(String value) throws ParseException {
+        return parseNullableString(value, true);
+    }
+    @Override
+    public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        String cellValue;
+        switch (formulaValue.getCellTypeEnum()) {
+            case STRING:
+                cellValue = formulaValue.getStringValue();
+                break;
+            case NUMERIC:
+                cellValue = new BigDecimal(formulaValue.getNumberValue()).toPlainString();
+                break;        
+            default:
+                cellValue = formulaValue.formatAsString();
+        }
+        return parseNullableString(cellValue, false); // there is parseexception check anyway
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'C', 253, 0);
+    }
+    @Override
+    public Object formatJSON(T object) {
+        return formatNullableString(object, false); // json supports nulls
+    }
+
+    @Override
+    public String formatCSV(T object) {
+        return formatNullableString(object, true);
+    }
+
+    @Override
+    public String formatXML(T object) {
+        return formatNullableString(object, true);
+    }
+
+    @Override
+    public Object formatXLS(T object) {
+        return formatNullableString(object, false); // xls supports nulls
+    }
+
+    protected T readDBF(Object object) {
+        return read(object);
+    }
+    protected T readJSON(Object object) {
+        return read(object);
+    }
+    protected T readXLS(Object object) {
+        return read(object);
     }
 }

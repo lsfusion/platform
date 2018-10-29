@@ -40,8 +40,8 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.remote.*;
@@ -251,7 +251,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         
         logger.error(title + " at '" + time + "' from '" + hostname + "': ", t);
         try {
-            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, this.user, hostname, true, web);
+            businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, this.user, hostname, true, web);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -563,6 +563,15 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
         return Locale.getDefault();
     }
+    
+    @Override
+    public Integer getFontSize() {
+        try {
+            return (Integer) businessLogics.authenticationLM.userFontSize.read(createSession(), user);
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void gainedFocus(FormInstance form) {
         //todo: не нужно, так что позже можно удалить
@@ -670,7 +679,7 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                 ObjectInstance object = null;
                 for (GroupObjectInstance group : (ImOrderSet<GroupObjectInstance>) form.form.getOrderGroups()) {
                     for (ObjectInstance obj : group.objects) {
-                        if (obj.getsID().equals(objectSID)) {
+                        if (obj.getSID().equals(objectSID)) {
                             object = obj;
                             groupObject = group;
                             break;

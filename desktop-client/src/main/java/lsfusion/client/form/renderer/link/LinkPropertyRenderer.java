@@ -16,6 +16,8 @@ public abstract class LinkPropertyRenderer extends LabelPropertyRenderer {
     public void setValue(Object value) {
         if (value != null) {
             getComponent().setText(null);
+        } else {
+            getComponent().setIcon(null);
         }
         super.setValue(getImageIcon()); // передаём суперу иконку, а не ссылку. из наличия ссылки не следует наличие иконки
     }

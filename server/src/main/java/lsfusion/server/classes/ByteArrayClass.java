@@ -6,6 +6,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
+import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;

@@ -1,11 +1,14 @@
 package lsfusion.base.col.interfaces.immutable;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 public interface ImOrderSet<K> extends ImList<K> {
-
+    
     boolean contains(K element);
+
+    <G> ImMap<G, ImOrderSet<K>> groupOrder(BaseUtils.Group<G, K> getter);
 
     ImSet<K> getSet();
 
@@ -18,10 +21,10 @@ public interface ImOrderSet<K> extends ImList<K> {
     <V> ImMap<K, V> mapList(ImList<? extends V> list);
 
     ImOrderSet<K> removeOrder(ImSet<? extends K> set);
+    ImOrderSet<K> removeOrderIncl(ImSet<? extends K> set);
     ImOrderSet<K> removeOrderIncl(K element);
 
     <V> ImOrderSet<V> mapOrder(ImRevMap<? extends K, ? extends V> map);
-    <V> ImOrderSet<V> mapOrder(ImMap<? extends K, ? extends V> map);
 
     <V> ImOrderMap<K, V> mapOrderMap(ImMap<K, V> map);
 
@@ -42,8 +45,11 @@ public interface ImOrderSet<K> extends ImList<K> {
     <M> ImOrderSet<M> mapOrderSetValues(GetIndexValue<M, K> getter);
     <M> ImOrderSet<M> mapMergeOrderSetValues(GetValue<M, K> getter);
 
+    <M> ImOrderMap<M, K> mapOrderKeys(GetValue<M, K> getter);
+    
     <M> ImOrderMap<K, M> mapOrderValues(GetStaticValue<M> getter);
     <M> ImOrderMap<K, M> mapOrderValues(GetValue<M, K> getter);
+    <MK, MV> ImOrderMap<MK,MV> mapOrderKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue);
 
     <M> ImMap<K, M> mapOrderValues(GetIndexValue<M, K> getter); // в порядке order вызывать getter
     <M> ImMap<K, M> mapOrderValues(GetIndex<M> getter); // в порядке order вызывать getter

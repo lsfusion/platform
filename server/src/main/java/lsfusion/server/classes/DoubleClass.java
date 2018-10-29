@@ -1,11 +1,16 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
+import net.iryndin.jdbf.core.DbfRecord;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -98,6 +103,16 @@ public class DoubleClass extends IntegralClass<Double> {
 
     public String getSID() {
         return "DOUBLE";
+    }
+
+    @Override
+    public Double parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getDouble(fieldName));
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'F', 13, 3);
     }
 
     @Override

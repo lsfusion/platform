@@ -80,6 +80,10 @@ public class ScriptingFormEntity {
                 if (groupObject.events.get(j) != null) {
                     form.addActionsOnEvent(obj, version, groupObject.events.get(j));
                 }
+
+                if (groupObject.integrationSIDs.get(j) != null) {
+                    obj.setIntegrationSID(groupObject.integrationSIDs.get(j));
+                }
             }
 
             String groupName = groupObject.groupName;
@@ -107,7 +111,19 @@ public class ScriptingFormEntity {
             String propertyGroupName = groupObject.propertyGroupName;
             AbstractGroup propertyGroup = (propertyGroupName == null ? null : LM.findGroup(propertyGroupName));
             if(propertyGroup != null)
-                groupObj.propertyGroup = propertyGroup;            
+                groupObj.propertyGroup = propertyGroup;
+
+            String integrationSID = groupObject.integrationSID;
+            if(integrationSID == null && groupObject.groupName == null) {
+                integrationSID = "";
+                for (ObjectEntity obj : groupObj.getOrderObjects()) {
+                    integrationSID = (integrationSID.length() == 0 ? "" : integrationSID + ".") + obj.getIntegrationSID();
+                }
+            }
+            if(integrationSID != null)
+                groupObj.setIntegrationSID(integrationSID);
+
+            groupObj.setIntegrationKey(groupObject.integrationKey);
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
@@ -305,6 +321,12 @@ public class ScriptingFormEntity {
             else
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, version);
 
+            try {
+                form.setFinalPropertyDrawSID(propertyDraw, alias);
+            } catch (FormEntity.AlreadyDefined alreadyDefined) {
+                LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
+            }
+
             applyPropertyOptions(propertyDraw, propertyOptions, version);
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
@@ -315,8 +337,6 @@ public class ScriptingFormEntity {
                 propertyDraw.initCaption = caption; 
 
             movePropertyDraw(propertyDraw, propertyOptions, version);
-
-            setFinalPropertyDrawSID(propertyDraw, alias);
         }
     }
 
@@ -440,6 +460,10 @@ public class ScriptingFormEntity {
         if (eventID != null)
             property.eventID = eventID;
 
+        String integrationSID = options.getIntegrationSID();
+        if (integrationSID != null)
+            property.setIntegrationSID(integrationSID);
+        
         String groupName = options.getGroupName();
         AbstractGroup group = (groupName == null ? null : LM.findGroup(groupName));
         if(group != null)
@@ -467,18 +491,6 @@ public class ScriptingFormEntity {
         return new CalcPropertyObjectEntity(
                 mapImpl.property,
                 mapImpl.mapping.join(groundProperty.mapping));
-    }
-
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws ScriptingErrorLog.SemanticErrorException {
-        String newSID = (alias == null ? property.getSID() : alias);
-        property.setSID(null);
-        PropertyDrawEntity drawEntity;
-        if ((drawEntity = form.getPropertyDraw(newSID, Version.CURRENT)) != null) {
-            LM.getErrLog().emitAlreadyDefinedPropertyDraw(LM.getParser(), form.getCanonicalName(), newSID, drawEntity.getFormPath());
-        }
-        property.setSID(newSID);
-        
-        property.setShortSID(alias == null ? property.getShortSID() : alias);
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

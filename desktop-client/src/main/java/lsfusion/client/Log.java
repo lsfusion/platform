@@ -104,32 +104,20 @@ public final class Log {
         }
     }
 
-    public static void error(String message) {
-        error(message, null, null, false);
-    }
-
     public static void error(String message, Throwable t) {
-        error(message, t, false);
+        error(message, t, null);
     }
 
-    public static void error(String message, String trace) {
-        error(message, null, null, trace, false);
+    public static void error(String message, Throwable t, String lsfStack) {
+        error(message, null, null, ExceptionUtils.getStackTraceString(t), lsfStack, false);
     }
 
-    public static void error(String message, List<String> titles, List<List<String>> data, boolean warning) {
-        error(message, titles, data, "", warning);
+    public static void messageWarning(String message, List<String> titles, List<List<String>> data) {
+        error(message, titles, data, "", null, true);
     }
-
-    public static void error(String message, Throwable t, boolean forcedShowError) {
-        error(message, null, null, ExceptionUtils.getStackTraceString(t), forcedShowError);
-    }
-
-    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean warning) {
-        error(message, titles, data, trace, false, warning);
-    }
-
-    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean forcedShowError, boolean warning) {
-        if (!forcedShowError && ConnectionLostManager.isConnectionLost()) {
+    
+    public static void error(String message, List<String> titles, List<List<String>> data, String trace, String lsfStack, boolean warning) {
+        if (ConnectionLostManager.isConnectionLost()) {
             return;
         }
 
@@ -158,7 +146,7 @@ public final class Log {
         }
 
         JTextArea taErrorText = new JTextArea(trace, 7, 60);
-        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12)));
         taErrorText.setForeground(Color.RED);
 
         JPanel textWithLine = new JPanel();

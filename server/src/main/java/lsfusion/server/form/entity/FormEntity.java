@@ -10,11 +10,13 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.ServerResponse;
+import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
@@ -22,6 +24,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
+import lsfusion.server.form.stat.StaticDataGenerator;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
@@ -45,9 +48,7 @@ import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
@@ -113,17 +114,20 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return treeGroups.getNFListIt(version);
     }    
     
-    private NFOrderSet<PropertyDrawEntity<?>> propertyDraws = NFFact.orderSet();
-    public Iterable<PropertyDrawEntity<?>> getPropertyDrawsIt() {
+    private NFOrderSet<PropertyDrawEntity> propertyDraws = NFFact.orderSet();
+    public Iterable<PropertyDrawEntity> getPropertyDrawsIt() {
         return propertyDraws.getIt();
     }
-    public Iterable<PropertyDrawEntity<?>> getNFPropertyDrawsIt(Version version) {
+    public Iterable<PropertyDrawEntity> getNFPropertyDrawsIt(Version version) {
         return propertyDraws.getNFIt(version);
     }
-    public ImList<PropertyDrawEntity<?>> getPropertyDrawsList() {
-        return propertyDraws.getList();        
+    public ImList<PropertyDrawEntity> getPropertyDrawsList() {
+        return propertyDraws.getOrderSet();        
     }
-    public Iterable<PropertyDrawEntity<?>> getNFPropertyDrawsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
+    public Iterable<PropertyDrawEntity> getPropertyDrawsListIt() {
+        return propertyDraws.getListIt();        
+    }
+    public Iterable<PropertyDrawEntity> getNFPropertyDrawsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return propertyDraws.getNFListIt(version);
     }
     
@@ -246,6 +250,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
+    public GroupObjectEntity getGroupObjectIntegration(String sID) {
+        for (GroupObjectEntity group : getGroupsIt()) {
+            if (group.getIntegrationSID().equals(sID)) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     public GroupObjectEntity getNFGroupObject(String sID, Version version) {
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
             if (group.getSID().equals(sID)) {
@@ -344,6 +357,56 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
 
         return null;
+    }
+
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getGroupFixedFilters(final ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return getFixedFilters().group(new BaseUtils.Group<GroupObjectEntity, FilterEntity>() {
+            @Override
+            public GroupObjectEntity group(FilterEntity key) {
+                GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
+                if (groupObject == null) 
+                    return GroupObjectEntity.NULL;
+                return groupObject;
+            }
+        });
+    }
+    
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> getGroupProperties(final ImSet<GroupObjectEntity> excludeGroupObjects, final boolean supportGroupColumns) {
+        return getStaticPropertyDrawsList().groupOrder(new BaseUtils.Group<GroupObjectEntity, PropertyDrawEntity>() {
+            public GroupObjectEntity group(PropertyDrawEntity key) {
+                GroupObjectEntity applyObject = key.getApplyObject(FormEntity.this, excludeGroupObjects, supportGroupColumns);
+                return applyObject == null ? GroupObjectEntity.NULL : applyObject;
+            }});
+    }
+
+    public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(new SFunctionSet<PropertyDrawEntity>() {
+            public boolean contains(PropertyDrawEntity element) {
+                return element.isCalcProperty() && element.getIntegrationSID() != null;
+            }
+        });
+    }
+
+    @IdentityLazy
+    public ImMap<GroupObjectEntity, ImOrderMap<OrderEntity, Boolean>> getGroupOrdersList(final ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return BaseUtils.immutableCast(getDefaultOrdersList().mapOrderKeyValues(new GetValue<OrderEntity<?>, PropertyDrawEntity<?>>() {
+            public OrderEntity<?> getMapValue(PropertyDrawEntity<?> value) {
+                return value.getOrder();
+            }
+        }, new GetValue<Boolean, Boolean>() {
+            public Boolean getMapValue(Boolean value) {
+                return !value;
+            }}).mergeOrder(getFixedOrdersList()).groupOrder(new BaseUtils.Group<GroupObjectEntity, OrderEntity<?>>() {
+            @Override
+            public GroupObjectEntity group(OrderEntity<?> key) {
+                GroupObjectEntity groupObject = key.getApplyObject(FormEntity.this, excludeGroupObjects);
+                if(groupObject == null)
+                    return GroupObjectEntity.NULL;
+                return groupObject;
+            }
+        }));
     }
 
     public RegularFilterEntity getRegularFilter(int id) {
@@ -486,12 +549,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects) {
+        return getApplyObject(objects, SetFact.<GroupObjectEntity>EMPTY());
+    }
+    public GroupObjectEntity getApplyObject(ImSet<ObjectEntity> objects, ImSet<GroupObjectEntity> excludeGroupObjects) {
         GroupObjectEntity result = null;
         for (GroupObjectEntity group : getGroupsList()) {
-            for (ObjectEntity object : group.getObjects()) {
-                if (objects.contains(object)) {
-                    result = group;
-                    break;
+            if(!excludeGroupObjects.contains(group)) {
+                for (ObjectEntity object : group.getObjects()) {
+                    if (objects.contains(object)) {
+                        result = group;
+                        break;
+                    }
                 }
             }
         }
@@ -520,11 +588,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if (propertySID != null) {
             newPropertyDraw.setSID(propertySID);
             
-            newPropertyDraw.setShortSID(inheritedProperty.getName());
+            newPropertyDraw.setIntegrationSID(inheritedProperty.getName());
         }
 
-        propertyDraws.add(newPropertyDraw, new FindIndex<PropertyDrawEntity<?>>() {
-            public int getIndex(List<PropertyDrawEntity<?>> list) {
+        propertyDraws.add(newPropertyDraw, new FindIndex<PropertyDrawEntity>() {
+            public int getIndex(List<PropertyDrawEntity> list) {
                 int ind = list.size() - 1;
                 if (!newPropertyDraw.shouldBeLast) {
                     while (ind >= 0) {
@@ -579,7 +647,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcPropertyRevImplement<P, ObjectEntity> impl) {
         return addPropertyObject(impl.property, impl.mapping);
     }
-    public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(CalcProperty<P> property, ImRevMap<P, ObjectEntity> objects) {
+    public <P extends PropertyInterface> CalcPropertyObjectEntity<P> addPropertyObject(CalcProperty<P> property, ImRevMap<P, ObjectEntity> objects) {
         return new CalcPropertyObjectEntity<>(property, objects);
     }
 
@@ -605,6 +673,56 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         return null;
     }
+
+    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sid, PropertyDrawEntity checkProperty, Version version) {
+        if (sid == null) {
+            return null;
+        }
+        for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
+            if (sid.equals(propertyDraw.getIntegrationSID()) && BaseUtils.nullEquals(propertyDraw.getNFToDraw(this, version), checkProperty.getNFToDraw(this, version))) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean noClasses() {
+        return false;
+    }
+
+    public static class AlreadyDefined extends Exception {
+        public final String formCanonicalName;
+        public final String newSID;
+        public final String formPath;
+
+        public AlreadyDefined(String formCanonicalName, String newSID, String formPath) {
+            this.formCanonicalName = formCanonicalName;
+            this.newSID = newSID;
+            this.formPath = formPath;
+        }
+    }
+
+    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws AlreadyDefined {
+        String newSID = (alias == null ? property.getSID() : alias);
+        property.setSID(null);
+        PropertyDrawEntity drawEntity;
+        if ((drawEntity = getPropertyDraw(newSID, Version.CURRENT)) != null) {
+            throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
+        }
+        property.setSID(newSID);
+
+        // has to be done somewhere in open operator, because interactive forms can have properties with the same name 
+//        String newIntegrationSID = (alias == null ? property.getIntegrationSID() : alias);
+//        property.setIntegrationSID(null);
+//        if ((drawEntity = getPropertyDrawIntegration(newIntegrationSID, property, Version.CURRENT)) != null) {
+//            throw new AlreadyDefined(getCanonicalName(), newIntegrationSID, drawEntity.getFormPath());
+//        }
+//        property.setIntegrationSID(newIntegrationSID);
+        if(alias != null)
+            property.setIntegrationSID(alias);
+    }
+
 
     public PropertyDrawEntity<?> getPropertyDraw(String name, List<String> mapping, Version version) {
         return getPropertyDraw(PropertyDrawEntity.createSID(name, mapping), version);
@@ -665,38 +783,46 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public FormView getNFRichDesign(Version version) {
         return richDesign.getNF(version);
-/*        FormView view = richDesign.getNF(version);
-        if(view == null) {
-            view = createDefaultRichDesign(version);
-            richDesign.set(view, version);
-        }
-        return view;*/
     }
 
     public void setRichDesign(FormView view, Version version) {
         richDesign.set(view, version);
     }
 
-    private GroupObjectHierarchy groupHierarchy;
-
-    public GroupObjectHierarchy.ReportHierarchy getReportHierarchy(boolean forceGroupNonJoinable) {
-        return getGroupHierarchy().createReportHierarchy(forceGroupNonJoinable);
+    private StaticDataGenerator.Hierarchy getHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filter) {
+        ImMap<GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> groupProperties = getGroupProperties(valueGroups, supportGroupColumns);
+        if(filter != null)
+            groupProperties = groupProperties.mapValues(filter);
+        return new StaticDataGenerator.Hierarchy(getGroupHierarchy(supportGroupColumns, valueGroups), groupProperties, valueGroups);
     }
 
-    public GroupObjectHierarchy.ReportHierarchy getSingleGroupReportHierarchy(int groupId, boolean forceGroupNonJoinable) {
-        return getGroupHierarchy().createSingleGroupReportHierarchy(groupId, forceGroupNonJoinable);
+    @IdentityInstanceLazy
+    public StaticDataGenerator.Hierarchy getImportHierarchy() {
+        return getHierarchy(false, SetFact.<GroupObjectEntity>EMPTY(), null);
+    }
+    public ImMap<GroupObjectEntity, ImSet<FilterEntity>> getImportFixedFilters() {
+        return getGroupFixedFilters(SetFact.<GroupObjectEntity>EMPTY());
     }
 
-    public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
+    @IdentityInstanceLazy
+    private StaticDataGenerator.Hierarchy getCachedStaticHierarchy(boolean isReport, ImSet<GroupObjectEntity> valueGroups) {
+        return getHierarchy(isReport, valueGroups, null);
+    }
+    
+    public StaticDataGenerator.Hierarchy getStaticHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> valueGroups, GetKeyValue<ImOrderSet<PropertyDrawEntity>, GroupObjectEntity, ImOrderSet<PropertyDrawEntity>> filter) {
+        if(filter == null) // optimization
+            return getCachedStaticHierarchy(supportGroupColumns, valueGroups);
+        return getHierarchy(supportGroupColumns, valueGroups, filter);
     }
 
-    public GroupObjectHierarchy getGroupHierarchy() {
-        if (groupHierarchy == null) {
-            FormGroupHierarchyCreator creator = new FormGroupHierarchyCreator(this);
-            groupHierarchy = creator.createHierarchy();
-            modifyHierarchy(groupHierarchy);
-        }
-        return groupHierarchy;
+    @IdentityInstanceLazy
+    public GroupObjectHierarchy getGroupHierarchy(boolean supportGroupColumns, ImSet<GroupObjectEntity> excludeGroupObjects) {
+        return new FormGroupHierarchyCreator(this, supportGroupColumns).createHierarchy(excludeGroupObjects);
+    }
+
+    @IdentityInstanceLazy
+    public GroupObjectHierarchy getSingleGroupObjectHierarchy(GroupObjectEntity groupObject) {
+        return new GroupObjectHierarchy(groupObject, Collections.singletonMap(groupObject, SetFact.<GroupObjectEntity>EMPTYORDER()));
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, Version version, ActionPropertyObjectEntity... actions) {
@@ -720,8 +846,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property, boolean grid) {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
-        if(grid) {
-            GroupObjectEntity toDraw = property.getToDraw(this);
+        GroupObjectEntity toDraw;
+        if(grid && (toDraw = property.getToDraw(this)) != null) {
             if (toDraw.isInTree())
                 drawComponent = formView.get(toDraw.treeGroup);
             else
@@ -897,7 +1023,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         MSet<GroupObjectEntity> mFixedGroupObjects = SetFact.mSetMax(fixedFilters.size());
         for(FilterEntity<?> filterEntity : fixedFilters) {
             if(!group.getObjects().disjoint(filterEntity.getObjects())) { // для фильтров "зависящих" от группы
-                GroupObjectEntity drawGroup = filterEntity.getToDraw(this);
+                GroupObjectEntity drawGroup = filterEntity.getApplyObject(this);
                 if(!drawGroup.equals(group))
                     mFixedGroupObjects.add(drawGroup); 
             }
@@ -912,27 +1038,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public List<PropertyDrawEntity> getProperties(GroupObjectEntity groupObject) {
-
-        List<PropertyDrawEntity> result = new ArrayList<>();
-
-        for (PropertyDrawEntity property : getPropertyDrawsIt()) {
-            if (groupObject.equals(property.getToDraw(this))) {
-                result.add(property);
-            }
-        }
-
-        return result;
-    }
-
     public void setReadOnlyIf(PropertyDrawEntity property, CalcPropertyObjectEntity condition) {
         property.propertyReadOnly = condition;
-    }
-
-    public void setEditType(PropertyEditType editType, GroupObjectEntity groupObject) {
-        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
-            setEditType(propertyView, editType);
-        }
     }
 
     public void setEditType(PropertyEditType editType) {
@@ -944,12 +1051,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public void setNFEditType(PropertyEditType editType, Version version) {
         for (PropertyDrawEntity propertyView : getNFPropertyDrawsIt(version)) {
             setEditType(propertyView, editType);
-        }
-    }
-
-    public void setEditType(ObjectEntity objectEntity, PropertyEditType editType) {
-        for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
-            setEditType(property, editType);
         }
     }
 

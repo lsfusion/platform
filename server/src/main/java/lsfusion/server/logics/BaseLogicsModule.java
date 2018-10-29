@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
@@ -124,10 +125,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP formPageCount;
     public LCP exportFile;
     public LCP exportFiles;
+    public LCP importFile;
+    public LCP importFiles;
     public LCP ignorePrintType;
     public LCP readFile;
 
-    public LCP imported;
+    public LCP getExtension;
+
+    public LCP<?> imported;
     public LCP importedString;
 
     public LCP defaultBackgroundColor;
@@ -160,6 +165,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
+
+    // need to implement next methods this way, because they are used in super.initProperties, and can not be initialized before super.initProperties
 
     @IdentityLazy
     public LAP getFormEditReport() {
@@ -419,6 +426,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         formPageCount = findProperty("formPageCount[]");
         exportFile = findProperty("exportFile[]");
         exportFiles = findProperty("exportFiles[VARSTRING[100]]");
+        importFile = findProperty("importFile[]");
+        importFiles = findProperty("importFiles[VARSTRING[100]]");
         ignorePrintType = findProperty("ignorePrintType[]");
         readFile = findProperty("readFile[]");
 
@@ -437,7 +446,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         objectClassName = findProperty("objectClassName[Object]");
         statCustomObjectClass = findProperty("stat[CustomObjectClass]");
-        
+
+        getExtension = findProperty("getExtension[?]");
+
         // Настройка отчетов
         reportRowHeight = findProperty("reportRowHeight[]");
         reportCharWidth = findProperty("reportCharWidth[]");
@@ -597,13 +608,21 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "RawFile"),
                 getLCPByUniqueName(namePrefix + "File"),
                 getLCPByUniqueName(namePrefix + "ExcelFile"),
+                getLCPByUniqueName(namePrefix + "CsvFile"),
+                getLCPByUniqueName(namePrefix + "HtmlFile"),
+                getLCPByUniqueName(namePrefix + "JsonFile"),
+                getLCPByUniqueName(namePrefix + "XmlFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
                 getLCPByUniqueName(namePrefix + "RawLink"),
                 getLCPByUniqueName(namePrefix + "Link"),
-                getLCPByUniqueName(namePrefix + "ExcelLink")
-        );
+                getLCPByUniqueName(namePrefix + "ExcelLink"),
+                getLCPByUniqueName(namePrefix + "CsvLink"),
+                getLCPByUniqueName(namePrefix + "HtmlLink"),
+                getLCPByUniqueName(namePrefix + "JsonLink"),
+                getLCPByUniqueName(namePrefix + "XmlLink")
+                );
     }
 
     protected LCP<?> getLCPByUniqueName(String name) {
@@ -653,8 +672,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP getObjValueProp(FormEntity formEntity, ObjectEntity obj) {
         ValueClass cls = obj.baseClass;
         LCP result = addProp(new ObjectValueProperty(cls, obj));
-        if (formEntity.getCanonicalName() != null) {
-            // issue #1725 Потенциальное совпадение канонических имен различных свойств
+        if (formEntity.getCanonicalName() != null && !obj.noClasses()) {
             String name = objValuePrefix + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
         }
@@ -680,7 +698,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @IdentityStrongLazy
     public LAP getFormNavigatorAction(FormEntity form) {
-        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, new ArrayList<ObjectEntity>(), false, WindowFormType.DOCKED, true);
+        LAP<?> result = addIFAProp(LocalizedString.NONAME, form, SetFact.<ObjectEntity>EMPTYORDER(), false, WindowFormType.DOCKED, true);
 
         String contextPrefix = getFormPrefix(form);
         String name = "_NAVIGATORFORM" + contextPrefix;

@@ -42,7 +42,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
         finalizeInit();
     }
     
-        @Override
+    @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         return super.aspectChangeExtProps().replaceValues(true);
     }

@@ -15,6 +15,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 
 public abstract class CompareWhere<This extends CompareWhere<This>> extends BinaryWhere<This> {
     
@@ -75,14 +76,14 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         return compare(mapKeys.filterIncl(mapValues.keys()), mapValues);
     }
 
-    public static <K, KV extends K> Where compareInclValues(ImMap<K,? extends Expr> map,ImMap<KV, DataObject> mapValues) {
+    public static <K, KV extends K> Where compareInclValues(ImMap<K,? extends Expr> map,ImMap<KV, ? extends ObjectValue> mapValues) {
         return compareValues(map.filterIncl(mapValues.keys()), mapValues);
     }
 
-    public static <K> Where compareValues(ImMap<K,? extends Expr> map,ImMap<K, DataObject> mapValues) {
+    public static <K> Where compareValues(ImMap<K,? extends Expr> map,ImMap<K, ? extends ObjectValue> mapValues) {
         Where where = TRUE;
         for(int i=0,size=map.size();i<size;i++)
-            where = where.and(map.getValue(i).compare(mapValues.get(map.getKey(i)), Compare.EQUALS));
+            where = where.and(map.getValue(i).compare(mapValues.get(map.getKey(i)).getExpr(), Compare.EQUALS));
         return where;
     }
 

@@ -4,6 +4,7 @@ import jasperapi.ReportGenerator;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Log;
 import lsfusion.client.exceptions.ClientExceptionManager;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -49,7 +50,7 @@ public class ClientReportUtils {
         public void run() {
             try {
 
-                JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+                JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();

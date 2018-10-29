@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.BaseClass;
@@ -12,7 +13,14 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -48,7 +56,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     int getReportMinimumWidth();
     int getReportPreferredWidth();
 
-    boolean fillReportDrawField(ReportDrawField reportField);
+    void fillReportDrawField(ReportDrawField reportField);
     
     boolean isFlex();
 
@@ -62,6 +70,20 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     ExtInt getCharLength();
 
+    T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
+    T parseJSON(JSONObject object, String key) throws ParseException, JSONException;
+    T parseCSV(String value) throws ParseException;
+    T parseXML(String value) throws ParseException;
+    T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
+
+    OverJDBField formatDBF(String fieldName) throws JDBFException;
+    Object formatJSON(T object);
+    String formatCSV(T object);
+    String formatXML(T object);
+    Object formatXLS(T object);
+
+    T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - not null (файлы decode'ся base64)
+    
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
     String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)

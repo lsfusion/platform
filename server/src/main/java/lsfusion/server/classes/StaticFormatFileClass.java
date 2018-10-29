@@ -22,7 +22,7 @@ public abstract class StaticFormatFileClass extends FileClass {
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
         if (typeFrom instanceof DynamicFormatFileClass) {
-            return "castfromcustomfile(" + value + ")";
+            return "cast_from_custom_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }

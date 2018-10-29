@@ -84,8 +84,7 @@ public class ActionClass extends DataClass<Object> {
     }
 
     @Override
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
     }
 
     public Object parseString(String s) throws ParseException {

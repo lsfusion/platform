@@ -77,6 +77,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP defaultTimeZone;
     public LCP defaultTwoDigitYearStart;
     
+    public LCP userFontSize;
+    
     public LAP deliveredNotificationAction;
 
     public LAP generateLoginPassword;
@@ -159,6 +161,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         defaultCountry = findProperty("defaultUserCountry[]");
         defaultTimeZone = findProperty("defaultUserTimeZone[]");
         defaultTwoDigitYearStart = findProperty("defaultUserTwoDigitYearStart[]");
+        
+        userFontSize = findProperty("fontSize[CustomUser]");
         
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
 

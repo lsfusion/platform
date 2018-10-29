@@ -49,8 +49,24 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
+import lsfusion.server.logics.property.actions.integration.IntegrationFormEntity;
+import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
+import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.json.ExportJSONActionProperty;
+import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.xml.ExportXMLActionProperty;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.csv.ExportCSVActionProperty;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.ExportDBFActionProperty;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.table.ExportTableActionProperty;
 import lsfusion.server.logics.property.actions.file.OpenActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.ImportJSONActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.hierarchy.xml.ImportXMLActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.plain.csv.ImportCSVActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.ImportDBFActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.plain.table.ImportTableActionProperty;
+import lsfusion.server.logics.property.actions.integration.importing.plain.xls.ImportXLSActionProperty;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
@@ -522,26 +538,105 @@ public abstract class LogicsModule {
         return addMFAProp(null, caption, form, objectsToSet, newSession);
     }
     public LAP addMFAProp(AbstractGroup group, LocalizedString caption, FormEntity form, ImOrderSet<ObjectEntity> objectsToSet, boolean newSession) {
-        LAP result = addIFAProp(caption, form, objectsToSet.toJavaList(), true, WindowFormType.FLOAT, false);
+        LAP result = addIFAProp(caption, form, objectsToSet, true, WindowFormType.FLOAT, false);
         return addSessionScopeAProp(group, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, result);
     }
 
-    protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
-        return addIFAProp(null, caption, form, objectsToSet, Collections.nCopies(objectsToSet.size(), false), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
+    protected <O extends ObjectSelector> LAP addIFAProp(LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
+        return addIFAProp(null, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, syncType, windowType, forbidDuplicate, false, false);
     }
-    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ManageSessionType manageSession, Boolean noCancel, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addIFAProp(group, caption, form, objectsToSet, nulls, ListFact.<O>EMPTY(), ListFact.<LCP>EMPTY(), ListFact.<Boolean>EMPTY(), manageSession, noCancel, ListFact.<O>EMPTY(), ListFact.<CalcProperty>EMPTY(), syncType, windowType, forbidDuplicate, checkOnOk, readonly);
     }
-    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
+    protected <O extends ObjectSelector> LAP addIFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LCP> inputProps, ImList<Boolean> inputNulls, ManageSessionType manageSession, Boolean noCancel, ImList<O> contextObjects, ImList<CalcProperty> contextProperties, boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
         return addProperty(group, new LAP<>(new FormInteractiveActionProperty<>(caption, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, contextObjects, contextProperties, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly)));
     }
-    protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
+    protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
         return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNulls)));
     }
-    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, List<O> objectsToSet, List<Boolean> nulls, FormExportType staticType, boolean noHeader, String separator, String charset, LCP targetProp, Object... params) {
-        if(targetProp == null)
-            targetProp = (staticType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
-        return addProperty(group, new LAP<>(new ExportActionProperty<>(caption, form, objectsToSet, nulls, staticType, targetProp, noHeader, separator, charset)));
+    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
+        ExportActionProperty<O> exportAction;
+        switch(staticType) {
+            case XML:
+                exportAction = new ExportXMLActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                break;
+            case JSON:
+                exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                break;
+            case CSV:
+                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, noHeader, separator, noEscape, charset);
+                break;
+            case XLS:
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, false);
+                break;
+            case XLSX:
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, true);
+                break;
+            case DBF:
+                exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
+                break;
+            case TABLE:
+                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
+                break;
+            default:
+                throw new UnsupportedOperationException();                
+        }
+        return addProperty(group, new LAP<>(exportAction));
+    }
+
+    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+        // getExtension(FILE(prm1))
+        // FOR x = getExtension(prm1) DO {
+        //    CASE EXCLUSIVE
+        //          WHEN x = type.getExtension
+        //              IMPORT type form...
+        // }
+        
+        Object[] cases = new Object[0];
+        for(FormIntegrationType importType : FormIntegrationType.values()) {
+            cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
+            directLI(addImportFAProp(null, importType, formEntity, paramsCount, fileProp, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
+        }        
+        
+        return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
+                add(add(getUParams(paramsCount), 
+                        new Object[] {addJProp(baseLM.equals2, 1, baseLM.getExtension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))  
+                        directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
+    }
+    
+    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+        ImportActionProperty importAction;
+        
+        if(format == null)
+            return addAutoImportFAProp(group, formEntity, paramsCount, fileProp, groupFiles, sheetAll, separator, noHeader, charset, hasWhere);
+        else {
+            switch (format) {
+                // hierarchical
+                case XML:
+                    importAction = new ImportXMLActionProperty(paramsCount, fileProp, formEntity);
+                    break;
+                case JSON:
+                    importAction = new ImportJSONActionProperty(paramsCount, fileProp, formEntity);
+                    break;
+                // plain
+                case CSV:
+                    importAction = new ImportCSVActionProperty(paramsCount, fileProp, groupFiles, formEntity, noHeader, charset, separator);
+                    break;
+                case DBF:
+                    importAction = new ImportDBFActionProperty(paramsCount, fileProp, groupFiles, formEntity, charset, hasWhere);
+                    break;
+                case XLS:
+                case XLSX:
+                    importAction = new ImportXLSActionProperty(paramsCount, fileProp, groupFiles, formEntity, sheetAll);
+                    break;
+                case TABLE:
+                    importAction = new ImportTableActionProperty(paramsCount, fileProp, groupFiles, formEntity);
+                    break;
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
+        return addProperty(group, new LAP<>(importAction));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -559,51 +654,44 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Export property action ----------------- //
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormExportType type, int resInterfaces, ImOrderSet<String> aliases, ImOrderSet<String> exportAliases, final ImList<Type> types,
-                                         ImOrderMap<String, Boolean> orders, LCP targetProp, boolean conditional, boolean hasListOption, String separator, boolean noHeader, boolean noEscape,
-                                         String charset, Object... params) {
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator,
+                                         boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
-        ImMap<String, CalcPropertyInterfaceImplement<PropertyInterface>> aliasesExprs = aliases.mapOrderValues(new GetIndex<CalcPropertyInterfaceImplement<PropertyInterface>>() {
-            public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(int i) {
-                return exprs.get(i);
-            }
-        });
-        ImMap<String, Type> aliasesTypes = aliases.mapOrderValues(new GetIndex<Type>() {
-            public Type getMapValue(int i) {
-                return types.get(i);
-            }
-        });
+        ImOrderSet<PropertyInterface> mapInterfaces = BaseUtils.immutableCast(readImplements.subList(0, resInterfaces).toOrderExclSet());
+        
+        // determining where
+        CalcPropertyInterfaceImplement<PropertyInterface> where = conditional ? readImplements.get(readImplements.size() - 1) : null;
+        where = DerivedProperty.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
-        ExtendContextActionProperty exportAction;
-        if (type == FormExportType.CSV)
-            exportAction = new ExportCSVDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, separator, noHeader, noEscape, charset);
-        else if (type == FormExportType.DBF)
-            exportAction = new ExportDBFDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, charset);
-        else if (type == FormExportType.JSON)
-            exportAction = new ExportJSONDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, hasListOption);
-        else if (type == FormExportType.XML)
-            exportAction = new ExportXMLDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, hasListOption);
-        else if (type == FormExportType.TABLE)
-            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                    (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                    conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, false);
-        else
-            exportAction = new ExportTableDataActionProperty<>(caption, type.getExtension(), innerInterfaces.getSet(),
-                (ImOrderSet) readImplements.subList(0, resInterfaces).toOrderExclSet(), exportAliases, aliasesExprs, aliasesTypes,
-                conditional ? readImplements.get(readImplements.size() - 1) : null, orders, targetProp, true);
+        // creating form
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
+        ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
+        ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
+        
+        ImMap<GroupObjectEntity, LCP> exportFiles = MapFact.EMPTY();
+        if(type.isPlain()) {
+            exportFiles = MapFact.singleton(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject, singleExportFile);
+            singleExportFile = null;
+        }            
+                
+        // creating action
+        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, singleExportFile, exportFiles);
+    }
 
+    protected LAP addImportPropertyAProp(LocalizedString caption, FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+        ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
+        ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
-        return addProperty(null, new LAP(exportAction));
+        // determining where
+        CalcPropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1? baseLM.imported.getImplement(innerInterfaces.single()) : null;
+
+        // creating form
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
+        
+        // create action
+        return addImportFAProp(null, type, form, paramsCount, null, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, charset, hasWhere);
     }
 
     // ------------------- Set property action ----------------- //
@@ -1911,7 +1999,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
 //            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
         //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), new ArrayList<ObjectSelector>(), new ArrayList<Boolean>(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).property.getImplement();
+        logAction = (ActionPropertyMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ",property.caption), new OutFormSelector<T>(property, messageProperty), ListFact.<ObjectSelector>EMPTY(), ListFact.<Boolean>EMPTY(), null, null, FormPrintType.MESSAGE, false, 30, null, null, true).property.getImplement();
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),

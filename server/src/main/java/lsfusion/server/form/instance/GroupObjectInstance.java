@@ -35,10 +35,7 @@ import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.GroupObjectProp;
-import lsfusion.server.form.entity.UpdateType;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.filter.AndFilterInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.OrFilterInstance;
@@ -66,7 +63,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public final CalcPropertyObjectInstance propertyBackground;
     public final CalcPropertyObjectInstance propertyForeground;
-    private final boolean noClassFilter;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
@@ -148,7 +144,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             this.pageSize = Settings.get().getPageSizeDefaultValue();
         }
         
-        this.noClassFilter = entity.noClassFilter;
         this.parent = parent;
         this.props = props;
     }
@@ -399,14 +394,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public static ImMap<ObjectInstance, ValueClass> getGridClasses(ImSet<ObjectInstance> objects) {
-        return objects.mapValues(new GetValue<ValueClass, ObjectInstance>() {
+        return objects.filterFn(new SFunctionSet<ObjectInstance>() {
+            @Override
+            public boolean contains(ObjectInstance element) {
+                return !element.noClasses;
+            }
+        }).mapValues(new GetValue<ValueClass, ObjectInstance>() {
             public ValueClass getMapValue(ObjectInstance value) {
                 return value.getGridClass();
             }});
     }
     public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, MSet<CalcProperty> mUsedProps) throws SQLException, SQLHandledException {
-        if(noClassFilter)
-            return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier, mUsedProps);
     }
 
@@ -1029,7 +1027,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         return null; // ничего не изменилось
     }
-
+    
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
@@ -1255,11 +1253,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         }
 
         @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
-        @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.background} (") + GroupObjectInstance.this.toString() + ")";
         }
@@ -1281,11 +1274,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         public int getID() {
             return GroupObjectInstance.this.getID();
-        }
-
-        @Override
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override

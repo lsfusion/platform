@@ -11,14 +11,12 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.profiler.ProfiledObject;
-import lsfusion.server.profiler.RMICallProfileObject;
 import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -230,9 +228,9 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return closed;
     }
 
-    public void logServerException(Throwable t) throws SQLException, SQLHandledException {
+    public void logServerException(Throwable t, String lsfStack) throws SQLException, SQLHandledException {
         BusinessLogics businessLogics = getContext().getLogicsInstance().getBusinessLogics();
-        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, null, null, false, false);
+        businessLogics.systemEventsLM.logException(businessLogics, getStack(), t, lsfStack, null, null, false, false);
     }
 
     public void interrupt(boolean cancelable) throws RemoteException {

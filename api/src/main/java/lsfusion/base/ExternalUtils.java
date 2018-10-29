@@ -211,7 +211,7 @@ public class ExternalUtils {
                     builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
             }
             entity = builder.build();
-        } else {
+        } else if(paramCount == 1) {
             Object value = BaseUtils.single(paramList);
             if (value instanceof byte[]) {
                 String extension = BaseUtils.getExtension((byte[]) value);
@@ -221,6 +221,8 @@ public class ExternalUtils {
             } else {
                 entity = new StringEntity((String) value, ExternalUtils.TEXT_PLAIN);
             }
+        } else {
+            entity = new StringEntity("", ExternalUtils.TEXT_PLAIN);
         }
         return entity;
     }

@@ -531,10 +531,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         final JMenuItem about = new JMenuItem(getString("layout.menu.help.about"));
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JDialog dialog = new JDialog(DockableMainFrame.this);
+                JDialog dialog = new JDialog(DockableMainFrame.this, true);
                 Container contentPane = dialog.getContentPane();
                 contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-                contentPane.setPreferredSize(new Dimension(265, 100));
 
                 JLabel label = new JLabel(Main.getLogo());
                 label.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -548,7 +547,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                     text = "<html><b>" + text + "</b> powered by " + Main.LSFUSION_TITLE + "</html>";
                 }
                 JLabel labelName = new JLabel(text);
-                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, 12));
+                labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN, Main.getIntUIFontSize(12)));
                 contentPane.add(labelName);
 
                 dialog.setTitle(about.getText());

@@ -27,17 +27,26 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     private CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+        assert !noClasses();
         return IsClassProperty.getProperty(interfaces);
     }
 
     @Override
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
-        depends.add((CalcProperty) getInterfaceClassProperty().property);
+        if(!noClasses())
+            depends.add(getInterfaceClassProperty().property);
+    }
+
+    private boolean noClasses() {
+        return object.noClasses();
     }
 
     @Override
     protected Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        return joinImplement.get(getInterface()).and(getInterfaceClassProperty().mapExpr(joinImplement, calcType, propChanges, changedWhere).getWhere()); // на тип особого смысла
+        Expr result = joinImplement.get(getInterface());
+        if(!noClasses())
+            result = result.and(getInterfaceClassProperty().mapExpr(joinImplement, calcType, propChanges, changedWhere).getWhere()); // на тип особого смысла
+        return result;
     }
 
     @Override
@@ -52,8 +61,10 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
 
     @Override
     public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
-        return getInterface().mapInferInterfaceClasses(commonValue, inferType).and(
-                getInterfaceClassProperty().mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType), inferType);
+        Inferred<ClassPropertyInterface> result = getInterface().mapInferInterfaceClasses(commonValue, inferType);
+        if(!noClasses())
+            result = result.and(getInterfaceClassProperty().mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType), inferType);
+        return result;
     }
     @Override
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {

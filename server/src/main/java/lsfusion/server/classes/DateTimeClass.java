@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
@@ -9,7 +10,11 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.sql.*;
 import java.text.DateFormat;
@@ -33,12 +38,10 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return Timestamp.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     public byte getTypeID() {
@@ -108,15 +111,33 @@ public class DateTimeClass extends DataClass<Timestamp> {
         throw new RuntimeException("not supported");
     }
 
+    @Override
+    public Timestamp parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getDate(fieldName));
+    }
+    @Override
+    public Timestamp parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        java.util.Date cellValue;
+        try {
+            cellValue = cell.getDateCellValue();
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue);
+        }
+        return readXLS(cellValue);
+    }
+
     public Timestamp parseString(String s) throws ParseException {
         try {
-            return DateConverter.dateToStamp(getDateTimeFormat().parse(s));
-        } catch (Exception e) {
+            java.util.Date parse = null;
             try {
-                return DateConverter.dateToStamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(s));
-            } catch (Exception e2) {
-                throw new ParseException("error parsing datetime", e);
+                parse = getDateTimeFormat().parse(s);
+            } catch (java.text.ParseException e) {
+                parse = DateConverter.smartParse(s);
             }
+            
+            return DateConverter.dateToStamp(parse);
+        } catch (Exception e) {
+            throw new ParseException("error parsing datetime", e);
         }
     }
 
@@ -145,6 +166,16 @@ public class DateTimeClass extends DataClass<Timestamp> {
     @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'D', 8, 0);
+    }
+
+    @Override
+    public Object formatXLS(Timestamp object) {
+        return object;
     }
 
     @Override

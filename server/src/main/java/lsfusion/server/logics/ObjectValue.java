@@ -19,7 +19,7 @@ import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.ReallyChanged;
-import lsfusion.server.form.instance.filter.CompareValue;
+import lsfusion.server.form.instance.filter.CompareInstance;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionChanges;
@@ -27,7 +27,7 @@ import lsfusion.server.session.SessionChanges;
 import java.sql.SQLException;
 import java.util.Collection;
 
-public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareValue {
+public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValuesContext<T> implements CompareInstance {
 
     public abstract String getString(SQLSyntax syntax);
 

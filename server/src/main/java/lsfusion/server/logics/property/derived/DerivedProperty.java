@@ -873,4 +873,20 @@ public class DerivedProperty {
         return createChangeClassAction(cls, forceDialog, innerInterfaces, context, where, changeInterface, baseClass);
     }
 
+    private static <P extends PropertyInterface> CalcPropertyMapImplement<?, P> getFullWhereProperty(ImSet<P> innerInterfaces, CalcPropertyInterfaceImplement<P> where, ImCol<CalcPropertyInterfaceImplement<P>> exprs) {
+        CalcPropertyMapImplement<?, P> result = createUnion(innerInterfaces, exprs.mapColValues(new GetValue<CalcPropertyInterfaceImplement<P>, CalcPropertyInterfaceImplement<P>>() {
+            public CalcPropertyInterfaceImplement<P> getMapValue(CalcPropertyInterfaceImplement<P> value) {
+                return createNotNull(value);
+            }
+        }).toList());
+        if (where != null)
+            result = DerivedProperty.createAnd(innerInterfaces, where, result);
+        return result;
+    }
+
+    public static <P extends PropertyInterface> CalcPropertyInterfaceImplement<P> getFullWhereProperty(ImSet<P> innerInterfaces, ImSet<P> mapInterfaces, CalcPropertyInterfaceImplement<P> where, ImCol<CalcPropertyInterfaceImplement<P>> exprs) {
+        ImSet<P> extInterfaces = innerInterfaces.remove(mapInterfaces);
+        return (where == null && extInterfaces.isEmpty()) || (where != null && where.mapIsFull(extInterfaces)) ?
+                (where == null ? DerivedProperty.<P>createTrue() : where) : getFullWhereProperty(innerInterfaces, where, exprs);
+    }
 }

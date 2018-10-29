@@ -6,7 +6,6 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
@@ -26,6 +25,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
@@ -40,7 +40,6 @@ import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
@@ -152,7 +151,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     @Override
-    public DataObject getObjectValue(ImMap<ObjectEntity, ObjectValue> mapObjects) {
+    public DataObject getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         return this;
     }
 
@@ -236,7 +235,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return null;
     }
 
-    public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groups) {
+    public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return null;
     }
 
@@ -246,9 +245,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public PropertyObjectInterfaceInstance getInstance(InstanceFactory instanceFactory) {
         return this;
-    }
-
-    public void fillObjects(MSet<ObjectEntity> objects) {
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
@@ -324,7 +320,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     @Override
-    public Expr getExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects) {
+    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) {
         return getExpr();
     }
 }

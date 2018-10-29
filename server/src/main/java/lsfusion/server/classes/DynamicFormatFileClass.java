@@ -49,7 +49,7 @@ public class DynamicFormatFileClass extends FileClass {
             extension = ((StaticFormatFileClass) typeFrom).getDefaultCastExtension();
         }
         if (extension != null) {
-            return "casttocustomfile(" + value + ", CAST('" + extension + "' AS VARCHAR))";
+            return "cast_to_custom_file(" + value + ", CAST('" + extension + "' AS VARCHAR))";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }

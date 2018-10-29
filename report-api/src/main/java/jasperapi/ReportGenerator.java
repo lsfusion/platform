@@ -1,13 +1,14 @@
 package jasperapi;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.interop.form.ReportGenerationDataType;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
@@ -41,8 +42,9 @@ public class ReportGenerator {
 
     private Map<String, List<String>> hierarchy;
     private Map<String, JasperDesign> designs;
-    private Map<String, ClientReportData> data;
-    private Map<String, List<List<Object>>> compositeColumnValues;
+    
+    private Map<String, ClientKeyData> keyData;
+    private ClientPropertyData propData;    
 
     // Для того, чтобы в отчетах данные выводились по несколько раз, нужно создать в .jrxml файле parameter строкового типа
     // с таким именем, и в default value expression вписать имя field'а, который будет содержать количество копий,
@@ -73,15 +75,23 @@ public class ReportGenerator {
         TRAY_VALUES.put("side", MediaTray.SIDE);
     }
 
-    public static class SourcesGenerationOutput {
-        public Map<String, ClientReportData> data;
-        // данные для свойств с группами в колонках
-        // объекты, от которых зависит свойство
-        public Map<String, List<Integer>> compositeFieldsObjects;
-        public Map<String, Map<List<Object>, Object>> compositeObjectValues;
-        // объекты, идущие в колонки
-        public Map<String, List<Integer>> compositeColumnObjects;
-        public Map<String, List<List<Object>>> compositeColumnValues;
+    public boolean hasColumns(String fieldName, String subreportID) { // optimization
+        Result<Integer> minColumnsCount = new Result<>(); 
+        int columnsCount = getColumnsCount(fieldName, subreportID, minColumnsCount);
+        if(columnsCount != 1)
+            return true;
+        return !minColumnsCount.result.equals(1);
+    }
+    public int getColumnsCount(String fieldName, String subreportID) {
+        assert hasColumns(fieldName, subreportID);
+        return getColumnsCount(fieldName, subreportID, null); 
+    }
+    public int getColumnsCount(String fieldName, String subreportID, Result<Integer> minColumnsCount) {
+        Integer columnsCount = keyData.get(subreportID).getColumnsCount(fieldName, minColumnsCount);
+        if(columnsCount != null)
+            return columnsCount;
+        
+        return propData.getColumnsCount(fieldName, minColumnsCount);
     }
 
     public ReportGenerator(ReportGenerationData generationData) {
@@ -91,55 +101,64 @@ public class ReportGenerator {
         JRVirtualizationHelper.setThreadVirtualizer(virtualizer);
     }
 
-    public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
-        return createReport(ignorePagination, files, false);
-    }
-
-    public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
+    public JasperPrint createReport(FormPrintType printType) throws ClassNotFoundException, IOException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(generationData.reportHierarchyData);
-        return createReport(hpair, ignorePagination, files, fixBoolean);
-    }
-
-    private JasperPrint createReport(Pair<String, Map<String, List<String>>> hpair, boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws IOException, ClassNotFoundException, JRException {
         rootID = hpair.first;
         hierarchy = hpair.second;
 
-        return createJasperPrint(ignorePagination, files, fixBoolean);
-    }
-
-    private JasperPrint createJasperPrint( boolean ignorePagination, Map<ByteArray, String> files, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
         designs = retrieveReportDesigns(generationData);
-
-        SourcesGenerationOutput output = retrieveReportSources(generationData, files, fixBoolean);
-        data = output.data;
-        compositeColumnValues = output.compositeColumnValues;
-
-        transformDesigns(ignorePagination);
-
-        Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources(virtualizer);
-
-        JasperReport report = JasperCompileManager.compileReport(designs.get(rootID));
         
-        JasperPrint print = JasperFillManager.fillReport(report, compileParams.first, compileParams.second);
-        print.setProperty(SIDES_PROPERTY_NAME, designs.get(rootID).getProperty(SIDES_PROPERTY_NAME));
-        print.setProperty(TRAY_PROPERTY_NAME, designs.get(rootID).getProperty(TRAY_PROPERTY_NAME));
-        print.setProperty(SHEET_COLLATE_PROPERTY_NAME, designs.get(rootID).getProperty(SHEET_COLLATE_PROPERTY_NAME));
+        Pair<Map<String, ClientKeyData>, ClientPropertyData> output = retrieveReportSources(generationData);        
+        keyData = output.first;
+        propData = output.second;
+
+        transformDesigns(printType.ignorePagination());
+
+        Map<String, Object> params = new HashMap<>();
+        iterateChildReport(rootID, params, virtualizer);
+
+        JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
+        ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
+        Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
+
+        JasperPrint print = JasperFillManager.fillReport(report, childParams, source);
+
+        JasperDesign rootDesign = designs.get(rootID);
+        print.setProperty(SIDES_PROPERTY_NAME, rootDesign.getProperty(SIDES_PROPERTY_NAME));
+        print.setProperty(TRAY_PROPERTY_NAME, rootDesign.getProperty(TRAY_PROPERTY_NAME));
+        print.setProperty(SHEET_COLLATE_PROPERTY_NAME, rootDesign.getProperty(SHEET_COLLATE_PROPERTY_NAME));
+
         return print;
     }
 
-    private Pair<Map<String, Object>, JRDataSource> prepareReportSources(JRVirtualizer virtualizer) throws JRException {
-        Map<String, Object> params = new HashMap<>();
-        for (String childID : hierarchy.get(rootID)) {
-            iterateChildSubreports(childID, params, virtualizer);
-        }
+    private ReportDataSource iterateChildReport(String reportID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
+        String repeatCountPropName = getRepeatCountPropName(reportID);
+        ReportDataSource source = new ReportDataSource(keyData.get(reportID), propData, repeatCountPropName);
 
-        ReportRootDataSource rootSource = new ReportRootDataSource();
-        return new Pair<Map<String, Object>, JRDataSource>(params, rootSource);
+        Map<String, Object> childParams = new HashMap<>();
+        iterateChildReports(source, reportID, childParams, virtualizer);
+
+        JasperReport report = JasperCompileManager.compileReport(designs.get(reportID));
+
+        params.put(reportID + ReportConstants.reportSuffix, report);
+        params.put(reportID + ReportConstants.sourceSuffix, source);
+        params.put(reportID + ReportConstants.paramsSuffix, childParams);
+        params.put(JRParameter.REPORT_VIRTUALIZER, virtualizer);
+
+        return source;        
+    }
+    
+    private void iterateChildReports(ReportDataSource source, String parentID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
+        for (String childID : hierarchy.get(parentID)) {
+            ReportDataSource childSource = iterateChildReport(childID, params, virtualizer);
+            
+            source.addSubReportSource(childSource);
+        }
     }
 
-    private String getRepeatCountPropName(String parentID) {
+    private String getRepeatCountPropName(String reportID) {
         String propName = null;
-        JRParameter parameter = designs.get(parentID).getParametersMap().get(repeatPropertyFieldName);
+        JRParameter parameter = designs.get(reportID).getParametersMap().get(repeatPropertyFieldName);
         if (parameter != null) {
             propName = parameter.getDefaultValueExpression().getText();
             if (propName != null) {
@@ -154,26 +173,6 @@ public class ReportGenerator {
         return propName;
     }
 
-    private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
-        Map<String, Object> localParams = new HashMap<>();
-        List<ReportDependentDataSource> childSources = new ArrayList<>();
-
-        String repeatCountPropName = getRepeatCountPropName(parentID);
-        ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources, repeatCountPropName);
-
-        for (String childID : hierarchy.get(parentID)) {
-            ReportDependentDataSource childSource = iterateChildSubreports(childID, localParams, virtualizer);
-            childSources.add(childSource);
-        }
-
-        params.put(parentID + ReportConstants.reportSuffix, JasperCompileManager.compileReport(designs.get(parentID)));
-        params.put(parentID + ReportConstants.sourceSuffix, source);
-        params.put(parentID + ReportConstants.paramsSuffix, localParams);
-        params.put(JRParameter.REPORT_VIRTUALIZER, virtualizer);
-
-        return source;
-    }
-
     public static Pair<String, Map<String, java.util.List<String>>> retrieveReportHierarchy(byte[] array) throws IOException, ClassNotFoundException {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(array));
         String rootID = objStream.readUTF();
@@ -181,99 +180,29 @@ public class ReportGenerator {
         return new Pair<>(rootID, hierarchy);
     }
 
-    public static Map<String, Map<String, String>> retrievePropertyCaptions(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(generationData.reportDesignData));
-        return (Map<String, Map<String, String>>) objStream.readObject();
-    }
-
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(generationData.reportDesignData));
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
-        return retrieveReportSources(generationData, files, ReportGenerationDataType.PRINTJASPER, false);
-    }
-
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, boolean fixBoolean) throws IOException {
-        return retrieveReportSources(generationData, files, ReportGenerationDataType.PRINTJASPER, fixBoolean);
-    }
-
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType) throws IOException {
-       return retrieveReportSources(generationData, files, reportType, false);
-    }
-
-    //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files, ReportGenerationDataType reportType, boolean fixBoolean) throws IOException {
-        SourcesGenerationOutput output = new SourcesGenerationOutput();
+    public static Pair<Map<String, ClientKeyData>, ClientPropertyData> retrieveReportSources(ReportGenerationData generationData) throws IOException {
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
+
+        Map<Map<Integer, Object>, Map<Integer, Object>> cache = new HashMap<>();
+
+        // deserialize keys
+        Map<String, ClientKeyData> keyData = new HashMap<>();
         int size = dataStream.readInt();
-        output.data = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
-            ClientReportData reportData = new ClientReportData(dataStream, files, reportType, fixBoolean);
-            output.data.put(sid, reportData);
+            ClientKeyData reportData = new ClientKeyData(dataStream, cache);
+            keyData.put(sid, reportData);
         }
-
-        int compositePropsCnt = dataStream.readInt();
-
-        output.compositeFieldsObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
-
-        int compositeFieldsCnt = dataStream.readInt();
-        output.compositeObjectValues = new HashMap<>();
-        for (int i = 0; i < compositeFieldsCnt; i++) {
-            String fieldId = dataStream.readUTF();
-            Map<List<Object>, Object> data = new HashMap<>();
-            int valuesCnt = dataStream.readInt();
-            for (int j = 0; j < valuesCnt; j++) {
-                List<Object> values = new ArrayList<>();
-                String dataFieldId = getBaseFieldName(fieldId); 
-                int objCnt = output.compositeFieldsObjects.get(dataFieldId).size();
-                for (int k = 0; k < objCnt; k++) {
-                    values.add(BaseUtils.deserializeObject(dataStream));
-                }
-                data.put(values, BaseUtils.deserializeObject(dataStream));
-            }
-            output.compositeObjectValues.put(fieldId, data);
-        }
-
-        output.compositeColumnObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
-
-        output.compositeColumnValues = new HashMap<>();
-        for (int i = 0; i < compositePropsCnt; i++) {
-            String fieldId = dataStream.readUTF();
-            List<List<Object>> data = new ArrayList<>();
-            int valuesCnt = dataStream.readInt();
-            for (int j = 0; j < valuesCnt; j++) {
-                List<Object> values = new ArrayList<>();
-                int objCnt = output.compositeColumnObjects.get(fieldId).size();
-                for (int k = 0; k < objCnt; k++) {
-                    values.add(BaseUtils.deserializeObject(dataStream));
-                }
-                data.add(values);
-            }
-            output.compositeColumnValues.put(fieldId, data);
-        }
-
-        for (ClientReportData data : output.data.values()) {
-            data.setCompositeData(output.compositeFieldsObjects, output.compositeObjectValues,
-                    output.compositeColumnObjects, output.compositeColumnValues);
-        }
-        return output;
-    }
-
-    private static Map<String, List<Integer>> retrievePropertyObjects(DataInputStream stream, int propCnt) throws IOException {
-        Map<String, List<Integer>> objects = new HashMap<>();
-        for (int i = 0; i < propCnt; i++) {
-            String fieldId = stream.readUTF();
-            List<Integer> objectsId = new ArrayList<>();
-            int objectCnt = stream.readInt();
-            for (int j = 0; j < objectCnt; j++) {
-                objectsId.add(stream.readInt());
-            }
-            objects.put(fieldId, objectsId);
-        }
-        return objects;
+        
+        // deserializeProperties
+        ClientPropertyData propData = new ClientPropertyData(dataStream, cache);
+        
+        return new Pair<>(keyData, propData);
     }
 
     private void transformDesigns(boolean ignorePagination) throws JRException {
@@ -308,29 +237,24 @@ public class ReportGenerator {
             return fieldName;
         }
     }
-    
-    private boolean isColumnPropertyField(String fieldName) {
-        String baseFieldName = getBaseFieldName(fieldName);
-        return compositeColumnValues.containsKey(baseFieldName);
-    }
-    
-    private String findColumnFieldName(JRExpression expr) {
+
+    private String findColumnFieldName(JRExpression expr, String subreportID) {
         String exprText = expr.getText();
         Matcher match = fieldPattern.matcher(exprText);
         while (match.find()) {
             String fieldName = getFieldName(match.group());
-            if (isColumnPropertyField(fieldName)) {
+            if (hasColumns(fieldName, subreportID)) {
                 return fieldName;
             }
         }
         return null;
     }
     
-    private String findFieldNameToSplitStyle(JRStyle style) {
+    private String findFieldNameToSplitStyle(JRStyle style, String subreportID) {
         final JRConditionalStyle[] condStyles = style.getConditionalStyles();
         if (condStyles != null) {
             for (JRConditionalStyle condStyle : condStyles) {
-                String columnFieldName = findColumnFieldName(condStyle.getConditionExpression());
+                String columnFieldName = findColumnFieldName(condStyle.getConditionExpression(), subreportID);
                 if (columnFieldName != null) {
                     return columnFieldName;
                 } 
@@ -339,13 +263,13 @@ public class ReportGenerator {
         return null;
     }
     
-    private void transformExpression(JRDesignExpression expr, int index) {
+    private void transformExpression(JRDesignExpression expr, int index, String subreportID) {
         String exprText = expr.getText();
         Set<String> columnFieldsStr = new HashSet<>();
         Matcher match = fieldPattern.matcher(exprText);
         while (match.find()) {  
             String fieldStr = match.group();
-            if (isColumnPropertyField(getFieldName(fieldStr))) {
+            if (hasColumns(getFieldName(fieldStr), subreportID)) {
                 columnFieldsStr.add(fieldStr);
             }
         }
@@ -357,29 +281,28 @@ public class ReportGenerator {
         expr.setText(exprText);
     }
     
-    private void transformStyleExpressions(JRDesignStyle style, int index) {
+    private void transformStyleExpressions(JRDesignStyle style, int index, String subreportID) {
         final JRConditionalStyle[] condStyles = style.getConditionalStyles();
         if (condStyles != null) {
             for (JRConditionalStyle condStyle : condStyles) {
                 if (condStyle.getConditionExpression() instanceof JRDesignExpression) {
-                    transformExpression((JRDesignExpression) condStyle.getConditionExpression(), index);
+                    transformExpression((JRDesignExpression) condStyle.getConditionExpression(), index, subreportID);
                 }                
             }
         }
     }
     
-    private Set<String> transformColumnDependentStyles(JasperDesign design) throws JRException {
+    private Set<String> transformColumnDependentStyles(JasperDesign design, String subreportID) throws JRException {
         Set<String> styleNames = new HashSet<>();
         for (JRStyle style : design.getStyles()) {
             if (style instanceof JRDesignStyle) {
-                String fieldName = findFieldNameToSplitStyle(style);
+                String fieldName = findFieldNameToSplitStyle(style, subreportID);
                 if (fieldName != null) {
-                    String baseFieldName = getBaseFieldName(fieldName);
                     styleNames.add(style.getName());
-                    for (int i = 0; i < compositeColumnValues.get(baseFieldName).size(); ++i) {
+                    for (int i = 0, size = getColumnsCount(fieldName, subreportID); i < size; ++i) {
                         JRDesignStyle newStyle = (JRDesignStyle) style.clone();
                         newStyle.setName(style.getName() + indexSuffix(i));
-                        transformStyleExpressions(newStyle, i);
+                        transformStyleExpressions(newStyle, i, subreportID);
                         design.addStyle(newStyle);
                     }
                 }
@@ -415,16 +338,15 @@ public class ReportGenerator {
         return bands;
     }
     
-    private void transformFields(JasperDesign design) throws JRException {
+    private void transformFields(JasperDesign design, String subreportID) throws JRException {
         for (JRField f : design.getFields()) {
             if (f instanceof JRDesignField) {
                 JRDesignField field = (JRDesignField) f;
                 String fieldName = field.getName();
-                String baseFieldName = getBaseFieldName(fieldName);
-                if (compositeColumnValues.containsKey(baseFieldName)) { 
+                if (fieldName != null && hasColumns(fieldName, subreportID)) { 
                     JRField removedField = design.removeField(fieldName);
 
-                    for (int i = 0; i < compositeColumnValues.get(baseFieldName).size(); ++i) {
+                    for (int i = 0, size = getColumnsCount(fieldName, subreportID); i < size; ++i) {
                         String newFieldName = fieldName + indexSuffix(i);
                         JRDesignField designField = new JRDesignField();
                         designField.setName(newFieldName);
@@ -468,17 +390,17 @@ public class ReportGenerator {
         public int compareTo(FieldXBorder o) {
             if (x < o.x) return -1;
             if (x > o.x) return 1;
-            if (!isLeft && o.isLeft) return -1;
-            if (isLeft && !o.isLeft) return 1;
+            if (isLeft && !o.isLeft) return -1;
+            if (!isLeft && o.isLeft) return 1;
             return 0;
         }
     }
 
     private void transformDesign(JasperDesign design, String subreportID, boolean ignorePagination) throws JRException {
-        Set<String> transformedStyleNames = transformColumnDependentStyles(design);
-        transformFields(design);
+        Set<String> transformedStyleNames = transformColumnDependentStyles(design, subreportID);
+        transformFields(design, subreportID);
         for (JRBand band : getBands(design)) {
-            transformBand(design, band, ignorePagination, transformedStyleNames);
+            transformBand(design, band, ignorePagination, transformedStyleNames, subreportID);
         }
         
         if (generationData.useShowIf) {
@@ -527,7 +449,7 @@ public class ReportGenerator {
     private Collection<JRTextField> findTextFieldsToHide(JasperDesign design, String subreportID) {
         return findTextFieldsToHide(design, getHidingFieldsNames(design, subreportID));
     }
-
+    
     private List<JRTextField> findTextFieldsToHide(JasperDesign design, Set<String> hidingFieldsNames) {
         List<JRTextField> textFieldsToHide = new ArrayList<>();
         for (JRElement element : getDesignElements(design)) {
@@ -560,16 +482,8 @@ public class ReportGenerator {
     
     
     private boolean needToBeHidden(final String fieldName, String subreportID) {
-        if (isShowIfFieldName(fieldName)) {
-            ClientReportData reportData = data.get(subreportID);
-            if (reportData.next()) {
-                JRDesignField field = new JRDesignField();
-                field.setName(fieldName);
-                Object o = reportData.getFieldValue(field);
-                reportData.revert();
-                return o == null;
-            }
-        }
+        if (isShowIfFieldName(fieldName))
+            return propData.getFieldValue(new HashMap<Integer, Object>(), fieldName) == null;
         return false;
     }
 
@@ -604,6 +518,11 @@ public class ReportGenerator {
         removeZeroWidthElements(design);
     }
 
+    @Deprecated
+    public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, FormPrintType.XLSX, null, null);
+    }
+
     private void removeZeroWidthElements(JasperDesign design) {
         for (JRBand band : design.getAllBands()) {
             if (band instanceof JRDesignBand) {
@@ -627,7 +546,7 @@ public class ReportGenerator {
         return element.getX() + element.getWidth();
     }
     
-    private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination, Set<String> transformedStyleNames) {
+    private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination, Set<String> transformedStyleNames, String subreportID) {
         if (band instanceof JRDesignBand) {
             JRDesignBand designBand = (JRDesignBand) band;
             List<JRDesignElement> toDelete = new ArrayList<>();
@@ -650,7 +569,7 @@ public class ReportGenerator {
                 if (element instanceof JRDesignTextField) {
                     JRDesignTextField textField = (JRDesignTextField) element;
                     if (textField.getExpression() != null) {
-                        transformTextField(design, textField, fieldsInGroup, toAdd, toDelete, transformedStyleNames);
+                        transformTextField(design, textField, fieldsInGroup, toAdd, toDelete, transformedStyleNames, subreportID);
                     }
                 } else if (ignorePagination && element instanceof JRDesignBreak) {
                     toDelete.add((JRDesignBreak) element);
@@ -665,45 +584,45 @@ public class ReportGenerator {
         }
     }
 
-    private void transformTextFieldExpressions(JRDesignTextField oldField, JRDesignTextField newField, int i) {
+    private void transformTextFieldExpressions(JRDesignTextField oldField, JRDesignTextField newField, int i, String subreportID) {
         if (oldField.getExpression() != null) {
             JRDesignExpression subExpr = new JRDesignExpression(oldField.getExpression().getText());
-            transformExpression(subExpr, i);
+            transformExpression(subExpr, i, subreportID);
             newField.setExpression(subExpr);
         }
         
         if (oldField.getPrintWhenExpression() != null && oldField.getPrintWhenExpression().getText() != null) {
             JRDesignExpression subPWExpr = new JRDesignExpression(oldField.getPrintWhenExpression().getText());
-            transformExpression(subPWExpr, i);
+            transformExpression(subPWExpr, i, subreportID);
             newField.setPrintWhenExpression(subPWExpr);
         }
 
         if (oldField.getPatternExpression() != null && oldField.getPatternExpression().getText() != null) {
             JRDesignExpression subPatExpr = new JRDesignExpression(oldField.getPatternExpression().getText());
-            transformExpression(subPatExpr, i);
+            transformExpression(subPatExpr, i, subreportID);
             newField.setPatternExpression(subPatExpr);
         }
     }
     
-    private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup,
-                                    List<JRDesignElement> toAdd, List<JRDesignElement> toDelete, Set<String> transformedStyleNames) {
-        String fieldName = findColumnFieldName(textField.getExpression());
+    private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup, List<JRDesignElement> toAdd, List<JRDesignElement> toDelete, Set<String> transformedStyleNames, String subreportID) {
+        String fieldName = findColumnFieldName(textField.getExpression(), subreportID);
 
         if (fieldName != null) {
-            String baseFieldName = getBaseFieldName(fieldName);
             toDelete.add(textField);
-            int newFieldsCount = compositeColumnValues.get(baseFieldName).size();
-            if (newFieldsCount > 0) {
-                List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
-                String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
+            if (hasColumns(fieldName, subreportID)) {
+                int newFieldsCount = getColumnsCount(fieldName, subreportID);
+                if(newFieldsCount > 0) { // optimization + otherwise where will be division by zero in makeTextFieldPartition
+                    List<JRDesignTextField> subFields = makeTextFieldPartition(textField, newFieldsCount, fieldsInGroup);
+                    String oldStyleName = textField.getStyle() == null ? null : textField.getStyle().getName();
 
-                for (int i = 0; i < newFieldsCount; i++) {
-                    transformTextFieldExpressions(textField, subFields.get(i), i);
-                    if (oldStyleName != null && transformedStyleNames.contains(oldStyleName)) {
-                        subFields.get(i).setStyle(design.getStylesMap().get(oldStyleName + indexSuffix(i)));
+                    for (int i = 0; i < newFieldsCount; i++) {
+                        transformTextFieldExpressions(textField, subFields.get(i), i, subreportID);
+                        if (oldStyleName != null && transformedStyleNames.contains(oldStyleName)) {
+                            subFields.get(i).setStyle(design.getStylesMap().get(oldStyleName + indexSuffix(i)));
+                        }
                     }
+                    toAdd.addAll(subFields);
                 }
-                toAdd.addAll(subFields);
             }
         }
         if (textField.getPattern() == null) {
@@ -774,12 +693,12 @@ public class ReportGenerator {
     }
 
     public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) {
-        exportAndOpen(generationData, type, null, null, fixBoolean);
+        exportAndOpen(generationData, type, null, null);
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean fixBoolean) {
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
-            File tempFile = exportToFile(generationData, type, sheetName, password, fixBoolean);
+            File tempFile = exportToFile(generationData, type, sheetName, password);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -793,62 +712,35 @@ public class ReportGenerator {
         }
     }
 
-    public static File exportToXls(ReportGenerationData generationData) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, new JRXlsExporter(), "xls", true);
-    }
-    
-    public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRXlsxExporter(), "xlsx", true);
-    }
-    
-    public static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRPdfExporter(), "pdf", false);
-    }
-
-    public static File exportToDoc(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRDocxExporter(), "doc", false);
-    }
-
-    public static File exportToDocx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRDocxExporter(), "docx", false);
-    }
-    
     private static JRAbstractExporter getExporter(FormPrintType printType) {
         switch (printType) {
             case XLS:
                 return new JRXlsExporter();
             case XLSX:
                 return new JRXlsxExporter();
-            case PDF:
-                return new JRPdfExporter();
             case DOC:
                 return new JRDocxExporter();
             case DOCX:
                 return new JRDocxExporter();
+            case RTF:
+                return new JRRtfExporter();
+            case HTML:
+                return new ReportHTMLExporter();
+            default:
+                return new JRPdfExporter(); // by default exporting to pdf
         }
-        throw new UnsupportedOperationException();
     }
 
     public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, type, sheetName, password, false);
-    }
-
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, boolean fixBoolean) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, getExporter(type), type.getExtension(), sheetName, password, type.isExcel(), fixBoolean);
-    }
-    
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
-        return exportToFile(generationData, exporter, extension, null, null, ignorePagination, false);
-    }
-
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, String sheetName, String password, boolean ignorePagination, boolean fixBoolean) throws IOException, JRException, ClassNotFoundException {
+        String extension = type.getExtension();
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
 
-        JasperPrint print = report.createReport(ignorePagination, null, fixBoolean);
+        JasperPrint print = report.createReport(type);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
+        JRAbstractExporter exporter = getExporter(type);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         exporter.exportReport();
@@ -901,18 +793,19 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static byte[] exportToExcelByteArray(ReportGenerationData generationData, FormPrintType type) {
+    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type) {
+        return exportToFileByteArray(generationData, type, null, null);
+    }
+    
+    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
-            assert type.isExcel();
-            File tempFile = type == FormPrintType.XLS ? exportToXls(generationData) : exportToXlsx(generationData);
-            FileInputStream fis = new FileInputStream(tempFile);
-            byte[] array = new byte[(int) tempFile.length()];
-            //noinspection ResultOfMethodCallIgnored
-            fis.read(array);
-            JRVirtualizationHelper.clearThreadVirtualizer();
-            return array;
+            try {
+                return IOUtils.getFileBytes(exportToFile(generationData, type, sheetName, password));
+            } finally {
+                JRVirtualizationHelper.clearThreadVirtualizer();
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в Excel", e);
+            throw Throwables.propagate(e);
         }
     }
 }

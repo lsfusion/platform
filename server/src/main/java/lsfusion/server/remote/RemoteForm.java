@@ -13,10 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.interop.ClassViewType;
-import lsfusion.interop.FormGrouping;
-import lsfusion.interop.Order;
-import lsfusion.interop.Scroll;
+import lsfusion.interop.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
@@ -61,7 +58,6 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
 
     public final F form;
     private final FormView richDesign;
-    public final InteractiveFormReportManager reportManager;
 
     private final WeakReference<RemoteFormListener> weakRemoteFormListener;
 
@@ -85,7 +81,6 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         setContext(new RemoteFormContext<>(this));
         this.form = form;
         this.richDesign = form.entity.getRichDesign();
-        this.reportManager = new InteractiveFormReportManager(form);
         this.requestLock = new SequentialRequestLock();
 
         this.weakRemoteFormListener = new WeakReference<>(remoteFormListener);
@@ -100,7 +95,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
         return weakRemoteFormListener.get();
     }
 
-    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final boolean toExcel, final FormUserPreferences userPreferences) throws RemoteException {
+    public ReportGenerationData getReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new EExecutionStackCallable<ReportGenerationData>() {
             @Override
             public ReportGenerationData call(ExecutionStack stack) throws Exception {
@@ -109,7 +104,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                     logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
                 }
 
-                return reportManager.getReportData(groupId, toExcel, userPreferences);
+                return new InteractiveFormReportManager(form, groupId, userPreferences).getReportData(printType);
             }
         });
     }
@@ -359,7 +354,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                     logger.trace("pasteExternalTable Action");
 
                     for (int i =0; i < propertyIDs.size(); i++) {
-                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getsID(), String.valueOf(columnKeys.get(i))));
+                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
                     }                  
                 }
                 
@@ -386,7 +381,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                     for (byte[] bkey : e.getValue()) {
                         
                         if(logger.isTraceEnabled())
-                            logger.trace(String.format("propertyDraw: %s", propertyDraw.getsID()));
+                            logger.trace(String.format("propertyDraw: %s", propertyDraw.getSID()));
                         
                         propKeys.add(deserializePropertyKeys(propertyDraw, bkey), propValue);
                     }
@@ -495,7 +490,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                 Object result = form.calculateSum(propertyDraw, keys);
                 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getsID(), result));
+                    logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
                 }
                 
                 return result;
@@ -720,7 +715,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                 form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushChangeType, pushAddObject, true, stack);
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {
@@ -749,7 +744,7 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
                 form.executeEditAction(propertyDraw, actionSID, keys, stack);
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    logger.trace(String.format("executeEditAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {

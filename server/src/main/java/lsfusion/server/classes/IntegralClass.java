@@ -2,9 +2,16 @@ package lsfusion.server.classes;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
@@ -16,12 +23,10 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         super(caption);
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     @Override
@@ -109,6 +114,33 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     @Override
     public String formatString(T value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    @Override
+    public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getBigDecimal(fieldName));
+    }
+
+    @Override
+    public T parseJSON(JSONObject object, String key) throws JSONException {
+        return readJSON((Number)object.opt(key));
+    }
+
+    @Override
+    public T parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        if(formulaValue.getCellTypeEnum().equals(CellType.NUMERIC))
+            return readXLS(formulaValue.getNumberValue());
+        return super.parseXLS(cell, formulaValue); 
+    }
+
+    @Override
+    public Object formatJSON(T object) {
+        return object;
+    }
+
+    @Override
+    public Object formatXLS(T object) {
+        return object == null ? null : object.doubleValue();
     }
 
     @Override

@@ -29,7 +29,7 @@ public class MessageActionProperty extends SystemActionProperty {
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue objValue = context.getSingleKeyValue();
-        showMessage(context, objValue == null ? null : objValue.getValue());
+        showMessage(context, objValue.getValue());
         return FlowResult.FINISH;
     }
 

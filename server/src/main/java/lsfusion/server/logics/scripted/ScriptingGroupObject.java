@@ -10,21 +10,25 @@ import lsfusion.server.logics.i18n.LocalizedString;
 import java.util.List;
 
 public class ScriptingGroupObject {
-    String groupName;
-    List<String> objects;
-    List<String> classes;
-    List<LocalizedString> captions;
-    List<ActionPropertyObjectEntity> events;
-    ClassViewType viewType;
-    boolean isInitType;
-    Integer pageSize;
-    UpdateType updateType;
-    String propertyGroupName;
-    
-    GroupObjectEntity neighbourGroupObject;
-    Boolean isRightNeighbour;
+    public String groupName;
+    public List<String> objects;
+    public List<String> classes;
+    public List<LocalizedString> captions;
+    public List<ActionPropertyObjectEntity> events;
+    public List<String> integrationSIDs;
+    public ClassViewType viewType;
+    public boolean isInitType;
+    public Integer pageSize;
+    public UpdateType updateType;
+    public String propertyGroupName;
 
-    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events) {
+    public String integrationSID;
+    public boolean integrationKey;
+
+    public GroupObjectEntity neighbourGroupObject;
+    public Boolean isRightNeighbour;
+
+    public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionPropertyObjectEntity> events, List<String> integrationSIDs) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
 
         groupName = name;
@@ -32,6 +36,7 @@ public class ScriptingGroupObject {
         this.classes = classes;
         this.captions = captions;
         this.events = events;
+        this.integrationSIDs = integrationSIDs;
     }
 
     public void setViewType(ClassViewType viewType) {
@@ -57,5 +62,13 @@ public class ScriptingGroupObject {
 
     public void setPropertyGroupName(String propertyGroupName) {
         this.propertyGroupName = propertyGroupName;
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
+    public void setIntegrationKey(boolean integrationKey) {
+        this.integrationKey = integrationKey;
     }
 }

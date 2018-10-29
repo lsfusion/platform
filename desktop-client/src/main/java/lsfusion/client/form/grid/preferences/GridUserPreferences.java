@@ -147,10 +147,12 @@ public class GridUserPreferences {
     public Comparator<ClientPropertyDraw> getUserOrderComparator() {
         return new Comparator<ClientPropertyDraw>() {
             public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-                if (getUserOrder(c1) == null)
-                    return getUserOrder(c2) == null ? 0 : 1;
+                Integer order1 = getUserOrder(c1);
+                Integer order2 = getUserOrder(c2);
+                if (order1 == null)
+                    return order2 == null ? 0 : 1;
                 else
-                    return getUserOrder(c2) == null ? -1 : (getUserOrder(c1) - getUserOrder(c2));
+                    return order2 == null ? -1 : (order1 - order2);
             }
         };
     }

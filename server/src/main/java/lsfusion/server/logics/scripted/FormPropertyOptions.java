@@ -38,6 +38,7 @@ public class FormPropertyOptions {
     private Map<KeyStroke, String> keyBindings;
     private Map<String, ActionPropertyObjectEntity> editActions;
     private String eventId;
+    private String integrationSID;
     private PropertyDrawEntity neighbourPropertyDraw;
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
@@ -293,6 +294,14 @@ public class FormPropertyOptions {
         this.eventId = eventId;
     }
 
+    public String getIntegrationSID() {
+        return integrationSID;
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
     public Boolean getAttr() {
         return attr;
     }
@@ -332,6 +341,7 @@ public class FormPropertyOptions {
         merged.setContextMenuBindings(nvl(overrides.getContextMenuBindings(), contextMenuBindings));
         merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
+        merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
         merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));

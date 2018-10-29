@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.base.SystemUtils;
@@ -10,7 +11,11 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -34,12 +39,10 @@ public class DateClass extends DataClass<Date> {
         return java.util.Date.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
-        return true;
     }
 
     public byte getTypeID() {
@@ -115,12 +118,34 @@ public class DateClass extends DataClass<Date> {
         return dateFormat;
     }
 
+    @Override
+    public Date parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getDate(fieldName));
+    }
+    @Override
+    public Date parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        java.util.Date cellValue;
+        try {
+            cellValue = cell.getDateCellValue();
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue);
+        }
+        return readXLS(cellValue);
+    }
+
     public Date parseString(String s) throws ParseException {
         try {
-            DateConverter.assertDateToSql(getDateFormat().parse(s));
-            return DateConverter.safeDateToSql(getDateFormat().parse(s));
+            java.util.Date parse = null;
+            try {
+                parse = getDateFormat().parse(s);
+            } catch (java.text.ParseException e) {
+                parse = DateConverter.smartParse(s);
+            }
+
+            DateConverter.assertDateToSql(parse);
+            return DateConverter.safeDateToSql(parse);
         } catch (Exception e) {
-            throw new ParseException("error parsing date", e);
+            throw new ParseException("error parsing date : " + s, e);
         }
     }
 
@@ -135,6 +160,16 @@ public class DateClass extends DataClass<Date> {
     @Override
     public Object getInfiniteValue(boolean min) {
         return DateConverter.dateToSql(new java.util.Date(min ? 0 : Long.MAX_VALUE));
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'D', 8, 0);
+    }
+
+    @Override
+    public Object formatXLS(Date object) {
+        return object;
     }
 
     @Override

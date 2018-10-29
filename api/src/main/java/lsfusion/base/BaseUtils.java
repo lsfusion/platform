@@ -30,8 +30,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -47,7 +47,7 @@ public class BaseUtils {
 
     //minHeapFreeRatio + cherry-picks from master
     public static Integer getApiVersion() {
-        return 71;
+        return 73;
     }
 
     public static String getPlatformVersion() {
@@ -207,6 +207,20 @@ public class BaseUtils {
     }
 
 
+    public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Set<? extends K> keys) {
+        if(keys.size() == map.size()) { // optimization
+            assert keys.equals(map.keySet());
+            return (Map<K, V>) map;
+        }
+            
+        Map<K, V> result = new HashMap<>();
+        for (K key : keys) {
+            V value = map.get(key);
+            if (value != null) result.put(key, value);
+        }
+        return result;
+    }
+    
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, Iterable<? extends K> keys) {
         Map<K, V> result = new HashMap<>();
         for (K key : keys) {
@@ -918,6 +932,11 @@ public class BaseUtils {
     }
 
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> merge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
+        if(map2.isEmpty())
+            return (Map<B, V>) map1;
+        if(map1.isEmpty())
+            return (Map<B, V>) map2;
+        
         Map<B, V> result = new HashMap<B, V>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
             V prevValue = result.put(entry2.getKey(), entry2.getValue());

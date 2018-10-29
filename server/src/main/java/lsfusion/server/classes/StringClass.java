@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
@@ -9,6 +10,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -52,6 +54,9 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        if (typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONClass || typeFrom instanceof XMLClass) {
+            return "cast_file_to_string(" + value + ")";
+        }
         String result = super.getCast(value, syntax, typeEnv, typeFrom);
         if(!blankPadded && typeFrom != null && syntax.doesNotTrimWhenCastToVarChar() && typeFrom instanceof StringClass && ((StringClass) typeFrom).blankPadded)
             result = ((StringClass)typeFrom).getRTrim(result);
@@ -343,6 +348,12 @@ public class StringClass extends DataClass<String> {
     @Override
     public boolean fixedSize() {
         return false;
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        ExtInt charLength = getCharLength();
+        return new OverJDBField(fieldName, 'C', Math.min(charLength.isUnlimited() ? Integer.MAX_VALUE : charLength.getValue(), 253), 0);
     }
 
     @Override

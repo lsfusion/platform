@@ -470,6 +470,7 @@ public class GridTable extends ClientPropertyTable {
         return properties.contains(property);
     }
 
+    // should be the same as FormInstance.getOrderedVisibleProperties 
     public List<ClientPropertyDraw> getOrderedVisibleProperties(List<ClientPropertyDraw> propertiesList) {
         List<ClientPropertyDraw> result = new ArrayList<>();
 

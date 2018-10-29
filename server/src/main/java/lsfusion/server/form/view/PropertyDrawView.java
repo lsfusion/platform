@@ -143,7 +143,7 @@ public class PropertyDrawView extends ComponentView {
         return caption == null ? null : ThreadLocalContext.localize(caption).replace("\"", "\\\"");
     }
 
-    public ReportDrawField getReportDrawField(int charWidth, int scale) {
+    public ReportDrawField getReportDrawField(int charWidth, int scale, Type type) {
         ReportDrawField reportField = new ReportDrawField(getPropertyFormName(), getReportCaption(), charWidth);
 
         setupGeometry(reportField, scale);
@@ -155,10 +155,7 @@ public class PropertyDrawView extends ComponentView {
 
         reportField.pattern = getFormatPattern();
 
-        if (!getType().fillReportDrawField(reportField)) {
-            return null;
-        }
-
+        type.fillReportDrawField(reportField);
         return reportField;
     }
 

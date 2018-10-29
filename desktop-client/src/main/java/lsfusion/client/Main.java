@@ -25,6 +25,7 @@ import sun.security.action.GetPropertyAction;
 
 import javax.swing.Timer;
 import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,6 +101,9 @@ public class Main {
     public static boolean useRequestTimeout;
     
     public static long timeDiffServerClientLog = 1000;
+    
+    public static Integer fontSize;
+    private static Map<Object, FontUIResource> fontUIDefaults = new HashMap<>();
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
@@ -253,6 +257,9 @@ public class Main {
 
                     setupTimePreferences(userPreferences.timeZone, userPreferences.twoDigitYearStart);
 
+                    fontSize = remoteNavigator.getFontSize();
+                    setUIFontSize();
+
                     computerId = loginAction.getComputerId();
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
@@ -288,7 +295,7 @@ public class Main {
                             task.start();
                         } catch (Exception e) {
                             logger.error(getString("client.error.application.initialization"), e);
-                            Log.error(getString("client.error.application.initialization"), e, true);
+                            Log.error(getString("client.error.application.initialization"), e);
                         }
                     }
 
@@ -301,7 +308,7 @@ public class Main {
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error(getString("client.error.application.initialization"), e);
-                    Log.error(getString("client.error.application.initialization"), e, true);
+                    Log.error(getString("client.error.application.initialization"), e);
                     Main.restart();
                 }
             }
@@ -359,6 +366,34 @@ public class Main {
         //просто любая дата, для которой нужны обе цифры при форматтинге
         gc2.set(1991, Calendar.NOVEMBER, 21, 10, 55, 55);
         return gc2.getTime();
+    }
+
+    private static void setUIFontSize() {
+        Enumeration keys = UIManager.getDefaults().keys();
+        if (fontSize != null || !fontUIDefaults.isEmpty()) { // skip if fontSize was never set
+            while (keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                FontUIResource defaultUIFont = fontUIDefaults.get(key);
+                if (defaultUIFont == null) {
+                    Object value = UIManager.get(key);
+                    if (value instanceof FontUIResource) {
+                        defaultUIFont = (FontUIResource) value;
+                        fontUIDefaults.put(key, defaultUIFont);
+                    }
+                }
+                if (defaultUIFont != null) {
+                    UIManager.put(key, new FontUIResource(defaultUIFont.deriveFont(getUIFontSize(defaultUIFont.getSize()))));
+                }
+            }
+        }
+    }
+
+    public static float getUIFontSize(int defaultSize) {
+        return fontSize != null ? (float) defaultSize * fontSize / 100 : defaultSize;
+    }
+
+    public static int getIntUIFontSize(int defaultSize) {
+        return (int) (getUIFontSize(defaultSize) + 0.5); // as deriveFont() does
     }
 
     private static void initJulLogging() {

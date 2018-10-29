@@ -2,10 +2,9 @@ package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -24,8 +23,6 @@ import lsfusion.server.logics.property.actions.DefaultChangeObjectActionProperty
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 import lsfusion.server.session.Modifier;
 
-import java.util.Set;
-
 import static lsfusion.server.logics.i18n.LocalizedString.create;
 
 public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ObjectSelector {
@@ -37,12 +34,15 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public LocalizedString getCaption() {
         return (caption != null && !BaseUtils.isRedundantString(caption.getSourceString()))
                ? caption
-               : !BaseUtils.isRedundantString(baseClass.toString())
+               : baseClass != null && !BaseUtils.isRedundantString(baseClass.toString())
                  ? create(baseClass.toString())
                  : create("{logics.undefined.object}");
     }
 
     public ValueClass baseClass;
+    private boolean noClasses;
+
+    public String integrationSID;
 
     public ObjectEntity() {
 
@@ -51,20 +51,22 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption) {
         this(ID, null, baseClass, caption);
     }
-
+    public ObjectEntity(int ID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
+        this(ID, null, baseClass, caption, noClasses);
+    }
     public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption) {
+        this(ID, sID, baseClass, caption, false);
+    }
+    public ObjectEntity(int ID, String sID, ValueClass baseClass, LocalizedString caption, boolean noClasses) {
         super(ID);
         this.sID = sID != null ? sID : "obj" + ID;
         this.caption = caption;
         this.baseClass = baseClass;
+        this.noClasses = noClasses;
     }
 
     public ObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
-    }
-
-    public void fillObjects(MSet<ObjectEntity> objects) {
-        objects.add(this);
     }
 
     public PropertyObjectInterfaceInstance getRemappedInstance(ObjectEntity oldObject, ObjectInstance newObject, InstanceFactory instanceFactory) {
@@ -95,20 +97,18 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     @Override
     public Type getType() {
+        if(noClasses())
+            return null;
         return baseClass.getType();
     }
-
+    
     @Override
-    public Expr getExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier, ImMap<ObjectEntity, ObjectValue> mapObjects) {
-        Expr expr = mapExprs.get(this);
-        if(expr != null)
-            return expr;
-        ServerLoggers.assertLog(false, "EXPR SHOULD EXIST IN ALL USE CASES");
-        return mapObjects.get(this).getExpr();
+    public Expr getEntityExpr(ImMap<ObjectEntity, ? extends Expr> mapExprs, Modifier modifier) {
+        return mapExprs.get(this);
     }
 
     @Override
-    public ObjectValue getObjectValue(ImMap<ObjectEntity, ObjectValue> mapObjects) {
+    public ObjectValue getObjectValue(ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) {
         ObjectValue objectValue = mapObjects.get(this);
         if(objectValue != null)
             return objectValue;
@@ -116,7 +116,20 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     }
 
     @Override
-    public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groups) {
+    public GroupObjectEntity getApplyObject(FormEntity formEntity, ImSet<GroupObjectEntity> excludeGroupObjects) {
         return groupTo;
+    }
+
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getSID();
+    }
+
+    @Override
+    public boolean noClasses() {
+        return noClasses;
     }
 }

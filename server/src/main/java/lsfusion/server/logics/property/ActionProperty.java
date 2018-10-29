@@ -192,6 +192,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             result.addAll(element.getChangeProps().toMap(false));
         return result.immutable();
     }
+    protected static ImMap<CalcProperty, Boolean> getChangeProps(ImCol<CalcProperty> props) {
+        MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
+        for(CalcProperty element : props)
+            result.addAll(element.getChangeProps().toMap(false));
+        return result.immutable();
+    }
     protected static <T extends PropertyInterface> ImMap<CalcProperty, Boolean> getUsedProps(CalcPropertyInterfaceImplement<T>... props) {
         return getUsedProps(SetFact.<CalcPropertyInterfaceImplement<T>>EMPTY(), props);
     }

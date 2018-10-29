@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.data.expr.query.Stat;
@@ -8,7 +9,14 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,12 +38,10 @@ public class LogicalClass extends DataClass<Boolean> {
         return Boolean.class;
     }
 
-    public boolean fillReportDrawField(ReportDrawField reportField) {
-        if (!super.fillReportDrawField(reportField))
-            return false;
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalAlignEnum.CENTER.getValue();
-        return true;
     }
 
     public byte getTypeID() {
@@ -74,6 +80,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public Boolean read(Object value) {
+        if(value instanceof Boolean)
+            return (Boolean)value ? true : null;
         if(value!=null) return true;
         return null;
     }
@@ -122,6 +130,31 @@ public class LogicalClass extends DataClass<Boolean> {
         return object==null?true:null;
     }
 
+    @Override
+    public Boolean parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
+        return readDBF(dbfRecord.getBoolean(fieldName));
+    }
+    @Override
+    public Boolean parseJSON(JSONObject object, String key) throws JSONException {
+        return readJSON(object.getBoolean(key));
+    }
+    @Override
+    public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
+        if(formulaValue.getCellTypeEnum().equals(CellType.BOOLEAN))
+            return readXLS(formulaValue.getBooleanValue());
+        return super.parseXLS(cell, formulaValue);
+    }
+
+    @Override
+    public Object formatJSON(Boolean object) {
+        return object != null;
+    }
+
+    @Override
+    public Object formatXLS(Boolean object) {
+        return object != null;
+    }
+
     public Boolean parseString(String s) throws ParseException {
         try {
             boolean b = Boolean.parseBoolean(s);
@@ -145,6 +178,11 @@ public class LogicalClass extends DataClass<Boolean> {
     @Override
     public Stat getTypeStat() {
         return Stat.ONE;
+    }
+
+    @Override
+    public OverJDBField formatDBF(String fieldName) throws JDBFException {
+        return new OverJDBField(fieldName, 'L', 1, 0);
     }
 
     public boolean calculateStat() {

@@ -4,6 +4,7 @@ import jasperapi.ReportGenerator;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -20,7 +21,7 @@ public class ReportDialog extends JDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         ReportGenerator report = new ReportGenerator(generationData);
-        JasperPrint print = report.createReport(false, null);
+        JasperPrint print = report.createReport(FormPrintType.PRINT);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 

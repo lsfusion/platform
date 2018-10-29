@@ -1,5 +1,6 @@
 package lsfusion.client.form.layout;
 
+import lsfusion.client.Main;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -701,7 +702,7 @@ public class TitledBorder extends AbstractBorder
         } else if (c != null && (font = c.getFont()) != null) {
             return font;
         }
-        return new Font(Font.DIALOG, Font.PLAIN, 12);
+        return new Font(Font.DIALOG, Font.PLAIN, Main.getIntUIFontSize(12));
     }
 
     private static boolean computeIntersection(Rectangle dest,

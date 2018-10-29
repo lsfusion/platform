@@ -172,7 +172,17 @@ public class AbstractGroup extends AbstractNode {
     public String getName() {
         return CanonicalNameUtils.getName(canonicalName);
     }
+    
+    private String integrationSID;
 
+    public void setIntegrationSID(String integrationSID) {
+        this.integrationSID = integrationSID;
+    }
+
+    public String getIntegrationSID() {
+        return integrationSID != null ? integrationSID : getName();
+    }
+    
     // todo [dale]: Используется для идентификации групп свойств в reflection, желательно перевести на canonical names
     public String getSID() {
         return CanonicalNameUtils.toSID(canonicalName);

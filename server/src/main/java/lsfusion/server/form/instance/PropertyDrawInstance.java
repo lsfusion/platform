@@ -47,19 +47,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return getValueProperty() instanceof CalcPropertyObjectInstance;
     }
 
-    public boolean isNoParamCalcProperty() {
-        return isCalcProperty() && getValueProperty().property.getInterfaceCount() == 0;
-    }
-
-    public GroupObjectInstance getApplyObject() {
-        return getValueProperty().getApplyObject();
-    }
-
-    public ImSet<ObjectInstance> getObjectInstances() {
-        return getValueProperty().getSetObjectInstances();
-    }
-
-
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
     public GroupObjectInstance toDraw; // не null, кроме когда без параметров в FormInstance проставляется
 
@@ -138,11 +125,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return PropertyReadType.DRAW;
     }
 
-    @Override
-    public PropertyType getPropertyType(FormEntity formEntity) {
-        return entity.getPropertyType(formEntity);
-    }
-
     public ClassViewType getForceViewType() {
         return entity.forceViewType;
     }
@@ -175,10 +157,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
         @Override
         public Object getProfiledObject() {
             return NullValueProperty.instance;
@@ -197,10 +175,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         public PropertyDrawInstance<P> getPropertyDraw() {
@@ -224,10 +198,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override
@@ -254,10 +224,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
         @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.property.footer}") + "(" + PropertyDrawInstance.this.toString() + ")";
@@ -280,10 +246,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override
@@ -310,10 +272,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return PropertyDrawInstance.this.getID();
         }
 
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
-        }
-
         @Override
         public String toString() {
             return ThreadLocalContext.localize("{logics.background}") + "(" + PropertyDrawInstance.this.toString() + ")";
@@ -336,10 +294,6 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         public int getID() {
             return PropertyDrawInstance.this.getID();
-        }
-
-        public PropertyType getPropertyType(FormEntity formEntity) {
-            return null;
         }
 
         @Override

@@ -54,8 +54,8 @@ import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
-import lsfusion.server.remote.FormReportManager;
-import lsfusion.server.remote.StaticFormReportManager;
+import lsfusion.server.form.stat.FormReportManager;
+import lsfusion.server.form.stat.StaticFormReportManager;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -206,7 +206,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             instanceFactory.getInstance(treeGroup); // чтобы зарегить ссылки
         }
 
-        ImList<PropertyDrawEntity<?>> propertyDraws = entity.getPropertyDrawsList();
+        ImOrderSet<PropertyDrawEntity> propertyDraws = (ImOrderSet<PropertyDrawEntity>) entity.getPropertyDrawsList();
         MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
         for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
             if (propertyDrawEntity.checkPermission(this.securityPolicy.property.view)) {
@@ -526,10 +526,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         
         for (PropertyDrawInstance property : userPrefsHiddenProperties) {
             if (property.toDraw == go) {
-                if (!hiddenSidsList.contains(property.getsID())) {
+                if (!hiddenSidsList.contains(property.getSID())) {
                     hiddenProps.remove(property);        
                 } else {
-                    hiddenSidsList.remove(property.getsID());
+                    hiddenSidsList.remove(property.getSID());
                 }
             }
         }
@@ -793,7 +793,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     
     public PropertyDrawInstance getPropertyDraw(String sid) {
         for (PropertyDrawInstance property : properties)
-            if (property.getsID().equals(sid))
+            if (property.getSID().equals(sid))
                 return property;
         return null;
     }
@@ -1569,12 +1569,119 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         page.updateActiveTabProperty(session, true);
     }
-    
-    public boolean isPropertyShown(PropertyDrawInstance property) {
-        return isShown.get(property) != null;
+
+    public ImOrderSet<PropertyDrawEntity> getPropertyEntitiesShownInGroup(final GroupObjectInstance group) {
+        return properties.filterList(new SFunctionSet<PropertyDrawInstance>() {
+            public boolean contains(PropertyDrawInstance property) {
+                Boolean isShownValue = isShown.get(property);
+                return isShownValue != null && isShownValue && property.isCalcProperty() && property.toDraw == group; // toDraw and not getApplyObject to get WYSIWYG 
+            }
+        }).toOrderExclSet().mapOrderSetValues(new GetValue<PropertyDrawEntity, PropertyDrawInstance>() {
+            @Override
+            public PropertyDrawEntity getMapValue(PropertyDrawInstance value) {
+                return ((PropertyDrawInstance<?>)value).entity;
+            }
+        });
     }
 
-    boolean refresh = true;
+    public ImOrderSet<PropertyDrawEntity> getVisibleProperties(final GroupObjectInstance groupObject, ImOrderSet<PropertyDrawEntity> properties, FormUserPreferences preferences) {
+
+        final GroupObjectUserPreferences groupPreferences = getGroupPreferences(groupObject, preferences);
+        if (groupPreferences == null)
+            return properties;
+
+        return properties.filterOrder(new SFunctionSet<PropertyDrawEntity>() {
+            public boolean contains(PropertyDrawEntity property) {
+                // to check hide we need FormView, now we don't have it and it is not that important
+                ColumnUserPreferences propertyPreferences = getPropertyPreferences(instanceFactory.getInstance(property), groupPreferences);
+                if (propertyPreferences == null)
+                    return true;
+                
+                if(propertyPreferences.userHide != null && propertyPreferences.userHide)
+                    return false;
+                
+                return propertyPreferences.userOrder != null;
+            }
+        });
+    }
+
+    // should be the same as GridTable.getOrderedVisibleProperties 
+    public ImOrderSet<PropertyDrawEntity> getOrderedVisibleProperties(GroupObjectInstance groupObject, ImOrderSet<PropertyDrawEntity> properties, FormUserPreferences preferences) {
+        // first part is skipped because props have been already filtered in getVisibleProperties
+        GroupObjectUserPreferences groupPreferences = getGroupPreferences(groupObject, preferences);
+        if (groupPreferences == null)
+            return properties;
+
+        List<PropertyDrawEntity> list = new ArrayList<>(properties.toJavaList());
+        Collections.sort(list, getUserOrderComparator(properties, groupPreferences));
+        return SetFact.fromJavaOrderSet(list);
+    }
+
+    private Comparator<PropertyDrawEntity> getUserOrderComparator(ImOrderSet<PropertyDrawEntity> baseOrder, final GroupObjectUserPreferences groupPreferences) {
+        final ImMap<PropertyDrawEntity, Integer> userOrders = baseOrder.getSet().mapValues(new GetValue<Integer, PropertyDrawEntity>() {
+            @Override
+            public Integer getMapValue(PropertyDrawEntity value) {
+                return getUserOrder(instanceFactory.getInstance(value), groupPreferences);
+            }
+        });
+        return new Comparator<PropertyDrawEntity>() {
+            public int compare(PropertyDrawEntity c1, PropertyDrawEntity c2) {
+                Integer order1 = userOrders.get(c1);
+                Integer order2 = userOrders.get(c2);
+                if (order1 == null)
+                    return order2 == null ? 0 : 1;
+                else
+                    return order2 == null ? -1 : (order1 - order2);
+            }
+        };
+    }
+
+    private Integer getUserOrder(PropertyDrawInstance property, GroupObjectUserPreferences groupPreferences) {
+        ColumnUserPreferences propertyPreferences = getPropertyPreferences(property, groupPreferences);
+        if (propertyPreferences == null)
+            return null;
+
+        return propertyPreferences.userOrder;
+    }
+
+    public FontInfo getUserFont(GroupObjectInstance group, FormUserPreferences preferences) {
+        GroupObjectUserPreferences groupPreferences = getGroupPreferences(group, preferences);
+        if (groupPreferences == null) 
+            return null;
+
+        return groupPreferences.fontInfo;
+    }
+
+    private GroupObjectUserPreferences getGroupPreferences(GroupObjectInstance group, FormUserPreferences preferences) {
+        if (group == null || preferences == null) return null;
+
+        GroupObjectUserPreferences groupPreferences = preferences.getUsedPreferences(group.getSID());
+        if (groupPreferences == null) 
+            return null;
+        return groupPreferences;
+    }
+
+    public Integer getUserWidth(PropertyDrawInstance instance, FormUserPreferences preferences) {
+        GroupObjectUserPreferences groupPreferences = getGroupPreferences(instance.toDraw, preferences);
+        if (groupPreferences == null)
+            return null;
+
+        ColumnUserPreferences propertyPreferences = getPropertyPreferences(instance, groupPreferences);
+        if (propertyPreferences == null) 
+            return null;
+
+        return propertyPreferences.userWidth;
+    }
+
+    private ColumnUserPreferences getPropertyPreferences(PropertyDrawInstance instance, GroupObjectUserPreferences groupPreferences) {
+        ColumnUserPreferences propertyPreferences = groupPreferences.getColumnUserPreferences().get(instance.getSID());
+        if(propertyPreferences == null) 
+            return null;
+
+        return propertyPreferences;
+    }
+
+    private boolean refresh = true;
 
     private boolean classUpdated(Updated updated, GroupObjectInstance groupObject) {
         return updated.classUpdated(SetFact.singleton(groupObject));
@@ -2436,12 +2543,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
-        FormReportManager<?, ?, ?, ?, ?, ?, ?> newFormManager = new StaticFormReportManager(entity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
-        return newFormManager.getCustomReportPathList(false, null, null);
+        FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
+        return newFormManager.getCustomReportPathList(FormPrintType.PRINT);
     }
 
     public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.<ObjectEntity, ObjectValue>EMPTY(), null);
-        return newFormManager.saveAndGetCustomReportPathList(false, null, null, recreate);
+        return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
     }
 }

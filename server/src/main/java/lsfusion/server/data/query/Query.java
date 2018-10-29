@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.*;
+import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -95,6 +96,36 @@ public class Query<K,V> extends IQuery<K,V> {
 
     public Type getKeyType(K key) {
         return mapKeys.get(key).getType(where);
+    }
+    
+    public ImMap<K, Type> getKeyTypes(final Type.Getter<K> typeGetter) {
+        return mapKeys.keys().mapValues(new GetValue<Type, K>() {
+            @Override
+            public Type getMapValue(K value) {
+                Type propertyType = getKeyType(value);
+                if(propertyType != null)
+                    return propertyType;
+                Type entityType = typeGetter.getType(value);
+                if(entityType != null)
+                    return entityType;
+                return AbstractType.getUnknownTypeNull();
+            }
+        });        
+    }
+
+    public ImMap<V, Type> getPropertyTypes(final Type.Getter<V> typeGetter) {
+        return getProperties().mapValues(new GetValue<Type, V>() {
+            @Override
+            public Type getMapValue(V value) {
+                Type propertyType = getPropertyType(value);
+                if(propertyType != null)
+                    return propertyType;
+                Type entityType = typeGetter.getType(value);
+                if(entityType != null)
+                    return entityType;
+                return AbstractType.getUnknownTypeNull();
+            }
+        });        
     }
 
     public Type getPropertyType(V property) {
