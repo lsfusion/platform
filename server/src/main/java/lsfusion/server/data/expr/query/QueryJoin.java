@@ -215,7 +215,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
 
         if(pushedKeys.size() < pushKeys.size()) {
             pushKeys = pushKeys.filterIncl(pushedKeys);
-            pushNotNullKeys = pushNotNullKeys.filterIncl(pushedKeys);
+            pushNotNullKeys = pushNotNullKeys.filter(pushedKeys);
         }
 
         return getPushedStatKeys(type, adjustNotNullStats(pushCost, pushStat, pushKeys, pushNotNullKeys));
