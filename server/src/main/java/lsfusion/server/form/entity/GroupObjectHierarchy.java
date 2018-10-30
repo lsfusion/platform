@@ -68,7 +68,7 @@ public class GroupObjectHierarchy {
 
         public CalcPropertyObjectEntity getReportPathProp(FormEntity formEntity) {
             GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup == null ? formEntity.reportPathProp : groups.get(0).reportPathProp;
+            return firstGroup == null ? formEntity.reportPathProp : firstGroup.reportPathProp;
         }
 
         public boolean needMargin() {
