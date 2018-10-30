@@ -341,7 +341,7 @@ public class FileUtils {
         FTPClient ftpClient = new FTPClient();
         try {
             ftpClient.setConnectTimeout(60000); //1 minute = 60 sec
-            ftpClient.setControlEncoding(charset);
+            ftpClient.setControlEncoding(ftpPath.charset != null ? ftpPath.charset : charset);
             ftpClient.connect(ftpPath.server, ftpPath.port);
             ftpClient.login(ftpPath.username, ftpPath.password);
             ftpClient.enterLocalPassiveMode();
