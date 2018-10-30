@@ -136,7 +136,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
     @Override
     public Boolean parseJSON(JSONObject object, String key) throws JSONException {
-        return readJSON(object.getBoolean(key));
+        return readJSON(object.optBoolean(key));
     }
     @Override
     public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
