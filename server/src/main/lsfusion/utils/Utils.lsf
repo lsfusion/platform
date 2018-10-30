@@ -10,6 +10,7 @@ GROUP print 'Печатные формы' : public;
 fileName 'Список файлов' = DATA LOCAL VARISTRING[500] (INTEGER);
 fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
 //path, charset, isClient
+//todo: во всех использованиях с кастомной кодировкой вписать кодировку в строку подключения, чтобы можно было убрать  charset из параметров
 listFiles 'Получить список файлов'  INTERNAL  'lsfusion.utils.utils.ListFilesActionProperty' (VARISTRING[500], VARISTRING[10], BOOLEAN); 
 listFiles 'Получить список файлов' (VARISTRING[500] path)  { listFiles(path, 'UTF-8', NULL); }
 listFilesClient 'Получить список файлов (на клиенте)' (VARISTRING[500] path)  { listFiles(path, NULL, TRUE); }
