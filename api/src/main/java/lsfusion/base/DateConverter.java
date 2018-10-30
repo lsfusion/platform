@@ -140,7 +140,7 @@ public class DateConverter {
     }
 
     private static final Map<String, String> DATE_FORMAT_REGEXPS = new HashMap<String, String>();
-    {
+    static {
         DATE_FORMAT_REGEXPS.put("^\\d{8}$", "yyyyMMdd");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}-\\d{1,2}-\\d{4}$", "dd-MM-yyyy");
         DATE_FORMAT_REGEXPS.put("^\\d{1,2}\\.\\d{1,2}\\.\\d{4}$", "dd.MM.yyyy");
