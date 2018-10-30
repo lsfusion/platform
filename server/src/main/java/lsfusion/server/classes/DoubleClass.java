@@ -106,11 +106,6 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     @Override
-    public Double parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
-        return readDBF(dbfRecord.getDouble(fieldName));
-    }
-
-    @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         return new OverJDBField(fieldName, 'F', 13, 3);
     }
