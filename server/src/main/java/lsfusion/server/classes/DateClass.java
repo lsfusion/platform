@@ -124,13 +124,14 @@ public class DateClass extends DataClass<Date> {
     }
     @Override
     public Date parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        java.util.Date cellValue;
+        java.util.Date cellValue = null;
         try {
             cellValue = cell.getDateCellValue();
-        } catch (IllegalStateException e) {
-            return super.parseXLS(cell, formulaValue);
+        } catch (IllegalStateException e) {            
         }
-        return readXLS(cellValue);
+        if(cellValue != null)
+            return readXLS(cellValue);
+        return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try
     }
 
     public Date parseString(String s) throws ParseException {
