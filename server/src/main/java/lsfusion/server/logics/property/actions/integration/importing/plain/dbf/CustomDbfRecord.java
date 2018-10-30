@@ -199,6 +199,19 @@ public class CustomDbfRecord {
         return b < 0 ? (256 + b) : b;
     }
 
+    public Number getNumber(String fieldName) {
+        DbfField f = getField(fieldName);
+        switch (f.getType()) {
+            case Integer:
+                return getInteger(fieldName);
+            case Float:
+            case Double:
+                return getDouble(fieldName);
+            default:
+                return getBigDecimal(fieldName);
+        }
+    }
+    
     public BigDecimal getBigDecimal(String fieldName) {
         DbfField f = getField(fieldName);
         String s = getString(fieldName);

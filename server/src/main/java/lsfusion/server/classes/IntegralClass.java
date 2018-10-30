@@ -118,12 +118,15 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     @Override
     public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException {
-        return readDBF(dbfRecord.getBigDecimal(fieldName));
+        return readDBF(dbfRecord.getNumber(fieldName));
     }
 
     @Override
     public T parseJSON(JSONObject object, String key) throws JSONException {
-        return readJSON((Number)object.opt(key));
+        Object opt = object.opt(key);
+        if(opt instanceof String && (opt.equals("NaN") || opt.equals("Infinity")))
+            return null;
+        return readJSON((Number) opt);
     }
 
     @Override
