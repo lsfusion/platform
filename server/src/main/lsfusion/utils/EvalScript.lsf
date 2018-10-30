@@ -21,31 +21,78 @@ preRunScript(Script s)  {
     APPLY;
 }
 
+showStack 'Показать стек' = DATA LOCAL BOOLEAN ();
+FORM exception 'Ошибка'
+    OBJECTS message = TEXT PANEL, showStack = BOOLEAN PANEL, javaStack = TEXT PANEL, lsfStack = TEXT PANEL
+    PROPERTIES valueMessage= VALUE(message) BACKGROUND RGB(255, 50, 50) READONLY, showStack() TOOLBAR 
+    PROPERTIES READONLY SHOWIF showStack() valueJavaStack = VALUE(javaStack), valueLsfStack = VALUE(lsfStack)
+;
+
+DESIGN exception {
+    NEW pane BEFORE TOOLBARBOX {
+        size = (500, 300);
+        type = SPLITV;
+        NEW error {
+            fill = 0.25;
+            MOVE PROPERTY(valueMessage) {
+                fill = 1;
+                panelCaptionAbove = TRUE;
+                caption = 'Текст ошибки';
+            };
+        }
+        NEW stacks {
+            fill = 0.75;
+            type = COLUMNS;
+            columns = 2;
+            MOVE PROPERTY(valueJavaStack) {
+                panelCaptionAbove = TRUE;
+                fill = 0.5;
+                valueSize = ( -1, 200);
+                caption = 'Java-стек';
+            };
+            MOVE PROPERTY(valueLsfStack) {
+                panelCaptionAbove = TRUE;
+                fill = 0.5;
+                valueSize = ( -1, 200);
+                caption = 'LSF-стек';
+            };
+        }        
+    }
+}
+
 scriptExecution 'Выполнить скрипт' (Script s)  { 
     preRunScript(s); 
-    NEWSESSION { 
+    NEWSESSION TRY {
         EVAL text(s); 
-    } 
+    } CATCH {
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
+    }
 }
 
 actionBodyExecution 'Выполнить действие' (Script s)  { 
     preRunScript(s);
-    NEWSESSION {
+    NEWSESSION TRY {
         EVAL CONCAT ' ', 'run() \{', text(s), ';\n\};';
+    } CATCH {
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
     }
 }
 
 formExecution 'Показать форму' (Script s)  { 
     preRunScript(s);
-    NEWSESSION {
+    NEWSESSION TRY {
         EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() \{ SHOW form NOWAIT; \}';
+    } CATCH {
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();    
     }
 }
 
 javaActionBodyExecution 'Выполнить Java-код' (Script s)  { 
     preRunScript(s);
-    NEWSESSION {
+    NEWSESSION TRY {
         EVAL CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
+    } CATCH {
+        SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException();
     }
 }
 
