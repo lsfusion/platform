@@ -31,6 +31,8 @@ import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
@@ -919,6 +921,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     businessLogics.recalculateClassStats(session, false);
                     apply(session);
                 }
+            }
+
+            // temporary
+            startLogger.info("Checking column group / regular filters influence on hierarchy");
+            for (FormEntity form : businessLogics.getFormEntities()) {
+                if(form.usedInPrint)
+                    form.getGroupHierarchy(true, SetFact.<GroupObjectEntity>EMPTY());
             }
 
             startLogger.info("Updating stats");

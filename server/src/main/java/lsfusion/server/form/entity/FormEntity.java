@@ -53,6 +53,8 @@ import java.util.*;
 public class FormEntity implements FormSelector<ObjectEntity> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     
+    public boolean usedInPrint = false; // temporary
+    
     public static Boolean DEFAULT_NOCANCEL = null;
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;

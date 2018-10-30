@@ -65,6 +65,11 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
         this.exportFile = exportFile;
 
         this.sheetNameProperty = sheetNameProperty;
+        
+        // temporary
+        FormEntity staticForm = form.getStaticForm();
+        if(staticForm != null)
+            staticForm.usedInPrint = true;
 
         if (printer != null) {
             this.printerProperty = printer.getImplement(

@@ -80,7 +80,9 @@ public class FormGroupHierarchyCreator {
         for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
             for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
                 boolean changed = addDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
-                assert !changed;
+                if(changed)
+                    System.out.println("Regular filter influence on hierarchy : FORM " + form + ",  FILTER : " + filter);
+//                assert !changed;
             }
         }
 
@@ -91,7 +93,9 @@ public class FormGroupHierarchyCreator {
                     if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects, supportGroupColumns))
                         for (GroupObjectEntity columnGroup : columnGroupObjects) 
                             if(groups.contains(columnGroup)) {
-                                assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));
+                                if(!(BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup)))) // temporary
+                                    System.out.println("Column groups influence on hierarchy : FORM " + form + ",  GROUP : " + targetGroup + ", COLUMN GROUP : " + columnGroup + ", GROUP PARENTS : " + graph.get(targetGroup) + ", COLUMN GROUP PARENTS : " + graph.get(columnGroup));
+//                                assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));                                
 //                                graph.get(targetGroup).addAll(graph.get(columnGroup));
                             }
                 }
