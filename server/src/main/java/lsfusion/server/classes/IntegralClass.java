@@ -124,7 +124,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     @Override
     public T parseJSON(JSONObject object, String key) throws JSONException {
         Object opt = object.opt(key);
-        if(opt instanceof String && (opt.equals("NaN") || opt.equals("Infinity")))
+        if(opt instanceof String && (opt.equals("NaN") || opt.equals("Infinity") || opt.equals("-NaN") || opt.equals("-Infinity")))
             return null;
         return readJSON((Number) opt);
     }
