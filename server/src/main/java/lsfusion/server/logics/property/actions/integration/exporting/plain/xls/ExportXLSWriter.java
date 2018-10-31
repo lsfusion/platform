@@ -100,13 +100,13 @@ public class ExportXLSWriter extends ExportByteArrayPlainWriter {
 
     private static Integer nameToIndex(String name, boolean xlsx) {
         Integer number = null;
-        //restrictions: max 256 (xls) or 16384 (xlsx) columns and uppercase
+        //restrictions: max 256=IV (xls) or 702=ZZ (xlsx) columns and uppercase
         if(name.equals(name.toUpperCase())) {
             for (int i = 0; i < name.length(); i++) {
                 number = (number== null ? 0 : number * 26) + (name.charAt(i) - ('A' - 1));
             }
         }
-        return number != null && number <= (xlsx ? 16384 : 256) ? (number - 1) : null;
+        return number != null && number <= (xlsx ? 702 : 256) ? (number - 1) : null;
     }
 
     private short getDateFormat(DateFormat format) {
