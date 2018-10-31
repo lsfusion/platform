@@ -5,7 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.interop.PropertyEditType;
@@ -44,7 +43,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         int i = 0;
         for (I pi : property.getReflectionOrderInterfaces()) {
             ObjectEntity paramObject = addSingleGroupObject(interfaceClasses.get(pi), version);
-            addPropertyDraw(paramObject, version, LM.recognizeGroup);
+            addPropertyDraw(paramObject, version, LM.getRecognizeGroup());
             addPropertyDraw(LM.getObjValueProp(this, paramObject), version, paramObject);
             paramObject.groupTo.setPanelClassView();
 

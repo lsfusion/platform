@@ -106,8 +106,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initClasses() throws RecognitionException {
-        super.initClasses();
+    public void initMetaGroupsAndClasses() throws RecognitionException {
+        super.initMetaGroupsAndClasses();
 
         clientException = (ConcreteCustomClass) findClass("ClientException");
         webClientException = (ConcreteCustomClass) findClass("WebClientException");

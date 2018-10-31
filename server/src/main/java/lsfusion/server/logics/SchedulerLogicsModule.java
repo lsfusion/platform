@@ -53,8 +53,8 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initClasses() throws RecognitionException {
-        super.initClasses();
+    public void initMetaGroupsAndClasses() throws RecognitionException {
+        super.initMetaGroupsAndClasses();
 
         scheduledTask = (ConcreteCustomClass) findClass("ScheduledTask");
         scheduledTaskLog = (ConcreteCustomClass) findClass("ScheduledTaskLog");

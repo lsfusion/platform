@@ -97,13 +97,9 @@ public abstract class LogicsModule {
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
 
-    public abstract void initModule() throws RecognitionException;
-
-    public abstract void initClasses() throws RecognitionException;
+    public abstract void initMetaGroupsAndClasses() throws RecognitionException;
 
     public abstract void initTables() throws RecognitionException;
-
-    public abstract void initGroups() throws RecognitionException;
 
     public abstract void initProperties() throws FileNotFoundException, RecognitionException;
 
@@ -296,27 +292,8 @@ public abstract class LogicsModule {
         metaCodeFragments.put(new Pair<>(fragment.getName(), fragment.parameters.size()), fragment);
     }
 
-    // aliases для использования внутри иерархии логических модулей
-    protected BaseClass baseClass;
-
-    public AbstractGroup rootGroup;
-    public AbstractGroup publicGroup;
-    public AbstractGroup baseGroup;
-    public AbstractGroup recognizeGroup;
-
     protected void setBaseLogicsModule(BaseLogicsModule baseLM) {
         this.baseLM = baseLM;
-    }
-
-    protected void initBaseGroupAliases() {
-        this.rootGroup = baseLM.rootGroup;
-        this.publicGroup = baseLM.publicGroup;
-        this.baseGroup = baseLM.baseGroup;
-        this.recognizeGroup = baseLM.recognizeGroup;
-    }
-
-    protected void initBaseClassAliases() {
-        this.baseClass = baseLM.baseClass;
     }
 
     public FunctionSet<Version> visible;
@@ -649,7 +626,7 @@ public abstract class LogicsModule {
                 (conditional ? readImplements.get(resInterfaces) : null);
 
         return addAProp(new ChangeClassActionProperty<>(cls, false, innerInterfaces.getSet(),
-                mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, baseClass));
+                mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, getBaseClass()));
     }
 
     // ------------------- Export property action ----------------- //
@@ -2322,6 +2299,26 @@ public abstract class LogicsModule {
     
     public Map<String, List<LogicsModule>> getNamespaceToModules() {
         return namespaceToModules;
+    }
+
+    public BaseClass getBaseClass() {
+        return baseLM.baseClass;
+    }
+
+    public AbstractGroup getRootGroup() {
+        return baseLM.rootGroup;
+    }
+
+    public AbstractGroup getPublicGroup() {
+        return baseLM.publicGroup;
+    }
+
+    public AbstractGroup getBaseGroup() {
+        return baseLM.baseGroup;
+    }
+
+    public AbstractGroup getRecognizeGroup() {
+        return baseLM.recognizeGroup;
     }
 
     public static class LocalPropertyData {
