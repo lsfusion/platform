@@ -23,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 
+import static lsfusion.base.DateConverter.safeDateToSql;
+
 public class DateClass extends DataClass<Date> {
 
     public final static DateClass instance = new DateClass();
@@ -82,7 +84,7 @@ public class DateClass extends DataClass<Date> {
 
     public Date read(Object value) {
         DateConverter.assertDateToSql((java.util.Date)value);
-        return DateConverter.safeDateToSql((java.util.Date)value);
+        return safeDateToSql((java.util.Date)value);
     }
 
     @Override
@@ -135,15 +137,14 @@ public class DateClass extends DataClass<Date> {
 
     public Date parseString(String s) throws ParseException {
         try {
-            java.util.Date parse = null;
+            java.util.Date parse;
             try {
                 parse = getDateFormat().parse(s);
+                DateConverter.assertDateToSql(parse);
             } catch (java.text.ParseException e) {
                 parse = DateConverter.smartParse(s);
             }
-
-            DateConverter.assertDateToSql(parse);
-            return DateConverter.safeDateToSql(parse);
+            return safeDateToSql(parse);
         } catch (Exception e) {
             throw new ParseException("error parsing date : " + s, e);
         }
