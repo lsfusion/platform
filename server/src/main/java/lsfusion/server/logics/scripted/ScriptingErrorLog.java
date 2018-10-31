@@ -189,7 +189,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitWindowPositionConflictError(ScriptParser parser, String name) throws SemanticErrorException {
-        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" + 
+        emitSimpleError(parser, "both border position (LEFT, RIGHT, TOP or BOTTOM) and dock position (POSITION(x, y, width, height))" +
                 format("are specified for window '%s', only one of those should be used", name));
     }
 
@@ -558,6 +558,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("group object '%s' does not contain object '%s'", groupObjName, objName));
     }
     
+    public void emitImportNonIntegralSheetError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Sheet index should have INTEGER or LONG value");
+    }
+
     public void emitNavigatorElementFolderNameError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "navigator folder name should be defined");
     }
@@ -581,7 +585,7 @@ public class ScriptingErrorLog {
     public void emitRelationalOperatorClassCommpatibilityError(ScriptParser parser, String leftClassName, String rightClassName) throws SemanticErrorException {
         emitSimpleError(parser, format("value of class '%s' is not comparable with value of class '%s'", leftClassName, rightClassName));
     }
-    
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
