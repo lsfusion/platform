@@ -1989,6 +1989,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams sheet = null;
 	boolean sheetAll = false;
 	LCPWithParams memo = null;
+	LCPWithParams where = null;
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
@@ -2001,11 +2002,11 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inPropParseState()) {
-        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll, separator, noHeader, charset, root, paramClasses, attr, $whereExpr.property, memo);
+        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll, separator, noHeader, charset, root, paramClasses, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
-		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; separator = $type.separator;
+		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; where = $type.where; separator = $type.separator;
 		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })
 		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		(
@@ -2039,7 +2040,6 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
              }
 		    plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; literals = $plist.literals; }
 		)
-		('WHERE' whereExpr=propertyExpression[context, dynamic])?
 		dDB=doInputBody[context, newContext]
 	;
 
@@ -2230,9 +2230,9 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, PropertyU
 		)?
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, String separator, boolean noHeader, String charset, LCPWithParams root, boolean attr]
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, LCPWithParams where, String separator, boolean noHeader, String charset, LCPWithParams root, boolean attr]
 	:	'XLS' 	{ $format = FormIntegrationType.XLS; } ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
-	|	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
