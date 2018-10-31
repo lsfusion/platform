@@ -29,34 +29,31 @@ FORM exception 'Ошибка'
 ;
 
 DESIGN exception {
-    NEW pane BEFORE TOOLBARBOX {
-        size = (500, 300);
-        type = SPLITV;
-        NEW error {
-            fill = 0.25;
+    size = (500, 400);
+    OBJECTS {
+        NEW pane {
+            fill = 1;
+            type = SPLITV;
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
                 panelCaptionAbove = TRUE;
                 caption = 'Текст ошибки';
-            };
+            }
+            NEW stacks {
+                fill = 3;
+                type = SPLITH;
+                MOVE PROPERTY(valueJavaStack) {
+                    panelCaptionAbove = TRUE;
+                    fill = 1;
+                    caption = 'Java-стек';
+                }
+                MOVE PROPERTY(valueLsfStack) {
+                    panelCaptionAbove = TRUE;
+                    fill = 1;
+                    caption = 'LSF-стек';
+                }
+            }        
         }
-        NEW stacks {
-            fill = 0.75;
-            type = COLUMNS;
-            columns = 2;
-            MOVE PROPERTY(valueJavaStack) {
-                panelCaptionAbove = TRUE;
-                fill = 0.5;
-                valueSize = ( -1, 200);
-                caption = 'Java-стек';
-            };
-            MOVE PROPERTY(valueLsfStack) {
-                panelCaptionAbove = TRUE;
-                fill = 0.5;
-                valueSize = ( -1, 200);
-                caption = 'LSF-стек';
-            };
-        }        
     }
 }
 
