@@ -297,10 +297,16 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
                 return false;
             return aspectDebugHasAlotKeys();
         }
-        return Stat.ALOT.lessEquals(getInterfaceClassStats().getRows());
+        return hasAlotKeys(getInterfaceClassStats().getRows());
     }
 
     public boolean aspectDebugHasAlotKeys() {
-        return Stat.ALOT.lessEquals(getInterfaceClassStats(true).getRows());
+        return hasAlotKeys(getInterfaceClassStats(true).getRows());
     }
+
+    private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
+    private static boolean hasAlotKeys(Stat stat) {
+        return ALOT_THRESHOLD.lessEquals(stat);
+    }
+
 }
