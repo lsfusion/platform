@@ -43,7 +43,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
             groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
-            groupObject.setSID("value"); // for JSON
+            groupObject.setSID("value"); // for JSON and XML
             addGroupObject(groupObject, version);
         } else
             groupObject = null;
