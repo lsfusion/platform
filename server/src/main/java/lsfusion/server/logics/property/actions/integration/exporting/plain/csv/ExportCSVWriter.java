@@ -82,12 +82,13 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
 
     private static Integer nameToIndex(String name) {
         Integer number = null;
+        //restrictions: max 702=ZZ columns and uppercase
         if(name.equals(name.toUpperCase())) {
             for (int i = 0; i < name.length(); i++) {
                 number = (number== null ? 0 : number * 26) + (name.charAt(i) - ('A' - 1));
             }
         }
-        return number != null ? (number - 1) : null;
+        return number != null && number <= 702 ? (number - 1) : null;
     }
 
     //modified from StringEscapeUtils
