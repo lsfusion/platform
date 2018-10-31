@@ -3,6 +3,7 @@ package lsfusion.client.form.grid;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ReflectionUtils;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
@@ -213,20 +214,13 @@ public class GridTable extends ClientPropertyTable {
 
         TableHeaderUI ui = getTableHeader().getUI();
         if (ui instanceof BasicTableHeaderUI) {
-            try {
-                // change default CellRendererPane to draw corner triangles
-                Field rendererPaneField = BasicTableHeaderUI.class.getDeclaredField("rendererPane");
-                rendererPaneField.setAccessible(true);
-                GridCellRendererPane newRendererPane = new GridCellRendererPane();
-                rendererPaneField.set(ui, newRendererPane);
-
-                Field headerField = BasicTableHeaderUI.class.getDeclaredField("header");
-                headerField.setAccessible(true);
-                JTableHeader header = (JTableHeader) headerField.get(ui);
-                header.removeAll();
-                header.add(newRendererPane);
-            } catch (NoSuchFieldException | IllegalAccessException ignored) {
-            }
+            // change default CellRendererPane to draw corner triangles
+            JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
+            CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
+            header.remove(oldRendererPane);
+            GridCellRendererPane newRendererPane = new GridCellRendererPane();
+            ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
+            header.add(newRendererPane);
         }
 
         tableHeader.addMouseListener(sortableHeaderManager);
