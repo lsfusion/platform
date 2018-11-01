@@ -66,7 +66,7 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
     }
 
     private Map<Integer, String> getFieldIndexMap() {
-        int prevIndex = 0;
+        int prevIndex = -1;
         final Map<Integer, String> fieldIndexMap = new HashMap<>();
         for (String field : fieldTypes.keyOrderSet()) {
             Integer index = nameToIndex(field);
