@@ -39,8 +39,8 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initClasses() throws RecognitionException {
-        super.initClasses();
+    public void initMetaGroupsAndClasses() throws RecognitionException {
+        super.initMetaGroupsAndClasses();
     }
 
     @Override

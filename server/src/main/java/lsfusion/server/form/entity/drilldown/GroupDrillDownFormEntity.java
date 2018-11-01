@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.Compare;
@@ -68,7 +67,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 detailsGroup.add(innerObject);
 
                 addPropertyDraw(LM.baseLM.getObjValueProp(this, innerObject), version, innerObject);
-                addPropertyDraw(innerObject, version, LM.recognizeGroup);
+                addPropertyDraw(innerObject, version, LM.getRecognizeGroup());
             }
 
             mInnerObjects.revAdd(innerInterface, innerObject);
@@ -104,7 +103,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 if(groupImplement instanceof CalcPropertyMapImplement) {
                     CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
                     ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
-                    if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
+                    if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
                         if (mapImplement.property.isDrillFull()) {
                             addPropertyDraw(mapImplement.property, mapImplMapping, version);
                         }
