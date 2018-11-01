@@ -144,37 +144,43 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        parseStep(ScriptParser.State.META_GROUP_CLASS_TABLE);
+    public void initModule() throws RecognitionException {
+        parseStep(ScriptParser.State.INIT);
+    }
+
+    @Override
+    public void initClasses() throws RecognitionException {
+        initBaseClassAliases();
+        parseStep(ScriptParser.State.CLASS);
     }
 
     @Override
     public void initTables() throws RecognitionException {
-        addScriptedTables();
+        parseStep(ScriptParser.State.TABLE);
+    }
+
+    @Override
+    public void initGroups() throws RecognitionException {
+        initBaseGroupAliases();
+        parseStep(ScriptParser.State.GROUP);
     }
 
     @Override
     public void initProperties() throws RecognitionException {
         warningList.clear();
-        
-        parseStep(ScriptParser.State.PROP_INDEX);
-        
-        if (!parser.isInsideMetacode()) {
-            showWarnings();
-        }
+        parseStep(ScriptParser.State.PROP);
     }
 
     @Override
     public void initIndexes() throws RecognitionException {
-        for (TemporaryIndexInfo info : tempIndicies) {
-            addIndex(info.keyNames, info.params);
-        }
-        tempIndicies.clear();
-        
+        parseStep(ScriptParser.State.INDEX);
         for (LCP property : indexedProperties) {
             addIndex(property);
         }
         indexedProperties.clear();
+        if (!parser.isInsideMetacode()) {
+            showWarnings();
+        }
     }
 
     public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> namespacePriority) {
@@ -186,6 +192,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         setRequiredNames(new LinkedHashSet<>(requiredModules));
         setNamespacePriority(namespacePriority);
+    }
+
+    public void initAliases() {
+        initBaseGroupAliases();
+        initBaseClassAliases();
     }
 
     @Override
@@ -451,7 +462,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions, version);
 
             if(!instNames.isEmpty())
-                cls.addParentClass(getBaseClass().staticObjectClass, version);
+                cls.addParentClass(baseClass.staticObjectClass, version);
+
             names = ((ConcreteCustomClass) cls).getNFStaticObjectsNames(version);
             captions = ((ConcreteCustomClass) cls).getNFStaticObjectsCaptions(version);
         }
@@ -2124,7 +2136,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedDeleteAProp(int oldContextSize, List<TypedParameter> newContext, LCPWithParams param, LCPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        LAPWithParams res = addScriptedChangeClassAProp(oldContextSize, newContext, param, getBaseClass().unknown, whereProperty);
+        LAPWithParams res = addScriptedChangeClassAProp(oldContextSize, newContext, param, baseClass.unknown, whereProperty);
         setDeleteActionOptions(res.getLP());
         return res;
     }
@@ -3623,55 +3635,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedTable(String name, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateTable(name);
 
-        // todo [dale]: Hack. Class CustomObjectClass is created after all in InitObjectClassTask 
-        boolean isCustomObjectClassTable = isCustomObjectClassTable(name, classIds);
-
         ValueClass[] classes = new ValueClass[classIds.size()];
-        if (!isCustomObjectClassTable(name, classIds)) {
-            for (int i = 0; i < classIds.size(); i++) {
-                classes[i] = findClass(classIds.get(i));
-            }
+        for (int i = 0; i < classIds.size(); i++) {
+            classes[i] = findClass(classIds.get(i));
         }
-        
-        tempTables.add(new TemporaryTableInfo(name, classes, isFull, isExplicit, isCustomObjectClassTable));
+        addTable(name, isFull, isExplicit, classes);
     }
 
-    private boolean isCustomObjectClassTable(String name, List<String> classIds) {
-        return classIds.size() == 1 && classIds.get(0).equals("CustomObjectClass");
-    }
-    
-    private void addScriptedTables() {
-        for (TemporaryTableInfo info : tempTables) {
-            ValueClass[] classes = info.classes;
-            if (info.isCustomObjectClassTable) {
-                classes = new ValueClass[] {baseLM.baseClass.objectClass};
-            }
-            addTable(info.name, info.isFull, info.isExplicit, classes);
-        }
-        tempTables.clear(); 
-    } 
-    
-    private List<TemporaryTableInfo> tempTables = new ArrayList<>();
-    
-    private static class TemporaryTableInfo {
-        public final String name;
-        public final ValueClass[] classes;
-        public final boolean isFull, isExplicit;
-        public final boolean isCustomObjectClassTable;
-        
-        public TemporaryTableInfo(String name, ValueClass[] classes, boolean isFull, boolean isExplicit, boolean isCustomObjectClassTable) {
-            this.name = name;
-            this.classes = classes;
-            this.isFull = isFull;
-            this.isExplicit = isExplicit;
-            this.isCustomObjectClassTable = isCustomObjectClassTable;  
-        }
-    }  
-    
-    private List<LCP> indexedProperties = new ArrayList<>();
-    private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
-            
-    public void addScriptedIndex(LCP lp) {
+    public List<LCP> indexedProperties = new ArrayList<>();
+
+    public void addScriptedIndex(LCP lp) throws ScriptingErrorLog.SemanticErrorException {
         indexedProperties.add(lp);
 
         ImSet<StoredDataProperty> fullAggrProps;
@@ -3695,17 +3668,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             public String getMapValue(TypedParameter value) {
                 return value.paramName;
             }});
-        tempIndicies.add(new TemporaryIndexInfo(keyNames, getParamsPlainList(lps).toArray()));
-    }
-
-    private static class TemporaryIndexInfo {
-        public ImOrderSet<String> keyNames;
-        public Object[] params;
-        
-        public TemporaryIndexInfo(ImOrderSet<String> keyNames, Object[] params) {
-            this.keyNames = keyNames;
-            this.params = params;
-        }
+        addIndex(keyNames, getParamsPlainList(lps).toArray());
     }
 
     public void addScriptedLoggable(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {

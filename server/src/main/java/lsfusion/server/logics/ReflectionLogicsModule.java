@@ -197,8 +197,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initClasses() throws RecognitionException {
+        super.initClasses();
         propertyGroup = (ConcreteCustomClass) findClass("PropertyGroup");
         navigatorElement = (ConcreteCustomClass) findClass("NavigatorElement");
         navigatorFolder = (ConcreteCustomClass) findClass("NavigatorFolder");
