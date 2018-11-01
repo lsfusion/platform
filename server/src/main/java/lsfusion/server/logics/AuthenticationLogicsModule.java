@@ -214,31 +214,38 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         query.and(customUserLogin.getExpr(loginExpr).getWhere());
         query.and(isLockedLogin.getExpr(loginExpr).getWhere().not());
 
-        if (userNames != null) {
-            final StringClass KEY_CLASS = StringClass.get(30);
-            
-            NoPropertyTableUsage<String> table = new NoPropertyTableUsage<>("syncUsers", SetFact.singletonOrder(KEY_NAME), new Type.Getter<String>() {
-                @Override
-                public Type getType(String key) {
-                    return KEY_CLASS;
-                }
-            });
-
-            ImSet<ImMap<String, DataObject>> keys = SetFact.fromJavaSet(userNames).mapItSetValues(new GetValue<ImMap<String, DataObject>, String>() {
-                @Override
-                public ImMap<String, DataObject> getMapValue(String value) {
-                    return MapFact.singleton(KEY_NAME, new DataObject(value, KEY_CLASS));
-                }
-            });
-
-            table.writeKeys(session.sql, keys, session.getOwner());
-            query.and(table.join(imRevMap).getWhere());
-        }
-        
-        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(session);
+        NoPropertyTableUsage<String> table = null;
         Set<String> result = new HashSet<>();
-        for (ImMap<String, Object> keys : queryResult.keyIt()) {
-            result.add(((String) keys.get(KEY_NAME)));
+        try {
+            if (userNames != null) {
+                final StringClass KEY_CLASS = StringClass.get(30);
+
+                table = new NoPropertyTableUsage<>("syncUsers", SetFact.singletonOrder(KEY_NAME), new Type.Getter<String>() {
+                    @Override
+                    public Type getType(String key) {
+                        return KEY_CLASS;
+                    }
+                });
+
+                ImSet<ImMap<String, DataObject>> keys = SetFact.fromJavaSet(userNames).mapItSetValues(new GetValue<ImMap<String, DataObject>, String>() {
+                    @Override
+                    public ImMap<String, DataObject> getMapValue(String value) {
+                        return MapFact.singleton(KEY_NAME, new DataObject(value, KEY_CLASS));
+                    }
+                });
+
+                table.writeKeys(session.sql, keys, session.getOwner());
+                query.and(table.join(imRevMap).getWhere());
+            }
+
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(session);
+            for (ImMap<String, Object> keys : queryResult.keyIt()) {
+                result.add(((String) keys.get(KEY_NAME)));
+            }
+        } finally {
+            if (table != null) {
+                table.drop(session.sql, session.getOwner());
+            }
         }
         return result;
     }
