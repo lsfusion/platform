@@ -60,7 +60,7 @@ public class ExportXLSWriter extends ExportByteArrayPlainWriter {
         });
 
         Row currentRow = sheet.createRow(rowNum++);
-        Integer prevIndex = 0;
+        Integer prevIndex = -1;
         for (String field : fieldTypes.keyOrderSet()) {
 
             Integer index = nameToIndex(field, xlsx);
