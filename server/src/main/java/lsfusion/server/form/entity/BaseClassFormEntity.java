@@ -20,7 +20,7 @@ public abstract class BaseClassFormEntity extends FormEntity {
 
         object = addSingleGroupObject(cls, version);
 
-        ImList<PropertyClassImplement> idProps = LM.recognizeGroup.getProperties(cls, version);
+        ImList<PropertyClassImplement> idProps = LM.getRecognizeGroup().getProperties(cls, version);
         if(idProps.isEmpty()) {
             // we need at least one prop (otherwise there will be no grid in dialog)
             LCP objValueProp = LM.getObjValueProp(this, object);
@@ -28,7 +28,7 @@ public abstract class BaseClassFormEntity extends FormEntity {
             objectValue.setEditType(PropertyEditType.READONLY);
         }
 
-        addPropertyDraw(object, version, LM.baseGroup);
+        addPropertyDraw(object, version, LM.getBaseGroup());
     }
 
 }

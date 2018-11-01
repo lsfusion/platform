@@ -62,6 +62,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public AbstractGroup drillDownGroup; // для того чтобы в reflection'е можно было для всех drillDown одну политику безопасности проставлять
     public AbstractGroup propertyPolicyGroup; // для того чтобы в reflection'е можно было для всех propertyPolicy одну политику безопасности проставлять
 
+    public AbstractGroup rootGroup;
+    public AbstractGroup publicGroup;
+    public AbstractGroup baseGroup;
+    public AbstractGroup recognizeGroup;
+    
     // properties
     public LCP groeq2;
     public LCP lsoeq2;
@@ -319,16 +324,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
     
     @Override
-    public void initClasses() throws RecognitionException {
+    public void initMetaGroupsAndClasses() throws RecognitionException {
         baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"), elementCanonicalName("StaticObject"), LocalizedString.create("{classes.static.object.class}"));
-        
-        super.initClasses();
+        super.initMetaGroupsAndClasses();
+        initGroups();
     }
 
-    @Override
-    public void initGroups() throws RecognitionException {
-        super.initGroups();
-
+    private void initGroups() throws RecognitionException {
         Version version = getVersion();
 
         rootGroup = findGroup("root");
@@ -465,15 +467,13 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initIndexes() throws RecognitionException {
-        
         super.initIndexes();
-        
         addIndex(staticCaption);
     }
 
     @IdentityStrongLazy
     public <P extends PropertyInterface> PropertyFormEntity getLogForm(CalcProperty<P> property, CalcProperty messageProperty) { // messageProperty - nullable
-        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, recognizeGroup);
+        PropertyFormEntity form = new PropertyFormEntity(this, property, messageProperty, getRecognizeGroup());
         addFormEntity(form);
         return form;
     }

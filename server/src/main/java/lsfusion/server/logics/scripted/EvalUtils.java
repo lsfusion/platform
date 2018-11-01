@@ -44,8 +44,7 @@ public class EvalUtils {
         String errString = "";
         try {
             module.initModuleDependencies();
-            module.initModule();
-            module.initAliases();
+            module.initMetaGroupsAndClasses();
             
             if(locals != null) {
                 for(Pair<LCP, List<ResolveClassSet>> local : locals) {

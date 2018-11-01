@@ -4,17 +4,17 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.tasks.GroupModuleTask;
 import org.antlr.runtime.RecognitionException;
 
-public class InitClassesTask extends GroupModuleTask {
+public class InitMetaGroupsAndClassesTask extends GroupModuleTask {
 
     protected boolean isGraph() {
         return true;
     }
 
     protected void runTask(LogicsModule module) throws RecognitionException {
-        module.initClasses();
+        module.initMetaGroupsAndClasses();
     }
 
     public String getCaption() {
-        return "Initializing classes";
+        return "Initializing metacodes, property groups and classes";
     }
 }
