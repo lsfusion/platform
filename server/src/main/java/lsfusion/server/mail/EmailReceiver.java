@@ -212,6 +212,7 @@ public class EmailReceiver {
             socketFactory.setTrustAllHosts(true);
             mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
             mailProps.setProperty("mail.store.protocol", "imaps");
+            mailProps.setProperty("mail.imaps.timeout", "5000");
         }
         Session emailSession = Session.getInstance(mailProps);
         Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
