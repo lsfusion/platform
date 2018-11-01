@@ -170,6 +170,12 @@ grammar LsfLogics;
 		if (!$actionStatement.isEmpty()) {
 			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $actionStatement::topName, $actionStatement::topCaption);
 		}
+		if (!$overridePropertyStatement.isEmpty()) {
+			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $overridePropertyStatement::topName, null);
+		}
+		if (!$overrideActionStatement.isEmpty()) {
+			return self.getParser().getGlobalDebugPoint(self.getName(), previous, $overrideActionStatement::topName, null);
+		}
 		return self.getParser().getGlobalDebugPoint(self.getName(), previous);
 	}
 
@@ -2236,14 +2242,14 @@ importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntit
 	|	'XLS'	{ $format = FormIntegrationType.XLS; }
 	;
 
-propertyUsage returns [PropertyUsage propUsage]
+propertyUsage returns [String name, PropertyUsage propUsage]
 @init {
 	List<String> classList = null;
 }
 @after {
 	$propUsage = new PropertyUsage($pname.name, classList);
 }
-	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })?
+	:	pname=propertyName { $name = $pname.name; } ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })?
 	;
 
 inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer> usedContext, boolean ci]
@@ -3593,6 +3599,9 @@ terminalFlowActionDefinitionBody returns [LAPWithParams property]
 ////////////////////////////////////////////////////////////////////////////////
 
 overridePropertyStatement
+scope {
+	String topName;
+}
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	LCPWithParams property = null;
@@ -3603,7 +3612,10 @@ overridePropertyStatement
         self.addImplementationToAbstractProp($prop.propUsage, $list.params, property, when);
 	}
 }
-	:	prop=propertyUsage
+	:	prop=propertyUsage 
+	{
+		$overridePropertyStatement::topName = $prop.name;
+	}
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+='
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
@@ -3611,6 +3623,9 @@ overridePropertyStatement
 	;
 
 overrideActionStatement
+scope {
+	String topName;
+}
 @init {
 	List<TypedParameter> context = new ArrayList<>();
 	LAPWithParams action = null;
@@ -3623,6 +3638,9 @@ overrideActionStatement
 }
 	:	'ACTION'?
 	    prop=propertyUsage
+	{
+		$overrideActionStatement::topName = $prop.name;
+	}
 		'(' list=typedParameterList ')' { context = $list.params; }
         '+'
         ('WHEN' whenExpr=propertyExpression[context, false] 'THEN' { when = $whenExpr.property; })?
