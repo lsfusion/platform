@@ -112,13 +112,13 @@ public class ReportDesignGenerator {
             ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
         }
 
-        iterateChildReport(hierarchy.reportHierarchy.rootNode, true);
+        iterateChildReport(hierarchy.reportHierarchy.rootNode, true, true);
 
         return designs;
     }
 
-    private JasperDesign iterateChildReport(ReportNode node, boolean isFirst) throws JRException {
-        JasperDesign design = createJasperDesignObject(node, !isFirst);
+    private JasperDesign iterateChildReport(ReportNode node, boolean isRoot, boolean isFirst) throws JRException {
+        JasperDesign design = createJasperDesignObject(node, isRoot, !isFirst);
         createDesignGroups(design, node);        
         iterateChildReports(design, node);
         
@@ -128,7 +128,7 @@ public class ReportDesignGenerator {
     private void iterateChildReports(JasperDesign design, ReportNode node) throws JRException {
         List<ReportNode> children = hierarchy.reportHierarchy.getChildNodes(node);
         for (ReportNode childNode : children) {
-            JasperDesign childDesign = iterateChildReport(childNode, (childNode == children.get(0)));
+            JasperDesign childDesign = iterateChildReport(childNode, false, (childNode == children.get(0)));
 
             addSubReportBand(design, childDesign, childNode.getID());
         }
@@ -328,11 +328,11 @@ public class ReportDesignGenerator {
         subReportElement.setParametersMapExpression(createParameterExpression(design, sid, ReportConstants.paramsSuffix, Map.class));
     }
 
-    private JasperDesign createJasperDesignObject(ReportNode node, boolean needTopMargin) throws JRException {
+    private JasperDesign createJasperDesignObject(ReportNode node, boolean needMargin, boolean needTopMargin) throws JRException {
         JasperDesign design = new JasperDesign();
         design.setName(node.getName(formView));
 
-        if(!node.needMargin()) {
+        if(!needMargin) {
             design.setTopMargin(needTopMargin ? neighboursGap : 0);
             design.setBottomMargin(0);
             design.setLeftMargin(0);

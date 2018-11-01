@@ -71,11 +71,6 @@ public class GroupObjectHierarchy {
             return firstGroup == null ? formEntity.reportPathProp : firstGroup.reportPathProp;
         }
 
-        public boolean needMargin() {
-            GroupObjectEntity firstGroup = getFirstGroup();
-            return firstGroup == null;
-        }
-
         public GroupObjectEntity getLastGroup() {
             return groups.get(groups.size() - 1);
         }
