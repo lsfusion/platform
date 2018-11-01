@@ -847,14 +847,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return params;
     }
 
-    public void getParamIndexes(List<String> paramClasses, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
-        assert paramClasses.size() <= 1; //пока рассчитываем, что параметров не больше 1
-        for(String paramClass : paramClasses) {
-            getParamIndex(new TypedParameter(findClass(paramClass), "row"), context, dynamic, insideRecursion);
+    public void getParamIndices(List<TypedParameter> typedParams, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
+        for(TypedParameter typedParam : typedParams) {
+            getParamIndex(typedParam, context, dynamic, insideRecursion);
         }
     }
 
-        public int getParamIndex(TypedParameter param, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
+    public int getParamIndex(TypedParameter param, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
         String paramName = param.paramName;
         int index = indexOf(context, paramName);
 
@@ -3364,10 +3363,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(property, allParams);
     }
 
-    private ImList<LCP> findLPsForImport(List<PropertyUsage> propUsages, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
-        return findLPsForImport(propUsages, "INTEGER", oldContext, newContext);
-    }
-
     private ImList<LCP> findLPsForImport(List<PropertyUsage> propUsages, String param, List<TypedParameter> oldContext, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         if(propUsages == null) {
             int size=newContext.size() - oldContext.size() - (param == null ? 0 : 1);
@@ -3429,13 +3424,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return PropertyCanonicalNameUtils.createSignature(signature);
     }
 
-    public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, List<String> paramClasses, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, List<TypedParameter> fieldParams, List<String> toParams, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
             fileProp = new LCPWithParams(baseLM.importFile);
 
-        assert paramClasses.size() <= 1;
-        String param = paramClasses.isEmpty() ? null : paramClasses.get(0);
+        String param;
+        if(fieldParams != null) {
+            assert fieldParams.size() <= 1;
+            param = fieldParams.isEmpty() ? null : fieldParams.get(0).cls.getParsedName();
+        } else {
+            assert toParams.size() <= 1;
+            param = toParams.isEmpty() ? null : toParams.get(0);
+        }
 
         ImList<LCP> props = findLPsForImport(propUsages, param, context, newContext);
 
