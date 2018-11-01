@@ -1,6 +1,5 @@
 package lsfusion.client;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
@@ -9,6 +8,7 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.exceptions.*;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,16 +20,15 @@ import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.CancellationException;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
 
 public final class LoginAction {
+    private final static Logger logger = Logger.getLogger(LoginAction.class);
     private static final String CONFIG_FILE_NAME = "login.dialog.cfg";
     
     private static class LoginActionHolder {
@@ -65,14 +64,45 @@ public final class LoginAction {
         String serverHost = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTNAME);
         String serverPort = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_HOSTPORT);
         String serverDB = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_EXPORTNAME);
-        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
-        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
-        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, userName, password, password != null));
-
-        //loginDialog = new LoginDialog(loginInfo);
+        
+        loginInfo = restoreLoginData(new LoginInfo(serverHost, serverPort, serverDB, null));
     }
 
-    public void initLoginDialog() {
+    public void initLoginDialog(RemoteLogicsInterface remoteLogics) {
+        String userName = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_USER);
+        String password = getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_PASSWORD);
+
+        if (remoteLogics != null) {
+            Set<String> savedUsers = new HashSet<>();
+            for (UserInfo userInfo : userInfos) {
+                savedUsers.add(userInfo.name);
+            }
+            try {
+                Set<String> currentUsers = remoteLogics.syncUsers(savedUsers);
+                List<UserInfo> newUserInfos = new ArrayList<>();
+                for (UserInfo userInfo : userInfos) {
+                    if (currentUsers.remove(userInfo.name)) {
+                        newUserInfos.add(userInfo);
+                    }
+                }
+                for (String user : currentUsers) {
+                    newUserInfos.add(new UserInfo(user, false, null));
+                }
+                userInfos = newUserInfos;
+            } catch (RemoteException e) {
+                logger.error("Error synchronizing users", e);
+            }
+        }
+        UserInfo userInfo = !userInfos.isEmpty() ? userInfos.get(0).copy() : new UserInfo();
+        if (userName != null){
+            userInfo.name = userName;
+        }
+        if (password != null) {
+            userInfo.savePassword = true; // for command line values: set this flag to fill password field in login dialog
+            userInfo.password = password;
+        }
+        loginInfo.setUserInfo(userInfo);
+
         loginDialog = new LoginDialog(loginInfo, userInfos);
     }
 
@@ -84,7 +114,7 @@ public final class LoginAction {
             // всё в одной строке для упрощения поддержки обратной совместимости при добавлении функционала по сохранению всех паролей  
             // вообще здесь уже просится что-то типа XML
             List<UserInfo> newUserList = new ArrayList<>();
-            UserInfo currentUserInfo = new UserInfo(loginInfo.getUserName(), loginInfo.getSavePwd(), loginInfo.getPassword());
+            UserInfo currentUserInfo = loginInfo.getUserInfo();
             newUserList.add(currentUserInfo);
             StringBuilder usersString = new StringBuilder(currentUserInfo.toString());
             for (UserInfo userInfo : userInfos) {
@@ -109,12 +139,12 @@ public final class LoginAction {
                 FileReader fileRd = new FileReader(file);
                 Scanner scanner = new Scanner(fileRd);
                 String serverHost = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerHost() != null) {
-                    serverHost = loginInfo.getServerHost();
+                if (loginInfo.getServerHost() == null) {
+                    loginInfo.setServerHost(serverHost);
                 }
                 String serverPort = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerPort() != null) {
-                    serverPort = loginInfo.getServerPort();
+                if (loginInfo.getServerPort() == null) {
+                    loginInfo.setServerPort(serverPort);
                 }
                 userInfos = new ArrayList<>();
                 if (scanner.hasNextLine()) {
@@ -136,28 +166,10 @@ public final class LoginAction {
                         }
                     }
                 }
-                String userName = loginInfo.getUserName();
-                if (userName == null && !userInfos.isEmpty()){
-                    userName = userInfos.get(0).name;
+                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "default";
+                if (loginInfo.getServerDB() == null) {
+                    loginInfo.setServerDB(serverDB);
                 }
-                String serverDB = scanner.hasNextLine() ? scanner.nextLine() : "";
-                if (loginInfo.getServerDB() != null) {
-                    serverDB = loginInfo.getServerDB();
-                }
-                if (serverDB.isEmpty()) {
-                    serverDB = "default";
-                }
-                boolean savePwd = loginInfo.getSavePwd(); // в loginInfo приходят только значения из командной строки. ставим этот флаг, чтобы в диалоге заполнялось поле с паролем
-                if (!savePwd && !userInfos.isEmpty()) {
-                    savePwd = userInfos.get(0).savePassword;
-                }
-                String password = "";
-                if (loginInfo.getPassword() != null) {
-                    password = loginInfo.getPassword();
-                } else if (!userInfos.isEmpty()) {
-                    password = userInfos.get(0).password;
-                }
-                return new LoginInfo(serverHost, serverPort, serverDB, userName, password, savePwd);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -325,28 +337,5 @@ public final class LoginAction {
 
     public void setAutoLogin(boolean autoLogin) {
         this.autoLogin = autoLogin;
-    }
-    
-    public class UserInfo {
-        String name;
-        boolean savePassword;
-        String password;
-        
-        public UserInfo (String name, boolean savePassword, String password) {
-            this.name = name;
-            this.savePassword = savePassword;
-            if (savePassword) {
-                this.password = password;
-            }
-        }
-
-        @Override
-        public String toString() {
-            String string = this.name + "\t" + savePassword;
-            if (savePassword) {
-                string += "\t" + Base64.encodeBase64URLSafeString(password.getBytes()) ;
-            }
-            return string;
-        }
     }
 }

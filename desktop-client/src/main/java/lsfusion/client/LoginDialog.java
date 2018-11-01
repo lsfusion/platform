@@ -23,20 +23,20 @@ public class LoginDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox loginBox;
+    private JComboBox<String> loginBox;
     private JPasswordField passwordField;
-    private JComboBox serverHost;
+    private JComboBox<String> serverHost;
     private JCheckBox savePassword;
     private JLabel warning;
     private JPanel warningPanel;
-    private JComboBox serverDB;
+    private JComboBox<String> serverDB;
     private String waitMessage = ClientResourceBundle.getString("dialog.please.wait");
     private LoginInfo loginInfo;
     private boolean autoLogin = false;
     private JLabel imageLabel;
-    private List<LoginAction.UserInfo> userInfos;
+    private List<UserInfo> userInfos;
 
-    public LoginDialog(LoginInfo defaultLoginInfo, List<LoginAction.UserInfo> userInfos) {
+    public LoginDialog(LoginInfo defaultLoginInfo, List<UserInfo> userInfos) {
         super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
         this.userInfos = userInfos;
         imageLabel.setIcon(Main.getLogo());
@@ -60,19 +60,19 @@ public class LoginDialog extends JDialog {
                 server.append(loginInfo.getServerPort());
             }
             String item = server.toString();
-            ((MutableComboBoxModel) serverHost.getModel()).addElement(item);
+            ((MutableComboBoxModel<String>) serverHost.getModel()).addElement(item);
             serverHost.setSelectedItem(item);
         }
 
         String db = loginInfo.getServerDB();
         if (db != null) {
             if (serverDB.getItemCount() == 0)
-                ((MutableComboBoxModel) serverDB.getModel()).addElement(db);
+                ((MutableComboBoxModel<String>) serverDB.getModel()).addElement(db);
             serverDB.setSelectedItem(db);
         }
 
-        for (LoginAction.UserInfo userInfo : userInfos) {
-            ((MutableComboBoxModel)loginBox.getModel()).addElement(userInfo.name);
+        for (UserInfo userInfo : userInfos) {
+            ((MutableComboBoxModel<String>)loginBox.getModel()).addElement(userInfo.name);
         }
         if (loginInfo.getUserName() != null) {
             loginBox.setSelectedItem(loginInfo.getUserName());
@@ -125,7 +125,7 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        serverHost.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+        KeyListener updateKeyListener = new KeyListener() {
             public void keyTyped(KeyEvent e) {
                 update();
             }
@@ -137,34 +137,23 @@ public class LoginDialog extends JDialog {
             public void keyReleased(KeyEvent e) {
                 update();
             }
-        });
+        };
+        serverHost.getEditor().getEditorComponent().addKeyListener(updateKeyListener);
 
         loginBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    LoginAction.UserInfo info = getUserInfo((String) loginBox.getModel().getSelectedItem());
+                    UserInfo info = getUserInfo((String) loginBox.getModel().getSelectedItem());
                     if (info != null) {
                         savePassword.setSelected(info.savePassword);
-                        passwordField.setText(info.password);
+                        passwordField.setText(info.savePassword ? info.password : "");
                     }
                     update();
                 }
             }
         });
 
-        loginBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {
-                update();
-            }
-
-            public void keyPressed(KeyEvent e) {
-                update();
-            }
-
-            public void keyReleased(KeyEvent e) {
-                update();
-            }
-        });
+        loginBox.getEditor().getEditorComponent().addKeyListener(updateKeyListener);
 
         loginBox.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
@@ -195,8 +184,8 @@ public class LoginDialog extends JDialog {
         });
     }
     
-    private LoginAction.UserInfo getUserInfo(String userName) {
-        for (LoginAction.UserInfo userInfo : userInfos) {
+    private UserInfo getUserInfo(String userName) {
+        for (UserInfo userInfo : userInfos) {
             if (userInfo.name.equals(userName)) {
                 return userInfo;
             }
@@ -208,7 +197,7 @@ public class LoginDialog extends JDialog {
         try {
             RemoteServerAgentInterface remoteLoader = RMIUtils.rmiLookup("localhost", 6666, "ServerAgent", Main.rmiSocketFactory);
             for (String exportName : remoteLoader.getExportNames()) {
-                ((MutableComboBoxModel) serverDB.getModel()).addElement(exportName);
+                ((MutableComboBoxModel<String>) serverDB.getModel()).addElement(exportName);
             }
         } catch (Exception ignore) {
         }
@@ -253,7 +242,12 @@ public class LoginDialog extends JDialog {
         } else {
             serverInfo = getServerInfo(item.toString());
         }
-        loginInfo = new LoginInfo(serverInfo.getHostName(), String.valueOf(serverInfo.getPort()), String.valueOf(serverDB.getSelectedItem()), ((String) loginBox.getModel().getSelectedItem()), new String(passwordField.getPassword()), savePassword.isSelected());
+        loginInfo = new LoginInfo(
+                serverInfo.getHostName(), 
+                String.valueOf(serverInfo.getPort()),
+                (String) serverDB.getSelectedItem(), 
+                new UserInfo((String) loginBox.getSelectedItem(), savePassword.isSelected(), new String(passwordField.getPassword()))
+        );
 
         setVisible(false);
     }

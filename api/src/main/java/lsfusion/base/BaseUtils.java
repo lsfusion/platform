@@ -47,7 +47,7 @@ public class BaseUtils {
 
     //minHeapFreeRatio + cherry-picks from master
     public static Integer getApiVersion() {
-        return 74;
+        return 75;
     }
 
     public static String getPlatformVersion() {

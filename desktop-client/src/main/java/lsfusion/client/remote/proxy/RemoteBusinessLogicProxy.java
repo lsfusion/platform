@@ -15,6 +15,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
@@ -24,6 +25,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException {
         return new RemoteNavigatorProxy(target.createNavigator(isFullClient, navigatorInfo, forceCreateNew));
+    }
+
+    @Override
+    public Set<String> syncUsers(Set<String> userNames) throws RemoteException {
+        logRemoteMethodStartCall("syncUsers");
+        Set<String> result = target.syncUsers(userNames);
+        logRemoteMethodEndCall("syncUsers", result);
+        return result;
     }
 
     @Override

@@ -91,6 +91,7 @@ sha256Password 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
 calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
 forbidChangePassword 'Запретить пользователю изменять пароль' = ABSTRACT BOOLEAN (CustomUser);
 forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
+isLockedLogin 'Заблокирован' (login) = isLocked(customUser(login));
 
 lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
 lastComputer 'Рабочее место' = DATA Computer (CustomUser);

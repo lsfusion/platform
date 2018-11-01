@@ -13,6 +13,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
@@ -23,6 +24,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     GUIPreferences getGUIPreferences() throws RemoteException;
     
     RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
+    
+    Set<String> syncUsers(Set<String> userNames) throws RemoteException;
 
     Long getComputer(String hostname) throws RemoteException;
 
