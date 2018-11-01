@@ -85,8 +85,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initClasses() throws RecognitionException {
+        super.initClasses();
 
         computer = (ConcreteCustomClass) findClass("Computer");
         user = (AbstractCustomClass) findClass("User");

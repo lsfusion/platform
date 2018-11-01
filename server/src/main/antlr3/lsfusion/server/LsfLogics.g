@@ -104,13 +104,9 @@ grammar LsfLogics;
 	
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (parseState == ScriptParser.State.INIT) { 
 			self.getErrLog().write(msg + "\n");
 		}
-	}
-	
-	public boolean isFirstFullParse() {
-		return parseState == ScriptParser.State.META_GROUP_CLASS_TABLE;
 	}
 	
 	@Override
@@ -147,16 +143,28 @@ grammar LsfLogics;
 		return inParseState(ScriptParser.State.PRE);
 	}
 
-	public boolean inMetaGroupClassTableParseState() {
-		return inParseState(ScriptParser.State.META_GROUP_CLASS_TABLE);
+	public boolean inInitParseState() {
+		return inParseState(ScriptParser.State.INIT); 
+	}
+
+	public boolean inGroupParseState() {
+		return inParseState(ScriptParser.State.GROUP);
+	}
+
+	public boolean inClassParseState() {
+		return inParseState(ScriptParser.State.CLASS);
 	}
 
 	public boolean inPropParseState() {
-		return inParseState(ScriptParser.State.PROP_INDEX);
+		return inParseState(ScriptParser.State.PROP);
 	}
 
-	public boolean isFirstFullParse() {
-		return inMetaGroupClassTableParseState();
+	public boolean inTableParseState() {
+		return inParseState(ScriptParser.State.TABLE);
+	}
+
+	public boolean inIndexParseState() {
+		return inParseState(ScriptParser.State.INDEX);
 	}
 
 	public DebugInfo.DebugPoint getCurrentDebugPoint() {
@@ -196,7 +204,7 @@ grammar LsfLogics;
 
 	@Override
 	public void emitErrorMessage(String msg) {
-		if (isFirstFullParse()) { 
+		if (parseState == ScriptParser.State.INIT) { 
 			self.getErrLog().write(msg + "\n");
 		}
 	}
@@ -242,7 +250,7 @@ moduleHeader
 @after {
 	if (inPreParseState()) {
 		self.initScriptingModule($name.text, namespaceName, requiredModules, namespacePriority);
-	} else if (isFirstFullParse()) {
+	} else if (inInitParseState()) {
 		self.initModulesAndNamespaces(requiredModules, namespacePriority);
 	}
 }
@@ -301,7 +309,7 @@ classStatement
 	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inClassParseState()) {
 	    if (!isNative)
 		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex, point);
 	}
@@ -315,7 +323,7 @@ classStatement
 
 extendClassStatement
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inClassParseState()) {
 		self.extendClass($className.sid, $classData.names, $classData.captions, $classData.parents);
 	}
 }
@@ -354,7 +362,7 @@ groupStatement
 	String parent = null;
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inGroupParseState()) {
 		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
 	}
 }
@@ -3896,7 +3904,7 @@ tableStatement
 	boolean isNoDefault = false;
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inTableParseState()) {
 		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
 	}
 }
@@ -3919,18 +3927,40 @@ loggableStatement
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-mappedPropertyOrSimpleParam[List<TypedParameter> context] returns [LCPWithParams property]
-    :   (   toProp=propertyUsage '(' params=singleParameterList[context, true] ')' { if(inPropParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
-        |   param=singleParameter[context, true] { $property = $param.property; }
+// duplicate of singleParameter because of different parse states
+singleParameterIndex[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
+@init {
+	String className = null;
+}
+@after {
+	if (inIndexParseState()) {
+		$property = new LCPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
+	}
+}
+	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
+	;
+
+singleParameterIndexList[List<TypedParameter> context, boolean dynamic] returns [List<LCPWithParams> props]
+@init {
+	props = new ArrayList<>();
+}
+	:	(first=singleParameterIndex[context, dynamic] { props.add($first.property); }
+		(',' next=singleParameterIndex[context, dynamic] { props.add($next.property); })*)?
+	;
+
+
+mappedPropertyOrSimpleParamIndex[List<TypedParameter> context] returns [LCPWithParams property]
+    :   (   toProp=propertyUsage '(' params=singleParameterIndexList[context, true] ')' { if(inIndexParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
+        |   param=singleParameterIndex[context, true] { $property = $param.property; }
         )
 ;
 
-nonEmptyMappedPropertyOrSimpleParamList[List<TypedParameter> context] returns [List<LCPWithParams> props]
+nonEmptyMappedPropertyOrSimpleParamIndexList[List<TypedParameter> context] returns [List<LCPWithParams> props]
 @init {
 	$props = new ArrayList<>();
 }
-	:	first=mappedPropertyOrSimpleParam[context] { $props.add($first.property); }
-		(',' next=mappedPropertyOrSimpleParam[context] { $props.add($next.property); })*
+	:	first=mappedPropertyOrSimpleParamIndex[context] { $props.add($first.property); }
+		(',' next=mappedPropertyOrSimpleParamIndex[context] { $props.add($next.property); })*
 	;
 
 indexStatement
@@ -3938,11 +3968,11 @@ indexStatement
 	List<TypedParameter> context = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inIndexParseState()) {
 		self.addScriptedIndex(context, $list.props);
 	}	
 }
-	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
+	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleParamIndexList[context] ';'
 	;
 
 
@@ -4314,7 +4344,7 @@ metaCodeDeclarationStatement
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inInitParseState()) {
 		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, metaTokens, $text, lineNumber);
 	}
 }

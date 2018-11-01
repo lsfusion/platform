@@ -85,13 +85,13 @@ public class LogFormEntity extends FormEntity {
         Version version = getVersion();
 
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, version, systemEventsLM.baseLM.getRecognizeGroup());
+            addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup);
         }
 
         addPropertyDraw(logValueProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.getRecognizeGroup().getProperties(property.property.getValueClass(ClassType.logPolicy), version);
+                systemEventsLM.baseLM.recognizeGroup.getProperties(property.property.getValueClass(ClassType.logPolicy), version);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {

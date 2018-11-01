@@ -907,7 +907,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public ImOrderSet<Property> getOrderProperties() {
-        return LM.getRootGroup().getProperties();
+        return LM.rootGroup.getProperties();
     }
 
     public ImSet<Property> getProperties() {
@@ -1064,7 +1064,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public static final boolean disableImplicitCases = true;
     
     public ImList<AbstractGroup> getChildGroups() {
-        return LM.getRootGroup().getChildGroups();
+        return LM.rootGroup.getChildGroups();
     }
 
     public ImOrderSet<Property> getPropertyList() {

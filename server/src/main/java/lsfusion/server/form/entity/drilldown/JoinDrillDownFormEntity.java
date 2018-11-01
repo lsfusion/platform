@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.Compare;
@@ -67,7 +68,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                         CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
                         ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
                         //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                        if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasNFChild(mapImplement.property, version)) {
+                        if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasNFChild(mapImplement.property, version)) {
                             if (mapImplement.property.isDrillFull()) {
                                 detailsProperties.add(addPropertyDraw(mapImplement.property, mapImplMapping, version));
                             }
