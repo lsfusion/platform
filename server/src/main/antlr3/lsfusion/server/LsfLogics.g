@@ -1995,14 +1995,15 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	String charset = null;
 	LCPWithParams root = null;
 	boolean attr = false;
-	List<String> paramClasses = null;
+    List<TypedParameter> fieldParams = null;
+    List<String> toParams = null;
 
 	List<String> ids = null;
 	List<Boolean> literals = null;
 }
 @after {
 	if (inPropParseState()) {
-        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll, separator, noHeader, charset, root, paramClasses, attr, where, memo);
+        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll, separator, noHeader, charset, root, fieldParams, toParams, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
@@ -2010,37 +2011,25 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })
 		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		(
-            'FIELDS' ('(' paramClassNames=classIdList {
-                            if(inPropParseState()) {
-                                paramClasses = $paramClassNames.ids;
-                                self.getParamIndexes(paramClasses, newContext, true, insideRecursion);
-                            }
-                    	 }
-                     ')')?
+            'FIELDS' ('(' list=typedParameterList { if(inPropParseState()) { fieldParams = list; } } ')')?
             {
-                if(inPropParseState() && paramClasses == null) {
-                    paramClasses = Collections.singletonList("INTEGER");
-                    self.getParamIndex(self.new TypedParameter(self.findClass("INTEGER"), "row"), newContext, true, insideRecursion);
+                if(inPropParseState()) {
+                    if(fieldParams == null)
+                        fieldParams = Arrays.asList(TP("INTEGER", "row"));
+                    self.getParamIndices(fieldParams, newContext, true, insideRecursion);
                 }
             }
             pflist = nonEmptyImportFieldDefinitions[newContext] { ids = $pflist.ids; literals = $pflist.literals; }
+            dDB=doInputBody[context, newContext]
             |
-		    'TO' ('(' paramClassNames=classIdList {
-                            if(inPropParseState()) {
-                                paramClasses = $paramClassNames.ids;
-                                self.getParamIndexes(paramClasses, newContext, true, insideRecursion);
-                            }
-                      }
-                 ')')?
+		    'TO' ('(' paramClassNames=classIdList { if(inPropParseState()) { toParams = $paramClassNames.ids; } } ')')?
              {
-                 if(inPropParseState() && paramClasses == null) {
-                     paramClasses = Collections.singletonList("INTEGER");
-                     self.getParamIndex(self.new TypedParameter(self.findClass("INTEGER"), "row"), newContext, true, insideRecursion);
+                 if(inPropParseState() && toParams == null) {
+                     toParams = Collections.singletonList("INTEGER");
                  }
              }
 		    plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; literals = $plist.literals; }
 		)
-		dDB=doInputBody[context, newContext]
 	;
 
 nonEmptyImportFieldDefinitions[List<TypedParameter> newContext] returns [List<String> ids, List<Boolean> literals, List<Boolean> nulls]
