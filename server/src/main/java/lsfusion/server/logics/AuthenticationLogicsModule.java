@@ -1,23 +1,37 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
 import lsfusion.server.logics.property.CurrentUserFormulaProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.NoPropertyTableUsage;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static lsfusion.base.BaseUtils.nullTrim;
 
@@ -33,6 +47,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP contactEmail;
 
     public LCP isLockedCustomUser;
+    public LCP isLockedLogin;
     public LCP loginCustomUser;
     public LCP customUserLogin;
     public LCP customUserUpcaseLogin;
@@ -122,6 +137,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
+        isLockedLogin = findProperty("isLockedLogin[STRING[30]]");
 
         loginCustomUser = findProperty("login[CustomUser]");
         customUserLogin = findProperty("customUser[STRING[30]]");
@@ -185,5 +201,45 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
             }
         }
         return authenticated;
+    }
+    
+    public Set<String> syncUsers(final Set<String> userNames) throws SQLException, SQLHandledException {
+        final DataSession session = createSession();
+
+        final String KEY_NAME = "login";
+        KeyExpr loginExpr = new KeyExpr(KEY_NAME);
+        ImRevMap<String, KeyExpr> imRevMap = MapFact.singletonRev(KEY_NAME, loginExpr);
+
+        QueryBuilder<String, String> query = new QueryBuilder<>(imRevMap);
+        query.and(customUserLogin.getExpr(loginExpr).getWhere());
+        query.and(isLockedLogin.getExpr(loginExpr).getWhere().not());
+
+        if (userNames != null) {
+            final StringClass KEY_CLASS = StringClass.get(30);
+            
+            NoPropertyTableUsage<String> table = new NoPropertyTableUsage<>("syncUsers", SetFact.singletonOrder(KEY_NAME), new Type.Getter<String>() {
+                @Override
+                public Type getType(String key) {
+                    return KEY_CLASS;
+                }
+            });
+
+            ImSet<ImMap<String, DataObject>> keys = SetFact.fromJavaSet(userNames).mapItSetValues(new GetValue<ImMap<String, DataObject>, String>() {
+                @Override
+                public ImMap<String, DataObject> getMapValue(String value) {
+                    return MapFact.singleton(KEY_NAME, new DataObject(value, KEY_CLASS));
+                }
+            });
+
+            table.writeKeys(session.sql, keys, session.getOwner());
+            query.and(table.join(imRevMap).getWhere());
+        }
+        
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(session);
+        Set<String> result = new HashSet<>();
+        for (ImMap<String, Object> keys : queryResult.keyIt()) {
+            result.add(((String) keys.get(KEY_NAME)));
+        }
+        return result;
     }
 }

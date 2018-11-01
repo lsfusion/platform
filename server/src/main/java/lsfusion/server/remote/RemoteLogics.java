@@ -20,7 +20,6 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ExecutionStack;
@@ -33,8 +32,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
-import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
@@ -53,10 +52,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.server.context.ThreadLocalContext.localize;
 
@@ -159,6 +155,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw new RemoteMessageException(ApiResourceBundle.getString("exceptions.server.is.restarting"));
 
         return navigatorsManager.createNavigator(getStack(), isFullClient, navigatorInfo, reuseSession);
+    }
+
+    @Override
+    public Set<String> syncUsers(Set<String> userNames) throws RemoteException {
+        try {
+            return businessLogics.authenticationLM.syncUsers(userNames);
+        } catch (Exception e) {
+            throw new RuntimeException("Error synchronizing user names", e);
+        }
     }
 
     protected DataSession createSession() throws SQLException {

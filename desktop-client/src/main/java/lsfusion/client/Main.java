@@ -201,10 +201,17 @@ public class Main {
                 try {
                     LoginAction loginAction = LoginAction.getInstance();
 
+                    RemoteLogicsInterface tmpRemoteLogics = null;
+                    try {
+                        RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginAction.loginInfo.getServerHost(), loginAction.loginInfo.getServerPort(), loginAction.loginInfo.getServerDB()).connect(false);
+                        tmpRemoteLogics = remoteLoader.getLogics();
+                    } catch (Throwable e) {
+                        logger.error("Error creating RemoteLogics", e);
+                    }
                     //пытаемся подгрузить лого
-                    loadLogicsLogo(loginAction.loginInfo);
+                    loadLogicsLogo(tmpRemoteLogics);
 
-                    loginAction.initLoginDialog();
+                    loginAction.initLoginDialog(tmpRemoteLogics);
 
                     if (!loginAction.login()) {
                         return;
@@ -320,14 +327,13 @@ public class Main {
         });
     }
 
-    private static void loadLogicsLogo(LoginInfo loginInfo) {
+    private static void loadLogicsLogo(RemoteLogicsInterface remoteLogics) {
         try {
-            RemoteLogicsLoaderInterface remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort(), loginInfo.getServerDB()).connect(false);
-            if (remoteLoader != null) {
-                RemoteLogicsInterface remote = remoteLoader.getLogics();
-                logicsLogo = remote.getGUIPreferences().logicsLogo;
+            if (remoteLogics != null) {
+                logicsLogo = remoteLogics.getGUIPreferences().logicsLogo;
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            logger.error("Error loading logics logo", e);
         }
     }
 
