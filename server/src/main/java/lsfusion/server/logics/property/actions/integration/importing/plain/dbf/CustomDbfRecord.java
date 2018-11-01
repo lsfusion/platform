@@ -204,7 +204,6 @@ public class CustomDbfRecord {
         switch (f.getType()) {
             case Integer:
                 return getInteger(fieldName);
-            case Float:
             case Double:
                 return getDouble(fieldName);
             default:
