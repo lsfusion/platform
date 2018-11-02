@@ -252,8 +252,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 if (objectType instanceof StaticFormatFileClass)
                     extension = ((StaticFormatFileClass) objectType).getOpenExtension(file);
                 else {
-                    file = BaseUtils.getFile(file);
                     extension = BaseUtils.getExtension(file);
+                    file = BaseUtils.getFile(file);
                 }
                 attachments.add(new EmailSender.AttachmentFile(file, name + "." + extension, extension));
             }
