@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.csv;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -82,6 +83,17 @@ public class ImportCSVIterator extends ImportPlainIterator {
 
     @Override
     protected Object getPropValue(String name, Type type) throws ParseException, java.text.ParseException {
-        return type.parseCSV(line.get(fieldIndexes.get(name)));
+        Integer fieldIndex = fieldIndexes.get(name);
+        if(noHeader) { // ignoring all exceptions (just like excel)
+            if (fieldIndex >= line.size())
+                return null;
+        }
+        try {
+            return type.parseCSV(line.get(fieldIndex));
+        } catch (ParseException e) {
+            if(!noHeader) // ignoring all exceptions (just like excel)
+                throw Throwables.propagate(e);
+            return null;
+        }
     }
 }
