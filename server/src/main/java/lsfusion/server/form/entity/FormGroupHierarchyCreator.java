@@ -87,6 +87,19 @@ public class FormGroupHierarchyCreator {
         }
 
         if(supportGroupColumns) { // temporary remove if assertion will not be broken
+            for (PropertyDrawEntity<?> property : propertyDraws) {
+                if(property.propertyCaption != null) {
+                    boolean changed = addDependencies(graph, getGroupsByObjects(property.propertyCaption.getObjectInstances(), groups));
+                    if(changed)
+                        System.out.println("HEADER affects hierarchy : FORM " + form + ",  FILTER : " + property);
+                }
+                if(property.propertyFooter != null) {
+                    boolean changed = addDependencies(graph, getGroupsByObjects(property.propertyFooter.getObjectInstances(), groups));
+                    if(changed)
+                        System.out.println("FOOTER affects hierarchy : FORM " + form + ",  FILTER : " + property);
+                }
+            }
+
             for (GroupObjectEntity targetGroup : groups) {
                 for (PropertyDrawEntity<?> property : propertyDraws) {
                     ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
