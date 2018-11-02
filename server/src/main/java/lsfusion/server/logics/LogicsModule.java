@@ -541,19 +541,19 @@ public abstract class LogicsModule {
                 exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, noHeader, separator, noEscape, charset);
+                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, noHeader, separator, noEscape, charset);
                 break;
             case XLS:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, false);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false);
                 break;
             case XLSX:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset, true);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true);
                 break;
             case DBF:
-                exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
+                exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
                 break;
             case TABLE:
-                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, singleExportFile, exportFiles, charset);
+                exportAction = new ExportTableActionProperty<>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                

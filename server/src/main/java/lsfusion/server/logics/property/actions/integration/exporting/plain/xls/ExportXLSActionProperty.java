@@ -18,8 +18,8 @@ import java.io.IOException;
 public class ExportXLSActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
     private boolean xlsx;
 
-    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean xlsx) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
+    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean xlsx) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
         this.xlsx = xlsx;
     }
 

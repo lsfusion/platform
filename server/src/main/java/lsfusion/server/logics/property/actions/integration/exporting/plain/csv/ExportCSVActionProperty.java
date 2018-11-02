@@ -22,8 +22,8 @@ public class ExportCSVActionProperty<O extends ObjectSelector> extends ExportPla
     private final boolean noEscape;
     private final String separator;
 
-    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, boolean noEscape, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
+    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, boolean noEscape, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
         
         this.noHeader = noHeader;
         this.noEscape = noEscape;

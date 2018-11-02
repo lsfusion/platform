@@ -10,7 +10,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.stat.StaticDataGenerator;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
@@ -31,16 +30,13 @@ import java.util.Map;
 public abstract class ExportPlainActionProperty<O extends ObjectSelector> extends ExportActionProperty<O> {
 
     protected final String charset;
-
-    protected final LCP<?> singleExportFile; // nullable, temporary will be removed
     protected final ImMap<GroupObjectEntity, LCP> exportFiles;
     
-    public ExportPlainActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
+    public ExportPlainActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
         super(caption, form, objectsToSet, nulls, staticType);
         
         this.charset = charset;
         
-        this.singleExportFile = singleExportFile;
         this.exportFiles = exportFiles;
     }
 
@@ -55,13 +51,9 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
     protected void writeResult(ExecutionContext<ClassPropertyInterface> context, Map<GroupObjectEntity, byte[]> files) throws SQLException, SQLHandledException {
         for (Map.Entry<GroupObjectEntity, byte[]> entry : files.entrySet()) {
-            if(singleExportFile != null) {
-                writeResult(singleExportFile, staticType, context, entry.getValue(), new DataObject(entry.getKey() == null ? "root" : entry.getKey().getSID()));
-            } else {
-                LCP exportFile = exportFiles.get(entry.getKey() == null ? GroupObjectEntity.NULL : entry.getKey());
-                if(exportFile != null)
-                    writeResult(exportFile, staticType, context, entry.getValue());
-            }
+            LCP exportFile = exportFiles.get(entry.getKey() == null ? GroupObjectEntity.NULL : entry.getKey());
+            if(exportFile != null)
+                writeResult(exportFile, staticType, context, entry.getValue());
         }
     }
 
@@ -144,8 +136,6 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
     @Override
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        if(singleExportFile != null)
-            return getChangeProps(singleExportFile.property);
         return getChangeProps(exportFiles.values().mapColValues(new GetValue<CalcProperty, LCP>() {
             public CalcProperty getMapValue(LCP value) {
                 return ((LCP<?>)value).property;

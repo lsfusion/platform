@@ -108,6 +108,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "meta code", name);
     }
 
+    public void emitGroupObjectNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "group object", name);
+    }
+
     public void emitObjectNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
         emitNotFoundError(parser, "object", name);
     }
