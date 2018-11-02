@@ -41,7 +41,7 @@ public class XMLNode implements Node<XMLNode> {
     public Iterable<Pair<Object, XMLNode>> getMap(String key, boolean isIndex) {
         MList<Pair<Object, XMLNode>> mResult = ListFact.mList();
         if(isIndex) {
-            List children = element.getChildren(key.equals("value") ? null : key);
+            List children = key.equals("value") ? element.getChildren() : element.getChildren(key);
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
         } else {
