@@ -153,7 +153,7 @@ public final class LoginAction {
                         Scanner usersScanner = new Scanner(users);
                         usersScanner.useDelimiter("\\t");
                         while (usersScanner.hasNext()) {
-                            String name = usersScanner.next();
+                            String name = usersScanner.next().trim();
                             boolean save = false;
                             String pass = null;
                             if (usersScanner.hasNext()) {
