@@ -132,6 +132,9 @@
             <id>lsfusion</id>
             <name>lsFusion Public Repository</name>
             <url>${lsfusion.public.repo}</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
 
