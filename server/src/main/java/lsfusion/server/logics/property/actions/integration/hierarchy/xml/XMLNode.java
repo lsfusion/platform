@@ -1,12 +1,14 @@
 package lsfusion.server.logics.property.actions.integration.hierarchy.xml;
 
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.hierarchy.Node;
 import org.jdom.Element;
+import org.jdom.Namespace;
 
 import java.util.List;
 
@@ -19,19 +21,47 @@ public class XMLNode implements Node<XMLNode> {
 
     @Override
     public XMLNode getNode(String key) {
-        Element childElement = element.getChild(key);
+        Element childElement = getXMLChild(key);
         if(childElement == null)
             return null;
         return new XMLNode(childElement);
+    }
+    
+    private Namespace getXMLNamespace(String fullName, Result<String> shortName, boolean inheritNamespace) {
+        int nsIndex = fullName.indexOf(":");
+        if(nsIndex < 0) {
+            shortName.set(fullName);
+            
+            Namespace defaultNamespace;
+            if(inheritNamespace && (defaultNamespace = element.getNamespace("")) != null)
+                return defaultNamespace;
+            
+            return Namespace.NO_NAMESPACE;
+        }
+        
+        shortName.set(fullName.substring(nsIndex + 1));            
+        return element.getNamespace(fullName.substring(0, nsIndex));
+    }
+
+    public String getXMLAttributeValue(String key) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = getXMLNamespace(key, shortKey, false); // attributes don't inherit tags namespaces
+        return element.getAttributeValue(shortKey.result, namespace);
+    }
+
+    public Element getXMLChild(String key) {
+        Result<String> shortKey = new Result<>();
+        Namespace namespace = getXMLNamespace(key, shortKey, true);
+        return element.getChild(shortKey.result, namespace);
     }
 
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         String stringValue;;
         if(attr)
-            stringValue = element.getAttributeValue(key);
+            stringValue = getXMLAttributeValue(key);
         else {
-            Element childElement = element.getChild(key);
+            Element childElement = getXMLChild(key);
             stringValue = childElement != null ? childElement.getText() : null;
         }
         return type.parseXML(stringValue);
@@ -45,7 +75,7 @@ public class XMLNode implements Node<XMLNode> {
             for (int i = 0; i < children.size(); i++)
                 mResult.add(new Pair<Object, XMLNode>(i, new XMLNode((Element)children.get(i))));
         } else {
-            Element child = element.getChild(key);
+            Element child = getXMLChild(key);
             if(child != null)
                 for(Object value : child.getChildren())
                     mResult.add(new Pair<Object, XMLNode>(((Element)value).getName(), new XMLNode((Element)value)));
