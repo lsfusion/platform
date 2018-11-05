@@ -37,6 +37,22 @@ public class FormGroupHierarchyCreator {
         return changed;
     }
 
+    // temporary
+    private boolean checkDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet) {
+        boolean changed = false;
+        GroupObjectEntity prev = null, cur = null;
+        for (GroupObjectEntity group : getFormGroupsIt()) {
+            if (groupsSet.contains(group)) {
+                prev = cur;
+                cur = group;
+            }
+            if (prev != null) {
+                changed = !graph.get(cur).contains(prev) || changed;
+            }
+        }
+        return changed;
+    }
+
     private Iterable<GroupObjectEntity> getFormGroupsIt() {
         return form.getGroupsIt();
     }
@@ -79,7 +95,7 @@ public class FormGroupHierarchyCreator {
         // temporary remove if assertion will not be broken
         for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
             for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
-                boolean changed = addDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
+                boolean changed = checkDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
                 if(changed)
                     System.out.println("Regular filter influence on hierarchy : FORM " + form + ",  FILTER : " + filter);
 //                assert !changed;
@@ -89,12 +105,12 @@ public class FormGroupHierarchyCreator {
         if(supportGroupColumns) { // temporary remove if assertion will not be broken
             for (PropertyDrawEntity<?> property : propertyDraws) {
                 if(property.propertyCaption != null) {
-                    boolean changed = addDependencies(graph, getGroupsByObjects(property.propertyCaption.getObjectInstances(), groups));
+                    boolean changed = checkDependencies(graph, getGroupsByObjects(property.propertyCaption.getObjectInstances(), groups));
                     if(changed)
                         System.out.println("HEADER affects hierarchy : FORM " + form + ",  FILTER : " + property);
                 }
                 if(property.propertyFooter != null) {
-                    boolean changed = addDependencies(graph, getGroupsByObjects(property.propertyFooter.getObjectInstances(), groups));
+                    boolean changed = checkDependencies(graph, getGroupsByObjects(property.propertyFooter.getObjectInstances(), groups));
                     if(changed)
                         System.out.println("FOOTER affects hierarchy : FORM " + form + ",  FILTER : " + property);
                 }
