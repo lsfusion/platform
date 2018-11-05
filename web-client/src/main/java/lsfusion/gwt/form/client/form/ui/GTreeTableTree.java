@@ -31,7 +31,7 @@ public class GTreeTableTree {
 
     public int addProperty(GGroupObject group, GPropertyDraw property) {
 
-        if (properties.indexOf(property) == -1) {
+        if (properties.indexOf(property) == -1 && !property.hide) {
             int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(ins, property);
 
