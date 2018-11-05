@@ -129,7 +129,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private LCP isActiveForm;
     public LCP formPageCount;
     public LCP exportFile;
-    public LCP exportFiles;
     public LCP importFile;
     public LCP importFiles;
     public LCP readFile;
@@ -426,7 +425,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         isActiveForm = findProperty("isActiveForm[]");
         formPageCount = findProperty("formPageCount[]");
         exportFile = findProperty("exportFile[]");
-        exportFiles = findProperty("exportFiles[VARSTRING[100]]");
         importFile = findProperty("importFile[]");
         importFiles = findProperty("importFiles[VARSTRING[100]]");
         readFile = findProperty("readFile[]");

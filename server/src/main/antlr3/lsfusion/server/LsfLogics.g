@@ -2925,7 +2925,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage, $pUsages.pUsages);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
@@ -2934,7 +2934,16 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 		)?
-		('TO' pUsage=propertyUsage)?
+		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
+	;
+
+groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, PropertyUsage> pUsages]
+@init {
+	$pUsages = new OrderedMap<>();
+	GroupObjectEntity go = null;
+}
+	:	firstGroupObject=ID { if(inPropParseState()) { go=self.findGroupObjectEntity(formEntity, $firstGroupObject.text); } }  EQ firstPropertyUsage=propertyUsage { if(inPropParseState()) { $pUsages.put(go, $firstPropertyUsage.propUsage); } }
+		(',' nextGroupObject=ID { if(inPropParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyUsage = propertyUsage { if(inPropParseState()) { $pUsages.put(go, $nextPropertyUsage.propUsage); } } )*
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]

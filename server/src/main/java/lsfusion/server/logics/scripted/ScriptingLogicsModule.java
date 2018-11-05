@@ -2032,7 +2032,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             LAP lap = addGOSAProp(groupObject, objects, type, resultParams.toArray());
             return new LAPWithParams(lap, mergeAllParams(values));
         } else {
-            errLog.emitNotFoundError(parser, "group оbject", getSeekObjectName(name));
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));
             return null;
         }
     }
@@ -3105,7 +3105,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
-                                                                            boolean noHeader, String separator, String charset, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+                                                                            boolean noHeader, String separator, String charset, PropertyUsage propUsage, OrderedMap<GroupObjectEntity, PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
 
@@ -3127,20 +3127,42 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> propParams = new ArrayList<>();
         List<Integer> allParams = mergeAllParams(propParams);
 
-        LCP<?> targetProp = null;
-        if(propUsage != null)
-            targetProp = findLCPNoParamsByPropertyUsage(propUsage);
-        if(targetProp == null)
-            targetProp = (exportType.isPlain() ? baseLM.exportFiles : baseLM.exportFile);
+        LCP<?> singleExportFile = null;
+        MExclMap<GroupObjectEntity, LCP> exportFiles = MapFact.mExclMap();
+        if(exportType.isPlain()) {
+            if(propUsages != null) {
+                for (Map.Entry<GroupObjectEntity, PropertyUsage> entry : propUsages.entrySet()) {
+                    exportFiles.exclAdd(entry.getKey(), findLCPNoParamsByPropertyUsage(entry.getValue()));
+                }
+            } else if (propUsage != null) {
+                throw new UnsupportedOperationException(String.format("EXPORT %s TO single file not supported", exportType));
+            } else {
+                throw new RuntimeException("Output file(s) for export not specified");
+            }
+        } else {
+            if(propUsages != null) {
+                throw new UnsupportedOperationException(String.format("EXPORT %s TO multiple files not supported", exportType));
+            } else {
+                singleExportFile = propUsage != null ? findLCPNoParamsByPropertyUsage(propUsage) : baseLM.exportFile;
+            }
+        }
 
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, true, charset, targetProp, MapFact.<GroupObjectEntity, LCP>EMPTY());
+                exportType, noHeader, separator, true, charset, singleExportFile, exportFiles.immutable());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
         } else {
             return new LAPWithParams(property, allParams);
         }
+    }
+
+    public GroupObjectEntity findGroupObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity result = form.getNFGroupObject(objectName, getVersion());
+        if (result == null) {
+            errLog.emitGroupObjectNotFoundError(parser, objectName);
+        }
+        return result;
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {

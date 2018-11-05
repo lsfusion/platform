@@ -17,8 +17,8 @@ import java.io.IOException;
 
 public class ExportTableActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
 
-    public ExportTableActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, LCP exportFile, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, exportFiles, charset);
+    public ExportTableActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
     }
 
     @Override
