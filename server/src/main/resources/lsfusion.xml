@@ -241,7 +241,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initMetaGroupsAndClassesTask" class="lsfusion.server.logics.tasks.impl.InitMetaGroupsAndClassesTask">
+    <bean id="initMetaAndClassesTask" class="lsfusion.server.logics.tasks.impl.InitMetaAndClassesTask">
         <property name="dependencies">
             <set>
                 <ref bean="initModuleOrderTask"/> <!-- потому как parser не thread safe, поэтому initModuleRestTask -->
@@ -253,7 +253,7 @@
     <bean id="initObjectClassTask" class="lsfusion.server.logics.tasks.impl.InitObjectClassTask">
         <property name="dependencies">
             <set>
-                <ref bean="initMetaGroupsAndClassesTask"/>
+                <ref bean="initMetaAndClassesTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -286,7 +286,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="initPropertiesTask" class="lsfusion.server.logics.tasks.impl.InitPropertiesTask">
+    <bean id="initMainLogicTask" class="lsfusion.server.logics.tasks.impl.InitMainLogicTask">
         <property name="dependencies">
             <set>
                 <ref bean="initFullTablesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
@@ -298,7 +298,7 @@
     <bean id="checkDuplicateSystemElements" class="lsfusion.server.logics.tasks.impl.simple.CheckDuplicateSystemElementsTask">
         <property name="dependencies">
             <set>
-                <ref bean="initPropertiesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
+                <ref bean="initMainLogicTask"/> 
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

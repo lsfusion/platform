@@ -71,15 +71,15 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
         userRole = (ConcreteCustomClass) findClass("UserRole");
         policy = (ConcreteCustomClass) findClass("Policy");
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
-        super.initProperties();
+    public void initMainLogic() throws RecognitionException {
+        super.initMainLogic();
         // ---- Роли
         sidUserRole = findProperty("sid[UserRole]");
         nameUserRole = findProperty("name[UserRole]");

@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static com.google.common.collect.Iterables.size;
 import static lsfusion.server.logics.PropertyCanonicalNameUtils.objValuePrefix;
@@ -170,7 +171,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         namedActions = NFFact.simpleMap(namedActions);
     }
 
-    // need to implement next methods this way, because they are used in super.initProperties, and can not be initialized before super.initProperties
+    // need to implement next methods this way, because they are used in super.initMainLogic, and can not be initialized before super.initMainLogic
 
     @IdentityLazy
     public LAP getFormEditReport() {
@@ -324,39 +325,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
     
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
+    public void initMetaAndClasses() throws RecognitionException {
         baseClass = addBaseClass(elementCanonicalName("Object"), LocalizedString.create("{logics.object}"), elementCanonicalName("StaticObject"), LocalizedString.create("{classes.static.object.class}"));
-        super.initMetaGroupsAndClasses();
-        initGroups();
-    }
-
-    private void initGroups() throws RecognitionException {
-        Version version = getVersion();
-
-        rootGroup = findGroup("root");
-//        rootGroup.changeChildrenToSimple(version);
-        rootGroup.system = true;
-
-        publicGroup = findGroup("public");
-        publicGroup.system = true;
-
-        privateGroup = findGroup("private");
-        privateGroup.changeChildrenToSimple(version); 
-        privateGroup.system = true;
-
-        baseGroup = findGroup("base");
-        baseGroup.system = true;
-
-        recognizeGroup = findGroup("id");
-        recognizeGroup.system = true;
-
-        drillDownGroup = findGroup("drillDown");
-        drillDownGroup.changeChildrenToSimple(version);
-        drillDownGroup.system = true;
-
-        propertyPolicyGroup = findGroup("propertyPolicy");
-        propertyPolicyGroup.changeChildrenToSimple(version);
-        propertyPolicyGroup.system = true;
+        super.initMetaAndClasses();
+        initNativeGroups();
     }
 
     @Override
@@ -368,12 +340,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
-
-        objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
-        makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
-        random = addRMProp(LocalizedString.create("Random"));
-        makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
+    public void initMainLogic() throws RecognitionException {
+        initNativeProperties();
 
         // логические св-ва
         and1 = addAFProp(false);
@@ -406,7 +374,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             makeActionPublic(watch, "watch");
         }
 
-        super.initProperties();
+        super.initMainLogic();
+        initGroups();
+        addClassDataPropsToGroup();
 
         // через JOIN (не операторы)
 
@@ -463,6 +433,54 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor[]");
 
         initNavigators();
+    }
+
+    private void initNativeProperties() {
+        objectClass = addProperty(null, new LCP<>(baseClass.getObjectClassProperty()));
+        makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
+        random = addRMProp(LocalizedString.create("Random"));
+        makePropertyPublic(random, "random", Collections.<ResolveClassSet>emptyList());
+    }
+
+    private void initNativeGroups() {
+        rootGroup = addAbstractGroup("root", LocalizedString.create("root"), null);
+//        rootGroup.changeChildrenToSimple(version);
+        rootGroup.system = true;
+
+        publicGroup = addAbstractGroup("public", LocalizedString.create("public"), rootGroup);
+        publicGroup.system = true;
+
+        privateGroup = addAbstractGroup("private", LocalizedString.create("private"), rootGroup);
+        privateGroup.changeChildrenToSimple(getVersion());
+        privateGroup.system = true;
+
+        baseGroup = addAbstractGroup("base", LocalizedString.create("base"), publicGroup);
+        baseGroup.system = true;
+
+        recognizeGroup = addAbstractGroup("id", LocalizedString.create("id"), baseGroup);
+        recognizeGroup.system = true;
+    }
+
+    private void addClassDataPropsToGroup() {
+        for (List<LCP<?>> propList : namedProperties.values()) {
+            for (LCP<?> lcp : propList) {
+                if (lcp.property instanceof ClassDataProperty) {
+                    addProperty(null, lcp);
+                }
+            }
+        }
+    }
+
+    private void initGroups() throws RecognitionException {
+        Version version = getVersion();
+
+        drillDownGroup = findGroup("drillDown");
+        drillDownGroup.changeChildrenToSimple(version);
+        drillDownGroup.system = true;
+
+        propertyPolicyGroup = findGroup("propertyPolicy");
+        propertyPolicyGroup.changeChildrenToSimple(version);
+        propertyPolicyGroup.system = true;
     }
 
     @Override

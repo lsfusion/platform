@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class ScriptParser {
-    public enum State {PRE, META_GROUP_CLASS_TABLE, PROP_INDEX, GENMETA}
+    public enum State {PRE, META_CLASS_TABLE, MAIN, GENMETA}
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<>();
@@ -97,14 +97,14 @@ public class ScriptParser {
         parsers.pop();
 
         int codeLinesCnt = 0;
-        if (!insideGeneratedMeta && parser.parseState == State.PROP_INDEX) {
+        if (!insideGeneratedMeta && parser.parseState == State.MAIN) {
             codeLinesCnt = linesCount(code);
             globalExpandedLines += codeLinesCnt - 1;
         }
         
         if (parsers.size() == 1) {
             currentExpandedLines = 0;
-        } else if (!insideGeneratedMeta && parser.parseState == State.PROP_INDEX) {
+        } else if (!insideGeneratedMeta && parser.parseState == State.MAIN) {
             currentExpandedLines += codeLinesCnt - 1; 
         }
 

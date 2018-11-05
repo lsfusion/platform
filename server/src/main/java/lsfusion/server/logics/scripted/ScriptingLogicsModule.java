@@ -144,8 +144,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        parseStep(ScriptParser.State.META_GROUP_CLASS_TABLE);
+    public void initMetaAndClasses() throws RecognitionException {
+        parseStep(ScriptParser.State.META_CLASS_TABLE);
     }
 
     @Override
@@ -154,10 +154,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
+    public void initMainLogic() throws RecognitionException {
         warningList.clear();
         
-        parseStep(ScriptParser.State.PROP_INDEX);
+        parseStep(ScriptParser.State.MAIN);
         
         if (!parser.isInsideMetacode()) {
             showWarnings();
