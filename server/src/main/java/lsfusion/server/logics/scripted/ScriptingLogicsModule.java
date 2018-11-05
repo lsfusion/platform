@@ -3147,13 +3147,13 @@ public class ScriptingLogicsModule extends LogicsModule {
                     exportFiles.exclAdd(entry.getKey(), findLCPNoParamsByPropertyUsage(entry.getValue()));
                 }
             } else if (propUsage != null) {
-                throw new UnsupportedOperationException(String.format("EXPORT %s TO single file not supported", exportType));
+                errLog.emitSimpleError(parser, String.format("EXPORT %s TO single file not supported", exportType));
             } else {
-                throw new RuntimeException("Output file(s) for export not specified");
+                errLog.emitSimpleError(parser, "Output file(s) for export not specified");
             }
         } else {
             if(propUsages != null) {
-                throw new UnsupportedOperationException(String.format("EXPORT %s TO multiple files not supported", exportType));
+                errLog.emitSimpleError(parser, String.format("EXPORT %s TO multiple files not supported", exportType));
             } else {
                 singleExportFile = propUsage != null ? findLCPNoParamsByPropertyUsage(propUsage) : baseLM.exportFile;
             }
