@@ -28,7 +28,10 @@ public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XM
     }
 
     public static Element findRootNode(byte[] file, String root) throws JDOMException, IOException {
-        return findRootNode(new SAXBuilder().build(new ByteArrayInputStream(file)).getRootElement(), root);
+        Element rootNode = findRootNode(new SAXBuilder().build(new ByteArrayInputStream(file)).getRootElement(), root);
+        if(rootNode == null)
+            throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
+        return rootNode;
     }
 
     private static Element findRootNode(Element rootNode, String root) {
@@ -39,6 +42,6 @@ public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XM
             if (found != null)
                 return found;
         }
-        throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
+        return null;
     }
 }
