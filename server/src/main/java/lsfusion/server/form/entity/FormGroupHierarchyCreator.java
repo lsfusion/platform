@@ -81,15 +81,22 @@ public class FormGroupHierarchyCreator {
             addDependencies(graph, propObjects);
         }
 
-        for (GroupObjectEntity group : groups) {
-            if (group.propertyBackground != null)
-                addDependencies(graph, getGroupsByObjects(group.propertyBackground.getObjectInstances(), groups));
-            if (group.propertyForeground != null)
-                addDependencies(graph, getGroupsByObjects(group.propertyForeground.getObjectInstances(), groups));
-        }
-
         for (FilterEntity filter : form.getFixedFilters()) {
             addDependencies(graph, getGroupsByObjects(filter.getObjects(), groups));
+        }
+
+        // temporary remove if assertion will not be broken
+        for (GroupObjectEntity group : groups) {
+            if (group.propertyBackground != null) {
+                boolean changed = checkDependencies(graph, getGroupsByObjects(group.propertyBackground.getObjectInstances(), groups));
+                if(changed)
+                    System.out.println("Group background affects hierarchy : FORM " + form + ",  GROUP : " + group);
+            }
+            if (group.propertyForeground != null) {
+                boolean changed = checkDependencies(graph, getGroupsByObjects(group.propertyForeground.getObjectInstances(), groups));
+                if(changed)
+                    System.out.println("Group foreground affects hierarchy : FORM " + form + ",  GROUP : " + group);
+            }
         }
 
         // temporary remove if assertion will not be broken
@@ -102,7 +109,8 @@ public class FormGroupHierarchyCreator {
             }
         }
 
-        if(supportGroupColumns) { // temporary remove if assertion will not be broken
+        // temporary remove if assertion will not be broken
+        if(supportGroupColumns) {
             for (PropertyDrawEntity<?> property : propertyDraws) {
                 if(property.propertyCaption != null) {
                     boolean changed = checkDependencies(graph, getGroupsByObjects(property.propertyCaption.getObjectInstances(), groups));
