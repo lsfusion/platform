@@ -2637,7 +2637,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static String transformFormulaText(String text, String textTo) { // так как $i не постфиксный (например $1 и $12)
-        return text.replaceAll("\\$(\\d+)", textTo);
+        return text != null ? text.replaceAll("\\$(\\d+)", textTo) : null;
     }
 
     public LCPWithParams addScriptedRProp(List<TypedParameter> context, LCPWithParams zeroStep, LCPWithParams nextStep, Cycle cycleType) throws ScriptingErrorLog.SemanticErrorException {

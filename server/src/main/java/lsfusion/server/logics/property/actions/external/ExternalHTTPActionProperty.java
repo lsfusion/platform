@@ -55,17 +55,22 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         try {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String replacedParams = replaceParams(context, getTransformedText(context, query), rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
-            Map<String, String> headers = getHeaders(context);
-            HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result, headers);
-            HttpEntity responseEntity = response.getEntity();
+            String connectionString = getTransformedText(context, query);
+            if(connectionString != null) {
+                String replacedParams = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
+                Map<String, String> headers = getHeaders(context);
+                HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result, headers);
+                HttpEntity responseEntity = response.getEntity();
 
-            if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
-                ContentType contentType = ContentType.get(responseEntity);
-                List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
-                fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
-            } else            
-                throw new RuntimeException(response.getStatusLine().toString());
+                if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
+                    ContentType contentType = ContentType.get(responseEntity);
+                    List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
+                    fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+                } else
+                    throw new RuntimeException(response.getStatusLine().toString());
+            } else {
+                throw new RuntimeException("connectionString not specified");
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
