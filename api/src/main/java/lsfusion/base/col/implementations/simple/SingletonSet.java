@@ -337,8 +337,8 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return -1;
     }
 
-    public ImMap<Integer, K> toIndexedMap() {
-        return MapFact.<Integer, K>singleton(0, key);
+    public ImRevMap<Integer, K> toIndexedMap() {
+        return MapFact.singletonRev(0, key);
     }
 
     public ImList<K> addList(ImList<? extends K> list) {
@@ -394,6 +394,11 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
 
     public <M> ImMap<M, K> mapListMapValues(GetIndex<M> getterKey) {
         return MapFact.<M, K>singleton(getterKey.getMapValue(0), key);
+    }
+
+    @Override
+    public <M> ImRevMap<M, K> mapListRevValues(GetIndex<M> getterKey) {
+        return MapFact.<M, K>singletonRev(getterKey.getMapValue(0), key);
     }
 
     public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {

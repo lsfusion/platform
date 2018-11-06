@@ -44,7 +44,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                     public boolean contains(CalcPropertyInterfaceImplement<I> element) {
                         return element instanceof PropertyInterface;
                     }
-                }).toRevMap().reverse()
+                }).toRevMap(property.getReflectionOrderInterfaces()).reverse()
         );
 
         detailsGroup = new GroupObjectEntity(genID(), "");

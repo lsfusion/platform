@@ -4,26 +4,24 @@ import lsfusion.base.ExternalUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportByteArrayPlainWriter;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportMatrixWriter;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
-public class ExportCSVWriter extends ExportByteArrayPlainWriter {
+public class ExportCSVWriter extends ExportMatrixWriter {
     private CsvEscaper csvEscaper;
     private String separator;
-    private Map<Integer, String> fieldIndexMap = null;
 
     public ExportCSVWriter(ImOrderMap<String, Type> fieldTypes, boolean noHeader, boolean noEscape, String separator, String charset) throws IOException {
-        super(fieldTypes);
+        super(fieldTypes, noHeader);
         
         if(separator == null)
             separator = ExternalUtils.defaultCSVSeparator;
@@ -38,57 +36,29 @@ public class ExportCSVWriter extends ExportByteArrayPlainWriter {
                 write("\r\n");
             }
         };
-        if(noHeader) {
-            fieldIndexMap = getFieldIndexMap();
-        } else {
-            writer.println(fieldTypes.keyOrderSet().toString(this.separator));
-        }
+
+        int maxIndex = -1;
+        for(int index : fieldIndexMap.keyIt())
+            if(index > maxIndex)
+                maxIndex = index;        
+        fullIndexList = ListFact.consecutiveList(maxIndex + 1, 0); 
     }
 
     private PrintWriter writer;
+
+    private ImOrderSet<Integer> fullIndexList; // optimization
+    
     @Override
-    public void writeLine(final ImMap<String, Object> row) {
-        if (fieldIndexMap != null) {
-            writer.println(ListFact.consecutiveList(fieldIndexMap.isEmpty() ? 0 : (Collections.max(fieldIndexMap.keySet()) + 1), 0).mapListValues(new GetValue<Object, Integer>() {
-                public Object getMapValue(Integer i) {
-                    String field = fieldIndexMap.get(i);
-                    return field != null ? csvEscaper.translate(fieldTypes.get(field).formatCSV(row.get(field))) : "";
-                }
-            }).toString(separator));
-        } else {
-            writer.println(fieldTypes.mapOrderValues(new GetKeyValue<Object, String, Type>() {
-                @Override
-                public Object getMapValue(String key, Type value) {
-                    return csvEscaper.translate(value.formatCSV(row.get(key)));
-                }
-            }).valuesList().toString(separator));
-        }
-    }
-
-    private Map<Integer, String> getFieldIndexMap() {
-        int prevIndex = -1;
-        final Map<Integer, String> fieldIndexMap = new HashMap<>();
-        for (String field : fieldTypes.keyOrderSet()) {
-            Integer index = nameToIndex(field);
-            if (index == null) {
-                index = ++prevIndex;
-            } else {
-                prevIndex = index;
+    public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types) {
+        writer.println(fullIndexList.mapListValues(new GetValue<Object, Integer>() {
+            public Object getMapValue(Integer i) {
+                String field = fieldIndexMap.get(i);
+                if(field == null)
+                    return "";
+                Type type = types.get(field);
+                return csvEscaper.translate(type.formatCSV(values.get(field)));
             }
-            fieldIndexMap.put(index, field);
-        }
-        return fieldIndexMap;
-    }
-
-    private static Integer nameToIndex(String name) {
-        Integer number = null;
-        //restrictions: max 702=ZZ columns and uppercase
-        if(name.equals(name.toUpperCase())) {
-            for (int i = 0; i < name.length(); i++) {
-                number = (number== null ? 0 : number * 26) + (name.charAt(i) - ('A' - 1));
-            }
-        }
-        return number != null && number <= 702 ? (number - 1) : null;
+        }).toString(separator));
     }
 
     //modified from StringEscapeUtils

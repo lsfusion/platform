@@ -20,7 +20,7 @@ public interface ImList<K> extends Iterable<K> {
     ImCol<K> getCol();
 
     int indexOf(K key);
-    ImMap<Integer, K> toIndexedMap();
+    ImRevMap<Integer, K> toIndexedMap();
 
     ImList<K> addList(ImList<? extends K> list);
     ImList<K> addList(K element);
@@ -43,6 +43,7 @@ public interface ImList<K> extends Iterable<K> {
     <M> ImList<M> mapListValues(GetValue<M, K> getter);
 
     <M> ImMap<M,K> mapListMapValues(GetIndex<M> getterKey);
+    <M> ImRevMap<M,K> mapListRevValues(GetIndex<M> getterKey);
     <MK, MV> ImMap<MK,MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);
     <MK, MV> ImMap<MK,MV> mapListKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue);
     <MK, MV> ImRevMap<MK,MV> mapListRevKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue);

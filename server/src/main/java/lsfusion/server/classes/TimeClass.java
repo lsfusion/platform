@@ -9,6 +9,8 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
+import org.apache.poi.ss.usermodel.Cell;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -139,8 +141,9 @@ public class TimeClass extends DataClass<Time> {
     }
 
     @Override
-    public Object formatXLS(Time object) {
-        return object;
+    public void formatXLS(Time object, Cell cell, ExportXLSWriter.Styles styles) {
+        cell.setCellValue(object);
+        cell.setCellStyle(styles.time);
     }
 
     @Override

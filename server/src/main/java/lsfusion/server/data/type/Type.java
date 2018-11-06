@@ -14,6 +14,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -80,7 +81,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     Object formatJSON(T object);
     String formatCSV(T object);
     String formatXML(T object);
-    Object formatXLS(T object);
+    void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
 
     T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - not null (файлы decode'ся base64)
     

@@ -7,7 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
+import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.actions.integration.importing.plain.ImportMatrixIterator;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
@@ -22,9 +24,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-public class ImportXLSIterator extends ImportPlainIterator {
-
-    private final boolean useStreamingReader;
+public class ImportXLSIterator extends ImportMatrixIterator {
 
     private final Workbook wb;
     private File wbFile;
@@ -32,7 +32,7 @@ public class ImportXLSIterator extends ImportPlainIterator {
     private Integer lastSheet;
     
     public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, Integer singleSheetIndex) throws IOException {
-        super(fieldTypes);
+        super(fieldTypes, true);
 
         int minSize = Settings.get().getMinSizeForExcelStreamingReader();
         useStreamingReader = xlsx && minSize >= 0 && file.length >= minSize;
@@ -65,15 +65,6 @@ public class ImportXLSIterator extends ImportPlainIterator {
         finalizeInit();
     }
 
-    private ImMap<String, Integer> fieldIndexes;
-
-    @Override
-    protected ImOrderSet<String> readFields() {
-        ImOrderMap<String, Integer> sourceMap = nameToIndexColumnsMapping;
-        fieldIndexes = sourceMap.getMap();
-        return sourceMap.keyOrderSet();
-    }
-
     private int currentSheet = 0;
     private Sheet sheet = null;
 
@@ -86,8 +77,10 @@ public class ImportXLSIterator extends ImportPlainIterator {
     }
 
     private Iterator<Row> rowIterator = null;
-    private boolean firstRow;
     private Row row;
+
+    private final boolean useStreamingReader;
+    private boolean firstRow;
 
     @Override
     protected boolean nextRow() {
@@ -95,11 +88,14 @@ public class ImportXLSIterator extends ImportPlainIterator {
             if (!nextSheet())
                 return false;
             rowIterator = sheet.rowIterator();
+            
             if (useStreamingReader)
                 firstRow = true;
+            
             return nextRow();
         }
         row = rowIterator.next();
+        
         if (useStreamingReader && row.getRowNum() == 0) {
             if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
                 firstRow = false;
@@ -107,22 +103,19 @@ public class ImportXLSIterator extends ImportPlainIterator {
                 return nextRow();
             }
         }
+        
         return true;
     }
 
     @Override
-    protected Object getPropValue(String name, Type type) {
-        Cell cell = row.getCell(fieldIndexes.get(name));
+    protected Object getPropValue(Integer fieldIndex, Type type) throws ParseException {
+        Cell cell = row.getCell(fieldIndex);
         if(cell == null)
-            return null;
-        CellValue cellValue = formulaEvaluator.evaluate(cell);
+            throw new ParseException("Column with index " + fieldIndex + " not found");
+        CellValue cellValue = formulaEvaluator.evaluate(cell);        
         if(cellValue == null)
             return null;
-        try {
-            return type.parseXLS(cell, cellValue);
-        } catch (lsfusion.server.data.type.ParseException e) {
-            return null; // xls is really unpredictable format, so will return null if something is going wrong
-        }
+        return type.parseXLS(cell, cellValue);
     }
 
     @Override
@@ -134,30 +127,6 @@ public class ImportXLSIterator extends ImportPlainIterator {
                 wbFile.deleteOnExit();
             }
         }
-    }
-
-    public final static ImOrderMap<String, Integer> nameToIndexColumnsMapping = ListFact.consecutiveList(256, 0).mapOrderKeys(new GetValue<String, Integer>() {
-        public String getMapValue(Integer value) {
-            return nameToIndex(value);
-        }
-    });
-
-    private static String nameToIndex(int index) {
-        String columnName = "";
-        int resultLen = 1;
-        final int LETTERS_CNT = 26;
-        int sameLenCnt = LETTERS_CNT;
-        while (sameLenCnt <= index) {
-            ++resultLen;
-            index -= sameLenCnt;
-            sameLenCnt *= LETTERS_CNT;
-        }
-
-        for (int i = 0; i < resultLen; ++i) {
-            columnName = (char)('A' + (index % LETTERS_CNT)) + columnName;
-            index /= LETTERS_CNT;
-        }
-        return columnName;
     }
 
     private class XLSXHugeFormulaEvaluator implements FormulaEvaluator {
