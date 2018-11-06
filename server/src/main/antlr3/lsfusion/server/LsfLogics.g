@@ -405,6 +405,7 @@ scope {
 		|	dialogFormDeclaration
 		|	editFormDeclaration
 		|	reportFilesDeclaration
+		|	reportDeclaration
 		)*
 		';'
 	;
@@ -445,6 +446,18 @@ reportPath
 		| 	go = formGroupObjectEntity { groupObject = $go.groupObject; }
 		) 
 		prop = formCalcPropertyObject { property = $prop.property; }
+	;
+
+reportDeclaration
+@init {
+	CalcPropertyObjectEntity property = null;
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.setReportPath(null, property);
+	}
+}
+	:	'REPORT' prop = formCalcPropertyObject { property = $prop.property; }
 	;
 
 formDeclaration returns [ScriptingFormEntity form]
@@ -521,6 +534,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
+		|   formSubReport { $groupObject.setSubReportPath($formSubReport.pathProperty);  }
 		)*
 	;
 
@@ -589,6 +603,10 @@ formExtID returns [String extID]
 
 formExtKey
 	:	'EXTKEY'
+	;
+
+formSubReport returns [CalcPropertyObjectEntity pathProperty]
+	:	'SUBREPORT' (prop=formCalcPropertyObject { pathProperty = $prop.property; })?
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, LocalizedString caption, ActionPropertyObjectEntity event, String extID]
