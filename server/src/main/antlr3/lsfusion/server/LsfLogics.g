@@ -2144,7 +2144,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedImportFormActionProperty($type.format, $fileProp.propUsage, form, noHeader, charset, separator, root);
+	    $property = self.addScriptedImportFormActionProperty($type.format, $fileExprs.property, $fileExprs.properties, form, noHeader, charset, separator, root);
 	}
 }
 	:	'IMPORT'
