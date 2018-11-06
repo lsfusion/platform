@@ -20,15 +20,18 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<CalcPropertyInterfaceImplement<P>> properties, CalcPropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super("Export.export", LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
-        if(where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where
-            CalcPropertyMapImplement<M, P> mapWhere = (CalcPropertyMapImplement<M, P>) where;
-            interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
+        if(innerClasses == null) { // export
+            if (where instanceof CalcPropertyMapImplement) { // it'not clear what to do with parameter as where
+                CalcPropertyMapImplement<M, P> mapWhere = (CalcPropertyMapImplement<M, P>) where;
+                interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
+            } else 
+                interfaceClasses = MapFact.EMPTY();
         } else
-            interfaceClasses = MapFact.EMPTY();
+            interfaceClasses = innerInterfaces.mapList(innerClasses);
 
         mapObjects = innerInterfaces.mapOrderRevValues(new GetIndexValue<ObjectEntity, P>() {
             public ObjectEntity getMapValue(int i, P value) {
