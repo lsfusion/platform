@@ -14,8 +14,8 @@ import java.io.IOException;
 
 public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XMLNode> {
 
-    public ImportXMLActionProperty(int paramsCount, LCP<?> fileProperty, FormEntity formEntity) {
-        super(paramsCount, fileProperty, formEntity);
+    public ImportXMLActionProperty(int paramsCount, FormEntity formEntity) {
+        super(paramsCount, formEntity);
     }
 
     @Override

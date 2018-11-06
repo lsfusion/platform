@@ -39,12 +39,12 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
+    public void initMainLogic() throws RecognitionException {
 
         currentDateTime = addTProp(LocalizedString.create("{logics.date.current.datetime}"), Time.DATETIME);
         makePropertyPublic(currentDateTime, "currentDateTime", new ArrayList<ResolveClassSet>());
@@ -55,7 +55,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         currentEpoch = addTProp(LocalizedString.create("{logics.date.current.epoch}"), Time.EPOCH);
         makePropertyPublic(currentEpoch, "currentEpoch", new ArrayList<ResolveClassSet>());
 
-        super.initProperties();
+        super.initMainLogic();
 
         month = (ConcreteCustomClass) findClass("Month");
         DOW = (ConcreteCustomClass) findClass("DOW");

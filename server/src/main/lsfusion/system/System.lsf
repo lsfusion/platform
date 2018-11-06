@@ -4,6 +4,10 @@ NAMESPACE System;
 
 CLASS NATIVE Object;
 
+GROUP NATIVE root 'Корневая группа';
+GROUP NATIVE public 'Пользовательские свойства' : root;
+GROUP NATIVE private 'Внутренние свойства' : root;
+
 CLASS NATIVE StaticObject;
 TABLE staticObject (StaticObject) NODEFAULT;
 
@@ -16,12 +20,9 @@ random = NATIVE DOUBLE ();
 
 stat 'Статистика' = DATA INTEGER (CustomObjectClass);
 
-GROUP root 'Корневая группа';
-GROUP public 'Пользовательские свойства' : root;
-GROUP private 'Внутренние свойства' : root;
+GROUP NATIVE base 'Атрибуты' : public;
+GROUP NATIVE id 'Идентифицирующие свойства' : base;
 
-GROUP base 'Атрибуты' : public;
-GROUP id 'Идентифицирующие свойства' : base;
 GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 
@@ -136,10 +137,7 @@ open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenRawLink
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
 exportFile() = DATA LOCAL FILE ();
-exportFiles = DATA LOCAL FILE (VARSTRING[100]);
-
 importFile() = DATA LOCAL FILE ();
-importFiles(id) = DATA LOCAL FILE (VARSTRING[100]);
 
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
@@ -148,8 +146,6 @@ readFile = DATA LOCAL FILE ();
 
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
-
-ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
 
 downloadFile 'Скопировать файл на клиент'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 

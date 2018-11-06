@@ -68,14 +68,14 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
         notification = (ConcreteCustomClass) findClass("Notification");
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
-        super.initProperties();
+    public void initMainLogic() throws RecognitionException {
+        super.initMainLogic();
 
         // ------- Управление почтой ------ //
 

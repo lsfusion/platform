@@ -55,7 +55,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP calculatedHash;
     public LCP lastActivityCustomUser;
     public LCP lastComputerCustomUser;
-    public LCP ignorePrintTypeCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
     public LCP currentUserAllowExcessAllocatedBytes;
@@ -103,8 +102,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
 
         computer = (ConcreteCustomClass) findClass("Computer");
         user = (AbstractCustomClass) findClass("User");
@@ -113,14 +112,14 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
+    public void initMainLogic() throws RecognitionException {
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<>(new CurrentUserFormulaProperty(user)));
         makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
         currentComputer = addProperty(null, new LCP<>(new CurrentComputerFormulaProperty(computer)));
         makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
 
-        super.initProperties();
+        super.initMainLogic();
 
         firstNameContact = findProperty("firstName[Contact]");
         lastNameContact = findProperty("lastName[Contact]");
@@ -153,7 +152,6 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         lastActivityCustomUser = findProperty("lastActivity[CustomUser]");
         lastComputerCustomUser = findProperty("lastComputer[CustomUser]");
-        ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustom[User]");
 
         minHashLength = findProperty("minHashLength[]");
         useLDAP = findProperty("useLDAP[]");
