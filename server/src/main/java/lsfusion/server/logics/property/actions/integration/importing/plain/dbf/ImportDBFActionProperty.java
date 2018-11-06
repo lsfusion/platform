@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainActionProperty;
@@ -26,8 +25,8 @@ public class ImportDBFActionProperty extends ImportPlainActionProperty<ImportDBF
     
     private final String charset;
 
-    public ImportDBFActionProperty(int paramsCount, LCP<?> fileProperty, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
-        super(paramsCount, fileProperty, groupFiles, formEntity);
+    public ImportDBFActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
+        super(paramsCount, groupFiles, formEntity);
         this.charset = charset == null ? "cp1251" : charset;
 
         int shift = groupFiles.size();

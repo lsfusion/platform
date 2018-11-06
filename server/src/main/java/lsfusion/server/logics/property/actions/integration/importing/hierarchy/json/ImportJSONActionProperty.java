@@ -2,7 +2,6 @@ package lsfusion.server.logics.property.actions.integration.importing.hierarchy.
 
 import com.google.common.base.Throwables;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.integration.hierarchy.json.JSONNode;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.ImportHierarchicalActionProperty;
 import org.json.JSONException;
@@ -11,8 +10,8 @@ import java.io.IOException;
 
 public class ImportJSONActionProperty extends ImportHierarchicalActionProperty<JSONNode> {
 
-    public ImportJSONActionProperty(int paramsCount, LCP<?> fileProperty, FormEntity formEntity) {
-        super(paramsCount, fileProperty, formEntity);
+    public ImportJSONActionProperty(int paramsCount, FormEntity formEntity) {
+        super(paramsCount, formEntity);
     }
 
     @Override

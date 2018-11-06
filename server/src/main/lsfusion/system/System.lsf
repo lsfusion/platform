@@ -137,10 +137,7 @@ open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenRawLink
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
 exportFile() = DATA LOCAL FILE ();
-exportFiles = DATA LOCAL FILE (VARSTRING[100]);
-
 importFile() = DATA LOCAL FILE ();
-importFiles(id) = DATA LOCAL FILE (VARSTRING[100]);
 
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);

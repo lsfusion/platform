@@ -131,11 +131,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP formPageCount;
     public LCP exportFile;
     public LCP importFile;
-    public LCP importFiles;
+    public LCP ignorePrintType;
     public LCP readFile;
 
     public LCP getExtension;
-    
+
     public LCP<?> imported;
     public LCP importedString;
 
@@ -169,7 +169,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         namedProperties = NFFact.simpleMap(namedProperties);
         namedActions = NFFact.simpleMap(namedActions);
     }
-    
+
     // need to implement next methods this way, because they are used in super.initMainLogic, and can not be initialized before super.initMainLogic
 
     @IdentityLazy
@@ -396,7 +396,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         formPageCount = findProperty("formPageCount[]");
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
-        importFiles = findProperty("importFiles[VARSTRING[100]]");
+        ignorePrintType = findProperty("ignorePrintType[]");
         readFile = findProperty("readFile[]");
 
         imported = findProperty("imported[INTEGER]");

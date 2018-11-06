@@ -9,7 +9,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainActionProperty;
@@ -22,8 +21,8 @@ public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLS
     private final boolean sheetAll;
     private final PropertyInterface sheetInterface;
 
-    public ImportXLSActionProperty(int paramsCount, LCP fileProperty, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean sheetAll) {
-        super(paramsCount, fileProperty, groupFiles, formEntity);
+    public ImportXLSActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean sheetAll) {
+        super(paramsCount, groupFiles, formEntity);
         this.sheetAll = sheetAll;
 
         int shift = groupFiles.size();

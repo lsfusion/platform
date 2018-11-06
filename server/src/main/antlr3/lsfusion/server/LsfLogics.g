@@ -365,7 +365,7 @@ groupStatement
 		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
 	}
 }
-	:	'GROUP' ('NATIVE' { isNative = true; })? 
+	:	'GROUP' ('NATIVE' { isNative = true; })?
 		groupNameCaption=simpleNameWithCaption
 		('EXTID' extID=stringLiteral)?
 		(':' parentName=compoundID { parent = $parentName.sid; })?
@@ -1278,11 +1278,11 @@ notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 	boolean notWas = false;
 }
 @after {
-	if (inMainParseState() && notWas) { 
+	if (inMainParseState() && notWas) {
 		$property = self.addScriptedNotProp($notExpr.property);  
 	}
 }
-	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inMainParseState()) { self.checkCIInExpr($notExpr.ci); } } 
+	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inMainParseState()) { self.checkCIInExpr($notExpr.ci); } }
 	|	expr=equalityPE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
@@ -1380,7 +1380,7 @@ additivePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 	}
 }
 	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inMainParseState()) { self.checkCIInExpr($ci); } } 
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		(operand=PLUS | operand=MINUS) { ops.add($operand.text); }
 		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); }
 		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
@@ -1413,7 +1413,7 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } } 
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } }
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
@@ -2151,7 +2151,16 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (namespace=ID '.')? formSName=ID { if (inMainParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
 	                                                             charset = $type.charset; root = $type.root; }
-	    ('FROM' fileProp=propertyUsage)?
+	    ('FROM' fileExprs=importFormPropertyExpressions[context, dynamic, form])?
+	;
+
+importFormPropertyExpressions[List<TypedParameter> context, boolean dynamic, FormEntity formEntity] returns [LCPWithParams property, OrderedMap<GroupObjectEntity, LCPWithParams> properties]
+@init {
+	$properties = new OrderedMap<>();
+	GroupObjectEntity go = null;
+}
+	:  aliasedPE=aliasedPropertyExpression[context, dynamic] { if(inMainParseState()) { if($aliasedPE.alias == null) { $property = $aliasedPE.property; } else { $properties.put(self.findGroupObjectEntity(formEntity, $aliasedPE.alias), $aliasedPE.property); } } }
+		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyExpression = propertyExpression[context, dynamic] { if(inMainParseState()) { $properties.put(go, $nextPropertyExpression.property); } } )*
 	;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
