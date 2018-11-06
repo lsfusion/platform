@@ -131,7 +131,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP formPageCount;
     public LCP exportFile;
     public LCP importFile;
-    public LCP ignorePrintType;
     public LCP readFile;
 
     public LCP getExtension;
@@ -396,7 +395,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         formPageCount = findProperty("formPageCount[]");
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
-        ignorePrintType = findProperty("ignorePrintType[]");
         readFile = findProperty("readFile[]");
 
         imported = findProperty("imported[INTEGER]");

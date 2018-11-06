@@ -147,8 +147,6 @@ readFile = DATA LOCAL FILE ();
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
-
 downloadFile 'Скопировать файл на клиент'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 
 loadDownloadedLibrary 'Загрузить скачанную библиотеку'  INTERNAL  'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
