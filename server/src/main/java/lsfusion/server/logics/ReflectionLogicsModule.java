@@ -201,8 +201,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
         propertyGroup = (ConcreteCustomClass) findClass("PropertyGroup");
         navigatorElement = (ConcreteCustomClass) findClass("NavigatorElement");
         navigatorFolder = (ConcreteCustomClass) findClass("NavigatorFolder");
@@ -220,11 +220,11 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
+    public void initMainLogic() throws RecognitionException {
         currentForm = addProperty(null, new LCP<>(new CurrentFormFormulaProperty(form)));
         makePropertyPublic(currentForm, "currentForm", new ArrayList<ResolveClassSet>());
 
-        super.initProperties();
+        super.initMainLogic();
 
         // ------- Доменная логика --------- //
 

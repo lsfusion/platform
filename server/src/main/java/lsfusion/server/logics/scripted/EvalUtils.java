@@ -44,7 +44,7 @@ public class EvalUtils {
         String errString = "";
         try {
             module.initModuleDependencies();
-            module.initMetaGroupsAndClasses();
+            module.initMetaAndClasses();
             
             if(locals != null) {
                 for(Pair<LCP, List<ResolveClassSet>> local : locals) {
@@ -52,7 +52,7 @@ public class EvalUtils {
                 }                
             }
 
-            module.initProperties();
+            module.initMainLogic();
 
             errString = module.getErrorsDescription();
         } catch (RecognitionException e) {

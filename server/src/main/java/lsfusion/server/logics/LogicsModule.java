@@ -97,11 +97,11 @@ public abstract class LogicsModule {
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
 
-    public abstract void initMetaGroupsAndClasses() throws RecognitionException;
+    public abstract void initMetaAndClasses() throws RecognitionException;
 
     public abstract void initTables() throws RecognitionException;
 
-    public abstract void initProperties() throws FileNotFoundException, RecognitionException;
+    public abstract void initMainLogic() throws FileNotFoundException, RecognitionException;
 
     public abstract void initIndexes() throws RecognitionException;
 

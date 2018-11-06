@@ -74,7 +74,7 @@ public class LogFormEntity extends FormEntity {
 
         initProperties();
         
-        // finalizeInit внутри initProperties
+        // finalizeInit внутри initMainLogic
     }
 
     private Version getVersion() {

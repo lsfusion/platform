@@ -110,7 +110,7 @@ grammar LsfLogics;
 	}
 	
 	public boolean isFirstFullParse() {
-		return parseState == ScriptParser.State.META_GROUP_CLASS_TABLE;
+		return parseState == ScriptParser.State.META_CLASS_TABLE;
 	}
 	
 	@Override
@@ -147,16 +147,16 @@ grammar LsfLogics;
 		return inParseState(ScriptParser.State.PRE);
 	}
 
-	public boolean inMetaGroupClassTableParseState() {
-		return inParseState(ScriptParser.State.META_GROUP_CLASS_TABLE);
+	public boolean inMetaClassTableParseState() {
+		return inParseState(ScriptParser.State.META_CLASS_TABLE);
 	}
 
-	public boolean inPropParseState() {
-		return inParseState(ScriptParser.State.PROP_INDEX);
+	public boolean inMainParseState() {
+		return inParseState(ScriptParser.State.MAIN);
 	}
 
 	public boolean isFirstFullParse() {
-		return inMetaGroupClassTableParseState();
+		return inMetaClassTableParseState();
 	}
 
 	public DebugInfo.DebugPoint getCurrentDebugPoint() {
@@ -184,13 +184,13 @@ grammar LsfLogics;
 	}
 
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
-		if (inPropParseState()) {
+		if (inMainParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
 		}
 	}
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
-		if (inPropParseState()) {
+		if (inMainParseState()) {
 			return $formStatement::form.getGroupObjectsList(ids, version);
 		}
 		return null;
@@ -307,7 +307,7 @@ classStatement
 	DebugInfo.DebugPoint point = getCurrentDebugPoint(); 
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inMetaClassTableParseState()) {
 	    if (!isNative)
 		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex, point);
 	}
@@ -321,7 +321,7 @@ classStatement
 
 extendClassStatement
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inMetaClassTableParseState()) {
 		self.extendClass($className.sid, $classData.names, $classData.captions, $classData.parents);
 	}
 }
@@ -358,13 +358,15 @@ classParentsList returns [List<String> list]
 groupStatement
 @init {
 	String parent = null;
+	boolean isNative = false;
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inMainParseState() && !isNative) {
 		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
 	}
 }
-	:	'GROUP' groupNameCaption=simpleNameWithCaption
+	:	'GROUP' ('NATIVE' { isNative = true; })? 
+		groupNameCaption=simpleNameWithCaption
 		('EXTID' extID=stringLiteral)?
 		(':' parentName=compoundID { parent = $parentName.sid; })?
 		';'
@@ -384,11 +386,11 @@ scope {
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-	if (inPropParseState() && initialDeclaration) {
+	if (inMainParseState() && initialDeclaration) {
 		self.finalizeScriptedForm($formStatement::form);
 	}
 }
-	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; if(inPropParseState()) self.addScriptedForm($formStatement::form, point); }
+	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; if(inMainParseState()) self.addScriptedForm($formStatement::form, point); }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
 		(	formGroupObjectsList
@@ -410,7 +412,7 @@ scope {
 dialogFormDeclaration
 	:	'LIST' cid=classId 'OBJECT' oid=ID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$formStatement::form.setAsDialogForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
@@ -419,7 +421,7 @@ dialogFormDeclaration
 editFormDeclaration
 	:	'EDIT' cid=classId 'OBJECT' oid=ID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$formStatement::form.setAsEditForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
@@ -435,7 +437,7 @@ reportPath
 	CalcPropertyObjectEntity property = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.setReportPath(groupObject, property);	
 	}
 }
@@ -454,7 +456,7 @@ formDeclaration returns [ScriptingFormEntity form]
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh);
 	}
 }
@@ -468,7 +470,7 @@ formDeclaration returns [ScriptingFormEntity form]
 
 extendingFormDeclaration returns [ScriptingFormEntity form]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$form = self.getFormForExtending($formName.sid);
 	}
 }
@@ -480,7 +482,7 @@ formGroupObjectsList
 	List<ScriptingGroupObject> groups = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion());
 	}
 }
@@ -496,7 +498,7 @@ formTreeGroupObjectList
 	List<List<PropertyUsage>> properties = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.isRightNeighbour, groups, properties, self.getVersion());
 	}
 }
@@ -635,7 +637,7 @@ formPropertiesList
 	List<FormPropertyOptions> options = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, commonOptions, options, self.getVersion(), points);
 	}
 }
@@ -693,8 +695,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	id=ID              	{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text, self.getVersion()); }
-	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
+	:	id=ID              	{ if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($id.text, self.getVersion()); }
+	|	prop=mappedPropertyDraw { if (inMainParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
 formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> captions, List<AbstractFormPropertyUsage> properties, List<FormPropertyOptions> options, List<DebugInfo.DebugPoint> points]
@@ -721,13 +723,13 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 				EQ
 				(	expr=formExprDeclaration { signature = $expr.signature; }
 				    {
-                        if(inPropParseState()) {
+                        if(inMainParseState()) {
                             lpUsage = self.checkPropertyIsNew(new FormLCPUsage($expr.property, $expr.mapping, signature));
                         }
 				    }
 				|	action=formActionDeclaration { signature = $action.signature; }
 				    {
-                        if(inPropParseState()) {
+                        if(inMainParseState()) {
                             lpUsage = new FormLAPUsage($action.property, $action.mapping, signature);
                         }
 				    })
@@ -755,13 +757,13 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
                     EQ
                     (	expr=formExprDeclaration { signature = $expr.signature; }
                         {
-                            if(inPropParseState()) {
+                            if(inMainParseState()) {
                                 lpUsage = self.checkPropertyIsNew(new FormLCPUsage($expr.property, $expr.mapping, signature));
                             }
                         }
                     |	action=formActionDeclaration { signature = $action.signature; }
                         {
-                            if(inPropParseState()) {
+                            if(inMainParseState()) {
                                 lpUsage = new FormLAPUsage($action.property, $action.mapping, signature);
                             }
                         })                    
@@ -796,7 +798,7 @@ formDesignOrFormCalcPropertyObject[ScriptingFormView design] returns [CalcProper
 		|	expr=formExprDeclaration { propUsage = new FormLCPUsage($expr.property, $expr.mapping); }
         )
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 			    if(design != null)
 			        $property = design.addCalcPropertyObject(propUsage);
                 else
@@ -814,7 +816,7 @@ formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
 		|	mAction=formActionDeclaration { propUsage = new FormLAPUsage($mAction.property, $mAction.mapping); }
 		)
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$action = $formStatement::form.addActionPropertyObject(propUsage);
 			}
 		}
@@ -822,7 +824,7 @@ formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
 
 formGroupObjectEntity returns [GroupObjectEntity groupObject]
 	:	id = ID { 
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$groupObject = $formStatement::form.getGroupObjectEntity($ID.text, self.getVersion());
 			} 
 		}
@@ -848,13 +850,13 @@ mappedPropertyObjectUsage returns [PropertyUsage propUsage, List<String> mapping
 formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw = null]
 	:	pname=ID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
 			}
 		}
 	|	mappedProp=mappedPropertyDraw	
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
 			}
 		}
@@ -935,7 +937,7 @@ formFiltersList
 	List<ImOrderSet<String>> propertyMappings = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedFilters(properties, propertyMappings, self.getVersion());
 	}
 }
@@ -949,7 +951,7 @@ formHintsList
 	boolean hintNoUpdate = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedHints(hintNoUpdate, $list.propUsages, self.getVersion());
 	}
 }
@@ -963,7 +965,7 @@ formEventsList
 	List<Object> types = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedFormEvents(actions, types, self.getVersion());
 	}
 }
@@ -998,7 +1000,7 @@ filterGroupDeclaration
 	List<RegularFilterInfo> filters = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
 	}
 }
@@ -1012,7 +1014,7 @@ extendFilterGroupDeclaration
 	List<RegularFilterInfo> filters = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.extendScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
 	}
 }
@@ -1034,33 +1036,33 @@ formRegularFilterDeclaration returns [RegularFilterInfo filter]
 formExprDeclaration returns [LCP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$mapping = self.getUsedNames(context, $expr.property.usedParams);
 		$signature = self.getUsedClasses(context, $expr.property.usedParams);
 	}	
 }
-	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); } }
+	:	expr=propertyExpression[context, false] { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($expr.property); $property = $expr.property.getLP(); } }
 	;
 
 formActionDeclaration returns [LAP property, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> context = new ArrayList<>();
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$mapping = self.getUsedNames(context, $action.property.usedParams);
 		$signature = self.getUsedClasses(context, $action.property.usedParams);
 	}
 }
-	:	action=listTopContextDependentActionDefinitionBody[context, false, false] { if (inPropParseState()) { $property = $action.property.getLP(); } }
+	:	action=listTopContextDependentActionDefinitionBody[context, false, false] { if (inMainParseState()) { $property = $action.property.getLP(); } }
 	;
 	
 filterSetDefault returns [boolean isDefault = false]
@@ -1074,7 +1076,7 @@ formOrderByList
 	List<Boolean> orders = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$formStatement::form.addScriptedDefaultOrder(properties, orders, self.getVersion());
 	}
 }
@@ -1106,7 +1108,7 @@ scope {
 	LP lp = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if (lp != null) // not native
 		    self.setPropertyScriptInfo(lp, $text, point);
 	}
@@ -1121,7 +1123,7 @@ scope {
         pdef=propertyDefinition[context, dynamic] { property = $pdef.property; signature = $pdef.signature; }
         ((popt=propertyOptions[property, propertyName, caption, context, signature] { ps = $popt.ps; } ) | ';')
         {
-            if (inPropParseState() && property != null) { // not native
+            if (inMainParseState() && property != null) { // not native
                 if(ps == null)
                     ps = new PropertySettings();
                 property = self.addSettingsToProperty(property, propertyName, caption, context, signature, ps);
@@ -1146,7 +1148,7 @@ scope {
 	LP lp = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if (lp != null) // not native
 		    self.setPropertyScriptInfo(lp, $text, point);
 	}
@@ -1160,17 +1162,17 @@ scope {
         { LAP property = null; ActionSettings ps = null; }
         (
             (
-                ciADB=contextIndependentActionDB { if(inPropParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
+                ciADB=contextIndependentActionDB { if(inMainParseState()) { property = $ciADB.property; signature = $ciADB.signature; } }
                 ((aopt=actionOptions[property, propertyName, caption, context, signature] { ps = $aopt.ps; } ) | ';')
             )
         |
             (
-                aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inPropParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
+                aDB=listTopContextDependentActionDefinitionBody[context, dynamic, true] { if (inMainParseState()) { property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(context); }}
                 (aopt=actionOptions[property, propertyName, caption, context, signature]  { ps = $aopt.ps; } )?
             )
         )
         {
-            if (inPropParseState()) {
+            if (inMainParseState()) {
                 if(ps == null)
                     ps = new ActionSettings();
                 self.addSettingsToAction(property, propertyName, caption, context, signature, ps);
@@ -1182,8 +1184,8 @@ scope {
 propertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[context, dynamic, false] { $property = $ciPD.property; $signature = $ciPD.signature; }
 	|	exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; $signature = $exprOrCIPD.ci.signature; } 
-                                                    else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
-	|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
+                                                    else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $signature = self.getClassesFromTypedParams(context); $property = $exprOrCIPD.property.getLP(); } }}
+	|	'NATIVE' classId '(' clist=classIdList ')' { if (inMainParseState()) { $signature = self.createClassSetsFromClassNames($clist.ids); }}
 	;
 
 
@@ -1195,7 +1197,7 @@ actionOrPropertyDeclaration returns [String name, LocalizedString caption, List<
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
     :   exprOrCIPD=propertyExpressionOrContextIndependentPD[context, dynamic] { $property = $exprOrCIPD.property; }
-        { if(inPropParseState()) { self.checkCIInExpr($exprOrCIPD.ci); } }
+        { if(inMainParseState()) { self.checkCIInExpr($exprOrCIPD.ci); } }
 ;
 
 propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1203,7 +1205,7 @@ propertyExpressionOrContextIndependentPD[List<TypedParameter> context, boolean d
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
-    if (inPropParseState()) {
+    if (inMainParseState()) {
         self.propertyDefinitionCreated($ci != null ? $ci.property : $property.getLP(), point);
     }
 }
@@ -1216,14 +1218,14 @@ ifPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prope
 	List<LCPWithParams> props = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedIfProp(props);
 	}
 } 
 	:	firstExpr=orPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-        ( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+        ( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
         'IF' nextExpr=orPE[context, dynamic] { props.add($nextExpr.property); }
-        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
 orPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1231,14 +1233,14 @@ orPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prope
 	List<LCPWithParams> props = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedOrProp(props);
 	}
 } 
 	:	firstExpr=xorPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		'OR' nextExpr=xorPE[context, dynamic] { props.add($nextExpr.property); }
-		 { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		 { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
 xorPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1246,14 +1248,14 @@ xorPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 	List<LCPWithParams> props = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedXorProp(props);
 	}
 } 
 	:	firstExpr=andPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		'XOR' nextExpr=andPE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
 andPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1261,14 +1263,14 @@ andPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 	List<LCPWithParams> props = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAndProp(props);				
 	}
 }
 	:	firstExpr=notPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		'AND' nextExpr=notPE[context, dynamic] { props.add($nextExpr.property); }
-        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
 notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1276,11 +1278,11 @@ notPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams prop
 	boolean notWas = false;
 }
 @after {
-	if (inPropParseState() && notWas) { 
+	if (inMainParseState() && notWas) { 
 		$property = self.addScriptedNotProp($notExpr.property);  
 	}
 }
-	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inPropParseState()) { self.checkCIInExpr($notExpr.ci); } } 
+	:	'NOT' notExpr=notPE[context, dynamic] { notWas = true; } { if(inMainParseState()) { self.checkCIInExpr($notExpr.ci); } } 
 	|	expr=equalityPE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 	;
 
@@ -1290,17 +1292,17 @@ equalityPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 	String op = null;
 }
 @after {
-	if (inPropParseState() && op != null) {
+	if (inMainParseState() && op != null) {
 		$property = self.addScriptedEqualityProp(op, leftProp, rightProp, context);
 	} else {
 		$property = leftProp;
 	}
 }
 	:	lhs=relationalPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		(operand=EQ_OPERAND { op = $operand.text; } | operand=EQ { op = $operand.text; })
 		rhs=relationalPE[context, dynamic] { rightProp = $rhs.property; }
-		{ if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } })?
+		{ if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } })?
 	;
 
 
@@ -1311,7 +1313,7 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	String op = null;
 }
 @after {
-	if (inPropParseState())
+	if (inMainParseState())
 	{
 		if (op != null) {
 			$property = self.addScriptedRelationalProp(op, leftProp, rightProp, context);
@@ -1322,10 +1324,10 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 }
 	:	lhs=likePE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
 		(
-			(   { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+			(   { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 			    operand=relOperand { op = $operand.text; }
 			    rhs=likePE[context, dynamic] { rightProp = $rhs.property; }
-			    { if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } }
+			    { if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } }
 			)
 		)?
 	;
@@ -1336,7 +1338,7 @@ likePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams pro
 	LCPWithParams leftProp = null, rightProp = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if(rightProp != null)
 		    $property = self.addScriptedLikeProp(leftProp, rightProp);
 	    else
@@ -1344,10 +1346,10 @@ likePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams pro
 	}
 }
 	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		'LIKE'
 		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
-        { if(inPropParseState()) { self.checkCIInExpr($rhs.ci); } })?
+        { if(inMainParseState()) { self.checkCIInExpr($rhs.ci); } })?
 	;
 
 additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
@@ -1356,14 +1358,14 @@ additiveORPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	List<String> ops = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAdditiveOrProp(ops, props);
 	}
 }
 	:	firstExpr=additivePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		(operand=ADDOR_OPERAND nextExpr=additivePE[context, dynamic] { ops.add($operand.text); props.add($nextExpr.property); }
-        { if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } }))*
+        { if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } }))*
 	;
 	
 	
@@ -1373,15 +1375,15 @@ additivePE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams
 	List<String> ops = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAdditiveProp(ops, props);				
 	}
 }
 	:	firstExpr=multiplicativePE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } } 
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } } 
 		(operand=PLUS | operand=MINUS) { ops.add($operand.text); }
 		nextExpr=multiplicativePE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 		
 	
@@ -1391,15 +1393,15 @@ multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LCPWith
 	List<String> ops = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedMultiplicativeProp(ops, props);				
 	}
 }
 	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); $ci = $firstExpr.ci; }
-		( { if(inPropParseState()) { self.checkCIInExpr($ci); } }
+		( { if(inMainParseState()) { self.checkCIInExpr($ci); } }
 		operand=multOperand { ops.add($operand.text); }
 		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); }
-		{ if(inPropParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
+		{ if(inMainParseState()) { self.checkCIInExpr($nextExpr.ci); } })*
 	;
 
 unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci] 
@@ -1407,11 +1409,11 @@ unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPara
 	boolean minusWas = false;
 }
 @after {
-	if (inPropParseState() && minusWas) {
+	if (inMainParseState() && minusWas) {
 		$property = self.addScriptedUnaryMinusProp($expr.property);
 	} 
 }
-	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inPropParseState()) { self.checkCIInExpr($expr.ci); } } 
+	:	MINUS expr=unaryMinusPE[context, dynamic] { minusWas = true; } { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } } 
 	|	simpleExpr=postfixUnaryPE[context, dynamic] { $property = $simpleExpr.property; $ci = $simpleExpr.ci; }
 	;
 
@@ -1422,7 +1424,7 @@ postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPa
 	Boolean type = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if(hasPostfix)
     		$property = self.addScriptedDCCProp($expr.property, $index.val);
         else if(type != null)
@@ -1431,7 +1433,7 @@ postfixUnaryPE[List<TypedParameter> context, boolean dynamic] returns [LCPWithPa
 }
 	:	expr=simplePE[context, dynamic] { $property = $expr.property; $ci = $expr.ci; }
 		(
-		    { if(inPropParseState()) { self.checkCIInExpr($expr.ci); } }
+		    { if(inMainParseState()) { self.checkCIInExpr($expr.ci); } }
 		    (
 			    '[' index=uintLiteral ']' { hasPostfix = true; }
                 |
@@ -1458,7 +1460,7 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LCPWithP
 	String className = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = new LCPWithParams(null, self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion));
 	}
 }
@@ -1467,7 +1469,7 @@ singleParameter[List<TypedParameter> context, boolean dynamic] returns [LCPWithP
 	
 expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property, LCPContextIndependent ci]
 @after {
-	if (inPropParseState() && $ci == null) {
+	if (inMainParseState() && $ci == null) {
 		self.checkPropertyValue($property.getLP());
 	}
 }
@@ -1494,7 +1496,7 @@ contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean inne
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.propertyDefinitionCreated($property, point);
 	}
 }
@@ -1513,7 +1515,7 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	List<Integer> usedContext = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		if (isInline) {
 			$property = self.addScriptedJProp(true, $iProp.property, $exprList.props, usedContext, ci);
 		} else {
@@ -1537,7 +1539,7 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
     DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		LCPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint, innerPD);
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
@@ -1557,7 +1559,7 @@ groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	List<TypedParameter> groupContext = new ArrayList<>(context);
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		Pair<LCPWithParams, LCPContextIndependent> peOrCI = self.addScriptedCDGProp(context.size(), $exprList.props, $gp.type, $gp.mainProps, $gp.orderProps, $gp.ascending, $gp.whereProp, groupContext);
 		$property = peOrCI.first;
 		$ci = peOrCI.second;
@@ -1602,7 +1604,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	boolean useLast = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps, context);
 	}
 }
@@ -1638,7 +1640,7 @@ dataPropertyDefinition[boolean innerPD] returns [LCP property, List<ResolveClass
 	LocalNestedType nestedType = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
 		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, nestedType);
 	}
@@ -1667,7 +1669,7 @@ abstractPropertyDefinition[boolean innerPD] returns [LCP property, List<ResolveC
 	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
 		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast, innerPD);
 	}
@@ -1695,7 +1697,7 @@ abstractActionDefinition returns [LAP property, List<ResolveClassSet> signature]
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
 		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
@@ -1717,7 +1719,7 @@ overridePropertyDefinition[List<TypedParameter> context, boolean dynamic] return
 	boolean isExclusive = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedOverrideProp($exprList.props, isExclusive);
 	}
 }
@@ -1731,7 +1733,7 @@ ifElsePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 	LCPWithParams elseProp = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedIfElseUProp($ifExpr.property, $thenExpr.property, elseProp);
 	}
 }
@@ -1746,7 +1748,7 @@ maxPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LC
 	boolean isMin = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedMaxProp($exprList.props, isMin);
 	}
 }
@@ -1763,7 +1765,7 @@ casePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	boolean isExclusive = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedCaseUProp(whenProps, thenProps, elseProp, isExclusive);
 	}
 }
@@ -1783,7 +1785,7 @@ multiPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 	boolean isExclusive = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedMultiProp($exprList.props, isExclusive);
 	}
 }
@@ -1796,12 +1798,12 @@ recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 @init {
 	Cycle cycleType = Cycle.NO;
 	List<TypedParameter> recursiveContext = null;
-	if (inPropParseState() && insideRecursion) {
+	if (inMainParseState() && insideRecursion) {
 		self.getErrLog().emitNestedRecursionError(self.getParser());
 	}
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedRProp(recursiveContext, $zeroStep.property, $nextStep.property, cycleType);			
 	}
 	insideRecursion = false;
@@ -1824,7 +1826,7 @@ recursivePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 
 structCreationPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property] 
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedCCProp($list.props);
 	}
 }
@@ -1836,7 +1838,7 @@ structCreationPropertyDefinition[List<TypedParameter> context, boolean dynamic] 
 
 castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedCastProp($ptype.text, $expr.property);
 	}
 }
@@ -1845,7 +1847,7 @@ castPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 
 concatPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedConcatProp($separator.val, $list.props);
 	}
 }
@@ -1857,7 +1859,7 @@ sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 	IncrementType type = null; 
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedSessionProp(type, $expr.property);
 	}
 }
@@ -1876,7 +1878,7 @@ sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns
 
 signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property] 	
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedSignatureProp($expr.property);
 	}
 } 
@@ -1885,7 +1887,7 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LCPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedActiveTabProp($fc.component);
 	}
 }
@@ -1898,7 +1900,7 @@ formulaPropertyDefinition returns [LCP property, List<ResolveClassSet> signature
 	boolean hasNotNullCondition = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
 		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
@@ -1924,7 +1926,7 @@ groupObjectPropertyDefinition returns [LCP property, List<ResolveClassSet> signa
 	GroupObjectProp prop = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$signature = new ArrayList<>();	
 		$property = self.addScriptedGroupObjectProp($gobj.sid, prop, $signature);
 	}
@@ -1939,7 +1941,7 @@ reflectionPropertyDefinition returns [LCP property, List<ResolveClassSet> signat
 	ActionOrPropertyUsage propertyUsage = null;
 }
 @after{
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$signature = new ArrayList<>();	
 		$property = self.addScriptedReflectionProperty(type, propertyUsage, $signature);
 	}
@@ -1957,7 +1959,7 @@ readActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
     boolean dialog = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, context, clientAction, dialog);
 	}
 }
@@ -1971,7 +1973,7 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	boolean append = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, context, clientAction, dialog, append);
 	}
 }
@@ -2006,18 +2008,18 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	List<Boolean> literals = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
         $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, sheet, sheetAll, separator, noHeader, charset, root, fieldParams, toParams, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; where = $type.where; separator = $type.separator;
 		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })
-		'FROM' expr=propertyExpression[context, dynamic] { if (inPropParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
+		'FROM' expr=propertyExpression[context, dynamic] { if (inMainParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		(
-            'FIELDS' ('(' list=typedParameterList { if(inPropParseState()) { fieldParams = list; } } ')')?
+            'FIELDS' ('(' list=typedParameterList { if(inMainParseState()) { fieldParams = list; } } ')')?
             {
-                if(inPropParseState()) {
+                if(inMainParseState()) {
                     if(fieldParams == null)
                         fieldParams = Arrays.asList(TP("INTEGER", "row"));
                     self.getParamIndices(fieldParams, newContext, true, insideRecursion);
@@ -2026,9 +2028,9 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
             pflist = nonEmptyImportFieldDefinitions[newContext] { ids = $pflist.ids; literals = $pflist.literals; }
             dDB=doInputBody[context, newContext]
             |
-		    'TO' ('(' paramClassNames=classIdList { if(inPropParseState()) { toParams = $paramClassNames.ids; } } ')')?
+		    'TO' ('(' paramClassNames=classIdList { if(inMainParseState()) { toParams = $paramClassNames.ids; } } ')')?
              {
-                 if(inPropParseState() && toParams == null) {
+                 if(inMainParseState() && toParams == null) {
                      toParams = Collections.singletonList("INTEGER");
                  }
              }
@@ -2051,14 +2053,14 @@ importFieldDefinition[List<TypedParameter> newContext] returns [String id, Boole
     DataClass dataClass = null;
 }
     :
-        ptype=PRIMITIVE_TYPE { if(inPropParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
+        ptype=PRIMITIVE_TYPE { if(inMainParseState()) dataClass = (DataClass)self.findClass($ptype.text); }
         (varID=ID EQ)?
         (   pid=ID { $id = $pid.text; $literal = false; }
         |	sLiteral=stringLiteral { $id = $sLiteral.val; $literal = true; }
         )
         ('NULL' { $nulls = true; } )?
         {
-        	if(inPropParseState())
+        	if(inMainParseState())
                 self.getParamIndex(self.new TypedParameter(dataClass, $varID.text != null ? $varID.text : $id), newContext, true, insideRecursion);
         }
     ;
@@ -2083,7 +2085,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
 			                                                 hasListOption, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
@@ -2141,12 +2143,12 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
     FormEntity form = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    $property = self.addScriptedImportFormActionProperty($type.format, $fileProp.propUsage, form, noHeader, charset, separator, root);
 	}
 }
 	:	'IMPORT'
-	    (namespace=ID '.')? formSName=ID { if (inPropParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
+	    (namespace=ID '.')? formSName=ID { if (inMainParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importFormSourceFormat [context, dynamic, form] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader;
 	                                                             charset = $type.charset; root = $type.root; }
 	    ('FROM' fileProp=propertyUsage)?
@@ -2158,7 +2160,7 @@ newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 	List<LP> localProps = new ArrayList<LP>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedNewThreadActionProperty($aDB.property, $connExpr.property, $periodExpr.property, $delayExpr.property);
 	}
 }
@@ -2177,7 +2179,7 @@ newExecutorActionDefinitionBody[List<TypedParameter> context, boolean dynamic] r
 	List<LP> localProps = new ArrayList<LP>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedNewExecutorActionProperty($aDB.property, $threadsExpr.property);
 	}
 }
@@ -2193,7 +2195,7 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean newSQL = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedNewSessionAProp($aDB.property, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL);
 	}
 }
@@ -2258,15 +2260,15 @@ inlineProperty[List<TypedParameter> context] returns [LCP property, List<Integer
 	List<ResolveClassSet> signature = null;
 }
 @after {
-	if (inPropParseState()) { // not native
+	if (inMainParseState()) { // not native
 		$property.setExplicitClasses(signature);
 	}
 }
 	:	'[' 	(	ciPD=contextIndependentPD[context, true, true] { $property = $ciPD.property; signature = $ciPD.signature; $usedContext = $ciPD.usedContext; $ci = true; }
 				|   exprOrCIPD=propertyExpressionOrContextIndependentPD[newContext, true] { if($exprOrCIPD.ci != null) { $property = $exprOrCIPD.ci.property; signature = $exprOrCIPD.ci.signature; $usedContext = $exprOrCIPD.ci.usedContext; $ci = true; }
-                                                                    else { if (inPropParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
-//                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inPropParseState()) { $property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(newContext); }}
-//                |	'ACTION' ciADB=contextIndependentActionDB { if (inPropParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
+                                                                    else { if (inMainParseState()) { self.getChecks().checkNecessaryProperty($exprOrCIPD.property); $property = $exprOrCIPD.property.getLP(); $usedContext = self.getResultInterfaces(context.size(), $exprOrCIPD.property); signature = self.getClassesFromTypedParams(context.size(), $usedContext, newContext);} }}
+//                |   aDB=listTopContextDependentActionDefinitionBody[newContext, true, true] { if (inMainParseState()) { $property = $aDB.property.getLP(); signature = self.getClassesFromTypedParams(newContext); }}
+//                |	'ACTION' ciADB=contextIndependentActionDB { if (inMainParseState()) { $property = $ciADB.property; signature = $ciADB.signature; } }
 				)
 		']'
 	;
@@ -2367,7 +2369,7 @@ loggableSetting [PropertySettings ps]
 
 aggrSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setAggr(property);
 	}
 }
@@ -2399,7 +2401,7 @@ notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve 
 
 shortcutSetting [LAP property, LocalizedString caption]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addToContextMenuFor(property, $c.val != null ? $c.val : caption, $usage.propUsage);
 	}
 }
@@ -2411,7 +2413,7 @@ asonEditActionSetting [LAP property]
 	String editActionSID = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setAsEditActionFor(property, $et.type, $usage.propUsage);
 	}
 }
@@ -2420,7 +2422,7 @@ asonEditActionSetting [LAP property]
 
 forceViewTypeSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setForceViewType(property, $viewType.type);
 	}
 }
@@ -2429,7 +2431,7 @@ forceViewTypeSetting [LP property]
 
 fixedCharWidthSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setFixedCharWidth(property, $width.val);
 	}
 }
@@ -2438,7 +2440,7 @@ fixedCharWidthSetting [LP property]
 
 charWidthSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setCharWidth(property, $width.val);
 	}
 }
@@ -2447,7 +2449,7 @@ charWidthSetting [LP property]
 
 imageSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setImage(property, $path.val);
 	}
 }
@@ -2456,7 +2458,7 @@ imageSetting [LP property]
 
 defaultCompareSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setDefaultCompare(property, $defaultCompare.val);
 	}
 }
@@ -2469,7 +2471,7 @@ editKeySetting [LP property]
 	Boolean show = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setChangeKey(property, $key.val, show);
 	}
 }
@@ -2484,7 +2486,7 @@ autosetSetting [LCP property]
 	boolean autoset = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setAutoset(property, autoset);
 	}
 }
@@ -2496,7 +2498,7 @@ confirmSetting [LP property]
 	boolean askConfirm = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setAskConfirm(property, askConfirm);
 	}
 }
@@ -2508,7 +2510,7 @@ regexpSetting [LP property]
 	String message = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setRegexp(property, $exp.val, message);
 	}
 }
@@ -2518,7 +2520,7 @@ regexpSetting [LP property]
 
 echoSymbolsSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setEchoSymbols(property);
 	}
 }
@@ -2527,7 +2529,7 @@ echoSymbolsSetting [LP property]
 
 indexSetting [LCP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedIndex(property);
 	}
 }
@@ -2543,7 +2545,7 @@ notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
 
 onEditEventSetting [LP property, List<TypedParameter> context]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setScriptedEditAction(property, $et.type, $action.property);
 	}
 }
@@ -2560,7 +2562,7 @@ formEventType returns [String type]
 
 onContextMenuEventSetting [LP property, List<TypedParameter> context]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setScriptedContextMenuAction(property, $c.val, $action.property);
 	}
 }
@@ -2570,7 +2572,7 @@ onContextMenuEventSetting [LP property, List<TypedParameter> context]
 
 onKeyPressEventSetting [LP property, List<TypedParameter> context]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setScriptedKeyPressAction(property, $key.val, $action.property);
 	}
 }
@@ -2579,7 +2581,7 @@ onKeyPressEventSetting [LP property, List<TypedParameter> context]
 
 eventIdSetting [LP property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.setEventId(property, $id.val);
 	}
 }
@@ -2596,7 +2598,7 @@ listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolea
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-    if (inPropParseState()) {
+    if (inMainParseState()) {
         $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, context, new ArrayList<TypedParameter>(), needFullContext);
 
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
@@ -2605,7 +2607,7 @@ listTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolea
         self.topContextActionPropertyDefinitionBodyCreated($property);
     }
 }
-    :   aDB=listActionDefinitionBody[context, dynamic] { if(inPropParseState()) { $property = $aDB.property; } }
+    :   aDB=listActionDefinitionBody[context, dynamic] { if(inMainParseState()) { $property = $aDB.property; } }
 	;
 
 endDeclTopContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAPWithParams property]
@@ -2615,7 +2617,7 @@ endDeclTopContextDependentActionDefinitionBody[List<TypedParameter> context, boo
 // top level, not recursive
 topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LAPWithParams property]
 @after{
-    if (inPropParseState()) {
+    if (inMainParseState()) {
         self.topContextActionPropertyDefinitionBodyCreated($property);
     }
 }
@@ -2625,7 +2627,7 @@ topContextDependentActionDefinitionBody[List<TypedParameter> context, boolean dy
 // modifies context + is flow action (uses another actions)
 modifyContextFlowActionDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext, boolean explicitCreated] returns [LAPWithParams property]
 @after{
-    if (inPropParseState() && !explicitCreated) {
+    if (inMainParseState() && !explicitCreated) {
         $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, newContext, $oldContext, needFullContext);
     }
 }
@@ -2641,7 +2643,7 @@ actionDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modi
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after{
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
 		self.actionPropertyDefinitionBodyCreated($property, point, endPoint, modifyContext, null);
 	}
@@ -2660,7 +2662,7 @@ recursiveContextActionDB[List<TypedParameter> context, boolean dynamic] returns 
 
 recursiveExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	if (inPropParseState() && dynamic) {
+	if (inMainParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
@@ -2694,7 +2696,7 @@ leafContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPW
 
 leafExtendContextActionDB[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	if (inPropParseState() && dynamic) {
+	if (inMainParseState() && dynamic) {
 		self.getErrLog().emitExtendActionContextError(self.getParser());
 	}
 }
@@ -2733,7 +2735,7 @@ contextIndependentActionDB returns [LAP property, List<ResolveClassSet> signatur
 	Boolean needToCreateDelegate = null;
 }
 @after{
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    LAPWithParams lpWithParams = new LAPWithParams($property, new ArrayList<Integer>());
 		DebugInfo.DebugPoint endPoint = getCurrentDebugPoint(true);
 		self.actionPropertyDefinitionBodyCreated(lpWithParams, point, endPoint, false, needToCreateDelegate);
@@ -2753,19 +2755,19 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 }
 	:
 	(
-		(	formName=compoundID { if(inPropParseState()) { $form = self.findForm($formName.sid); } }
+		(	formName=compoundID { if(inMainParseState()) { $form = self.findForm($formName.sid); } }
 			('OBJECTS' list=formActionObjectList[$form, context, newContext, dynamic] { $props = $list.props; })?
 			{
-				if(inPropParseState())
+				if(inMainParseState())
 					$mapped = MappedForm.create($form, $list.objects != null ? $list.objects : new ArrayList<ObjectEntity>());
 			}
 		)
 	    |
 	    (	('LIST' | ('EDIT' { edit = true; } ))
-			cls = classId { if(inPropParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
+			cls = classId { if(inMainParseState()) { mappedCls = (CustomClass)self.findClass($cls.sid); } }
 			(object=formActionProps["object", mappedCls, context, newContext, dynamic] { $props = Collections.singletonList($object.props); })
 			{
-				if(inPropParseState())
+				if(inMainParseState())
 					$mapped = MappedForm.create(mappedCls, edit);
 			}
 		)
@@ -2775,7 +2777,7 @@ mappedForm[List<TypedParameter> context, List<TypedParameter> newContext, boolea
 
 emptyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-    if (inPropParseState()) {
+    if (inMainParseState()) {
         $property = new LAPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());
     }
 }
@@ -2796,7 +2798,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean checkOnOk = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly);
 	}
 }
@@ -2829,7 +2831,7 @@ dialogActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 	boolean readOnly = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedDialogFAProp($mf.mapped, $mf.props, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly, $dDB.property, $dDB.elseProperty, context, newContext);
 	}
 }
@@ -2864,7 +2866,7 @@ noCancelClause returns [boolean result]
 doInputBody[List<TypedParameter> oldContext, List<TypedParameter> newContext]  returns [LAPWithParams property, LAPWithParams elseProperty]
         // used explicit modifyContextFlowActionDefinitionBodyCreated to support CHANGE clauses inside extendDoParams, but need modifyContext flag in actionPropertyDefinitionBody to get right DelegationType
     :	(('DO' dDB=modifyContextFlowActionDefinitionBody[oldContext, newContext, false, false, true] { $property = $dDB.property; } ) ('ELSE' eDB=keepContextFlowActionDefinitionBody[newContext, false] { $elseProperty = $eDB.property; } )?)
-	|	(';' { if(inPropParseState()) { $property = new LAPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
+	|	(';' { if(inMainParseState()) { $property = new LAPWithParams(self.baseLM.getEmpty(), new ArrayList<Integer>());  } })
 ;
 
 syncTypeLiteral returns [boolean val]
@@ -2886,7 +2888,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
     LCPWithParams passwordProperty = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedPrintFAProp($mf.mapped, $mf.props, printerProperty, printType, $pUsage.propUsage, syncType, selectTop, $sUsage.propUsage, passwordProperty);
 	}
 }
@@ -2924,7 +2926,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	String charset = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage, $pUsages.pUsages);
 	}
 }
@@ -2942,8 +2944,8 @@ groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObje
 	$pUsages = new OrderedMap<>();
 	GroupObjectEntity go = null;
 }
-	:	firstGroupObject=ID { if(inPropParseState()) { go=self.findGroupObjectEntity(formEntity, $firstGroupObject.text); } }  EQ firstPropertyUsage=propertyUsage { if(inPropParseState()) { $pUsages.put(go, $firstPropertyUsage.propUsage); } }
-		(',' nextGroupObject=ID { if(inPropParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyUsage = propertyUsage { if(inPropParseState()) { $pUsages.put(go, $nextPropertyUsage.propUsage); } } )*
+	:	firstGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $firstGroupObject.text); } }  EQ firstPropertyUsage=propertyUsage { if(inMainParseState()) { $pUsages.put(go, $firstPropertyUsage.propUsage); } }
+		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyUsage = propertyUsage { if(inMainParseState()) { $pUsages.put(go, $nextPropertyUsage.propUsage); } } )*
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
@@ -2957,8 +2959,8 @@ formActionObjectList[FormEntity formEntity, List<TypedParameter> context, List<T
 @init {
     ObjectEntity object = null;
 }
-	:	id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); }
-		(',' id=ID { if(inPropParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); })*
+	:	id=ID { if(inMainParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); }
+		(',' id=ID { if(inMainParseState()) { object=self.findObjectEntity(formEntity, $id.text); $objects.add(object); } } fap=formActionProps[$id.text, object != null ? object.baseClass : null, context, newContext, dynamic] { $props.add($fap.props); })*
 	;
 
 formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> context, List<TypedParameter> newContext, boolean dynamic] returns [FormActionProps props]
@@ -2994,7 +2996,7 @@ formActionProps[String objectName, ValueClass objectClass, List<TypedParameter> 
             )
             { out = true; inNull = true; }
             varID=ID?
-            { if(newContext!=null && inPropParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(objectClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
+            { if(newContext!=null && inMainParseState()) { outParamNum = self.getParamIndex(self.new TypedParameter(objectClass, $varID.text != null ? $varID.text : objectName), newContext, true, insideRecursion); } }
             ('NULL' { outNull = true; })? 
 //            ('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
             (('CONSTRAINTFILTER' { constraintFilter = true; } ) (EQ consExpr=propertyExpression[context, dynamic] { changeProp = $consExpr.property; } )?)?
@@ -3015,7 +3017,7 @@ customActionDefinitionBody returns [LAP property, List<ResolveClassSet> signatur
 	List<String> classes = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if($code.val == null)
 	        $property = self.addScriptedCustomActionProp($classN.val, classes, allowNullValue);
 	    else
@@ -3036,7 +3038,7 @@ externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] ret
     List<LCPWithParams> params = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
       if($type.format == ExternalFormat.DB) {
         $property = self.addScriptedExternalDBActionProp($type.conStr, $type.exec, params, context, $tl.propUsages);
       } else if($type.format == ExternalFormat.DBF) {
@@ -3079,7 +3081,7 @@ newWhereActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParam
 	List<LCPWithParams> toPropMapping = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition, newContext);
 	}
 }
@@ -3095,7 +3097,7 @@ newActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams pro
 	String varName = "added";
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
         $property = self.addScriptedNewAProp(context, $actDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset);
 	}
 }
@@ -3124,7 +3126,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	List<LCPWithParams> inlineFiles = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats, attachFileNames, attachFiles, inlineTexts, inlineFiles);
 	}
 }
@@ -3179,14 +3181,14 @@ confirmActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams
     boolean yesNo = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedConfirmProp($pe.property, $dDB.property, $dDB.elseProperty, yesNo, context, newContext);
 	}
 }
 	:	'ASK'
         pe=propertyExpression[context, false]
         { newContext = new ArrayList<TypedParameter>(context); }
-	    ((varID=ID { if (inPropParseState()) { self.getParamIndex(self.new TypedParameter("BOOLEAN", $varID.text), newContext, true, insideRecursion); } } EQ)? 'YESNO' { yesNo = true;} )?
+	    ((varID=ID { if (inMainParseState()) { self.getParamIndex(self.new TypedParameter("BOOLEAN", $varID.text), newContext, true, insideRecursion); } } EQ)? 'YESNO' { yesNo = true;} )?
         dDB=doInputBody[context, newContext]
 	;
 		
@@ -3195,7 +3197,7 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
     boolean noWait = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedMessageProp($pe.property, noWait);
 	}
 }
@@ -3206,7 +3208,7 @@ messageActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retur
 
 asyncUpdateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAsyncUpdateProp($pe.property);
 	}
 }
@@ -3220,7 +3222,7 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	List<LCPWithParams> lps = new ArrayList<>(); 
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = obj != null ? self.addScriptedObjectSeekProp($obj.sid, $pe.property, type)
 		                        : self.addScriptedGroupObjectSeekProp($gobj.sid, objNames, lps, type);
 	}
@@ -3241,7 +3243,7 @@ changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAPWithPa
 	LCPWithParams condition = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedChangeClassAProp(context.size(), newContext, $param.property, $className.sid, condition);	
 	}
 }
@@ -3255,7 +3257,7 @@ deleteActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 	LCPWithParams condition = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedDeleteAProp(context.size(), newContext, $param.property, condition);	
 	}
 }
@@ -3268,7 +3270,7 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean action = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedEvalActionProp($expr.property, $exprList.props, context, action);
 	}
 }
@@ -3277,7 +3279,7 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	
 drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedDrillDownActionProp($expr.property);
 	}
 }
@@ -3286,7 +3288,7 @@ drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] ret
 
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedRequestAProp($aDB.property, $dDB.property, $eDB.property);
 	}
 }
@@ -3304,7 +3306,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams p
     LCPWithParams changeProp = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedInputAProp($in.dataClass, $in.initValue, outProp, $dDB.property, $dDB.elseProperty, context, newContext, assign, changeProp, assignDebugPoint);
 	}
 }
@@ -3323,7 +3325,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LCPWithP
     String varName = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$dataClass = self.getInputDataClass(varName, context, $ptype.text, $pe.property, insideRecursion);
 		$initValue = $pe.property;
 	}
@@ -3343,7 +3345,7 @@ mappedInput[List<TypedParameter> context] returns [DataClass dataClass, LCPWithP
 
 activeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedActiveFormAProp($name.sid);
 	}
 }
@@ -3357,7 +3359,7 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
     PropertyDrawEntity propertyDraw = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 	    if(form != null)
 		    $property = self.addScriptedActivateAProp(form, component);
         else
@@ -3377,13 +3379,13 @@ listActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	List<LCP> localProps = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedListAProp(props, localProps);
 	}
 }
 	:	'{'
 			(	(aDB=keepContextFlowActionDefinitionBody[context, dynamic] { props.add($aDB.property); })
-			|	def=localDataPropertyDefinition ';' { if (inPropParseState()) localProps.addAll($def.properties); }
+			|	def=localDataPropertyDefinition ';' { if (inMainParseState()) localProps.addAll($def.properties); }
 			)*
 		'}'
 	;
@@ -3402,7 +3404,7 @@ localDataPropertyDefinition returns [List<LCP<?>> properties]
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$properties = self.addLocalDataProperty($propNames.ids, $returnClass.sid, $paramClasses.ids, $nlm.nestedType, point);
 	}
 }
@@ -3420,7 +3422,7 @@ execActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean isInline = false;
 } 
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 //		if (isInline) {
 //			$property = self.addScriptedJoinAProp($iProp.property, $exprList.props);
 //		} else {
@@ -3443,7 +3445,7 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 	LCPWithParams condition = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
 	}
 }
@@ -3458,7 +3460,7 @@ assignActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams 
 
 tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedTryAProp($tryADB.property, $catchADB.property, $finallyADB.property);
 	}
 }
@@ -3469,7 +3471,7 @@ tryActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [
 
 ifActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedIfAProp($expr.property, $thenADB.property, $elseADB.property);
 	}
 }
@@ -3486,7 +3488,7 @@ caseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	boolean isExclusive = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedCaseAProp(whenProps, thenActions, elseAction, isExclusive); 
 	}
 }
@@ -3508,7 +3510,7 @@ applyActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	boolean serializable = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedApplyAProp($applyADB.property, single, keepSessionProps, keepAllSessionProps, serializable);
 	}
 }
@@ -3525,7 +3527,7 @@ cancelActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean keepAllSessionProps = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedCancelAProp(keepSessionProps, keepAllSessionProps);
 	}
 }
@@ -3538,7 +3540,7 @@ multiActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	boolean isExclusive = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedMultiAProp($actList.props, isExclusive); 
 	}
 }
@@ -3551,7 +3553,7 @@ forAddObjClause[List<TypedParameter> context] returns [Integer paramCnt, String 
 	String varName = "added";
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$paramCnt = self.getParamIndex(self.new TypedParameter($className, varName), context, true, insideRecursion);
 	}
 }
@@ -3571,7 +3573,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LAPWithPa
 	
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addScriptedForAProp(context, $expr.property, orders, $actDB.property, $elseActDB.property, $addObj.paramCnt, $addObj.className, $addObj.autoset, recursive, descending, $in.noInline, $in.forceInline);
 	}	
 }
@@ -3594,7 +3596,7 @@ terminalFlowActionDefinitionBody returns [LAPWithParams property]
 	boolean isBreak = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property =	self.getTerminalFlowActionProperty(isBreak);
 	}
 }
@@ -3617,7 +3619,7 @@ scope {
 	LCPWithParams when = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
         self.addImplementationToAbstractProp($prop.propUsage, $list.params, property, when);
 	}
 }
@@ -3641,7 +3643,7 @@ scope {
 	LCPWithParams when = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
         self.addImplementationToAbstractAction($prop.propUsage, $list.params, action, when);
 	}
 }
@@ -3665,25 +3667,25 @@ constraintStatement
 	boolean checked = false;
 	List<PropertyUsage> propUsages = null;
 	DebugInfo.DebugPoint debugPoint = null; 
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		debugPoint = getEventDebugPoint();
 	}
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedConstraint($expr.property.getLP(), $et.event, checked, propUsages, $message.property.getLP(), debugPoint);
 	}
 }
 	:	'CONSTRAINT'
 		et=baseEvent	
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
-		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inPropParseState()) self.getChecks().checkNecessaryProperty($expr.property); }
+		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inMainParseState()) self.getChecks().checkNecessaryProperty($expr.property); }
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.dropPrevScope($et.event);
 			}
 		}
@@ -3706,7 +3708,7 @@ followsStatement
 	Event event = Event.APPLY;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedFollows(mainProp, context, $fcl.pfollows, $fcl.prop, $fcl.event, $fcl.debug);
 	}
 }
@@ -3723,13 +3725,13 @@ followsClause[List<TypedParameter> context] returns [LCPWithParams prop, Event e
     :	
         et=baseEvent { $event = $et.event; }
         {
-            if (inPropParseState()) {
+            if (inMainParseState()) {
                 self.setPrevScope($et.event);
             }
         }
         expr = propertyExpression[context, false]
         {
-            if (inPropParseState()) {
+            if (inMainParseState()) {
                 self.dropPrevScope($et.event);
             }
         }
@@ -3748,14 +3750,14 @@ writeWhenStatement
     boolean action = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedWriteWhen($mainProp.propUsage, $mainProp.mapping, $valueExpr.property, $whenExpr.property, action);
 	}
 }
 	:	mainProp=mappedProperty 
 		'<-'
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setPrevScope(ChangeEvent.scope);
 			}
 		}
@@ -3764,7 +3766,7 @@ writeWhenStatement
 		('DO' { action = true; })? // DO - undocumented syntax
 		whenExpr=propertyExpression[$mainProp.mapping, false]
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.dropPrevScope(ChangeEvent.scope);
 			}
 		}
@@ -3782,25 +3784,25 @@ eventStatement
 	boolean descending = false;
 	DebugInfo.DebugPoint debug = null;
 	
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		debug = getEventDebugPoint(); 
 	}
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug);
 	} 
 }
 	:	'WHEN'
 		et=baseEvent
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
 		whenExpr=propertyExpression[context, true]
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.dropPrevScope($et.event);
 			}
 		}
@@ -3821,7 +3823,7 @@ globalEventStatement
 	boolean single = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedGlobalEvent($action.property, $et.event, single, $property.propUsage);
 	}
 }
@@ -3830,13 +3832,13 @@ globalEventStatement
 		('SINGLE' { single = true; })?
 		('SHOWDEP' property=actionOrPropertyUsage)?
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
 		action=endDeclTopContextDependentActionDefinitionBody[new ArrayList<TypedParameter>(), false, false]
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.dropPrevScope($et.event);
 			}
 		}
@@ -3849,7 +3851,7 @@ baseEvent returns [Event event]
 	List<PropertyUsage> puAfters = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$event = self.createScriptedEvent(baseEvent, ids, puAfters);
 	}
 }
@@ -3869,7 +3871,7 @@ inlineStatement[List<TypedParameter> context] returns [List<LCPWithParams> noInl
 
 showDepStatement
 @after {
-    if (inPropParseState()) {
+    if (inMainParseState()) {
         self.addScriptedShowDep($property.propUsage, $propFrom.propUsage);
     }
 }
@@ -3890,7 +3892,7 @@ aspectStatement
 	boolean before = true;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedAspect($mainProp.propUsage, $mainProp.mapping, $action.property, before);
 	}
 }
@@ -3912,7 +3914,7 @@ tableStatement
 	boolean isNoDefault = false;
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inMetaClassTableParseState()) {
 		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
 	}
 }
@@ -3924,7 +3926,7 @@ tableStatement
 
 loggableStatement
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedLoggable($list.propUsages);
 	}	
 }
@@ -3936,7 +3938,7 @@ loggableStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 mappedPropertyOrSimpleParam[List<TypedParameter> context] returns [LCPWithParams property]
-    :   (   toProp=propertyUsage '(' params=singleParameterList[context, true] ')' { if(inPropParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
+    :   (   toProp=propertyUsage '(' params=singleParameterList[context, true] ')' { if(inMainParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
         |   param=singleParameter[context, true] { $property = $param.property; }
         )
 ;
@@ -3954,7 +3956,7 @@ indexStatement
 	List<TypedParameter> context = new ArrayList<>();
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedIndex(context, $list.props);
 	}	
 }
@@ -3973,7 +3975,7 @@ windowStatement
 
 windowCreateStatement
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		self.addScriptedWindow($type.type, $name.name, $name.caption, $opts.options);
 	}
 }
@@ -3983,7 +3985,7 @@ windowCreateStatement
 windowHideStatement
 	:	'HIDE' 'WINDOW' wid=compoundID ';'
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.hideWindow($wid.sid);
 			}
 		}
@@ -4052,7 +4054,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 moveNavigatorElementStatement[NavigatorElement parentElement]
 	:	'MOVE' elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
 			}
 		}
@@ -4065,7 +4067,7 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 }
 	:	'NEW' b=navigatorElementDescription opts=navigatorElementOptions
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setupNavigatorElement($b.element, null, $parentElement, $opts.options, false);
 			}
 		}
@@ -4077,7 +4079,7 @@ navigatorElementDescription returns [NavigatorElement element]
 	boolean isAction = false;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
  		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
@@ -4109,7 +4111,7 @@ navigatorElementInsertPosition returns [InsertPosition position, NavigatorElemen
 editNavigatorElementStatement[NavigatorElement parentElement]
 	:	elem=navigatorElementSelector (caption=localizedStringLiteral)? opts=navigatorElementOptions
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
 			}
 		}
@@ -4119,7 +4121,7 @@ editNavigatorElementStatement[NavigatorElement parentElement]
 navigatorElementSelector returns [NavigatorElement element]
 	:	cid=compoundID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$element = self.findNavigatorElement($cid.sid);
 			}
 		}
@@ -4149,7 +4151,7 @@ designHeader returns [ScriptingFormView view]
 	LocalizedString caption = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$view = self.getFormDesign($cid.sid, caption, customDesign);
 	}
 }
@@ -4179,7 +4181,7 @@ newComponentStatement[ComponentView parentComponent]
 }
 	:	'NEW' cid=ID insPosition=componentInsertPosition
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
 			}
 		}
@@ -4192,7 +4194,7 @@ moveComponentStatement[ComponentView parentComponent]
 }
 	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
 			}
 		}
@@ -4212,7 +4214,7 @@ componentInsertPosition returns [InsertPosition position, ComponentView anchor]
 removeComponentStatement
 	:	'REMOVE' compSelector=componentSelector ';'
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$designStatement::design.removeComponent($compSelector.component, self.getVersion());
 			}
 		}
@@ -4226,20 +4228,20 @@ componentSelector returns [ComponentView component]
 formComponentSelector[ScriptingFormView formView] returns [ComponentView component]
 	:	'PARENT' '(' child=componentSelector ')'
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				formView.getParentContainer($child.component, self.getVersion());
 			}
 		}
 	|	'PROPERTY' '(' prop=propertySelector[formView] ')' { $component = $prop.propertyView; }
 	|   exc=formContainersComponentSelector
 	    {
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$component = formView.getComponentBySID($exc.sid, self.getVersion());
 			}
 	    }
 	|	mid=ID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$component = formView.getComponentBySID($mid.text, self.getVersion());
 			}
 		}
@@ -4286,13 +4288,13 @@ groupObjectTreeComponentSelectorType
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]
 	:	pname=ID
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$propertyView = formView.getPropertyView($pname.text, self.getVersion());
 			}
 		}
 	|	mappedProp=mappedPropertyDraw	
 		{
-			if (inPropParseState()) {
+			if (inMainParseState()) {
 				$propertyView = formView.getPropertyView($mappedProp.name, $mappedProp.mapping, self.getVersion());
 			}
 		}
@@ -4330,7 +4332,7 @@ metaCodeDeclarationStatement
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
-	if (inMetaGroupClassTableParseState()) {
+	if (inMetaClassTableParseState()) {
 		self.addScriptedMetaCodeFragment($id.text, $list.ids, tokens, metaTokens, $text, lineNumber);
 	}
 }
@@ -4425,7 +4427,7 @@ parameter
 
 typedParameter returns [TypedParameter param]
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$param = self.new TypedParameter($cname.sid, $pname.text);
 	}
 }
@@ -4574,7 +4576,7 @@ constantProperty returns [LCP property]
 	Object value = null;
 }
 @after {
-	if (inPropParseState()) {
+	if (inMainParseState()) {
 		$property = self.addConstantProp(cls, value);	
 	}
 }
@@ -4638,13 +4640,13 @@ formComponentID returns [FormEntity form, ComponentView component]
     :
         (namespacePart=ID '.')? formPart=ID '.'
         {
-            if(inPropParseState()) {
+            if(inMainParseState()) {
                 formView = self.getFormDesign(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text, null, false);
             }
         }
         cs = formComponentSelector[formView] { $component = $cs.component; }
         {
-            if(inPropParseState()) {
+            if(inMainParseState()) {
                 $form = formView.getView().entity;
             }
         }
@@ -4657,7 +4659,7 @@ formPropertyID returns [PropertyDrawEntity propertyDraw]
     :
         (namespace=ID '.')? formSName=ID '.'
         {
-            if(inPropParseState()) {
+            if(inMainParseState()) {
                 form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text);
             }
         }

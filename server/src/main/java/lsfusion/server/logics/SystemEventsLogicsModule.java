@@ -18,7 +18,6 @@ import lsfusion.server.logics.property.CurrentConnectionFormulaProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.stack.ExecutionStackAspect;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -106,8 +105,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initMetaGroupsAndClasses() throws RecognitionException {
-        super.initMetaGroupsAndClasses();
+    public void initMetaAndClasses() throws RecognitionException {
+        super.initMetaAndClasses();
 
         clientException = (ConcreteCustomClass) findClass("ClientException");
         webClientException = (ConcreteCustomClass) findClass("WebClientException");
@@ -123,11 +122,11 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void initProperties() throws RecognitionException {
+    public void initMainLogic() throws RecognitionException {
         currentConnection = addProperty(null, new LCP<>(new CurrentConnectionFormulaProperty(connection)));
         makePropertyPublic(currentConnection, "currentConnection", new ArrayList<ResolveClassSet>());
 
-        super.initProperties();
+        super.initMainLogic();
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");
