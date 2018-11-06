@@ -561,7 +561,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP<>(exportAction));
     }
 
-    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
         // getExtension(FILE(prm1))
         // FOR x = getExtension(prm1) DO {
         //    CASE EXCLUSIVE
@@ -572,7 +572,7 @@ public abstract class LogicsModule {
         Object[] cases = new Object[0];
         for(FormIntegrationType importType : FormIntegrationType.values()) {
             cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-            directLI(addImportFAProp(null, importType, formEntity, paramsCount, fileProp, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
+            directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
         }        
         
         return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
@@ -581,33 +581,33 @@ public abstract class LogicsModule {
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
-    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, LCP<?> fileProp, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
         ImportActionProperty importAction;
         
         if(format == null)
-            return addAutoImportFAProp(group, formEntity, paramsCount, fileProp, groupFiles, sheetAll, separator, noHeader, charset, hasWhere);
+            return addAutoImportFAProp(group, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere);
         else {
             switch (format) {
                 // hierarchical
                 case XML:
-                    importAction = new ImportXMLActionProperty(paramsCount, fileProp, formEntity);
+                    importAction = new ImportXMLActionProperty(paramsCount, formEntity);
                     break;
                 case JSON:
-                    importAction = new ImportJSONActionProperty(paramsCount, fileProp, formEntity);
+                    importAction = new ImportJSONActionProperty(paramsCount, formEntity);
                     break;
                 // plain
                 case CSV:
-                    importAction = new ImportCSVActionProperty(paramsCount, fileProp, groupFiles, formEntity, noHeader, charset, separator);
+                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, noHeader, charset, separator);
                     break;
                 case DBF:
-                    importAction = new ImportDBFActionProperty(paramsCount, fileProp, groupFiles, formEntity, charset, hasWhere);
+                    importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
                     break;
                 case XLS:
                 case XLSX:
-                    importAction = new ImportXLSActionProperty(paramsCount, fileProp, groupFiles, formEntity, sheetAll);
+                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, sheetAll);
                     break;
                 case TABLE:
-                    importAction = new ImportTableActionProperty(paramsCount, fileProp, groupFiles, formEntity);
+                    importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity);
                     break;
                 default:
                     throw new UnsupportedOperationException();
@@ -668,7 +668,7 @@ public abstract class LogicsModule {
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
-        return addImportFAProp(null, type, form, paramsCount, null, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, charset, hasWhere);
+        return addImportFAProp(null, type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, charset, hasWhere);
     }
 
     // ------------------- Set property action ----------------- //

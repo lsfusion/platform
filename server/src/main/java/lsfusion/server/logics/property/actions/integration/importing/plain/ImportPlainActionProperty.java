@@ -8,19 +8,18 @@ import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.GroupObjectEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.stat.StaticDataGenerator;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.hierarchy.ImportData;
 import lsfusion.server.logics.property.actions.integration.importing.FormImportData;
 import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
 import lsfusion.server.logics.property.actions.integration.plain.PlainConstants;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -29,19 +28,17 @@ import java.util.Map;
 
 public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> extends ImportActionProperty {
 
-    protected final LCP<?> fileProperty;
     protected final ImRevMap<GroupObjectEntity, PropertyInterface> fileInterfaces;
 
     public abstract ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException;
 
-    public ImportPlainActionProperty(int paramsCount, LCP<?> fileProperty, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity) {
+    public ImportPlainActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity) {
         super(paramsCount, formEntity);
 
-        this.fileProperty = fileProperty;
         this.fileInterfaces = groupFiles.mapSet(getOrderInterfaces());
     }
 
-    protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, byte[]> files = getFiles(context);
         
         FormImportData importData = new FormImportData(formEntity, context);
@@ -144,34 +141,10 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         }).map(fields);
     }
 
-    private Map<GroupObjectEntity, byte[]> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<GroupObjectEntity, byte[]> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, byte[]> files = new HashMap<>();
-
-        if(fileProperty != null) {
-            LCP<? extends PropertyInterface> property = fileProperty;
-
-            KeyExpr stringExpr = new KeyExpr("string");
-            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "string", stringExpr);
-            QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("importFiles", property.getExpr(context.getModifier(), stringExpr));
-            query.and(property.getExpr(context.getModifier(), stringExpr).getWhere());
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(context);
-            
-            for (int i = 0; i < result.size(); i++) {
-                String groupSID = ((String) result.getKey(i).get("string")).trim();
-                
-                GroupObjectEntity group; 
-                if(groupSID.equals("root"))
-                    group = null;
-                else
-                    group = formEntity.getGroupObjectIntegration(groupSID);
-                
-                files.put(group, readFile(property, (byte[]) result.getValue(i).get("importFiles")));                
-            }
-        } else {
-            for(int i=0,size=fileInterfaces.size();i<size;i++)
-                files.put(fileInterfaces.getKey(i), readFile(context.getKeyValue(fileInterfaces.getValue(i))));
-        }
+        for(int i=0,size=fileInterfaces.size();i<size;i++)
+            files.put(fileInterfaces.getKey(i), readFile(context.getKeyValue(fileInterfaces.getValue(i))));
         return files;
     }
 }

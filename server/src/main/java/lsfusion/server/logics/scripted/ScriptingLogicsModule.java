@@ -3487,16 +3487,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedImportDoClause(param, doAction, elseAction, context, newContext, props, nulls, addScriptedJoinAProp(importAction, params));
     }
 
-    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, PropertyUsage fileProp, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
-        LCP<?> fileProperty = fileProp == null ? null : findLCPByPropertyUsage(fileProp);
-        if(fileProperty == null)
-            fileProperty = (format.isPlain() ? baseLM.importFiles : baseLM.importFile);
-
+    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = new ArrayList<>();
+        if(format.isPlain()) {
+            if(fileProps != null && !fileProps.isEmpty()) {
+                for(LCPWithParams fProp : fileProps.values()) {
+                    checks.checkImportFromFileExpression(fProp);
+                    params.add(fProp);
+                }
+            } else if(fileProp != null) {
+                errLog.emitSimpleError(parser, String.format("IMPORT %s FROM single file not supported", format));
+            } else {
+                errLog.emitSimpleError(parser, "Input file(s) for import not specified");
+            }
+        } else {
+            if(fileProps != null && !fileProps.isEmpty()) {
+                errLog.emitSimpleError(parser, String.format("IMPORT %s FROM multiple files not supported", format));
+            } else {
+                if (fileProp == null) fileProp = new LCPWithParams(baseLM.importFile);
+                checks.checkImportFromFileExpression(fileProp);
+                params.add(fileProp);
+            }
+        }
+
         if(rootProp != null)
             params.add(rootProp);
 
-        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), fileProperty, SetFact.<GroupObjectEntity>EMPTYORDER(), false, separator, noHeader, charset, false), params);
+        ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.<GroupObjectEntity>EMPTYORDER();
+        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, false, separator, noHeader, charset, false), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
