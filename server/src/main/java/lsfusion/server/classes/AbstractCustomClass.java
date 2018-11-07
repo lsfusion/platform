@@ -1,13 +1,15 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.mutables.Version;
 
 public class AbstractCustomClass extends CustomClass {
-
-    public AbstractCustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+    
+    public AbstractCustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
         super(canonicalName, caption, version, parents);
     }
 

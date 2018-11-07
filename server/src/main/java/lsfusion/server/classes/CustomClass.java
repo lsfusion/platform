@@ -5,10 +5,7 @@ import lsfusion.base.ImmutableObject;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -120,7 +117,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public LocalizedString caption;
-    public CustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+    public CustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
         this.canonicalName = canonicalName;
         this.caption = caption;
 

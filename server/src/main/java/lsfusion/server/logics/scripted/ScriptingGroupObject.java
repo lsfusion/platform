@@ -1,10 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import lsfusion.interop.ClassViewType;
-import lsfusion.server.form.entity.ActionPropertyObjectEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.UpdateType;
+import lsfusion.server.form.entity.*;
 import lsfusion.server.logics.i18n.LocalizedString;
 
 import java.util.List;
@@ -24,6 +21,8 @@ public class ScriptingGroupObject {
 
     public String integrationSID;
     public boolean integrationKey;
+
+    public CalcPropertyObjectEntity subReportPath;
 
     public GroupObjectEntity neighbourGroupObject;
     public Boolean isRightNeighbour;
@@ -70,5 +69,9 @@ public class ScriptingGroupObject {
 
     public void setIntegrationKey(boolean integrationKey) {
         this.integrationKey = integrationKey;
+    }
+
+    public void setSubReportPath(CalcPropertyObjectEntity subReportPath) {
+        this.subReportPath = subReportPath;
     }
 }

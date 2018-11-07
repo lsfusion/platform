@@ -408,16 +408,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(className) : captionStr);
 
-        CustomClass[] parents;
-        if (parentNames.isEmpty()) {
-            parents = new CustomClass[] {baseLM.baseClass};
-        } else {
-            parents = new CustomClass[parentNames.size()];
-            for (int i = 0; i < parentNames.size(); i++) {
-                String parentName = parentNames.get(i);
-                parents[i] = (CustomClass) findClass(parentName);
-            }
-        }
+        ImList<CustomClass> parents = BaseUtils.immutableCast(findClasses(parentNames));
 
         List<LocalizedString> captions = new ArrayList<>();
         for (int i = 0; i < instCaptions.size(); i++) {
@@ -3495,6 +3486,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
         return proceedImportDoClause(paramClasses.isEmpty(), doAction, elseAction, context, newContext, props, nulls, addScriptedJoinAProp(importAction, params));
+    }
+
+    public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
+        MList<ValueClass> mResult = ListFact.mList(classNames.size()); // exception 
+        for(String className : classNames)
+            mResult.add(findClass(className));
+        return mResult.immutableList();
     }
 
     public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {

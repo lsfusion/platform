@@ -679,13 +679,16 @@ public class ReportGenerator {
         for (int i = 0; i < cnt; ++i) {
             JRDesignTextField subField = (JRDesignTextField) textField.clone();
             subField.setX(baseX + xShift);
-            int rightBound = (i+1 < cnt ? baseX + subWidth : (int)boundRect.getX() + (int)boundRect.getWidth());
+            int setWidth;
             if (rightmost) {
-                subField.setWidth(rightBound - subField.getX());
+                int rightBound = (i+1 < cnt ? baseX + subWidth : (int)boundRect.getX() + (int)boundRect.getWidth());
+                setWidth = rightBound - subField.getX();
             } else {
-                subField.setWidth(xEndShift - xShift);
+                setWidth = xEndShift - xShift;
             }
+            subField.setWidth(BaseUtils.max(setWidth,4)); // setting some minimum width, because otherwise there are some unclear errors while layouting
             res.add(subField);
+            
             baseX += subWidth;
         }
         

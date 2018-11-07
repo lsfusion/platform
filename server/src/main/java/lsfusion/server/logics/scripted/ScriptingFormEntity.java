@@ -125,6 +125,9 @@ public class ScriptingFormEntity {
 
             groupObj.setIntegrationKey(groupObject.integrationKey);
 
+            if(groupObject.subReportPath != null)
+                setReportPath(groupObj, groupObject.subReportPath);
+
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
         }
