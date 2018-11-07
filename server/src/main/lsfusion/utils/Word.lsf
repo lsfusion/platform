@@ -54,7 +54,7 @@ FORM template 'Шаблон Word'
     OBJECTS te = TemplateEntry
     PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
     PROPERTIES (te) PANEL SHOWIF isTable(te) firstRow, columnSeparator, rowSeparator
-    PROPERTIES (t) TODRAW te TOOLBAR openProcess
+    PROPERTIES (t) DRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
 

@@ -43,7 +43,7 @@ FORM template 'Шаблон Excel'
 
     OBJECTS te = TemplateEntry
     PROPERTIES (te) isTable, key, description, isNumeric, format, value, rowSeparator SHOWIF isTable(te), NEW, DELETE GRID
-    PROPERTIES (t) TODRAW te TOOLBAR openProcess
+    PROPERTIES (t) DRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
 

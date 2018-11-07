@@ -50,7 +50,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
 
     FORM dialog###property###object###propPostfix caption
         OBJECTS a=###object PANEL, d=DATE
-        PROPERTIES name(a) READONLY, add###property(a) TODRAW d , VALUE(d) READONLY, data###property(a, d)
+        PROPERTIES name(a) READONLY, add###property(a) DRAW d , VALUE(d) READONLY, data###property(a, d)
         FILTERS data###property(a, d)
     ;
     DESIGN dialog###property###object###propPostfix {
@@ -85,7 +85,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
 
     FORM dialog###property###object caption
         OBJECTS a=###object PANEL, d=DATE
-        PROPERTIES typeIdentity(a) READONLY, add###property(a) TODRAW d , VALUE(d) READONLY, data###typeIdentity###classIdentity###property(a, d)
+        PROPERTIES typeIdentity(a) READONLY, add###property(a) DRAW d , VALUE(d) READONLY, data###typeIdentity###classIdentity###property(a, d)
         FILTERS data###property(a, d)
     ;
     DESIGN dialog###property###object {
@@ -121,7 +121,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
 
     FORM dialog###property###object1###object2 caption
         OBJECTS a=###object1 PANEL, b=###object2 PANEL, d=DATE
-        PROPERTIES name(a) READONLY, name(b) READONLY, add###property(a, b) TODRAW d , VALUE(d) READONLY, data###property(a, b, d)
+        PROPERTIES name(a) READONLY, name(b) READONLY, add###property(a, b) DRAW d , VALUE(d) READONLY, data###property(a, b, d)
         FILTERS data###property(a, b, d)
     ;
     DESIGN dialog###property###object1###object2 {
