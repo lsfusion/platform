@@ -3495,17 +3495,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
-        MList<ValueClass> mResult = ListFact.mList(classNames.size()); // exception 
-        for(String className : classNames)
-            mResult.add(findClass(className));
-        return mResult.immutableList();
-    }
-
     public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = new ArrayList<>();
-        if(format.isPlain()) {
-            if(fileProps != null && !fileProps.isEmpty()) {
+        boolean hasFileProps = fileProps != null && !fileProps.isEmpty();
+        boolean isPlain = format != null ? format.isPlain() : hasFileProps;
+        if(isPlain) {
+            if(hasFileProps) {
                 for(LCPWithParams fProp : fileProps.values()) {
                     checks.checkImportFromFileExpression(fProp);
                     params.add(fProp);
@@ -3516,7 +3511,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitSimpleError(parser, "Input file(s) for import not specified");
             }
         } else {
-            if(fileProps != null && !fileProps.isEmpty()) {
+            if(hasFileProps) {
                 errLog.emitSimpleError(parser, String.format("IMPORT %s FROM multiple files not supported", format));
             } else {
                 if (fileProp == null) fileProp = new LCPWithParams(baseLM.importFile);

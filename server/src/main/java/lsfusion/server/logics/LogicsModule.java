@@ -571,10 +571,12 @@ public abstract class LogicsModule {
         // }
         
         Object[] cases = new Object[0];
-        for(FormIntegrationType importType : FormIntegrationType.values()) {
-            cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-            directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
-        }        
+        boolean isPlain = !groupFiles.isEmpty();
+        for(FormIntegrationType importType : FormIntegrationType.values()) 
+            if(importType.isPlain() == isPlain) {
+                cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
+                    directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
+            }        
         
         return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
