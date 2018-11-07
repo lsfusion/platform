@@ -59,6 +59,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         return treeGroup != null;
     }
 
+    public boolean isSubReport;
     public CalcPropertyObjectEntity<?> reportPathProp;
     
     public UpdateType updateType;
