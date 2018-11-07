@@ -351,14 +351,6 @@ public abstract class LogicsModule {
         return baseClass;
     }
 
-    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, CustomClass... parents) {
-        return addConcreteClass(name, caption, new ArrayList<String>(), new ArrayList<LocalizedString>(), parents);
-    }
-
-    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, String[] sids, LocalizedString[] names, CustomClass... parents) {
-        return addConcreteClass(name, caption, BaseUtils.toList(sids), BaseUtils.toList(names), parents);
-    }
-
     protected static void printStaticObjectsChanges(String path, String staticName, List<String> sids) {
         try {
             PrintWriter w = new PrintWriter(new FileWriter(path, true));
@@ -371,15 +363,24 @@ public abstract class LogicsModule {
         }
     }
 
-    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, List<String> objNames, List<LocalizedString> objCaptions, CustomClass... parents) {
-        assert parents.length > 0;
+    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, List<String> objNames, List<LocalizedString> objCaptions, ImList<CustomClass> parents) {
+        if(!objNames.isEmpty())
+            parents = parents.addList(getBaseClass().staticObjectClass);
+        parents = checkEmptyParents(parents);
         ConcreteCustomClass customClass = new ConcreteCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
         customClass.addStaticObjects(objNames, objCaptions, getVersion());
         storeCustomClass(customClass);
         return customClass;
     }
 
-    protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, CustomClass... parents) {
+    private ImList<CustomClass> checkEmptyParents(ImList<CustomClass> parents) {
+        if(parents.isEmpty())
+            parents = ListFact.<CustomClass>singleton(getBaseClass());
+        return parents;
+    }
+
+    protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, ImList<CustomClass> parents) {
+        parents = checkEmptyParents(parents);
         AbstractCustomClass customClass = new AbstractCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
         storeCustomClass(customClass);
         return customClass;
