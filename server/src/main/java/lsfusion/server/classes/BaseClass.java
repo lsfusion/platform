@@ -1,6 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -48,9 +49,9 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public BaseClass(String canonicalName, LocalizedString caption, String staticCanonicalName, LocalizedString staticCanonicalCaption, Version version) {
-        super(canonicalName, caption, version);
+        super(canonicalName, caption, version, ListFact.<CustomClass>EMPTY());
         unknown = new UnknownClass(this);
-        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, this);
+        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, ListFact.singleton((CustomClass) this));
     }
 
     @Override
@@ -88,7 +89,7 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void initObjectClass(Version version, String canonicalName) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, this, staticObjectClass);
+        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, ListFact.singleton((CustomClass) staticObjectClass));
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 

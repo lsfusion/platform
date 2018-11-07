@@ -4,10 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.sets.*;
 import lsfusion.server.context.ThreadLocalContext;
@@ -30,7 +27,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass, ObjectValueClassSet, StaticClass {
-    public ConcreteCustomClass(String canonicalName, LocalizedString caption, Version version, CustomClass... parents) {
+    public ConcreteCustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
         super(canonicalName, caption, version, parents);
     }
 
