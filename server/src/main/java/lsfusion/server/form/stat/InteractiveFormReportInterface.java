@@ -57,6 +57,6 @@ public class InteractiveFormReportInterface extends InteractiveFormDataInterface
 
     @Override
     public String getReportPrefix() {
-        return groupId != null ? getReportPrefix(groupId) : null;
+        return groupId != null ? getReportPrefix(groupId) : "";
     }
 }
