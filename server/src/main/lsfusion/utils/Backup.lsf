@@ -66,7 +66,7 @@ exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
     PROPERTIES() binPath, dumpDir, saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
-    PROPERTIES() TODRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
+    PROPERTIES() DRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
     PROPERTIES(b) deleteAction GRID

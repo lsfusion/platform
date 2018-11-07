@@ -159,7 +159,7 @@ FORM mail 'Почта'
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
                    dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
     PROPERTIES(e) NEWSESSION DELETE GRID
-    PROPERTIES(a)  receiveEmailAction TODRAW e 
+    PROPERTIES(a)  receiveEmailAction DRAW e 
     FILTERS account(e)==a
                     
     OBJECTS ae=AttachmentEmail
