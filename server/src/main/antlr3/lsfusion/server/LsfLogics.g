@@ -454,7 +454,7 @@ reportDeclaration
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(null, property);
+		$formStatement::form.setReportPath(property);
 	}
 }
 	:	'REPORT' prop = formCalcPropertyObject { property = $prop.property; }
@@ -536,7 +536,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
-		|   formSubReport { $groupObject.setSubReportPath($formSubReport.pathProperty);  }
+		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
 		)*
 	;
 

@@ -22,6 +22,7 @@ public class ScriptingGroupObject {
     public String integrationSID;
     public boolean integrationKey;
 
+    public boolean isSubReport;
     public CalcPropertyObjectEntity subReportPath;
 
     public GroupObjectEntity neighbourGroupObject;
@@ -71,7 +72,8 @@ public class ScriptingGroupObject {
         this.integrationKey = integrationKey;
     }
 
-    public void setSubReportPath(CalcPropertyObjectEntity subReportPath) {
+    public void setSubReport(CalcPropertyObjectEntity subReportPath) {
+        this.isSubReport = true;
         this.subReportPath = subReportPath;
     }
 }

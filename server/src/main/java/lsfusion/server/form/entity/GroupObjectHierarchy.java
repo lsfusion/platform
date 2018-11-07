@@ -66,6 +66,11 @@ public class GroupObjectHierarchy {
             return formSID + (firstGroup == null ? "" : "_" + firstGroup.getSID()) + ".jrxml";
         }
 
+        private boolean isNonSqueezable() {
+            GroupObjectEntity firstGroup = getFirstGroup();
+            return firstGroup != null && firstGroup.isSubReport;
+        }
+
         public CalcPropertyObjectEntity getReportPathProp(FormEntity formEntity) {
             GroupObjectEntity firstGroup = getFirstGroup();
             return firstGroup == null ? formEntity.reportPathProp : firstGroup.reportPathProp;
@@ -86,8 +91,6 @@ public class GroupObjectHierarchy {
         private void merge(ReportNode obj) {
             groups.addAll(obj.groups);
         }
-
-        private boolean isNonJoinable = false;
 
         public int getGroupLevel() {
             return groupLevel;
@@ -130,9 +133,6 @@ public class GroupObjectHierarchy {
         public ReportHierarchy(GroupObjectEntity rootGroup, Map<GroupObjectEntity, ImOrderSet<GroupObjectEntity>> dependencies) {
 
             rootNode = createNode(rootGroup, dependencies);
-            rootNode.isNonJoinable = true;
-//            for(ReportNode topGroup : this.dependencies.get(rootNode))
-//                topGroup.isNonJoinable = true;
 
             squeeze(rootNode);
 
@@ -167,11 +167,13 @@ public class GroupObjectHierarchy {
             for (ReportNode child : children) {
                 squeeze(child);
             }
-            if (children.size() == 1 && !reportNode.isNonJoinable) {
+            if (children.size() == 1) {
                 ReportNode child = BaseUtils.single(children);
-                dependencies.put(reportNode, dependencies.get(child));
-                dependencies.remove(child);
-                reportNode.merge(child);
+                if(!child.isNonSqueezable()) {
+                    dependencies.put(reportNode, dependencies.get(child));
+                    dependencies.remove(child);
+                    reportNode.merge(child);
+                }
             }
         }
 
