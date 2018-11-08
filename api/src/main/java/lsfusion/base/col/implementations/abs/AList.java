@@ -95,8 +95,8 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         return -1;
     }
 
-    public ImRevMap<Integer, K> toIndexedMap() {
-        return mapListRevValues(new GetIndex<Integer>() {
+    public ImMap<Integer, K> toIndexedMap() {
+        return mapListMapValues(new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
                 return i;
             }
@@ -193,13 +193,6 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
         for(int i=0,size=size();i<size;i++)
             mResult.exclAdd(getterKey.getMapValue(i), get(i));
         return mResult.immutable();
-    }
-
-    public <M> ImRevMap<M, K> mapListRevValues(GetIndex<M> getterKey) {
-        MRevMap<M, K> mResult = MapFact.mRevMap(size());
-        for(int i=0,size=size();i<size;i++)
-            mResult.revAdd(getterKey.getMapValue(i), get(i));
-        return mResult.immutableRev();
     }
 
     public <MK, MV> ImMap<MK, MV> mapListKeyValues(GetIndex<MK> getterKey, GetValue<MV, K> getterValue) {
