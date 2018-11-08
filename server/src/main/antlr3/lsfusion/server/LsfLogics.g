@@ -2026,7 +2026,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 } 
 	:	'IMPORT' 
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; where = $type.where; separator = $type.separator;
-		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })
+		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })?
 		'FROM' expr=propertyExpression[context, dynamic] { if (inMainParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		(
             'FIELDS' ('(' list=typedParameterList { if(inMainParseState()) { fieldParams = list; } } ')')?
