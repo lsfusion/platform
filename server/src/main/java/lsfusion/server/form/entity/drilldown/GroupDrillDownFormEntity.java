@@ -39,12 +39,12 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
         Version version = LM.getVersion();
 
         ImMap<I, GroupProperty.Interface<I>> byInnerInterfaces = BaseUtils.immutableCast(
-                property.getMapInterfaces().filterFnValues(new SFunctionSet<CalcPropertyInterfaceImplement<I>>() {
+                property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(new SFunctionSet<CalcPropertyInterfaceImplement<I>>() {
                     @Override
                     public boolean contains(CalcPropertyInterfaceImplement<I> element) {
                         return element instanceof PropertyInterface;
                     }
-                }).toRevMap(property.getReflectionOrderInterfaces()).reverse()
+                }).reverse()
         );
 
         detailsGroup = new GroupObjectEntity(genID(), "");
