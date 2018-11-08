@@ -125,8 +125,8 @@ public class ScriptingFormEntity {
 
             groupObj.setIntegrationKey(groupObject.integrationKey);
 
-            if(groupObject.subReportPath != null)
-                setReportPath(groupObj, groupObject.subReportPath);
+            if(groupObject.isSubReport)
+                setSubReport(groupObj, groupObject.subReportPath);
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
@@ -234,11 +234,19 @@ public class ScriptingFormEntity {
     }
     
     public void setReportPath(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) throws ScriptingErrorLog.SemanticErrorException {
-        if (groupObject != null) {
-            groupObject.reportPathProp = property;
-        } else {
-            form.reportPathProp = property;
-        }
+        if (groupObject != null)
+            setSubReport(groupObject, property);
+        else
+            setReportPath(property);
+    }
+
+    public void setReportPath(CalcPropertyObjectEntity property) {
+        form.reportPathProp = property;
+    }
+
+    public void setSubReport(GroupObjectEntity groupObject, CalcPropertyObjectEntity property) {
+        groupObject.isSubReport = true;
+        groupObject.reportPathProp = property;
     }
     
     private CustomClass getSingleAddClass(ScriptingLogicsModule.PropertyUsage propertyUsage) throws ScriptingErrorLog.SemanticErrorException {

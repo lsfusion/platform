@@ -454,7 +454,7 @@ reportDeclaration
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.setReportPath(null, property);
+		$formStatement::form.setReportPath(property);
 	}
 }
 	:	'REPORT' prop = formCalcPropertyObject { property = $prop.property; }
@@ -534,7 +534,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
-		|   formSubReport { $groupObject.setSubReportPath($formSubReport.pathProperty);  }
+		|   formSubReport { $groupObject.setSubReport($formSubReport.pathProperty);  }
 		)*
 	;
 
@@ -691,7 +691,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HEADER' propObj=formCalcPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formCalcPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=classViewType { $options.setForceViewType($viewType.type); }
-		|	'TODRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
+		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(false); }
 		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setNeighbourType(true); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }

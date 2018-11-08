@@ -227,7 +227,7 @@ FORM addChat 'Создать чат'
     
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY login, name
-    PROPERTIES(c,u) TODRAW u in, readonly 
+    PROPERTIES(c,u) DRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
 
@@ -242,7 +242,7 @@ FORM editChat 'Чат'
     
     OBJECTS u = CustomUser
     PROPERTIES(u) READONLY login, name
-    PROPERTIES(c,u) TODRAW u in, readonly 
+    PROPERTIES(c,u) DRAW u in, readonly 
     
     FILTERGROUP in FILTER 'Включены в чат' in(c,u) DEFAULT
 ;  
