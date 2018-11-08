@@ -545,10 +545,10 @@ public abstract class LogicsModule {
                 exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, noHeader, separator, noEscape, charset);
                 break;
             case XLS:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true, noHeader);
                 break;
             case DBF:
                 exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);

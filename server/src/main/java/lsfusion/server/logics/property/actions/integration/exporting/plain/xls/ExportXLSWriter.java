@@ -3,26 +3,20 @@ package lsfusion.server.logics.property.actions.integration.exporting.plain.xls;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.TimeClass;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportByteArrayPlainWriter;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportMatrixWriter;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 public class ExportXLSWriter extends ExportMatrixWriter {
-    private boolean xlsx;
     private Workbook workbook;
     private Sheet sheet;
     private int rowNum = 0;
@@ -50,24 +44,30 @@ public class ExportXLSWriter extends ExportMatrixWriter {
     }
     private final Styles styles;    
 
-    public ExportXLSWriter(ImOrderMap<String, Type> fieldTypes, boolean xlsx) throws IOException {
-        super(fieldTypes, true);
-
-        this.xlsx = xlsx;
+    public ExportXLSWriter(ImOrderMap<String, Type> fieldTypes, boolean xlsx, boolean noHeader) throws IOException {
+        super(fieldTypes, noHeader);
 
         workbook = xlsx ? new XSSFWorkbook() : new HSSFWorkbook();
         sheet = workbook.createSheet();        
         styles = new Styles(workbook);
+
+        finalizeInit();
     }
 
     @Override
-    protected void writeLine(ImMap<String, ?> values, ImMap<String, Type> types) {
+    protected void writeLine(ImMap<String, ?> values, ImMap<String, Type> types, boolean isHeader) {
         Row currentRow = sheet.createRow(rowNum++);
         for (int i=0,size=fieldIndexMap.size();i<size;i++) {
             Integer index = fieldIndexMap.getKey(i);
             String field = fieldIndexMap.getValue(i);
 
-            fieldTypes.get(field).formatXLS(values.get(field), currentRow.createCell(index), styles);
+            Cell cell = currentRow.createCell(index);
+            Object value = values.get(field);
+            if(isHeader) {
+                cell.setCellValue((String) value);
+            } else {
+                fieldTypes.get(field).formatXLS(value, cell, styles);
+            }
         }
     }
 

@@ -13,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.Map;
 
 public class ExportCSVWriter extends ExportMatrixWriter {
     private CsvEscaper csvEscaper;
@@ -41,7 +39,9 @@ public class ExportCSVWriter extends ExportMatrixWriter {
         for(int index : fieldIndexMap.keyIt())
             if(index > maxIndex)
                 maxIndex = index;        
-        fullIndexList = ListFact.consecutiveList(maxIndex + 1, 0); 
+        fullIndexList = ListFact.consecutiveList(maxIndex + 1, 0);
+
+        finalizeInit();
     }
 
     private PrintWriter writer;
@@ -49,7 +49,7 @@ public class ExportCSVWriter extends ExportMatrixWriter {
     private ImOrderSet<Integer> fullIndexList; // optimization
     
     @Override
-    public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types) {
+    public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types, boolean isHeader) {
         writer.println(fullIndexList.mapListValues(new GetValue<Object, Integer>() {
             public Object getMapValue(Integer i) {
                 String field = fieldIndexMap.get(i);

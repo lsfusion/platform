@@ -11,6 +11,7 @@ import java.io.IOException;
 // can be with header (strict format) and without (flex format)
 public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
 
+    private ImSet<String> headerFields = null;
     protected final ImRevMap<Integer, String> fieldIndexMap;
 
     public ExportMatrixWriter(ImOrderMap<String, Type> fieldTypes, boolean noHeader) throws IOException {
@@ -20,13 +21,17 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
             fieldIndexMap = getFieldIndexMap(fieldTypes).reverse();
         else {
             fieldIndexMap = fieldTypes.keyOrderSet().toIndexedMap();
-            
-            ImSet<String> fields = fieldTypes.keys();
-            writeLine(fields.toMap(), fields.toMap((Type) ImportMatrixIterator.nameClass));
+            headerFields = fieldTypes.keys();
         }
     }
 
-    private static ImRevMap<String, Integer> getFieldIndexMap(ImOrderMap<String, Type> fieldTypes) {
+    protected void finalizeInit() throws IOException {
+        if(headerFields != null) {
+            writeLine(headerFields.toMap(), headerFields.toMap((Type) ImportMatrixIterator.nameClass), true);
+        }
+    }
+
+    protected static ImRevMap<String, Integer> getFieldIndexMap(ImOrderMap<String, Type> fieldTypes) {
         ImOrderMap<String, Integer> nameToIndex = ImportMatrixIterator.nameToIndexColumnsMapping;
         ImMap<String, String> mapping = ImportPlainIterator.getRequiredActualMap(nameToIndex.keyOrderSet(), fieldTypes, false);
         return mapping.toRevMap(fieldTypes.keyOrderSet()).join(nameToIndex.getMap().toRevExclMap());
@@ -34,8 +39,8 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
     
     @Override
     public void writeLine(ImMap<String, Object> row) throws IOException {
-        writeLine(row, fieldTypes.getMap());
+        writeLine(row, fieldTypes.getMap(), false);
     }
 
-    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types) throws IOException;
+    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types, boolean isHeader) throws IOException;
 }

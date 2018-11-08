@@ -17,14 +17,16 @@ import java.io.IOException;
 
 public class ExportXLSActionProperty<O extends ObjectSelector> extends ExportPlainActionProperty<O> {
     private boolean xlsx;
+    private boolean noHeader;
 
-    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean xlsx) {
+    public ExportXLSActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean xlsx, boolean noHeader) {
         super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
         this.xlsx = xlsx;
+        this.noHeader = noHeader;
     }
 
     @Override
     protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
-        return new ExportXLSWriter(fieldTypes, xlsx);
+        return new ExportXLSWriter(fieldTypes, xlsx, noHeader);
     }
 }

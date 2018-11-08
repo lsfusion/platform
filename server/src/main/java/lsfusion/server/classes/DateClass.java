@@ -171,7 +171,9 @@ public class DateClass extends DataClass<Date> {
 
     @Override
     public void formatXLS(Date object, Cell cell, ExportXLSWriter.Styles styles) {
-        cell.setCellValue(object);
+        if (object != null) {
+            cell.setCellValue(object);
+        }
         cell.setCellStyle(styles.date);
     }
 

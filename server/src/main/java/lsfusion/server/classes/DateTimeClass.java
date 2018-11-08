@@ -176,7 +176,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
 
     @Override
     public void formatXLS(Timestamp object, Cell cell, ExportXLSWriter.Styles styles) {
-        cell.setCellValue(object);
+        if(object != null) {
+            cell.setCellValue(object);
+        }
         cell.setCellStyle(styles.dateTime);
     }
 

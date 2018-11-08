@@ -142,7 +142,9 @@ public class TimeClass extends DataClass<Time> {
 
     @Override
     public void formatXLS(Time object, Cell cell, ExportXLSWriter.Styles styles) {
-        cell.setCellValue(object);
+        if (object != null) {
+            cell.setCellValue(object);
+        }
         cell.setCellStyle(styles.time);
     }
 
