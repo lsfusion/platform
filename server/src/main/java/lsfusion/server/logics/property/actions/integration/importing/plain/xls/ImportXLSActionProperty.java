@@ -2,10 +2,6 @@ package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.Settings;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -17,12 +13,14 @@ import lsfusion.server.logics.property.actions.integration.importing.plain.Impor
 import java.io.IOException;
 
 public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLSIterator> {
-    
+
+    private boolean noHeader;
     private final boolean sheetAll;
     private final PropertyInterface sheetInterface;
 
-    public ImportXLSActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean sheetAll) {
+    public ImportXLSActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean noHeader, boolean sheetAll) {
         super(paramsCount, groupFiles, formEntity);
+        this.noHeader = noHeader;
         this.sheetAll = sheetAll;
 
         int shift = groupFiles.size();
@@ -41,6 +39,6 @@ public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLS
             if(singleSheetIndex == null)
                 singleSheetIndex = 0;
         }
-        return new ImportXLSIterator(fieldTypes, file, file[0] == 80, singleSheetIndex);
+        return new ImportXLSIterator(fieldTypes, file, file[0] == 80, noHeader, singleSheetIndex);
     }
 }

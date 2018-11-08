@@ -3437,7 +3437,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int i = 0; i < paramClasses.length; i++) {
                 ValueClass paramClass = paramClasses[i];
                 ValueClass valueClass = valueClasses.get(i);
-                if (!valueClass.isCompatibleParent(paramClass)) {
+                if (!valueClass.isCompatibleParent(paramClass) && !paramClass.isCompatibleParent(valueClass)) {
                     errLog.emitPropertyWithParamsExpectedError(getParser(), propUsage.name, getParamClasses(valueClasses));
                 }
             }

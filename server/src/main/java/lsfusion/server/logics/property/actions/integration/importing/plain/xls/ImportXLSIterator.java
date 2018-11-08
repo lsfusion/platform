@@ -1,16 +1,11 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportMatrixIterator;
-import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -31,8 +26,8 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     private FormulaEvaluator formulaEvaluator;
     private Integer lastSheet;
     
-    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, Integer singleSheetIndex) throws IOException {
-        super(fieldTypes, true);
+    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, boolean noHeader, Integer singleSheetIndex) throws IOException {
+        super(fieldTypes, noHeader);
 
         int minSize = Settings.get().getMinSizeForExcelStreamingReader();
         useStreamingReader = xlsx && minSize >= 0 && file.length >= minSize;
@@ -111,7 +106,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     protected Object getPropValue(Integer fieldIndex, Type type) throws ParseException {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
-            throw new ParseException("Column with index " + fieldIndex + " not found");
+            return null;
         CellValue cellValue = formulaEvaluator.evaluate(cell);        
         if(cellValue == null)
             return null;

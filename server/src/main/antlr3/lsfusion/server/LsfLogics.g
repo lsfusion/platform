@@ -2247,7 +2247,7 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, PropertyU
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, LCPWithParams where, String separator, boolean noHeader, String charset, LCPWithParams root, boolean attr]
-	:	'XLS' 	{ $format = FormIntegrationType.XLS; } ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+	:	'XLS' 	{ $format = FormIntegrationType.XLS; } ('NOHEADER' { $noHeader = true; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
 	|	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?

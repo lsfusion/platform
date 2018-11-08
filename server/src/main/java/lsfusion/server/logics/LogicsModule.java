@@ -607,7 +607,7 @@ public abstract class LogicsModule {
                     break;
                 case XLS:
                 case XLSX:
-                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, sheetAll);
+                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, noHeader, sheetAll);
                     break;
                 case TABLE:
                     importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity);
