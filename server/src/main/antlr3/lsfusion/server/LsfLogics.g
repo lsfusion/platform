@@ -2099,11 +2099,11 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
-			                                                 hasListOption, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
+			                                                 root, hasListOption, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormIntegrationType.XML; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?  ('ATTR' { attr = true; })?
+		(	'XML' { exportType = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {root = $rootProperty.property; })? (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?  ('ATTR' { attr = true; })?
 	    |  	'JSON' { exportType = FormIntegrationType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
 		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
 		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?

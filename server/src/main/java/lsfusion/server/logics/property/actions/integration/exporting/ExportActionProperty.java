@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.integration.exporting;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
@@ -19,8 +20,8 @@ import java.sql.SQLException;
 
 public abstract class ExportActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormIntegrationType> {
 
-    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType) {
-        super(caption, form, objectsToSet, nulls, staticType, null);
+    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, Property... extraProps) {
+        super(caption, form, objectsToSet, nulls, staticType, null, extraProps);
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;
