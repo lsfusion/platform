@@ -532,14 +532,14 @@ public abstract class LogicsModule {
     protected <O extends ObjectSelector> LAP<?> addPFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, CalcProperty printerProperty, LCP sheetNameProperty, FormPrintType staticType, boolean syncType, Integer selectTop, CalcProperty passwordProperty, LCP targetProp, boolean removeNulls) {
         return addProperty(group, new LAP<>(new PrintActionProperty<>(caption, form, objectsToSet, nulls, staticType, syncType, selectTop, passwordProperty, sheetNameProperty, targetProp, printerProperty, baseLM.formPageCount, removeNulls)));
     }
-    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
+    protected <O extends ObjectSelector> LAP addEFAProp(AbstractGroup group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, String charset, CalcProperty root, LCP singleExportFile, ImMap<GroupObjectEntity, LCP> exportFiles) {
         ExportActionProperty<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                exportAction = new ExportXMLActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset, root);
                 break;
             case JSON:
-                exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
+                exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset, root);
                 break;
             case CSV:
                 exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, noHeader, separator, noEscape, charset);
@@ -634,15 +634,16 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Export property action ----------------- //
-    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders, LCP singleExportFile, boolean conditional, String separator,
+    protected LAP addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
+                                         LCP singleExportFile, boolean conditional, CalcProperty root, String separator,
                                          boolean noHeader, boolean noEscape, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
-        final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0));
+        final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (conditional ? 1 : 0) - (root != null ? 1 : 0));
         ImOrderSet<PropertyInterface> mapInterfaces = BaseUtils.immutableCast(readImplements.subList(0, resInterfaces).toOrderExclSet());
         
         // determining where
-        CalcPropertyInterfaceImplement<PropertyInterface> where = conditional ? readImplements.get(readImplements.size() - 1) : null;
+        CalcPropertyInterfaceImplement<PropertyInterface> where = conditional ? readImplements.get(readImplements.size() - (root != null ? 2 : 1)) : null;
         where = DerivedProperty.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
         // creating form
@@ -657,7 +658,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, singleExportFile, exportFiles);
+        return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, root, singleExportFile, exportFiles);
     }
 
     protected LAP addImportPropertyAProp(LocalizedString caption, FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {

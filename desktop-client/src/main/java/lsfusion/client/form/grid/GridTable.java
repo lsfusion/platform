@@ -1,9 +1,9 @@
 package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
+import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
@@ -33,7 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.TableHeaderUI;
-import javax.swing.plaf.basic.BasicTableHeaderUI;
+import javax.swing.plaf.synth.SynthTableHeaderUI;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -213,14 +213,10 @@ public class GridTable extends ClientPropertyTable {
         };
 
         TableHeaderUI ui = getTableHeader().getUI();
-        if (ui instanceof BasicTableHeaderUI) {
-            // change default CellRendererPane to draw corner triangles
-            JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
-            CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
-            header.remove(oldRendererPane);
-            GridCellRendererPane newRendererPane = new GridCellRendererPane();
-            ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
-            header.add(newRendererPane);
+        if (ui instanceof WindowsTableHeaderUI) {
+            getTableHeader().setUI(new WindowsGridTableHeaderUI());
+        } else if (ui instanceof SynthTableHeaderUI) {
+            getTableHeader().setUI(new SynthGridTableHeaderUI());
         }
 
         tableHeader.addMouseListener(sortableHeaderManager);
@@ -1871,6 +1867,28 @@ public class GridTable extends ClientPropertyTable {
                     paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
                 }
             }
+        }
+    }
+
+    private class WindowsGridTableHeaderUI extends WindowsTableHeaderUI {
+        @Override
+        public void installUI(JComponent c) {
+            super.installUI(c);
+
+            header.remove(rendererPane);
+            rendererPane = new GridCellRendererPane();
+            header.add(rendererPane);
+        }
+    }
+
+    private class SynthGridTableHeaderUI extends SynthTableHeaderUI {
+        @Override
+        public void installUI(JComponent c) {
+            super.installUI(c);
+
+            header.remove(rendererPane);
+            rendererPane = new GridCellRendererPane();
+            header.add(rendererPane);
         }
     }
 
