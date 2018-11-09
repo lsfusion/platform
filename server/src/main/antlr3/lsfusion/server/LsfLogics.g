@@ -2129,11 +2129,11 @@ nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dyna
     String alias;
 }
     :
-        expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); }    
-		(',' expr=aliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); } )*	
+        expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); }
+		(',' expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); } )*
 	;
 
-aliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LCPWithParams property]
+exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LCPWithParams property]
     :
         ( { (input.LA(1)==ID || input.LA(1)==STRING_LITERAL) && input.LA(2)==EQ }?
           (   simpleName=ID { $alias = $simpleName.text; $literal = false; }
@@ -2142,8 +2142,7 @@ aliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns
           EQ
         )?
         expr=propertyExpression[context, dynamic] { $property = $expr.property; }
-    ;       
-
+    ;
 
 importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
@@ -2171,9 +2170,18 @@ importFormPropertyExpressions[List<TypedParameter> context, boolean dynamic, For
 	$properties = new OrderedMap<>();
 	GroupObjectEntity go = null;
 }
-	:  aliasedPE=aliasedPropertyExpression[context, dynamic] { if(inMainParseState()) { if($aliasedPE.alias == null) { $property = $aliasedPE.property; } else { $properties.put(self.findGroupObjectEntity(formEntity, $aliasedPE.alias), $aliasedPE.property); } } }
+	:  aliasedPE=importAliasedPropertyExpression[context, dynamic] { if(inMainParseState()) { if($aliasedPE.alias == null) { $property = $aliasedPE.property; } else { $properties.put(self.findGroupObjectEntity(formEntity, $aliasedPE.alias), $aliasedPE.property); } } }
 		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextPropertyExpression = propertyExpression[context, dynamic] { if(inMainParseState()) { $properties.put(go, $nextPropertyExpression.property); } } )*
 	;
+
+importAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, LCPWithParams property]
+    :
+        ( { (input.LA(1)==ID || input.LA(1)==STRING_LITERAL) && input.LA(2)==EQ }?
+          ( simpleName=ID { $alias = $simpleName.text; } )
+          EQ
+        )?
+        expr=propertyExpression[context, dynamic] { $property = $expr.property; }
+    ;
 
 newThreadActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
