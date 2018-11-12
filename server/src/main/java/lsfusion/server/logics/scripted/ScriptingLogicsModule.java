@@ -3139,7 +3139,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, true, charset, singleExportFile, exportFiles.immutable());
+                exportType, noHeader, separator, true, charset, null, singleExportFile, exportFiles.immutable());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -3266,8 +3266,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals, List<LCPWithParams> exprs, LCPWithParams whereProperty,
-                                                        PropertyUsage fileProp, Boolean hasListOption, String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
+    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
+                                                         List<LCPWithParams> exprs, LCPWithParams whereProperty, PropertyUsage fileProp, LCPWithParams rootProperty, Boolean hasListOption,
+                                                         String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                          List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         LCP<?> targetProp = fileProp != null ? findLCPNoParamsByPropertyUsage(fileProp) : null;
@@ -3306,6 +3307,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
+        if(rootProperty != null) {
+            paramsList.add(rootProperty);
+        }
 
 //        ImList<Type> exprTypes = getTypesForExportProp(exprs, newContext);
 
@@ -3313,7 +3317,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP result = null;
         try {
             result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exIds, exLiterals, orders, targetProp,
-                    whereProperty != null, separator, noHeader, noEscape, charset, attr, resultParams.toArray());
+                    whereProperty != null, rootProperty != null ? rootProperty.getLP().property : null, separator, noHeader, noEscape, charset, attr, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
