@@ -55,19 +55,13 @@ public class ExportXLSWriter extends ExportMatrixWriter {
     }
 
     @Override
-    protected void writeLine(ImMap<String, ?> values, ImMap<String, Type> types, boolean isHeader) {
+    protected void writeLine(ImMap<String, ?> values, ImMap<String, Type> types) {
         Row currentRow = sheet.createRow(rowNum++);
         for (int i=0,size=fieldIndexMap.size();i<size;i++) {
             Integer index = fieldIndexMap.getKey(i);
             String field = fieldIndexMap.getValue(i);
 
-            Cell cell = currentRow.createCell(index);
-            Object value = values.get(field);
-            if(isHeader) {
-                cell.setCellValue((String) value);
-            } else {
-                fieldTypes.get(field).formatXLS(value, cell, styles);
-            }
+            types.get(field).formatXLS(values.get(field), currentRow.createCell(index), styles);
         }
     }
 

@@ -49,7 +49,7 @@ public class ExportCSVWriter extends ExportMatrixWriter {
     private ImOrderSet<Integer> fullIndexList; // optimization
     
     @Override
-    public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types, boolean isHeader) {
+    public void writeLine(final ImMap<String, ?> values, final ImMap<String, Type> types) {
         writer.println(fullIndexList.mapListValues(new GetValue<Object, Integer>() {
             public Object getMapValue(Integer i) {
                 String field = fieldIndexMap.get(i);

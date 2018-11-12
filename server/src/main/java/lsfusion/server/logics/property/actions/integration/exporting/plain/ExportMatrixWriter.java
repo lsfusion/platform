@@ -27,7 +27,7 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
 
     protected void finalizeInit() throws IOException {
         if(headerFields != null) {
-            writeLine(headerFields.toMap(), headerFields.toMap((Type) ImportMatrixIterator.nameClass), true);
+            writeLine(headerFields.toMap(), headerFields.toMap((Type) ImportMatrixIterator.nameClass));
         }
     }
 
@@ -39,8 +39,8 @@ public abstract class ExportMatrixWriter extends ExportByteArrayPlainWriter {
     
     @Override
     public void writeLine(ImMap<String, Object> row) throws IOException {
-        writeLine(row, fieldTypes.getMap(), false);
+        writeLine(row, fieldTypes.getMap());
     }
 
-    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types, boolean isHeader) throws IOException;
+    protected abstract void writeLine(ImMap<String, ?> values, ImMap<String, Type> types) throws IOException;
 }

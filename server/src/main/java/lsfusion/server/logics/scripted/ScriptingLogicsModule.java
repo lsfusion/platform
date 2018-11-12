@@ -3466,15 +3466,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(fileProp == null)
             fileProp = new LCPWithParams(baseLM.importFile);
 
+        if(toParamClasses != null && toParamClasses.size() > 1) {
+            errLog.emitSimpleError(parser, "IMPORT TO/FIELDS params with multiple classes is not supported");
+        }
+
         ImList<LCP> props;
         ImList<ValueClass> paramClasses;
         if(fieldParams != null) { // FIELDS
             paramClasses = getValueClassesFromTypedParams(fieldParams);
             props = genLCPsForImport(context, newContext, paramClasses);
         } else { // TO
-            if(toParamClasses.size() > 1) {
-                errLog.emitSimpleError(parser, "IMPORT TO params with multiple classes is not supported");
-            }
             paramClasses = findClasses(toParamClasses);
             props = findLCPsForImport(propUsages, paramClasses);
         }

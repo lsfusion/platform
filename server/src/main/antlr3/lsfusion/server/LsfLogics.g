@@ -2176,7 +2176,7 @@ importFormPropertyExpressions[List<TypedParameter> context, boolean dynamic, For
 
 importAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, LCPWithParams property]
     :
-        ( { (input.LA(1)==ID || input.LA(1)==STRING_LITERAL) && input.LA(2)==EQ }?
+        ( { input.LA(1)==ID && input.LA(2)==EQ }?
           ( simpleName=ID { $alias = $simpleName.text; } )
           EQ
         )?
