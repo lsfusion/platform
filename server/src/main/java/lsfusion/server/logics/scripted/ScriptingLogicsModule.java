@@ -3468,6 +3468,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramClasses = getValueClassesFromTypedParams(fieldParams);
             props = genLCPsForImport(context, newContext, paramClasses);
         } else { // TO
+            if(toParamClasses.size() > 1) {
+                errLog.emitSimpleError(parser, "IMPORT TO params with multiple classes is not supported");
+            }
             paramClasses = findClasses(toParamClasses);
             props = findLCPsForImport(propUsages, paramClasses);
         }
