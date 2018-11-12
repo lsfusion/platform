@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
@@ -137,10 +137,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         hostnameCurrentComputer = findProperty("hostnameCurrentComputer[]");
 
         isLockedCustomUser = findProperty("isLocked[CustomUser]");
-        isLockedLogin = findProperty("isLockedLogin[STRING[30]]");
+        isLockedLogin = findProperty("isLockedLogin[STRING[100]]");
 
         loginCustomUser = findProperty("login[CustomUser]");
-        customUserLogin = findProperty("customUser[STRING[30]]");
+        customUserLogin = findProperty("customUser[STRING[100]]");
         customUserUpcaseLogin = findProperty("customUserUpcase[?]");
 
         sha256PasswordCustomUser = findProperty("sha256Password[CustomUser]");
@@ -218,7 +218,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         Set<String> result = new HashSet<>();
         try {
             if (userNames != null) {
-                final StringClass KEY_CLASS = StringClass.get(30);
+                final DataClass KEY_CLASS = (DataClass) loginCustomUser.property.getType();
 
                 table = new NoPropertyTableUsage<>("syncUsers", SetFact.singletonOrder(KEY_NAME), new Type.Getter<String>() {
                     @Override
