@@ -332,9 +332,12 @@ FORM settings 'Настройки'
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, hostnameServerComputer
     OBJECTS u=User
-    PROPERTIES(u) name READONLY, nameMainRole, explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    PROPERTIES(u) READONLY name, login, nameMainRole
+    PROPERTIES(u) explainAnalyzeMode, loggerDebugEnabled, remoteLoggerDebugEnabled, remoteExLogEnabled, remotePausableLogEnabled, nameExecEnv, volatileStatsEnabled
+    
     OBJECTS uc=User
-    PROPERTIES(uc) name READONLY, selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
+    PROPERTIES(uc) READONLY name, login
+    PROPERTIES(uc) selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor
     
     OBJECTS r = Setting
     PROPERTIES(r) READONLY name, defaultValue, baseValue CHANGEABLE
