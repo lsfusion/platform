@@ -2959,7 +2959,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedAction;
     }
 
-    private LAPWithParams proceedImportDoClause(boolean noParams, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<LCP> importParamProps, List<Boolean> nulls, LAPWithParams proceedAction) throws ScriptingErrorLog.SemanticErrorException {
+    private LAPWithParams proceedImportDoClause(boolean noParams, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, LCP<?> whereLCP, ImList<LCP> importParamProps, List<Boolean> nulls, LAPWithParams proceedAction) throws ScriptingErrorLog.SemanticErrorException {
         if (doAction != null) {
             int paramOld = oldContext.size() + (!noParams ? 1 : 0);
             if(paramOld == newContext.size()) // хак, потом можно будет красивее сделать
@@ -2975,7 +2975,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(!noParams) {
                 modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false); // "добавляем" row параметр
 
-                doAction = addScriptedForAProp(oldContext, new LCPWithParams(baseLM.imported, oldContext.size()), Collections.singletonList(new LCPWithParams(oldContext.size())), doAction,
+                doAction = addScriptedForAProp(oldContext, new LCPWithParams(whereLCP, oldContext.size()), Collections.singletonList(new LCPWithParams(oldContext.size())), doAction,
                         elseAction, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
             }
             LAPWithParams listAction = addScriptedListAProp(BaseUtils.toList(proceedAction, doAction), Collections.<LCP>emptyList());
@@ -3457,7 +3457,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return PropertyCanonicalNameUtils.createSignature(signature);
     }
 
-    public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages, List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset, LCPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr, LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages,
+                                                         List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
+                                                         PropertyUsage wherePropertyUsage, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset,
+                                                         LCPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
+                                                         LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
             fileProp = new LCPWithParams(baseLM.importFile);
@@ -3475,6 +3479,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             props = findLCPsForImport(propUsages, paramClasses);
         }
 
+        LCP<?> whereLCP = wherePropertyUsage != null ? findLCPByPropertyUsage(wherePropertyUsage) : baseLM.imported;
+
         List<LCPWithParams> params = new ArrayList<>();
         params.add(fileProp);
         if(root != null)
@@ -3488,11 +3494,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP importAction = null;
         try {
-            importAction = addImportPropertyAProp(null, format, params.size(), ids, literals, paramClasses, separator, noHeader, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LCP[props.size()])));
+            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator, noHeader, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LCP[props.size()])));
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
-        return proceedImportDoClause(paramClasses.isEmpty(), doAction, elseAction, context, newContext, props, nulls, addScriptedJoinAProp(importAction, params));
+        return proceedImportDoClause(paramClasses.isEmpty(), doAction, elseAction, context, newContext, whereLCP, props, nulls, addScriptedJoinAProp(importAction, params));
     }
 
     public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
