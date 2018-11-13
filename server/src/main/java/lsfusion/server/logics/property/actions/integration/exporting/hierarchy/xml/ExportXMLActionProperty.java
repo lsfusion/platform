@@ -20,12 +20,12 @@ import java.io.PrintWriter;
 public class ExportXMLActionProperty<O extends ObjectSelector> extends ExportHierarchicalActionProperty<XMLNode, O> {
     
     public ExportXMLActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                   FormIntegrationType staticType, LCP exportFile, String charset, CalcProperty root) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, root);
+                                   FormIntegrationType staticType, LCP exportFile, String charset, CalcProperty root, CalcProperty tag) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, root, tag);
     }
 
-    protected XMLNode createRootNode(String root) {
-        return new XMLNode(new Element(root != null ? root : form.getStaticForm().getName()));
+    protected XMLNode createRootNode(String root, String tag) {
+        return new XMLNode(new Element(root != null ? root : form.getStaticForm().getName()), tag);
     }
 
     @Override

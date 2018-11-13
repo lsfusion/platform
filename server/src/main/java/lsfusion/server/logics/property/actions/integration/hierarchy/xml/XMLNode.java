@@ -14,9 +14,15 @@ import java.util.List;
 
 public class XMLNode implements Node<XMLNode> {
     public final Element element; // addContent, getChildren
+    private final String tag;
 
     public XMLNode(Element element) {
+        this(element, null);
+    }
+
+    public XMLNode(Element element, String tag) {
         this.element = element;
+        this.tag = tag;
     }
 
     @Override
@@ -108,11 +114,11 @@ public class XMLNode implements Node<XMLNode> {
     public void addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
         if(isIndex) {
             for(Pair<Object, XMLNode> value : map) {
-                value.second.element.setName(key);
+                value.second.element.setName(tag != null ? tag : key);
                 node.element.addContent(value.second.element);
             }
         } else {
-            Element addElement = new Element(key);
+            Element addElement = new Element(tag != null ? tag : key);
             for(Pair<Object, XMLNode> value : map) {
                 value.second.element.setName((String) value.first);                    
                 addElement.addContent(value.second.element);

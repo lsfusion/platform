@@ -22,6 +22,7 @@ import java.sql.SQLException;
 public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O extends ObjectSelector> extends ExportActionProperty<O> {
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> rootProperty;
+    private CalcPropertyInterfaceImplement<ClassPropertyInterface> tagProperty;
 
     protected final LCP<?> exportFile; // nullable
 
@@ -34,11 +35,18 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
                                             FormIntegrationType staticType,
                                             LCP exportFile,
                                             String charset,
-                                            CalcProperty root) {
-        super(caption, form, objectsToSet, nulls, staticType, root);
+                                            CalcProperty root,
+                                            CalcProperty tag) {
+        super(caption, form, objectsToSet, nulls, staticType, root, tag);
 
         if (root != null) {
             this.rootProperty = root.getImplement(
+                    getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
+            );
+        }
+
+        if (tag != null) {
+            this.tagProperty = tag.getImplement(
                     getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
             );
         }
@@ -49,7 +57,9 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
 
     public void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException {
         ParseNode parseNode = hierarchy.getIntegrationHierarchy();
-        T rootNode = createRootNode(rootProperty == null ? null : (String) rootProperty.read(context, context.getKeys()));
+        String root = rootProperty == null ? null : (String) rootProperty.read(context, context.getKeys());
+        String tag = tagProperty == null ? null : (String) tagProperty.read(context, context.getKeys());
+        T rootNode = createRootNode(root, tag);
         parseNode.exportNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), exportData);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -59,7 +69,7 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
         writeResult(exportFile, staticType, context, outputStream.toByteArray());
     }
 
-    protected abstract T createRootNode(String root);
+    protected abstract T createRootNode(String root, String tag);
 
     protected abstract void writeRootNode(PrintWriter printWriter, T rootNode) throws IOException;
 
