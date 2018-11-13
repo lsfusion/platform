@@ -6,11 +6,11 @@ import lsfusion.gwt.base.server.dispatch.SecuredAction;
 import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.base.server.spring.NavigatorProvider;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
@@ -35,9 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.text.ParseException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface> extends AbstractStandardDispatchServlet implements HttpRequestHandler, InitializingBean, BeanNameAware {
     protected final static Logger logger = Logger.getLogger(LogicsAwareDispatchServlet.class);
@@ -156,6 +153,9 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
         } catch (MessageException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
+        } catch (RemoteInternalException e) {
+            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            throw new MessageException("Внутренняя ошибка сервера.", e, e.lsfStack);
         } catch (Throwable e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.", e);

@@ -103,6 +103,20 @@ textarea {
     padding: 5px 5px 7px 5px;
 }
 
+/* ------------ Error box styles ------------ */
+.errorBox-button {
+    margin: 3px 3px 5px;
+}
+
+.errorBox-stackBox {
+    resize: none;
+    white-space: nowrap;
+}
+
+.errorBox-message {
+    padding: 5px;
+}
+
 /* ------------ Resizable window ------------ */
 .dragdrop-boundary {
     /*background-color: #F8F8F8; *//* light gray */

@@ -149,14 +149,28 @@ public final class Log {
             messagePanel.add(new JScrollPane(createDataTable(titles, data)));
         }
 
-        JTextArea taErrorText = new JTextArea(trace, 7, 60);
-        taErrorText.setFont(new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12)));
-        taErrorText.setForeground(Color.RED);
+        Font logFont = new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12));
+        JTextArea javaStackTA = new JTextArea(trace, 7, 60);
+        javaStackTA.setFont(logFont);
+        javaStackTA.setForeground(Color.RED);
+        JScrollPane javaStackInScroll = new JScrollPane(javaStackTA);
 
         JPanel textWithLine = new JPanel();
         textWithLine.setLayout(new BorderLayout(10, 10));
         textWithLine.add(new JSeparator(), BorderLayout.NORTH);
-        textWithLine.add(new JScrollPane(taErrorText));
+        if (lsfStack != null) {
+            JTabbedPane stackPanes = new JTabbedPane();
+            stackPanes.add("Java", javaStackInScroll);
+            
+            JTextArea lsfStackTA = new JTextArea(lsfStack, 7, 60);
+            lsfStackTA.setFont(logFont);
+            lsfStackTA.setForeground(Color.RED);
+            stackPanes.add("LSF", new JScrollPane(lsfStackTA));
+            
+            textWithLine.add(stackPanes);
+        } else {
+            textWithLine.add(javaStackInScroll);
+        }
 
         final JPanel south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));

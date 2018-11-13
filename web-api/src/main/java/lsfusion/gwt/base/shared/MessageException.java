@@ -7,6 +7,7 @@ public class MessageException extends DispatchException {
     }
     
     public StackTraceElement[] myTrace;
+    public String lsfStack;
 
     public MessageException(Throwable cause) {
         super(cause);
@@ -20,5 +21,10 @@ public class MessageException extends DispatchException {
     public MessageException(String message, Throwable cause) {
         super(message, cause);
         myTrace = cause.getStackTrace();
+    }
+    
+    public MessageException(String message, Throwable cause, String lsfStack) {
+        this(message, cause);
+        this.lsfStack = lsfStack;
     }
 }
