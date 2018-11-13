@@ -2261,7 +2261,6 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Form
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
-//	|	'MDB'	{ $format = FormIntegrationType.MDB; }
 	;
 
 importFormSourceFormat [List<TypedParameter> context, boolean dynamic, FormEntity form] returns [FormIntegrationType format, String separator,
