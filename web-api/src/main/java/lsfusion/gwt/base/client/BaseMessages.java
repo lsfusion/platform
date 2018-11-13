@@ -32,6 +32,10 @@ public interface BaseMessages extends Messages {
 
     String loading();
 
+    String more();
+    
+    String error();
+
     String logout();
 
     String username();
