@@ -57,7 +57,6 @@ import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.x
 import lsfusion.server.logics.property.actions.integration.exporting.plain.csv.ExportCSVActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.ExportDBFActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.table.ExportTableActionProperty;
-import lsfusion.server.logics.property.actions.file.OpenActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
@@ -1611,16 +1610,6 @@ public abstract class LogicsModule {
     @IdentityStrongLazy
     protected LAP addAsyncUpdateAProp() {
         return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(LocalizedString.create("Async Update"))));
-    }
-
-    // ------------------- OPEN FILE ----------------- //
-
-    protected LAP addOFAProp(ValueClass prop, ValueClass nameProp, boolean syncType) {
-        List<ValueClass> valueClasses = new ArrayList<>();
-        valueClasses.add(prop);
-        if(nameProp != null)
-            valueClasses.add(nameProp);
-        return addProperty(null, new LAP(new OpenActionProperty(LocalizedString.create("ofa"), syncType, valueClasses.toArray(new ValueClass[valueClasses.size()]))));
     }
 
     // ------------------- EVAL ----------------- //

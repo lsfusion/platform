@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -16,6 +17,10 @@ public class CSVClass extends StaticFormatFileClass {
 
     private static Collection<CSVClass> instances = new ArrayList<>();
 
+    public static CSVClass get() {
+        return get(false, false);
+    }
+    
     public static CSVClass get(boolean multiple, boolean storeName) {
         for (CSVClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -35,7 +40,7 @@ public class CSVClass extends StaticFormatFileClass {
         return Data.CSV;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "csv";
     }
 

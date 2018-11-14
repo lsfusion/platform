@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.type.Type;
 
@@ -16,9 +17,9 @@ public abstract class ExportByteArrayPlainWriter extends ExportPlainWriter {
         this.outputStream = new ByteArrayOutputStream();
     }
 
-    public byte[] release() throws IOException {
+    public RawFileData release() throws IOException {
         closeWriter();
-        return outputStream.toByteArray();
+        return new RawFileData(outputStream.toByteArray());
     }
 
     protected abstract void closeWriter() throws IOException;

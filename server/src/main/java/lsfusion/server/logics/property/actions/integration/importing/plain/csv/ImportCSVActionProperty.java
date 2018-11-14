@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.csv;
 
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
@@ -24,7 +25,7 @@ public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSV
     }
 
     @Override
-    public ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) {
         return new ImportCSVIterator(fieldTypes, file, charset, noHeader, separator);
     }
 

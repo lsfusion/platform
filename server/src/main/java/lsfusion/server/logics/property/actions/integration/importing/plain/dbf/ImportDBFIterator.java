@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
 import com.google.common.base.Throwables;
 import com.hexiong.jdbf.DBFReader;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -39,7 +40,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
         return true;
     }
 
-    public ImportDBFIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, String charset, byte[] memo, List<List<String>> wheresList) throws IOException {
+    public ImportDBFIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, RawFileData memo, List<List<String>> wheresList) throws IOException {
         super(fieldTypes);
 
         this.reader = new CustomDbfReader(file, memo);

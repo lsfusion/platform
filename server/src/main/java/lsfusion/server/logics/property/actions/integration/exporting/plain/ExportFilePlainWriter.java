@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
 import lsfusion.base.IOUtils;
-import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.type.Type;
 
@@ -17,12 +17,12 @@ public abstract class ExportFilePlainWriter extends ExportPlainWriter {
         file = File.createTempFile("file", ".exp");
     }
 
-    public byte[] release() throws IOException {
-        byte[] result;
+    public RawFileData release() throws IOException {
+        RawFileData result;
         try {
             closeWriter();
         } finally {
-            result = IOUtils.getFileBytes(file);
+            result = new RawFileData(file);
             if(!file.delete())
                 file.deleteOnExit();
         }

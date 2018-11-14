@@ -2,6 +2,7 @@ package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.property.ExecutionContext;

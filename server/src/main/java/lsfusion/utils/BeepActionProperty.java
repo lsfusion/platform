@@ -1,6 +1,6 @@
 package lsfusion.utils;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.interop.action.BeepClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -28,10 +28,10 @@ public class BeepActionProperty extends ScriptingActionProperty {
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         //do not use large files
-        final byte[] inputFile = (byte[]) context.getKeyValue(fileInterface).getValue();
+        final FileData inputFile = (FileData) context.getKeyValue(fileInterface).getValue();
         boolean async = context.getKeyValue(asyncInterface).getValue() != null;
         if(inputFile != null) {
-            context.delayUserInteraction(new BeepClientAction(BaseUtils.getFile(inputFile), async));
+            context.delayUserInteraction(new BeepClientAction(inputFile.getRawFile(), async));
         }
     }
 

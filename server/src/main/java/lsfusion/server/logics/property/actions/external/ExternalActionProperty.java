@@ -2,6 +2,8 @@ package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -91,7 +93,7 @@ public abstract class ExternalActionProperty extends SystemActionProperty {
             String prmName = getParamName(String.valueOf(i + 1));
             PropertyInterface paramInterface = orderInterfaces.get(i);
             Object replacement = format(context, paramInterface, urlEncodeCharset);
-            if (replacement instanceof byte[] ||
+            if (replacement instanceof FileData ||
                     (mNotUsedParams != null && !connectionString.contains(prmName))) {
                 if(mNotUsedParams != null)
                     mNotUsedParams.exclAdd(paramInterface);

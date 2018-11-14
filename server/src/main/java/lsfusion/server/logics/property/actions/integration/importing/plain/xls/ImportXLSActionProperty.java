@@ -1,10 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.Settings;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
@@ -30,7 +27,7 @@ public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLS
     }
 
     @Override
-    public ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
         Integer singleSheetIndex = null;
         if(!sheetAll) {
             if(sheetInterface != null) {
@@ -41,6 +38,6 @@ public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLS
             if(singleSheetIndex == null)
                 singleSheetIndex = 0;
         }
-        return new ImportXLSIterator(fieldTypes, file, file[0] == 80, singleSheetIndex);
+        return new ImportXLSIterator(fieldTypes, file, file.getBytes()[0] == 80, singleSheetIndex);
     }
 }

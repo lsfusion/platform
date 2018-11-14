@@ -796,14 +796,14 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type) {
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type) {
         return exportToFileByteArray(generationData, type, null, null);
     }
     
-    public static byte[] exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
             try {
-                return IOUtils.getFileBytes(exportToFile(generationData, type, sheetName, password));
+                return new RawFileData(exportToFile(generationData, type, sheetName, password));
             } finally {
                 JRVirtualizationHelper.clearThreadVirtualizer();
             }

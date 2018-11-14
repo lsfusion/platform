@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
@@ -35,14 +36,14 @@ public class ImportDBFActionProperty extends ImportPlainActionProperty<ImportDBF
     }
 
     @Override
-    public ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
         String wheres = null;
         if(whereInterface != null)
             wheres = (String)context.getKeyObject(whereInterface);
-        byte[] memo = null;
+        RawFileData memo = null;
         if(memoInterface != null) {
-            Object memoObject = context.getKeyObject(memoInterface);
-            memo = memoObject != null ? BaseUtils.getFile((byte[]) memoObject) : null;
+            FileData memoObject = (FileData) context.getKeyObject(memoInterface);
+            memo = memoObject != null ? memoObject.getRawFile() : null;
         }
         return new ImportDBFIterator(fieldTypes, file, charset, memo, getWheresList(wheres));
     }

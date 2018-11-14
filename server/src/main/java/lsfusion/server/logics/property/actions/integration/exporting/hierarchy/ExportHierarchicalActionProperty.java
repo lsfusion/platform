@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.exporting.hierarchy;
 
 import lsfusion.base.ExternalUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -66,7 +67,7 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset)))) {
             writeRootNode(out, rootNode);
         }
-        writeResult(exportFile, staticType, context, outputStream.toByteArray());
+        writeResult(exportFile, staticType, context, new RawFileData(outputStream));
     }
 
     protected abstract T createRootNode(String root, String tag);

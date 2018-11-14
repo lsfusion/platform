@@ -2734,7 +2734,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	asyncADB=asyncUpdateActionDefinitionBody[context, dynamic] { $property = $asyncADB.property; }
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $property = $seekADB.property; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $property = $mailADB.property; }
-	|	fileADB=fileActionDefinitionBody[context, dynamic] { $property = $fileADB.property; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $property = $evalADB.property; }
 	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $property = $drillDownADB.property; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $property = $readADB.property; }
@@ -3252,21 +3251,6 @@ seekObjectActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 
 seekObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LCPWithParams> values] 
 	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
-	;
-
-fileActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
-@init {
-	LCPWithParams fileProp = null;
-	LCPWithParams fileNameProp = null;
-	Boolean syncType = null;
-
-}
-@after {
-	if (inMainParseState()) {
-		$property = self.addScriptedFileAProp(fileProp, fileNameProp, context, syncType);
-	}
-}
-	:	'OPEN' pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })? (sync = syncTypeLiteral { syncType = $sync.val; })?
 	;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAPWithParams property]

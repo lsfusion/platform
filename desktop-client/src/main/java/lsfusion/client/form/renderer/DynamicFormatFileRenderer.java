@@ -1,5 +1,6 @@
 package lsfusion.client.form.renderer;
 
+import lsfusion.base.FileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.ClientPropertyDraw;
 
@@ -13,8 +14,8 @@ public class DynamicFormatFileRenderer extends FilePropertyRenderer {
         super.setValue(value);
         
         if (value != null) {
-            byte[] union = (byte[]) value;
-            getComponent().setIcon(SwingUtils.getSystemIcon(new String(union, 1, union[0])));
+            FileData fileData = (FileData) value;
+            getComponent().setIcon(SwingUtils.getSystemIcon(fileData.getExtension()));
         }
     }
 }

@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.server.convert;
 
+import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientFileClass;
 import lsfusion.client.logics.classes.ClientImageClass;
@@ -149,7 +150,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     private Object convertFileValue(ClientPropertyDraw property, Object value) {
         if (property.baseType instanceof ClientImageClass) {
-            return FileUtils.createPropertyImage((byte[]) value, property.getPropertyFormName());
+            return FileUtils.createPropertyImage(((RawFileData) value).getBytes(), property.getPropertyFormName());
         } else {
             return value == null ? null : true;
         }

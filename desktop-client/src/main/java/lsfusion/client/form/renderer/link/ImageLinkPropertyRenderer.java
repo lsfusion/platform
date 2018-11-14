@@ -1,6 +1,7 @@
 package lsfusion.client.form.renderer.link;
 
 import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 
@@ -17,14 +18,14 @@ import java.util.WeakHashMap;
 public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
     private ImageIcon icon;
 
-    public static Map<ClientPropertyDraw, Map<String, byte[]>> imageCache = new WeakHashMap<>();
+    public static Map<ClientPropertyDraw, Map<String, RawFileData>> imageCache = new WeakHashMap<>();
 
     public ImageLinkPropertyRenderer(ClientPropertyDraw property) {
         super(property);
     }
 
     public void setValue(Object value) {
-        byte[] iconBytes = readImage(property, (String) value);
+        RawFileData iconBytes = readImage(property, (String) value);
         
         icon = null; // сбрасываем
         if (iconBytes != null) {
@@ -54,18 +55,18 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         imageCache.remove(property);
     }
     
-    private static synchronized byte[] getFromCache(ClientPropertyDraw property, String url) {
-        Map<String, byte[]> imageMap = imageCache.get(property);
+    private static synchronized RawFileData getFromCache(ClientPropertyDraw property, String url) {
+        Map<String, RawFileData> imageMap = imageCache.get(property);
         return imageMap == null ? null : imageMap.get(url);
     }
     
     private static synchronized boolean isCached(ClientPropertyDraw property, String url) {
-        Map<String, byte[]> imageMap = imageCache.get(property);
+        Map<String, RawFileData> imageMap = imageCache.get(property);
         return imageMap != null && imageMap.containsKey(url);
     }
     
-    private static synchronized void putIntoCache(ClientPropertyDraw property, String url, byte[] image) {
-        Map<String, byte[]> imageMap = imageCache.get(property);
+    private static synchronized void putIntoCache(ClientPropertyDraw property, String url, RawFileData image) {
+        Map<String, RawFileData> imageMap = imageCache.get(property);
         if (imageMap == null) {
             imageMap = new HashMap<>();
             imageCache.put(property, imageMap);
@@ -73,16 +74,16 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
         imageMap.put(url, image);
     }
 
-    public static byte[] readImage(ClientPropertyDraw property, String link) {
+    public static RawFileData readImage(ClientPropertyDraw property, String link) {
         try {
-            byte[] result = getFromCache(property, link);
+            RawFileData result = getFromCache(property, link);
             if (result == null && !isCached(property, link)) {
                 URLConnection httpcon = new URL(link).openConnection();
                 httpcon.addRequestProperty("User-Agent", "");
                 InputStream inputStream = httpcon.getInputStream();
-                result = IOUtils.readBytesFromStream(inputStream);
+                result = new RawFileData(inputStream);
                 
-                ImageIcon icon = new ImageIcon(result); // проверка на то, что массив байтов - картинка. readBytesFromStream возвращает 4 байта, а не null
+                ImageIcon icon = new ImageIcon(result.getBytes()); // проверка на то, что массив байтов - картинка. readBytesFromStream возвращает 4 байта, а не null
                 if (icon.getIconWidth() < 0 || icon.getIconHeight() < 0) {
                     result = null;
                 }

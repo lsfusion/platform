@@ -1,6 +1,7 @@
 package lsfusion.client.form.editor;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Log;
@@ -20,7 +21,7 @@ public class FilePropertyEditor extends DialogBasedPropertyEditor {
 
     protected final JFileChooser fileChooser = new JFileChooser();
     protected boolean canceled;
-    private byte[] content;
+    private Object content; // RawFileData, FileData or byte[] (if multiple || storeName)
 
     public FilePropertyEditor(boolean multiple, boolean storeName, String description, String... extensions) {
         super();

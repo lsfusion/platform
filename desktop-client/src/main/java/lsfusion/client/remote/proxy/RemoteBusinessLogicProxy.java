@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.base.FileData;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -113,13 +114,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodStartCall("remindPassword");
         target.remindPassword(email, localeLanguage);
         logRemoteMethodEndVoidCall("remindPassword");
-    }
-
-    public byte[] readFile(String canonicalName, String... params) throws RemoteException {
-        logRemoteMethodStartCall("readFile");
-        byte[] result = target.readFile(canonicalName, params);
-        logRemoteMethodEndVoidCall("readFile");
-        return result;
     }
 
     @Override

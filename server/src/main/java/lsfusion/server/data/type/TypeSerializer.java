@@ -146,20 +146,20 @@ public class TypeSerializer {
         if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readLong());
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(false, false);
+        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get();
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
 
-        if (type == Data.IMAGE) return ImageClass.get(false, false);
-        if (type == Data.WORD) return WordClass.get(false, false);
-        if (type == Data.EXCEL) return ExcelClass.get(false, false);
-        if (type == Data.PDF) return PDFClass.get(false, false);
-        if (type == Data.CSV) return CSVClass.get(false, false);
-        if (type == Data.HTML) return HTMLClass.get(false, false);
-        if (type == Data.JSON) return JSONClass.get(false, false);
-        if (type == Data.XML) return XMLClass.get(false, false);
+        if (type == Data.IMAGE) return ImageClass.get();
+        if (type == Data.WORD) return WordClass.get();
+        if (type == Data.EXCEL) return ExcelClass.get();
+        if (type == Data.PDF) return PDFClass.get();
+        if (type == Data.CSV) return CSVClass.get();
+        if (type == Data.HTML) return HTMLClass.get();
+        if (type == Data.JSON) return JSONClass.get();
+        if (type == Data.XML) return XMLClass.get();
         //todo:!!
-        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get(false, false, "", "");
+        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get("", "");
 
         if (type == Data.IMAGELINK) return ImageLinkClass.get(false);
         if (type == Data.WORDLINK) return WordLinkClass.get(false);

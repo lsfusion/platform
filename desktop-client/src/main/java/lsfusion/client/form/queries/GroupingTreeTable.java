@@ -1,6 +1,7 @@
 package lsfusion.client.form.queries;
 
 import lsfusion.base.OrderedMap;
+import lsfusion.base.RawFileData;
 import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
@@ -73,7 +74,7 @@ public class GroupingTreeTable extends JXTreeTable {
                     int columnClicked = columnAtPoint(e.getPoint());
                     ClientPropertyDraw columnProperty = treeTableModel.getColumnProperty(columnClicked);
                     if (columnProperty != null && (columnProperty.baseType instanceof ClientImageClass || columnProperty.baseType instanceof ClientImageLinkClass)) {
-                        ImagePropertyRenderer.expandImage((byte[]) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
+                        ImagePropertyRenderer.expandImage((RawFileData) getValueAt(rowAtPoint(e.getPoint()), columnClicked));
                     }
                 }
             }
@@ -434,8 +435,8 @@ public class GroupingTreeTable extends JXTreeTable {
         protected void setValue(Object value) {
             if (value != null) {
                 ImageIcon icon = null;
-                if (value instanceof byte[]) {
-                    icon = new ImageIcon((byte[]) value);
+                if (value instanceof RawFileData) {
+                    icon = new ImageIcon(((RawFileData) value).getBytes());
                 }
                 if (icon != null) {
                     Dimension scaled = ImagePropertyRenderer.getIconScale(icon, getColumn(column).getWidth(), getRowHeight());

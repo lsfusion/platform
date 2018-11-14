@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.RawFileData;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -9,7 +11,7 @@ public class UserLogsClientAction implements ClientAction {
     }
 
     @Override
-    public Map<String, byte[]> dispatch(ClientActionDispatcher dispatcher) throws IOException {
+    public Map<String, RawFileData> dispatch(ClientActionDispatcher dispatcher) throws IOException {
         return dispatcher.execute(this);
     }
 }

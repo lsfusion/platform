@@ -1,8 +1,8 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -18,10 +18,7 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -52,10 +49,9 @@ public class MakeZipFileActionProperty extends ScriptingActionProperty {
 
                         for (int i = 0; i < result.size(); i++) {
                             String fileName = (String) result.getKey(i).get("i").getValue();
-                            byte[] fileBytes = (byte[]) result.getValue(i).get("zipping").getValue();
+                            FileData fileBytes = (FileData) result.getValue(i).get("zipping").getValue();
                             if (fileBytes != null) {
-                                fileBytes = BaseUtils.getFile(fileBytes);
-                                ByteArrayInputStream bis = new ByteArrayInputStream(fileBytes);
+                                InputStream bis = fileBytes.getRawFile().getInputStream();
                                 zos.putNextEntry(new ZipEntry(fileName));
                                 byte[] buf = new byte[1024];
                                 int len;
@@ -66,7 +62,7 @@ public class MakeZipFileActionProperty extends ScriptingActionProperty {
                             }
                         }
                     }
-                    findProperty("zipped[]").change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(zipFile), "zip".getBytes()), context);
+                    findProperty("zipped[]").change(new FileData(new RawFileData(zipFile), "zip"), context);
                 } finally {
                     if(zipFile != null && !zipFile.delete())
                         zipFile.deleteOnExit();

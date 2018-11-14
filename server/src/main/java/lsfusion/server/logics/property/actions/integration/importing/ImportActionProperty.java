@@ -2,7 +2,9 @@ package lsfusion.server.logics.property.actions.integration.importing;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.base.ProgressBar;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -26,7 +28,6 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.i18n.LocalizedString;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SystemActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -51,21 +52,18 @@ public abstract class ImportActionProperty extends SystemActionProperty {
         this.formEntity = formEntity;
     }
 
-    protected static byte[] readFile(LCP file, byte[] singleFile) throws SQLException, SQLHandledException {
-        return readFile(file.property.getType(), singleFile);
-    }
-    protected static byte[] readFile(ObjectValue value) throws SQLException, SQLHandledException {
+    protected static RawFileData readFile(ObjectValue value) throws SQLException, SQLHandledException {
         if(value instanceof DataObject)
-            return readFile(((DataObject) value).objectClass.getType(), (byte[])((DataObject) value).object);
+            return readFile(((DataObject) value).objectClass.getType(), ((DataObject) value).object);
         return null;
     }
-    private static byte[] readFile(Type type, byte[] singleFile) throws SQLException, SQLHandledException {
+    private static RawFileData readFile(Type type, Object singleFile) throws SQLException, SQLHandledException {
         if (type instanceof StaticFormatFileClass) {
-            return singleFile;
+            return (RawFileData) singleFile;
         } else {
             if(singleFile == null)
                 return null;
-            return BaseUtils.getFile(singleFile);
+            return ((FileData)singleFile).getRawFile();
         }
     }
 

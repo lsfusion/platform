@@ -1454,18 +1454,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LAPWithParams addScriptedFileAProp(LCPWithParams property, LCPWithParams nameProp, List<TypedParameter> contextParams, Boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCPWithParams> params = new ArrayList<>();
-        params.add(property);
-        if(nameProp != null)
-            params.add(nameProp);
-
-        LAP<?> res = addOFAProp(getValueClassByParamProperty(property, contextParams),
-                        nameProp == null ? null : getValueClassByParamProperty(nameProp, contextParams),
-                        syncType != null && syncType);
-        return addScriptedJoinAProp(res, params);
-    }
-
     public LAP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             ActionProperty instance;

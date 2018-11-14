@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.csv;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -15,6 +16,7 @@ import lsfusion.server.logics.property.actions.integration.importing.plain.xls.I
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -24,10 +26,10 @@ public class ImportCSVIterator extends ImportPlainIterator {
     
     private final boolean noHeader;
 
-    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, byte[] file, String charset, boolean noHeader, String separator) {
+    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, boolean noHeader, String separator) {
         super(fieldTypes);
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
+        InputStream inputStream = file.getInputStream();
         this.reader = charset != null ? new Scanner(inputStream, charset) : new Scanner(inputStream);
         this.separator = separator;
 
