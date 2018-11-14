@@ -3,6 +3,7 @@ package lsfusion.gwt.form.server;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.FormPrintType;
@@ -104,13 +105,13 @@ public class FileUtils {
         return null;
     }
 
-    public static byte[] readFilesAndDelete(GFilesDTO filesObj) {
+    public static Object readFilesAndDelete(GFilesDTO filesObj) {
         File[] files = new File[filesObj.filePaths.size()];
         for (int i = 0; i < filesObj.filePaths.size(); i++) {
             files[i] = new File(APP_TEMP_FOLDER_URL, filesObj.filePaths.get(i));
         }
         try {
-            byte[] bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.storeName, filesObj.custom, files);
+            Object bytes = BaseUtils.filesToBytes(filesObj.multiple, filesObj.storeName, filesObj.custom, files);
             for (File file : files) {
                 file.delete();
             }
@@ -121,21 +122,19 @@ public class FileUtils {
         }
     }
 
-    public static String saveFile(byte[] fileBytes, String name, String extension) {
-        return name != null ? saveFile(fileBytes, name + "." + extension) : saveFile(fileBytes, extension);
+    public static String saveFile(RawFileData fileData, String name, String extension) {
+        return name != null ? saveFile(fileData, name + "." + extension) : saveFile(fileData, extension);
     }
 
-    public static String saveFile(byte[] fileBytes, String nameWithExtension) {
-        return saveFile(BaseUtils.randomString(15) + "." + nameWithExtension, fileBytes);
+    public static String saveFile(RawFileData fileData, String nameWithExtension) {
+        return saveFile(BaseUtils.randomString(15) + "." + nameWithExtension, fileData);
     }
 
-    public static String saveFile(String fileName, byte[] fileBytes) {
+    public static String saveFile(String fileName, RawFileData fileData) {
         try {
-            if (fileBytes != null) {
+            if (fileData != null) {
                 File file = new File(APP_TEMP_FOLDER_URL, fileName);
-                FileOutputStream f = new FileOutputStream(file);
-                f.write(fileBytes);
-                f.close();
+                fileData.write(file);
                 return fileName;
             }
         } catch (IOException e) {
@@ -146,14 +145,11 @@ public class FileUtils {
 
     public static String exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
-            byte[] report = ReportGenerator.exportToFileByteArray(reportData, type);;
+            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type);;
             
             String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + type.getExtension();
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(report);
-
-            fos.close();
+            report.write(file);
             return fileName;
         } catch (Exception e) {
             throw Throwables.propagate(e);

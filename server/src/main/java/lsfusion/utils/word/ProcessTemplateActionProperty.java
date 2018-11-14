@@ -1,6 +1,7 @@
 package lsfusion.utils.word;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -85,13 +86,14 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                                                                   isTableTemplateEntry, firstRowTemplateEntry, columnSeparatorTemplateEntry, rowSeparatorTemplateEntry));
                     }
 
-                    byte[] fileObject = (byte[]) fileObjectValue.getValue();
-                    boolean isDocx = fileObject.length > 2 && fileObject[0] == 80 && fileObject[1] == 75;
+                    RawFileData fileObject = (RawFileData) fileObjectValue.getValue();
+                    byte[] bytes = fileObject.getBytes();
+                    boolean isDocx = bytes.length > 2 && bytes[0] == 80 && bytes[1] == 75;
 
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
                     if (isDocx) {
-                        XWPFDocument document = new XWPFDocument(new ByteArrayInputStream((byte[]) wordObject.object));
+                        XWPFDocument document = new XWPFDocument(((RawFileData) wordObject.object).getInputStream());
                         List<XWPFParagraph> docParagraphs = document.getParagraphs();
                         for (List<Object> entry : templateEntriesList) {
                             String key = (String) entry.get(0);
@@ -107,7 +109,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         }
                         document.write(outputStream);
                     } else {
-                        HWPFDocument document = new HWPFDocument(new POIFSFileSystem(new ByteArrayInputStream((byte[]) wordObject.object)));
+                        HWPFDocument document = new HWPFDocument(new POIFSFileSystem(((RawFileData) wordObject.object).getInputStream()));
                         Range range = document.getRange();
                         for (List<Object> entry : templateEntriesList) {
                             range.replaceText((String) entry.get(0), (String) entry.get(1));
@@ -115,7 +117,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         document.write(outputStream);
                     }
 
-                    findProperty("resultTemplate[]").change(outputStream.toByteArray(), context);
+                    findProperty("resultTemplate[]").change(new RawFileData(outputStream), context);
                 }
             }
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {

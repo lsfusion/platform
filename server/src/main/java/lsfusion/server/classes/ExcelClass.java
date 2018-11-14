@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
@@ -16,6 +17,10 @@ public class ExcelClass extends StaticFormatFileClass {
 
     private static Collection<ExcelClass> instances = new ArrayList<>();
 
+    public static ExcelClass get() {
+        return get(false, false);
+    }
+    
     public static ExcelClass get(boolean multiple, boolean storeName) {
         for (ExcelClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -35,9 +40,9 @@ public class ExcelClass extends StaticFormatFileClass {
         return Data.EXCEL;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         try {
-            return DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "xlsx" : "xls";
+            return DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()) ? "xlsx" : "xls";
         } catch (IOException e) {
             return "xls";
         }

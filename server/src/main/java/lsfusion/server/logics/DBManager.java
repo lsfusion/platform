@@ -641,9 +641,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private OldDBStructure getOldDBStructure(SQLSession sql) throws SQLException, SQLHandledException, IOException {
         DataInputStream inputDB = null;
         StructTable structTable = StructTable.instance;
-        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
+        RawFileData struct = (RawFileData) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
-            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+            inputDB = new DataInputStream(struct.getInputStream());
         }
         return new OldDBStructure(inputDB);
     }
@@ -942,9 +942,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new RawFileData(outDBStruct), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
             } catch (Exception e) {
-                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new byte[0], ByteArrayClass.instance));
+                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(RawFileData.EMPTY, ByteArrayClass.instance));
                 sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
             }
 
@@ -1840,9 +1840,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         
         DataInputStream inputDB;
         StructTable structTable = StructTable.instance;
-        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
+        RawFileData struct = (RawFileData) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null) {
-            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+            inputDB = new DataInputStream(struct.getInputStream());
             //noinspection ResultOfMethodCallIgnored
             inputDB.read();
             dbVersion = new DBVersion(inputDB.readUTF());

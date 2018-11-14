@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.json;
 
+import lsfusion.base.RawFileData;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 
 public class JSONReader {
 
-    public static Object readRootObject(byte[] file, String root) throws IOException, JSONException {
+    public static Object readRootObject(RawFileData file, String root) throws IOException, JSONException {
         Object rootNode = JSONReader.readObject(file);
         if (root != null) {
             rootNode = JSONReader.findRootNode(rootNode, null, root);
@@ -21,8 +22,8 @@ public class JSONReader {
     }
 
 
-    public static Object readObject(byte[] file) throws IOException, JSONException {
-        try (InputStream is = new ByteArrayInputStream(file)) {
+    public static Object readObject(RawFileData file) throws IOException, JSONException {
+        try (InputStream is = file.getInputStream()) {
             final BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             final String jsonText = readAll(rd).trim();
 

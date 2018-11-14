@@ -6,7 +6,8 @@ import com.github.junrar.impl.FileVolumeManager;
 import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -34,18 +35,18 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            byte[] unzippingFile = (byte[])findProperty("unzipping[]").read(context);
+            FileData unzippingFile = (FileData)findProperty("unzipping[]").read(context);
             if(unzippingFile != null) {
-                byte[] file = BaseUtils.getFile(unzippingFile);
-                String extension = BaseUtils.getExtension(unzippingFile);
+                RawFileData file = unzippingFile.getRawFile();
+                String extension = unzippingFile.getExtension();
 
-                Map<String, byte[]> result = new HashMap<>();
+                Map<String, FileData> result = new HashMap<>();
                 if (extension.toLowerCase().equals("rar")) {
                     result = unpackRARFile(file);
                 } else if (extension.toLowerCase().equals("zip")) {
                     result = unpackZIPFile(file);
                 }
-                for(Map.Entry<String, byte[]> entry : result.entrySet()) {
+                for(Map.Entry<String, FileData> entry : result.entrySet()) {
                     findProperty("unzipped[VARSTRING[100]]").change(entry.getValue(), context, new DataObject(entry.getKey()));
                 }
             }
@@ -54,16 +55,14 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private Map<String, byte[]> unpackRARFile(byte[] fileBytes) {
+    private Map<String, FileData> unpackRARFile(RawFileData fileBytes) {
 
-        Map<String, byte[]> result = new HashMap<>();
+        Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
         File outputFile = null;
         try {
             inputFile = File.createTempFile("email", ".rar");
-            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
-                stream.write(fileBytes);
-            }
+            fileBytes.write(inputFile);
 
             List<File> dirList = new ArrayList<>();
             File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
@@ -84,7 +83,7 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
                         try (FileOutputStream os = new FileOutputStream(outputFile)) {
                             a.extractFile(fh, os);
                         }
-                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
                         if(!outputFile.delete())
                             outputFile.deleteOnExit();
                     }
@@ -108,16 +107,14 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
         return result;
     }
 
-    private Map<String, byte[]> unpackZIPFile(byte[] fileBytes) {
+    private Map<String, FileData> unpackZIPFile(RawFileData fileBytes) {
 
-        Map<String, byte[]> result = new HashMap<>();
+        Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
         File outputFile = null;
         try {
             inputFile = File.createTempFile("email", ".zip");
-            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
-                stream.write(fileBytes);
-            }
+            fileBytes.write(inputFile);
 
             byte[] buffer = new byte[1024];
             Set<File> dirList = new HashSet<>();
@@ -142,7 +139,7 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
                             outputStream.write(buffer, 0, len);
                         }
                         outputStream.close();
-                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
                         if(!outputFile.delete())
                             outputFile.deleteOnExit();
                     }
@@ -167,7 +164,7 @@ public class MakeUnzipFileActionProperty extends ScriptingActionProperty {
         return result;
     }
 
-    private String getFileName(Map<String, byte[]> files, String fileName) {
+    private String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
             String name = getFileNameWithoutExt(fileName);
             String extension = BaseUtils.getFileExtension(fileName);

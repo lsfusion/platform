@@ -2,6 +2,7 @@ package lsfusion.utils.backup;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.ExportFileClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
@@ -38,7 +39,7 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
                 assert fileBackupName != null;
                 File file = new File(fileBackup.trim());
                 if (file.exists()) {
-                    context.delayUserInterfaction(new ExportFileClientAction(fileBackupName.trim(), IOUtils.getFileBytes(file)));
+                    context.delayUserInterfaction(new ExportFileClientAction(fileBackupName.trim(), new RawFileData(file)));
                 } else {
                     context.delayUserInterfaction(new MessageClientAction("Файл не найден", "Ошибка"));
                 }

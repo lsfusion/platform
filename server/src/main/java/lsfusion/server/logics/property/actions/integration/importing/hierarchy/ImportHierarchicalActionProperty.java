@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
@@ -18,7 +19,7 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
     private final PropertyInterface fileInterface;
     private final PropertyInterface rootInterface;
 
-    public abstract T getRootNode(byte[] file, String root);
+    public abstract T getRootNode(RawFileData fileData, String root);
 
     public ImportHierarchicalActionProperty(int paramsCount, FormEntity formEntity) {
         super(paramsCount, formEntity);
@@ -34,7 +35,7 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
         if(rootInterface != null)
             root = (String) context.getKeyObject(rootInterface);
 
-        byte[] file = readFile(context.getKeyValue(fileInterface));
+        RawFileData file = readFile(context.getKeyValue(fileInterface));
 
         ParseNode parseNode = formEntity.getImportHierarchy().getIntegrationHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);

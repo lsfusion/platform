@@ -1,7 +1,7 @@
 package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -27,11 +27,11 @@ public class OpenFileActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            byte[] source = (byte[]) context.getKeyValue(sourceInterface).getValue();
+            FileData source = (FileData) context.getKeyValue(sourceInterface).getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
             if (source != null) {
-                context.delayUserInteraction(new OpenFileClientAction(BaseUtils.getFile(source), name, BaseUtils.getExtension(source)));
+                context.delayUserInteraction(new OpenFileClientAction(source.getRawFile(), name, source.getExtension()));
             }
 
         } catch (Exception e) {

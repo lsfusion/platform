@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -16,6 +17,9 @@ public class HTMLClass extends StaticFormatFileClass {
 
     private static Collection<HTMLClass> instances = new ArrayList<>();
 
+    public static HTMLClass get() {
+        return get(false, false);
+    }
     public static HTMLClass get(boolean multiple, boolean storeName) {
         for (HTMLClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -35,7 +39,7 @@ public class HTMLClass extends StaticFormatFileClass {
         return Data.HTML;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "html";
     }
 

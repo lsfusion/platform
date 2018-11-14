@@ -1,5 +1,6 @@
 package lsfusion.interop;
 
+import lsfusion.base.FileData;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.IDaemonTask;
@@ -40,8 +41,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     VMOptions getClientVMOptions() throws RemoteException;
 
     void remindPassword(String email, String localeLanguage) throws RemoteException;
-
-    byte[] readFile(String canonicalName, String... params) throws RemoteException;
 
     //external requests
     List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException;

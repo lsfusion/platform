@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -16,6 +17,10 @@ public class XMLClass extends StaticFormatFileClass {
 
     private static Collection<XMLClass> instances = new ArrayList<>();
 
+    public static XMLClass get() {
+        return get(false, false);
+    }
+    
     public static XMLClass get(boolean multiple, boolean storeName) {
         for (XMLClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -35,7 +40,7 @@ public class XMLClass extends StaticFormatFileClass {
         return Data.XML;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "xml";
     }
 

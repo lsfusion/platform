@@ -1,6 +1,7 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
@@ -40,12 +41,12 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
         String password = (String) context.getDataKeyValue(passwordInterface).object;
 
         try {
-            byte[] file = (byte[]) fileObject.object;
+            RawFileData file = (RawFileData) fileObject.object;
             String extension = ((StaticFormatFileClass)fileObject.objectClass.getType()).getOpenExtension(file);
-            byte[] protectedFile = null;
+            RawFileData protectedFile = null;
             switch (extension) {
                 case "xls": {
-                    HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
+                    HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
                     for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
                         Sheet sheet = it.next();
                         if (password != null) {
@@ -55,12 +56,12 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
 
                     try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                         wb.write(bos);
-                        protectedFile = bos.toByteArray();
+                        protectedFile = new RawFileData(bos);
                     }
                     break;
                 }
                 case "xlsx": {
-                    XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
+                    XSSFWorkbook wb = new XSSFWorkbook(file.getInputStream());
                     for (Iterator<Sheet> it = wb.sheetIterator(); it.hasNext(); ) {
                         Sheet sheet = it.next();
                         if (password != null) {
@@ -74,7 +75,7 @@ public class ProtectExcelActionProperty extends ScriptingActionProperty {
                     }
                     try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                         wb.write(bos);
-                        protectedFile = bos.toByteArray();
+                        protectedFile = new RawFileData(bos);
                     }
                     break;
                 }

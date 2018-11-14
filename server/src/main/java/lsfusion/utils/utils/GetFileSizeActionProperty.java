@@ -1,8 +1,7 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.server.ServerLoggers;
+import lsfusion.base.FileData;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -27,7 +26,7 @@ public class GetFileSizeActionProperty extends ScriptingActionProperty {
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
         try {
-            findProperty("fileSize[]").change(BaseUtils.getFile((byte[]) context.getDataKeyValue(fileInterface).object).length, context);
+            findProperty("fileSize[]").change(((FileData) context.getDataKeyValue(fileInterface).object).getRawFile().getLength(), context);
         } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

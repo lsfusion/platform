@@ -2,6 +2,7 @@ package lsfusion.utils.image;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -33,15 +34,15 @@ public class ResizeImageActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            byte[] inputFile = (byte[]) context.getKeyValue(fileInterface).getValue();
+            RawFileData inputFile = (RawFileData) context.getKeyValue(fileInterface).getValue();
             Double scale = (Double) context.getKeyValue(scaleInterface).getValue();
 
             File outputFile = null;
             try {
                 outputFile = File.createTempFile("resized", ".jpg");
                 if(scale != 0) {
-                    Thumbnails.of(new ByteArrayInputStream(inputFile)).scale((double) 1 / scale).toFile(outputFile);
-                    findProperty("resizedImage[]").change(IOUtils.getFileBytes(outputFile), context);
+                    Thumbnails.of(inputFile.getInputStream()).scale((double) 1 / scale).toFile(outputFile);
+                    findProperty("resizedImage[]").change(new RawFileData(outputFile), context);
                 }
             } finally {
                 if (outputFile != null && !outputFile.delete())

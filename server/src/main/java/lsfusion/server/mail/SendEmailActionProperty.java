@@ -1,8 +1,8 @@
 package lsfusion.server.mail;
 
 import jasperapi.ReportGenerator;
-import jasperapi.ReportHTMLExporter;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.action.MessageClientAction;
@@ -27,12 +27,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.remote.InteractiveFormReportManager;
-import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.engine.export.JRRtfExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
@@ -158,7 +153,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 EmailSender sender = new EmailSender(nullTrim(smtpHostAccount), nullTrim(smtpPortAccount), nullTrim(encryptedConnectionType), nullTrim(fromAddressAccount), nullTrim(nameAccount),nullTrim(passwordAccount), recipients);
 
                 List<EmailSender.AttachmentFile> attachFiles = new ArrayList<>();
-                List<byte[]> inlineFiles = new ArrayList<>();
+                List<RawFileData> inlineFiles = new ArrayList<>();
                 proceedForms(context, attachFiles, inlineFiles);
                 proceedFiles(context, attachFiles, inlineFiles);
                 
@@ -175,7 +170,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     }
 
     @Deprecated
-    public void proceedForms(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<byte[]> inlineForms) throws SQLException, SQLHandledException, ClassNotFoundException, IOException, JRException {
+    public void proceedForms(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<RawFileData> inlineForms) throws SQLException, SQLHandledException, ClassNotFoundException, IOException, JRException {
         assert forms.size() == storageTypes.size() && forms.size() == formats.size() && forms.size() == attachmentProps.size() && forms.size() == mapObjects.size();
 
         for (int i = 0; i < forms.size(); i++) {
@@ -193,7 +188,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
                 ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(printType);
 
-                byte[] file = ReportGenerator.exportToFileByteArray(generationData, printType);
+                RawFileData file = ReportGenerator.exportToFileByteArray(generationData, printType);
                 if (storageType == FormStorageType.INLINE)
                     inlineForms.add(file);
                 else {
@@ -234,7 +229,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return recipientEmails;
     }
     
-    private void proceedFiles(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<byte[]> customInlines) throws SQLException, SQLHandledException {
+    private void proceedFiles(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<RawFileData> customInlines) throws SQLException, SQLHandledException {
         for (int i = 0; i < attachFileNames.size(); i++) {
             String name;
             CalcPropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
@@ -245,38 +240,42 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             }
 
             ObjectValue fileObject = attachFiles.get(i).readClasses(context, context.getKeys());
-            byte[] file = (byte[]) fileObject.getValue();
             if (fileObject instanceof DataObject) {
                 Type objectType = ((DataObject)fileObject).getType();
                 String extension;
-                if (objectType instanceof StaticFormatFileClass)
-                    extension = ((StaticFormatFileClass) objectType).getOpenExtension(file);
-                else {
-                    extension = BaseUtils.getExtension(file);
-                    file = BaseUtils.getFile(file);
+                RawFileData rawFile;
+                if (objectType instanceof StaticFormatFileClass) {
+                    rawFile = (RawFileData) fileObject.getValue();
+                    extension = ((StaticFormatFileClass) objectType).getOpenExtension(rawFile);
+                } else {
+                    FileData file = (FileData) fileObject.getValue();
+                    extension = file.getExtension();
+                    rawFile = file.getRawFile();
                 }
-                attachments.add(new EmailSender.AttachmentFile(file, name + "." + extension, extension));
+                attachments.add(new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension));
             }
         }
         for(CalcPropertyInterfaceImplement inlineText : this.inlineTexts) {
             String text = (String) inlineText.read(context, context.getKeys());
             if(text != null)
-                customInlines.add(text.getBytes());
+                customInlines.add(new RawFileData(text.getBytes()));
         }
 
         for (CalcPropertyInterfaceImplement inlineFile : this.inlineFiles) {
             ObjectValue fileObject = inlineFile.readClasses(context, context.getKeys());
-            byte[] file = (byte[]) fileObject.getValue();
             if (fileObject instanceof DataObject) {
+                RawFileData rawFile;
                 if (((DataObject) fileObject).getType() instanceof DynamicFormatFileClass) {
-                    file = BaseUtils.getFile(file);
+                    rawFile = ((FileData) fileObject.getValue()).getRawFile();
+                } else {
+                    rawFile = (RawFileData) fileObject.getValue();                    
                 }
-                customInlines.add(file);
+                customInlines.add(rawFile);
             }
         }
     }
 
-    private EmailSender.AttachmentFile createAttachment(FormEntity form, FormPrintType printType, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, byte[] file) throws SQLException, SQLHandledException {
+    private EmailSender.AttachmentFile createAttachment(FormEntity form, FormPrintType printType, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, RawFileData file) throws SQLException, SQLHandledException {
         String attachmentName = null;
         if (attachmentNameProp != null) {
             attachmentName = (String) attachmentNameProp.read(context, context.getKeys());

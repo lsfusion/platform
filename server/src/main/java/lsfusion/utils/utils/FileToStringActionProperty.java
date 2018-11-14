@@ -1,7 +1,7 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -10,7 +10,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
-import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -27,11 +26,11 @@ public class FileToStringActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        byte[] fileBytes = (byte[]) context.getKeyValue(fileInterface).getValue();
+        FileData fileData = (FileData) context.getKeyValue(fileInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();
-        if(fileBytes != null) {
+        if(fileData != null) {
             try {
-                String fileString = IOUtils.readStreamToString(new ByteArrayInputStream(BaseUtils.getFile(fileBytes)), charset);
+                String fileString = IOUtils.readStreamToString(fileData.getRawFile().getInputStream(), charset);
                 findProperty("resultString[]").change(fileString, context);
             } catch (Exception e) {
                 throw Throwables.propagate(e);

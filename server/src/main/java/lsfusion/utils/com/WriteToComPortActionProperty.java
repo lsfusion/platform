@@ -1,6 +1,6 @@
 package lsfusion.utils.com;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.WriteToComPortClientAction;
 import lsfusion.server.classes.ValueClass;
@@ -30,13 +30,13 @@ public class WriteToComPortActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        byte[] file = (byte[]) context.getKeyValue(fileInterface).getValue();
+        FileData file = (FileData) context.getKeyValue(fileInterface).getValue();
         Integer baudRate = (Integer) context.getKeyValue(baudRateInterface).getValue();
         Integer comPort = (Integer) context.getKeyValue(comPortInterface).getValue();
         boolean daemon = context.getKeyValue(daemonInterface).getValue() != null;
 
         if(file != null && baudRate != null && comPort != null) {
-            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(BaseUtils.getFile(file), baudRate, comPort, daemon));
+            String result = (String) context.requestUserInteraction(new WriteToComPortClientAction(file.getRawFile(), baudRate, comPort, daemon));
             if (result != null) {
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
             }

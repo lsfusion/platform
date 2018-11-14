@@ -6,9 +6,7 @@ import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import com.jcraft.jsch.*;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.JDBCTable;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -44,7 +42,7 @@ public class ReadUtils {
     public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) throws IOException, SftpException, JSchException, SQLException {
         String type = null;
         File file = null;
-        byte[] fileBytes = null;
+        Object fileBytes = null; // RawFileData or FileData
         int errorCode = 0;
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
@@ -95,7 +93,7 @@ public class ReadUtils {
                             try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
                                 try (java.nio.channels.FileLock lock = channel.lock()) {
                                     if (isDynamicFormatFileClass) {
-                                        fileBytes = BaseUtils.mergeFileAndExtension(readBytesFromChannel(channel), extension.getBytes());
+                                        fileBytes = new FileData(readBytesFromChannel(channel), extension);
                                     } else {
                                         fileBytes = readBytesFromChannel(channel);
                                     }
@@ -103,9 +101,9 @@ public class ReadUtils {
                             }
                         } else {
                             if (isDynamicFormatFileClass) {
-                                fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
+                                fileBytes = new FileData(new RawFileData(file), extension);
                             } else {
-                                fileBytes = IOUtils.getFileBytes(file);
+                                fileBytes = new RawFileData(file);
                             }
                         }
                         if (!type.equals("file")) //delete temp file
@@ -289,7 +287,7 @@ public class ReadUtils {
                     statement = conn.createStatement();
                     ResultSet rs = statement.executeQuery(jdbcQuery);
 
-                    FileUtils.writeByteArrayToFile(file, JDBCTable.serialize(rs));
+                    JDBCTable.serialize(rs).write(file);
 
                 } finally {
                     if (statement != null)
@@ -573,7 +571,7 @@ public class ReadUtils {
         return values;
     }
 
-    private static byte[] readBytesFromChannel(FileChannel channel) throws IOException {
+    private static RawFileData readBytesFromChannel(FileChannel channel) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteBuffer buffer = ByteBuffer.allocate(IOUtils.BUFFER_SIZE);
         int left = Integer.MAX_VALUE;
@@ -582,17 +580,17 @@ public class ReadUtils {
             out.write(buffer.array(), 0, readCount);
             left -= readCount;
         }
-        return out.toByteArray();
+        return new RawFileData(out);
     }
 
     public static class ReadResult implements Serializable {
-        public byte[] fileBytes;
+        public Object fileBytes; // RawFileData or FileData
         public String type;
         public String filePath;
         public int errorCode;
         public String error;
 
-        public ReadResult(byte[] fileBytes, String type, String filePath, int errorCode, String error) {
+        public ReadResult(Object fileBytes, String type, String filePath, int errorCode, String error) {
             this.fileBytes = fileBytes;
             this.type = type;
             this.filePath = filePath;

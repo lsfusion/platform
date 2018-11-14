@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
+import lsfusion.base.RawFileData;
 import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfMetadata;
 import net.iryndin.jdbf.util.DbfMetadataUtils;
@@ -18,8 +19,8 @@ public class CustomDbfReader implements Closeable {
     private int recordsCounter = 0;
     private static final int BUFFER_SIZE = 8192;
 
-    public CustomDbfReader(byte[] dbfFile, byte[] memoFile) throws IOException {
-        this.dbfInputStream = new BufferedInputStream(new ByteArrayInputStream(dbfFile), BUFFER_SIZE);
+    public CustomDbfReader(RawFileData dbfFile, RawFileData memoFile) throws IOException {
+        this.dbfInputStream = new BufferedInputStream(dbfFile.getInputStream(), BUFFER_SIZE);
         if(memoFile != null)
             this.memoReader = new CustomMemoReader(memoFile);
         readMetadata();

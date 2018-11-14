@@ -1,13 +1,10 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.NavigatorInfo;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -36,8 +33,6 @@ import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.external.ExternalHTTPActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
@@ -281,37 +276,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public byte[] readFile(String canonicalName, String... params) throws RemoteException {
-        LCP<PropertyInterface> property = (LCP<PropertyInterface>)businessLogics.findProperty(canonicalName);
-        if (property != null) {
-            if (!(property.property.getType() instanceof FileClass)) {
-                throw new RuntimeException("Property type is distinct from FileClass");
-            }
-            ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
-            DataObject[] objects = new DataObject[interfaces.size()];
-            byte[] fileBytes;
-            try {
-                DataSession session = createSession();
-                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.filePolicy);
-                for (int i = 0; i < interfaces.size(); i++) {
-                    ValueClass valueClass = interfaceClasses.get(interfaces.get(i));
-                    objects[i] = session.getDataObject(valueClass, valueClass.getType().parseString(params[i]));
-                }
-                fileBytes = (byte[]) property.read(session, objects);
-
-                if (fileBytes != null && !(property.property.getType() instanceof DynamicFormatFileClass)) {
-                    fileBytes = BaseUtils.mergeFileAndExtension(fileBytes, ((StaticFormatFileClass) property.property.getType()).getOpenExtension(fileBytes).getBytes());
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            return fileBytes;
-        } else {
-            throw new RuntimeException("Property was not found");
-        }
-    }
-
-    @Override
     public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) {
         List<Object> returnList;
         try {
@@ -395,8 +359,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         List<Object> returnList = new ArrayList<>();
         boolean jdbcSingleRow = false;
         if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
-            if (BaseUtils.getExtension((byte[]) returnValue).equals("jdbc")) {
-                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(BaseUtils.getFile((byte[]) returnValue));
+            if (((FileData) returnValue).getExtension().equals("jdbc")) {
+                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) returnValue).getRawFile());
                 if (jdbcTable.singleRow) {
                     ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
                     for (String field : jdbcTable.fields) {

@@ -8,6 +8,7 @@ import jssc.SerialPort;
 import jssc.SerialPortException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
@@ -495,14 +496,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public Map<String, byte[]> execute(UserLogsClientAction action) {
-        Map<String, byte[]> result = new HashMap<>();
+    public Map<String, RawFileData> execute(UserLogsClientAction action) {
+        Map<String, RawFileData> result = new HashMap<>();
         File logDir = new File(SystemUtils.getUserDir().getAbsolutePath() + "/logs/");
         File[] logFiles = logDir.listFiles();
         if (logFiles != null) {
             for (File logFile : logFiles) {
                 try {
-                    result.put(logFile.getName(), IOUtils.getFileBytes(logFile));
+                    result.put(logFile.getName(), new RawFileData(logFile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -512,7 +513,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public byte[] execute(ThreadDumpClientAction action) {
+    public RawFileData execute(ThreadDumpClientAction action) {
         String text = "";
         for(StackTraceElement[] stackTrace : Thread.getAllStackTraces().values())
             text += stackTraceToString(stackTrace) + "\n";
@@ -520,7 +521,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         try {
             file = File.createTempFile("threaddump", ".txt");
             FileUtils.writeStringToFile(file, text);
-            return IOUtils.getFileBytes(file);
+            return new RawFileData(file);
         } catch (IOException e) {
             return null;
         } finally {
@@ -552,11 +553,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    private void beep(byte[] fileBytes) {
+    private void beep(RawFileData rawFile) {
         File file = null;
         try {
-            file = File.createTempFile("beep", getExtension(fileBytes));
-            FileUtils.writeByteArrayToFile(file, fileBytes);
+            file = File.createTempFile("beep", getExtension(rawFile.getBytes()));
+            rawFile.write(file);
             Media hit = new Media(file.toURI().toString());
             createJFXPanel();
             MediaPlayer mediaPlayer = new MediaPlayer(hit);
@@ -582,14 +583,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public String execute(WriteToComPortClientAction action) {
         if(action.daemon) {
-            return Main.writeToComPort(action.file, action.comPort);
+            return Main.writeToComPort(action.file.getBytes(), action.comPort);
         } else {
             try {
                 SerialPort serialPort = new SerialPort("COM" + action.comPort);
                 try {
                     serialPort.openPort();
                     serialPort.setParams(action.baudRate, 8, 1, 0);
-                    serialPort.writeBytes(action.file);
+                    serialPort.writeBytes(action.file.getBytes());
                 } finally {
                     serialPort.closePort();
                 }

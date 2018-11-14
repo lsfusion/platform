@@ -3,7 +3,8 @@ package lsfusion.server.logics.property.actions.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.SaveFileClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
@@ -20,9 +21,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +48,6 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject sourceObject = context.getDataKeys().getValue(0);
         assert sourceObject.getType() instanceof FileClass;
-        byte[] fileBytes = (byte[]) sourceObject.object;
 
         String path = null;
         if(context.getDataKeys().size() == 2) {
@@ -60,25 +57,27 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
 
         String extension = null;
-        if (fileBytes != null) {
+        RawFileData rawFileData = null;
+        if (sourceObject.object != null) {
             if (sourcePropertyType instanceof StaticFormatFileClass) {
-                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(fileBytes);
+                rawFileData = (RawFileData) sourceObject.object;
+                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
             } else if (sourcePropertyType instanceof DynamicFormatFileClass) {
-                extension = BaseUtils.getExtension(fileBytes);
-                fileBytes = BaseUtils.getFile(fileBytes);
+                extension = ((FileData) sourceObject.object).getExtension();
+                rawFileData = ((FileData) sourceObject.object).getRawFile();
             }
         }
         try {
-            if (fileBytes != null) {
+            if (rawFileData != null) {
                 if (clientAction) {
                     path = path == null || path.isEmpty() ? "file" : appendExtension(path, extension);
                     if (path.contains("/") || path.contains("\\")) {
-                        processClientAbsolutePath(context, fileBytes, path);
+                        processClientAbsolutePath(context, rawFileData, path);
                     } else {
-                        processClientRelativePath(context, fileBytes, path);
+                        processClientRelativePath(context, rawFileData, path);
                     }
                 } else {
-                    processServerAbsolutePath(fileBytes, path, extension);
+                    processServerAbsolutePath(rawFileData, path, extension);
                 }
             } else {
                 throw new RuntimeException("File bytes not specified");
@@ -88,20 +87,20 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void processClientAbsolutePath(ExecutionContext context, byte[] fileBytes, String path) {
+    private void processClientAbsolutePath(ExecutionContext context, RawFileData fileData, String path) {
         Pattern p = Pattern.compile("(file://)?(.*)");
         Matcher m = p.matcher(path);
         if (m.matches()) {
             path = m.group(2);
         }
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, false, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileData, path, false, !dialog, append));
     }
 
-    private void processClientRelativePath(ExecutionContext context, byte[] fileBytes, String path) {
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, true, !dialog, append));
+    private void processClientRelativePath(ExecutionContext context, RawFileData fileData, String path) {
+        context.delayUserInterfaction(new SaveFileClientAction(fileData, path, true, !dialog, append));
     }
 
-    private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
+    private void processServerAbsolutePath(RawFileData fileData, String path, String extension) throws IOException, SftpException, JSchException {
         if (path != null && !path.isEmpty()) {
             Pattern p = Pattern.compile("(?:(file|ftp|sftp)://)?(.*)");
             Matcher m = p.matcher(path);
@@ -120,7 +119,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         if (file.getParentFile() == null || !file.getParentFile().exists())
                             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
                         else
-                            writeFile(file.getAbsolutePath(), fileBytes, append);
+                            writeFile(file.getAbsolutePath(), fileData, append);
                         break;
                     }
                     case "ftp": {
@@ -153,21 +152,21 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         return BaseUtils.getFileExtension(path).isEmpty() && extension != null && !extension.isEmpty() ? (path + "." + extension) : path;
     }
 
-    private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
+    private static void writeFile(String filePath, RawFileData fileData, boolean append) throws IOException {
         if (append) {
             String extension = BaseUtils.getFileExtension(filePath);
             switch (extension) {
                 case "csv":
                     if (new File(filePath).exists()) {
-                        Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
+                        fileData.append(filePath);
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 case "xls": {
                     File file = new File(filePath);
                     if (file.exists()) {
-                        HSSFWorkbook sourceWB = new HSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
                         HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyHSSFSheets(sourceWB, destinationWB);
 
@@ -176,14 +175,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 }
                 case "xlsx":
                     File file = new File(filePath);
                     if (file.exists()) {
-                        XSSFWorkbook sourceWB = new XSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
                         XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyXSSFSheets(sourceWB, destinationWB);
 
@@ -192,14 +191,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 default:
                     throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
             }
         } else {
-            IOUtils.putFileBytes(new File(filePath), fileBytes);
+            fileData.write(filePath);
         }
     }
 

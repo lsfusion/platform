@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class ImageClass extends StaticFormatFileClass {
 
     private static Collection<ImageClass> instances = new ArrayList<>();
 
+    public static ImageClass get() {
+        return get(false, false);
+    }
     public static ImageClass get(boolean multiple, boolean storeName) {
         for (ImageClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -32,7 +36,7 @@ public class ImageClass extends StaticFormatFileClass {
         return Data.IMAGE;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "jpg"; //, jpeg, bmp, png";
     }
 

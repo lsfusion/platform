@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -19,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -31,20 +33,20 @@ public class ImportXLSIterator extends ImportPlainIterator {
     private FormulaEvaluator formulaEvaluator;
     private Integer lastSheet;
     
-    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, Integer singleSheetIndex) throws IOException {
+    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, boolean xlsx, Integer singleSheetIndex) throws IOException {
         super(fieldTypes);
 
         int minSize = Settings.get().getMinSizeForExcelStreamingReader();
-        useStreamingReader = xlsx && minSize >= 0 && file.length >= minSize;
+        useStreamingReader = xlsx && minSize >= 0 && file.getLength() >= minSize;
         if(useStreamingReader) {
             wbFile = File.createTempFile("import", "xlsx");
-            FileUtils.writeByteArrayToFile(wbFile, file);
+            file.write(wbFile);
             wb = StreamingReader.builder().rowCacheSize(100)    // number of rows to keep in memory (defaults to 10)
                     .bufferSize(4096)     // buffer size to use when reading InputStream to file (defaults to 1024)
                     .open(wbFile);            // InputStream or File for XLSX file (required)
             formulaEvaluator = new XLSXHugeFormulaEvaluator();
         } else {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
+            InputStream inputStream = file.getInputStream();
             if (xlsx) {
                 wb = new XSSFWorkbook(inputStream);
                 formulaEvaluator = new XSSFFormulaEvaluator((XSSFWorkbook) wb);

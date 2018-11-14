@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class PDFClass extends StaticFormatFileClass {
 
     private static Collection<PDFClass> instances = new ArrayList<>();
 
+    public static PDFClass get() {
+        return get(false, false);
+    }
     public static PDFClass get(boolean multiple, boolean storeName) {
         for (PDFClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -32,7 +36,7 @@ public class PDFClass extends StaticFormatFileClass {
         return Data.PDF;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "pdf";
     }
 

@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.RawFileData;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -8,27 +10,14 @@ import java.util.Map;
 public class ExportFileClientAction extends ExecuteClientAction {
 
     // в качестве ключей - имена файлов, не пути к ним
-    public Map<String, byte[]> files;
+    public Map<String, RawFileData> files;
 
-    public ExportFileClientAction(String fileName, String fileText, String charsetName) {
-        try {
-            files = new HashMap<>();
-            if (charsetName != null) {
-                files.put(fileName, fileText.getBytes(charsetName));
-            } else {
-                files.put(fileName, fileText.getBytes());
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public ExportFileClientAction(String fileName, byte[] file) {
+    public ExportFileClientAction(String fileName, RawFileData file) {
         files = new HashMap<>();
         files.put(fileName, file);
     }
 
-    public ExportFileClientAction(Map<String, byte[]> files) {
+    public ExportFileClientAction(Map<String, RawFileData> files) {
         this.files = files;
     }
 

@@ -1,6 +1,8 @@
 package lsfusion.server.logics.property.actions.file;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.DynamicFormatFileClass;
@@ -58,7 +60,10 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                 readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false);
             }
             if (readResult.errorCode == 0) {
-                targetProp.change(readResult.fileBytes, context);
+                if(isDynamicFormatFileClass)
+                    targetProp.change((FileData)readResult.fileBytes, context);
+                else
+                    targetProp.change((RawFileData)readResult.fileBytes, context);
             }
             if(readResult.error != null)
                 throw new RuntimeException(readResult.error);

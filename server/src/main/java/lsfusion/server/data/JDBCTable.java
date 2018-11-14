@@ -2,6 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -173,7 +174,7 @@ public class JDBCTable {
     }
 
     // для оптимизации не будем готоваить сначала set'ы / map'ы а сразу сериализуем в результат
-    public static byte[] serialize(ResultSet set) throws IOException, SQLException {
+    public static RawFileData serialize(ResultSet set) throws IOException, SQLException {
         ResultSetMetaData metaData = set.getMetaData();
 
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -205,12 +206,11 @@ public class JDBCTable {
             }
         }
         o.writeBoolean(false);
-        return b.toByteArray();
+        return new RawFileData(b);
     }
 
-    public static JDBCTable deserializeJDBC(byte[] array) throws IOException {
-        ByteArrayInputStream b = new ByteArrayInputStream(array);
-        DataInputStream in = new DataInputStream(b);
+    public static JDBCTable deserializeJDBC(RawFileData rawFileData) throws IOException {
+        DataInputStream in = new DataInputStream(rawFileData.getInputStream());
 
         boolean singleRow = in.readBoolean();
         int fieldCount = in.readInt();

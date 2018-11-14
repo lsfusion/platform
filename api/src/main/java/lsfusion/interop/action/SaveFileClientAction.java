@@ -1,17 +1,19 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.RawFileData;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SaveFileClientAction extends ExecuteClientAction {
-    public final byte[] file;
+    public final RawFileData file;
     public final String path;
     public final boolean relative;
     public final boolean noDialog;
     public final boolean append;
 
-    public SaveFileClientAction(byte[] file, String path, boolean relative, boolean noDialog, boolean append) {
+    public SaveFileClientAction(RawFileData file, String path, boolean relative, boolean noDialog, boolean append) {
         this.file = file;
         this.path = path;
         this.relative = relative;
@@ -19,8 +21,8 @@ public class SaveFileClientAction extends ExecuteClientAction {
         this.append = append;
     }
     
-    public Map<String, byte[]> getFileMap() {
-        Map<String, byte[]> result = new HashMap<>();
+    public Map<String, RawFileData> getFileMap() {
+        Map<String, RawFileData> result = new HashMap<>();
         result.put(noDialog && relative ? (System.getProperty("user.home") + "/Downloads/" + path) : path, file);
         return result;
     }

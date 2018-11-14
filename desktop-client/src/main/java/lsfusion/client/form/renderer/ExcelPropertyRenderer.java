@@ -1,5 +1,6 @@
 package lsfusion.client.form.renderer;
 
+import lsfusion.base.RawFileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.logics.ClientPropertyDraw;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
@@ -19,7 +20,7 @@ public class ExcelPropertyRenderer extends FilePropertyRenderer {
         if (value != null) {
             String extension = "xls";
             try {
-                if (DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream((byte[]) value))) {
+                if (DocumentFactoryHelper.hasOOXMLHeader(((RawFileData) value).getInputStream())) {
                     extension = "xlsx";
                 }
             } catch (IOException ignored) {}
