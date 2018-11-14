@@ -3509,7 +3509,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps, FormEntity formEntity, boolean noHeader, String charset, String separator, LCPWithParams rootProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps,
+                                                             FormEntity formEntity, LCPWithParams sheet, boolean sheetAll, boolean noHeader, boolean attr, String charset, String separator,
+                                                             LCPWithParams rootProp, LCPWithParams whereProp,  LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = new ArrayList<>();
         boolean hasFileProps = fileProps != null && !fileProps.isEmpty();
         boolean isPlain = format != null ? format.isPlain() : hasFileProps;
@@ -3534,11 +3536,20 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
+        if(attr)
+            errLog.emitSimpleError(parser, "IMPORT form with ATTR not supported");
+        if(whereProp != null)
+            errLog.emitSimpleError(parser, "IMPORT form with WHERE not supported");
+        if(memoProp != null)
+            errLog.emitSimpleError(parser, "IMPORT form with MEMO not supported");
+
         if(rootProp != null)
             params.add(rootProp);
+        if(sheet != null)
+            params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.<GroupObjectEntity>EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, false, separator, noHeader, charset, false), params);
+        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, charset, whereProp != null), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
