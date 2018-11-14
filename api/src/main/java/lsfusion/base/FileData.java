@@ -1,8 +1,9 @@
 package lsfusion.base;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class FileData {
+public class FileData implements Serializable {
 
     private final RawFileData fileData;
     private final String extension;

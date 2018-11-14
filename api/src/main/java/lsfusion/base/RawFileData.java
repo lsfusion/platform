@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
-public class RawFileData {
+public class RawFileData implements Serializable {
 
     public static final RawFileData EMPTY = new RawFileData(new byte[0]);
     
