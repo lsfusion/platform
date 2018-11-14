@@ -1994,11 +1994,6 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 	;
 
-hasListOptionLiteral returns [boolean val]
-	:	'LIST' { $val = true; }
-	|	'TABLE' { $val = false; }
-	;
-
 importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
     List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
@@ -2093,18 +2088,18 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	String charset = null;
 	boolean attr = false;
 	LCPWithParams root = null;
-	Boolean hasListOption = null;
+	LCPWithParams tag = null;
 
 }
 @after {
 	if (inMainParseState()) {
 			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
-			                                                 root, hasListOption, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
+			                                                 root, tag, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {root = $rootProperty.property; })? (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?  ('ATTR' { attr = true; })?
-	    |  	'JSON' { exportType = FormIntegrationType.JSON; } (listOption = hasListOptionLiteral { hasListOption = $listOption.val; })?
+		(	'XML' { exportType = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {tag = $tagProperty.property; })? ('ATTR' { attr = true; })?
+	    |  	'JSON' { exportType = FormIntegrationType.JSON; }
 		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
 		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'XLS' { exportType = FormIntegrationType.XLS; } ('NOHEADER' { noHeader = true; })?

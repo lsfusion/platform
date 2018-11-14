@@ -220,7 +220,7 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
             try(DataSession session = createSession()) {
-                Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
+                Object userId = authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(100)));
                 if (userId != null) return localize("{logics.error.user.duplicate}");
 
                 Object emailId = businessLogics.authenticationLM.contactEmail.read(session, new DataObject(email, StringClass.get(50)));
@@ -263,8 +263,8 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     public User readUser(String login, boolean insensitive, DataSession session) throws SQLException, SQLHandledException {
-        Long userId = insensitive ? (Long) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(30))) :
-                (Long) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
+        Long userId = insensitive ? (Long) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(100))) :
+                (Long) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(100)));
         if (userId == null) {
             return null;
         }

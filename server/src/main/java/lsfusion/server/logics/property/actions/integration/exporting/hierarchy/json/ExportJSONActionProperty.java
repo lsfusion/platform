@@ -6,7 +6,6 @@ import lsfusion.server.form.entity.FormSelector;
 import lsfusion.server.form.entity.ObjectSelector;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.ExportHierarchicalActionProperty;
 import lsfusion.server.logics.property.actions.integration.hierarchy.json.JSONNode;
@@ -19,11 +18,11 @@ import java.io.PrintWriter;
 public class ExportJSONActionProperty<O extends ObjectSelector> extends ExportHierarchicalActionProperty<JSONNode, O> {
 
     public ExportJSONActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
-                                    FormIntegrationType staticType, LCP exportFile, String charset, CalcProperty root) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, root);
+                                    FormIntegrationType staticType, LCP exportFile, String charset) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFile, charset, null, null);
     }
 
-    protected JSONNode createRootNode(String root) {
+    protected JSONNode createRootNode(String root, String tag) {
         return new JSONNode(new JSONObject());
     }
 
