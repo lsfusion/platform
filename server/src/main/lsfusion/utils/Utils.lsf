@@ -45,7 +45,7 @@ setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)';
 
 printToLog 'Записать в лог'  INTERNAL  'lsfusion.utils.utils.PrintToLogActionProperty' (TEXT);
 logToFile (VARSTRING[1000] file, TEXT message) {
-    appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message)); 
+    appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
 }
 logToFile (VARSTRING[1000] file, FILE message) {
     fileToString(message, 'UTF-8');
