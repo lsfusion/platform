@@ -2964,6 +2964,9 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    |  	'JSON' { exportType = FormIntegrationType.JSON; }
 		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
 	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
+	    |  	'XLS' { exportType = FormIntegrationType.XLS; } ('NOHEADER' { noHeader = true; })?
+	    |  	'XLSX' { exportType = FormIntegrationType.XLSX; } ('NOHEADER' { noHeader = true; })?
+	    |  	'TABLE' { exportType = FormIntegrationType.TABLE; }
 		)?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
