@@ -54,7 +54,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
             lastSheet = singleSheetIndex;
         } else {
             currentSheet = 0;
-            lastSheet = wb.getNumberOfSheets();
+            lastSheet = wb.getNumberOfSheets() - 1; //zero based
         }            
         
         finalizeInit();

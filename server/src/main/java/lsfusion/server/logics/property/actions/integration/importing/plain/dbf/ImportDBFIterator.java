@@ -85,7 +85,7 @@ public class ImportDBFIterator extends ImportPlainIterator {
             String value = where.get(4);
 
             if (record.getField(field) == null) {
-                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in IMPORT DBF: no such column"));
+                throw Throwables.propagate(new RuntimeException(String.format("Incorrect WHERE in IMPORT DBF: no such column '%s'", field)));
             }
             String fieldValue = record.getString(field, charset);
             boolean conditionResult = fieldValue == null || ignoreRowStringCondition(not, fieldValue, sign, value);
