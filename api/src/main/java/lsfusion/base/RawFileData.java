@@ -15,6 +15,7 @@ public class RawFileData {
     private final byte[] array;
 
     public RawFileData(byte[] array) {
+        assert array != null;
         this.array = array;
     }
 
