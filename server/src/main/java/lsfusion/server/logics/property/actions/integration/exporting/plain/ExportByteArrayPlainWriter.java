@@ -19,7 +19,7 @@ public abstract class ExportByteArrayPlainWriter extends ExportPlainWriter {
 
     public RawFileData release() throws IOException {
         closeWriter();
-        return new RawFileData(outputStream.toByteArray());
+        return new RawFileData(outputStream);
     }
 
     protected abstract void closeWriter() throws IOException;
