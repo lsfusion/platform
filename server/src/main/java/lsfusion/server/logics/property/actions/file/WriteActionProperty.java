@@ -129,7 +129,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         if (extension != null && !extension.isEmpty()) {
                             path += "." + extension;
                         }
-                        storeFileToFTP(path, fileBytes);
+                        storeFileToFTP(path, fileData);
                         break;
                     }
                     case "sftp": {
@@ -138,7 +138,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         if (extension != null && !extension.isEmpty()) {
                             path += "." + extension;
                         }
-                        storeFileToSFTP(path, fileBytes);
+                        storeFileToSFTP(path, fileData);
                         break;
                     }
                 }
@@ -202,7 +202,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    public static void storeFileToFTP(String path, byte[] file) throws IOException {
+    public static void storeFileToFTP(String path, RawFileData fileData) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         /*ftp://username:password;charset@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
@@ -228,7 +228,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
-                    InputStream inputStream = new ByteArrayInputStream(file);
+                    InputStream inputStream = fileData.getInputStream();
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
                     if (done)
@@ -255,7 +255,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    public static void storeFileToSFTP(String path, byte[] file) throws JSchException, SftpException {
+    public static void storeFileToSFTP(String path, RawFileData file) throws JSchException, SftpException {
         /*sftp://username:password;charset@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
@@ -286,7 +286,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 if (charset != null)
                     channelSftp.setFilenameEncoding(charset);
                 channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
-                channelSftp.put(new ByteArrayInputStream(file), remoteFile.getName());
+                channelSftp.put(file.getInputStream(), remoteFile.getName());
             } finally {
                 if (channelSftp != null)
                     channelSftp.exit();
