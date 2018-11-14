@@ -66,7 +66,7 @@ CLASS SystemUser '{authentication.system.user}' : User;
 
 CLASS CustomUser '{authentication.custom.user}' : User, Contact;
 TABLE customUser (CustomUser);
-TABLE loginSID (STRING[100], STRING[100]);
+TABLE loginSID (VARSTRING[100], VARSTRING[100]);
 
 currentUser = NATIVE User ();
 currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
@@ -80,7 +80,7 @@ currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
 
 isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
-login '{authentication.login}' = DATA STRING[100] (CustomUser);
+login '{authentication.login}' = DATA VARSTRING[100] (CustomUser);
 currentUserLogin 'Логин Тек. Польз.' () = login[CustomUser](currentUser());
 allowExcessAllocatedBytes 'Разрешено превышение allocated bytes' = DATA BOOLEAN (CustomUser);
 currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login[CustomUser](currentUser()) == 'admin';
@@ -255,7 +255,7 @@ userChanged() = DATA LOCAL BOOLEAN();
 
 // change by login and password
 FORM reloginLoginUser '{authentication.relogin}'
-    OBJECTS data = (login = STRING[100], password = STRING[30])  PANEL
+    OBJECTS data = (login = VARSTRING[100], password = STRING[30])  PANEL
     PROPERTIES valueLogin = VALUE(login), valuePassword = VALUE(password)
 ;
 
