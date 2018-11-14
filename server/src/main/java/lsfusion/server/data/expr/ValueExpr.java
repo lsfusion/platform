@@ -37,7 +37,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
             (objectClass instanceof StaticFormatFileClass && ((RawFileData)object).getLength() > 1000)) {
             int i=0;
             while(true) {
-                Value removeValue = new ValueExpr(new BigInteger(""+i).toByteArray(), (FileClass)objectClass);
+                Value removeValue = new ValueExpr(new RawFileData(new BigInteger(""+i).toByteArray()), (FileClass)objectClass);
                 if(!usedValues.contains(removeValue))
                     return removeValue;
             }
