@@ -246,13 +246,25 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
                     InputStream inputStream = new FileInputStream(file);
+                    ftpClient.changeWorkingDirectory(remoteFile);
                     boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
-                    if (done)
+                    if (done) {
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
-                    else {
-                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
-                        throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
+                    } else {
+                        if (ftpClient.getReplyCode() == 553) {
+                            File f = new File(remoteFile);
+                            if(f.getParent() != null) {
+                                ftpClient.changeWorkingDirectory(f.getParent());
+                            }
+                            done = ftpClient.storeFile(f.getName(), inputStream);
+                        }
+                        if (done) {
+                            ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
+                        } else {
+                            ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
+                            throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
+                        }
                     }
                 } else {
                     throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
