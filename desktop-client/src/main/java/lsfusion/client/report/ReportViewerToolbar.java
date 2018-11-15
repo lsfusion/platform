@@ -172,7 +172,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private JButton getAddReportButton(final EditReportInvoker editInvoker) {
         final JButton addReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/editAutoReport.png")));
-        addReportButton.setToolTipText(getString("layout.menu.file.edit.auto.report"));
+        addReportButton.setToolTipText(getString("layout.menu.file.create.custom.report"));
         addReportButton.setMargin(new Insets(2, 2, 2, 2));
         addReportButton.setMaximumSize(new Dimension(23, 23));
         addReportButton.setMinimumSize(new Dimension(23, 23));
@@ -193,8 +193,8 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private void addButtonPressed(EditReportInvoker editInvoker) {
         if(hasCustomReports) { // при добавлении, если есть уже сохраненные отчеты предлагаем их удалить
-            if(showConfirmDialog(reportViewer, getString("layout.menu.file.edit.auto.report.confirm"),
-                    getString("layout.menu.file.edit.auto.report"), JOptionPane.WARNING_MESSAGE, false) == 0) {
+            if(showConfirmDialog(reportViewer, getString("layout.menu.file.create.custom.report.confirm"),
+                    getString("layout.menu.file.create.custom.report.title"), JOptionPane.WARNING_MESSAGE, false) == 0) {
                 recreateReport(editInvoker);
                 return;
             }
