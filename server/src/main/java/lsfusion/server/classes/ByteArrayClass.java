@@ -84,7 +84,10 @@ public class ByteArrayClass extends DataClass<RawFileData> {
     }
 
     public RawFileData read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return new RawFileData(set.getBytes(name));
+        byte[] result = set.getBytes(name);
+        if(result != null)
+            return new RawFileData(result);
+        return null;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
