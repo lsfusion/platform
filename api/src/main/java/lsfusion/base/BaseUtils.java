@@ -44,7 +44,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + numRowHeight option for property
     public static Integer getApiVersion() {
-        return 75;
+        return 76;
     }
 
     public static String getPlatformVersion() {
