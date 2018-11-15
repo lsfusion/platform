@@ -92,7 +92,7 @@ public class DynamicFormatFileClass extends FileClass<FileData> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setBytes(num, ((FileData) value).getBytes());
+        statement.setBytes(num, value != null ? ((FileData) value).getBytes() : null);
     }
 
     @Override

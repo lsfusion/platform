@@ -86,7 +86,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setBytes(num, ((RawFileData) value).getBytes());
+        statement.setBytes(num, value != null ? ((RawFileData) value).getBytes() : null);
     }
 
     @Override

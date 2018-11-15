@@ -11,6 +11,7 @@ public class FileData implements Serializable {
     public final static FileData EMPTY = new FileData(RawFileData.EMPTY, "");
 
     public FileData(RawFileData fileData, String extension) {
+        assert fileData != null;
         this.fileData = fileData;
         this.extension = extension;
     }

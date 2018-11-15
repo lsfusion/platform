@@ -44,7 +44,7 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         if (exportFile.property.getType() instanceof StaticFormatFileClass) {
             exportFile.change(singleFile, context, params);
         } else {
-            exportFile.change(new FileData(singleFile, staticType.getExtension()), context, params);
+            exportFile.change(singleFile != null ? new FileData(singleFile, staticType.getExtension()) : null, context, params);
         }
     }
 
