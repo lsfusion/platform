@@ -322,23 +322,41 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             if(mnum==0)
                 return false;
         }
+        
+        // in theory it makes sense to add optimization : for all K that has class in andFrom in all wheres, none of wheres classes contains all andFrom classes, calculate or of all wheres classes and check if it containsAll classes from andFrom if it doesn't return false (because for that class right part will be true and left false)  
+        // but knfComplexityThreshold does pretty the same optimization, so we will not add it for now
 
-        boolean result = getKNF().meansFrom(andFrom, implicitCast);
-//        assert result == getPrevKNF().meansFrom(andFrom);
-        return result;
+        Object knfs = getKNF();
+        if(knfs instanceof KNF)
+            return ((KNF<K>)knfs).meansFrom(andFrom, implicitCast);
+        
+        return meansFrom((Or<K>[][])knfs, andFrom, implicitCast);
     }
 
-    private KNF<K> knf;
+    private Object knf;
     @ManualLazy
-    private KNF<K> getKNF() {
+    private Object getKNF() {
         if(knf==null) {
             if(wheres.length==0)
                 knf = KNF.STATIC(false);
             else {
                 KNF<K>[] knfs = new KNF[wheres.length];
-                for (int i = 0; i < wheres.length; i++)
-                    knfs[i] = new KNF<>(KNF.toOr(wheres[i]));
+                
+                int[] complexities = new int[wheres.length];
+                int baseComplexity = 0;
+                
+                for (int i = 0; i < wheres.length; i++) {
+                    KNF<K> knf = new KNF<>(KNF.toOr(wheres[i]));
+                    knfs[i] = knf;
+                    
+                    int complexity = knf.getComplexity();
+                    complexities[i] = complexity;
+                    baseComplexity += complexity;
+                }
 
+                int totalComplexity = baseComplexity;
+                int knfCount = knfs.length;
+                
                 for(int p=0;p<wheres.length-1;p++) {
                     // сначала ищем наиболее похожие
                     BaseUtils.Paired<Or<K>> max = null; int lm=0; int rm = 0;
@@ -352,14 +370,34 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                                     }
                                 }
                         }
-                    knfs[lm] = KNF.orPairs(max);
+                        
+                    KNF<K> knf = KNF.orPairs(max);
+
+                    // optimization for large knf's
+                    int complexity = knf.getComplexity();
+                    totalComplexity += complexity - complexities[lm] - complexities[rm];
+                    if(totalComplexity > baseComplexity * knfComplexityThreshold) {// if complexity grows really fast switching to incomplete mode
+                        Or<K>[][] result = new Or[knfCount][]; int rc = 0;
+                        for(int i=0;i<knfs.length;i++)
+                            if(knfs[i] != null) {
+                                result[rc++] = knfs[i].wheres;
+                            }
+                        this.knf = result;
+                        return this.knf;
+                    }
+                    knfCount--;
+                    complexities[lm] = complexity;
+
+                    knfs[lm] = knf;
                     knfs[rm] = null;
-                }
-                knf = knfs[0];
+                }                                
+                this.knf = knfs[0]; 
             }
         }
         return knf;
     }
+    
+    public static int knfComplexityThreshold = 10;    
 
     public static class Or<K> extends NF<K,OrClassSet> {
 
@@ -420,6 +458,12 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return isTrue ? TRUE : FALSE;
         }
         
+        public int getComplexity() {
+            int result = 0;
+            for(Or<K> where : wheres)
+                result += where.size();
+            return result;
+        }
 
         protected KNF<K> createThis(Or<K>[] wheres) {
             return new KNF<>(wheres);
@@ -475,6 +519,31 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
                 if(!where.meansFrom(andFrom, implicitCast)) return false;
             return true;
         }
+    }
+
+    private final static ArrayInstancer<Or> arrayInstancer = new ArrayInstancer<Or>() {
+        public Or[] newArray(int size) {
+            return new Or[size];
+        }
+    };
+    private static <K> ArrayInstancer<Or<K>> arrayInstancer() {
+        return BaseUtils.immutableCast(arrayInstancer);
+    }
+            
+    // optimization for large knf's
+    // we are sort of finishing single knf computation (but we can exit a lot ealier)
+    public static <K> boolean meansFrom(Or<K>[][] knfs, And<K> andFrom, boolean implicitCast) {
+        assert knfs.length > 1;
+        ArrayCombinations<Or<K>> combinations = new ArrayCombinations<>(knfs, AbstractClassWhere.<K>arrayInstancer());
+        for(Or<K>[] wheres : combinations) {
+            Or<K> orResult = wheres[0]; 
+            for(int i=1;i<wheres.length;i++) {
+                orResult = orResult.intersect(wheres[i]);
+            }
+            if(!orResult.meansFrom(andFrom, implicitCast))
+                return false;
+        }
+        return true;
     }
 
     private static <K,V,VThis extends AbstractClassWhere<V,VThis>> And<K>[] initMapKeys(VThis classes,ImRevMap<V,K> map) {
