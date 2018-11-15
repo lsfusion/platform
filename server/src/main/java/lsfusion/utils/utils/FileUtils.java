@@ -12,15 +12,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,7 +146,9 @@ public class FileUtils {
 
             ftpClient.connect(ftpPath.server, ftpPath.port);
             if (ftpClient.login(ftpPath.username, ftpPath.password)) {
-                ftpClient.enterLocalPassiveMode();
+                if(ftpPath.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 boolean dirExists = true;
@@ -238,7 +242,9 @@ public class FileUtils {
                 ftpClient.setControlEncoding(ftpPath.charset);
             ftpClient.connect(ftpPath.server, ftpPath.port);
             ftpClient.login(ftpPath.username, ftpPath.password);
-            ftpClient.enterLocalPassiveMode();
+            if(ftpPath.passiveMode) {
+                ftpClient.enterLocalPassiveMode();
+            }
 
             InputStream inputStream = ftpClient.retrieveFileStream(ftpPath.remoteFile);
             int returnCode = ftpClient.getReplyCode();
@@ -294,7 +300,9 @@ public class FileUtils {
             ftpClient.setControlEncoding(ftpPath.charset != null ? ftpPath.charset : charset);
             ftpClient.connect(ftpPath.server, ftpPath.port);
             ftpClient.login(ftpPath.username, ftpPath.password);
-            ftpClient.enterLocalPassiveMode();
+            if(ftpPath.passiveMode) {
+                ftpClient.enterLocalPassiveMode();
+            }
 
             Map<String, Boolean> result = new HashMap<>();
             if (ftpPath.remoteFile == null || ftpPath.remoteFile.isEmpty() || ftpClient.changeWorkingDirectory(ftpPath.remoteFile)) {
@@ -348,20 +356,35 @@ public class FileUtils {
 
     private static FTPPath parseFTPPath(String path, Integer defaultPort) {
         /*username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]*))?(?:/(.*))?");
+        Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]+))?(?:/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1);
             String password = connectionStringMatcher.group(2);
             String charset = connectionStringMatcher.group(3);
             String server = connectionStringMatcher.group(4);
-            boolean noPort = connectionStringMatcher.groupCount() == 5;
-            Integer port = noPort || connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
-            String remoteFile = connectionStringMatcher.group(noPort ? 5 : 6);
-            return new FTPPath(username, password, charset, server, port, remoteFile);
+            Integer port = connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
+            String remoteFile = connectionStringMatcher.group(6);
+            List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8);
+            boolean passiveMode = isPassiveMode(extraParams);
+            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
         } else {
             throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file");
         }
+    }
+
+    private static boolean isPassiveMode(List<NameValuePair> queryParams) {
+        String result = getParameterValue(queryParams, "passivemode");
+        return result == null || result.equals("true");
+    }
+
+    private static String getParameterValue(List<NameValuePair> queryParams, String key) {
+        List<String> values = new ArrayList<>();
+        for(NameValuePair queryParam : queryParams) {
+            if(queryParam.getName().equalsIgnoreCase(key))
+                values.add(queryParam.getValue());
+        }
+        return values.isEmpty() ? null : values.get(0);
     }
 
     private static class FTPPath {
@@ -371,14 +394,16 @@ public class FileUtils {
         String server;
         Integer port;
         String remoteFile;
+        boolean passiveMode;
 
-        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile) {
+        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile, boolean passiveMode) {
             this.username = username;
             this.password = password;
             this.charset = charset;
             this.server = server;
             this.port = port;
             this.remoteFile = remoteFile;
+            this.passiveMode = passiveMode;
         }
     }
 }
