@@ -3115,7 +3115,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAPWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
-                                                                            boolean noHeader, String separator, String charset, PropertyUsage propUsage, OrderedMap<GroupObjectEntity, PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+                                                                            LCPWithParams rootProperty, LCPWithParams tagProperty, boolean attr,
+                                                                            boolean noHeader, String separator, boolean noEscape, String charset, PropertyUsage propUsage,
+                                                                            OrderedMap<GroupObjectEntity, PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
 
@@ -3157,8 +3159,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
+        if(rootProperty != null) {
+            errLog.emitSimpleError(parser, "EXPORT form with ROOT not supported");
+        }
+        if(tagProperty != null) {
+            errLog.emitSimpleError(parser, "EXPORT form with TAG not supported");
+        }
+        if(attr) {
+            errLog.emitSimpleError(parser, "EXPORT form with ATTR not supported");
+        }
+
         LAP property = addEFAProp(null, LocalizedString.NONAME, mapped.form, mObjects.immutableList(), mNulls.immutableList(),
-                exportType, noHeader, separator, true, charset, null, null, singleExportFile, exportFiles.immutable());
+                exportType, noHeader, separator, noEscape, charset, null, null, singleExportFile, exportFiles.immutable());
 
         if (mapping.size() > 0) {
             return addScriptedJoinAProp(property, mapping);
@@ -3471,7 +3483,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             fileProp = new LCPWithParams(baseLM.importFile);
 
         if(toParamClasses != null && toParamClasses.size() > 1) {
-            errLog.emitSimpleError(parser, "IMPORT TO/FIELDS params with multiple classes is not supported");
+            errLog.emitSimpleError(parser, "IMPORT TO/FIELDS params with multiple classes not supported");
         }
 
         ImList<LCP> props;

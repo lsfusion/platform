@@ -2076,12 +2076,9 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @init {
 	List<TypedParameter> newContext = new ArrayList<>(context); 
 
-	FormIntegrationType exportType = null;
-
+    FormIntegrationType format = null;
     List<LCPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
-	LCPWithParams sheet = null;
-	LCPWithParams memo = null;
 	String separator = null;
 	boolean noHeader = false;
 	boolean noEscape = false;
@@ -2093,20 +2090,13 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-			$property = self.addScriptedExportActionProperty(context, newContext, exportType, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
+			$property = self.addScriptedExportActionProperty(context, newContext, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
 			                                                 root, tag, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
-		(	'XML' { exportType = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {tag = $tagProperty.property; })? ('ATTR' { attr = true; })?
-	    |  	'JSON' { exportType = FormIntegrationType.JSON; }
-		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })?
-		                                               ('NOESCAPE' { noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'XLS' { exportType = FormIntegrationType.XLS; } ('NOHEADER' { noHeader = true; })?
-	    |  	'XLSX' { exportType = FormIntegrationType.XLSX; } ('NOHEADER' { noHeader = true; })?
-	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'TABLE' { exportType = FormIntegrationType.TABLE; }
-		)?
+	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; noEscape = $type.noEscape;
+	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
@@ -2940,26 +2930,34 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 
 exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAPWithParams property]
 @init {
-	FormIntegrationType exportType = null;
+    FormIntegrationType format = null;
+	String separator = null;
 	boolean noHeader = false;
-    String separator = null;
+	boolean noEscape = false;
 	String charset = null;
+	boolean attr = false;
+	LCPWithParams root = null;
+	LCPWithParams tag = null;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, exportType, noHeader, separator, charset, $pUsage.propUsage, $pUsages.pUsages);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, noHeader, separator, noEscape, charset, $pUsage.propUsage, $pUsages.pUsages);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(	'XML' { exportType = FormIntegrationType.XML; }
-	    |  	'JSON' { exportType = FormIntegrationType.JSON; }
-		|  	'CSV' { exportType = FormIntegrationType.CSV; } (separatorVal = stringLiteral { separator = $separatorVal.val; })? ('NOHEADER' { noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'DBF' { exportType = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { charset = $charsetVal.val; })?
-	    |  	'XLS' { exportType = FormIntegrationType.XLS; } ('NOHEADER' { noHeader = true; })?
-	    |  	'XLSX' { exportType = FormIntegrationType.XLSX; } ('NOHEADER' { noHeader = true; })?
-	    |  	'TABLE' { exportType = FormIntegrationType.TABLE; }
-		)?
+		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; noEscape = $type.noEscape;
+        	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
+	;
+
+exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean noHeader, boolean noEscape, String charset, LCPWithParams root, LCPWithParams tag, boolean attr]
+	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('NOESCAPE' { $noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+    |	'DBF' { $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+    |   'XLS' { $format = FormIntegrationType.XLS; } ('NOHEADER' { $noHeader = true; })?
+    |   'XLSX' { $format = FormIntegrationType.XLSX; } ('NOHEADER' { $noHeader = true; })?
+	|	'JSON' { $format = FormIntegrationType.JSON; }
+	|	'XML' { $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })?
+	|	'TABLE' { $format = FormIntegrationType.TABLE; }
 	;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, PropertyUsage> pUsages]
