@@ -344,7 +344,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 returnList.addAll(readReturnProperty(session, businessLogics.LM.exportFile));
             }
 
-            session.applyException(businessLogics, stack);
+//            session.applyException(businessLogics, stack);
         }
         return returnList;
     }
