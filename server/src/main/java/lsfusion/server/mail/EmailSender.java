@@ -147,7 +147,8 @@ public class EmailSender {
         if(inlineFiles.isEmpty())
             inlineFiles = Collections.singletonList(new RawFileData(localize("{mail.you.have.received.reports}").getBytes()));
         for(RawFileData inlineFile : inlineFiles)
-            setText(mp, new String(inlineFile.getBytes()));
+            if(inlineFile != null)
+                setText(mp, new String(inlineFile.getBytes()));
 
         for (AttachmentFile attachment : attachments)
             attachFile(mp, attachment);

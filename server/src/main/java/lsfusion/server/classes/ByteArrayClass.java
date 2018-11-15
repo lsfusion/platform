@@ -8,7 +8,6 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.i18n.LocalizedString;
-import net.iryndin.jdbf.core.DbfRecord;
 import org.apache.commons.net.util.Base64;
 
 import java.nio.charset.Charset;
@@ -89,7 +88,7 @@ public class ByteArrayClass extends DataClass<RawFileData> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setBytes(num, ((RawFileData) value).getBytes());
+        statement.setBytes(num, value != null ? ((RawFileData) value).getBytes() : null);
     }
 
     @Override
