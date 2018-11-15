@@ -234,8 +234,8 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     if (done)
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
-                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
-                        throw new RuntimeException("Some error occurred while writing file to ftp");
+                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
+                        throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
                     }
                 } else {
                     throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
