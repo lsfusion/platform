@@ -2245,9 +2245,9 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, PropertyU
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, LCPWithParams where, String separator, boolean noHeader, String charset, LCPWithParams root, boolean attr]
-	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' 	{ $format = FormIntegrationType.XLS; } ('NOHEADER' { $noHeader = true; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
@@ -2950,13 +2950,18 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	;
 
 exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean noHeader, boolean noEscape, String charset, LCPWithParams root, LCPWithParams tag, boolean attr]
-	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('NOESCAPE' { $noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('NOESCAPE' { $noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF' { $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' { $format = FormIntegrationType.XLS; } ('NOHEADER' { $noHeader = true; })?
-    |   'XLSX' { $format = FormIntegrationType.XLSX; } ('NOHEADER' { $noHeader = true; })?
+    |   'XLS' { $format = FormIntegrationType.XLS; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })?
+    |   'XLSX' { $format = FormIntegrationType.XLSX; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })?
 	|	'JSON' { $format = FormIntegrationType.JSON; }
 	|	'XML' { $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'TABLE' { $format = FormIntegrationType.TABLE; }
+	;
+
+noHeaderOption returns [boolean noHeader]
+    :	'HEADER' { $noHeader = false; }
+    |	'NOHEADER'{ $noHeader = true; }
 	;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, PropertyUsage> pUsages]
