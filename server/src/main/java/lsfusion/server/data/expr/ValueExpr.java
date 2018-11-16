@@ -34,17 +34,17 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
 
     public Value removeBig(MAddSet<Value> usedValues) {
         if(objectClass instanceof DynamicFormatFileClass && ((FileData)object).getLength() > 1000) {
-            int i=0;
+            int i=usedValues.size();
             while(true) {
-                Value removeValue = new ValueExpr(new FileData(new RawFileData(new BigInteger(""+i).toByteArray()), ""), (DynamicFormatFileClass)objectClass);
+                Value removeValue = new ValueExpr(new FileData(new RawFileData(new BigInteger(""+(i++)).toByteArray()), ""), (DynamicFormatFileClass)objectClass);
                 if(!usedValues.contains(removeValue))
                     return removeValue;
             }
         }
         if(objectClass instanceof StaticFormatFileClass && ((RawFileData)object).getLength() > 1000) {
-            int i=0;
+            int i=usedValues.size();
             while(true) {
-                Value removeValue = new ValueExpr(new RawFileData(new BigInteger(""+i).toByteArray()), (StaticFormatFileClass)objectClass);
+                Value removeValue = new ValueExpr(new RawFileData(new BigInteger(""+(i++)).toByteArray()), (StaticFormatFileClass)objectClass);
                 if(!usedValues.contains(removeValue))
                     return removeValue;
             }
