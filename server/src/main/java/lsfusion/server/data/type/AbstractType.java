@@ -6,8 +6,8 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
-import net.iryndin.jdbf.core.DbfField;
 import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
@@ -155,7 +155,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
             default:
                 cellValue = formulaValue.formatAsString();
         }
-        return parseNullableString(cellValue, false); // there is parseexception check anyway
+        return parseNullableString(cellValue, false);
     }
 
     @Override
@@ -178,8 +178,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public Object formatXLS(T object) {
-        return formatNullableString(object, false); // xls supports nulls
+    public void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles) {
+        String formatted = formatNullableString(object, false); // xls supports nulls
+        if(formatted != null)
+            cell.setCellValue(formatted);
     }
 
     protected T readDBF(Object object) {

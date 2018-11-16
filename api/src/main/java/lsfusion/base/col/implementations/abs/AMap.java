@@ -147,6 +147,18 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mResult.immutableRev().reverse();
     }
 
+    public ImRevMap<K, V> toRevMap(ImOrderSet<K> interfaces) {
+        assert size() == interfaces.size();
+        MRevMap<V, K> mResult = MapFact.mRevMapMax(interfaces.size());
+        for(int i=0,size=size();i<size;i++) {
+            K key = interfaces.get(i);
+            V value = get(key);
+            if(!mResult.containsKey(value))
+                mResult.revAdd(value, key);
+        }
+        return mResult.immutableRev().reverse();
+    }
+
     public ImRevMap<K, V> toRevExclMap() {
         MRevMap<K, V> mResult = MapFact.mRevMapMax(size());
         for(int i=0,size=size();i<size;i++)

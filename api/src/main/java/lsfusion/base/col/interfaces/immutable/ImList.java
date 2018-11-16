@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 import java.util.List;
 
+// can contain nulls
 public interface ImList<K> extends Iterable<K> {
 
     int size();

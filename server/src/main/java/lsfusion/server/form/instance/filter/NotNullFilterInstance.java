@@ -66,7 +66,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
             return;
 
         ImRevMap<P, KeyExpr> mapKeys = property.property.getMapKeys();
-        ImRevMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap().crossJoin(mapKeys);
+        ImRevMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap(property.property.getFriendlyOrderInterfaces()).crossJoin(mapKeys);
         property.property.setNotNull(mapKeys, getChangedWhere(object, mapObjects, addObject), env, true, stack);
     }
 }

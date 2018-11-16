@@ -72,6 +72,15 @@ public abstract class AOrderSet<K> extends AList<K> implements ImOrderSet<K> {
         return SetFact.imOrderFilter(mResult, this);
     }
 
+    @Override
+    public ImRevMap<Integer, K> toIndexedMap() {
+        return mapOrderRevKeys(new GetIndex<Integer>() {
+            public Integer getMapValue(int i) {
+                return i;
+            }
+        });
+    }
+
     public ImOrderSet<K> removeOrder(ImSet<? extends K> ks) {
         return filterOrder(new NotFunctionSet<>((FunctionSet<K>) ks));
     }

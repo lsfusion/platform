@@ -12,6 +12,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -126,14 +127,13 @@ public class DateClass extends DataClass<Date> {
     }
     @Override
     public Date parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
-        java.util.Date cellValue = null;
+        java.util.Date cellValue;
         try {
             cellValue = cell.getDateCellValue();
-        } catch (IllegalStateException e) {            
+        } catch (IllegalStateException e) {
+            return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try to parse it as a string
         }
-        if(cellValue != null)
-            return readXLS(cellValue);
-        return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try
+        return readXLS(cellValue);
     }
 
     public Date parseString(String s) throws ParseException {
@@ -170,8 +170,11 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Object formatXLS(Date object) {
-        return object;
+    public void formatXLS(Date object, Cell cell, ExportXLSWriter.Styles styles) {
+        if (object != null) {
+            cell.setCellValue(object);
+        }
+        cell.setCellStyle(styles.date);
     }
 
     @Override

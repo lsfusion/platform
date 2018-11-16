@@ -5,6 +5,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -142,8 +143,9 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     }
 
     @Override
-    public Object formatXLS(T object) {
-        return object == null ? null : object.doubleValue();
+    public void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles) {
+        if(object != null)
+            cell.setCellValue(object.doubleValue());
     }
 
     @Override

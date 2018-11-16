@@ -11,6 +11,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -174,8 +175,11 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     @Override
-    public Object formatXLS(Timestamp object) {
-        return object;
+    public void formatXLS(Timestamp object, Cell cell, ExportXLSWriter.Styles styles) {
+        if(object != null) {
+            cell.setCellValue(object);
+        }
+        cell.setCellStyle(styles.dateTime);
     }
 
     @Override

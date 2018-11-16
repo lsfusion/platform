@@ -1,7 +1,9 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
 
 import java.io.ByteArrayOutputStream;

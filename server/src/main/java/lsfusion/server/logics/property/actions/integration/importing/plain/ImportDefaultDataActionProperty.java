@@ -9,7 +9,6 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.importing.plain.csv.ImportCSVIterator;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.ImportDBFIterator;
-import lsfusion.server.logics.property.actions.integration.importing.plain.mdb.ImportMDBIterator;
 import lsfusion.server.logics.property.actions.integration.importing.plain.table.ImportTableIterator;
 import lsfusion.server.logics.property.actions.integration.importing.plain.xls.ImportXLSIterator;
 import org.jdom.JDOMException;
@@ -40,8 +39,6 @@ public class ImportDefaultDataActionProperty {
 //                return new ImportDBFIterator(fieldTypes, file, null, null, null);
 //            case "jdbc":
 //                return new ImportTableIterator(fieldTypes, file);
-//            case "mdb":
-//                return new ImportMDBIterator(fieldTypes, file);
 //            default:
 //                throw new UnsupportedOperationException(String.format("Unsupported file format '%s'", extension));
 //        }
