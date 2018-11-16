@@ -39,7 +39,8 @@ richTextToString 'Приведение RichText к строке' INTERNAL 'lsfus
 appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
 appendToFile(VARSTRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
-setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)';
+setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)'; // for RAWFILE, PDFFILE...
+changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extension); // for FILE
 
 // --------------------------------- Logging --------------------------------- //
 
