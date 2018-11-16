@@ -1,5 +1,6 @@
 package lsfusion.server.form.view.report;
 
+import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.SplitTypeEnum;
 
@@ -43,6 +44,18 @@ public abstract class ReportLayout {
         }
 
         return rowCount;
+    }
+
+    public static abstract class BandSection {
+        public abstract void setBand(JRBand band);
+    }
+
+    public static abstract class MultipleBandSection extends BandSection {
+        public void setBand(JRBand band) {
+            addBand(band);
+        }
+
+        public abstract void addBand(JRBand band);
     }
 }
 
@@ -91,12 +104,12 @@ class ReportGroupRowLayout extends ReportGroupLayout {
 
     protected JRDesignBand groupBand;
 
-    public ReportGroupRowLayout(JRDesignGroup designGroup, int rowHeight) {
+    public ReportGroupRowLayout(BandSection section, int rowHeight) {
         super(rowHeight);
 
         groupBand = new JRDesignBand();
         groupBand.setSplitType(SplitTypeEnum.PREVENT);
-        ((JRDesignSection)designGroup.getGroupHeaderSection()).addBand(groupBand);
+        section.setBand(groupBand);
     }
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
@@ -144,16 +157,16 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
     protected JRDesignBand captionGroupBand;
     protected JRDesignBand textGroupBand;
 
-    public ReportGroupColumnLayout(JRDesignGroup captionGroup, JRDesignGroup textGroup, int rowHeight) {
+    public ReportGroupColumnLayout(MultipleBandSection designSection, int rowHeight) {
         super(rowHeight);
 
         captionGroupBand = new JRDesignBand();
         captionGroupBand.setSplitType(SplitTypeEnum.PREVENT);
-        ((JRDesignSection)captionGroup.getGroupHeaderSection()).addBand(captionGroupBand);
+        designSection.addBand(captionGroupBand);
 
         textGroupBand = new JRDesignBand();
         textGroupBand.setSplitType(SplitTypeEnum.PREVENT);
-        ((JRDesignSection)textGroup.getGroupHeaderSection()).addBand(textGroupBand);
+        designSection.addBand(textGroupBand);
     }
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
