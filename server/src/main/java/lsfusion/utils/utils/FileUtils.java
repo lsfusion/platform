@@ -44,10 +44,10 @@ public class FileUtils {
                 try {
                     switch (destPath.type) {
                         case "ftp":
-                            WriteActionProperty.storeFileToFTP(destinationPath, sourceFile);
+                            WriteActionProperty.storeFileToFTP(destinationPath, sourceFile, null);
                             break;
                         case "sftp":
-                            WriteActionProperty.storeFileToSFTP(destinationPath, sourceFile);
+                            WriteActionProperty.storeFileToSFTP(destinationPath, sourceFile, null);
                             break;
                         default:
                             ServerLoggers.importLogger.info(String.format("Writing file to %s", destinationPath));

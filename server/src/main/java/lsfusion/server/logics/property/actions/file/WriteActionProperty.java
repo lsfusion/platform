@@ -128,13 +128,9 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                             throw new RuntimeException("APPEND is not supported in WRITE to FTP");
                         File file = null;
                         try {
-                            //для ftp и sftp пока оставляем старую схему - добавляем расширение всегда
-                            if (extension != null && !extension.isEmpty()) {
-                                path += "." + extension;
-                            }
                             file = File.createTempFile("downloaded", ".tmp");
                             fileData.write(file);
-                            storeFileToFTP(path, file);
+                            storeFileToFTP(path, file, extension);
                         } finally {
                             if (file != null && !file.delete())
                                 file.deleteOnExit();
@@ -146,12 +142,9 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                             throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
                         File file = null;
                         try {
-                            if (extension != null && !extension.isEmpty()) {
-                                path += "." + extension;
-                            }
                             file = File.createTempFile("downloaded", ".tmp");
                             fileData.write(file);
-                            storeFileToSFTP(path, file);
+                            storeFileToSFTP(path, file, extension);
                         } finally {
                             if (file != null && !file.delete())
                                 file.deleteOnExit();
@@ -219,10 +212,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    public static void storeFileToFTP(String path, File file) throws IOException {
+    public static void storeFileToFTP(String path, File file, String extension) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 21);
         if (properties != null) {
+            String remoteFile = properties.remoteFile;
+            if (extension != null && !extension.isEmpty()) {
+                remoteFile += "." + extension;
+            }
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
             if (properties.charset != null)
@@ -238,7 +235,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
                     InputStream inputStream = new FileInputStream(file);
-                    boolean done = ftpClient.storeFile(properties.remoteFile, inputStream);
+                    boolean done = ftpClient.storeFile(remoteFile, inputStream);
                     inputStream.close();
                     if (done)
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
@@ -264,11 +261,15 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    public static void storeFileToSFTP(String path, File file) throws JSchException, SftpException, FileNotFoundException {
+    public static void storeFileToSFTP(String path, File file, String extension) throws JSchException, SftpException, FileNotFoundException {
         /*sftp://username:password;charset@host:port/path_to_file*/
         ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 22);
         if (properties != null) {
-            File remoteFile = new File((!properties.remoteFile.startsWith("/") ? "/" : "") + properties.remoteFile);
+            String remoteFilePath = properties.remoteFile;
+            if (extension != null && !extension.isEmpty()) {
+                remoteFilePath += "." + extension;
+            }
+            File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
 
             Session session = null;
             Channel channel = null;

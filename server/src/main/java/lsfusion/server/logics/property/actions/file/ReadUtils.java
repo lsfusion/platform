@@ -135,9 +135,9 @@ public class ReadUtils {
                 ServerLoggers.importLogger.info(String.format("Writing file to %s", movePath));
                 FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
             } else if (movePath.startsWith("ftp://"))
-                WriteActionProperty.storeFileToFTP(movePath, file);
+                WriteActionProperty.storeFileToFTP(movePath, file, null);
             else if (movePath.startsWith("sftp://"))
-                WriteActionProperty.storeFileToSFTP(movePath, file);
+                WriteActionProperty.storeFileToSFTP(movePath, file, null);
             else
                 throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath + ", supports only file, ftp, sftp"));
         }
