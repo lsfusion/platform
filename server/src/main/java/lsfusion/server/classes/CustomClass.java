@@ -346,7 +346,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private abstract class ClassFormHolder {
-        private NFProperty<ClassFormEntity> form = NFFact.property(true); // temporary until getAddFormAction и т.п. getEditForm уйдут
+        private NFProperty<ClassFormEntity> form = NFFact.property();
         private boolean isUsed = false;
 
         public ClassFormEntity getForm(final BaseLogicsModule LM) {
@@ -437,21 +437,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 }
             
             return null;
-        }        
-
-        public ClassFormEntity getNFForm(BaseLogicsModule LM, Version version) { // temp
-            ClassFormEntity classForm = form.getNF(version);
-            if (classForm != null) {
-                return classForm;
-            }
-
-            classForm = addDefaultForm(LM);
-            
-            form.set(classForm, version);
-
-            return classForm;
         }
-        
+
         @IdentityStrongLazy
         private ClassFormEntity addDefaultForm(BaseLogicsModule LM) {
             ClassFormEntity classForm = createDefaultForm(LM);
@@ -541,10 +528,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             concreteCustomClass = (ConcreteCustomClass) concreteClass;
             
         return editFormHolder.getPolyForm(LM, concreteCustomClass);
-    }
-    // когда убирать, убрать в ClassFormHolder.form allowVersionFinalRead
-    public ClassFormEntity getEditForm(BaseLogicsModule LM, Version version) { // temporary for migration
-        return editFormHolder.getNFForm(LM, version);
     }
 
     public void setEditForm(FormEntity form, ObjectEntity object, Version version) {
