@@ -3,6 +3,7 @@ package lsfusion.client.form.dispatch;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.client.Main;
+import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
@@ -12,9 +13,12 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
+
+import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class ClientFormActionDispatcher extends SwingClientActionDispatcher {
 
@@ -73,7 +77,20 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
             if (action.printType == FormPrintType.AUTO) {
                 ClientReportUtils.autoprintReport(action.generationData, action.printerName);
             } else if (action.printType != FormPrintType.PRINT) {
-                ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password);
+                int editChoice = JOptionPane.NO_OPTION;
+                if (action.inDevMode && action.reportPathList.isEmpty()) {
+                    editChoice = SwingUtils.showConfirmDialog(Main.frame, 
+                            getString("layout.menu.file.create.custom.report.choice"),
+                            getString("layout.menu.file.create.custom.report.title"),
+                            JOptionPane.QUESTION_MESSAGE,
+                            false);
+                    if (editChoice == JOptionPane.YES_OPTION) {
+                        Main.addReportPathList(action.reportPathList, action.formSID);
+                    }
+                }
+                if (editChoice == JOptionPane.NO_OPTION) {
+                    ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password);
+                }
             } else {
                 if (action.inDevMode) {
                     pageCount = Main.frame.runReport(getFormController(), action.reportPathList, action.formSID, action.isModal, action.generationData, action.printerName);

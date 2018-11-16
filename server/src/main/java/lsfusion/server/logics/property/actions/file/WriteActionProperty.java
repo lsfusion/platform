@@ -3,7 +3,8 @@ package lsfusion.server.logics.property.actions.file;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.SaveFileClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
@@ -20,9 +21,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +48,6 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject sourceObject = context.getDataKeys().getValue(0);
         assert sourceObject.getType() instanceof FileClass;
-        byte[] fileBytes = (byte[]) sourceObject.object;
 
         String path = null;
         if(context.getDataKeys().size() == 2) {
@@ -60,25 +57,27 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
 
         String extension = null;
-        if (fileBytes != null) {
+        RawFileData rawFileData = null;
+        if (sourceObject.object != null) {
             if (sourcePropertyType instanceof StaticFormatFileClass) {
-                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(fileBytes);
+                rawFileData = (RawFileData) sourceObject.object;
+                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
             } else if (sourcePropertyType instanceof DynamicFormatFileClass) {
-                extension = BaseUtils.getExtension(fileBytes);
-                fileBytes = BaseUtils.getFile(fileBytes);
+                extension = ((FileData) sourceObject.object).getExtension();
+                rawFileData = ((FileData) sourceObject.object).getRawFile();
             }
         }
         try {
-            if (fileBytes != null) {
+            if (rawFileData != null) {
                 if (clientAction) {
                     path = path == null || path.isEmpty() ? "file" : appendExtension(path, extension);
                     if (path.contains("/") || path.contains("\\")) {
-                        processClientAbsolutePath(context, fileBytes, path);
+                        processClientAbsolutePath(context, rawFileData, path);
                     } else {
-                        processClientRelativePath(context, fileBytes, path);
+                        processClientRelativePath(context, rawFileData, path);
                     }
                 } else {
-                    processServerAbsolutePath(fileBytes, path, extension);
+                    processServerAbsolutePath(rawFileData, path, extension);
                 }
             } else {
                 throw new RuntimeException("File bytes not specified");
@@ -88,21 +87,21 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void processClientAbsolutePath(ExecutionContext context, byte[] fileBytes, String path) {
+    private void processClientAbsolutePath(ExecutionContext context, RawFileData fileData, String path) {
         Pattern p = Pattern.compile("(file://)?(.*)");
         Matcher m = p.matcher(path);
         if (m.matches()) {
             path = m.group(2);
         }
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, path, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileData, path, !dialog, append));
     }
 
-    private void processClientRelativePath(ExecutionContext context, byte[] fileBytes, String path) {
+    private void processClientRelativePath(ExecutionContext context, RawFileData fileData, String path) {
         String filePath = dialog ? path : (System.getProperty("user.home") + "/Downloads/" + path);
-        context.delayUserInterfaction(new SaveFileClientAction(fileBytes, filePath, !dialog, append));
+        context.delayUserInterfaction(new SaveFileClientAction(fileData, filePath, !dialog, append));
     }
 
-    private void processServerAbsolutePath(byte[] fileBytes, String path, String extension) throws IOException, SftpException, JSchException {
+    private void processServerAbsolutePath(RawFileData fileData, String path, String extension) throws IOException, SftpException, JSchException {
         if (path != null && !path.isEmpty()) {
             Pattern p = Pattern.compile("(?:(file|ftp|sftp)://)?(.*)");
             Matcher m = p.matcher(path);
@@ -121,7 +120,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         if (!file.getParentFile().exists())
                             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
                         else
-                            writeFile(file.getAbsolutePath(), fileBytes, append);
+                            writeFile(file.getAbsolutePath(), fileData, append);
                         break;
                     }
                     case "ftp": {
@@ -134,7 +133,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                                 path += "." + extension;
                             }
                             file = File.createTempFile("downloaded", ".tmp");
-                            IOUtils.putFileBytes(file, fileBytes);
+                            fileData.write(file);
                             storeFileToFTP(path, file);
                         } finally {
                             if (file != null && !file.delete())
@@ -151,7 +150,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                                 path += "." + extension;
                             }
                             file = File.createTempFile("downloaded", ".tmp");
-                            IOUtils.putFileBytes(file, fileBytes);
+                            fileData.write(file);
                             storeFileToSFTP(path, file);
                         } finally {
                             if (file != null && !file.delete())
@@ -170,21 +169,21 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         return BaseUtils.getFileExtension(path).isEmpty() && extension != null && !extension.isEmpty() ? (path + "." + extension) : path;
     }
 
-    private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
+    private static void writeFile(String filePath, RawFileData fileData, boolean append) throws IOException {
         if (append) {
             String extension = BaseUtils.getFileExtension(filePath);
             switch (extension) {
                 case "csv":
                     if (new File(filePath).exists()) {
-                        Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
+                        fileData.append(filePath);
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 case "xls": {
                     File file = new File(filePath);
                     if (file.exists()) {
-                        HSSFWorkbook sourceWB = new HSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
                         HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyHSSFSheets(sourceWB, destinationWB);
 
@@ -193,14 +192,14 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 }
                 case "xlsx":
                     File file = new File(filePath);
                     if (file.exists()) {
-                        XSSFWorkbook sourceWB = new XSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
                         XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyXSSFSheets(sourceWB, destinationWB);
 
@@ -209,51 +208,43 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        fileData.write(filePath);
                     }
                     break;
                 default:
                     throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
             }
         } else {
-            IOUtils.putFileBytes(new File(filePath), fileBytes);
+            fileData.write(filePath);
         }
     }
 
     public static void storeFileToFTP(String path, File file) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
-        /*ftp://username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //lstradeby
-            String password = connectionStringMatcher.group(2); //12345
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(5)); //21
-            String remoteFile = connectionStringMatcher.group(6);
-
+        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 21);
+        if (properties != null) {
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if (charset != null)
-                ftpClient.setControlEncoding(charset);
+            if (properties.charset != null)
+                ftpClient.setControlEncoding(properties.charset);
             try {
 
-                ftpClient.connect(server, port);
-                if (ftpClient.login(username, password)) {
-                    ftpClient.enterLocalPassiveMode();
+                ftpClient.connect(properties.server, properties.port);
+                if (ftpClient.login(properties.username, properties.password)) {
+                    if(properties.passiveMode) {
+                        ftpClient.enterLocalPassiveMode();
+                    }
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
                     InputStream inputStream = new FileInputStream(file);
-                    boolean done = ftpClient.storeFile(remoteFile, inputStream);
+                    boolean done = ftpClient.storeFile(properties.remoteFile, inputStream);
                     inputStream.close();
                     if (done)
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
                     else {
-                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s", path));
-                        throw new RuntimeException("Some error occurred while writing file to ftp");
+                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
+                        throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
                     }
                 } else {
                     throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
@@ -269,31 +260,23 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 }
             }
         } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file");
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file?passivemode=false");
         }
     }
 
     public static void storeFileToSFTP(String path, File file) throws JSchException, SftpException, FileNotFoundException {
         /*sftp://username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //username
-            String password = connectionStringMatcher.group(2); //password
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //host:IP
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(5));
-            String filePath = connectionStringMatcher.group(6);
-            File remoteFile = new File((!filePath.startsWith("/") ? "/" : "") + filePath);
+        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 22);
+        if (properties != null) {
+            File remoteFile = new File((!properties.remoteFile.startsWith("/") ? "/" : "") + properties.remoteFile);
 
             Session session = null;
             Channel channel = null;
             ChannelSftp channelSftp = null;
             try {
                 JSch jsch = new JSch();
-                session = jsch.getSession(username, server, port);
-                session.setPassword(password);
+                session = jsch.getSession(properties.username, properties.server, properties.port);
+                session.setPassword(properties.password);
                 java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 session.setConfig(config);
@@ -301,8 +284,8 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 channel = session.openChannel("sftp");
                 channel.connect();
                 channelSftp = (ChannelSftp) channel;
-                if (charset != null)
-                    channelSftp.setFilenameEncoding(charset);
+                if (properties.charset != null)
+                    channelSftp.setFilenameEncoding(properties.charset);
                 channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
                 channelSftp.put(new FileInputStream(file), remoteFile.getName());
             } finally {

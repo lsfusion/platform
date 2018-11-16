@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.RawFileData;
+
 import java.util.Map;
 
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
@@ -55,9 +57,9 @@ public interface ClientActionDispatcher {
 
     boolean execute(CopyToClipboardClientAction action);
 
-    Map<String, byte[]> execute(UserLogsClientAction action);
+    Map<String, RawFileData> execute(UserLogsClientAction action);
 
-    byte[] execute(ThreadDumpClientAction action);
+    RawFileData execute(ThreadDumpClientAction action);
 
     void execute(BeepClientAction action);
 

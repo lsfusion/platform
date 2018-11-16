@@ -6,9 +6,7 @@ import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import com.jcraft.jsch.*;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.JDBCTable;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -17,6 +15,8 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.jfree.ui.ExtensionFileFilter;
 import org.springframework.util.FileCopyUtils;
 
@@ -27,6 +27,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -45,7 +47,7 @@ public class ReadUtils {
     public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) throws IOException, SftpException, JSchException, SQLException {
         String type = null;
         File file = null;
-        byte[] fileBytes = null;
+        Object fileBytes = null; // RawFileData or FileData
         int errorCode = 0;
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
@@ -96,7 +98,7 @@ public class ReadUtils {
                             try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
                                 try (java.nio.channels.FileLock lock = channel.lock()) {
                                     if (isDynamicFormatFileClass) {
-                                        fileBytes = BaseUtils.mergeFileAndExtension(readBytesFromChannel(channel), extension.getBytes());
+                                        fileBytes = new FileData(readBytesFromChannel(channel), extension);
                                     } else {
                                         fileBytes = readBytesFromChannel(channel);
                                     }
@@ -104,9 +106,9 @@ public class ReadUtils {
                             }
                         } else {
                             if (isDynamicFormatFileClass) {
-                                fileBytes = BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes());
+                                fileBytes = new FileData(new RawFileData(file), extension);
                             } else {
-                                fileBytes = IOUtils.getFileBytes(file);
+                                fileBytes = new RawFileData(file);
                             }
                         }
                     } else {
@@ -220,7 +222,9 @@ public class ReadUtils {
 
                 ftpClient.connect(properties.server, properties.port);
                 ftpClient.login(properties.username, properties.password);
-                ftpClient.enterLocalPassiveMode();
+                if(properties.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 OutputStream outputStream = new FileOutputStream(file);
@@ -302,7 +306,9 @@ public class ReadUtils {
                     ftpClient.setControlEncoding(properties.charset);
                 ftpClient.connect(properties.server, properties.port);
                 ftpClient.login(properties.username, properties.password);
-                ftpClient.enterLocalPassiveMode();
+                if(properties.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
                 boolean done = ftpClient.deleteFile(properties.remoteFile);
@@ -353,20 +359,35 @@ public class ReadUtils {
         }
     }
 
-    private static FTPPath parseFTPPath(String path, Integer defaultPort) {
-        /*sftp|ftp://username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
+    public static FTPPath parseFTPPath(String path, Integer defaultPort) {
+        /*sftp|ftp://username:password;charset@host:port/path_to_file?passivemode=false*/
+        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]+))?(?:\\/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //lstradeby
-            String password = connectionStringMatcher.group(2); //12345
+            String username = connectionStringMatcher.group(1);
+            String password = connectionStringMatcher.group(2);
             String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.groupCount() == 5;
-            Integer port = noPort || connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5)); //21
-            String remoteFile = connectionStringMatcher.group(noPort ? 5 : 6);
-            return new FTPPath(username, password, charset, server, port, remoteFile);
+            String server = connectionStringMatcher.group(4);
+            Integer port = connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
+            String remoteFile = connectionStringMatcher.group(6);
+            List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) :  StandardCharsets.UTF_8);
+            boolean passiveMode = isPassiveMode(extraParams);
+            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
         } else return null;
+    }
+
+    private static boolean isPassiveMode(List<NameValuePair> queryParams) {
+        String result = getParameterValue(queryParams, "passivemode");
+        return result == null || result.equals("true");
+    }
+
+    private static String getParameterValue(List<NameValuePair> queryParams, String key) {
+        List<String> values = new ArrayList<>();
+        for(NameValuePair queryParam : queryParams) {
+            if(queryParam.getName().equalsIgnoreCase(key))
+                values.add(queryParam.getValue());
+        }
+        return values.isEmpty() ? null : values.get(0);
     }
 
     private static void copyJDBCToFile(String query, File file) throws SQLException {
@@ -386,7 +407,7 @@ public class ReadUtils {
                     statement = conn.createStatement();
                     ResultSet rs = statement.executeQuery(jdbcQuery);
 
-                    FileUtils.writeByteArrayToFile(file, JDBCTable.serialize(rs));
+                    JDBCTable.serialize(rs).write(file);
 
                 } finally {
                     if (statement != null)
@@ -670,7 +691,7 @@ public class ReadUtils {
         return values;
     }
 
-    private static byte[] readBytesFromChannel(FileChannel channel) throws IOException {
+    private static RawFileData readBytesFromChannel(FileChannel channel) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteBuffer buffer = ByteBuffer.allocate(IOUtils.BUFFER_SIZE);
         int left = Integer.MAX_VALUE;
@@ -679,17 +700,17 @@ public class ReadUtils {
             out.write(buffer.array(), 0, readCount);
             left -= readCount;
         }
-        return out.toByteArray();
+        return new RawFileData(out);
     }
 
     public static class ReadResult implements Serializable {
-        byte[] fileBytes;
+        Object fileBytes; // RawFileData or FileData
         String type;
         public String filePath;
         public int errorCode;
         public String error;
 
-        public ReadResult(byte[] fileBytes, String type, String filePath, int errorCode, String error) {
+        public ReadResult(Object fileBytes, String type, String filePath, int errorCode, String error) {
             this.fileBytes = fileBytes;
             this.type = type;
             this.filePath = filePath;
@@ -714,21 +735,23 @@ public class ReadUtils {
         return error;
     }
 
-    private static class FTPPath {
+    public static class FTPPath {
         String username;
         String password;
         String charset;
         String server;
         Integer port;
         String remoteFile;
+        boolean passiveMode;
 
-        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile) {
+        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile, boolean passiveMode) {
             this.username = username;
             this.password = password;
             this.charset = charset;
             this.server = server;
             this.port = port;
             this.remoteFile = remoteFile;
+            this.passiveMode = passiveMode;
         }
     }
 }

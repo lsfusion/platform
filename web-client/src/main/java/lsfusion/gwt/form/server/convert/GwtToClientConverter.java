@@ -80,7 +80,7 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = GFilesDTO.class)
-    public byte[] convertFiles(GFilesDTO filesObject) {
+    public Object convertFiles(GFilesDTO filesObject) {
         return FileUtils.readFilesAndDelete(filesObject);
     }
 

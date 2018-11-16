@@ -87,8 +87,6 @@
 
     <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 
-    <b:bean id="readFileHandler" class="lsfusion.gwt.base.server.spring.ReadFileRequestHandler"/>
-
     <b:bean id="readLogoHandler" class="lsfusion.gwt.base.server.spring.ReadLogoRequestHandler"/>
 
     <b:bean id="readMemoryLimitsHandler" class="lsfusion.gwt.base.server.spring.ReadMemoryLimitsRequestHandler"/>

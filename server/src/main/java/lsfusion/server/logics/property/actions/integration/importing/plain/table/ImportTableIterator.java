@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.table;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -13,7 +14,7 @@ import java.text.ParseException;
 public class ImportTableIterator extends ImportPlainIterator {
     private final JDBCTable rs;
 
-    public ImportTableIterator(ImOrderMap<String, Type> fieldTypes, byte[] file) throws IOException {
+    public ImportTableIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file) throws IOException {
         super(fieldTypes);
         this.rs = JDBCTable.deserializeJDBC(file);
         

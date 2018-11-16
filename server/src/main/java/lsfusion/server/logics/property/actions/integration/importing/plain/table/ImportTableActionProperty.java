@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.table;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.type.Type;
@@ -19,7 +20,7 @@ public class ImportTableActionProperty extends ImportPlainActionProperty<ImportT
     }
 
     @Override
-    public ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
         return new ImportTableIterator(fieldTypes, file);
     }
 }

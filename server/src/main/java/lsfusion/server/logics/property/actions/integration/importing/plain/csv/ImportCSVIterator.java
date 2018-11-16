@@ -1,5 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.csv;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -13,6 +15,7 @@ import lsfusion.server.logics.property.actions.integration.importing.plain.Impor
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -20,16 +23,16 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     private final Scanner reader;
     private final String separator;
     
-    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, byte[] file, String charset, boolean noHeader, String separator) throws IOException {
+    public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, boolean noHeader, String separator) throws IOException {
         super(fieldTypes, noHeader);
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
+        InputStream inputStream = file.getInputStream();
         this.reader = charset != null ? new Scanner(inputStream, charset) : new Scanner(inputStream);
         this.separator = separator;
         
         finalizeInit();
     }
-    
+
     private ImList<String> line;
 
     @Override
@@ -41,10 +44,10 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     private ImList<String> readLine() {
         if (reader.hasNextLine()) {
             String line = reader.nextLine();
-            
+
             if (!line.isEmpty() && line.charAt(0) == '\uFEFF') // cutting BOM
                 line = line.substring(1);
-            
+
             return ListFact.toList(line.split(Pattern.quote(separator),-1));
         } else return null;
     }

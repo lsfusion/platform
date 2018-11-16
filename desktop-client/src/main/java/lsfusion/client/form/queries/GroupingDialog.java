@@ -10,10 +10,7 @@ import jxl.WorkbookSettings;
 import jxl.biff.DisplayFormat;
 import jxl.format.BorderLineStyle;
 import jxl.write.*;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
-import lsfusion.base.Pair;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.grid.GridTable;
@@ -1021,14 +1018,15 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof Boolean) {
                     length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
-                } else if (value instanceof byte[]) { // здесь ожидается изображение
+                } else if (value instanceof RawFileData || value instanceof FileData) { // здесь ожидается изображение
+                    RawFileData rawFile = value instanceof RawFileData ? (RawFileData)value : ((FileData)value).getRawFile(); 
                     WritableCellFormat format = new WritableCellFormat();
                     format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
                     sheet.getWritableCell(column, currentRow).setCellFormat(format);
                     sheet.addCell(new Blank(column, currentRow, format));
                     sheet.setRowView(currentRow, 500);
 
-                    WritableImage image = new WritableImage(column, currentRow, 1, 1, (byte[]) value);
+                    WritableImage image = new WritableImage(column, currentRow, 1, 1, rawFile.getBytes());
                     image.setImageAnchor(WritableImage.MOVE_AND_SIZE_WITH_CELLS);
                     sheet.addImage(image);
                 } else {

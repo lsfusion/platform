@@ -49,7 +49,7 @@ public class ExternalUtils {
         List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
         List<String> returns = getParameterValues(queryParams, RETURNS_PARAM);
         List<Object> paramList = new ArrayList<>();
-
+        
         String filename = "export";
 
         if (uri.startsWith("/exec")) {
@@ -144,12 +144,12 @@ public class ExternalUtils {
         String extension = getExtensionFromContentType(contentType, humanReadable);
         Charset charset = getCharsetFromContentType(contentType);
         if(extension != null) { // FILE
-            byte[] file;
+            RawFileData file;
             if(humanReadable.result && convertedToString)
-                file = ((String)object).getBytes(charset);
+                file = new RawFileData(((String)object).getBytes(charset));
             else
-                file = (byte[])object;
-            return BaseUtils.mergeFileAndExtension(file, extension.getBytes());
+                file = new RawFileData((byte[])object);
+            return new FileData(file, extension);
         } else {
             if(!convertedToString)
                 object = new String((byte[]) object, charset);
@@ -166,10 +166,11 @@ public class ExternalUtils {
         return charset;
     }
 
+    // returns String or FileData
     public static List<Object> getListFromInputStream(InputStream is, ContentType contentType) throws IOException, MessagingException {
         return getListFromInputStream(IOUtils.readBytesFromStream(is), contentType);
     }
-    // возвращает или byte[] для CustomFile или String для остальных, contentType может быть null если нет параметров
+    // returns FileData for FILE or String for other classes, contentType can be null if there are no parameters
     public static List<Object> getListFromInputStream(byte[] bytes, ContentType contentType) throws IOException, MessagingException {
         List<Object> paramsList = new ArrayList<>();
         if (contentType != null) { // если есть параметры, теоретически можно было бы пытаться по другому угадать
@@ -205,17 +206,19 @@ public class ExternalUtils {
             builder.setContentType(ExternalUtils.MULTIPART_MIXED);
             for (int i = 0; i < paramCount; i++) {
                 Object value = paramList.get(i);
-                if (value instanceof byte[])
-                    builder.addPart("param" + i, new ByteArrayBody(BaseUtils.getFile((byte[]) value), getContentType(BaseUtils.getExtension((byte[]) value)), "filename"));
+                if (value instanceof FileData) {
+                    String extension = ((FileData) value).getExtension();
+                    builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
+                }
                 else
                     builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
             }
             entity = builder.build();
         } else if(paramCount == 1) {
             Object value = BaseUtils.single(paramList);
-            if (value instanceof byte[]) {
-                String extension = BaseUtils.getExtension((byte[]) value);
-                entity = new ByteArrayEntity(BaseUtils.getFile((byte[]) value), getContentType(extension));
+            if (value instanceof FileData) {
+                String extension = ((FileData) value).getExtension();
+                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), getContentType(extension));
                 if(singleFileExtension != null)
                     singleFileExtension.set(extension);
             } else {

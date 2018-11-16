@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -15,6 +16,10 @@ public class JSONClass extends StaticFormatFileClass {
     }
 
     private static Collection<JSONClass> instances = new ArrayList<>();
+
+    public static JSONClass get() {
+        return get(false, false);
+    }
 
     public static JSONClass get(boolean multiple, boolean storeName) {
         for (JSONClass instance : instances)
@@ -35,7 +40,7 @@ public class JSONClass extends StaticFormatFileClass {
         return Data.JSON;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         return "json";
     }
 

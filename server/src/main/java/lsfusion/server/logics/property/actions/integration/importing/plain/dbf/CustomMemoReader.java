@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
+import lsfusion.base.RawFileData;
 import net.iryndin.jdbf.core.MemoFileHeader;
 import net.iryndin.jdbf.core.MemoRecord;
 import net.iryndin.jdbf.util.BitUtils;
@@ -21,17 +22,17 @@ import java.io.*;
 public class CustomMemoReader implements Closeable {
 
     private static final int BUFFER_SIZE = 8192;
-    private byte[] memoFile;
+    private RawFileData memoFile;
     private MemoFileHeader memoHeader;
 
-    public CustomMemoReader(byte[] memoFile) throws IOException {
+    public CustomMemoReader(RawFileData memoFile) throws IOException {
         this.memoFile = memoFile;
         readMetadata();
     }
 
     private void readMetadata() throws IOException {
         byte[] headerBytes = new byte[JdbfUtils.MEMO_HEADER_LENGTH];
-        try(InputStream memoInputStream = new BufferedInputStream(new ByteArrayInputStream(memoFile), BUFFER_SIZE)) {
+        try(InputStream memoInputStream = new BufferedInputStream(memoFile.getInputStream(), BUFFER_SIZE)) {
             memoInputStream.mark(8192);
             memoInputStream.read(headerBytes);
             this.memoHeader = MemoFileHeader.create(headerBytes);
@@ -47,7 +48,7 @@ public class CustomMemoReader implements Closeable {
     }
 
     public MemoRecord read(int offsetInBlocks) throws IOException {
-        InputStream memoInputStream = new BufferedInputStream(new ByteArrayInputStream(memoFile), BUFFER_SIZE);
+        InputStream memoInputStream = new BufferedInputStream(memoFile.getInputStream(), BUFFER_SIZE);
         //System.out.println(this.memoHeader);
        // memoInputStream.mark(memoHeader.getBlockSize()*offsetInBlocks);
         memoInputStream.skip(memoHeader.getBlockSize()*offsetInBlocks);

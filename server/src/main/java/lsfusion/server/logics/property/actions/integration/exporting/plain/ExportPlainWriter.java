@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.type.Type;
@@ -14,7 +15,7 @@ public abstract class ExportPlainWriter {
         this.fieldTypes = fieldTypes;
     }
 
-    public abstract byte[] release() throws IOException;
+    public abstract RawFileData release() throws IOException;
 
     public void writeCount(int count) throws IOException { // if needed        
     } 

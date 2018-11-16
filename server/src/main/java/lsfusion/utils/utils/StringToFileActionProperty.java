@@ -1,7 +1,8 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -33,11 +34,8 @@ public class StringToFileActionProperty extends ScriptingActionProperty {
         String extension = (String) context.getKeyValue(extensionInterface).getValue();
 
         try {
-            byte[] file = inputValue == null ? new byte[0] : inputValue.getBytes(charset);
-            byte[] ext = extension == null ? new byte[0] : extension.getBytes(charset);
-            byte[] fileBytes = BaseUtils.mergeFileAndExtension(file, ext);
-            if (fileBytes != null) {
-                findProperty("resultFile[]").change(fileBytes, context);
+            if (inputValue != null && extension != null) {
+                findProperty("resultFile[]").change(new FileData(new RawFileData(inputValue.getBytes(charset)), extension), context);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

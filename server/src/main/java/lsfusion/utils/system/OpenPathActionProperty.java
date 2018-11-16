@@ -2,6 +2,7 @@ package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -35,7 +36,7 @@ public class OpenPathActionProperty extends ScriptingActionProperty {
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
             if (source != null) {
-                context.delayUserInteraction(new OpenFileClientAction(IOUtils.toByteArray(new FileInputStream(source)),
+                context.delayUserInteraction(new OpenFileClientAction(new RawFileData(source),
                         name != null ? name : FilenameUtils.getBaseName(source), BaseUtils.getFileExtension(source)));
             }
 

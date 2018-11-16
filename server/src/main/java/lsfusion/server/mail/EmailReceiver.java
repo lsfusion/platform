@@ -10,7 +10,8 @@ import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -254,11 +255,11 @@ public class EmailReceiver {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                             }
-                            byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
+                            FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
                             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
                             int counter = 1;
                             if (messageEmail.attachments != null) {
-                                for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                                for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
                                     dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
                                     counter++;
                                 }
@@ -316,10 +317,10 @@ public class EmailReceiver {
         return sentDate == null ? null : new Timestamp(sentDate.getTime());
     }
 
-    private byte[] getEMLByteArray (Message msg) throws IOException, MessagingException {
+    private RawFileData getEMLByteArray (Message msg) throws IOException, MessagingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         msg.writeTo(out); //вообще, out сначала необходимо MimeUtility.encode, а при открытии - decode, чтобы всё сохранялось корректно
-        return out.toByteArray();
+        return new RawFileData(out);
     }
 
     private String getEmailId(Timestamp dateTime, String fromAddress, String subject) {
@@ -328,7 +329,7 @@ public class EmailReceiver {
 
     private MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
         String body = "";
-        Map<String, byte[]> attachments = new HashMap<>();
+        Map<String, FileData> attachments = new HashMap<>();
         for (int i = 0; i < mp.getCount(); i++) {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
@@ -346,7 +347,7 @@ public class EmailReceiver {
                     }
                     fos.close();
 
-                    attachments.putAll(unpack(IOUtils.getFileBytes(f), fileName, unpack));
+                    attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
 
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
@@ -358,7 +359,7 @@ public class EmailReceiver {
             } else {
                 Object content = bp.getContent();
                 if (content instanceof BASE64DecoderStream) {
-                    byte[] byteArray = IOUtils.readBytesFromStream((BASE64DecoderStream) content);
+                    RawFileData byteArray = new RawFileData((BASE64DecoderStream) content);
                     String fileName = decodeFileName(bp.getFileName());
                     attachments.putAll(unpack(byteArray, fileName, unpack));
                 } else if (content instanceof MimeMultipart) {
@@ -371,8 +372,8 @@ public class EmailReceiver {
     }
 
     private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String fileName, boolean unpack) throws IOException, MessagingException {
-        byte[] byteArray = IOUtils.readBytesFromStream(base64InputStream);
-        Map<String, byte[]> attachments = new HashMap<>();
+        RawFileData byteArray = new RawFileData(base64InputStream);
+        Map<String, FileData> attachments = new HashMap<>();
         attachments.putAll(unpack(byteArray, fileName, unpack));
         return new MultipartBody(subjectEmail, attachments);
     }
@@ -393,16 +394,16 @@ public class EmailReceiver {
 
     private class MultipartBody {
         String message;
-        Map<String, byte[]> attachments;
+        Map<String, FileData> attachments;
 
-        private MultipartBody(String message, Map<String, byte[]> attachments) {
+        private MultipartBody(String message, Map<String, FileData> attachments) {
             this.message = message;
             this.attachments = attachments;
         }
     }
 
-    private Map<String, byte[]> unpack(byte[] byteArray, String fileName, boolean unpack) {
-        Map<String, byte[]> attachments = new HashMap<>();
+    private Map<String, FileData> unpack(RawFileData byteArray, String fileName, boolean unpack) {
+        Map<String, FileData> attachments = new HashMap<>();
         String[] fileNameAndExt = fileName.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
         if (unpack) {
@@ -412,21 +413,18 @@ public class EmailReceiver {
                 attachments.putAll(unpackZIPFile(byteArray));
             }
         }
-        if (attachments.isEmpty())
-            attachments.put(fileName, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+        if (attachments.isEmpty()) attachments.put(fileName, new FileData(byteArray, fileExtension));
         return attachments;
     }
 
-    private Map<String, byte[]> unpackRARFile(byte[] fileBytes) {
+    private Map<String, FileData> unpackRARFile(RawFileData rawFile) {
 
-        Map<String, byte[]> result = new HashMap<>();
+        Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
         File outputFile = null;
         try {
             inputFile = File.createTempFile("email", ".rar");
-            try (FileOutputStream stream = new FileOutputStream(inputFile)) {
-                stream.write(fileBytes);
-            }
+            rawFile.write(inputFile);
 
             List<File> dirList = new ArrayList<>();
             File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
@@ -447,7 +445,7 @@ public class EmailReceiver {
                         try (FileOutputStream os = new FileOutputStream(outputFile)) {
                             a.extractFile(fh, os);
                         }
-                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
                         if(!outputFile.delete())
                             outputFile.deleteOnExit();
                     }
@@ -471,15 +469,15 @@ public class EmailReceiver {
         return result;
     }
 
-    private Map<String, byte[]> unpackZIPFile(byte[] fileBytes) {
+    private Map<String, FileData> unpackZIPFile(RawFileData rawFile) {
 
-        Map<String, byte[]> result = new HashMap<>();
+        Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
         File outputFile = null;
         try {
             inputFile = File.createTempFile("email", ".zip");
             try (FileOutputStream stream = new FileOutputStream(inputFile)) {
-                stream.write(fileBytes);
+                rawFile.write(stream);
             }
 
             byte[] buffer = new byte[1024];
@@ -513,7 +511,7 @@ public class EmailReceiver {
                             outputStream.write(buffer, 0, len);
                         }
                         outputStream.close();
-                        result.put(getFileName(result, fileName), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(outputFile), BaseUtils.getFileExtension(outputFile).getBytes()));
+                        result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
                         if(!outputFile.delete())
                             outputFile.deleteOnExit();
                     }
@@ -538,7 +536,7 @@ public class EmailReceiver {
         return result;
     }
 
-    private String getFileName(Map<String, byte[]> files, String fileName) {
+    private String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
             String name = getFileNameWithoutExt(fileName);
             String extension = BaseUtils.getFileExtension(fileName);

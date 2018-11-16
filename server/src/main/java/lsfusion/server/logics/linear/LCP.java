@@ -1,6 +1,8 @@
 package lsfusion.server.logics.linear;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -123,10 +125,16 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     public void change(BigDecimal value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
-    public void change(byte[] value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(RawFileData value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, session, objects);
     }
-    public void change(byte[] value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+    public void change(RawFileData value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, context, objects);
+    }
+    public void change(FileData value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change((Object)value, session, objects);
+    }
+    public void change(FileData value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, context, objects);
     }
     public void change(String value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {

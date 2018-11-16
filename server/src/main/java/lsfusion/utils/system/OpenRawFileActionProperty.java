@@ -2,6 +2,7 @@ package lsfusion.utils.system;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
@@ -32,7 +33,7 @@ public class OpenRawFileActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             ObjectValue sourceObject = context.getKeyValue(sourceInterface);
-            byte[] source = (byte[]) sourceObject.getValue();
+            RawFileData source = (RawFileData) sourceObject.getValue();
             String name = (String) context.getKeyValue(nameInterface).getValue();
 
             if (sourceObject instanceof DataObject && source != null) {

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -42,15 +43,15 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
     @Override
     protected void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException {
-        Map<GroupObjectEntity, byte[]> files = new HashMap<>();
+        Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
 
         exportGroupData(hierarchy.getRoot(), SetFact.<GroupObjectEntity>EMPTY(), hierarchy, files, exportData, null);
 
         writeResult(context, files);
     }
 
-    protected void writeResult(ExecutionContext<ClassPropertyInterface> context, Map<GroupObjectEntity, byte[]> files) throws SQLException, SQLHandledException {
-        for (Map.Entry<GroupObjectEntity, byte[]> entry : files.entrySet()) {
+    protected void writeResult(ExecutionContext<ClassPropertyInterface> context, Map<GroupObjectEntity, RawFileData> files) throws SQLException, SQLHandledException {
+        for (Map.Entry<GroupObjectEntity, RawFileData> entry : files.entrySet()) {
             LCP exportFile = exportFiles.get(entry.getKey() == null ? GroupObjectEntity.NULL : entry.getKey());
             if(exportFile != null)
                 writeResult(exportFile, staticType, context, entry.getValue());
@@ -59,7 +60,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
     protected abstract ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException;
 
-    private void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, byte[]> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
+    private void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
         
         ImOrderSet<PropertyDrawEntity> childProperties = hierarchy.getProperties(currentGroup);
 
@@ -102,7 +103,7 @@ public abstract class ExportPlainActionProperty<O extends ObjectSelector> extend
 
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = data.getRows(currentGroup);
 
-        byte[] resultFile;
+        RawFileData resultFile;
         ExportPlainWriter exporter = getWriter(fieldTypes, currentGroup == null);
         try {
             exporter.writeCount(allRows.size());

@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -24,8 +23,6 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -47,7 +44,7 @@ public class BaseUtils {
 
     //minHeapFreeRatio + cherry-picks from master
     public static Integer getApiVersion() {
-        return 75;
+        return 76;
     }
 
     public static String getPlatformVersion() {
@@ -592,7 +589,12 @@ public class BaseUtils {
 
         if (objectType == 7) {
             int len = inStream.readInt();
-            return IOUtils.readBytesFromStream(inStream, len);
+            return new RawFileData(IOUtils.readBytesFromStream(inStream, len));
+        }
+
+        if (objectType == 12) {
+            int len = inStream.readInt();
+            return new FileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
         if (objectType == 8) {
@@ -684,9 +686,17 @@ public class BaseUtils {
             return;
         }
 
-        if (object instanceof byte[]) {
-            byte[] obj = (byte[]) object;
+        if (object instanceof RawFileData) {
             outStream.writeByte(7);
+            byte[] obj = ((RawFileData) object).getBytes();
+            outStream.writeInt(obj.length);
+            outStream.write(obj);
+            return;
+        }
+
+        if (object instanceof FileData) {
+            outStream.writeByte(12);
+            byte[] obj = ((FileData) object).getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
             return;
@@ -718,21 +728,6 @@ public class BaseUtils {
 
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
-
-    public static byte[] serializeResultSet(ResultSet rs) throws IOException, SQLException {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        ObjectOutputStream o = new ObjectOutputStream(b);
-        CachedRowSetImpl crs=new CachedRowSetImpl();
-        crs.populate(rs);
-        o.writeObject(crs);
-        return b.toByteArray();
-    }
-
-    public static CachedRowSetImpl deserializeResultSet(byte[] bytes) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream b = new ByteArrayInputStream(bytes);
-        ObjectInputStream o = new ObjectInputStream(b);
-        return (CachedRowSetImpl) o.readObject();
-    }
 
     public static byte[] serializeCustomObject(Object object) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -1639,10 +1634,6 @@ public class BaseUtils {
         return ints;
     }
 
-    public static boolean isData(Object object) {
-        return object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[];
-    }
-
     public static <I, E extends I> List<E> immutableCast(List<I> list) {
         return (List<E>) list;
     }
@@ -1999,10 +1990,10 @@ public class BaseUtils {
         });
     }
 
-    public static void openFile(byte[] data, String name, String extension) throws IOException {
+    public static void openFile(RawFileData data, String name, String extension) throws IOException {
         File file = name != null ? new File(System.getProperty("java.io.tmpdir") + "/" + name + "." + extension) : File.createTempFile("lsf", "." + extension);
         try (FileOutputStream f = new FileOutputStream(file)) {
-            f.write(data);
+            data.write(f);
         }
 
             ///Можно ждать, пока пользователь закроет файл
@@ -2189,12 +2180,11 @@ public class BaseUtils {
         return (index == -1) ? "" : filename.substring(index + 1);
     }
 
-    public static byte[] filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, File... files) throws IOException {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-        DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
         byte result[];
-        try {
+        try(DataOutputStream outStream = new DataOutputStream(byteOutStream)) {
             if (multiple)
                 outStream.writeInt(files.length);
             for (File file : files) {
@@ -2202,80 +2192,37 @@ public class BaseUtils {
                     outStream.writeInt(file.getName().length());
                     outStream.writeBytes(file.getName());
                 }
-                byte fileBytes[] = IOUtils.getFileBytes(file);
-                byte ext[] = null;
+                RawFileData rawFileData = new RawFileData(file);
+                String ext = null;
                 //int length = fileBytes.length;
 
+                byte[] fileBytes;
                 if (custom) {
-                    ext = getFileExtension(file).getBytes();
+                    ext = getFileExtension(file);
+                    FileData fileData = new FileData(rawFileData, ext);
+                    if(!(multiple || storeName))
+                        return fileData;
+                    fileBytes = fileData.getBytes();
+                } else {
+                    if(!(multiple || storeName))
+                        return rawFileData;
+                    fileBytes = rawFileData.getBytes();                    
                 }
-                byte[] union = mergeFileAndExtension(fileBytes, ext);
 
-                if (multiple)
-                    outStream.writeInt(union.length);
-                outStream.write(union);
-
-                if (!multiple) // just in case
-                    break;
+                outStream.writeInt(fileBytes.length);
+                outStream.write(fileBytes);
             }
 
             result = byteOutStream.toByteArray();
-            outStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        return result;
+        if(multiple || storeName)
+            return result;
+        else
+            return null;
     }
-
-    public static byte[] mergeFileAndExtension(byte[] file, byte[] ext) {
-        byte[] extBytes = new byte[0];
-        if (ext != null) {
-            extBytes = new byte[ext.length + 1];
-            extBytes[0] = (byte) ext.length;
-            System.arraycopy(ext, 0, extBytes, 1, ext.length);
-        }
-        byte[] result = new byte[extBytes.length + file.length];
-        System.arraycopy(extBytes, 0, result, 0, extBytes.length);
-        System.arraycopy(file, 0, result, extBytes.length, file.length);
-        return result;
-    }
-
-    public static String getExtension(byte[] array) {
-        byte ext[] = new byte[array[0]];
-        System.arraycopy(array, 1, ext, 0, ext.length);
-        return new String(ext);
-    }
-
-    public static byte[] getFile(byte[] array) {
-        byte file[] = new byte[array.length - array[0] - 1];
-        System.arraycopy(array, 1 + array[0], file, 0, file.length);
-        return file;
-    }
-
-    public static byte[] bytesToBytes(byte[]... files) {
-        ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-        DataOutputStream outStream = new DataOutputStream(byteOutStream);
-
-        byte result[];
-        try {
-            outStream.writeInt(files.length);
-            for (byte[] file : files) {
-
-
-                outStream.writeInt(file.length);
-                outStream.write(file);
-            }
-
-            result = byteOutStream.toByteArray();
-            outStream.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return result;
-    }
-
 
     public static int[] consecutiveInts(int length) {
         int[] result = new int[length];

@@ -1,6 +1,7 @@
 package lsfusion.client.form.renderer;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.client.Main;
 import lsfusion.client.logics.ClientPropertyDraw;
 
@@ -26,16 +27,16 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         
         icon = null; // сбрасываем
         if (value != null) {
-            Image image = convertValue((byte[]) value);
+            Image image = convertValue(((RawFileData) value));
             if (image != null) {
                 icon = new ImageIcon(image);
             }
         }
     }
     
-    public static Image convertValue(byte[] value) {
+    public static Image convertValue(RawFileData value) {
         try {
-            ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(value));
+            ImageInputStream iis = ImageIO.createImageInputStream(value.getInputStream());
             return ImageIO.read(iis);
         } catch (IOException e) {
             Throwables.propagate(e);
@@ -94,7 +95,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         }
     } 
 
-    public static void expandImage(final byte[] value) {
+    public static void expandImage(final RawFileData value) {
         if (value != null) {
             Image image = convertValue(value); 
             if (image != null) {

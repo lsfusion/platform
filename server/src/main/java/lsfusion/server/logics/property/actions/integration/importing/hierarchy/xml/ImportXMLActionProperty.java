@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.xml;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.integration.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.ImportHierarchicalActionProperty;
 import org.jdom.Element;
@@ -19,16 +19,16 @@ public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XM
     }
 
     @Override
-    public XMLNode getRootNode(byte[] file, String root) {
+    public XMLNode getRootNode(RawFileData fileData, String root) {
         try {
-            return new XMLNode(findRootNode(file, root));
+            return new XMLNode(findRootNode(fileData, root));
         } catch (JDOMException | IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static Element findRootNode(byte[] file, String root) throws JDOMException, IOException {
-        Element rootNode = findRootNode(new SAXBuilder().build(new ByteArrayInputStream(file)).getRootElement(), root);
+    public static Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
+        Element rootNode = findRootNode(new SAXBuilder().build(file.getInputStream()).getRootElement(), root);
         if(rootNode == null)
             throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
         return rootNode;

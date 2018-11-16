@@ -3,7 +3,7 @@ package lsfusion.server.mail;
 
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.RawFileData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ExecutorFactory;
 import lsfusion.server.context.ThreadLocalContext;
@@ -42,11 +42,11 @@ public class EmailSender {
     Map<String, Message.RecipientType> emails = new HashMap<>();
 
     public static class AttachmentFile {
-        public byte[] file;
+        public RawFileData file;
         public String attachmentName;
         public String extension;
 
-        public AttachmentFile(byte[] file, String attachmentName, String extension) {
+        public AttachmentFile(RawFileData file, String attachmentName, String extension) {
             this.file = file;
             this.attachmentName = attachmentName;
             this.extension = extension;
@@ -132,7 +132,7 @@ public class EmailSender {
     }
 
     public void attachFile(Multipart mp, AttachmentFile attachment) throws MessagingException, IOException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(new ByteArrayInputStream(attachment.file), getMimeType(attachment.extension));
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), getMimeType(attachment.extension));
         MimeBodyPart filePart = new MimeBodyPart();
         filePart.setDataHandler(new DataHandler(dataSource));
         filePart.setFileName(attachment.attachmentName);
@@ -140,14 +140,15 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<byte[]> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, String subject, List<RawFileData> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
         if(inlineFiles.isEmpty())
-            inlineFiles = Collections.singletonList(localize("{mail.you.have.received.reports}").getBytes());
-        for(byte[] inlineFile : inlineFiles)
-            setText(mp, new String(inlineFile));
+            inlineFiles = Collections.singletonList(new RawFileData(localize("{mail.you.have.received.reports}").getBytes()));
+        for(RawFileData inlineFile : inlineFiles)
+            if(inlineFile != null)
+                setText(mp, new String(inlineFile.getBytes()));
 
         for (AttachmentFile attachment : attachments)
             attachFile(mp, attachment);
@@ -157,7 +158,7 @@ public class EmailSender {
     }
 
     public void sendPlainMail(ExecutionContext context, String subject, String inlineText) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        sendMail(context, subject, Collections.singletonList(inlineText.getBytes()), Collections.<AttachmentFile>emptyList());
+        sendMail(context, subject, Collections.singletonList(new RawFileData(inlineText.getBytes())), Collections.<AttachmentFile>emptyList());
     }
 
     private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
@@ -275,7 +276,7 @@ public class EmailSender {
         setMessageHeading(subject);
 
         for (AttachmentProperties attachment : attachments) {
-            attachFile(mp, new AttachmentFile(IOUtils.getFileBytes(attachment.fileName), attachment.attachmentName, attachment.format.getExtension()));
+            attachFile(mp, new AttachmentFile(new RawFileData(attachment.fileName), attachment.attachmentName, attachment.format.getExtension()));
         }
         message.setContent(mp);
 

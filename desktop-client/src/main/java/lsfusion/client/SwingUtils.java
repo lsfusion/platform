@@ -2,10 +2,7 @@ package lsfusion.client;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ERunnable;
-import lsfusion.base.IOUtils;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
@@ -593,14 +590,14 @@ public class SwingUtils {
         }
     }
 
-    public static void showSaveFileDialog(Map<String, byte[]> files) {
+    public static void showSaveFileDialog(Map<String, RawFileData> files) {
         showSaveFileDialog(files, false, false);
     }
 
-    public static void showSaveFileDialog(Map<String, byte[]> files, boolean noDialog, boolean append) {
+    public static void showSaveFileDialog(Map<String, RawFileData> files, boolean noDialog, boolean append) {
         try {
             if (noDialog) {
-                for (Map.Entry<String, byte[]> fileEntry : files.entrySet()) {
+                for (Map.Entry<String, RawFileData> fileEntry : files.entrySet()) {
                     writeFile(fileEntry.getKey(), fileEntry.getValue(), append);
                 }
             } else {
@@ -630,13 +627,13 @@ public class SwingUtils {
                                 int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
                                         getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
                                 if (answer == JOptionPane.YES_OPTION) {
-                                    IOUtils.putFileBytes(file1, files.get(file));
+                                    files.get(file).write(file1);
                                 }
                             } else {
-                                IOUtils.putFileBytes(file1, files.get(file));
+                                files.get(file).write(file1);
                             }
                         } else {
-                            IOUtils.putFileBytes(new File(path + "\\" + file), files.get(file));
+                            files.get(file).write(new File(path + "\\" + file));
                         }
                     }
                     SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
@@ -647,21 +644,21 @@ public class SwingUtils {
         }
     }
 
-    private static void writeFile(String filePath, byte[] fileBytes, boolean append) throws IOException {
+    private static void writeFile(String filePath, RawFileData rawFile, boolean append) throws IOException {
         if (append) {
             String extension = BaseUtils.getFileExtension(filePath);
             switch (extension) {
                 case "csv":
                     if (new File(filePath).exists()) {
-                        Files.write(Paths.get(filePath), fileBytes, StandardOpenOption.APPEND);
+                        rawFile.append(filePath);
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        rawFile.write(filePath);
                     }
                     break;
                 case "xls": {
                     File file = new File(filePath);
                     if (file.exists()) {
-                        HSSFWorkbook sourceWB = new HSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        HSSFWorkbook sourceWB = new HSSFWorkbook(rawFile.getInputStream());
                         HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyHSSFSheets(sourceWB, destinationWB);
 
@@ -670,14 +667,14 @@ public class SwingUtils {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        rawFile.write(filePath);
                     }
                     break;
                 }
                 case "xlsx":
                     File file = new File(filePath);
                     if (file.exists()) {
-                        XSSFWorkbook sourceWB = new XSSFWorkbook(new ByteArrayInputStream(fileBytes));
+                        XSSFWorkbook sourceWB = new XSSFWorkbook(rawFile.getInputStream());
                         XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
                         WriteUtils.copyXSSFSheets(sourceWB, destinationWB);
 
@@ -686,14 +683,14 @@ public class SwingUtils {
                         }
 
                     } else {
-                        IOUtils.putFileBytes(new File(filePath), fileBytes);
+                        rawFile.write(filePath);
                     }
                     break;
                 default:
                     throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
             }
         } else {
-            IOUtils.putFileBytes(new File(filePath), fileBytes);
+            rawFile.write(filePath);
         }
     }
 

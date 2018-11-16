@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -30,7 +31,7 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
 
     protected final ImRevMap<GroupObjectEntity, PropertyInterface> fileInterfaces;
 
-    public abstract ImportPlainIterator getIterator(byte[] file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException;
+    public abstract ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException;
 
     public ImportPlainActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity) {
         super(paramsCount, formEntity);
@@ -39,7 +40,7 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
     }
 
     protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException {
-        Map<GroupObjectEntity, byte[]> files = getFiles(context);
+        Map<GroupObjectEntity, RawFileData> files = getFiles(context);
         
         FormImportData importData = new FormImportData(formEntity, context);
         
@@ -49,11 +50,11 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         return importData;
     }
 
-    private void importGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, byte[]> files, ImportData data, ExecutionContext<PropertyInterface> context, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
+    private void importGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, ImportData data, ExecutionContext<PropertyInterface> context, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
         
         ImOrderSet<PropertyDrawEntity> childProperties = hierarchy.getProperties(currentGroup);
 
-        byte[] file = files.get(currentGroup);
+        RawFileData file = files.get(currentGroup);
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = null;
         if(file != null) {
             ImOrderMap<String, Type> fieldTypes = MapFact.EMPTYORDER();
@@ -141,8 +142,8 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
         }).map(fields);
     }
 
-    private Map<GroupObjectEntity, byte[]> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        Map<GroupObjectEntity, byte[]> files = new HashMap<>();
+    private Map<GroupObjectEntity, RawFileData> getFiles(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
         for(int i=0,size=fileInterfaces.size();i<size;i++)
             files.put(fileInterfaces.getKey(i), readFile(context.getKeyValue(fileInterfaces.getValue(i))));
         return files;

@@ -28,17 +28,6 @@ public class IOUtils {
         return out.toByteArray();
     }
 
-    public static byte[] readBytesFromResource(String uri) throws IOException {
-        InputStream in = IOUtils.class.getResourceAsStream(uri);
-        try {
-            return readBytesFromStream(in);
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
     public static byte[] getFileBytes(File file) throws IOException {
         try (InputStream in = new FileInputStream(file)) {
             return readBytesFromStream(in);

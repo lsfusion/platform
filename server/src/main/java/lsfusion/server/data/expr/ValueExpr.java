@@ -1,6 +1,8 @@
 package lsfusion.server.data.expr;
 
+import lsfusion.base.FileData;
 import lsfusion.base.GlobalObject;
+import lsfusion.base.RawFileData;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -31,10 +33,18 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     public final Object object;
 
     public Value removeBig(MAddSet<Value> usedValues) {
-        if(objectClass instanceof FileClass && ((byte[])object).length > 1000) {
+        if(objectClass instanceof DynamicFormatFileClass && ((FileData)object).getLength() > 1000) {
             int i=0;
             while(true) {
-                Value removeValue = new ValueExpr(new BigInteger(""+i).toByteArray(), (FileClass)objectClass);
+                Value removeValue = new ValueExpr(new FileData(new RawFileData(new BigInteger(""+i).toByteArray()), ""), (DynamicFormatFileClass)objectClass);
+                if(!usedValues.contains(removeValue))
+                    return removeValue;
+            }
+        }
+        if(objectClass instanceof StaticFormatFileClass && ((RawFileData)object).getLength() > 1000) {
+            int i=0;
+            while(true) {
+                Value removeValue = new ValueExpr(new RawFileData(new BigInteger(""+i).toByteArray()), (StaticFormatFileClass)objectClass);
                 if(!usedValues.contains(removeValue))
                     return removeValue;
             }

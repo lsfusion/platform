@@ -1,7 +1,8 @@
 package lsfusion.server.logics.systemevents;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.interop.action.ThreadDumpClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -23,12 +24,11 @@ public class ThreadDumpActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        byte[] threadDump = (byte[]) context.requestUserInteraction(new ThreadDumpClientAction());
+        RawFileData threadDump = (RawFileData) context.requestUserInteraction(new ThreadDumpClientAction());
         if (threadDump != null) {
             try (ExecutionContext.NewSession<ClassPropertyInterface> newContext = context.newSession()) {
                 ObjectValue currentConnection = findProperty("currentConnection[]").readClasses(newContext);
-                if(currentConnection instanceof DataObject)
-                    findProperty("fileThreadDump[Connection]").change(BaseUtils.mergeFileAndExtension(threadDump, "txt".getBytes()), newContext, (DataObject) currentConnection);
+                if(currentConnection instanceof DataObject) findProperty("fileThreadDump[Connection]").change(new FileData(threadDump, "txt"), newContext, (DataObject) currentConnection);
                 newContext.apply();
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);

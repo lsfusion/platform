@@ -1,6 +1,9 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
+import lsfusion.base.RawFileData;
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.type.ParseException;
@@ -16,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -26,20 +30,20 @@ public class ImportXLSIterator extends ImportMatrixIterator {
     private FormulaEvaluator formulaEvaluator;
     private Integer lastSheet;
     
-    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, byte[] file, boolean xlsx, boolean noHeader, Integer singleSheetIndex) throws IOException {
+    public ImportXLSIterator(ImOrderMap<String, Type> fieldTypes, RawFileData file, boolean xlsx, boolean noHeader, Integer singleSheetIndex) throws IOException {
         super(fieldTypes, noHeader);
 
         int minSize = Settings.get().getMinSizeForExcelStreamingReader();
-        useStreamingReader = xlsx && minSize >= 0 && file.length >= minSize;
+        useStreamingReader = xlsx && minSize >= 0 && file.getLength() >= minSize;
         if(useStreamingReader) {
             wbFile = File.createTempFile("import", "xlsx");
-            FileUtils.writeByteArrayToFile(wbFile, file);
+            file.write(wbFile);
             wb = StreamingReader.builder().rowCacheSize(100)    // number of rows to keep in memory (defaults to 10)
                     .bufferSize(4096)     // buffer size to use when reading InputStream to file (defaults to 1024)
                     .open(wbFile);            // InputStream or File for XLSX file (required)
             formulaEvaluator = new XLSXHugeFormulaEvaluator();
         } else {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(file);
+            InputStream inputStream = file.getInputStream();
             if (xlsx) {
                 wb = new XSSFWorkbook(inputStream);
                 formulaEvaluator = new XSSFFormulaEvaluator((XSSFWorkbook) wb);
@@ -83,14 +87,14 @@ public class ImportXLSIterator extends ImportMatrixIterator {
             if (!nextSheet())
                 return false;
             rowIterator = sheet.rowIterator();
-            
+
             if (useStreamingReader)
                 firstRow = true;
-            
+
             return nextRow();
         }
         row = rowIterator.next();
-        
+
         if (useStreamingReader && row.getRowNum() == 0) {
             if (firstRow) { //skip all rows with rowNum 0 (except first) - they are incorrect
                 firstRow = false;
@@ -98,7 +102,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
                 return nextRow();
             }
         }
-        
+
         return true;
     }
 
@@ -107,7 +111,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         Cell cell = row.getCell(fieldIndex);
         if(cell == null)
             return null;
-        CellValue cellValue = formulaEvaluator.evaluate(cell);        
+        CellValue cellValue = formulaEvaluator.evaluate(cell);
         if(cellValue == null)
             return null;
         return type.parseXLS(cell, cellValue);

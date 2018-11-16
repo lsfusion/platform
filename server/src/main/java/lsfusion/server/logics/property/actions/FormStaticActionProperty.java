@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -39,11 +40,11 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         this.selectTop = selectTop == null ? 0 : selectTop;
     }
 
-    protected static void writeResult(LCP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, byte[] singleFile, DataObject... params) throws SQLException, SQLHandledException {
+    protected static void writeResult(LCP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, DataObject... params) throws SQLException, SQLHandledException {
         if (exportFile.property.getType() instanceof StaticFormatFileClass) {
             exportFile.change(singleFile, context, params);
         } else {
-            exportFile.change(BaseUtils.mergeFileAndExtension(singleFile, staticType.getExtension().getBytes()), context, params);
+            exportFile.change(singleFile != null ? new FileData(singleFile, staticType.getExtension()) : null, context, params);
         }
     }
 

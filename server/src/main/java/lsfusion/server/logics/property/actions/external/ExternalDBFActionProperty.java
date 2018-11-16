@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.external;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
+import lsfusion.base.FileData;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.*;
@@ -13,7 +13,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.xBaseJ.DBF;
 import org.xBaseJ.fields.CharField;
 import org.xBaseJ.fields.DateField;
@@ -49,12 +48,11 @@ public class ExternalDBFActionProperty extends ExternalActionProperty {
 
     private void writeDBF(ExecutionContext<PropertyInterface> context, String connectionString) throws SQLException, SQLHandledException {
         try {
-            Object queryFileBytes = context.getKeyObject(paramInterfaces.single());
-            if (queryFileBytes instanceof byte[]) {
-                String extension = BaseUtils.getExtension((byte[]) queryFileBytes);
+            Object fileData = context.getKeyObject(paramInterfaces.single());
+            if (fileData instanceof FileData) {
+                String extension = ((FileData) fileData).getExtension();
                 if (extension.equals("jdbc")) { // значит таблица
-                    queryFileBytes = BaseUtils.getFile((byte[]) queryFileBytes);
-                    JDBCTable jdbcTable = JDBCTable.deserializeJDBC((byte[]) queryFileBytes);
+                    JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) fileData).getRawFile());
 
                     Field[] fields = getFields(jdbcTable);
                     File file = new File(connectionString);

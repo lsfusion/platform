@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
@@ -16,6 +17,10 @@ public class WordClass extends StaticFormatFileClass {
 
     private static Collection<WordClass> instances = new ArrayList<>();
 
+    public static WordClass get() {
+        return get(false, false);
+    }
+    
     public static WordClass get(boolean multiple, boolean storeName) {
         for (WordClass instance : instances)
             if (instance.multiple == multiple && instance.storeName == storeName)
@@ -35,9 +40,9 @@ public class WordClass extends StaticFormatFileClass {
         return Data.WORD;
     }
 
-    public String getOpenExtension(byte[] file) {
+    public String getOpenExtension(RawFileData file) {
         try {
-            return DocumentFactoryHelper.hasOOXMLHeader(new ByteArrayInputStream(file)) ? "docx" : "doc";
+            return DocumentFactoryHelper.hasOOXMLHeader(file.getInputStream()) ? "docx" : "doc";
         } catch (IOException e) {
             return "doc";
         }

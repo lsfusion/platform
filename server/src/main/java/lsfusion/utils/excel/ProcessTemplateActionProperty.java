@@ -1,5 +1,6 @@
 package lsfusion.utils.excel;
 
+import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -23,6 +24,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -84,7 +86,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             templateEntriesList.add(new TemplateEntry(key, value, isTable, rowSeparator, isNumeric, format));
                     }
 
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[]) excelObject.object);
+                    InputStream inputStream = ((RawFileData) excelObject.object).getInputStream();
 
                     Workbook wb = WorkbookFactory.create(inputStream);
 
@@ -98,7 +100,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     wb.write(outputStream);
 
-                    findProperty("resultTemplate[]").change(outputStream.toByteArray(), context);
+                    findProperty("resultTemplate[]").change(new RawFileData(outputStream), context);
                 }
             }
 

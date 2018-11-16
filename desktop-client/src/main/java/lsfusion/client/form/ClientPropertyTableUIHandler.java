@@ -1,5 +1,6 @@
 package lsfusion.client.form;
 
+import lsfusion.base.RawFileData;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
@@ -91,11 +92,11 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
                         table.prepareTextEditor();
                     } else {
                         if (property.baseType instanceof ClientImageClass) {
-                            ImagePropertyRenderer.expandImage((byte[]) table.getValueAt(pressedRow, pressedCol));
+                            ImagePropertyRenderer.expandImage(((RawFileData) table.getValueAt(pressedRow, pressedCol)));
                             e.consume();
                         } else if (property.baseType instanceof ClientImageLinkClass) {
                             String value = (String) table.getValueAt(pressedRow, pressedCol);
-                            byte[] imageBytes = ImageLinkPropertyRenderer.readImage(property, value);
+                            RawFileData imageBytes = ImageLinkPropertyRenderer.readImage(property, value);
                             if (imageBytes != null) {
                                 ImagePropertyRenderer.expandImage(imageBytes);
                                 e.consume();
