@@ -204,32 +204,24 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
     public static void storeFileToFTP(String path, RawFileData fileData) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
-        /*ftp://username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //lstradeby
-            String password = connectionStringMatcher.group(2); //12345
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //ftp.harmony.neolocation.net
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(5)); //21
-            String remoteFile = connectionStringMatcher.group(6);
-
+        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 21);
+        if (properties != null) {
             FTPClient ftpClient = new FTPClient();
             ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if (charset != null)
-                ftpClient.setControlEncoding(charset);
+            if (properties.charset != null)
+                ftpClient.setControlEncoding(properties.charset);
             try {
 
-                ftpClient.connect(server, port);
-                if (ftpClient.login(username, password)) {
-                    ftpClient.enterLocalPassiveMode();
+                ftpClient.connect(properties.server, properties.port);
+                if (ftpClient.login(properties.username, properties.password)) {
+                    if(properties.passiveMode) {
+                        ftpClient.enterLocalPassiveMode();
+                    }
                     ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
                     InputStream inputStream = fileData.getInputStream();
-                    boolean done = ftpClient.storeFile(remoteFile, inputStream);
+                    boolean done = ftpClient.storeFile(properties.remoteFile, inputStream);
                     inputStream.close();
                     if (done)
                         ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
@@ -251,31 +243,23 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 }
             }
         } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file");
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file?passivemode=false");
         }
     }
 
     public static void storeFileToSFTP(String path, RawFileData file) throws JSchException, SftpException {
         /*sftp://username:password;charset@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1); //username
-            String password = connectionStringMatcher.group(2); //password
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4); //host:IP
-            boolean noPort = connectionStringMatcher.group(5) == null;
-            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(5));
-            String filePath = connectionStringMatcher.group(6);
-            File remoteFile = new File((!filePath.startsWith("/") ? "/" : "") + filePath);
+        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 22);
+        if (properties != null) {
+            File remoteFile = new File((!properties.remoteFile.startsWith("/") ? "/" : "") + properties.remoteFile);
 
             Session session = null;
             Channel channel = null;
             ChannelSftp channelSftp = null;
             try {
                 JSch jsch = new JSch();
-                session = jsch.getSession(username, server, port);
-                session.setPassword(password);
+                session = jsch.getSession(properties.username, properties.server, properties.port);
+                session.setPassword(properties.password);
                 java.util.Properties config = new java.util.Properties();
                 config.put("StrictHostKeyChecking", "no");
                 session.setConfig(config);
@@ -283,8 +267,8 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
                 channel = session.openChannel("sftp");
                 channel.connect();
                 channelSftp = (ChannelSftp) channel;
-                if (charset != null)
-                    channelSftp.setFilenameEncoding(charset);
+                if (properties.charset != null)
+                    channelSftp.setFilenameEncoding(properties.charset);
                 channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
                 channelSftp.put(file.getInputStream(), remoteFile.getName());
             } finally {
