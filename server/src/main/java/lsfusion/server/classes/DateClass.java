@@ -12,6 +12,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.OverJDBField;
+import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.CustomDbfRecord;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -130,7 +131,7 @@ public class DateClass extends DataClass<Date> {
         try {
             cellValue = cell.getDateCellValue();
         } catch (IllegalStateException e) {
-            return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try
+            return super.parseXLS(cell, formulaValue); // if cell can not parse date, we'll try to parse it as a string
         }
         return readXLS(cellValue);
     }
@@ -169,8 +170,11 @@ public class DateClass extends DataClass<Date> {
     }
 
     @Override
-    public Object formatXLS(Date object) {
-        return object;
+    public void formatXLS(Date object, Cell cell, ExportXLSWriter.Styles styles) {
+        if (object != null) {
+            cell.setCellValue(object);
+        }
+        cell.setCellStyle(styles.date);
     }
 
     @Override

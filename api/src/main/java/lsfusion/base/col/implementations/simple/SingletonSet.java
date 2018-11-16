@@ -337,8 +337,8 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return -1;
     }
 
-    public ImMap<Integer, K> toIndexedMap() {
-        return MapFact.<Integer, K>singleton(0, key);
+    public ImRevMap<Integer, K> toIndexedMap() {
+        return MapFact.singletonRev(0, key);
     }
 
     public ImList<K> addList(ImList<? extends K> list) {

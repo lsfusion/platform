@@ -12,6 +12,8 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportPlainIterator;
 
+import java.io.IOException;
+
 public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSVIterator> {
     private boolean noHeader;
     private String charset;
@@ -25,7 +27,7 @@ public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSV
     }
 
     @Override
-    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) {
+    public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
         return new ImportCSVIterator(fieldTypes, file, charset, noHeader, separator);
     }
 

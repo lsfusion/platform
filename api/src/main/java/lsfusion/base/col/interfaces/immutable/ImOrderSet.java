@@ -24,6 +24,8 @@ public interface ImOrderSet<K> extends ImList<K> {
     ImOrderSet<K> removeOrderIncl(ImSet<? extends K> set);
     ImOrderSet<K> removeOrderIncl(K element);
 
+    ImRevMap<Integer, K> toIndexedMap();
+
     <V> ImOrderSet<V> mapOrder(ImRevMap<? extends K, ? extends V> map);
 
     <V> ImOrderMap<K, V> mapOrderMap(ImMap<K, V> map);

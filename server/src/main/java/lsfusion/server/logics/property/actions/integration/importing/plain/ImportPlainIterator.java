@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -55,33 +54,37 @@ public abstract class ImportPlainIterator {
         return false;
     }
     
-    protected void finalizeInit() {
+    protected void finalizeInit() throws IOException {
         ImOrderSet<String> fileFields = readFields();
-        int f = 0;
         boolean fieldCI = isFieldCI();
 
-        ImOrderSet<String> keys = fieldTypes.keyOrderSet();
+        mapping = getRequiredActualMap(fileFields, fieldTypes, fieldCI);
+    }
+
+    public static ImMap<String, String> getRequiredActualMap(ImOrderSet<String> actualFields, ImOrderMap<String, Type> requiredFieldTypes, boolean fieldCI) {
+        int f = 0;
+        ImOrderSet<String> keys = requiredFieldTypes.keyOrderSet();
         ImOrderValueMap<String, String> mMapping = keys.mapItOrderValues();
         for(int i = 0, size = keys.size(); i<size; i++) {
             String field = keys.get(i);
             String actualField;
-            if(fileFields == null) { // hierarchical
+            if(actualFields == null) {
                 actualField = field;
             } else {
-                Pair<String, Integer> actual = findActualField(field, fileFields, fieldCI);
+                Pair<String, Integer> actual = findActualField(field, actualFields, fieldCI);
                 if (actual != null) {
                     actualField = actual.first;
                     f = actual.second;
                 } else
-                    actualField = fileFields.get(f);
+                    actualField = actualFields.get(f);
                 f++;
             }
             mMapping.mapValue(i, actualField);
         }
-        mapping = mMapping.immutableValueOrder().getMap();
+        return mMapping.immutableValueOrder().getMap();
     }
 
-    protected abstract ImOrderSet<String> readFields();
+    protected abstract ImOrderSet<String> readFields() throws IOException;
 
     protected abstract boolean nextRow() throws IOException;
     
@@ -106,18 +109,4 @@ public abstract class ImportPlainIterator {
     } 
     public abstract void release() throws IOException;
 
-    protected boolean isDate(Type type) {
-        return type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass;
-    }
-
-    protected Date parseDate(String value) {
-        Date result = null;
-        try {
-            if (value != null && !value.isEmpty() && !value.replace(".", "").trim().isEmpty()) {
-                result = DateUtils.parseDate(value, "dd/MM/yyyy", "dd.MM.yyyy", "dd.MM.yyyy HH:mm", "dd.MM.yyyy HH:mm:ss");
-            }
-        } catch (ParseException ignored) {
-        }
-        return result;
-    }
 }

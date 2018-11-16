@@ -28,6 +28,7 @@ public interface ImMap<K, V> {
     ImMap<V, ImSet<K>> groupValues();
 
     ImRevMap<K, V> toRevMap(); // костыль (недетерминированный метод), но там в QueryExpr, заколебешься с generics'ами у GroupExpr делать ImRevMap
+    ImRevMap<K, V> toRevMap(ImOrderSet<K> keys);
     ImRevMap<K, V> toRevExclMap();
     ImOrderMap<K, V> toOrderMap();
 

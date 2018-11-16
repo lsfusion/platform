@@ -96,7 +96,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
             return;
 
         ImRevMap<P, KeyExpr> mapKeys = property.property.getMapKeys();
-        ImMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap().crossJoin(mapKeys);
+        ImMap<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = property.mapping.toRevMap(property.property.getFriendlyOrderInterfaces()).crossJoin(mapKeys);
         env.change(property.property, new PropertyChange<>(mapKeys,
                 value.getExpr(mapObjects.filter(object.groupTo.objects), env.getModifier()),
                 getChangedWhere(object, mapObjects, addObject)));

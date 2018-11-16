@@ -544,10 +544,10 @@ public abstract class LogicsModule {
                 exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, noHeader, separator, noEscape, charset);
                 break;
             case XLS:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true);
+                exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, true, noHeader);
                 break;
             case DBF:
                 exportAction = new ExportDBFActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
@@ -570,10 +570,12 @@ public abstract class LogicsModule {
         // }
         
         Object[] cases = new Object[0];
-        for(FormIntegrationType importType : FormIntegrationType.values()) {
-            cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-            directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
-        }        
+        boolean isPlain = !groupFiles.isEmpty();
+        for(FormIntegrationType importType : FormIntegrationType.values()) 
+            if(importType.isPlain() == isPlain) {
+                cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
+                    directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
+            }        
         
         return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
@@ -604,7 +606,7 @@ public abstract class LogicsModule {
                     break;
                 case XLS:
                 case XLSX:
-                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, sheetAll);
+                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, noHeader, sheetAll);
                     break;
                 case TABLE:
                     importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity);
@@ -645,7 +647,7 @@ public abstract class LogicsModule {
         where = DerivedProperty.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, attr, version);
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
         
@@ -659,15 +661,15 @@ public abstract class LogicsModule {
         return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, root, tag, singleExportFile, exportFiles);
     }
 
-    protected LAP addImportPropertyAProp(LocalizedString caption, FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+    protected LAP addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LCP<?> whereLCP, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
         // determining where
-        CalcPropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1? baseLM.imported.getImplement(innerInterfaces.single()) : null;
+        CalcPropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1? whereLCP.getImplement(innerInterfaces.single()) : null;
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
         return addImportFAProp(null, type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, charset, hasWhere);
