@@ -3,7 +3,7 @@ package lsfusion.base;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class FileData implements Serializable {
+public class FileData extends TwinImmutableObject<FileData> implements Serializable {
 
     private final RawFileData fileData;
     private final String extension;
@@ -52,13 +52,12 @@ public class FileData implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof FileData && fileData.equals(((FileData) o).fileData) && extension.equals(((FileData) o).extension);
+    protected boolean calcTwins(TwinImmutableObject o) {
+        return fileData.equals(((FileData) o).fileData) && extension.equals(((FileData) o).extension);
     }
 
     @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return 31 * fileData.hashCode() + extension.hashCode();
     }
-
 }
