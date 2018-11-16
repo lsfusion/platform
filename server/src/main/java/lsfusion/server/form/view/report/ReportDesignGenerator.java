@@ -22,6 +22,7 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.form.stat.FormReportInterface;
 import lsfusion.server.session.DataSession;
+import net.sf.jasperreports.engine.JRBand;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
@@ -165,37 +166,10 @@ public class ReportDesignGenerator {
         return width;
     }
 
-    private void createDesignGroups(JasperDesign design, ReportNode node) throws JRException {
+    private void createDesignGroups(final JasperDesign design, ReportNode node) throws JRException {
         List<GroupObjectEntity> groups = node.getGroupList();
         for (GroupObjectEntity group : groups) { // can be null for root report node
             ImList<ReportDrawField> drawFields = groupFields.get(group);
-
-            // creating layouts
-            ReportLayout reportLayout;
-            if (hierarchy.reportHierarchy.isLeaf(node) && (group == groups.get(groups.size() - 1))) { // is detail
-                reportLayout = new ReportDetailLayout(design, rowHeight);
-            } else {
-                if (isSimpleBand(drawFields)) {
-                    JRDesignGroup designGroup = addDesignGroup(design, group, "designGroup");
-                    reportLayout = new ReportGroupRowLayout(designGroup, rowHeight);
-                } else {
-                    JRDesignGroup captionGroup = addDesignGroup(design, group, "captionGroup");
-                    JRDesignGroup textGroup = addDesignGroup(design, group, "textGroup");
-                    reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup, rowHeight);
-                }
-            }
-
-            // creating styles
-            JRDesignStyle groupCellStyle = getGroupCellStype(node, group, groups);
-            JRDesignStyle groupCaptionStyle = groupCellStyle;
-
-            // adding report fields
-            design.addStyle(groupCellStyle);
-            for (ReportDrawField reportField : drawFields)
-                addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
-
-            // layouting
-            reportLayout.doLayout(pageUsableWidth);
 
             // adding design fields
             if(group != null)
@@ -205,9 +179,57 @@ public class ReportDesignGenerator {
                     addDesignField(design, objField);
                 }
 
-            for (ReportDrawField propertyField : drawFields) {
-                addDesignField(design, propertyField);
-                addSupplementalDesignFields(design, propertyField);
+            boolean isDetail = hierarchy.reportHierarchy.isLeaf(node) && (group == groups.get(groups.size() - 1));
+                
+            // adding groups
+            final JRDesignGroup designGroup;
+            if(!isDetail && group != null)
+                designGroup = addDesignGroup(design, group, "designGroup");
+            else
+                designGroup = null;
+
+            // creating styles
+            JRDesignStyle groupCellStyle = getGroupCellStype(node, group, groups);
+            JRDesignStyle groupCaptionStyle = groupCellStyle;
+            design.addStyle(groupCellStyle);
+
+            // adding report fields
+            if(!drawFields.isEmpty()) {
+                // creating layouts
+                ReportLayout reportLayout;
+                if (isDetail) { // is detail
+                    reportLayout = new ReportDetailLayout(design, rowHeight);
+                } else {
+                    ReportLayout.BandSection section;
+                    if (group != null)
+                        section = new ReportLayout.MultipleBandSection() {
+                            public void addBand(JRBand band) {
+                                ((JRDesignSection) designGroup.getGroupHeaderSection()).addBand(band);
+                            }
+                        };
+                    else section = new ReportLayout.BandSection() {
+                        public void setBand(JRBand band) {
+                            design.setTitle(band);
+                        }
+                    };
+
+                    if (section instanceof ReportLayout.MultipleBandSection && !isSimpleBand(drawFields)) {
+                        reportLayout = new ReportGroupColumnLayout((ReportLayout.MultipleBandSection) section, rowHeight);
+                    } else {
+                        reportLayout = new ReportGroupRowLayout(section, rowHeight);
+                    }
+                }
+
+                for (ReportDrawField reportField : drawFields)
+                    addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
+
+                // layouting
+                reportLayout.doLayout(pageUsableWidth);
+
+                for (ReportDrawField propertyField : drawFields) {
+                    addDesignField(design, propertyField);
+                    addSupplementalDesignFields(design, propertyField);
+                }
             }
         }
     }
