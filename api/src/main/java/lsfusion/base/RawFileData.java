@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 
-public class RawFileData implements Serializable {
+public class RawFileData extends TwinImmutableObject<RawFileData> implements Serializable {
 
     public static final RawFileData EMPTY = new RawFileData(new byte[0]);
     
@@ -66,12 +66,12 @@ public class RawFileData implements Serializable {
     }        
 
     @Override
-    public boolean equals(Object o) {
-        return this == o || o instanceof RawFileData && Arrays.equals(array, ((RawFileData) o).array);
+    protected boolean calcTwins(TwinImmutableObject o) {
+        return Arrays.equals(array, ((RawFileData) o).array);
     }
 
     @Override
-    public int hashCode() {
+    public int immutableHashCode() {
         return Arrays.hashCode(array);
     }
 }
