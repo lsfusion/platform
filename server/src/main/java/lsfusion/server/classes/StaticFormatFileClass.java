@@ -31,7 +31,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     public Class getReportJavaClass() {
-        return FileData.class;
+        return RawFileData.class;
     }
 
     @Override
