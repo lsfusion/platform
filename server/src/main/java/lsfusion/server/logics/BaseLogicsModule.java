@@ -17,7 +17,6 @@ import lsfusion.server.data.SQLCallable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
@@ -721,7 +720,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope, ClassFormEntity form) {
+    public LAP getAddFormAction(CustomClass cls, FormEntity contextForm, ObjectEntity contextObject, FormSessionScope scope) {
         LAP<?> result = addAddFormAction(cls, contextObject, scope);
         // issue #47 Потенциальное совпадение канонических имен различных свойств
         String contextPrefix = getFormPrefix(contextForm) + getObjectPrefix(contextObject);
@@ -733,11 +732,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
         LAP<?> result = addEditFormAction(scope, cls);
         // issue #47 Потенциальное совпадение канонических имен различных свойств
         String name = "_EDITFORM" + scope + getClassPrefix(cls);
-        makeActionPublic(result, name, form.object.getResolveClassSet());
+        makeActionPublic(result, name, cls.getResolveSet());
 
         return result;
     }

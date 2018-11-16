@@ -2215,14 +2215,14 @@ public abstract class LogicsModule {
         CustomClass cls = explicitClass;
         if(cls == null)
             cls = (CustomClass)contextObject.baseClass;
-        return baseLM.getAddFormAction(cls, contextForm, contextObject, scope, cls.getEditForm(baseLM, version));
+        return baseLM.getAddFormAction(cls, contextForm, contextObject, scope);
     }
 
     public LAP getEditFormAction(ObjectEntity object, CustomClass explicitClass, FormSessionScope scope, Version version) {
         CustomClass cls = explicitClass;
         if(cls == null)
             cls = (CustomClass) object.baseClass;
-        return baseLM.getEditFormAction(cls, scope, cls.getEditForm(baseLM, version));
+        return baseLM.getEditFormAction(cls, scope);
     }
 
     public LAP getDeleteAction(ObjectEntity object, FormSessionScope scope) {
