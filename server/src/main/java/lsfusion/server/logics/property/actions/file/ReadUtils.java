@@ -213,149 +213,123 @@ public class ReadUtils {
     private static void copyFTPToFile(String path, File file) throws IOException {
         ServerLoggers.importLogger.info(String.format("Reading file from %s", path));
         FTPPath properties = parseFTPPath(path, 21);
-        if (properties != null) {
-            FTPClient ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if (properties.charset != null)
-                ftpClient.setControlEncoding(properties.charset);
-            try {
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        if (properties.charset != null)
+            ftpClient.setControlEncoding(properties.charset);
+        try {
 
-                ftpClient.connect(properties.server, properties.port);
-                ftpClient.login(properties.username, properties.password);
-                if(properties.passiveMode) {
-                    ftpClient.enterLocalPassiveMode();
-                }
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-
-                OutputStream outputStream = new FileOutputStream(file);
-                boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
-                outputStream.close();
-                if (!done) {
-                    throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
-                }
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                try {
-                    if (ftpClient.isConnected()) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                    }
-                } catch (FTPConnectionClosedException e1) {
-                    ServerLoggers.importLogger.error("Ignored: ", e1);
-                }
+            ftpClient.connect(properties.server, properties.port);
+            ftpClient.login(properties.username, properties.password);
+            if(properties.passiveMode) {
+                ftpClient.enterLocalPassiveMode();
             }
-        } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file"));
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+            OutputStream outputStream = new FileOutputStream(file);
+            boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
+            outputStream.close();
+            if (!done) {
+                throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            try {
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                }
+            } catch (FTPConnectionClosedException e1) {
+                ServerLoggers.importLogger.error("Ignored: ", e1);
+            }
         }
     }
 
     private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
         FTPPath properties = parseFTPPath(path, 22);
-        if (properties != null) {
-            String remoteFile = properties.remoteFile;
-            remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+        String remoteFile = properties.remoteFile;
+        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
-            Session session = null;
-            Channel channel = null;
-            ChannelSftp channelSftp = null;
-            try {
-                JSch jsch = new JSch();
-                session = jsch.getSession(properties.username, properties.server, properties.port);
-                session.setPassword(properties.password);
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-                session.connect();
-                channel = session.openChannel("sftp");
-                channel.connect();
-                channelSftp = (ChannelSftp) channel;
-                channelSftp.get(remoteFile, file.getAbsolutePath());
-            } finally {
-                if (channelSftp != null)
-                    channelSftp.exit();
-                if (channel != null)
-                    channel.disconnect();
-                if (session != null)
-                    session.disconnect();
-            }
-        } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file"));
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(properties.username, properties.server, properties.port);
+            session.setPassword(properties.password);
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            channelSftp.get(remoteFile, file.getAbsolutePath());
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 
-    public static void deleteFile(String type, String path) throws IOException, SftpException, JSchException {
-        File sourceFile = new File(path);
-        if (!sourceFile.delete()) {
-            sourceFile.deleteOnExit();
-        }
-        if (type.equals("ftp")) {
-            ReadUtils.deleteFTPFile(path);
-        } else if (type.equals("sftp")) {
-            ReadUtils.deleteSFTPFile(path);
-        }
-    }
-
-    //после перехода на 1.3.5 переедет в fsl
     public static void deleteFTPFile(String path) throws IOException {
         FTPPath properties = parseFTPPath(path, 21);
-        if (properties != null) {
-            FTPClient ftpClient = new FTPClient();
-            try {
-                if (properties.charset != null)
-                    ftpClient.setControlEncoding(properties.charset);
-                ftpClient.connect(properties.server, properties.port);
-                ftpClient.login(properties.username, properties.password);
-                if(properties.passiveMode) {
-                    ftpClient.enterLocalPassiveMode();
-                }
-                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+        FTPClient ftpClient = new FTPClient();
+        try {
+            if (properties.charset != null)
+                ftpClient.setControlEncoding(properties.charset);
+            ftpClient.connect(properties.server, properties.port);
+            ftpClient.login(properties.username, properties.password);
+            if(properties.passiveMode) {
+                ftpClient.enterLocalPassiveMode();
+            }
+            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
-                boolean done = ftpClient.deleteFile(properties.remoteFile);
-                if (!done) {
-                    throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
-                }
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            } finally {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
+            boolean done = ftpClient.deleteFile(properties.remoteFile);
+            if (!done) {
+                throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        } finally {
+            if (ftpClient.isConnected()) {
+                ftpClient.logout();
+                ftpClient.disconnect();
             }
         }
     }
 
-    //после перехода на 1.3.5 переедет в fsl
     public static void deleteSFTPFile(String path) throws JSchException, SftpException {
         FTPPath properties = parseFTPPath(path, 22);
-        if (properties != null) {
-            String remoteFile = properties.remoteFile;
-            remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+        String remoteFile = properties.remoteFile;
+        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
-            Session session = null;
-            Channel channel = null;
-            ChannelSftp channelSftp = null;
-            try {
-                JSch jsch = new JSch();
-                session = jsch.getSession(properties.username, properties.server, properties.port);
-                session.setPassword(properties.password);
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-                session.connect();
-                channel = session.openChannel("sftp");
-                channel.connect();
-                channelSftp = (ChannelSftp) channel;
-                channelSftp.rm(remoteFile);
-            } finally {
-                if (channelSftp != null)
-                    channelSftp.exit();
-                if (channel != null)
-                    channel.disconnect();
-                if (session != null)
-                    session.disconnect();
-            }
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(properties.username, properties.server, properties.port);
+            session.setPassword(properties.password);
+            Properties config = new Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            channelSftp.rm(remoteFile);
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 
@@ -373,7 +347,9 @@ public class ReadUtils {
             List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) :  StandardCharsets.UTF_8);
             boolean passiveMode = isPassiveMode(extraParams);
             return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
-        } else return null;
+        } else {
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false");
+        }
     }
 
     private static boolean isPassiveMode(List<NameValuePair> queryParams) {

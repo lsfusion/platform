@@ -215,90 +215,82 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
     public static void storeFileToFTP(String path, File file, String extension) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 21);
-        if (properties != null) {
-            String remoteFile = properties.remoteFile;
-            if (extension != null && !extension.isEmpty()) {
-                remoteFile += "." + extension;
+        String remoteFile = properties.remoteFile;
+        if (extension != null && !extension.isEmpty()) {
+            remoteFile += "." + extension;
+        }
+        FTPClient ftpClient = new FTPClient();
+        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
+        if (properties.charset != null)
+            ftpClient.setControlEncoding(properties.charset);
+        try {
+
+            ftpClient.connect(properties.server, properties.port);
+            if (ftpClient.login(properties.username, properties.password)) {
+                if(properties.passiveMode) {
+                    ftpClient.enterLocalPassiveMode();
+                }
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+
+                InputStream inputStream = new FileInputStream(file);
+                boolean done = ftpClient.storeFile(remoteFile, inputStream);
+                inputStream.close();
+                if (done)
+                    ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
+                else {
+                    ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
+                    throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
+                }
+            } else {
+                throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
             }
-            FTPClient ftpClient = new FTPClient();
-            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-            if (properties.charset != null)
-                ftpClient.setControlEncoding(properties.charset);
+        } finally {
             try {
-
-                ftpClient.connect(properties.server, properties.port);
-                if (ftpClient.login(properties.username, properties.password)) {
-                    if(properties.passiveMode) {
-                        ftpClient.enterLocalPassiveMode();
-                    }
-                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                    ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-
-                    InputStream inputStream = new FileInputStream(file);
-                    boolean done = ftpClient.storeFile(remoteFile, inputStream);
-                    inputStream.close();
-                    if (done)
-                        ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
-                    else {
-                        ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
-                        throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
-                    }
-                } else {
-                    throw new RuntimeException("Incorrect login or password. Writing file from ftp failed");
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
                 }
-            } finally {
-                try {
-                    if (ftpClient.isConnected()) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password;charset@host:port/path_to_file?passivemode=false");
         }
     }
 
     public static void storeFileToSFTP(String path, File file, String extension) throws JSchException, SftpException, FileNotFoundException {
         /*sftp://username:password;charset@host:port/path_to_file*/
         ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 22);
-        if (properties != null) {
-            String remoteFilePath = properties.remoteFile;
-            if (extension != null && !extension.isEmpty()) {
-                remoteFilePath += "." + extension;
-            }
-            File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
+        String remoteFilePath = properties.remoteFile;
+        if (extension != null && !extension.isEmpty()) {
+            remoteFilePath += "." + extension;
+        }
+        File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
 
-            Session session = null;
-            Channel channel = null;
-            ChannelSftp channelSftp = null;
-            try {
-                JSch jsch = new JSch();
-                session = jsch.getSession(properties.username, properties.server, properties.port);
-                session.setPassword(properties.password);
-                java.util.Properties config = new java.util.Properties();
-                config.put("StrictHostKeyChecking", "no");
-                session.setConfig(config);
-                session.connect();
-                channel = session.openChannel("sftp");
-                channel.connect();
-                channelSftp = (ChannelSftp) channel;
-                if (properties.charset != null)
-                    channelSftp.setFilenameEncoding(properties.charset);
-                channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
-                channelSftp.put(new FileInputStream(file), remoteFile.getName());
-            } finally {
-                if (channelSftp != null)
-                    channelSftp.exit();
-                if (channel != null)
-                    channel.disconnect();
-                if (session != null)
-                    session.disconnect();
-            }
-        } else {
-            throw new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password;charset@host:port/path_to_file");
+        Session session = null;
+        Channel channel = null;
+        ChannelSftp channelSftp = null;
+        try {
+            JSch jsch = new JSch();
+            session = jsch.getSession(properties.username, properties.server, properties.port);
+            session.setPassword(properties.password);
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+            channel = session.openChannel("sftp");
+            channel.connect();
+            channelSftp = (ChannelSftp) channel;
+            if (properties.charset != null)
+                channelSftp.setFilenameEncoding(properties.charset);
+            channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
+            channelSftp.put(new FileInputStream(file), remoteFile.getName());
+        } finally {
+            if (channelSftp != null)
+                channelSftp.exit();
+            if (channel != null)
+                channel.disconnect();
+            if (session != null)
+                session.disconnect();
         }
     }
 }

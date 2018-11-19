@@ -2,7 +2,6 @@ package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
-import lsfusion.base.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -355,7 +354,7 @@ public class FileUtils {
     }
 
     private static FTPPath parseFTPPath(String path, Integer defaultPort) {
-        /*username:password;charset@host:port/path_to_file*/
+        /*username:password;charset@host:port/path_to_file?passivemode=false*/
         Pattern connectionStringPattern = Pattern.compile("(.*):([^;]*)(?:;(.*))?@([^/:]*)(?::([^/]+))?(?:/([^?]*))?(?:\\?(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
@@ -369,7 +368,7 @@ public class FileUtils {
             boolean passiveMode = isPassiveMode(extraParams);
             return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
         } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file");
+            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false");
         }
     }
 
