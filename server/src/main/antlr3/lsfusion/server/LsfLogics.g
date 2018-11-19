@@ -2022,7 +2022,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, !hasHeader, charset, root, fieldParams, toParams, attr, where, memo);
+        $property = self.addScriptedImportActionProperty(format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, !hasHeader, charset, root, fieldParams, toParams, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
@@ -2048,7 +2048,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
                  }
              }
 		    plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; literals = $plist.literals; }
-		) ('WHERE' wherePropertyUsage=propertyUsage)?
+		    ('WHERE' wherePropertyUsage=propertyUsage)?
+		)
 	;
 
 nonEmptyImportFieldDefinitions[List<TypedParameter> newContext] returns [List<String> ids, List<Boolean> literals, List<Boolean> nulls]
@@ -2151,13 +2152,13 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedImportFormActionProperty($type.format, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, !hasHeader, attr, charset, separator, root, where, memo);
+	    $property = self.addScriptedImportFormActionProperty(format, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, !hasHeader, attr, charset, separator, root, where, memo);
 	}
 }
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inMainParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
-	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; where = $type.where; memo = $type.memo; separator = $type.separator;
-               hasHeader = $type.hasHeader; root = $type.root; attr = $type.attr; charset = $type.charset;   }
+	    (type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; where = $type.where; memo = $type.memo; separator = $type.separator;
+               hasHeader = $type.hasHeader; root = $type.root; attr = $type.attr; charset = $type.charset;   })?
 	    ('FROM' fileExprs=importFormPropertyExpressions[context, dynamic, form])?
 	;
 
