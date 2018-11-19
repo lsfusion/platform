@@ -923,13 +923,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
 
-            // temporary
-            startLogger.info("Checking column group / regular filters influence on hierarchy");
-            for (FormEntity form : businessLogics.getFormEntities()) {
-                if(form.usedInPrint)
-                    form.getGroupHierarchy(true, SetFact.<GroupObjectEntity>EMPTY());
-            }
-
             startLogger.info("Updating stats");
             ImMap<String, Integer> tableStats = businessLogics.updateStats(sql, false);  // пересчитаем статистику
 

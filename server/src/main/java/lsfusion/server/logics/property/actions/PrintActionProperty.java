@@ -66,11 +66,6 @@ public class PrintActionProperty<O extends ObjectSelector> extends FormStaticAct
 
         this.sheetNameProperty = sheetNameProperty;
         
-        // temporary
-        FormEntity staticForm = form.getStaticForm();
-        if(staticForm != null)
-            staticForm.usedInPrint = true;
-
         if (printer != null) {
             this.printerProperty = printer.getImplement(
                     getOrderInterfaces().subOrder(objectsToSet.size(), interfaces.size())
