@@ -2095,6 +2095,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
     }
 
+    @Deprecated
     public FormData getFormData(int orderTop) throws SQLException, SQLHandledException {
         return getFormData(getCalcProperties(), getGroups(), orderTop);
     }
@@ -2108,6 +2109,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     // считывает все данные с формы
+    @Deprecated
     public FormData getFormData(ImSet<PropertyDrawInstance> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
 
         checkNavigatorDeactivated();

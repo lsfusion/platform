@@ -140,15 +140,15 @@ public class EmailSender {
         mp.addBodyPart(filePart);
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<RawFileData> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentFile> attachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         Multipart mp = new MimeMultipart();
         setMessageHeading(subject);
 
         if(inlineFiles.isEmpty())
-            inlineFiles = Collections.singletonList(new RawFileData(localize("{mail.you.have.received.reports}").getBytes()));
-        for(RawFileData inlineFile : inlineFiles)
+            inlineFiles = Collections.singletonList(localize("{mail.you.have.received.reports}"));
+        for(String inlineFile : inlineFiles)
             if(inlineFile != null)
-                setText(mp, new String(inlineFile.getBytes()));
+                setText(mp, inlineFile);
 
         for (AttachmentFile attachment : attachments)
             attachFile(mp, attachment);
@@ -158,7 +158,7 @@ public class EmailSender {
     }
 
     public void sendPlainMail(ExecutionContext context, String subject, String inlineText) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
-        sendMail(context, subject, Collections.singletonList(new RawFileData(inlineText.getBytes())), Collections.<AttachmentFile>emptyList());
+        sendMail(context, subject, Collections.singletonList(inlineText), Collections.<AttachmentFile>emptyList());
     }
 
     private void sendMail(ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
