@@ -75,28 +75,6 @@ public class FormGroupHierarchyCreator {
         for (FilterEntity filter : form.getFixedFilters()) {
             addDependencies(graph, getGroupsByObjects(filter.getObjects(), groups));
         }
-
-        // temporary remove if assertion will not be broken
-        for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
-            for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
-                boolean changed = addDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
-                assert !changed;
-            }
-        }
-
-        if(supportGroupColumns) { // temporary remove if assertion will not be broken
-            for (GroupObjectEntity targetGroup : groups) {
-                for (PropertyDrawEntity<?> property : propertyDraws) {
-                    ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
-                    if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects, supportGroupColumns))
-                        for (GroupObjectEntity columnGroup : columnGroupObjects) 
-                            if(groups.contains(columnGroup)) {
-                                assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));
-//                                graph.get(targetGroup).addAll(graph.get(columnGroup));
-                            }
-                }
-            }
-        }
     }
 
     private static Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph(ImOrderSet<GroupObjectEntity> groups) {
