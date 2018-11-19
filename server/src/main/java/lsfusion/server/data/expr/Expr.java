@@ -81,7 +81,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
 
     @Override
-    public String toString() {
+    public String toString() { // it's important that it should be overrided for all getOuterValues objects (AbstractValueExpr), and for all classes for which in ToString.getSource toString is called (KeyExpr, Table.Join.Expr, QueryExpr)
         return getSource(new ToString(getOuterValues()));
     }
 
