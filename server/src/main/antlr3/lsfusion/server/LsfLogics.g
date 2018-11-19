@@ -2042,7 +2042,8 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
                  }
              }
 		    plist = nonEmptyPropertyUsageListWithIds { ids = $plist.ids; literals = $plist.literals; }
-		) ('WHERE' wherePropertyUsage=propertyUsage)?
+		    ('WHERE' wherePropertyUsage=propertyUsage)?
+		)
 	;
 
 nonEmptyImportFieldDefinitions[List<TypedParameter> newContext] returns [List<String> ids, List<Boolean> literals, List<Boolean> nulls]
