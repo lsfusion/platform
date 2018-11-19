@@ -2004,7 +2004,7 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	LCPWithParams memo = null;
 	LCPWithParams where = null;
 	String separator = null;
-	boolean noHeader = false;
+	boolean hasHeader = false;
 	String charset = null;
 	LCPWithParams root = null;
 	boolean attr = false;
@@ -2016,12 +2016,12 @@ importActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, noHeader, charset, root, fieldParams, toParams, attr, where, memo);
+        $property = self.addScriptedImportActionProperty($type.format, $expr.property, ids, literals, $plist.propUsages, $pflist.nulls, $dDB.property, $dDB.elseProperty, context, newContext, $wherePropertyUsage.propUsage, sheet, sheetAll, separator, !hasHeader, charset, root, fieldParams, toParams, attr, where, memo);
 	}
 } 
 	:	'IMPORT' 
 		(type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; memo = $type.memo; where = $type.where; separator = $type.separator;
-		        noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })?
+		        hasHeader = $type.hasHeader; root = $type.root; attr = $type.attr; charset = $type.charset; })?
 		'FROM' expr=propertyExpression[context, dynamic] { if (inMainParseState()) self.getChecks().checkImportFromFileExpression($expr.property); }
 		(
             'FIELDS' ('(' list=typedParameterList { if(inMainParseState()) { fieldParams = list; } } ')')?
@@ -2080,7 +2080,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
     List<LCPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
 	String separator = null;
-	boolean noHeader = false;
+	boolean hasHeader = false;
 	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
@@ -2091,11 +2091,11 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$property = self.addScriptedExportActionProperty(context, newContext, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
-			                                                 root, tag, separator, noHeader, noEscape, charset, attr, orderProperties, orderDirections);
+			                                                 root, tag, separator, !hasHeader, noEscape, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
-	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; noEscape = $type.noEscape;
+	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
 	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true] 
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
@@ -2137,7 +2137,7 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	LCPWithParams memo = null;
 	LCPWithParams where = null;
 	String separator = null;
-	boolean noHeader = false;
+	boolean hasHeader = false;
 	String charset = null;
 	LCPWithParams root = null;
 	boolean attr = false;
@@ -2145,13 +2145,13 @@ importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-	    $property = self.addScriptedImportFormActionProperty($type.format, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, noHeader, attr, charset, separator, root, where, memo);
+	    $property = self.addScriptedImportFormActionProperty($type.format, $fileExprs.property, $fileExprs.properties, form, sheet, sheetAll, !hasHeader, attr, charset, separator, root, where, memo);
 	}
 }
 	:	'IMPORT'
 	    (namespace=ID '.')? formSName=ID { if (inMainParseState()) { form = self.findForm(($namespace == null ? "" : $namespace.text + ".") + $formSName.text); }}
 	    type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; sheetAll = $type.sheetAll; where = $type.where; memo = $type.memo; separator = $type.separator;
-               noHeader = $type.noHeader; root = $type.root; attr = $type.attr; charset = $type.charset;   }
+               hasHeader = $type.hasHeader; root = $type.root; attr = $type.attr; charset = $type.charset;   }
 	    ('FROM' fileExprs=importFormPropertyExpressions[context, dynamic, form])?
 	;
 
@@ -2244,10 +2244,10 @@ propertyUsageWithId returns [String id = null, Boolean literal = null, PropertyU
 		)?
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, LCPWithParams where, String separator, boolean noHeader, String charset, LCPWithParams root, boolean attr]
-	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, LCPWithParams sheet, boolean sheetAll, LCPWithParams memo, LCPWithParams where, String separator, boolean hasHeader, String charset, LCPWithParams root, boolean attr]
+	:	'CSV'	{ $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF'	{ $format = FormIntegrationType.DBF; } ('MEMO' memoProperty = propertyExpression[context, dynamic] {$memo = $memoProperty.property; })? ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
+    |   'XLS' 	{ $format = FormIntegrationType.XLS; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('SHEET' ((sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; }) | ('ALL' {$sheetAll = true; })) )?
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	|	'XML'	{ $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; }
@@ -2931,7 +2931,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @init {
     FormIntegrationType format = null;
 	String separator = null;
-	boolean noHeader = false;
+	boolean hasHeader = false;
 	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
@@ -2940,28 +2940,28 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, noHeader, separator, noEscape, charset, $pUsage.propUsage, $pUsages.pUsages);
+		$property = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, charset, $pUsage.propUsage, $pUsages.pUsages);
 	}
 }
 	:	'EXPORT' mf=mappedForm[context, null, dynamic]
-		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; noHeader = $type.noHeader; noEscape = $type.noEscape;
+		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
 
-exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean noHeader, boolean noEscape, String charset, LCPWithParams root, LCPWithParams tag, boolean attr]
-	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })? ('NOESCAPE' { $noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean hasHeader, boolean noEscape, String charset, LCPWithParams root, LCPWithParams tag, boolean attr]
+	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('NOESCAPE' { $noEscape = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF' { $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' { $format = FormIntegrationType.XLS; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })?
-    |   'XLSX' { $format = FormIntegrationType.XLSX; } (noHeaderVal = noHeaderOption { $noHeader = $noHeaderVal.noHeader; })?
+    |   'XLS' { $format = FormIntegrationType.XLS; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+    |   'XLSX' { $format = FormIntegrationType.XLSX; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
 	|	'JSON' { $format = FormIntegrationType.JSON; }
 	|	'XML' { $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })?
 	|	'TABLE' { $format = FormIntegrationType.TABLE; }
 	;
 
-noHeaderOption returns [boolean noHeader]
-    :	'HEADER' { $noHeader = false; }
-    |	'NOHEADER'{ $noHeader = true; }
+hasHeaderOption returns [boolean hasHeader]
+    :	'HEADER' { $hasHeader = true; }
+    |	'NOHEADER'{ $hasHeader = false; }
 	;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, PropertyUsage> pUsages]
