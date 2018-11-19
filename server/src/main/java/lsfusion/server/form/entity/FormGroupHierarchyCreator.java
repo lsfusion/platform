@@ -84,60 +84,6 @@ public class FormGroupHierarchyCreator {
         for (FilterEntity filter : form.getFixedFilters()) {
             addDependencies(graph, getGroupsByObjects(filter.getObjects(), groups));
         }
-
-        // temporary remove if assertion will not be broken
-        for (GroupObjectEntity group : groups) {
-            if (group.propertyBackground != null) {
-                boolean changed = checkDependencies(graph, getGroupsByObjects(group.propertyBackground.getObjectInstances(), groups));
-                if(changed)
-                    System.out.println("Group background affects hierarchy : FORM " + form + ",  GROUP : " + group);
-            }
-            if (group.propertyForeground != null) {
-                boolean changed = checkDependencies(graph, getGroupsByObjects(group.propertyForeground.getObjectInstances(), groups));
-                if(changed)
-                    System.out.println("Group foreground affects hierarchy : FORM " + form + ",  GROUP : " + group);
-            }
-        }
-
-        // temporary remove if assertion will not be broken
-        for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
-            for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
-                boolean changed = checkDependencies(graph, getGroupsByObjects(filter.filter.getObjects(), groups));
-                if(changed)
-                    System.out.println("Regular filter influence on hierarchy : FORM " + form + ",  FILTER : " + filter);
-//                assert !changed;
-            }
-        }
-
-        // temporary remove if assertion will not be broken
-        if(supportGroupColumns) {
-            for (PropertyDrawEntity<?> property : propertyDraws) {
-                if(property.propertyCaption != null) {
-                    boolean changed = checkDependencies(graph, getGroupsByObjects(property.propertyCaption.getObjectInstances(), groups));
-                    if(changed)
-                        System.out.println("HEADER affects hierarchy : FORM " + form + ",  FILTER : " + property);
-                }
-                if(property.propertyFooter != null) {
-                    boolean changed = checkDependencies(graph, getGroupsByObjects(property.propertyFooter.getObjectInstances(), groups));
-                    if(changed)
-                        System.out.println("FOOTER affects hierarchy : FORM " + form + ",  FILTER : " + property);
-                }
-            }
-
-            for (GroupObjectEntity targetGroup : groups) {
-                for (PropertyDrawEntity<?> property : propertyDraws) {
-                    ImOrderSet<GroupObjectEntity> columnGroupObjects = property.getColumnGroupObjects();
-                    if (!columnGroupObjects.isEmpty() && targetGroup == property.getApplyObject(form, excludeGroupObjects, supportGroupColumns))
-                        for (GroupObjectEntity columnGroup : columnGroupObjects) 
-                            if(groups.contains(columnGroup)) {
-                                if(!(BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup)))) // temporary
-                                    System.out.println("Column groups influence on hierarchy : FORM " + form + ",  GROUP : " + targetGroup + ", COLUMN GROUP : " + columnGroup + ", GROUP PARENTS : " + graph.get(targetGroup) + ", COLUMN GROUP PARENTS : " + graph.get(columnGroup));
-//                                assert BaseUtils.addSet(graph.get(targetGroup), targetGroup).containsAll(graph.get(columnGroup));                                
-//                                graph.get(targetGroup).addAll(graph.get(columnGroup));
-                            }
-                }
-            }
-        }
     }
 
     private static Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph(ImOrderSet<GroupObjectEntity> groups) {
