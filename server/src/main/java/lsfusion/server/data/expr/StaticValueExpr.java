@@ -153,6 +153,11 @@ public class StaticValueExpr extends AbstractValueExpr<StaticClass> {
     }
 
     @Override
+    public String toString() {
+        return object + " - " + objectClass + " : " + sID;
+    }
+
+    @Override
     public boolean isAlwaysPositiveOrNull() {
         if(objectClass instanceof IntegralClass) 
             return ((IntegralClass) objectClass).isPositive((Number) object);
