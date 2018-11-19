@@ -1,12 +1,10 @@
-package lsfusion.server.remote;
+package lsfusion.server.form.stat;
 
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.stat.FormReportManager;
-import lsfusion.server.form.stat.InteractiveFormReportInterface;
 
 import java.sql.SQLException;
 

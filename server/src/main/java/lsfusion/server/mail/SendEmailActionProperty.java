@@ -27,7 +27,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.remote.InteractiveFormReportManager;
+import lsfusion.server.form.stat.InteractiveFormReportManager;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 
