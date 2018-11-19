@@ -28,6 +28,7 @@ import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.form.stat.InteractiveFormReportManager;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.DataObject;
