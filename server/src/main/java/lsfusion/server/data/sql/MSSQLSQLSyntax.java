@@ -482,10 +482,16 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
         return e.getSQLState().equals("23000");
     }
 
-    public String getDateTime() {
-        return "DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)";
+    @Override
+    public String getDateTimeMillis() {
+        return "DATEADD(millisecond, DATEDIFF(millisecond, 0, GETDATE()), 0)";
     }
 
+    @Override
+    public String getDateTime() {
+        return "DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)";
+    } 
+    
     @Override
     public String getRandom() {
         return "dbo.RandFromInt(dbo.currentTransID())";

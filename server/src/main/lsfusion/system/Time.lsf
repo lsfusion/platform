@@ -2,33 +2,42 @@ MODULE Time;
 
 REQUIRE System;
 
-extractHour = FORMULA INTEGER PG '(extract(hour from ($1)))', MS 'datepart(hh, $1)'; 
-extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)';
-extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
-
-currentDateTime = NATIVE DATETIME ();
-currentMinute = NATIVE INTEGER ();
-currentHour = NATIVE INTEGER ();
-currentEpoch = NATIVE LONG ();
-
-currentDate 'Тек. дата' = DATA DATE ();
-dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
-
-currentYear 'Тек. год' = extractYear (currentDate());
-
-currentTimeText() =  [FORMULA TEXT 'to_char(now(),($1))']('YYYYMMDDHH24MISSMS'); 
+currentDateTime = FORMULA DATETIME PG 'DATE_TRUNC(\'second\', CURRENT_TIMESTAMP)', MS 'DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)';
+currentDateTimeMillis = FORMULA DATETIME PG 'DATE_TRUNC(\'milliseconds\', CURRENT_TIMESTAMP)', MS 'DATEADD(millisecond, DATEDIFF(millisecond, 0, GETDATE()), 0)';
 
 toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
 toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(DATE date) = DATETIME(date AS DATE);
+
+currentTime 'Тек. время' = toTime(currentDateTime());
+
+extractHour = FORMULA INTEGER PG '(extract(hour from ($1)))', MS 'datepart(hh, $1)'; 
+extractMinute = FORMULA INTEGER PG '(extract(minute from ($1)))', MS 'datepart(mi, $1)';
+extractSecond = FORMULA INTEGER PG '(extract(second from ($1)))', MS 'datepart(ss, $1)';
+
+currentHour = extractHour(currentTime()); 
+currentMinute = extractMinute(currentTime());
+currentSecond = extractSecond(currentTime());
+
+currentDate 'Тек. дата' = DATA DATE ();
+
+extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
+extractMonthNumber = FORMULA INTEGER PG '(extract(month from ($1)))', MS 'datepart(mm, $1)';
+extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)';
+
+currentDay = extractDay(currentDate());
+currentMonth  = extractMonthNumber(currentDate());
+currentYear = extractYear(currentDate());
+
+dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
+
+currentTimeText() =  [FORMULA TEXT 'to_char(now(),($1))']('YYYYMMDDHH24MISSMS'); 
 
 toDateFormat = FORMULA DATE 'to_date($1,$2)';
 toDateTimeFormat = FORMULA DATETIME PG 'to_timestamp($1,$2)';
 
 toDateDDMMYY = FORMULA VARSTRING[8] 'to_char(($1),\'DD.MM.YY\')';
 toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
-
-currentTime 'Тек. время' = toTime(currentDateTime());
 
 sum(DATE date, INTEGER days) = [ FORMULA DATE PG '(($1)+($2))', MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS INTEGER);
 sumMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))', MS 'DATEADD(mm, $2, $1)';
@@ -99,11 +108,8 @@ onStarted() + {
 
 month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
 
-extractMonthNumber = [ FORMULA INTEGER PG '(extract(month from ($1)))', MS 'DATEPART(mm, $1)'](DATE date AS DATE);
 extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
 extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
-
-currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
 
 FORM months 'Месяца'
     OBJECTS m = Month

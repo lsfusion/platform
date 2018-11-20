@@ -18,7 +18,6 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.formula.*;
@@ -49,6 +48,7 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.IntegrationFormEntity;
 import lsfusion.server.logics.property.actions.integration.exporting.ExportActionProperty;
@@ -57,7 +57,6 @@ import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.x
 import lsfusion.server.logics.property.actions.integration.exporting.plain.csv.ExportCSVActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.dbf.ExportDBFActionProperty;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.table.ExportTableActionProperty;
-import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.xls.ExportXLSActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.ImportActionProperty;
 import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.ImportJSONActionProperty;
@@ -72,7 +71,10 @@ import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.ResolveManager;
 import lsfusion.server.logics.resolving.ResolvingErrors;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.RecognitionException;
@@ -938,12 +940,6 @@ public abstract class LogicsModule {
 
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
         return baseLM.addCProp(valueClass, value);
-    }
-
-    // ------------------- TIME ----------------- //
-
-    protected LCP addTProp(LocalizedString caption, Time time) {
-        return addProperty(null, new LCP<>(new TimeFormulaProperty(caption, time)));
     }
 
     // ------------------- Random ----------------- //
