@@ -483,7 +483,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     public String getDateTime() {
-        return "DATEADD(millisecond, DATEDIFF(millisecond, 0, GETDATE()), 0)";
+        return "DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)";
     }
 
     @Override

@@ -257,7 +257,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     public String getDateTime() {
-        return "DATE_TRUNC('milliseconds', CURRENT_TIMESTAMP)";
+        return "DATE_TRUNC('second', CURRENT_TIMESTAMP)";
     }
 
     public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
