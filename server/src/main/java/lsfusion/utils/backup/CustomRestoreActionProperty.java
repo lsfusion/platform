@@ -170,8 +170,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
 
                 if(!keys.isEmpty() || !columns.isEmpty()) {
                     //step1: props, mRows
-                    final ImOrderSet<LP> props = SetFact.fromJavaOrderSet(table.lpProperties);
-                    MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows = MapFact.mExclMap();
+                    final ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(table.lpProperties);
+                    MExclMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
 
                     for (int i = 0; i < columns.size(); i++) {
                         List<Object> keysEntry = keys.get(i);
@@ -189,8 +189,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                             keysMap = keysMap.addExcl(new KeyField("key" + k, valueClass instanceof CustomClass ? LongClass.instance : (Type) valueClass), keyObject);
                         }
 
-                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LP>() {
-                            public ObjectValue getMapValue(LP prop) {
+                        mRows.exclAdd(keysMap, props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                            public ObjectValue getMapValue(LCP prop) {
                                 try {
                                     Object object = columnsEntry.get(props.indexOf(prop));
                                     if (object == null) return NullValue.instance;
@@ -232,7 +232,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LP, ObjectValue>> mRows,
+    private void writeRows(ExecutionContext context, ImOrderSet<LCP> props, MExclMap<ImMap<KeyField, DataObject>, ImMap<LCP, ObjectValue>> mRows,
                              List<Object> keys, Set<String> replaceOnlyNullSet)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
@@ -240,14 +240,14 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         for(int i = 0; i < keys.size(); i++) {
             keySet = keySet.addOrderExcl(new KeyField("key" + i, getKeyType(keys.get(i))));
         }
-        SessionTableUsage<KeyField, LP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
+        SessionTableUsage<KeyField, LCP> importTable = new SessionTableUsage("custrest", keySet/*SetFact.singletonOrder("key")*/, props, new Type.Getter<KeyField>() {
             public Type getType(KeyField key) {
                 return key.type;
             }
-        }, new Type.Getter<LP>() {
+        }, new Type.Getter<LCP>() {
             @Override
-            public Type getType(LP key) {
-                return key.property.getType();
+            public Type getType(LCP key) {
+                return ((LCP<?>)key).property.getType();
             }
         });
         DataSession session = context.getSession();
@@ -256,9 +256,9 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         importTable.writeRows(sql, mRows.immutable(), owner);
 
         ImRevMap<KeyField, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LP> importJoin = importTable.join(mapKeys);
+        Join<LCP> importJoin = importTable.join(mapKeys);
         try {
-            for (LP lcp : props) {
+            for (LCP<?> lcp : props) {
                 ImMap<Object, Object> values = MapFact.EMPTY();
                 for (int i = 0; i < mapKeys.values().size(); i++) {
                     values = values.addExcl(lcp.listInterfaces.get(i), mapKeys.values().get(i));
@@ -268,7 +268,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                     where = where.and(((CalcProperty)lcp.property).getExpr(values).getWhere().not());
                 }
                 PropertyChange propChange = new PropertyChange(values.toRevMap(), importJoin.getExpr(lcp), where);
-                context.getEnv().change((CalcProperty) lcp.property, propChange);
+                context.getEnv().change(lcp.property, propChange);
             }
         } finally {
             importTable.drop(sql, owner);

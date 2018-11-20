@@ -48,7 +48,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP isLockedCustomUser;
     public LCP isLockedLogin;
-    public LCP loginCustomUser;
+    public LCP<?> loginCustomUser;
     public LCP customUserLogin;
     public LCP customUserUpcaseLogin;
     public LCP sha256PasswordCustomUser;

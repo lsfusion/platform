@@ -15,7 +15,6 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -483,10 +482,6 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, ExecutionStack stack, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
         env.execute(this, keys, formEnv, null, stack);
-    }
-
-    public ValueClass getValueClass(ClassType classType) {
-        return ActionClass.instance;
     }
 
     @Override

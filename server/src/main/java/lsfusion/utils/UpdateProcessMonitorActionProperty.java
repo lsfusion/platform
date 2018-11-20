@@ -241,7 +241,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
             @Override
             public Type getType(LCP key) {
-                return key.property.getType();
+                return ((LCP<?>)key).property.getType();
             }
         });
         OperationOwner owner = context.getSession().getOwner();
@@ -279,7 +279,7 @@ public class UpdateProcessMonitorActionProperty extends ProcessDumpActionPropert
         SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, new Type.Getter<LCP>() {
             @Override
             public Type getType(LCP key) {
-                return key.property.getType();
+                return ((LCP<?>)key).property.getType();
             }
         });
         OperationOwner owner = context.getSession().getOwner();

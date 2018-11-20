@@ -132,46 +132,4 @@ public class TypeSerializer {
         throw new IOException();
     }
 
-    public static ValueClass deserializeValueClass(BusinessLogics context, DataInputStream inStream) throws IOException {
-        byte type = inStream.readByte();
-
-        if (type == Data.INTEGER) return IntegerClass.instance;
-        if (type == Data.LONG) return LongClass.instance;
-        if (type == Data.DOUBLE) return DoubleClass.instance;
-        if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
-        if (type == Data.LOGICAL) return LogicalClass.instance;
-        if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
-        if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readLong());
-        if (type == Data.ACTION) return ActionClass.instance;
-        if (type == Data.DATETIME) return DateTimeClass.instance;
-        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get();
-        if (type == Data.TIME) return TimeClass.instance;
-        if (type == Data.COLOR) return ColorClass.instance;
-
-        if (type == Data.IMAGE) return ImageClass.get();
-        if (type == Data.WORD) return WordClass.get();
-        if (type == Data.EXCEL) return ExcelClass.get();
-        if (type == Data.PDF) return PDFClass.get();
-        if (type == Data.CSV) return CSVClass.get();
-        if (type == Data.HTML) return HTMLClass.get();
-        if (type == Data.JSON) return JSONClass.get();
-        if (type == Data.XML) return XMLClass.get();
-        //todo:!!
-        if (type == Data.CUSTOMSTATICFORMATFILE) return CustomStaticFormatFileClass.get("", "");
-
-        if (type == Data.IMAGELINK) return ImageLinkClass.get(false);
-        if (type == Data.WORDLINK) return WordLinkClass.get(false);
-        if (type == Data.EXCELLINK) return ExcelLinkClass.get(false);
-        if (type == Data.PDFLINK) return PDFLinkClass.get(false);
-        if (type == Data.CSVLINK) return CSVLinkClass.get(false);
-        if (type == Data.HTMLLINK) return HTMLLinkClass.get(false);
-        if (type == Data.JSONLINK) return JSONLinkClass.get(false);
-        if (type == Data.XMLLINK) return XMLLinkClass.get(false);
-        //todo:!!
-        if (type == Data.CUSTOMSTATICFORMATLINK) return CustomStaticFormatLinkClass.get(false, "", "");
-
-        throw new IOException();
-    }
 }

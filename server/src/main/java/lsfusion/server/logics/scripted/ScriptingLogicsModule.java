@@ -1548,7 +1548,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if(paramClass != null)
                 type = paramClass.getType();
             else {
-                LP property = paramProps.get(i).getLP();
+                LCP<?> property = paramProps.get(i).getLP();
                 if(property != null) {
                     ValueClass valueClass = property.property.getValueClass(ClassType.valuePolicy);
                     if (valueClass != null)
@@ -1566,7 +1566,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for(int i=0,size=paramProps.size();i<size;i++) {
             ValueClass valueClass = null;
 
-            LP property = paramProps.get(i).getLP();
+            LCP<?> property = paramProps.get(i).getLP();
             if(property != null)
                 valueClass = property.property.getValueClass(ClassType.valuePolicy);
 

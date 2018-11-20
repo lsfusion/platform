@@ -54,14 +54,14 @@ public abstract class FormStaticActionProperty<O extends ObjectSelector, T exten
         if(formEntity != null) {
             MSet<CalcProperty> mProps = SetFact.mSet();
             boolean isReport = this instanceof PrintActionProperty;
-            for (PropertyDrawEntity propertyDraw : formEntity.getStaticPropertyDrawsList()) {
+            for (PropertyDrawEntity<?> propertyDraw : formEntity.getStaticPropertyDrawsList()) {
                 if (isReport) {
                     MExclSet<PropertyReaderEntity> mReaders = SetFact.mExclSet();
                     propertyDraw.fillQueryProps(mReaders);
                     for (PropertyReaderEntity reader : mReaders.immutable())
                         mProps.add((CalcProperty) reader.getPropertyObjectEntity().property);
                 } else 
-                    mProps.add((CalcProperty) propertyDraw.getValueProperty().property);
+                    mProps.add(propertyDraw.getCalcValueProperty().property);
             }
             return mProps.immutable().toMap(false);
         }

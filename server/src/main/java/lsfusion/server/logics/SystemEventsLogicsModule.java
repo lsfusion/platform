@@ -83,7 +83,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LCP connectionFormCount;
 
-    public LCP currentSession;
+    public LCP<?> currentSession;
     public LCP connectionSession;
     public LCP formSession;
     public LCP quantityAddedClassesSession;

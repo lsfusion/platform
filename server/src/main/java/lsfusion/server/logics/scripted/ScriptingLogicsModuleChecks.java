@@ -172,15 +172,15 @@ public class ScriptingLogicsModuleChecks {
     }
     
     public void checkPropertyTypes(List<LCPWithParams> properties, String errMsgPropType) throws ScriptingErrorLog.SemanticErrorException {
-        LCP lp1 = properties.get(0).getLP();
+        LCP<?> lp1 = properties.get(0).getLP();
         if(lp1 == null)
             return;
-        Property prop1 = lp1.property;
+        CalcProperty prop1 = lp1.property;
         for (int i = 1; i < properties.size(); i++) {
-            LCP lp2 = properties.get(i).getLP();
+            LCP<?> lp2 = properties.get(i).getLP();
             if(lp2 == null)
                 return;
-            Property prop2 = lp2.property;
+            CalcProperty prop2 = lp2.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
                 errLog.emitIncompatibleTypesError(parser, errMsgPropType);
             }
