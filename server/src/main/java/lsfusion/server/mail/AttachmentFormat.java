@@ -4,7 +4,7 @@ import lsfusion.interop.FormPrintType;
 
 @Deprecated
 public enum AttachmentFormat {
-    PDF, DOCX, HTML, RTF, XLSX, DBF;
+    PDF, DOCX, HTML, RTF, XLSX, DBF, XML;
 
     @Deprecated
     public String getExtension() {
@@ -15,6 +15,7 @@ public enum AttachmentFormat {
             case RTF: return "rtf";
             case XLSX: return "xlsx";
             case DBF: return "dbf";
+            case XML: return "xml";
         }
         return null;
     }
