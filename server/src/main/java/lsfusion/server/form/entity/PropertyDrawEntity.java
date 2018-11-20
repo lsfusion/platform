@@ -263,7 +263,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public OrderEntity<?> getOrder() {
-        return (CalcPropertyObjectEntity<?>) getValueProperty();
+        return getCalcValueProperty();
     }
 
     public DataClass getRequestInputType(String actionSID, SecurityPolicy policy, boolean optimistic) {
@@ -592,10 +592,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.formPath = formPath;
     }
 
-    public CalcPropertyObjectEntity getDrawInstance() {
-        return getValueProperty().getDrawProperty();
-    }
-
     @Override
     public Object getProfiledObject() {
         return this;
@@ -607,7 +603,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Type getType() {
-        return getValueProperty().property.getType();
+        return getCalcValueProperty().property.getType();
     }
 
     public LocalizedString getCaption() {
@@ -644,9 +640,13 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return propertyObject;
     }
 
+    public CalcPropertyObjectEntity<?> getCalcValueProperty() {
+        return (CalcPropertyObjectEntity) getValueProperty();
+    }
+
     @Override
     public CalcPropertyObjectEntity getPropertyObjectEntity() {
-        return (CalcPropertyObjectEntity) getValueProperty();
+        return getCalcValueProperty();
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism

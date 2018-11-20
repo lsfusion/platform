@@ -387,7 +387,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void applyPropertyOptions(PropertyDrawEntity<?> property, FormPropertyOptions options, Version version) throws ScriptingErrorLog.SemanticErrorException {
         FormPropertyOptions.Columns columns = options.getColumns();
         if (columns != null) {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
@@ -401,14 +401,14 @@ public class ScriptingFormEntity {
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
         CalcPropertyObjectEntity backgroundProperty = options.getBackground();
-        if (backgroundProperty != null && !backgroundProperty.property.getType().equals(ColorClass.instance)) {
+        if (backgroundProperty != null && !((CalcPropertyObjectEntity<?>)backgroundProperty).property.getType().equals(ColorClass.instance)) {
             property.propertyBackground = addGroundPropertyObject(backgroundProperty, true);
         } else {
             property.propertyBackground = backgroundProperty;
         }
 
         CalcPropertyObjectEntity foregroundProperty = options.getForeground();
-        if (foregroundProperty != null && !foregroundProperty.property.getType().equals(ColorClass.instance)) {
+        if (foregroundProperty != null && !((CalcPropertyObjectEntity<?>)foregroundProperty).property.getType().equals(ColorClass.instance)) {
             property.propertyForeground = addGroundPropertyObject(foregroundProperty, false);
         } else {
             property.propertyForeground = foregroundProperty;
@@ -424,12 +424,12 @@ public class ScriptingFormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            form.addHintsNoUpdate((CalcProperty) property.getValueProperty().property, version);
+            form.addHintsNoUpdate(property.getCalcValueProperty().property, version);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            form.addHintsIncrementTable(version, (CalcProperty) property.getValueProperty().property);
+            form.addHintsIncrementTable(version, property.getCalcValueProperty().property);
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();

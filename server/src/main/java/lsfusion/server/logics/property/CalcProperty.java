@@ -1061,6 +1061,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         });
     }
 
+    public Type getType() {
+        ValueClass valueClass = getValueClass(ClassType.typePolicy);
+        return valueClass != null ? valueClass.getType() : null;
+    }
+
     @IdentityLazy
     public ValueClass getValueClass(ClassType classType) {
         return classToAlg(classType, new CallableWithParam<AlgType, ValueClass>() {

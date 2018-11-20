@@ -509,7 +509,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     if((property instanceof ActionProperty) != actions)
                         continue;
                     
-                    String returnClass = "";
+                    String returnClass = null;
                     String classProperty = "";
                     String tableSID = "";
                     Long complexityProperty = null;
@@ -525,9 +525,9 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             } else {
                                 tableSID = "";
                             }
+
+                            returnClass = ((CalcProperty)property).getValueClass(ClassType.syncPolicy).getSID();
                         }
-                        
-                        returnClass = property.getValueClass(ClassType.syncPolicy).getSID();
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     

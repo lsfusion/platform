@@ -138,23 +138,13 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
             MExclSet<Value> mStaticExprs = SetFact.mExclSet(4);
             mStaticExprs.exclAdd(ValueExpr.ZERO);
             mStaticExprs.exclAdd(ValueExpr.TRUEVAL);
-            mStaticExprs.exclAdd(ActionClass.instance.getDefaultExpr());
             staticExprs = mStaticExprs.immutable();
         }
         return staticExprs;
     }
 
     public static ImSet<? extends Value> removeStatic(ImSet<? extends Value> col) {
-        ImSet<Value> cleanCol = SetFact.remove(col, getStaticExprs());
-        MExclSet<Value> mResult = SetFact.mExclSet(cleanCol.size());
-        for(Value value : cleanCol)
-            if(!(value instanceof ValueExpr && ((ValueExpr)value).objectClass instanceof ActionClass)) // && ((ValueExpr) value).equals(((ActionClass)((ValueExpr)value).objectClass).getDefaultExpr())))
-                mResult.exclAdd(value);
-        return mResult.immutable();
-    }
-
-    public static <V> ImMap<Value,V> removeStatic(ImMap<Value,V> map) {
-        return map.remove(getStaticExprs());
+        return SetFact.remove(col, getStaticExprs());
     }
 
     // пересечение с игнорированием ValueExpr.TRUE

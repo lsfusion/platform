@@ -5,12 +5,12 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.Compare;
+import lsfusion.interop.Data;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.ActionClass;
-import lsfusion.server.auth.ChangePropertySecurityPolicy;
+
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
@@ -98,6 +98,10 @@ public class PropertyDrawView extends ComponentView {
 
     public Type getType() {
         return entity.getType();
+    }
+    
+    public boolean isCalcProperty() {
+        return entity.isCalcProperty();
     }
 
     public Type getChangeType(ServerContext context) {
@@ -224,7 +228,7 @@ public class PropertyDrawView extends ComponentView {
 
         if(defaultCompare != null)
             defaultCompare.serialize(outStream);
-        else if(Settings.get().isDefaultCompareForStringContains() && getType() instanceof StringClass)
+        else if(Settings.get().isDefaultCompareForStringContains() && isCalcProperty() && getType() instanceof StringClass)
             Compare.CONTAINS.serialize(outStream);
         else
             outStream.writeByte(-1);
@@ -255,7 +259,12 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(hide);
 
         //entity часть
-        TypeSerializer.serializeType(outStream, getType());
+        if(isCalcProperty())
+            TypeSerializer.serializeType(outStream, getType());
+        else {
+            outStream.writeByte(1);
+            outStream.writeByte(Data.ACTION);
+        }
 
         // асинхронные интерфейсы
 
@@ -302,13 +311,13 @@ public class PropertyDrawView extends ComponentView {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
-        outStream.writeBoolean(entity.isCalcProperty());
+        outStream.writeBoolean(isCalcProperty());
         outStream.writeBoolean(clearText);
         outStream.writeBoolean(notSelectAll);
 
         pool.serializeObject(outStream, pool.context.view.get(entity.quickFilterProperty));
 
-        MapKeysTable<? extends PropertyInterface> mapTable = entity.isCalcProperty() ?
+        MapKeysTable<? extends PropertyInterface> mapTable = isCalcProperty() ?
                         ((CalcProperty<?>)debugBinding).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
@@ -325,7 +334,11 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        debug.property.getValueClass(ClassType.formPolicy).serialize(outStream); // только показать пользователю
+        if(debug instanceof CalcPropertyObjectEntity)
+            ((CalcPropertyObjectEntity<?>)debug).property.getValueClass(ClassType.formPolicy).serialize(outStream);
+        else 
+            outStream.writeByte(Data.ACTION);
+        
         pool.writeString(outStream, entity.eventID);
 
         pool.writeString(outStream, debug.getCreationScript());
@@ -451,7 +464,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean isHorizontalValueFlex() {
         if(valueFlex != null)
             return valueFlex;
-        return getType().isFlex();
+        return isCalcProperty() && getType().isFlex();
     }
 
     public String getAskConfirmMessage() {
@@ -460,7 +473,7 @@ public class PropertyDrawView extends ComponentView {
             return entity.askConfirmMessage;
         
         LocalizedString msg;
-        if (entity.isCalcProperty()) {
+        if (isCalcProperty()) {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.edit.property}");
         } else {
             msg = LocalizedString.create("{form.instance.do.you.really.want.to.take.action}");

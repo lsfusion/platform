@@ -56,13 +56,13 @@ public class AnyValuePropertyHolder {
     private final LCP jsonLinkProperty;
     private final LCP xmlLinkProperty;
 
-    public AnyValuePropertyHolder(LCP objectProperty, LCP stringProperty, LCP textProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
-                                  LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
-                                  LCP pdfFileProperty, LCP rawFileProperty, LCP customFileProperty, LCP excelFileProperty, 
-                                  LCP csvFileProperty, LCP htmlFileProperty, LCP jsonFileProperty, LCP xmlFileProperty,
-                                  LCP wordLinkProperty, LCP imageLinkProperty, LCP pdfLinkProperty, LCP rawLinkProperty, 
-                                  LCP customLinkProperty, LCP excelLinkProperty, LCP csvLinkProperty, 
-                                  LCP htmlLinkProperty, LCP jsonLinkProperty, LCP xmlLinkProperty) {
+    public AnyValuePropertyHolder(LCP<?> objectProperty, LCP<?> stringProperty, LCP<?> textProperty, LCP<?> intProperty, LCP<?> longProperty, LCP<?> doubleProperty, LCP<?> numericProperty, LCP<?> yearProperty,
+                                  LCP<?> dateTimeProperty, LCP<?> logicalProperty, LCP<?> dateProperty, LCP<?> timeProperty, LCP<?> colorProperty, LCP<?> wordFileProperty, LCP<?> imageFileProperty,
+                                  LCP<?> pdfFileProperty, LCP<?> rawFileProperty, LCP<?> customFileProperty, LCP<?> excelFileProperty, 
+                                  LCP<?> csvFileProperty, LCP<?> htmlFileProperty, LCP<?> jsonFileProperty, LCP<?> xmlFileProperty,
+                                  LCP<?> wordLinkProperty, LCP<?> imageLinkProperty, LCP<?> pdfLinkProperty, LCP<?> rawLinkProperty, 
+                                  LCP<?> customLinkProperty, LCP<?> excelLinkProperty, LCP<?> csvLinkProperty, 
+                                  LCP<?> htmlLinkProperty, LCP<?> jsonLinkProperty, LCP<?> xmlLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null

@@ -85,10 +85,6 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
             }});
     }
 
-    public Type getType() {
-        return property.getType();
-    }
-
     protected ImMap<P, PropertyObjectInterfaceInstance> remap(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         return mapping.replaceValues(mapKeyValues);
     }

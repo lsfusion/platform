@@ -1,5 +1,6 @@
 package lsfusion.utils.backup;
 
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.Set;
 public class CustomRestoreTable {
     Set<String> replaceOnlyNullSet;
     List<String> sqlProperties;
-    List<LP> lpProperties;
+    List<LCP> lpProperties;
     List<String> keys;
     List<String> classKeys;
     boolean restoreObjects;

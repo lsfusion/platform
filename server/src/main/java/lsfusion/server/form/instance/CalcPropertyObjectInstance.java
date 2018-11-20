@@ -12,6 +12,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
@@ -134,5 +135,9 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
             return true;
         
         return isReallyChanged(hidden, modifier, reallyChanged, groupObjects); // cache пока не используем так как за многим надо следить
+    }
+
+    public Type getType() {
+        return property.getType();
     }
 }

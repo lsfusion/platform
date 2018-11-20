@@ -129,7 +129,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
     public static void fillResults(ExecutionContext context, ImList<LCP> targetPropList, List<Object> results, Charset charset) throws ParseException, SQLException, SQLHandledException {
         for(int i = 0, size = targetPropList.size(); i < size; i++) {
-            LCP targetProp = targetPropList.get(i);
+            LCP<?> targetProp = targetPropList.get(i);
 
             Object value = null;;
             if (i < results.size()) // для недостающих записываем null

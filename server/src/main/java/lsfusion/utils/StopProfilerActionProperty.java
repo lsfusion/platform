@@ -162,7 +162,7 @@ public class StopProfilerActionProperty extends ScriptingActionProperty {
         }, new Type.Getter<LCP>() {
             @Override
             public Type getType(LCP key) {
-                return key.property.getType();
+                return ((LCP<?>)key).property.getType();
             }
         });
 

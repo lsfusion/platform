@@ -22,7 +22,6 @@ import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -115,13 +114,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
     public void setID(int ID) {
         this.ID = ID;
     }
-
-    public Type getType() {
-        ValueClass valueClass = getValueClass(ClassType.typePolicy);
-        return valueClass != null ? valueClass.getType() : null;
-    }
-
-    public abstract ValueClass getValueClass(ClassType classType);
 
     public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces, ClassType classType) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
         return listInterfaces.mapList(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
@@ -648,9 +640,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractProp
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
-            if(propertyView.getType() instanceof LogicalClass)
-                propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
-            if(propertyView.getType() instanceof ActionClass)
+            if(propertyView.isCalcProperty()) {
+                if (propertyView.getType() instanceof LogicalClass) 
+                    propertyView.editOnSingleClick = Settings.get().getEditLogicalOnSingleClick();
+            } else
                 propertyView.editOnSingleClick = Settings.get().getEditActionOnSingleClick();
 
             if(propertyView.getCharWidth() == 0)

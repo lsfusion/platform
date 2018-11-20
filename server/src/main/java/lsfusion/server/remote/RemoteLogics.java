@@ -365,7 +365,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    private List<Object> readReturnProperty(DataSession session, LCP returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
+    private List<Object> readReturnProperty(DataSession session, LCP<?> returnProperty, ObjectValue... params) throws SQLException, SQLHandledException, IOException {
         Object returnValue = returnProperty.read(session, params);
         Type returnType = returnProperty.property.getType();
         return readReturnProperty(returnValue, returnType);

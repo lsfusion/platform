@@ -1139,13 +1139,11 @@ public abstract class LogicsModule {
         CalcPropertyMapImplement<?, PropertyInterface> initial = (CalcPropertyMapImplement<?, PropertyInterface>) listImplement.get(0);
         CalcPropertyMapImplement<?, PropertyInterface> step = (CalcPropertyMapImplement<?, PropertyInterface>) listImplement.get(1);
 
-        boolean convertToLogical = false;
         assert initial.property.getType() instanceof IntegralClass == (step.property.getType() instanceof IntegralClass);
         if(!(initial.property.getType() instanceof IntegralClass) && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
             CalcPropertyMapImplement<?, PropertyInterface> one = createStatic(1L, LongClass.instance);
             initial = createAnd(innerInterfaces.getSet(), one, initial);
             step = createAnd(innerInterfaces.getSet(), one, step);
-            convertToLogical = true;
         }
 
         RecursiveProperty<PropertyInterface> property = new RecursiveProperty<>(caption, interfaces, cycle,
@@ -1527,7 +1525,7 @@ public abstract class LogicsModule {
         return property;
     }
 
-    protected boolean isLogical(LP property) {
+    protected boolean isLogical(LCP<?> property) {
         if(property == null)
             return false;
 
