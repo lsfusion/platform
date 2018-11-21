@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -68,6 +69,7 @@ public class SQLSessionLoggerAspect {
                 if (result instanceof Integer) // cheat, но чисто для логинга
                     queryString = "[rows " + result + "] " + queryString;
                 sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s", runTime / 1000000, queryString, runningTotal / 1000000, runningWarningTotal / 1000000, runningCount));
+                sqlLogger.info(ExecutionStackAspect.getStackString());
             }
         }
         if (Profiler.PROFILER_ENABLED) {
