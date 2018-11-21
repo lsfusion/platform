@@ -561,7 +561,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP<>(exportAction));
     }
 
-    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
         // getExtension(FILE(prm1))
         // FOR x = getExtension(prm1) DO {
         //    CASE EXCLUSIVE
@@ -574,7 +574,7 @@ public abstract class LogicsModule {
         for(FormIntegrationType importType : FormIntegrationType.values()) 
             if(importType.isPlain() == isPlain) {
                 cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-                    directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere)))); // IMPORT type form...
+                    directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere)))); // IMPORT type form...
             }        
         
         return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
@@ -583,11 +583,11 @@ public abstract class LogicsModule {
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
-    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
         ImportActionProperty importAction;
         
         if(format == null)
-            return addAutoImportFAProp(group, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, charset, hasWhere);
+            return addAutoImportFAProp(group, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
         else {
             switch (format) {
                 // hierarchical
@@ -599,7 +599,7 @@ public abstract class LogicsModule {
                     break;
                 // plain
                 case CSV:
-                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, noHeader, charset, separator);
+                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, noHeader, noEscape, charset, separator);
                     break;
                 case DBF:
                     importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
@@ -661,7 +661,7 @@ public abstract class LogicsModule {
         return addEFAProp(null, caption, form, objectsToSet, nulls, type, noHeader, separator, noEscape, charset, root, tag, singleExportFile, exportFiles);
     }
 
-    protected LAP addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LCP<?> whereLCP, String separator, boolean noHeader, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
+    protected LAP addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LCP<?> whereLCP, String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
@@ -672,7 +672,7 @@ public abstract class LogicsModule {
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
-        return addImportFAProp(null, type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, charset, hasWhere);
+        return addImportFAProp(null, type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere);
     }
 
     // ------------------- Set property action ----------------- //
