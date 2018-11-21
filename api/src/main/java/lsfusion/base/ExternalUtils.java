@@ -54,26 +54,23 @@ public class ExternalUtils {
         
         String filename = "export";
 
-        if (uri.startsWith("/exec")) {
+        if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
             paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
-        } else if (uri.startsWith("/eval")) {
-            Object script = getParameterValue(queryParams, SCRIPT_PARAM);
-            if (!requestParams.isEmpty()) {
-                script = script != null ? script : getScriptRequestParam(requestParams);
-                paramsList = getRequestParams(requestParams);
-            } else if (script == null && !paramsList.isEmpty()) {
-                //Первый параметр считаем скриптом
-                script = paramsList.get(0);
-                paramsList = paramsList.subList(1, paramsList.size());
-            }
-            paramList = remoteLogics.eval(uri.startsWith("/eval/action"), script, returns.toArray(new String[returns.size()]),
-                    paramsList.toArray(), charset == null ? null : charset.toString());
-        } else if (uri.startsWith("/read")) {
-            String property = getParameterValue(queryParams, PROPERTY_PARAM);
-            if (property != null) {
-                filename = property;
-                paramList.addAll(remoteLogics.read(property, paramsList.toArray(), charset));
+        } else {
+            boolean isEvalAction = uri.endsWith("/eval/action");
+            if (uri.endsWith("/eval") || isEvalAction) {
+                Object script = getParameterValue(queryParams, SCRIPT_PARAM);
+                if (!requestParams.isEmpty()) {
+                    script = script != null ? script : getScriptRequestParam(requestParams);
+                    paramsList = getRequestParams(requestParams);
+                } else if (script == null && !paramsList.isEmpty()) {
+                    //Первый параметр считаем скриптом
+                    script = paramsList.get(0);
+                    paramsList = paramsList.subList(1, paramsList.size());
+                }
+                paramList = remoteLogics.eval(isEvalAction, script, returns.toArray(new String[returns.size()]),
+                        paramsList.toArray(), charset == null ? null : charset.toString());
             }
         }
 
