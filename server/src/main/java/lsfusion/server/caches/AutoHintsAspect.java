@@ -293,7 +293,7 @@ public class AutoHintsAspect {
                             long maxCountUsed = catchHint.getMaxCountUsed(property);
                             // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
                             long limit = BaseUtils.max(maxCountUsed, baseLimit) * complexity * complexity / limitComplexity / limitComplexity; // возможно надо будет все же экспоненту сделать 
-                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRows().lessEquals(new Stat(limit))) { // тут может быть проблема с интервалами (см. CalcProperty.allowHintIncrement)
+                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet(), StatType.HINTCHANGE).getRowsOrStat().lessEquals(new Stat(limit))) { // тут может быть проблема с интервалами (см. CalcProperty.allowHintIncrement)
                                 throw new HintException(new IncrementHint(property, true));
                             }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {

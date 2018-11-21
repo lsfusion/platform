@@ -52,6 +52,10 @@ public class StatKeys<K> extends TwinImmutableObject {
         return stat;
     }
 
+    public Stat getRowsOrStat() { // temp fix
+        return stat.or(cost.rows);
+    }
+
     public Cost getCost() {
         return cost;
     }
