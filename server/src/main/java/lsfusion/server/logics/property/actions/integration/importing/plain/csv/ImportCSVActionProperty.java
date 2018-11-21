@@ -16,19 +16,21 @@ import java.io.IOException;
 
 public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSVIterator> {
     private boolean noHeader;
+    private boolean noEscape;
     private String charset;
     private String separator;
     
-    public ImportCSVActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean noHeader, String charset, String separator) {
+    public ImportCSVActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean noHeader, boolean noEscape, String charset, String separator) {
         super(paramsCount, groupFiles, formEntity);
         this.noHeader = noHeader;
+        this.noEscape = noEscape;
         this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
     }
 
     @Override
     public ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException {
-        return new ImportCSVIterator(fieldTypes, file, charset, noHeader, separator);
+        return new ImportCSVIterator(fieldTypes, file, charset, noHeader, noEscape, separator);
     }
 
     protected boolean indexBased() {

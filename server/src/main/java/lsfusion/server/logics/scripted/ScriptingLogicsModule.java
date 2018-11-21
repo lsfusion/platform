@@ -3463,8 +3463,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages,
                                                          List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
-                                                         PropertyUsage wherePropertyUsage, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, String charset,
-                                                         LCPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
+                                                         PropertyUsage wherePropertyUsage, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
+                                                         String charset, LCPWithParams root, List<TypedParameter> fieldParams, List<String> toParamClasses, boolean attr,
                                                          LCPWithParams whereProp, LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
 
         if(fileProp == null)
@@ -3499,7 +3499,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP importAction = null;
         try {
-            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator, noHeader, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LCP[props.size()])));
+            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator, noHeader, noEscape, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LCP[props.size()])));
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
@@ -3514,7 +3514,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps,
-                                                             FormEntity formEntity, LCPWithParams sheet, boolean sheetAll, boolean noHeader, boolean attr, String charset, String separator,
+                                                             FormEntity formEntity, LCPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, String charset, String separator,
                                                              LCPWithParams rootProp, LCPWithParams whereProp,  LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
         List<LCPWithParams> params = new ArrayList<>();
         boolean hasFileProps = fileProps != null && !fileProps.isEmpty();
@@ -3553,7 +3553,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.<GroupObjectEntity>EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, charset, whereProp != null), params);
+        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
