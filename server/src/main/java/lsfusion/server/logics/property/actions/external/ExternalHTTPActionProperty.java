@@ -101,7 +101,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             default:
                 httpRequest = new HttpPost(connectionString);
                 HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
-                httpRequest.addHeader("Content-type", entity.getContentType().getValue());
+                if (!headers.containsKey("Content-type"))
+                    httpRequest.addHeader("Content-type", entity.getContentType().getValue());
                 ((HttpPost)httpRequest).setEntity(entity);
                 break;
         }
