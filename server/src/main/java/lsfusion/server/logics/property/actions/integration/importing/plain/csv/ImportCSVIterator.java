@@ -63,8 +63,7 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     protected Object getPropValue(Integer fieldIndex, Type type) throws ParseException {
         if (fieldIndex >= line.size())
             throw new ParseException("Column with index " + fieldIndex + " not found");
-        //return type.parseCSV(csvUnescaper.translate(line.get(fieldIndex)));
-        return type.parseCSV(line.get(fieldIndex));
+        return type.parseCSV(csvUnescaper.translate(line.get(fieldIndex)));
     }
 
     //modified from StringEscapeUtils
@@ -86,7 +85,7 @@ public class ImportCSVIterator extends ImportMatrixIterator {
                 throw new IllegalStateException("CsvUnescaper should never reach the [1] index");
             }
 
-            if ( input.charAt(0) != CSV_QUOTE || input.charAt(input.length() - 1) != CSV_QUOTE ) {
+            if (input.charAt(0) != CSV_QUOTE || input.charAt(input.length() - 1) != CSV_QUOTE || (input.length() == 1 && input.charAt(0) == CSV_QUOTE)) {
                 out.write(input.toString());
                 return Character.codePointCount(input, 0, input.length());
             }
