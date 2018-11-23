@@ -29,7 +29,6 @@ import static lsfusion.client.SwingUtils.showConfirmDialog;
 public class ReportViewerToolbar extends JRViewerToolbar {
     private final ReportViewer reportViewer;
     private JButton editReportButton = null;
-    private JButton addReportButton = null;
     private JButton deleteReportButton = null;
     private Boolean hasCustomReports;
     
@@ -90,13 +89,11 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
             add(Box.createHorizontalStrut(10));
 
-            editReportButton = getEditReportButton(editInvoker, hasCustomReports);
-            deleteReportButton = getDeleteReportButton(editInvoker, hasCustomReports);
-            addReportButton = getAddReportButton(editInvoker);
-
-            add(editReportButton);
-            add(addReportButton);
-            add(deleteReportButton);
+            add(getAddReportButton(editInvoker));
+            
+            add(editReportButton = getEditReportButton(editInvoker, hasCustomReports));
+            
+            add(deleteReportButton = getDeleteReportButton(editInvoker, hasCustomReports));
         }
     }
 
@@ -145,39 +142,21 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private JButton getEditReportButton(final EditReportInvoker editInvoker, boolean visible) {
-        JButton editReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/editReport.png")));
-        editReportButton.setToolTipText(getString("layout.menu.file.edit.report"));
-        editReportButton.setMargin(new Insets(2, 2, 2, 2));
-        editReportButton.setMaximumSize(new Dimension(23, 23));
-        editReportButton.setMinimumSize(new Dimension(23, 23));
-        editReportButton.setPreferredSize(new Dimension(23, 23));
-        editReportButton.addActionListener(new ActionListener() {
+        return createButton("/images/editReport.png", getString("layout.menu.file.edit.report"), visible, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
                     @Override
                     public void run() {
-                        editButtonPressed(editInvoker);
+                        editReport(editInvoker);
                     }
                 });
             }
         });
-        editReportButton.setVisible(visible);
-        return editReportButton;
-    }
-
-    private void editButtonPressed(EditReportInvoker editInvoker) {
-        editReport(editInvoker);
     }
 
     private JButton getAddReportButton(final EditReportInvoker editInvoker) {
-        final JButton addReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/editAutoReport.png")));
-        addReportButton.setToolTipText(getString("layout.menu.file.create.custom.report"));
-        addReportButton.setMargin(new Insets(2, 2, 2, 2));
-        addReportButton.setMaximumSize(new Dimension(23, 23));
-        addReportButton.setMinimumSize(new Dimension(23, 23));
-        addReportButton.setPreferredSize(new Dimension(23, 23));
-        addReportButton.addActionListener(new ActionListener() {
+        return createButton("/images/editAutoReport.png", getString("layout.menu.file.create.custom.report"), true, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
@@ -188,7 +167,6 @@ public class ReportViewerToolbar extends JRViewerToolbar {
                 });
             }
         });
-        return addReportButton;
     }
 
     private void addButtonPressed(EditReportInvoker editInvoker) {
@@ -209,13 +187,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
 
     private JButton getDeleteReportButton(final EditReportInvoker editInvoker, final boolean visible) {
-        final JButton deleteReportButton = new JButton(new ImageIcon(Main.class.getResource("/images/deleteReport.png")));
-        deleteReportButton.setToolTipText(getString("layout.menu.file.delete.report"));
-        deleteReportButton.setMargin(new Insets(2, 2, 2, 2));
-        deleteReportButton.setMaximumSize(new Dimension(23, 23));
-        deleteReportButton.setMinimumSize(new Dimension(23, 23));
-        deleteReportButton.setPreferredSize(new Dimension(23, 23));
-        deleteReportButton.addActionListener(new ActionListener() {
+        return createButton("/images/deleteReport.png", getString("layout.menu.file.delete.report"), visible, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RmiQueue.runAction(new Runnable() {
@@ -226,8 +198,6 @@ public class ReportViewerToolbar extends JRViewerToolbar {
                 });
             }
         });
-        deleteReportButton.setVisible(visible);
-        return deleteReportButton;
     }
 
     private void deleteButtonPressed(EditReportInvoker editInvoker) {
@@ -238,6 +208,18 @@ public class ReportViewerToolbar extends JRViewerToolbar {
             deleteReportButton.setVisible(false);
             invalidate();
         }
+    }
+    
+    private JButton createButton(String iconPath, String tooltipText, boolean visible, ActionListener actionListener) {
+        JButton button = new JButton(new ImageIcon(Main.class.getResource(iconPath)));
+        button.setToolTipText(tooltipText);
+        button.setMargin(new Insets(2, 2, 2, 2));
+        button.setMaximumSize(new Dimension(23, 23));
+        button.setMinimumSize(new Dimension(23, 23));
+        button.setPreferredSize(new Dimension(23, 23));
+        button.addActionListener(actionListener);
+        button.setVisible(visible);
+        return button;
     }
 
     private void addReport(EditReportInvoker editInvoker) {
@@ -251,7 +233,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
 
     private void recreateReport(EditReportInvoker editInvoker) { // нужен чтобы сохранить путь
         try {
-            editInvoker.invokeRecreateReport();;
+            editInvoker.invokeRecreateReport();
         } catch (RemoteException e) {
             throw Throwables.propagate(e);
         }
