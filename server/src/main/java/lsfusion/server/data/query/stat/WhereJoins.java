@@ -595,7 +595,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         public CompileInfo add(CompileInfo compileInfo) {
-            return new CompileInfo(usedNotNulls.addExcl(compileInfo.usedNotNulls), joinOrder.addOrderExcl(compileInfo.joinOrder), maxSubQueryCost.or(compileInfo.maxSubQueryCost));
+            ImOrderSet<BaseJoin> aJoinOrder = this.joinOrder;
+            ImOrderSet<BaseJoin> bJoinOrder = compileInfo.joinOrder;
+            if(aJoinOrder.size() < bJoinOrder.size()) {
+                ImOrderSet<BaseJoin> tJoinOrder = aJoinOrder;
+                aJoinOrder = bJoinOrder;
+                bJoinOrder = tJoinOrder;
+            }
+            return new CompileInfo(usedNotNulls.addExcl(compileInfo.usedNotNulls), aJoinOrder.addOrderExcl(bJoinOrder), maxSubQueryCost.or(compileInfo.maxSubQueryCost));
         }
         
         public final static CompileInfo EMPTY = new CompileInfo(SetFact.<BaseExpr>EMPTY(), SetFact.<BaseJoin>EMPTYORDER(), Cost.ONE); 
