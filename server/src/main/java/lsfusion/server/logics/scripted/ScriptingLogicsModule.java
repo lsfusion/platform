@@ -6,7 +6,10 @@ import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -38,8 +41,8 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.external.ExternalDBActionProperty;
 import lsfusion.server.logics.property.actions.external.ExternalDBFActionProperty;
@@ -77,8 +80,8 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1868,13 +1871,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         LCP<?> tprop = getInputProp(targetProp, requestDataClass, null);
 
         LAP property = addInputAProp(requestDataClass, tprop != null ? tprop.property : null);
+        
+        if (changeProp == null)
+            changeProp = oldValue;
 
-        if(oldValue == null)
+        // optimization. we don't use files on client side (see also DefaultChangeActionProperty.executeCustom()) 
+        if (oldValue == null || oldValue.getLP().property.getType() instanceof FileClass)
             oldValue = new LCPWithParams(baseLM.vnull);
         LAPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
-
-        if(changeProp == null)
-            changeProp = oldValue;
 
         return proceedInputDoClause(doAction, elseAction, oldContext, newContext, ListFact.<LCP>singleton(tprop), inputAction,
                 ListFact.singleton(assign ? new Pair<>(changeProp, assignDebugPoint) : null));
