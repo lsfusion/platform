@@ -92,7 +92,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
             ObjectValue changeValue;
             if (changeType instanceof DataClass) {
                 Object oldValue = null;
-                //не шлём значения для файлов, т.к. на клиенте они не нужны, но весят много
+                // optimization. we don't use files on client side (see also ScriptingLogicsModule.addScriptedInputAProp())
                 if (!(changeType instanceof FileClass)) {
                     oldValue = implement.read(context, keys);
                 }
