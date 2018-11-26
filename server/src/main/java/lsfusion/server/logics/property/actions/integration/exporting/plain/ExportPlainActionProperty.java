@@ -29,15 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ExportPlainActionProperty<O extends ObjectSelector> extends ExportActionProperty<O> {
-
-    protected final String charset;
     protected final ImMap<GroupObjectEntity, LCP> exportFiles;
     
     public ExportPlainActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType);
-        
-        this.charset = charset;
-        
+        super(caption, form, objectsToSet, nulls, staticType, charset);
         this.exportFiles = exportFiles;
     }
 

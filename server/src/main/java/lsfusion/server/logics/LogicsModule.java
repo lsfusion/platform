@@ -541,7 +541,7 @@ public abstract class LogicsModule {
                 exportAction = new ExportJSONActionProperty<O>(caption, form, objectsToSet, nulls, staticType, singleExportFile, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, noHeader, separator, noEscape, charset);
+                exportAction = new ExportCSVActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, noHeader, separator, noEscape);
                 break;
             case XLS:
                 exportAction = new ExportXLSActionProperty<O>(caption, form, objectsToSet, nulls, staticType, exportFiles, charset, false, noHeader);
@@ -561,7 +561,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP<>(exportAction));
     }
 
-    protected <O extends ObjectSelector> LAP addAutoImportFAProp(AbstractGroup group, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addAutoImportFAProp(FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
         // getExtension(FILE(prm1))
         // FOR x = getExtension(prm1) DO {
         //    CASE EXCLUSIVE
@@ -574,48 +574,48 @@ public abstract class LogicsModule {
         for(FormIntegrationType importType : FormIntegrationType.values()) 
             if(importType.isPlain() == isPlain) {
                 cases = add(cases, add(new Object[] {addJProp(baseLM.equals2, 1, addCProp(StringClass.text, LocalizedString.create(importType.getExtension(), false))), paramsCount + 1 }, // WHEN x = type.getExtension()
-                    directLI(addImportFAProp(null, importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere)))); // IMPORT type form...
+                    directLI(addImportFAProp(importType, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere)))); // IMPORT type form...
             }        
         
-        return addForAProp(group, LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
+        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, paramsCount, null, false, true, 0, false,
                 add(add(getUParams(paramsCount), 
                         new Object[] {addJProp(baseLM.equals2, 1, baseLM.getExtension, 2), paramsCount + 1, 1}), // FOR x = getExtension(FILE(prm1))  
                         directLI(addCaseAProp(true, cases))));  // CASE EXCLUSIVE
     }
     
-    protected <O extends ObjectSelector> LAP addImportFAProp(AbstractGroup group, FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
+    protected <O extends ObjectSelector> LAP addImportFAProp(FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
         ImportActionProperty importAction;
         
         if(format == null)
-            return addAutoImportFAProp(group, formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
+            return addAutoImportFAProp(formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
         else {
             switch (format) {
                 // hierarchical
                 case XML:
-                    importAction = new ImportXMLActionProperty(paramsCount, formEntity);
+                    importAction = new ImportXMLActionProperty(paramsCount, formEntity, charset);
                     break;
                 case JSON:
-                    importAction = new ImportJSONActionProperty(paramsCount, formEntity);
+                    importAction = new ImportJSONActionProperty(paramsCount, formEntity, charset);
                     break;
                 // plain
                 case CSV:
-                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, noHeader, noEscape, charset, separator);
+                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
                     break;
                 case DBF:
                     importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
                     break;
                 case XLS:
                 case XLSX:
-                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, noHeader, sheetAll);
+                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
                     break;
                 case TABLE:
-                    importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity);
+                    importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity, charset);
                     break;
                 default:
                     throw new UnsupportedOperationException();
             }
         }
-        return addProperty(group, new LAP<>(importAction));
+        return addProperty(null, new LAP<>(importAction));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -672,7 +672,7 @@ public abstract class LogicsModule {
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
         
         // create action
-        return addImportFAProp(null, type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere);
+        return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasWhere);
     }
 
     // ------------------- Set property action ----------------- //
@@ -783,7 +783,7 @@ public abstract class LogicsModule {
 
     // ------------------- For action ----------------- //
 
-    protected LAP addForAProp(AbstractGroup group, LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
+    protected LAP addForAProp(LocalizedString caption, boolean ascending, boolean ordersNotNull, boolean recursive, boolean hasElse, int resInterfaces, CustomClass addClass, boolean autoSet, boolean hasCondition, int noInline, boolean forceInline, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(innerInterfaces, params);
 
@@ -806,7 +806,7 @@ public abstract class LogicsModule {
 
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(readImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
-        return addProperty(group, new LAP<>(
+        return addProperty(null, new LAP<>(
                 new ForActionProperty<>(caption, innerInterfaces.getSet(), mapInterfaces, ifProp, orders, ordersNotNull, action, elseAction, addedInterface, addClass, autoSet, recursive, noInlineInterfaces, forceInline))
         );
     }
@@ -1747,7 +1747,7 @@ public abstract class LogicsModule {
         //              DELETE x;
         // }
 
-        LAP result = addForAProp(null, LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
+        LAP result = addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, 0, cls, true, false, 0, false,
                 1, //NEW x=X
                 addRequestAProp(null, caption, // REQUEST
                         baseLM.getPolyEdit(), 1, // edit(x);

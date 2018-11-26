@@ -11,8 +11,8 @@ import java.util.Iterator;
 
 public class JSONReader {
 
-    public static Object readRootObject(RawFileData file, String root) throws IOException, JSONException {
-        Object rootNode = JSONReader.readObject(file);
+    public static Object readRootObject(RawFileData file, String root, String charset) throws IOException, JSONException {
+        Object rootNode = JSONReader.readObject(file, charset);
         if (root != null) {
             rootNode = JSONReader.findRootNode(rootNode, null, root);
             if (rootNode == null)
@@ -22,9 +22,9 @@ public class JSONReader {
     }
 
 
-    public static Object readObject(RawFileData file) throws IOException, JSONException {
+    public static Object readObject(RawFileData file, String charset) throws IOException, JSONException {
         try (InputStream is = file.getInputStream()) {
-            final BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+            final BufferedReader rd = new BufferedReader(new InputStreamReader(is, charset));
             final String jsonText = readAll(rd).trim();
 
             if(jsonText.startsWith("["))

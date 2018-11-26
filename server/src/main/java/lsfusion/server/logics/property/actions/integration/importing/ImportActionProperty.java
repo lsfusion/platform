@@ -1,10 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.FileData;
-import lsfusion.base.ProgressBar;
-import lsfusion.base.RawFileData;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -40,8 +37,9 @@ import java.sql.SQLException;
 
 public abstract class ImportActionProperty extends SystemActionProperty {
     protected FormEntity formEntity;
+    protected String charset;
 
-    public ImportActionProperty(int paramsCount, FormEntity formEntity) {
+    public ImportActionProperty(int paramsCount, FormEntity formEntity, String charset) {
         super(LocalizedString.create("Import"), SetFact.toOrderExclSet(paramsCount, new GetIndex<PropertyInterface>() {
             @Override
             public PropertyInterface getMapValue(int i) {
@@ -50,6 +48,7 @@ public abstract class ImportActionProperty extends SystemActionProperty {
         }));
         
         this.formEntity = formEntity;
+        this.charset = charset;
     }
 
     protected static RawFileData readFile(ObjectValue value) throws SQLException, SQLHandledException {

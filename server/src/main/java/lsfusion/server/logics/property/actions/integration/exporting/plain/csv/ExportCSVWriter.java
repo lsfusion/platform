@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain.csv;
 
-import lsfusion.base.ExternalUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -20,12 +19,6 @@ public class ExportCSVWriter extends ExportMatrixWriter {
 
     public ExportCSVWriter(ImOrderMap<String, Type> fieldTypes, boolean noHeader, boolean noEscape, String separator, String charset) throws IOException {
         super(fieldTypes, noHeader);
-        
-        if(separator == null)
-            separator = ExternalUtils.defaultCSVSeparator;
-        if(charset == null)
-            charset = ExternalUtils.defaultCSVCharset;
-
         this.csvEscaper = new CsvEscaper(noEscape, separator);
         this.separator = separator;
         writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charset))) {

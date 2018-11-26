@@ -19,9 +19,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class ExportActionProperty<O extends ObjectSelector> extends FormStaticActionProperty<O, FormIntegrationType> {
+    protected final String charset;
 
-    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, Property... extraProps) {
+    public ExportActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, String charset, Property... extraProps) {
         super(caption, form, objectsToSet, nulls, staticType, null, extraProps);
+        this.charset = charset;
     }
     
     protected abstract void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException;

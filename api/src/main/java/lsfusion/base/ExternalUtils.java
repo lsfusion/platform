@@ -29,6 +29,7 @@ public class ExternalUtils {
     public static final String defaultCSVSeparator = ";";
     public static final String defaultCSVCharset = "UTF-8";
     public static final String defaultXMLJSONCharset = "UTF-8";
+    public static final String defaultDBFCharset = "CP1251";
 
     public static final Charset stringCharset = Consts.UTF_8;
     public static final ContentType TEXT_PLAIN = ContentType.create(

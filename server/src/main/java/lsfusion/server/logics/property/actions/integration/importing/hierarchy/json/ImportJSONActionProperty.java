@@ -11,14 +11,14 @@ import java.io.IOException;
 
 public class ImportJSONActionProperty extends ImportHierarchicalActionProperty<JSONNode> {
 
-    public ImportJSONActionProperty(int paramsCount, FormEntity formEntity) {
-        super(paramsCount, formEntity);
+    public ImportJSONActionProperty(int paramsCount, FormEntity formEntity, String charset) {
+        super(paramsCount, formEntity, charset);
     }
 
     @Override
     public JSONNode getRootNode(RawFileData fileData, String root) {
         try {
-            return JSONNode.getJSONNode(JSONReader.readRootObject(fileData, root), true);
+            return JSONNode.getJSONNode(JSONReader.readRootObject(fileData, root, charset), true);
         } catch (IOException | JSONException e) {
             throw Throwables.propagate(e);
         }

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.plain.dbf;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -22,13 +23,10 @@ import java.util.regex.Pattern;
 public class ImportDBFActionProperty extends ImportPlainActionProperty<ImportDBFIterator> {
 
     private final PropertyInterface whereInterface;
-    private final PropertyInterface memoInterface;    
-    
-    private final String charset;
+    private final PropertyInterface memoInterface;
 
     public ImportDBFActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean hasWhere) {
-        super(paramsCount, groupFiles, formEntity);
-        this.charset = charset == null ? "cp1251" : charset;
+        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultDBFCharset);
 
         int shift = groupFiles.size();
         whereInterface = hasWhere ? getOrderInterfaces().get(shift++) : null;
