@@ -351,7 +351,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     // modifier параметр избыточен (его можно получать из classChanges, но для оптимизации не будем его пересоздавать)
     public ModifyResult updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
         try {
-            if(!table.hasClassChanges(session)) // оптимизация, проверка что хоть один session.changes есть 
+            if(!fullHasClassChanges(session)) // optimization 
                 return ModifyResult.NO;
 
             SessionData<?> newTable = table;
@@ -364,5 +364,9 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
             aspectException(session.sql, session.env.getOpOwner());
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
+    }
+
+    protected boolean fullHasClassChanges(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        return table.hasClassChanges(session);
     }
 }

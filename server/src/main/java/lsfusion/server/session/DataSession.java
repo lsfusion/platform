@@ -1488,7 +1488,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private <T extends PropertyInterface, D extends PropertyInterface> void applyDependSingleApplyStored(ApplyCalcEvent singleEvent, SessionModifier baseModifier, BusinessLogics BL, PropertyChangeTableUsage<T> change) throws SQLException, SQLHandledException {
-        ImOrderSet<ApplySingleEvent> dependEvents = BL.getSingleApplyDependFrom(singleEvent, this); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<ApplySingleEvent> dependEvents = BL.getSingleApplyDependFrom(singleEvent, this, false); // !!! важно в лексикографическом порядке должно быть
 
         if (neededProps != null && !flush) { // придется отдельным прогоном чтобы правильную лексикографику сохранить
             for (ApplySingleEvent dependEvent : dependEvents)
@@ -1536,14 +1536,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     
 
-    private void updateDependApplyStartCurrentClasses(ApplyCalcEvent event, UpdateCurrentClassesSession session, BusinessLogics BL) throws SQLException, SQLHandledException {
+    private void updateDependApplyStartCurrentClasses(ApplyRemoveClassesEvent event, UpdateCurrentClassesSession session, BusinessLogics BL) throws SQLException, SQLHandledException {
         MAddSet<OldProperty> oldProps = SetFact.mAddSet();
         fillDependApplyStartCurrentClasses(event, oldProps, BL);
         for(OldProperty oldProp : oldProps)
             updateApplyStartCurrentClasses(session, oldProp);
     }
     private void fillDependApplyStartCurrentClasses(ApplyCalcEvent event, MAddSet<OldProperty> oldProps, BusinessLogics BL) throws SQLException, SQLHandledException {
-        ImOrderSet<ApplySingleEvent> dependProps = BL.getSingleApplyDependFrom(event, this); // !!! важно в лексикографическом порядке должно быть
+        ImOrderSet<ApplySingleEvent> dependProps = BL.getSingleApplyDependFrom(event, this, !Settings.get().isDisableCorrelations());
 
         // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
         for (ApplySingleEvent dependEvent : dependProps) {

@@ -635,6 +635,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             return property.getType();
         }
 
+        public CalcProperty<?> getProperty() {
+            return property;
+        }
+
         @Override
         public CustomClass getCustomClass() {
             return customClass;
@@ -665,7 +669,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return mResult.immutableOrder();
     }
 
-    private <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ClassType classType) {
+    public <K extends PropertyInterface> ImOrderSet<Correlation<T>> getCorrelations(ClassType classType) {
         return getCorrelations(null, classType);
     }    
 

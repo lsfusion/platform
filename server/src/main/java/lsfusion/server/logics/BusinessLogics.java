@@ -84,10 +84,7 @@ import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.form.stat.FormReportManager;
-import lsfusion.server.session.ApplyFilter;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyTableUsage;
+import lsfusion.server.session.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -898,8 +895,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void prereadCaches() {
         getApplyEvents(ApplyFilter.ONLYCHECK);
         getApplyEvents(ApplyFilter.NO);
-        if(Settings.get().isEnableApplySingleStored())
-            getOrderMapSingleApplyDepends(ApplyFilter.NO);
+        if(Settings.get().isEnableApplySingleStored()) {
+            getOrderMapSingleApplyDepends(ApplyFilter.NO, false);
+            if(!Settings.get().isDisableCorrelations())
+                getOrderMapSingleApplyDepends(ApplyFilter.NO, true);
+        }
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
@@ -1738,7 +1738,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    private ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter increment) {
+    private ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter increment, boolean includeCorrelations) {
         assert Settings.get().isEnableApplySingleStored();
 
         ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(increment);
@@ -1761,8 +1761,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
         }
         for (int i=0,size= singleAppliedOld.size();i<size;i++) { // old'ы по идее не важно в каком порядке будут (главное что stored до)
-            OldProperty old = singleAppliedOld.getKey(i);
-            fillSingleApplyDependFrom(old.property, new ApplyUpdatePrevEvent(old), singleAppliedOld.getValue(i), mMapDepends, canBeOutOfDepends);
+            OldProperty<?> old = singleAppliedOld.getKey(i);
+            SessionEnvEvent sessionEnv = singleAppliedOld.getValue(i);
+
+            ApplyUpdatePrevEvent event = new ApplyUpdatePrevEvent(old);
+            fillSingleApplyDependFrom(old.property, event, sessionEnv, mMapDepends, canBeOutOfDepends);
+            
+            if(includeCorrelations)
+                for(Correlation<?> corProp : old.property.getCorrelations(ClassType.typePolicy.materializeChangePolicy))
+                    fillSingleApplyDependFrom(corProp.getProperty(), event, sessionEnv, mMapDepends, true);
         }
 
         return mMapDepends.immutable().mapValues(new GetValue<ImOrderMap<ApplySingleEvent, SessionEnvEvent>, MOrderMap<ApplySingleEvent, SessionEnvEvent>>() {
@@ -1772,8 +1779,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session) {
-        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter).get(event));
+    public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) {
+        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations).get(event));
     }
 
     @IdentityLazy
