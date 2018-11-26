@@ -1,7 +1,6 @@
 package lsfusion.server.session;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -121,7 +120,16 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
             });
         }
 
-
+        protected boolean fullHasClassChanges(boolean hasClassChanges, UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+            if(!hasCorrelations()) // optimization + check
+                return hasClassChanges;
+            
+            for(Correlation<K> correlation : correlations.valueIt())
+                if(correlation.getProperty().hasChanges(session.modifier))
+                    return true;
+            return hasClassChanges;                
+        }
+        
         public boolean hasCorrelations() {
             return !correlations.isEmpty();
         }
@@ -164,6 +172,11 @@ public class PropertyChangeTableUsage<K extends PropertyInterface> extends Singl
     @Override
     public boolean hasCorrelations() {
         return correlations.hasCorrelations();
+    }
+
+    @Override
+    protected boolean fullHasClassChanges(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {
+        return correlations.fullHasClassChanges(super.fullHasClassChanges(session), session);
     }
 
     public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
