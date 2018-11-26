@@ -5,6 +5,7 @@ import com.jcraft.jsch.*;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.actions.file.FTPPath;
 import lsfusion.server.logics.property.actions.file.ReadUtils;
 import lsfusion.server.logics.property.actions.file.WriteActionProperty;
 import org.apache.commons.lang3.StringUtils;
@@ -384,25 +385,5 @@ public class FileUtils {
                 values.add(queryParam.getValue());
         }
         return values.isEmpty() ? null : values.get(0);
-    }
-
-    private static class FTPPath {
-        String username;
-        String password;
-        String charset;
-        String server;
-        Integer port;
-        String remoteFile;
-        boolean passiveMode;
-
-        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile, boolean passiveMode) {
-            this.username = username;
-            this.password = password;
-            this.charset = charset;
-            this.server = server;
-            this.port = port;
-            this.remoteFile = remoteFile;
-            this.passiveMode = passiveMode;
-        }
     }
 }
