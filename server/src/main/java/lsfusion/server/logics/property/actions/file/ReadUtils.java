@@ -686,24 +686,4 @@ public class ReadUtils {
         }
         return error;
     }
-
-    public static class FTPPath {
-        String username;
-        String password;
-        String charset;
-        String server;
-        Integer port;
-        String remoteFile;
-        boolean passiveMode;
-
-        public FTPPath(String username, String password, String charset, String server, Integer port, String remoteFile, boolean passiveMode) {
-            this.username = username;
-            this.password = password;
-            this.charset = charset;
-            this.server = server;
-            this.port = port;
-            this.remoteFile = remoteFile;
-            this.passiveMode = passiveMode;
-        }
-    }
 }

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.data.SQLHandledException;
@@ -21,8 +22,8 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
 
     public abstract T getRootNode(RawFileData fileData, String root);
 
-    public ImportHierarchicalActionProperty(int paramsCount, FormEntity formEntity) {
-        super(paramsCount, formEntity);
+    public ImportHierarchicalActionProperty(int paramsCount, FormEntity formEntity, String charset) {
+        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset);
 
         int shift = 0;
         this.fileInterface = getOrderInterfaces().get(shift++);

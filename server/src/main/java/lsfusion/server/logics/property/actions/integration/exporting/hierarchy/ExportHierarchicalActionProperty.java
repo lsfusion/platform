@@ -27,8 +27,6 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
 
     protected final LCP<?> exportFile; // nullable
 
-    protected final String charset; 
-            
     public ExportHierarchicalActionProperty(LocalizedString caption,
                                             FormSelector<O> form,
                                             ImList<O> objectsToSet,
@@ -38,7 +36,7 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
                                             String charset,
                                             CalcProperty root,
                                             CalcProperty tag) {
-        super(caption, form, objectsToSet, nulls, staticType, root, tag);
+        super(caption, form, objectsToSet, nulls, staticType, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, root, tag);
 
         if (root != null) {
             this.rootProperty = root.getImplement(
@@ -52,7 +50,6 @@ public abstract class ExportHierarchicalActionProperty<T extends Node<T>, O exte
             );
         }
 
-        this.charset = charset == null ? ExternalUtils.defaultXMLJSONCharset : charset;
         this.exportFile = exportFile;
     }
 

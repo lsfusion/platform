@@ -33,8 +33,8 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
 
     public abstract ImportPlainIterator getIterator(RawFileData file, ImOrderMap<String, Type> fieldTypes, ExecutionContext<PropertyInterface> context) throws IOException;
 
-    public ImportPlainActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity) {
-        super(paramsCount, formEntity);
+    public ImportPlainActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset) {
+        super(paramsCount, formEntity, charset);
 
         this.fileInterfaces = groupFiles.mapSet(getOrderInterfaces());
     }

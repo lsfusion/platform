@@ -19,8 +19,8 @@ public class ImportXLSActionProperty extends ImportPlainActionProperty<ImportXLS
     private final boolean sheetAll;
     private final PropertyInterface sheetInterface;
 
-    public ImportXLSActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean noHeader, boolean sheetAll) {
-        super(paramsCount, groupFiles, formEntity);
+    public ImportXLSActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean noHeader, boolean sheetAll) {
+        super(paramsCount, groupFiles, formEntity, charset);
         this.noHeader = noHeader;
         this.sheetAll = sheetAll;
 

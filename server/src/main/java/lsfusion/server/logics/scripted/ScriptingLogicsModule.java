@@ -2312,7 +2312,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(noInline);
 
-        LAP result = addForAProp(null, LocalizedString.NONAME, !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
+        LAP result = addForAProp(LocalizedString.NONAME, !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
                                 addClassName != null ? (CustomClass) findClass(addClassName) : null, autoSet != null ? autoSet : false, condition != null, noInline.size(), forceInline,
                                 getParamsPlainList(allCreationParams).toArray());
         return new LAPWithParams(result, usedParams);
@@ -3285,7 +3285,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
-    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, List<TypedParameter> newContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
+    public LAPWithParams addScriptedExportActionProperty(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
                                                          List<LCPWithParams> exprs, LCPWithParams whereProperty, PropertyUsage fileProp, LCPWithParams rootProperty, LCPWithParams tagProperty,
                                                          String separator, boolean noHeader, boolean noEscape, String charset, boolean attr,
                                                          List<LCPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
@@ -3548,7 +3548,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.<GroupObjectEntity>EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(null, format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null), params);
+        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null), params);
     }
 
     public LCP addTypeProp(ValueClass valueClass, boolean bIs) {

@@ -197,7 +197,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
     public static void storeFileToFTP(String path, RawFileData fileData, String extension) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
-        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 21);
+        FTPPath properties = ReadUtils.parseFTPPath(path, 21);
         String remoteFile = properties.remoteFile;
         if (extension != null && !extension.isEmpty()) {
             remoteFile += "." + extension;
@@ -242,7 +242,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
 
     public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException {
         /*sftp://username:password;charset@host:port/path_to_file*/
-        ReadUtils.FTPPath properties = ReadUtils.parseFTPPath(path, 22);
+        FTPPath properties = ReadUtils.parseFTPPath(path, 22);
         String remoteFilePath = properties.remoteFile;
         if (extension != null && !extension.isEmpty()) {
             remoteFilePath += "." + extension;

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.integration.exporting.plain.csv;
 
+import lsfusion.base.ExternalUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -22,12 +23,12 @@ public class ExportCSVActionProperty<O extends ObjectSelector> extends ExportPla
     private final boolean noEscape;
     private final String separator;
 
-    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, boolean noHeader, String separator, boolean noEscape, String charset) {
-        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset);
+    public ExportCSVActionProperty(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormIntegrationType staticType, ImMap<GroupObjectEntity, LCP> exportFiles, String charset, boolean noHeader, String separator, boolean noEscape) {
+        super(caption, form, objectsToSet, nulls, staticType, exportFiles, charset != null ? charset : ExternalUtils.defaultCSVCharset);
         
         this.noHeader = noHeader;
         this.noEscape = noEscape;
-        this.separator = separator;
+        this.separator = separator != null ? separator : ExternalUtils.defaultCSVSeparator;
     }
 
     @Override

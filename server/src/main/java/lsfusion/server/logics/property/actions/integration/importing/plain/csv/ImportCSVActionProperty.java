@@ -17,14 +17,12 @@ import java.io.IOException;
 public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSVIterator> {
     private boolean noHeader;
     private boolean noEscape;
-    private String charset;
     private String separator;
     
-    public ImportCSVActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, boolean noHeader, boolean noEscape, String charset, String separator) {
-        super(paramsCount, groupFiles, formEntity);
+    public ImportCSVActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean noHeader, boolean noEscape, String separator) {
+        super(paramsCount, groupFiles, formEntity, charset != null ? ExternalUtils.defaultCSVCharset : charset);
         this.noHeader = noHeader;
         this.noEscape = noEscape;
-        this.charset = charset == null ? ExternalUtils.defaultCSVCharset : charset;
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
     }
 

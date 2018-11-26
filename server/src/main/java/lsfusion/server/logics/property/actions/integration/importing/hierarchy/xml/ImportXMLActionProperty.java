@@ -9,13 +9,13 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XMLNode> {
 
-    public ImportXMLActionProperty(int paramsCount, FormEntity formEntity) {
-        super(paramsCount, formEntity);
+    public ImportXMLActionProperty(int paramsCount, FormEntity formEntity, String charset) {
+        super(paramsCount, formEntity, charset);
     }
 
     @Override
@@ -27,8 +27,8 @@ public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XM
         }
     }
 
-    public static Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
-        Element rootNode = findRootNode(new SAXBuilder().build(file.getInputStream()).getRootElement(), root);
+    public Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
+        Element rootNode = findRootNode(new SAXBuilder().build(new InputStreamReader(file.getInputStream(), charset)).getRootElement(), root);
         if(rootNode == null)
             throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
         return rootNode;
