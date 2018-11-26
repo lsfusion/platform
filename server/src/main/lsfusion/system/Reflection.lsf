@@ -188,7 +188,7 @@ TABLE tables (Table);
 sid 'Имя таблицы' = DATA VARISTRING[100] (Table);
 table 'Имя таблицы' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
 rows 'Количество записей' = DATA INTEGER (Table);
-skipVacuum 'Не упаковывать' = DATA BOOLEAN (Table);
+skipVacuum 'Не очищать' = DATA BOOLEAN (Table);
 table 'Таблица' = DATA Table (TableKey);
 sidTable (TableKey tableKey) = sid(table(tableKey));
 
@@ -256,6 +256,7 @@ recalculateClasses 'Пересчитать классы таблицы'  INTERNA
 notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
 notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
 recalculateStats 'Пересчитать статистику таблицы'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+pack 'Упаковать таблицу'  INTERNAL  'lsfusion.server.logics.reflection.PackTableActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
@@ -315,7 +316,7 @@ changeNotNullQuantity(TableColumn tc)  {
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
-    PROPERTIES(t) GRID recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, skipVacuum
+    PROPERTIES(t) GRID recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, pack, skipVacuum
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY class, classSID, name, quantity CHANGEABLE, quantityTop

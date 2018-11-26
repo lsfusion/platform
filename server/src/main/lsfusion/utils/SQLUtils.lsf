@@ -6,11 +6,11 @@ runSQL 'Выполнить SQL'  INTERNAL  'lsfusion.utils.RunSQLScriptActionPro
 
 runJDBC 'Выполнить JDBC'  INTERNAL  'lsfusion.utils.RunJDBCStatementActionProperty' (VARSTRING[100], TEXT);
 
-vacuumTableAction 'Упаковать таблицу'(Table table)  { 
+vacuumTableAction 'Очистить таблицу'(Table table)  { 
     runSQL('VACUUM FULL ' + sid(table));
 }
 
-vacuumTablesAction 'Упаковать БД потаблично' ()  { 
+vacuumTablesAction 'Очистить БД потаблично' ()  { 
     FOR table IS Table AND NOT skipVacuum(table) ORDER rows(table) DO {
         vacuumTableAction(table);
     }
