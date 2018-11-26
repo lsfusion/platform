@@ -1360,13 +1360,13 @@ public class Settings implements Cloneable {
         this.logTimeFilter = logTimeFilter;
     }
     
-    private int logTimeThreshold = 60;
+    private long logTimeThreshold = 60;
 
-    public int getLogTimeThreshold() {
+    public long getLogTimeThreshold() {
         return logTimeThreshold;
     }
 
-    public void setLogTimeThreshold(int logTimeThreshold) {
+    public void setLogTimeThreshold(long logTimeThreshold) {
         this.logTimeThreshold = logTimeThreshold;
     }
     
