@@ -404,7 +404,7 @@ META defineDocumentHeaderClosed (objectClass)
 } TOOLBAR CONFIRM;
     
     skipClose = ABSTRACT CASE BOOLEAN (objectClass);
-    closeDocuments(DATE date) + {  isClosed(objectClass o) <- TRUE WHERE date(o) < date AND date IS DATE AND NOT skipClose(o); }
+    closeDocuments(DATE date) + {  isClosed(objectClass o) <- TRUE WHERE date(o) < date AND date IS DATE AND NOT skipClose(o); APPLY; }
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
