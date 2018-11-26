@@ -622,7 +622,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                     if(pushNotNull != null)
                         pushAdjStat = pushAdjStat.min(pushNotNull);
                 }
-                Stat newStat = WhereJoins.calcEstJoinStat(pushAdjStat, thisAdjStat, i, pushEdgeStats, thisEdgeStats, false, null, null); // пока не поддерживается predicate push down
+                Stat newStat = WhereJoins.calcEstJoinStat(pushAdjStat, thisAdjStat, i, pushEdgeStats, thisEdgeStats, false, null, null, null); // пока не поддерживается predicate push down
 
                 if(newStat.less(bestStat)) {
                     bestStat = newStat;

@@ -690,6 +690,10 @@ public class MapFact {
     public static <K, V> MAddMap<K, V> mAddMap(AddValue<K, V> addValue) {
         return new HMap<>(addValue);
     }
+    
+    public static <K, V> MAddMap<K, V> mAddMapMax(int size, AddValue<K, V> addValue) {
+        return new HMap<>(size, addValue);
+    }
 
     public static <K, V> MAddMap<K, V> mAddOverrideMap(ImMap<? extends K, ? extends V> map) {
         return mAddMap(map, MapFact.<K, V>override());
