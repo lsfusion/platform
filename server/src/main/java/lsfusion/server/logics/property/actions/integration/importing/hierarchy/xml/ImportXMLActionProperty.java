@@ -10,7 +10,6 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XMLNode> {
 
