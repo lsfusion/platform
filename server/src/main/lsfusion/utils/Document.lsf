@@ -409,7 +409,8 @@ END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
     isClosed 'Закрыт' = ABSTRACT BOOLEAN(objectClass) MATERIALIZED;
-    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED INDEXED;
+    isOpened 'Не закрыт' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED;
+    INDEX isOpened(objectClass o), o;
     close 'Закрыть' (o)  ABSTRACT LIST ( objectClass);
 END
 
