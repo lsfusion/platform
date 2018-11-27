@@ -61,7 +61,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
-    private final List<CalcPropertyInterfaceImplement> inlineTexts = new ArrayList<>(); // deprecated
     private final List<CalcPropertyInterfaceImplement> inlineFiles = new ArrayList<>();
 
     public SendEmailActionProperty(LocalizedString caption, ValueClass[] classes) {
@@ -108,10 +107,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     public void addAttachmentFile(CalcPropertyInterfaceImplement fileName, CalcPropertyInterfaceImplement file) {
         attachFileNames.add(fileName);
         attachFiles.add(file);
-    }
-
-    public void addInlineText(CalcPropertyInterfaceImplement inlineText) {
-        inlineTexts.add(inlineText);
     }
 
     public void addInlineFile(CalcPropertyInterfaceImplement file) {
@@ -255,11 +250,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 }
                 attachments.add(new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension));
             }
-        }
-        for(CalcPropertyInterfaceImplement inlineText : this.inlineTexts) {
-            String text = (String) inlineText.read(context, context.getKeys());
-            if(text != null)
-                customInlines.add(text);
         }
 
         for (CalcPropertyInterfaceImplement inlineFile : this.inlineFiles) {
