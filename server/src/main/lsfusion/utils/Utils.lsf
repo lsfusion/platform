@@ -26,6 +26,7 @@ fileExistsClient 'Проверка существования файла (на �
 resultFile = DATA LOCAL FILE ();
 //value, charset, extension
 stringToFile 'Запись строки в файл'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
+stringToFile(TEXT str) { stringToFile(str, 'UTF-8', ''); }
 
 resultString = DATA LOCAL TEXT ();
 //file, charset
