@@ -23,7 +23,7 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
     public abstract T getRootNode(RawFileData fileData, String root);
 
     public ImportHierarchicalActionProperty(int paramsCount, FormEntity formEntity, String charset) {
-        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset);
+        super(paramsCount, formEntity, charset);
 
         int shift = 0;
         this.fileInterface = getOrderInterfaces().get(shift++);
