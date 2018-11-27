@@ -28,7 +28,7 @@ public class ImportXMLActionProperty extends ImportHierarchicalActionProperty<XM
     }
 
     public Element findRootNode(RawFileData file, String root) throws JDOMException, IOException {
-        Element rootNode = findRootNode(new SAXBuilder().build(new InputStreamReader(file.getInputStream(), charset)).getRootElement(), root);
+        Element rootNode = findRootNode(new SAXBuilder().build(file.getInputStream()).getRootElement(), root);
         if(rootNode == null)
             throw new RuntimeException(String.format("Import XML error: root node %s not found", root));
         return rootNode;
