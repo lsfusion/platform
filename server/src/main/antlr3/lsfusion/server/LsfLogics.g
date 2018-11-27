@@ -2911,6 +2911,8 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             |	'PDF' { printType = FormPrintType.PDF; }
             |	'DOC'  { printType = FormPrintType.DOC; }
             |	'DOCX' { printType = FormPrintType.DOCX; }
+            |	'RTF' { printType = FormPrintType.RTF; }
+            |	'HTML' { printType = FormPrintType.HTML; }
             )
             ('TO' pUsage=propertyUsage)?
             )
