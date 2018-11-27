@@ -20,7 +20,7 @@ public class ImportCSVActionProperty extends ImportPlainActionProperty<ImportCSV
     private String separator;
     
     public ImportCSVActionProperty(int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, FormEntity formEntity, String charset, boolean noHeader, boolean noEscape, String separator) {
-        super(paramsCount, groupFiles, formEntity, charset != null ? ExternalUtils.defaultCSVCharset : charset);
+        super(paramsCount, groupFiles, formEntity, charset != null ? charset : ExternalUtils.defaultCSVCharset);
         this.noHeader = noHeader;
         this.noEscape = noEscape;
         this.separator = separator == null ? ExternalUtils.defaultCSVSeparator : separator;
