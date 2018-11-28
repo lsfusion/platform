@@ -29,8 +29,19 @@ public class FileClientAction implements ClientAction {
                 return source != null && new File(source).exists();
             }
             case 1: {//DeleteFile
+                boolean result = false;
                 File sourceFile = new File(source);
-                return sourceFile.exists() && sourceFile.delete();
+                if(sourceFile.isDirectory()) {
+                    try {
+                        org.apache.commons.io.FileUtils.deleteDirectory(sourceFile);
+                        result = true;
+                    } catch (IOException ignored) {
+                    }
+
+                } else {
+                    result = sourceFile.exists() && sourceFile.delete();
+                }
+                return result;
             }
             case 2: {//MoveFile
                 return new File(source).renameTo(new File(destination));

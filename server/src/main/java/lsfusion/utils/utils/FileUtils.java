@@ -95,8 +95,17 @@ public class FileUtils {
                     break;
                 case "file":
                     sourcePath = sourcePath.startsWith("file://") ? sourcePath.substring(7) : sourcePath;
-                    if (!new File(sourcePath).delete()) {
-                        throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
+                    File sourceFile = new File(sourcePath);
+                    if(sourceFile.isDirectory()) {
+                        try {
+                            org.apache.commons.io.FileUtils.deleteDirectory(sourceFile);
+                        } catch (IOException e) {
+                            throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath), e);
+                        }
+                    } else {
+                        if (!sourceFile.delete()) {
+                            throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
+                        }
                     }
                     break;
             }
