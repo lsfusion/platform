@@ -42,7 +42,7 @@ public class BaseUtils {
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
-    //client auto restart in dev mode + numRowHeight option for property
+    //client auto restart in dev mode + charHeight option for property
     public static Integer getApiVersion() {
         return 77;
     }

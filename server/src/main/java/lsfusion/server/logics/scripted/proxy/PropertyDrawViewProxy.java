@@ -86,8 +86,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         }
     }
 
-    public void setNumRowHeight(int numRowHeight) {
-        target.setNumRowHeight(numRowHeight);
+    public void setCharHeight(int charHeight) {
+        target.setCharHeight(charHeight);
     }
 
     public void setCharWidth(int charWidth) {
