@@ -92,8 +92,17 @@ public class FileUtils {
                     deleteSFTPFile(path.path);
                     break;
                 case "file":
-                    if (!new File(path.path).delete()) {
-                        throw new RuntimeException(String.format("Failed to delete file '%s'", path.path));
+                    File sourceFile = new File(path.path);
+                    if(sourceFile.isDirectory()) {
+                        try {
+                            org.apache.commons.io.FileUtils.deleteDirectory(sourceFile);
+                        } catch (IOException e) {
+                            throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath), e);
+                        }
+                    } else {
+                        if (!sourceFile.delete()) {
+                            throw new RuntimeException(String.format("Failed to delete file '%s'", sourcePath));
+                        }
                     }
                     break;
             }
