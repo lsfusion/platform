@@ -1875,7 +1875,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             changeProp = oldValue;
 
         // optimization. we don't use files on client side (see also DefaultChangeActionProperty.executeCustom()) 
-        if (oldValue == null || oldValue.getLP().property.getType() instanceof FileClass)
+        if (oldValue == null || getTypeByParamProperty(oldValue, oldContext) instanceof FileClass)
             oldValue = new LCPWithParams(baseLM.vnull);
         LAPWithParams inputAction = addScriptedJoinAProp(property, Collections.singletonList(oldValue));
 
