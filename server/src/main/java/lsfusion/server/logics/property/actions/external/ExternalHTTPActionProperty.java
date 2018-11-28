@@ -88,23 +88,31 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
 
         HttpUriRequest httpRequest;
         switch (method) {
-            case GET:
+            case GET: {
                 httpRequest = new HttpGet(connectionString);
                 break;
-            case DELETE:
+            }
+            case DELETE: {
                 httpRequest = new HttpDelete(connectionString);
                 break;
-            case PUT:
+            }
+            case PUT: {
                 httpRequest = new HttpPut(connectionString);
+                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
+                if (!headers.containsKey("Content-type"))
+                    httpRequest.addHeader("Content-type", entity.getContentType().getValue());
+                ((HttpPut) httpRequest).setEntity(entity);
                 break;
+            }
             case POST:
-            default:
+            default: {
                 httpRequest = new HttpPost(connectionString);
                 HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
                 if (!headers.containsKey("Content-type"))
                     httpRequest.addHeader("Content-type", entity.getContentType().getValue());
-                ((HttpPost)httpRequest).setEntity(entity);
+                ((HttpPost) httpRequest).setEntity(entity);
                 break;
+            }
         }
         for(Map.Entry<String, String> header : headers.entrySet()) {
             httpRequest.addHeader(header.getKey(), header.getValue());
