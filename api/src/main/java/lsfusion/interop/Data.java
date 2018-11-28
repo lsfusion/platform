@@ -40,4 +40,6 @@ public class Data {
     public final static byte JSONLINK = 36;
     public final static byte XML = 37;
     public final static byte XMLLINK = 38;
+    public final static byte TABLE = 39;
+    public final static byte TABLELINK = 40;
 }

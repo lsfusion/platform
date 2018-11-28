@@ -128,8 +128,13 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientXMLClass.class)
-    public GXMLType convertExcelClass(ClientXMLClass xmlClass) {
+    public GXMLType convertXMLClass(ClientXMLClass xmlClass) {
         return initializeFileClass(xmlClass, new GXMLType());
+    }
+
+    @Converter(from = ClientTableClass.class)
+    public GTableType convertTableClass(ClientTableClass tableClass) {
+        return initializeFileClass(tableClass, new GTableType());
     }
 
     @Converter(from = ClientCustomStaticFormatFileClass.class)
@@ -182,6 +187,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
     @Converter(from = ClientXMLLinkClass.class)
     public GXMLLinkType convertXMLLinkClass(ClientXMLLinkClass xmlClass) {
         return initializeLinkClass(xmlClass, new GXMLLinkType());
+    }
+
+    @Converter(from = ClientTableLinkClass.class)
+    public GTableLinkType convertTableLinkClass(ClientTableLinkClass tableClass) {
+        return initializeLinkClass(tableClass, new GTableLinkType());
     }
 
     @Converter(from = ClientCustomStaticFormatLinkClass.class)

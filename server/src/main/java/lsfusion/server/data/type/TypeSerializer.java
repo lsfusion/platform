@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.Data;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.link.*;
-import lsfusion.server.logics.BusinessLogics;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -84,6 +83,7 @@ public class TypeSerializer {
         if (type == Data.HTML) return HTMLClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.JSON) return JSONClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.XML) return XMLClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.TABLE) return TableClass.get(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) {
             boolean multiple = inStream.readBoolean();
             boolean storeName = inStream.readBoolean();
@@ -111,6 +111,7 @@ public class TypeSerializer {
         if (type == Data.HTMLLINK) return HTMLLinkClass.get(inStream.readBoolean());
         if (type == Data.JSONLINK) return JSONLinkClass.get(inStream.readBoolean());
         if (type == Data.XMLLINK) return XMLLinkClass.get(inStream.readBoolean());
+        if (type == Data.TABLELINK) return TableLinkClass.get(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) {
             boolean multiple = inStream.readBoolean();
             String filterDescription = inStream.readUTF();

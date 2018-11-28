@@ -133,6 +133,7 @@ public interface MainFrameMessages extends Messages {
     String typeHTMLFileCaption();
     String typeJSONFileCaption();
     String typeXMLFileCaption();
+    String typeTableFileCaption();
     String typeStaticFormatLinkCaption();
     String typeDynamicFormatLinkCaption();
     String typeExcelFileLinkCaption();
@@ -143,6 +144,7 @@ public interface MainFrameMessages extends Messages {
     String typeHTMLFileLinkCaption();
     String typeJSONFileLinkCaption();
     String typeXMLFileLinkCaption();
+    String typeTableFileLinkCaption();
 
     String filterCompareStartsWith();
     String filterCompareContains();
