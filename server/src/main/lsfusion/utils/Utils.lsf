@@ -218,6 +218,7 @@ csvFile = DATA LOCAL CSVFILE();
 htmlFile = DATA LOCAL HTMLFILE();
 jsonFile = DATA LOCAL JSONFILE();
 xmlFile = DATA LOCAL XMLFILE();
+tableFile = DATA LOCAL TABLEFILE();
 
 // --------------------------------------------- Yes/No --------------------------------- //
 CLASS YesNo 'Логическое' {

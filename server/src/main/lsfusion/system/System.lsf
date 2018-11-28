@@ -189,6 +189,7 @@ requestedCsvFile = DATA LOCAL NESTED CSVFILE ();
 requestedHtmlFile = DATA LOCAL NESTED HTMLFILE ();
 requestedJsonFile = DATA LOCAL NESTED JSONFILE ();
 requestedXmlFile = DATA LOCAL NESTED XMLFILE ();
+requestedTableFile = DATA LOCAL NESTED TABLEFILE ();
 requestedWordLink = DATA LOCAL NESTED WORDLINK ();
 requestedImageLink = DATA LOCAL NESTED IMAGELINK ();
 requestedPdfLink = DATA LOCAL NESTED PDFLINK ();
@@ -199,6 +200,7 @@ requestedCsvLink = DATA LOCAL NESTED CSVLINK ();
 requestedHtmlLink = DATA LOCAL NESTED HTMLLINK ();    
 requestedJsonLink = DATA LOCAL NESTED JSONLINK ();    
 requestedXmlLink = DATA LOCAL NESTED XMLLINK ();    
+requestedTableLink = DATA LOCAL NESTED TABLELINK ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

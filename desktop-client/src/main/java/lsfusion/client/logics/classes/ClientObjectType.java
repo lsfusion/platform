@@ -40,8 +40,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return getFullWidthString("0000000", fontMetrics, property);
     }
 
-    public int getDefaultHeight(FontMetrics fontMetrics, int numRowHeight) {
-        return fontMetrics.getHeight() * numRowHeight + 1;
+    public int getDefaultHeight(FontMetrics fontMetrics, int charHeight) {
+        return fontMetrics.getHeight() * charHeight + 1;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {

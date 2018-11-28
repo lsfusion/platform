@@ -1,9 +1,7 @@
 package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.LinkPropertyEditor;
 import lsfusion.client.form.renderer.link.HTMLLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
@@ -22,11 +20,6 @@ public class ClientHTMLLinkClass extends ClientStaticFormatLinkClass {
 
     public byte getTypeId() {
         return Data.HTMLLINK;
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new LinkPropertyEditor(property, value);
     }
 
     @Override

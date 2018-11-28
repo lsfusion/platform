@@ -2,9 +2,7 @@ package lsfusion.client.logics.classes.link;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.LinkPropertyEditor;
 import lsfusion.client.form.renderer.link.CustomStaticFormatLinkRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
@@ -34,10 +32,6 @@ public class ClientCustomStaticFormatLinkClass extends ClientStaticFormatLinkCla
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new CustomStaticFormatLinkRenderer(property, filterExtensions[0]);
-    }
-
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new LinkPropertyEditor(property, value);
     }
 
     @Override

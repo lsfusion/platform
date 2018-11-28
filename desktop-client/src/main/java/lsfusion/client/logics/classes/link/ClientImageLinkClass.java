@@ -1,14 +1,10 @@
 package lsfusion.client.logics.classes.link;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.LinkPropertyEditor;
 import lsfusion.client.form.renderer.link.ImageLinkPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
-
-import java.awt.*;
 
 public class ClientImageLinkClass extends ClientStaticFormatLinkClass {
 
@@ -24,11 +20,6 @@ public class ClientImageLinkClass extends ClientStaticFormatLinkClass {
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
         return new ImageLinkPropertyRenderer(property);
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new LinkPropertyEditor(property, value);
     }
 
     @Override

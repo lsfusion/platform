@@ -45,6 +45,7 @@ public class AnyValuePropertyHolder {
     private final LCP htmlFileProperty;
     private final LCP jsonFileProperty;
     private final LCP xmlFileProperty;
+    private final LCP tableFileProperty;
     private final LCP wordLinkProperty;
     private final LCP imageLinkProperty;
     private final LCP pdfLinkProperty;
@@ -55,14 +56,15 @@ public class AnyValuePropertyHolder {
     private final LCP htmlLinkProperty;
     private final LCP jsonLinkProperty;
     private final LCP xmlLinkProperty;
+    private final LCP tableLinkProperty;
 
     public AnyValuePropertyHolder(LCP<?> objectProperty, LCP<?> stringProperty, LCP<?> textProperty, LCP<?> intProperty, LCP<?> longProperty, LCP<?> doubleProperty, LCP<?> numericProperty, LCP<?> yearProperty,
                                   LCP<?> dateTimeProperty, LCP<?> logicalProperty, LCP<?> dateProperty, LCP<?> timeProperty, LCP<?> colorProperty, LCP<?> wordFileProperty, LCP<?> imageFileProperty,
                                   LCP<?> pdfFileProperty, LCP<?> rawFileProperty, LCP<?> customFileProperty, LCP<?> excelFileProperty, 
-                                  LCP<?> csvFileProperty, LCP<?> htmlFileProperty, LCP<?> jsonFileProperty, LCP<?> xmlFileProperty,
+                                  LCP<?> csvFileProperty, LCP<?> htmlFileProperty, LCP<?> jsonFileProperty, LCP<?> xmlFileProperty, LCP<?> tableFileProperty,
                                   LCP<?> wordLinkProperty, LCP<?> imageLinkProperty, LCP<?> pdfLinkProperty, LCP<?> rawLinkProperty, 
                                   LCP<?> customLinkProperty, LCP<?> excelLinkProperty, LCP<?> csvLinkProperty, 
-                                  LCP<?> htmlLinkProperty, LCP<?> jsonLinkProperty, LCP<?> xmlLinkProperty) {
+                                  LCP<?> htmlLinkProperty, LCP<?> jsonLinkProperty, LCP<?> xmlLinkProperty, LCP<?> tableLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -86,6 +88,7 @@ public class AnyValuePropertyHolder {
                 && htmlFileProperty.property.getType() == HTMLClass.get()
                 && jsonFileProperty.property.getType() == JSONClass.get()
                 && xmlFileProperty.property.getType() == XMLClass.get()
+                && tableFileProperty.property.getType() == TableClass.get()
                 && wordLinkProperty.property.getType() == WordLinkClass.get(false)
                 && imageLinkProperty.property.getType() == ImageLinkClass.get(false)
                 && pdfLinkProperty.property.getType() == PDFLinkClass.get(false)
@@ -96,6 +99,7 @@ public class AnyValuePropertyHolder {
                 && htmlLinkProperty.property.getType() == HTMLLinkClass.get(false)
                 && jsonLinkProperty.property.getType() == JSONLinkClass.get(false)
                 && xmlLinkProperty.property.getType() == XMLLinkClass.get(false)
+                && tableLinkProperty.property.getType() == TableLinkClass.get(false)
                 ;
 
         this.objectProperty = objectProperty;
@@ -121,6 +125,7 @@ public class AnyValuePropertyHolder {
         this.htmlFileProperty = htmlFileProperty;
         this.jsonFileProperty = jsonFileProperty;
         this.xmlFileProperty = xmlFileProperty;
+        this.tableFileProperty = tableFileProperty;
         this.wordLinkProperty = wordLinkProperty;
         this.imageLinkProperty = imageLinkProperty;
         this.pdfLinkProperty = pdfLinkProperty;
@@ -131,6 +136,7 @@ public class AnyValuePropertyHolder {
         this.htmlLinkProperty = htmlLinkProperty;
         this.jsonLinkProperty = jsonLinkProperty;
         this.xmlLinkProperty = xmlLinkProperty;
+        this.tableLinkProperty = tableLinkProperty;
     }
 
     public LCP<?> getLCP(Type valueType) {
@@ -182,6 +188,8 @@ public class AnyValuePropertyHolder {
             return jsonFileProperty;
         } else if (valueType instanceof XMLClass) {
             return xmlFileProperty;
+        } else if (valueType instanceof TableClass) {
+            return tableFileProperty;
         } else if (valueType instanceof StaticFormatFileClass) {
             return customFileProperty;
         } else if (valueType instanceof WordLinkClass) {
@@ -204,6 +212,8 @@ public class AnyValuePropertyHolder {
             return jsonLinkProperty;
         } else if (valueType instanceof XMLLinkClass) {
             return xmlLinkProperty;
+        } else if (valueType instanceof TableLinkClass) {
+            return tableLinkProperty;
         } else if (valueType instanceof StaticFormatLinkClass) {
             return customLinkProperty;
         } else {
@@ -216,8 +226,8 @@ public class AnyValuePropertyHolder {
         return SetFact.toOrderExclSet(
                 objectProperty, stringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
                 dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, rawFileProperty, customFileProperty, excelFileProperty, 
-                csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, imageLinkProperty, pdfLinkProperty, rawLinkProperty, customLinkProperty, excelLinkProperty,
-                csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty
+                csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty, imageLinkProperty, pdfLinkProperty, rawLinkProperty, customLinkProperty, excelLinkProperty,
+                csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty
         ).mapOrderSetValues(new GetValue<SessionDataProperty, LCP>() {
             public SessionDataProperty getMapValue(LCP value) {
                 return (SessionDataProperty) value.property;

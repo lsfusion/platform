@@ -623,6 +623,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "HtmlFile"),
                 getLCPByUniqueName(namePrefix + "JsonFile"),
                 getLCPByUniqueName(namePrefix + "XmlFile"),
+                getLCPByUniqueName(namePrefix + "TableFile"),
                 getLCPByUniqueName(namePrefix + "WordLink"),
                 getLCPByUniqueName(namePrefix + "ImageLink"),
                 getLCPByUniqueName(namePrefix + "PdfLink"),
@@ -632,7 +633,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "CsvLink"),
                 getLCPByUniqueName(namePrefix + "HtmlLink"),
                 getLCPByUniqueName(namePrefix + "JsonLink"),
-                getLCPByUniqueName(namePrefix + "XmlLink")
+                getLCPByUniqueName(namePrefix + "XmlLink"),
+                getLCPByUniqueName(namePrefix + "TableLink")
                 );
     }
 

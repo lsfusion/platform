@@ -75,6 +75,7 @@ public class ClientTypeSerializer {
         if (type == Data.HTML) return new ClientHTMLClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.JSON) return new ClientJSONClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.XML) return new ClientXMLClass(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.TABLE) return new ClientTableClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.DYNAMICFORMATFILE) return new ClientDynamicFormatFileClass(inStream.readBoolean(), inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATFILE) return ClientCustomStaticFormatFileClass.deserialize(inStream);
 
@@ -86,6 +87,7 @@ public class ClientTypeSerializer {
         if (type == Data.HTMLLINK) return new ClientHTMLLinkClass(inStream.readBoolean());
         if (type == Data.JSONLINK) return new ClientJSONLinkClass(inStream.readBoolean());
         if (type == Data.XMLLINK) return new ClientXMLLinkClass(inStream.readBoolean());
+        if (type == Data.TABLELINK) return new ClientTableLinkClass(inStream.readBoolean());
         if (type == Data.DYNAMICFORMATLINK) return new ClientDynamicFormatLinkClass(inStream.readBoolean());
         if (type == Data.CUSTOMSTATICFORMATLINK) return ClientCustomStaticFormatLinkClass.deserialize(inStream);
 
