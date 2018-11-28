@@ -3171,11 +3171,7 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 			recipType=emailRecipientTypeLiteral { recipTypes.add($recipType.val); }
 			recipExpr=propertyExpression[context, dynamic] { recipProps.add($recipExpr.property); }
 		)*
-		(	(	'INLINE' { formTypes.add(FormStorageType.INLINE); }
-				form=compoundID { forms.add($form.sid); attachFormats.add(null); attachNames.add(null); }
-				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
-			)
-		|   (	'INLINE' 'PROPERTY' inlineFile=propertyExpression[context, dynamic] { inlineFiles.add($inlineFile.property); })
+		(	(	'INLINE' inlineFile=propertyExpression[context, dynamic] { inlineFiles.add($inlineFile.property); })
 		|	(	'ATTACH' { formTypes.add(FormStorageType.ATTACH); }
 				format=emailAttachFormat { attachFormats.add($format.val); }
 				

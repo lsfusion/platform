@@ -141,10 +141,11 @@ FORM remindUserPass 'Напоминание пароля'
     PROPERTIES(u) READONLY login, name[Contact]
 ;
 
-emailUserPass 'Напоминание пароля' (Contact user)  { EMAIL
-                               SUBJECT 'Напоминание пароля' IF user IS CustomUser
-                               TO email(user)
-                               INLINE remindUserPass OBJECTS u = user; }
+emailUserPass 'Напоминание пароля' (Contact user)  { 
+    LOCAL inlineFile = FILE (); 
+    PRINT remindUserPass OBJECTS u = user HTML TO inlineFile;
+    EMAIL SUBJECT 'Напоминание пароля' IF user IS CustomUser TO email(user) INLINE inlineFile(); 
+}                         
 
 FORM mail 'Почта' 
 
