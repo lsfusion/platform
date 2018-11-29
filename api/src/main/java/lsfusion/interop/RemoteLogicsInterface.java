@@ -1,6 +1,5 @@
 package lsfusion.interop;
 
-import lsfusion.base.FileData;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.event.IDaemonTask;
@@ -9,7 +8,6 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +41,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     void remindPassword(String email, String localeLanguage) throws RemoteException;
 
     //external requests
-    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException;
+    List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
     List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
-    List<Object> read(String property, Object[] params, Charset charset) throws RemoteException;
 
     String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException; 
 

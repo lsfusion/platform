@@ -1,6 +1,5 @@
 package lsfusion.client.remote.proxy;
 
-import lsfusion.base.FileData;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -11,7 +10,6 @@ import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 
-import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +115,7 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) throws RemoteException {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException {
         logRemoteMethodStartCall("exec");
         List<Object> result = target.exec(action, returnCanonicalNames, params, charset);
         logRemoteMethodEndVoidCall("exec");
@@ -129,14 +127,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodStartCall("eval");
         List<Object> result = target.eval(action, paramScript, returnCanonicalNames, params, charset);
         logRemoteMethodEndVoidCall("eval");
-        return result;
-    }
-
-    @Override
-    public List<Object> read(String property, Object[] params, Charset charset) throws RemoteException {
-        logRemoteMethodStartCall("read");
-        List<Object> result = target.read(property, params, charset);
-        logRemoteMethodEndVoidCall("read");
         return result;
     }
 
