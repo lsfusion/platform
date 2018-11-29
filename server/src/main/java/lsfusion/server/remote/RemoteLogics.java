@@ -19,7 +19,6 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
-import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.JDBCTable;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -276,12 +275,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, Charset charset) {
+    public List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charsetName) {
         List<Object> returnList;
         try {
             LAP property = businessLogics.findActionByCompoundName(action);
             if (property != null) {
-                returnList = executeExternal(property, returnCanonicalNames, params, charset);
+                returnList = executeExternal(property, returnCanonicalNames, params, Charset.forName(charsetName));
             } else {
                 throw new RuntimeException(String.format("Action %s was not found", action));
             }
@@ -292,14 +291,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) {
+    public List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charsetName) {
         List<Object> returnList = new ArrayList<>();
         if (paramScript != null) {
             try {
-                String script = StringClass.text.parseHTTP(paramScript, Charset.forName(charset));
+                Charset charset = Charset.forName(charsetName);
+                String script = StringClass.text.parseHTTP(paramScript, charset);
                 LAP<?> runAction = businessLogics.evaluateRun(script, action);
                 if (runAction != null)
-                    returnList = executeExternal(runAction, returnCanonicalNames, params, Charset.forName(charset));
+                    returnList = executeExternal(runAction, returnCanonicalNames, params, charset);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -309,7 +309,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    @Override
     public List<Object> read(String property, Object[] params, Charset charset) {
         try {
             LCP lcp = businessLogics.findPropertyByCompoundName(property);
@@ -326,26 +325,31 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
-        List<Object> returnList = new ArrayList<>();
         try (DataSession session = createSession()) {
-            ExecutionStack stack = getStack();
+            property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
 
-            property.execute(session, stack, ExternalHTTPActionProperty.getParams(session, property, params, charset));
-
-            if (returnCanonicalNames != null && returnCanonicalNames.length > 0) {
-                for (String returnCanonicalName : returnCanonicalNames) {
-                    LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
-                    if (returnProperty != null) {
-                        returnList.addAll(readReturnProperty(session, returnProperty));
-                    } else
-                        throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
-                }
-            } else {
-                returnList.addAll(readReturnProperty(session, businessLogics.LM.exportFile));
-            }
-
-//            session.applyException(businessLogics, stack);
+            return readReturnProperties(session, returnCanonicalNames);
         }
+    }
+
+    private List<Object> readReturnProperties(DataSession session, String[] returnCanonicalNames) throws SQLException, SQLHandledException, IOException {
+        LCP[] returnProps; 
+        if (returnCanonicalNames.length > 0) {
+            returnProps = new LCP[returnCanonicalNames.length];
+            for (int i = 0; i < returnCanonicalNames.length; i++) {
+                String returnCanonicalName = returnCanonicalNames[i];
+                LCP returnProperty = businessLogics.findProperty(returnCanonicalName);
+                if (returnProperty == null)
+                    throw new RuntimeException(String.format("Return property %s was not found", returnCanonicalName));
+                returnProps[i] = returnProperty;
+            }
+        } else {
+            returnProps = new LCP[] {businessLogics.LM.exportFile};
+        }
+
+        List<Object> returnList = new ArrayList<>();
+        for (LCP returnProperty : returnProps)
+            returnList.addAll(readReturnProperty(session, returnProperty));
         return returnList;
     }
 

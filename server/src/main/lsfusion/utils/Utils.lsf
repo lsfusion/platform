@@ -60,9 +60,9 @@ mkdir 'Создать папку'  INTERNAL  'lsfusion.utils.utils.MkdirActionPr
 mkdir 'Создать папку' (VARISTRING[500] path)  { mkdir(path, NULL); }
 mkdirClient 'Создать папку (на клиенте)' (VARISTRING[500] path)  { mkdir(path, TRUE); }
 //path, isClient
-delete 'Удалить файл'  INTERNAL  'lsfusion.utils.utils.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
-delete 'Удалить файл' (VARISTRING[500] path)  { delete(path, NULL); }
-deleteClient 'Удалить файл (на клиенте)' (VARISTRING[500] path)  { delete(path, TRUE); }
+delete 'Удалить файл или папку'  INTERNAL  'lsfusion.utils.utils.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
+delete 'Удалить файл или папку' (VARISTRING[500] path)  { delete(path, NULL); }
+deleteClient 'Удалить файл или папку (на клиенте)' (VARISTRING[500] path)  { delete(path, TRUE); }
 //sourcePath, destinationPath, isClient
 move 'Переместить файл'  INTERNAL  'lsfusion.utils.utils.MoveActionProperty' (VARISTRING[500], VARISTRING[500], BOOLEAN);
 move 'Переместить файл' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, NULL); }
