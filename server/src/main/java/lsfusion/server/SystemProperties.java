@@ -3,6 +3,7 @@ package lsfusion.server;
 public class SystemProperties {
     private static final int DEFAULT_DEBUGGER_PORT = 1299;
     
+    public static final boolean isPluginEnabled = System.getProperty("lsfusion.server.plugin.enabled") != null;
     public static final boolean isActionDebugEnabled = System.getProperty("lsfusion.server.debug.actions") != null;
 
     public static final boolean lightStart;
@@ -15,7 +16,7 @@ public class SystemProperties {
         String testModePropertyValue = System.getProperty("lsfusion.server.testmode");
         
         lightStart = lightStartValue == null ? false : "true".equals(lightStartValue.toLowerCase());
-        inDevMode  = devModePropertyValue == null ? isActionDebugEnabled : "true".equals(devModePropertyValue.toLowerCase());
+        inDevMode  = devModePropertyValue == null ? isPluginEnabled : "true".equals(devModePropertyValue.toLowerCase());
         inTestMode = testModePropertyValue == null ? getAssertsStatus() : "true".equals(testModePropertyValue.toLowerCase());
     }
 
