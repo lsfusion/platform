@@ -4790,7 +4790,7 @@ boundsDoubleLiteral returns [Bounds val]
 	;
 
 codeLiteral returns [String val]
-	:	s=CODE_LITERAL { $val = self.transformStringLiteral($s.text); }
+	:	s=CODE_LITERAL { $val = $s.text; }
 	;
 
 insertRelativePositionLiteral returns [InsertPosition val]
