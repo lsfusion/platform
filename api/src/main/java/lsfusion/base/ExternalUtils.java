@@ -55,7 +55,7 @@ public class ExternalUtils {
 
         if (uri.endsWith("/exec")) {
             String action = getParameterValue(queryParams, ACTION_CN_PARAM);
-            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset);
+            paramList = remoteLogics.exec(action, returns.toArray(new String[returns.size()]), paramsList.toArray(), charset == null ? null : charset.toString());
         } else {
             boolean isEvalAction = uri.endsWith("/eval/action");
             if (uri.endsWith("/eval") || isEvalAction) {
