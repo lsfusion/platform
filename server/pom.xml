@@ -305,5 +305,10 @@
             <artifactId>xlsx-streamer</artifactId>
             <version>1.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>4.4</version>
+        </dependency>
     </dependencies>
 </project>
