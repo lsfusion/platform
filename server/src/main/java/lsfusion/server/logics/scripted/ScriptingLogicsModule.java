@@ -58,9 +58,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.resolving.ResolvingErrors;
 import lsfusion.server.logics.resolving.ResolvingErrors.ResolvingError;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.mail.AttachmentFormat;
 import lsfusion.server.mail.SendEmailActionProperty;
-import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.LocalNestedType;
 import org.antlr.runtime.ANTLRFileStream;
@@ -1636,11 +1634,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              LCPWithParams subjProp,
                                              List<Message.RecipientType> recipTypes,
                                              List<LCPWithParams> recipProps,
-                                             List<String> forms,
-                                             List<FormStorageType> formTypes,
-                                             List<OrderedMap<String, LCPWithParams>> mapObjects,
-                                             List<LCPWithParams> attachNames,
-                                             List<AttachmentFormat> attachFormats,
                                              List<LCPWithParams> attachFileNames,
                                              List<LCPWithParams> attachFiles,
                                              List<LCPWithParams> inlineFiles) throws ScriptingErrorLog.SemanticErrorException {
@@ -1653,20 +1646,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         allProps.add(subjProp);
         allProps.addAll(recipProps);
 
-        List<ObjectEntity> formObjects = new ArrayList<>(Collections.<ObjectEntity>nCopies(allProps.size(), null));
-        for (int i = 0; i < forms.size(); ++i) {
-            FormEntity form = findForm(forms.get(i));
-            for (Map.Entry<String, LCPWithParams> e : mapObjects.get(i).entrySet()) {
-                allProps.add(e.getValue());
-                formObjects.add(findObjectEntity(form, e.getKey()));
-            }
-
-            if (formTypes.get(i) == FormStorageType.ATTACH && attachNames.get(i) != null) {
-                allProps.add(attachNames.get(i));
-                formObjects.add(null);
-            }
-        }
-
         for (int i = 0; i < attachFileNames.size(); i++) {
             if (attachFileNames.get(i) != null) {
                 allProps.add(attachFileNames.get(i));
@@ -1676,12 +1655,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         allProps.addAll(inlineFiles);
 
-        formObjects.addAll(Collections.<ObjectEntity>nCopies(allProps.size() - formObjects.size(), null));
-
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
-        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol(), formObjects);
+        ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
         LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, LocalizedString.NONAME, eaClasses, null, null);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
@@ -1701,27 +1678,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.addRecipient(allImplements.get(i++), recipType);
         }
 
-        for (int j = 0; j < forms.size(); ++j) {
-            String formName = forms.get(j);
-            FormStorageType formType = formTypes.get(j);
-            FormEntity form = findForm(formName);
-
-            Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<>();
-            for (Map.Entry<String, LCPWithParams> entry : mapObjects.get(j).entrySet()) {
-                objectsImplements.put(findObjectEntity(form, entry.getKey()), allImplements.get(i++));
-            }
-
-            if (formType == FormStorageType.ATTACH) {
-                CalcPropertyInterfaceImplement<ClassPropertyInterface> attachNameProp = attachNames.get(j) != null ? allImplements.get(i++) : null;
-                eaProp.addAttachmentForm(form, attachFormats.get(j), objectsImplements, attachNameProp);
-            } else {
-                eaProp.addInlineForm(form, objectsImplements);
-            }
-        }
-
         for (LCPWithParams fileName : attachFileNames) {
-            CalcPropertyInterfaceImplement<ClassPropertyInterface> attachFileName = fileName != null ? allImplements.get(i++) : null;
-            eaProp.addAttachmentFile(attachFileName, allImplements.get(i++));
+            eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
         }
 
         for(int j = 0; j < inlineFiles.size(); j++)
