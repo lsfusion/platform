@@ -1,12 +1,8 @@
 package lsfusion.server.mail;
 
-import jasperapi.ReportGenerator;
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
-import lsfusion.base.col.MapFact;
-import lsfusion.interop.FormPrintType;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
@@ -14,9 +10,6 @@ import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
@@ -27,26 +20,23 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.form.stat.InteractiveFormReportManager;
-import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
-import static lsfusion.base.BaseUtils.rtrim;
 import static lsfusion.server.context.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final static Logger logger = ServerLoggers.mailLogger;
-
-    public enum FormStorageType {INLINE, ATTACH}
 
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> fromAddressAccount;
     private CalcPropertyInterfaceImplement<ClassPropertyInterface> subject;
@@ -54,11 +44,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private List<CalcPropertyInterfaceImplement<ClassPropertyInterface>> recipients = new ArrayList<>();
     private List<Message.RecipientType> recipientTypes = new ArrayList<>();
 
-    private final List<FormEntity> forms = new ArrayList<>();
-    private final List<AttachmentFormat> formats = new ArrayList<>();
-    private final List<FormStorageType> storageTypes = new ArrayList<>();
-    private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<>();
-    private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
     private final List<CalcPropertyInterfaceImplement> inlineFiles = new ArrayList<>();
@@ -88,22 +73,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         recipientTypes.add(type);
     }
 
-    public void addInlineForm(FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objects) {
-        forms.add(form);
-        formats.add(AttachmentFormat.HTML);
-        storageTypes.add(FormStorageType.INLINE);
-        mapObjects.add(objects);
-        attachmentProps.add(null);
-    }
-
-    public void addAttachmentForm(FormEntity form, AttachmentFormat format, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objects, CalcPropertyInterfaceImplement attachmentNameProp) {
-        forms.add(form);
-        formats.add(format);
-        storageTypes.add(FormStorageType.ATTACH);
-        mapObjects.add(objects);
-        attachmentProps.add(attachmentNameProp);
-    }
-    
     public void addAttachmentFile(CalcPropertyInterfaceImplement fileName, CalcPropertyInterfaceImplement file) {
         attachFileNames.add(fileName);
         attachFiles.add(file);
@@ -150,7 +119,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
                 List<EmailSender.AttachmentFile> attachFiles = new ArrayList<>();
                 List<String> inlineFiles = new ArrayList<>();
-                proceedForms(context, attachFiles, inlineFiles);
                 proceedFiles(context, attachFiles, inlineFiles);
                 
                 sender.sendMail(context, subject, inlineFiles, attachFiles);
@@ -162,35 +130,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             logError(context, localize("{mail.failed.to.send.mail}") + " : " + e.toString());
             e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    public void proceedForms(ExecutionContext<ClassPropertyInterface> context, List<EmailSender.AttachmentFile> attachments, List<String> inlineForms) throws SQLException, SQLHandledException, ClassNotFoundException, IOException, JRException {
-        assert forms.size() == storageTypes.size() && forms.size() == formats.size() && forms.size() == attachmentProps.size() && forms.size() == mapObjects.size();
-
-        for (int i = 0; i < forms.size(); i++) {
-            FormEntity form = forms.get(i);
-            FormStorageType storageType = storageTypes.get(i);
-            AttachmentFormat attachmentFormat = formats.get(i);
-            CalcPropertyInterfaceImplement attachmentProp = attachmentProps.get(i);
-            Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = mapObjects.get(i);
-
-            FormInstance remoteForm = createReportForm(context, form, objectsImplements);
-
-            // если объекты подошли
-            if (remoteForm != null) {
-                FormPrintType printType = attachmentFormat == null ? FormPrintType.HTML : attachmentFormat.getFormPrintType();
-
-                ReportGenerationData generationData = new InteractiveFormReportManager(remoteForm).getReportData(printType);
-
-                RawFileData file = ReportGenerator.exportToFileByteArray(generationData, printType);
-                if (storageType == FormStorageType.INLINE)
-                    inlineForms.add(new String(file.getBytes()));
-                else {
-                    attachments.add(createAttachment(form, printType, attachmentProp, context, file));
-                }
-            }
         }
     }
 
@@ -232,7 +171,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             if (attachFileNameProp != null) {
                  name = (String) attachFileNameProp.read(context, context.getKeys());
             } else {
-                 name = "attachment" + i;
+                 name = "attachment" + (i + 1);
             }
 
             ObjectValue fileObject = attachFiles.get(i).readClasses(context, context.getKeys());
@@ -272,32 +211,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 customInlines.add(inlineText);
             }
         }
-    }
-
-    private EmailSender.AttachmentFile createAttachment(FormEntity form, FormPrintType printType, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, RawFileData file) throws SQLException, SQLHandledException {
-        String attachmentName = null;
-        if (attachmentNameProp != null) {
-            attachmentName = (String) attachmentNameProp.read(context, context.getKeys());
-        }
-        if (attachmentName == null) {
-            attachmentName = localize(form.getCaption());
-        }
-        attachmentName = rtrim(attachmentName.replace('"', '\''));
-
-        String extension = printType.getExtension();
-        
-        // adding extension, because apparently not all mail clients determine it correctly from mimeType
-        attachmentName += "." + extension;
-
-        return new EmailSender.AttachmentFile(file, attachmentName, extension);
-    }
-
-    private FormInstance createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException, SQLHandledException {
-        Map<ObjectEntity, ObjectValue> objectValues = new HashMap<>();
-        for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet())
-            objectValues.put(objectImpl.getKey(), objectImpl.getValue().readClasses(context, context.getKeys()));
-
-        return context.createFormInstance(form, MapFact.fromJavaMap(objectValues));
     }
 
     private void logError(ExecutionContext context, String errorMessage) {

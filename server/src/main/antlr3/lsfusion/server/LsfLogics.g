@@ -64,7 +64,6 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.FormActionProps;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.NavigatorElementOptions;
 	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
-	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 	import lsfusion.server.mail.AttachmentFormat;
 	import lsfusion.server.logics.property.actions.flow.Inline;
 	import lsfusion.server.logics.property.actions.SystemEvent;
@@ -3150,18 +3149,13 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 	List<Message.RecipientType> recipTypes = new ArrayList<>();
 	List<LCPWithParams> recipProps = new ArrayList<>();
 
-	List<String> forms = new ArrayList<String>();
-	List<FormStorageType> formTypes = new ArrayList<>();
-	List<OrderedMap<String, LCPWithParams>> mapObjects = new ArrayList<>();
-	List<LCPWithParams> attachNames = new ArrayList<>();
-	List<AttachmentFormat> attachFormats = new ArrayList<>();
 	List<LCPWithParams> attachFileNames = new ArrayList<>();
 	List<LCPWithParams> attachFiles = new ArrayList<>();
 	List<LCPWithParams> inlineFiles = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats, attachFileNames, attachFiles, inlineFiles);
+		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, attachFileNames, attachFiles, inlineFiles);
 	}
 }
 	:	'EMAIL'
@@ -3172,23 +3166,10 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 			recipExpr=propertyExpression[context, dynamic] { recipProps.add($recipExpr.property); }
 		)*
 		(	(	'INLINE' inlineFile=propertyExpression[context, dynamic] { inlineFiles.add($inlineFile.property); })
-		|	(	'ATTACH' { formTypes.add(FormStorageType.ATTACH); }
-				format=emailAttachFormat { attachFormats.add($format.val); }
-				
-				{ LCPWithParams attachName = null;}
-				('NAME' attachNameExpr=propertyExpression[context, dynamic] { attachName = $attachNameExpr.property; } )?
-				{ attachNames.add(attachName); }
-				
-				form=compoundID { forms.add($form.sid); }
-				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
-			)
-		|	(	'ATTACH'
-				
-				attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
-				
+		|	(	'ATTACH' attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
 				{ LCPWithParams attachFileName = null;}
-				('NAME' attachFileNameExpr=propertyExpression[context, dynamic] { attachFileName = $attachFileNameExpr.property; } )?
-				{ attachFileNames.add(attachFileName); }
+                ('NAME' attachFileNameExpr=propertyExpression[context, dynamic] { attachFileName = $attachFileNameExpr.property; } )?
+                { attachFileNames.add(attachFileName); }
 			)
 		)*
 	;

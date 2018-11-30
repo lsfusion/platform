@@ -1670,30 +1670,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // костыль для email
-    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> props, List<ObjectEntity> formObjects) {
+    public static <I extends PropertyInterface> ValueClass[] getCommonClasses(ImList<I> mapInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> props) {
         ValueClass[] result = new ValueClass[mapInterfaces.size()];
-        int index = 0;
         for(PropertyInterfaceImplement<I> prop : props) {
             ImMap<I, ValueClass> propClasses;
-
             if(prop instanceof CalcPropertyMapImplement) {
-                if (formObjects.get(index) == null) {
-                    propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
-                } else {
-                    propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy, new ExClassSet(formObjects.get(index).baseClass.getResolveSet()));
-                }
+                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
             } else {
-                if (formObjects.get(index) != null && prop instanceof PropertyInterface) {
-                    propClasses = MapFact.singleton((I)prop, formObjects.get(index).baseClass);
-                } else {
-                    propClasses = MapFact.EMPTY();
-                }
+                propClasses = MapFact.EMPTY();
             }
 
             for(int i=0;i<result.length;i++)
                 result[i] = op(result[i], propClasses.get(mapInterfaces.get(i)), true);
-
-            ++index;
         }
         return result;
     }
