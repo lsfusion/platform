@@ -2,7 +2,7 @@ package lsfusion.gwt.form.server.form.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.ChangeProperty;
@@ -16,7 +16,7 @@ public class ChangePropertyHandler extends ServerResponseActionHandler<ChangePro
 
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public ChangePropertyHandler(FormDispatchServlet servlet) {
+    public ChangePropertyHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

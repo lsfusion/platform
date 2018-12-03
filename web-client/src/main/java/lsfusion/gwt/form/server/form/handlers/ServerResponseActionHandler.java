@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
@@ -14,7 +14,7 @@ import java.io.IOException;
 public abstract class ServerResponseActionHandler<A extends Action<ServerResponseResult>> extends FormActionHandler<A, ServerResponseResult> {
     private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();
 
-    protected ServerResponseActionHandler(FormDispatchServlet servlet) {
+    protected ServerResponseActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

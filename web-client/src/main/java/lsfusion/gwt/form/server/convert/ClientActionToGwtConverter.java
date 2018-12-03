@@ -7,7 +7,7 @@ import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.form.client.window.GProgressBar;
 import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.view.actions.*;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
@@ -66,7 +66,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = FormClientAction.class)
-    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, FormDispatchServlet servlet) throws IOException {
+    public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, LSFusionDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.tabSID, servlet),
                 action.forbidDuplicate);
@@ -103,7 +103,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)
-    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, FormDispatchServlet servlet) throws IOException {
+    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, LSFusionDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
 
         GFormChangesDTO changesDTO = ClientFormChangesToGwtConverter.getInstance().convertOrCast(changes, (int)action.requestIndex, servlet.getBLProvider());
@@ -117,7 +117,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RequestUserInputClientAction.class)
-    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, FormDispatchServlet servlet) throws IOException {
+    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, LSFusionDispatchServlet servlet) throws IOException {
         GType type = typeConverter.convertOrCast(
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
@@ -132,7 +132,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = UpdateEditValueClientAction.class)
-    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action, FormDispatchServlet servlet) throws IOException {
+    public GUpdateEditValueAction convertAction(UpdateEditValueClientAction action, LSFusionDispatchServlet servlet) throws IOException {
         return new GUpdateEditValueAction(valuesConverter.convertOrCast(deserializeServerValue(action.value), servlet.getBLProvider()));
     }
 

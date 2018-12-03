@@ -4,7 +4,7 @@ import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
 import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfo;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class GetNavigatorInfoHandler extends LoggableActionHandler<GetNavigatorInfo, GetNavigatorInfoResult, RemoteLogicsInterface> implements NavigatorActionHandler {
 
-    public GetNavigatorInfoHandler(FormDispatchServlet servlet) {
+    public GetNavigatorInfoHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

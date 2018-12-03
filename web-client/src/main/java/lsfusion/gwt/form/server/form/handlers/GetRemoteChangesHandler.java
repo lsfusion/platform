@@ -2,7 +2,7 @@ package lsfusion.gwt.form.server.form.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.actions.form.GetRemoteChanges;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
@@ -10,7 +10,7 @@ import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import java.io.IOException;
 
 public class GetRemoteChangesHandler extends ServerResponseActionHandler<GetRemoteChanges> {
-    public GetRemoteChangesHandler(FormDispatchServlet servlet) {
+    public GetRemoteChangesHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

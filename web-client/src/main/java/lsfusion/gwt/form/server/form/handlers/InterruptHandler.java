@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.server.form.handlers;
 
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.actions.form.Interrupt;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class InterruptHandler extends FormActionHandler<Interrupt, VoidResult> {
 
-    public InterruptHandler(FormDispatchServlet servlet) {
+    public InterruptHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

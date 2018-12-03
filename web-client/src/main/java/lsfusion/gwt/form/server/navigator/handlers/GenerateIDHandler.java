@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
 import lsfusion.gwt.form.shared.actions.navigator.GenerateIDResult;
@@ -11,7 +11,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import java.io.IOException;
 
 public class GenerateIDHandler extends LoggableActionHandler<GenerateID, GenerateIDResult, RemoteLogicsInterface> {
-    public GenerateIDHandler(FormDispatchServlet servlet) {
+    public GenerateIDHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 
