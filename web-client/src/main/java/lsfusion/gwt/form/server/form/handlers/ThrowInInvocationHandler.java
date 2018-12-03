@@ -1,8 +1,8 @@
 package lsfusion.gwt.form.server.form.handlers;
 
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.form.ThrowInInvocation;
@@ -10,7 +10,7 @@ import lsfusion.gwt.form.shared.actions.form.ThrowInInvocation;
 import java.io.IOException;
 
 public class ThrowInInvocationHandler extends ServerResponseActionHandler<ThrowInInvocation> {
-    public ThrowInInvocationHandler(FormDispatchServlet servlet) {
+    public ThrowInInvocationHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

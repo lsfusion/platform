@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.rmi.RemoteException;
 
-public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogicsInterface> {
+public class LSFusionDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogicsInterface> {
     @Autowired
     private FormSessionManager formSessionManager;
 

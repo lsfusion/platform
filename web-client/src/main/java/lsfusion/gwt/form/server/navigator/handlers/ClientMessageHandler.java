@@ -2,7 +2,7 @@ package lsfusion.gwt.form.server.navigator.handlers;
 
 import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
 import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessage;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, ClientMessageResult, RemoteLogicsInterface> implements NavigatorActionHandler {
 
-    public ClientMessageHandler(FormDispatchServlet servlet) {
+    public ClientMessageHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.shared.actions.form.RefreshUPHiddenPropsAction;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class RefreshUPHiddenPropsActionHandler extends ServerResponseActionHandler<RefreshUPHiddenPropsAction> {
 
-    public RefreshUPHiddenPropsActionHandler(FormDispatchServlet servlet) {
+    public RefreshUPHiddenPropsActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

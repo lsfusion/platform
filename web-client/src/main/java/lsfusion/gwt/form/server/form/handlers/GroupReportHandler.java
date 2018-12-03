@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.server.form.handlers;
 
 import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.GroupReport;
@@ -14,7 +14,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 
 public class GroupReportHandler extends FormActionHandler<GroupReport, StringResult> {
-    public GroupReportHandler(FormDispatchServlet servlet) {
+    public GroupReportHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

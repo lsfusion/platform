@@ -3,7 +3,7 @@ package lsfusion.gwt.form.server.form.handlers;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFilters> {
-    public SetUserFiltersHandler(FormDispatchServlet servlet) {
+    public SetUserFiltersHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

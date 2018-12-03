@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.SaveUserPreferencesAction;
@@ -19,7 +19,7 @@ import java.util.Map;
 public class SaveUserPreferencesActionHandler extends ServerResponseActionHandler<SaveUserPreferencesAction> {
     private final static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public SaveUserPreferencesActionHandler(FormDispatchServlet servlet) {
+    public SaveUserPreferencesActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

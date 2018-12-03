@@ -83,7 +83,7 @@
     </b:bean>
 
     <!-- Custom request handlers -->
-    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.FormDispatchServlet"/>
+    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.LSFusionDispatchServlet"/>
 
     <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 

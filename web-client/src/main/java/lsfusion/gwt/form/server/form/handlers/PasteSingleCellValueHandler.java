@@ -1,6 +1,6 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.FormDispatchServlet;
+import lsfusion.gwt.form.server.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.PasteSingleCellValue;
@@ -17,7 +17,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 public class PasteSingleCellValueHandler extends ServerResponseActionHandler<PasteSingleCellValue> {
     private static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
-    public PasteSingleCellValueHandler(FormDispatchServlet servlet) {
+    public PasteSingleCellValueHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 
