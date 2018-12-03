@@ -120,6 +120,9 @@
                 <includes>
                     <include>lsfusion/gwt/**/*.*</include>
                 </includes>
+                <excludes>
+                    <exclude>lsfusion/gwt/**/server/**/*.*</exclude>
+                </excludes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
@@ -150,7 +153,93 @@
     <dependencies>
         <dependency>
             <groupId>lsfusion.platform</groupId>
-            <artifactId>web-api</artifactId>
+            <artifactId>api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>lsfusion.platform</groupId>
+            <artifactId>report-api</artifactId>
+            <!--избавляемся от ошибок при компиляции-->
+            <exclusions>
+                <exclusion>
+                    <artifactId>jdtcore</artifactId>
+                    <groupId>eclipse</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+        </dependency>
+
+        <!--чтобы избавиться от ошибок GWT при компиляции-->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <classifier>sources</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.allen-sauer.gwt.log</groupId>
+            <artifactId>gwt-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt.inject</groupId>
+            <artifactId>gin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.customware.gwt.dispatch</groupId>
+            <artifactId>gwt-dispatch</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.octo.captcha</groupId>
+            <artifactId>jcaptcha</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>stax</groupId>
+            <artifactId>stax</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bfr.client</groupId>
+            <artifactId>gwt-selection</artifactId>
         </dependency>
         <dependency>
             <groupId>lsfusion.platform</groupId>

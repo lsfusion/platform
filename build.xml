@@ -49,12 +49,6 @@
         </antcall>
     </target>
 
-    <target name="web-api-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="web-api"/>
-        </antcall>
-    </target>
-
     <target name="web-client-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="web-client"/>
