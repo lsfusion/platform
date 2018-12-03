@@ -15,6 +15,10 @@
  */
 package lsfusion.gwt.cellview.client.cell;
 
+import com.google.gwt.cell.client.AbstractEditableCell;
+import com.google.gwt.cell.client.CheckboxCell;
+import com.google.gwt.cell.client.EditTextCell;
+import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -135,16 +139,7 @@ public interface Cell<C> {
      * {@link com.google.gwt.dom.client.BrowserEvents BrowserEvents} for useful
      * constants). The container that uses this cell should only pass these events
      * to
-     * {@link #onBrowserEvent(com.google.gwt.cell.client.ValueUpdater}
-     * when the event occurs.
      *
-     * <p>
-     * The returned value should not be modified, and may be an unmodifiable set.
-     * Changes to the return value may not be reflected in the cell.
-     * </p>
-     *
-     * @return the consumed events, or null if no events are consumed
-     * @see com.google.gwt.dom.client.BrowserEvents
      */
     Set<String> getConsumedEvents();
 
