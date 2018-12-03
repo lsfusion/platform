@@ -811,11 +811,6 @@
             </dependency>
             <dependency>
                 <groupId>lsfusion.platform</groupId>
-                <artifactId>web-api</artifactId>
-                <version>${lsfusion.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>lsfusion.platform</groupId>
                 <artifactId>web-client</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>

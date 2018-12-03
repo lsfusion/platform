@@ -20,7 +20,6 @@
         <module>report-api</module>
         <module>desktop-client</module>
         <module>server</module>
-        <module>web-api</module>
         <module>web-client</module>
     </modules>
 
