@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.importing.plain.ImportMatrixIterator;
+import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,7 +22,7 @@ public class ImportCSVIterator extends ImportMatrixIterator {
     public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, boolean noHeader, boolean noEscape, String separator) throws IOException {
         super(fieldTypes, noHeader);
 
-        InputStreamReader isReader = charset != null ? new InputStreamReader(file.getInputStream(), charset) : new InputStreamReader(file.getInputStream());
+        InputStreamReader isReader = charset != null ? new InputStreamReader(new BOMInputStream(file.getInputStream()), charset) : new InputStreamReader(new BOMInputStream(file.getInputStream()));
         char escapeChar = noEscape ? '\0' : ICSVParser.DEFAULT_ESCAPE_CHARACTER;
         char quoteChar = noEscape ? '\0' : ICSVParser.DEFAULT_QUOTE_CHARACTER;
         this.csvReader = new CSVReaderBuilder(isReader).withCSVParser(new CSVParserBuilder().withSeparator(separator.charAt(0)).withQuoteChar(quoteChar).withEscapeChar(escapeChar).build()).build();
