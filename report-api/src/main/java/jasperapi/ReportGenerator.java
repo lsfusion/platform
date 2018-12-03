@@ -404,7 +404,7 @@ public class ReportGenerator {
         }
         
         if (generationData.useShowIf) {
-            Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design, subreportID);
+            Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design);
             if (!fieldsToHide.isEmpty()) {
                 cutSegments(design, findCutSegments(fieldsToHide));
             }
@@ -446,8 +446,8 @@ public class ReportGenerator {
         return segments;
     }
     
-    private Collection<JRTextField> findTextFieldsToHide(JasperDesign design, String subreportID) {
-        return findTextFieldsToHide(design, getHidingFieldsNames(design, subreportID));
+    private Collection<JRTextField> findTextFieldsToHide(JasperDesign design) {
+        return findTextFieldsToHide(design, getHidingFieldsNames(design));
     }
     
     private List<JRTextField> findTextFieldsToHide(JasperDesign design, Set<String> hidingFieldsNames) {
@@ -459,7 +459,8 @@ public class ReportGenerator {
                     String exprText = textElement.getExpression().getText();
                     if (exprText.startsWith("$F{")) {
                         String fieldName = getFieldName(exprText);
-                        if (hidingFieldsNames.contains(fieldName)) {
+                        // We need to check already divided fields as well
+                        if (hidingFieldsNames.contains(fieldName) || hidingFieldsNames.contains(nameWithoutIndexSuffix(fieldName))) { 
                             textFieldsToHide.add(textElement);
                         }
                     }
@@ -469,10 +470,10 @@ public class ReportGenerator {
         return textFieldsToHide;
     }
     
-    private Set<String> getHidingFieldsNames(JasperDesign design, String subreportID) {
+    private Set<String> getHidingFieldsNames(JasperDesign design) {
         Set<String> hidingFieldsNames = new HashSet<>();
         for (JRField field : design.getFieldsList()) {
-            if (needToBeHidden(field.getName(), subreportID)) {
+            if (needToBeHidden(field.getName())) {
                 String baseFieldName = getBaseFieldName(field.getName());
                 hidingFieldsNames.add(baseFieldName);
             }
@@ -480,13 +481,19 @@ public class ReportGenerator {
         return hidingFieldsNames;        
     }
     
-    
-    private boolean needToBeHidden(final String fieldName, String subreportID) {
+    private boolean needToBeHidden(final String fieldName) {
         if (isShowIfFieldName(fieldName))
             return propData.getFieldValue(new HashMap<Integer, Object>(), fieldName) == null;
         return false;
     }
 
+    private String nameWithoutIndexSuffix(String fieldName) {
+        if (fieldName.endsWith(endIndexMarker) && fieldName.contains(beginIndexMarker)) {
+            return fieldName.substring(0, fieldName.indexOf(beginIndexMarker));
+        }
+        return fieldName;
+    }
+    
     private Collection<JRElement> getDesignElements(JasperDesign design) {
         Collection<JRElement> elements = new ArrayList<>();
         for (JRBand band : design.getAllBands()) {
@@ -625,6 +632,11 @@ public class ReportGenerator {
                 }
             }
         }
+
+        transformTextFieldPattern(textField);
+    }
+    
+    private void transformTextFieldPattern(JRDesignTextField textField) {
         if (textField.getPattern() == null) {
             Class<?> valueClass = textField.getExpression().getValueClass();
             DateFormat format = null;
