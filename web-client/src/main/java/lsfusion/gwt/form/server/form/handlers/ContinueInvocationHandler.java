@@ -1,16 +1,17 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.ContinueInvocation;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 
 import java.io.IOException;
 
-public class ContinueInvocationHandler extends ServerResponseActionHandler<ContinueInvocation> {
+public class ContinueInvocationHandler extends FormServerResponseActionHandler<ContinueInvocation> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public ContinueInvocationHandler(LSFusionDispatchServlet servlet) {

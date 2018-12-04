@@ -1,8 +1,9 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
+import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.form.shared.actions.form.SaveUserPreferencesAction;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SaveUserPreferencesActionHandler extends ServerResponseActionHandler<SaveUserPreferencesAction> {
+public class SaveUserPreferencesActionHandler extends FormServerResponseActionHandler<SaveUserPreferencesAction> {
     private final static GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public SaveUserPreferencesActionHandler(LSFusionDispatchServlet servlet) {

@@ -12,8 +12,8 @@
 
     <!-- Security configuration -->
     <http auto-config="true" use-expressions="true" entry-point-ref="entryPoint">
-        <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
-        <intercept-url pattern="/form/*" access="isAuthenticated()"/>
+<!--        <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
+        <intercept-url pattern="/form/*" access="isAuthenticated()"/>-->
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
         <access-denied-handler ref="accessDeniedHandler" />
@@ -71,19 +71,19 @@
     </b:bean>
 
     <!-- Custom beans -->
-    <b:bean id="blProvider" class="lsfusion.gwt.base.server.spring.ContextBusinessLogicsProvider" />
+    <b:bean id="blProvider" class="lsfusion.gwt.form.server.logics.spring.LogicsProviderImpl" />
 
-    <b:bean id="navigatorProvider" scope="session" class="lsfusion.gwt.base.server.spring.NavigatorProviderImpl">
+    <b:bean id="navigatorProvider" scope="session" class="lsfusion.gwt.form.server.navigator.spring.NavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
         <b:constructor-arg ref="blProvider"/>
     </b:bean>
 
-    <b:bean id="formManager" scope="session" class="lsfusion.gwt.form.server.FormSessionManagerImpl">
+    <b:bean id="formManager" scope="session" class="lsfusion.gwt.form.server.form.spring.FormProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
     <!-- Custom request handlers -->
-    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.LSFusionDispatchServlet"/>
+    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.spring.LSFusionDispatchServlet"/>
 
     <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
 

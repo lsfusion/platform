@@ -10,7 +10,7 @@ import lsfusion.gwt.base.client.ui.DialogBoxHelper.OptionType;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.RetryException;
-import lsfusion.gwt.base.shared.actions.NavigatorAction;
+import lsfusion.gwt.form.shared.actions.navigator.NavigatorAction;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.baseMessages;
 

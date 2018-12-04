@@ -1,6 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import com.google.common.io.ByteStreams;
+import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -16,7 +17,7 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
     private ServletContext context;
 
     @Autowired
-    private BusinessLogicsProvider blProvider;
+    private LogicsProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

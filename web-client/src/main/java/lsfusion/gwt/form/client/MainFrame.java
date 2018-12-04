@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.datepicker.client.CalendarUtil;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
@@ -31,6 +30,7 @@ import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
+import lsfusion.gwt.form.shared.actions.logics.CreateNavigator;
 import lsfusion.gwt.form.shared.actions.navigator.GetClientSettingsResult;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;
@@ -46,6 +46,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 import java.io.IOException;
 import java.util.*;
 
+// scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint, ServerMessageProvider {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
@@ -98,8 +99,12 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void onModuleLoad() {
-        dispatcher.execute(new RegisterTabAction(tabSID), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.execute(new CreateNavigator(tabSID), new ErrorHandlingCallback<VoidResult>());
 
+        initializeFrame();
+    }
+
+    public void initializeFrame() {
         Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
             @Override
             public void onWindowClosing(Window.ClosingEvent event) {
@@ -223,7 +228,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public boolean execute() {
                 if (shouldRepeatPingRequest && !GConnectionLostManager.shouldBeBlocked()) {
                     setShouldRepeatPingRequest(false);
-                    dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
+                    dispatcher.execute(new ClientPushMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
                         @Override
                         public void success(ClientMessageResult result) {
                             setShouldRepeatPingRequest(true);
@@ -328,7 +333,7 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void clean() {
-        dispatcher.execute(new CleanAction(tabSID), new ErrorHandlingCallback<VoidResult>());
+        dispatcher.execute(new CloseNavigator(tabSID), new ErrorHandlingCallback<VoidResult>());
         GConnectionLostManager.invalidate();
         System.gc();
     }

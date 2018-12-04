@@ -2,9 +2,10 @@ package lsfusion.gwt.form.server.form.handlers;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.gwt.base.shared.actions.ListResult;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.server.convert.ClientActionToGwtConverter;
+import lsfusion.gwt.form.server.form.FormActionHandler;
 import lsfusion.gwt.form.shared.actions.form.GetRemoteActionMessageList;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -18,6 +19,11 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
 
     public GetRemoteActionMessageListHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
+    }
+
+    @Override
+    protected String getActionDetails(GetRemoteActionMessageList action) {
+        return null; // too many logs
     }
 
     @Override

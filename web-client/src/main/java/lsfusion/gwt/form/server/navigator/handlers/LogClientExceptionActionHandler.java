@@ -4,12 +4,10 @@ import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
-import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
+import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -25,14 +23,14 @@ import java.util.TimerTask;
 
 import static lsfusion.gwt.form.server.GLoggers.invocationLogger;
 
-public class LogClientExceptionActionHandler extends LoggableActionHandler<LogClientExceptionAction, VoidResult, RemoteLogicsInterface> implements NavigatorActionHandler {
+public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogClientExceptionAction, VoidResult> {
     public static final long COUNTER_CLEANER_PERIOD = 3 * 60 * 1000;
     
     private ConcurrentIdentityWeakHashMap<RemoteNavigatorInterface, Integer> exceptionCounter = MapFact.getGlobalConcurrentIdentityWeakHashMap();
     
     private GStackTraceDeobfuscator deobfuscator = new GStackTraceDeobfuscator();
     
-    public LogClientExceptionActionHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
+    public LogClientExceptionActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
 
         new Timer().schedule(new TimerTask() {

@@ -1,10 +1,11 @@
 package lsfusion.gwt.base.server.dispatch;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
+import lsfusion.gwt.base.server.ServerUtils;
 import lsfusion.gwt.base.server.exceptions.IODispatchException;
 import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -16,19 +17,27 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
-    protected final LogicsAwareDispatchServlet<L> servlet;
+import static lsfusion.gwt.form.server.GLoggers.invocationLogger;
 
-    public SimpleActionHandlerEx(LogicsAwareDispatchServlet<L> servlet) {
+public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
+    protected final LSFusionDispatchServlet servlet;
+
+    public SimpleActionHandlerEx(LSFusionDispatchServlet servlet) {
         this.servlet = servlet;
     }
 
     @Override
     public final R execute(A action, ExecutionContext context) throws DispatchException {
         try {
-            preExecute(action);
+            String actionDetails = invocationLogger.isInfoEnabled() ? getActionDetails(action) : null;
+            if (actionDetails != null)
+                invocationLogger.info("Executing action" + actionDetails);
+
             R result = executeEx(action, context);
-            postExecute(action);
+
+            if(actionDetails != null)
+                invocationLogger.info("Executed action" + actionDetails);
+
             return result;
         } catch (RemoteMessageException rme) {
             throw new MessageException(rme.getMessage());
@@ -40,9 +49,10 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
         }
     }
 
-    public void preExecute(A action) {}
-
-    public void postExecute(A action) {}
-
     public abstract R executeEx(A action, ExecutionContext context) throws DispatchException, IOException;
+
+    protected String getActionDetails(A action) {
+        return " by " + ServerUtils.getAuthorizedUserName() + ": " + action.getClass().getSimpleName();
+    }
+
 }

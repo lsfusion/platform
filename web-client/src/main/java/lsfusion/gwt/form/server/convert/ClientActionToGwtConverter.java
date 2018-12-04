@@ -4,11 +4,10 @@ import lsfusion.base.ProgressBar;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.form.client.window.GProgressBar;
 import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.shared.view.actions.*;
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
@@ -68,7 +67,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, LSFusionDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
-        return new GFormAction(modalityType, servlet.getFormSessionManager().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.tabSID, servlet),
+        return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, action.remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.tabSID, servlet),
                 action.forbidDuplicate);
     }
 
@@ -85,12 +84,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = HideFormClientAction.class)
-    public GHideFormAction convertAction(HideFormClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
+    public GHideFormAction convertAction(HideFormClientAction action, LSFusionDispatchServlet servlet) throws IOException {
         return new GHideFormAction();
     }
 
     @Converter(from = LogMessageClientAction.class)
-    public GLogMessageAction convertAction(LogMessageClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
+    public GLogMessageAction convertAction(LogMessageClientAction action, LSFusionDispatchServlet servlet) throws IOException {
         ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
             arrayData.add(new ArrayList<>(row));
@@ -181,7 +180,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = LoadLinkClientAction.class)
-    public GLoadLinkAction convertAction(LoadLinkClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
+    public GLoadLinkAction convertAction(LoadLinkClientAction action, LSFusionDispatchServlet servlet) throws IOException {
         return new GLoadLinkAction();
     }
 

@@ -1,9 +1,8 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
-import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
-import lsfusion.gwt.form.server.form.handlers.ServerResponseActionHandler;
+import lsfusion.gwt.form.server.navigator.NavigatorServerResponseActionHandler;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.ContinueNavigatorAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -11,7 +10,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
 
-public class ContinueNavigatorActionHandler extends ServerResponseActionHandler<ContinueNavigatorAction> implements NavigatorActionHandler {
+public class ContinueNavigatorActionHandler extends NavigatorServerResponseActionHandler<ContinueNavigatorAction> {
     private final GwtToClientConverter gwtConverter = GwtToClientConverter.getInstance();
 
     public ContinueNavigatorActionHandler(LSFusionDispatchServlet servlet) {
@@ -25,6 +24,6 @@ public class ContinueNavigatorActionHandler extends ServerResponseActionHandler<
             actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
         }
 
-        return getServerResponseResult(action.tabSID, servlet.getNavigator().continueNavigatorAction(actionResults));
+        return getServerResponseResult(action, servlet.getNavigator().continueNavigatorAction(actionResults));
     }
 }

@@ -1,20 +1,17 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
-import lsfusion.gwt.form.shared.actions.navigator.GetRemoteNavigatorActionMessage;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.InterruptNavigator;
-import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 
-public class InterruptNavigatorHandler extends LoggableActionHandler<InterruptNavigator, VoidResult, RemoteLogicsInterface> {
+public class InterruptNavigatorHandler extends NavigatorActionHandler<InterruptNavigator, VoidResult> {
 
-    public InterruptNavigatorHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
+    public InterruptNavigatorHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 

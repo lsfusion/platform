@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
+import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 public class ReadMemoryLimitsRequestHandler implements HttpRequestHandler {
 
     @Autowired
-    private BusinessLogicsProvider blProvider;
+    private LogicsProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

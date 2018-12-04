@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.ExternalUtils;
-import org.apache.http.HttpEntity;
+import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
@@ -9,12 +9,11 @@ import org.springframework.web.HttpRequestHandler;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLDecoder;
 
 public class ExternalRequestHandler implements HttpRequestHandler {
 
     @Autowired
-    private BusinessLogicsProvider blProvider;
+    private LogicsProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {

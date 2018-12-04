@@ -1,0 +1,13 @@
+package lsfusion.gwt.form.shared.actions.navigator;
+
+import lsfusion.gwt.base.shared.actions.VoidResult;
+
+public class CloseNavigator extends NavigatorAction<VoidResult> {
+    public String tabSID;
+
+    public CloseNavigator() {}
+
+    public CloseNavigator(String tabSID) {
+        this.tabSID = tabSID;
+    }
+}

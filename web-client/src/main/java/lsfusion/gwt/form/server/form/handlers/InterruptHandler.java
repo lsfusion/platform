@@ -1,8 +1,9 @@
 package lsfusion.gwt.form.server.form.handlers;
 
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
+import lsfusion.gwt.form.server.form.FormActionHandler;
 import lsfusion.gwt.form.shared.actions.form.Interrupt;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

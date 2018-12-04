@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.base.shared.actions.VoidResult;
@@ -15,7 +16,7 @@ public class FormHiddenHandler extends FormActionHandler<FormHidden, VoidResult>
 
     @Override
     public VoidResult executeEx(FormHidden action, ExecutionContext context) throws DispatchException, IOException {
-        getFormSessionManager().removeFormSessionObject(action.formSessionID);
+        removeFormSessionObject(action.formSessionID);
         return new VoidResult();
     }
 }

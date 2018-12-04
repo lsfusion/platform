@@ -2,7 +2,7 @@ package lsfusion.gwt.form.shared.actions.form;
 
 import java.io.Serializable;
 
-public class ContinueInvocation extends FormBoundAction<ServerResponseResult> {
+public class ContinueInvocation extends FormAction<ServerResponseResult> {
     public Serializable[] actionResults;
 
     public ContinueInvocation() {

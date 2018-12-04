@@ -1,8 +1,6 @@
 package lsfusion.gwt.form.shared.actions.navigator;
 
-import lsfusion.gwt.base.shared.actions.NavigatorAction;
-
-public class ExecuteNavigatorAction extends NavigatorRequestAction implements NavigatorAction {
+public class ExecuteNavigatorAction extends NavigatorRequestAction {
     public String actionSID;
     public int type;
 

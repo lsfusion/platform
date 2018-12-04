@@ -33,7 +33,7 @@
     </context-param>
 
     <listener>
-        <listener-class>lsfusion.gwt.form.server.AppContextListener</listener-class>
+        <listener-class>lsfusion.gwt.form.server.spring.AppContextListener</listener-class>
     </listener>
 
     <servlet>
@@ -41,6 +41,7 @@
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
 
+    <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
     <servlet-mapping>
         <servlet-name>formDispatch</servlet-name>
         <url-pattern>/form/dispatch</url-pattern>

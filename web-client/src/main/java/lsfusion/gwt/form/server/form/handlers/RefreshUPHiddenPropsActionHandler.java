@@ -1,7 +1,8 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
+import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
 import lsfusion.gwt.form.shared.actions.form.RefreshUPHiddenPropsAction;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -9,7 +10,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
 
-public class RefreshUPHiddenPropsActionHandler extends ServerResponseActionHandler<RefreshUPHiddenPropsAction> {
+public class RefreshUPHiddenPropsActionHandler extends FormServerResponseActionHandler<RefreshUPHiddenPropsAction> {
 
     public RefreshUPHiddenPropsActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);

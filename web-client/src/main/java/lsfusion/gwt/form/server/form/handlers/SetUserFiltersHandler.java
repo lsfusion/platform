@@ -1,10 +1,11 @@
 package lsfusion.gwt.form.server.form.handlers;
 
+import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.form.SetUserFilters;
@@ -17,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SetUserFiltersHandler extends ServerResponseActionHandler<SetUserFilters> {
+public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUserFilters> {
     public SetUserFiltersHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }

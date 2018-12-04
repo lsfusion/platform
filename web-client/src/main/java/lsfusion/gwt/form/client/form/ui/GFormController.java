@@ -41,8 +41,8 @@ import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.client.form.ui.layout.TabbedContainerView;
 import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.form.shared.actions.form.*;
-import lsfusion.gwt.form.shared.actions.navigator.GenerateID;
-import lsfusion.gwt.form.shared.actions.navigator.GenerateIDResult;
+import lsfusion.gwt.form.shared.actions.logics.GenerateID;
+import lsfusion.gwt.form.shared.actions.logics.GenerateIDResult;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.actions.GAction;
 import lsfusion.gwt.form.shared.view.actions.GLogMessageAction;
@@ -726,11 +726,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         syncDispatch(new ThrowInInvocation(throwable), callback);
     }
 
-    public <T extends Result> void syncDispatch(final FormBoundAction<T> action, AsyncCallback<T> callback) {
+    public <T extends Result> void syncDispatch(final FormAction<T> action, AsyncCallback<T> callback) {
         syncDispatch(action, callback, false);
     }
 
-    public <T extends Result> void syncDispatch(final FormBoundAction<T> action, AsyncCallback<T> callback, boolean direct) {
+    public <T extends Result> void syncDispatch(final FormAction<T> action, AsyncCallback<T> callback, boolean direct) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
         loadingManager.start();

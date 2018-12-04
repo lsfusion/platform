@@ -6,7 +6,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.base.client.AsyncCallbackEx;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.actions.form.FormBoundAction;
+import lsfusion.gwt.form.shared.actions.form.FormAction;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.form.shared.view.GForm;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
@@ -34,15 +34,15 @@ public class FormDispatchAsync {
     }
 
     public <A extends FormRequestIndexCountingAction<R>, R extends Result> int execute(A action, AsyncCallback<R> callback) {
-        execute((FormBoundAction) action, callback);
+        execute((FormAction) action, callback);
         return action.requestIndex;
     }
 
-    public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
+    public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
         execute(action, callback, false);
     }
 
-    public <A extends FormBoundAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
+    public <A extends FormAction<R>, R extends Result> void execute(A action, AsyncCallback<R> callback, boolean direct) {
         action.formSessionID = form.sessionID;
         if (action instanceof FormRequestIndexCountingAction) {
             ((FormRequestIndexCountingAction) action).requestIndex = nextRequestIndex++;
@@ -100,7 +100,7 @@ public class FormDispatchAsync {
         }
     }
 
-    public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {
+    public <A extends FormAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {
         action.formSessionID = form.sessionID;
         Log.debug("Executing priority action: " + action.toString());
         executeInternal(action, callback);

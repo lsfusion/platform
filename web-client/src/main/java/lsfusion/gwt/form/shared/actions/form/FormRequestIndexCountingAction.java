@@ -2,7 +2,7 @@ package lsfusion.gwt.form.shared.actions.form;
 
 import net.customware.gwt.dispatch.shared.Result;
 
-public class FormRequestIndexCountingAction<R extends Result> extends FormBoundAction<R> {
+public class FormRequestIndexCountingAction<R extends Result> extends FormAction<R> {
     public int requestIndex;
 
     public FormRequestIndexCountingAction() {

@@ -1,22 +1,23 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
-import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
-import lsfusion.gwt.form.server.FormSessionObject;
-import lsfusion.gwt.form.server.form.handlers.FormActionHandler;
-import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
-import lsfusion.gwt.form.shared.actions.form.GetRemoteActionMessage;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.GetRemoteNavigatorActionMessage;
-import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 
-public class GetRemoteNavigatorActionMessageHandler extends LoggableActionHandler<GetRemoteNavigatorActionMessage, StringResult, RemoteLogicsInterface> {
+public class GetRemoteNavigatorActionMessageHandler extends NavigatorActionHandler<GetRemoteNavigatorActionMessage, StringResult> {
 
-    public GetRemoteNavigatorActionMessageHandler(LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) {
+    public GetRemoteNavigatorActionMessageHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
+    }
+
+    @Override
+    protected String getActionDetails(GetRemoteNavigatorActionMessage action) {
+        return null; // too many logs
     }
 
     @Override

@@ -3,16 +3,14 @@ package lsfusion.gwt.form.server.navigator.handlers;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
-import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
-import lsfusion.gwt.form.server.LSFusionDispatchServlet;
+import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
+import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.server.convert.ClientNavigatorToGwtConverter;
-import lsfusion.gwt.form.server.form.handlers.LoggableActionHandler;
 import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfo;
 import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
-import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
@@ -20,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetNavigatorInfoHandler extends LoggableActionHandler<GetNavigatorInfo, GetNavigatorInfoResult, RemoteLogicsInterface> implements NavigatorActionHandler {
+public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigatorInfo, GetNavigatorInfoResult> {
 
     public GetNavigatorInfoHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
