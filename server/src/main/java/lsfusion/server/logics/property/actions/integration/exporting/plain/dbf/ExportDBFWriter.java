@@ -3,22 +3,14 @@ package lsfusion.server.logics.property.actions.integration.exporting.plain.dbf;
 import com.google.common.base.Throwables;
 import com.hexiong.jdbf.DBFWriter;
 import com.hexiong.jdbf.JDBFException;
-import jasperapi.ReportPropertyData;
-import lsfusion.base.IOUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
-import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportFilePlainWriter;
-import lsfusion.server.logics.property.actions.integration.exporting.plain.ExportPlainWriter;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 public class ExportDBFWriter extends ExportFilePlainWriter {
 
