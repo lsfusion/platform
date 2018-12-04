@@ -590,6 +590,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("value of class '%s' is not comparable with value of class '%s'", leftClassName, rightClassName));
     }
 
+    public void emitUseNullInsteadOfFalseError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "use NULL instead of FALSE");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
