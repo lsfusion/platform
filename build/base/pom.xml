@@ -407,7 +407,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!--подменяем для обхода бага Jasper при запуске на Java 8 приложения, скомпилированного на Java 7 (api)-->
+            <!--подменяем для обхода бага Jasper при запуске на Java 8 приложения, скомпилированного на Java 7 (report-api)-->
             <dependency>
                 <groupId>org.eclipse.jdt.core.compiler</groupId>
                 <artifactId>ecj</artifactId>
@@ -785,6 +785,11 @@
             <dependency>
                 <groupId>lsfusion.platform</groupId>
                 <artifactId>api</artifactId>
+                <version>${lsfusion.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>lsfusion.platform</groupId>
+                <artifactId>report-api</artifactId>
                 <version>${lsfusion.version}</version>
             </dependency>
             <dependency>
