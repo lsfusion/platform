@@ -619,5 +619,11 @@ public class ScriptingLogicsModuleChecks {
         } else {
             return prop.getLP().property.getValueClass(ClassType.valuePolicy);
         }
-    }  
+    }
+
+    public void checkBooleanUsage(boolean value) throws ScriptingErrorLog.SemanticErrorException {
+        if (!value) {
+            errLog.emitUseNullInsteadOfFalseError(parser);
+        }
+    }
 }
