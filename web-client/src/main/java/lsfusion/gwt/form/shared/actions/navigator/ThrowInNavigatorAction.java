@@ -5,8 +5,7 @@ public class ThrowInNavigatorAction extends NavigatorRequestAction {
 
     public ThrowInNavigatorAction() {}
 
-    public ThrowInNavigatorAction(String tabSID, Throwable throwable) {
-        super(tabSID);
+    public ThrowInNavigatorAction(Throwable throwable) {
         this.throwable = throwable;
     }
 }

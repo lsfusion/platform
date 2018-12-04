@@ -52,17 +52,6 @@ public class NavigatorTree extends ClientTree {
         rootNode.add(new ExpandingTreeNode());
         expandPath(new TreePath(rootNode));
 
-        rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open"), true) {
-            public void actionPerformed(ClientTreeActionEvent e) {
-                openForm((ClientNavigatorForm) e.getNode().getUserObject());
-            }
-
-            @Override
-            public boolean isApplicable(ClientTreeNode node) {
-                return node.getUserObject() instanceof ClientNavigatorForm;
-            }
-        });
-
         rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.execute.action"), true) {
             public void actionPerformed(ClientTreeActionEvent e) {
                 openAction((ClientNavigatorAction) e.getNode().getUserObject());
@@ -77,15 +66,6 @@ public class NavigatorTree extends ClientTree {
 
     private void openAction(ClientNavigatorAction action) {
         navigator.openAction(action);
-    }
-
-    private void openForm(ClientNavigatorForm form) {
-        assert form != null;
-        try {
-            navigator.openForm(form);
-        } catch (Exception e) {
-            throw new RuntimeException(ClientResourceBundle.getString("errors.error.opening.form"), e);
-        }
     }
 
     private void addNodeElements(ClientTreeNode parent) throws IOException {

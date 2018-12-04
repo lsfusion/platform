@@ -130,7 +130,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    @Override
     public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
         logRemoteMethodStartCall("getFormCanonicalName");
         String result = target.getFormCanonicalName(navigatorElementCanonicalName);

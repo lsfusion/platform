@@ -28,7 +28,7 @@ public class GetRemoteNavigatorActionMessageListHandler extends NavigatorActionH
     @Override
     public ListResult executeEx(GetRemoteNavigatorActionMessageList action, ExecutionContext context) throws DispatchException, IOException {
         List<Object> result = new ArrayList<>();
-        for (Object object : servlet.getNavigator().getRemoteActionMessageList()) {
+        for (Object object : getRemoteNavigator(action).getRemoteActionMessageList()) {
             if (object instanceof ProgressBar)
                 result.add(clientActionConverter.convertProgressBar((lsfusion.base.ProgressBar) object));
             else

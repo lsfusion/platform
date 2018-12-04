@@ -13,20 +13,20 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         super(servlet);
     }
 
-    private FormProvider getFormSessionManager() {
+    private FormProvider getFormProvider() {
         return ((LSFusionDispatchServlet)servlet).getFormProvider();
     }
 
     public FormSessionObject getFormSessionObject(String formSessionID) throws RuntimeException {
-        return getFormSessionManager().getFormSessionObject(formSessionID);
+        return getFormProvider().getFormSessionObject(formSessionID);
     }
 
     public FormSessionObject getFormSessionObjectOrNull(String formSessionID) throws RuntimeException {
-        return getFormSessionManager().getFormSessionObjectOrNull(formSessionID);
+        return getFormProvider().getFormSessionObjectOrNull(formSessionID);
     }
 
-    public FormSessionObject removeFormSessionObject(String formSessionID) throws RuntimeException {
-        return getFormSessionManager().removeFormSessionObject(formSessionID);
+    public void removeFormSessionObject(String formSessionID) throws RuntimeException {
+        getFormProvider().removeFormSessionObject(formSessionID);
     }
 
     protected final static int defaultLastReceivedRequestIndex = -1;

@@ -6,8 +6,7 @@ public class ExecuteNavigatorAction extends NavigatorRequestAction {
 
     public ExecuteNavigatorAction() {}
 
-    public ExecuteNavigatorAction(String tabSID, String actionSID, int type) {
-        super(tabSID);
+    public ExecuteNavigatorAction(String actionSID, int type) {
         this.actionSID = actionSID;
         this.type = type;
     }

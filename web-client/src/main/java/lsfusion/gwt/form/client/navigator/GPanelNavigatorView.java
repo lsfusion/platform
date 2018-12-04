@@ -36,15 +36,11 @@ public class GPanelNavigatorView extends GNavigatorView {
     private void addElement(GNavigatorElement element, Panel container) {
         ResizableHorizontalPanel insidePanel = new ResizableHorizontalPanel();
 
-        if (element instanceof GNavigatorForm) {
-            insidePanel.add(createButton(element));
-        } else {
-            for (GNavigatorElement child : element.children) {
-                if (!child.children.isEmpty()) {
-                    addElement(child, insidePanel);
-                } else {
-                    insidePanel.add(createButton(child));
-                }
+        for (GNavigatorElement child : element.children) {
+            if (!child.children.isEmpty()) {
+                addElement(child, insidePanel);
+            } else {
+                insidePanel.add(createButton(child));
             }
         }
 

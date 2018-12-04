@@ -24,6 +24,6 @@ public class ContinueNavigatorActionHandler extends NavigatorServerResponseActio
             actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
         }
 
-        return getServerResponseResult(action, servlet.getNavigator().continueNavigatorAction(actionResults));
+        return getServerResponseResult(action, getRemoteNavigator(action).continueNavigatorAction(actionResults));
     }
 }

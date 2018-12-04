@@ -7,8 +7,7 @@ public class ContinueNavigatorAction extends NavigatorRequestAction {
 
     public ContinueNavigatorAction() {}
 
-    public ContinueNavigatorAction(String tabSID, Object[] actionResults) {
-        super(tabSID);
+    public ContinueNavigatorAction(Object[] actionResults) {
         this.actionResults = new Serializable[actionResults.length];
         for (int i = 0; i < actionResults.length; i++) {
             this.actionResults[i] = (Serializable) actionResults[i];

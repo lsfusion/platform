@@ -17,7 +17,7 @@ public class GetLocaleHandler extends NavigatorActionHandler<GetLocaleAction, St
 
     @Override
     public StringResult executeEx(GetLocaleAction action, ExecutionContext context) throws DispatchException, IOException {
-        LocalePreferences preferences = servlet.getNavigator().getLocalePreferences();
+        LocalePreferences preferences = getRemoteNavigator(action).getLocalePreferences();
         return new StringResult(preferences.language == null ? "" : preferences.language);
     }
 }

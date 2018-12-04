@@ -16,7 +16,7 @@ public class SetCurrentFormHandler extends NavigatorActionHandler<SetCurrentForm
 
     @Override
     public VoidResult executeEx(SetCurrentForm action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.getNavigator().setCurrentForm(action.formID);
+        getRemoteNavigator(action).setCurrentForm(action.formID);
         return new VoidResult();
     }
 }

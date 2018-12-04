@@ -22,6 +22,6 @@ public class GetRemoteNavigatorActionMessageHandler extends NavigatorActionHandl
 
     @Override
     public StringResult executeEx(GetRemoteNavigatorActionMessage action, ExecutionContext context) throws DispatchException, IOException {
-        return new StringResult(servlet.getNavigator().getRemoteActionMessage());
+        return new StringResult(getRemoteNavigator(action).getRemoteActionMessage());
     }
 }

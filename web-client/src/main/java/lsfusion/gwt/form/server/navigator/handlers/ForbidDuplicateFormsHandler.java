@@ -16,6 +16,6 @@ public class ForbidDuplicateFormsHandler extends NavigatorActionHandler<ForbidDu
 
     @Override
     public BooleanResult executeEx(ForbidDuplicateFormsAction action, ExecutionContext context) throws DispatchException, IOException {
-        return new BooleanResult(servlet.getNavigator().isForbidDuplicateForms());
+        return new BooleanResult(getRemoteNavigator(action).isForbidDuplicateForms());
     }
 }

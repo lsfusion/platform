@@ -34,7 +34,7 @@ public class GExceptionManager {
         GWT.log(message, throwable);
         Log.error(message, throwable);
 
-        NavigatorDispatchAsync.Instance.get().execute(action, new ErrorHandlingCallback<VoidResult>() {
+        MainFrame.navigatorDispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
             @Override
             public void failure(Throwable caught) {
                 Log.error("Error logging client exception", caught);
@@ -72,7 +72,7 @@ public class GExceptionManager {
             final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
             for (final Throwable t : unreportedThrowables) {
                 Integer tryCount = unreportedThrowablesTryCount.get(t);
-                NavigatorDispatchAsync.Instance.get().execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
+                MainFrame.navigatorDispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
                     @Override
                     public void failure(Throwable caught) {
                         Log.error("Error logging unreported client exception", caught);

@@ -11,6 +11,7 @@ import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
+import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
@@ -28,7 +29,8 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
     public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws DispatchException, IOException {
         ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter();
 
-        DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(servlet.getNavigator().getNavigatorTree());
+        RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
+        DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 
         GNavigatorElement root = converter.convertOrCast(navigatorData.root);
 
@@ -39,7 +41,7 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
         }
 
         //getting common windows
-        List<ClientAbstractWindow> clientWindows = DeSerializer.deserializeListClientNavigatorWindow(servlet.getNavigator().getCommonWindows());
+        List<ClientAbstractWindow> clientWindows = DeSerializer.deserializeListClientNavigatorWindow(remoteNavigator.getCommonWindows());
         List<GAbstractWindow> windows = new ArrayList<>();
         for (ClientAbstractWindow clientWindow : clientWindows) {
             windows.add((GAbstractWindow) converter.convertOrCast(clientWindow));

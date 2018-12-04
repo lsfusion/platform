@@ -2,17 +2,13 @@ package lsfusion.gwt.form.server.form.spring;
 
 import lsfusion.gwt.base.server.spring.InvalidateListener;
 import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
-import lsfusion.gwt.form.server.navigator.spring.NavigatorProviderImpl;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.interop.form.RemoteFormInterface;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.synchronizedMap;
 
@@ -21,23 +17,9 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     @Autowired
     private LogicsProvider blProvider;
 
-    private int nextFormId = 0;
     private final Map<String, FormSessionObject> currentForms = synchronizedMap(new HashMap<String, FormSessionObject>());
 
     public FormProviderImpl() {}
-
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String tabSID, LSFusionDispatchServlet servlet) throws IOException {
-        String formID = nextFormSessionID();
-        FormProviderImpl formProvider = this;
-
-        GForm gForm = NavigatorProviderImpl.createForm(canonicalName, formSID, remoteForm, immutableMethods, firstChanges, tabSID, formID, formProvider);
-
-        return gForm;
-    }
-
-    private String nextFormSessionID() {
-        return "form" + nextFormId++ ;
-    }
 
     @Override
     public void onInvalidate() {
@@ -58,8 +40,14 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return formObject;
     }
 
-    public void addFormSessionObject(String formSessionID, FormSessionObject formSessionObject) {
+    private AtomicInteger nextFormId = new AtomicInteger(0);
+    private String nextFormSessionID() {
+        return "form" + nextFormId.getAndIncrement();
+    }
+    public String addFormSessionObject(FormSessionObject formSessionObject) {
+        String formSessionID = nextFormSessionID();
         currentForms.put(formSessionID, formSessionObject);
+        return formSessionID;
     }
 
     @Override
@@ -67,8 +55,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         return currentForms.get(formSessionID);
     }
 
-    public FormSessionObject removeFormSessionObject(String formSessionID) {
-        return currentForms.remove(formSessionID);
+    public void removeFormSessionObject(String formSessionID) {
+        currentForms.remove(formSessionID);
     }
 
     @Override

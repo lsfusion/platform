@@ -43,7 +43,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
 
     @Override
     public VoidResult executeEx(LogClientExceptionAction action, ExecutionContext context) throws DispatchException, IOException {
-        RemoteNavigatorInterface navigator = servlet.getNavigator();
+        RemoteNavigatorInterface navigator = getRemoteNavigator(action);
 
         // чтобы не засорять Журнал ошибок, ограничиваем количество отчётов об ошибках от одного пользователя.
         Integer count = exceptionCounter.get(navigator);

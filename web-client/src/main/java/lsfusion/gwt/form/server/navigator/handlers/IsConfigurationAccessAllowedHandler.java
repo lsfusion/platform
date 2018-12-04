@@ -16,6 +16,6 @@ public class IsConfigurationAccessAllowedHandler extends NavigatorActionHandler<
 
     @Override
     public BooleanResult executeEx(IsConfigurationAccessAllowedAction action, ExecutionContext context) throws DispatchException, IOException {
-        return new BooleanResult(servlet.getNavigator().isConfigurationAccessAllowed());
+        return new BooleanResult(getRemoteNavigator(action).isConfigurationAccessAllowed());
     }
 }

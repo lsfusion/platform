@@ -16,7 +16,7 @@ public class CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigator
 
     @Override
     public VoidResult executeEx(CloseNavigator action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.tabClosed(action.tabSID);
+        removeNavigatorSessionObject(action.navigatorID);
         return new VoidResult();
     }
 }

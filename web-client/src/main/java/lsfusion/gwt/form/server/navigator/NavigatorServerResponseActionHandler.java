@@ -16,6 +16,6 @@ public abstract class NavigatorServerResponseActionHandler<A extends NavigatorRe
     }
 
     protected ServerResponseResult getServerResponseResult(A action, ServerResponse serverResponse) throws IOException {
-        return FormServerResponseActionHandler.getServerResponseResult(new FormSessionObject(null, null, action.tabSID), serverResponse, servlet);
+        return FormServerResponseActionHandler.getServerResponseResult(new FormSessionObject(null, null, action.navigatorID), serverResponse, servlet);
     }
 }

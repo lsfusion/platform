@@ -25,14 +25,12 @@ public class NavigatorSessionObject {
     private volatile RemoteNavigatorInterface navigator;
     private final Object navigatorLock = new Object();
 
-    public NavigatorProviderImpl(LogicsProvider blProvider) {
-        this.blProvider = blProvider;
-        blProvider.addInvalidateListener(this);
+    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, String logicsSID) {
+        dfdffd
     }
 
     public String servSID = GwtSharedUtils.randomString(25);
 
-    private ClientCallBackInterface clientCallBack;
 
     public final Set<String> openTabs = new HashSet<String>();
 

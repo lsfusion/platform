@@ -816,7 +816,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         final int position = controller.getGrid().getTable().getKeyboardSelectedRow();
 
         if (add) {
-            NavigatorDispatchAsync.Instance.get().execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
+            MainFrame.logicsDispatcher.execute(new GenerateID(), new ErrorHandlingCallback<GenerateIDResult>() {
                 @Override
                 public void success(GenerateIDResult result) {
                     executeModifyObject(property, columnKey, object, add, result.ID, new GGroupObjectValue(object.ID, result.ID), position);

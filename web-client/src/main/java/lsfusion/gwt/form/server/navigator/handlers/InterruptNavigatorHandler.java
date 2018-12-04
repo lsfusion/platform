@@ -17,7 +17,7 @@ public class InterruptNavigatorHandler extends NavigatorActionHandler<InterruptN
 
     @Override
     public VoidResult executeEx(InterruptNavigator action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.getNavigator().interrupt(action.cancelable);
+        getRemoteNavigator(action).interrupt(action.cancelable);
         return new VoidResult();
     }
 }

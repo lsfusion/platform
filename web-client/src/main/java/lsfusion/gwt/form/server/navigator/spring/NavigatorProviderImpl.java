@@ -1,8 +1,6 @@
 package lsfusion.gwt.form.server.navigator.spring;
 
 import com.google.gwt.core.client.GWT;
-import lsfusion.base.NavigatorInfo;
-import lsfusion.base.SystemUtils;
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
@@ -10,11 +8,11 @@ import lsfusion.gwt.base.server.spring.InvalidateListener;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.form.server.form.spring.FormProviderImpl;
+import lsfusion.gwt.form.server.form.spring.FormProvider;
 import lsfusion.gwt.form.server.form.spring.FormSessionObject;
 import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsProviderImpl;
 import lsfusion.gwt.form.shared.view.*;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
@@ -23,7 +21,6 @@ import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -54,7 +51,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
     public final Set<String> openTabs = new HashSet<String>();
 
-    public static GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String tabSID, String formID, FormProviderImpl formProvider) throws IOException {
+    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String tabSID, FormProvider formProvider) throws IOException {
         FormClientAction.methodNames = FormClientAction.methodNames; // чтобы не потерять
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(immutableMethods != null ? (byte[])immutableMethods[2] : remoteForm.getRichDesignByteArray())));
 
@@ -62,7 +59,6 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
         gForm.sID = formSID;
         gForm.canonicalName = canonicalName;
-        gForm.sessionID = formID;
 
         if (firstChanges != null) {
             gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
@@ -79,9 +75,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                                                             convertUserPreferences(gForm, formUP.getGroupObjectUserPreferencesList()));
         }
 
-        FormSessionObject formSessionObject = new FormSessionObject(clientForm, remoteForm, tabSID);
-
-        formProvider.addFormSessionObject(formID, formSessionObject);
+        gForm.sessionID = formProvider.addFormSessionObject(new FormSessionObject(clientForm, remoteForm, tabSID));
         return gForm;
     }
 
@@ -113,13 +107,6 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     }
 
     @Override
-    public ClientCallBackInterface getClientCallBack() throws RemoteException {
-        if(clientCallBack == null)
-            clientCallBack = getNavigator().getClientCallBack();
-        return clientCallBack;
-    }
-
-    @Override
     public void tabOpened(String tabSID) {
         synchronized (openTabs) {
             openTabs.add(tabSID);
@@ -139,63 +126,6 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
         synchronized (openTabs) {
             return "SESSION " + servSID + " CURRENT OPENED TABS " + openTabs;
         }
-    }
-
-    @Override
-    public RemoteNavigatorInterface getNavigator() throws RemoteException {
-        //double-check locking
-        if (navigator == null) {
-            synchronized (navigatorLock) {
-                if (navigator == null) {
-                    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                    if (auth == null) {
-                        auth = new TestingAuthenticationToken("admin", "fusion");
-                        //throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
-                    }
-
-                    String username = auth.getName();
-                    String password = (String) auth.getCredentials();
-                    String osVersion = System.getProperty("os.name");
-                    String processor = System.getenv("PROCESSOR_IDENTIFIER");
-
-                    String architecture = System.getProperty("os.arch");
-                    if (osVersion.startsWith("Windows")) {
-                        String arch = System.getenv("PROCESSOR_ARCHITECTURE");
-                        String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
-                        architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
-                    }
-
-                    Integer cores = Runtime.getRuntime().availableProcessors();
-                    com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
-                            java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-                    Integer physicalMemory = (int) (os.getTotalPhysicalMemorySize() / 1048576);
-                    Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
-                    Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
-                    Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-                    String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
-
-                    String language = Locale.getDefault().getLanguage();
-                    String country = Locale.getDefault().getCountry(); 
-                    
-                    try {
-                        RemoteLogicsInterface bl = blProvider.getLogics();
-/*                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password,
-                                bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
-                                osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                                javaVersion, null, language, country), true);*/
-                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password,
-                                bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
-                                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
-                        navigator = unsynced; // ReflectionUtils.makeSynchronized(RemoteNavigatorInterface.class, unsynced) - в десктопе не синхронизировалось, непонятно зачем здесь синхронизировать
-                    } catch (RemoteException e) {
-                        blProvider.invalidate();
-                        throw e;
-                    }
-                }
-            }
-        }
-
-        return navigator;
     }
 
     public void onInvalidate() {

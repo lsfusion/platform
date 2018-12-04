@@ -16,6 +16,6 @@ public class ThrowInNavigatorActionHandler extends NavigatorServerResponseAction
 
     @Override
     public ServerResponseResult executeEx(ThrowInNavigatorAction action, ExecutionContext context) throws DispatchException, IOException {
-        return getServerResponseResult(action, servlet.getNavigator().throwInNavigatorAction(action.throwable));
+        return getServerResponseResult(action, getRemoteNavigator(action).throwInNavigatorAction(action.throwable));
     }
 }

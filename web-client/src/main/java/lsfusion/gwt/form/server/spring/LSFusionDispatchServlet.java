@@ -11,8 +11,10 @@ import lsfusion.gwt.form.server.form.spring.FormProvider;
 import lsfusion.gwt.form.server.logics.handlers.CreateNavigatorActionHandler;
 import lsfusion.gwt.form.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsSessionObject;
 import lsfusion.gwt.form.server.navigator.handlers.*;
 import lsfusion.gwt.form.server.navigator.spring.NavigatorProvider;
+import lsfusion.gwt.form.shared.view.GLogics;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -95,7 +97,6 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         registry.addHandler(new ExecuteNotificationHandler(this));
         registry.addHandler(new ExpandGroupObjectHandler(this));
         registry.addHandler(new FormHiddenHandler(this));
-        registry.addHandler(new GetFormHandler(this));
         registry.addHandler(new GetInitialFilterPropertyHandler(this));
         registry.addHandler(new GetRemoteActionMessageHandler(this));
         registry.addHandler(new GetRemoteActionMessageListHandler(this));
@@ -116,6 +117,10 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
 
     public FormProvider getFormProvider() {
         return formProvider;
+    }
+
+    public NavigatorProvider getNavigatorProvider() {
+        return navigatorProvider;
     }
 
     public void setUseGETForGwtRPC(boolean useGETForGwtRPC) {
@@ -244,18 +249,6 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         return blProvider;
     }
 
-    public RemoteNavigatorInterface getNavigator() throws RemoteException {
-        return navigatorProvider.getNavigator();
-    }
-
-    public ClientCallBackInterface getClientCallBack() throws RemoteException {
-        return navigatorProvider.getClientCallBack();
-    }
-
-    public String createNavigator(String tabSID) {
-        navigatorProvider.tabOpened(tabSID);
-    }
-
     public void tabClosed(String tabSID) throws RemoteException {
         formProvider.removeFormSessionObjects(tabSID);
 
@@ -278,6 +271,13 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
                 navigatorProvider.invalidate();
             }
         }
+    }
+
+    public GLogics lookupLogics(String host, int port, LogicsProvider logicsProvider) {
+        logicsProvider.add
+    }
+    public LogicsSessionObject getLogicsSessionObject(String logicsSessionID) {
+        dfdf
     }
 
     public HttpServletRequest getRequest() {
