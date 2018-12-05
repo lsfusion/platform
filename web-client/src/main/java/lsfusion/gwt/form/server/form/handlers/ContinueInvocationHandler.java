@@ -24,7 +24,7 @@ public class ContinueInvocationHandler extends FormServerResponseActionHandler<C
 
         Object actionResults[] = new Object[action.actionResults.length];
         for (int i = 0; i < actionResults.length; ++i) {
-            actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i], servlet.getBLProvider());
+            actionResults[i] = gwtConverter.convertOrCast(action.actionResults[i]);
         }
 
         return getServerResponseResult(form, form.remoteForm.continueServerInvocation(-1, defaultLastReceivedRequestIndex, -1, actionResults));

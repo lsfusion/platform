@@ -1,44 +1,26 @@
 package lsfusion.gwt.form.server.navigator;
 
-import lsfusion.gwt.form.server.form.spring.FormProvider;
-import lsfusion.gwt.form.server.navigator.spring.NavigatorProvider;
-import lsfusion.gwt.form.server.navigator.spring.NavigatorSessionObject;
+import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorProvider;
+import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorSessionObject;
 import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.CloseNavigator;
 import lsfusion.gwt.form.shared.actions.navigator.NavigatorAction;
 import lsfusion.gwt.form.shared.actions.logics.CreateNavigator;
-import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
-public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R extends Result> extends lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
+import java.rmi.RemoteException;
 
-    private NavigatorProvider getNavigatorProvider() {
-        return ((LSFusionDispatchServlet)servlet).getNavigatorProvider();
-    }
-    protected NavigatorSessionObject getNavigatorSessionObject(String navigatorID) {
-        return getNavigatorProvider().getNavigatorSessionObject(navigatorID);
-    }
-    protected void removeNavigatorSessionObject(String navigatorID) {
-        getNavigatorProvider().removeNavigatorSessionObject(navigatorID);
-
-        нужно убрать еще в formProvider'е все
-        если не осталось навигаторов можно закрывать
-        formProvider.removeFormSessionObjects(tabSID);
-
-        if (navigatorProvider.tabClosed(tabSID)) {
-            invalidate();
-        }
-
-    }
+public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R extends Result> extends LogicsAndNavigatorActionHandler<A, R> {
 
     // shortcut's
-    protected NavigatorSessionObject getNavigatorSessionObject(A action) {
-        return getNavigatorSessionObject(action.navigatorID);
-    }
     protected RemoteNavigatorInterface getRemoteNavigator(A action) {
-        return getNavigatorSessionObject(action).remoteNavigator;
+        return getLogicsAndNavigatorSessionObject(action).remoteNavigator;
+    }
+    protected ClientCallBackInterface getClientCallback(A action) throws RemoteException {
+        return getLogicsAndNavigatorSessionObject(action).getRemoteCallback();
     }
 
     public NavigatorActionHandler(LSFusionDispatchServlet servlet) {
@@ -52,7 +34,7 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
             message += "TAB ID " + ((CreateNavigator) action).tabSID + " IN " + servlet.getSessionInfo();
         }
         if (action instanceof CloseNavigator) {
-            message += "TAB ID " + ((CloseNavigator) action).navigatorID + " IN " + servlet.getSessionInfo();
+            message += "TAB ID " + ((CloseNavigator) action).sessionID + " IN " + servlet.getSessionInfo();
         }
         return message;
     }

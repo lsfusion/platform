@@ -16,6 +16,6 @@ public class GenerateIDHandler extends LogicsActionHandler<GenerateID, GenerateI
 
     @Override
     public GenerateIDResult executeEx(GenerateID action, ExecutionContext context) throws DispatchException, IOException {
-        return new GenerateIDResult(servlet.getLogics().generateID());
+        return new GenerateIDResult(getRemoteLogics(action).generateID());
     }
 }

@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
@@ -13,7 +13,7 @@ import java.io.IOException;
 public class ExternalRequestHandler implements HttpRequestHandler {
 
     @Autowired
-    private LogicsProvider blProvider;
+    private LogicsHandlerProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {

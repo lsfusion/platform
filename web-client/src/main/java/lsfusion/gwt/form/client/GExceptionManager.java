@@ -10,7 +10,6 @@ import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.NonFatalHandledException;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
@@ -34,7 +33,7 @@ public class GExceptionManager {
         GWT.log(message, throwable);
         Log.error(message, throwable);
 
-        MainFrame.navigatorDispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
+        MainFrame.logicsAndNavigatorDispatchAsync.execute(action, new ErrorHandlingCallback<VoidResult>() {
             @Override
             public void failure(Throwable caught) {
                 Log.error("Error logging client exception", caught);
@@ -72,7 +71,7 @@ public class GExceptionManager {
             final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
             for (final Throwable t : unreportedThrowables) {
                 Integer tryCount = unreportedThrowablesTryCount.get(t);
-                MainFrame.navigatorDispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
+                MainFrame.logicsAndNavigatorDispatchAsync.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
                     @Override
                     public void failure(Throwable caught) {
                         Log.error("Error logging unreported client exception", caught);

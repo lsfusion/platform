@@ -30,9 +30,7 @@ public abstract class FormServerResponseActionHandler<A extends FormAction<Serve
             resultActions = new GAction[serverResponse.actions.length];
             for (int i = 0; i < serverResponse.actions.length; i++) {
                 try {
-                    resultActions[i] = form != null
-                            ? clientActionConverter.convertAction(serverResponse.actions[i], form, servlet)
-                            : clientActionConverter.convertAction(serverResponse.actions[i], servlet);
+                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, servlet);
                 } catch (Exception e) {
                     resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: " + e.getMessage(), e));
                 }

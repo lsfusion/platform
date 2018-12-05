@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.exceptions.RemoteServerException;
@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class GwtRemoteAuthenticationManager implements RemoteAuthenticationManager {
+public class LSFRemoteAuthenticationManager implements RemoteAuthenticationManager {
     @Autowired
-    private LogicsProvider businessLogicProvider;
+    private LogicsHandlerProvider businessLogicProvider;
     
     @Override
     public Collection<GrantedAuthority> attemptAuthentication(String username, String password) throws RemoteAuthenticationException {

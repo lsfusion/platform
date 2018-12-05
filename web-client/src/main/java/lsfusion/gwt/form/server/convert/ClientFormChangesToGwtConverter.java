@@ -4,7 +4,6 @@ import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.GClassViewType;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -32,7 +31,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, LogicsProvider blProvider) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex) {
         GFormChangesDTO dto = new GFormChangesDTO();
 
         dto.requestIndex = requestIndex;
@@ -49,7 +48,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         dto.objects = new GGroupObjectValue[changes.objects.size()];
         i = 0;
         for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : changes.objects.entrySet()) {
-            GGroupObjectValue groupObjectValue = convertOrCast(e.getValue(), blProvider);
+            GGroupObjectValue groupObjectValue = convertOrCast(e.getValue());
             dto.objectsGroupIds[i] = e.getKey().ID;
             dto.objects[i++] = groupObjectValue;
         }
@@ -61,7 +60,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             ArrayList<GGroupObjectValue> keys = new ArrayList<>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
                 keys.add(groupObjectValue);
             }
 
@@ -76,7 +75,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             ArrayList<GGroupObjectValue> keys = new ArrayList<>();
 
             for (ClientGroupObjectValue keyValue : entry.getValue()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(keyValue, blProvider);
+                GGroupObjectValue groupObjectValue = convertOrCast(keyValue);
                 keys.add(groupObjectValue);
             }
 
@@ -90,7 +89,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> entry : changes.expandables.entrySet()) {
             HashMap<GGroupObjectValue, Boolean> expandables = new HashMap<>();
             for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : entry.getValue().entrySet()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey(), blProvider);
+                GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey());
                 expandables.put(groupObjectValue, expandable.getValue());
             }
             dto.expandablesGroupIds[i] = entry.getKey().ID;
@@ -104,9 +103,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             HashMap<GGroupObjectValue, Object> propValues = new HashMap<>();
             ClientPropertyReader reader = entry.getKey();
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
-                GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey(), blProvider);
+                GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
-                Object propValue = convertOrCast(clientValues.getValue(), blProvider);
+                Object propValue = convertOrCast(clientValues.getValue());
                 if (propValue instanceof FileData || propValue instanceof RawFileData) {
                     propValue = convertFileValue(reader, propValue);
                 }
@@ -167,14 +166,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = Date.class)
-    public GDateDTO convertDate(Date gDate, LogicsProvider blProvider) {
+    public GDateDTO convertDate(Date gDate) {
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(gDate);
         return new GDateDTO(gc.get(Calendar.DAY_OF_MONTH), gc.get(Calendar.MONTH), gc.get(Calendar.YEAR) - 1900);
     }
 
     @Converter(from = Time.class)
-    public GTimeDTO convertTime(Time time, LogicsProvider blProvider) {
+    public GTimeDTO convertTime(Time time) {
         GregorianCalendar gc = new GregorianCalendar();
         gc.clear();
         gc.setTime(time);

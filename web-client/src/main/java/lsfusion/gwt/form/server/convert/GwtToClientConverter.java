@@ -2,7 +2,6 @@ package lsfusion.gwt.form.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -53,7 +52,7 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = GDateDTO.class)
-    public java.sql.Date convertDate(GDateDTO dto, LogicsProvider blProvider) {
+    public java.sql.Date convertDate(GDateDTO dto) {
         GregorianCalendar gc = new GregorianCalendar();
         gc.set(dto.year + 1900, dto.month, dto.day, 0, 0, 0);
         gc.set(Calendar.MILLISECOND, 0);
@@ -61,7 +60,7 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = GTimeDTO.class)
-    public java.sql.Time convertTime(GTimeDTO dto, LogicsProvider blProvider) {
+    public java.sql.Time convertTime(GTimeDTO dto) {
         GregorianCalendar gc = new GregorianCalendar();
         gc.clear(); // reset to zero epoch
         
@@ -85,8 +84,8 @@ public class GwtToClientConverter extends ObjectConverter {
     }
 
     @Converter(from = GUserInputResult.class)
-    public UserInputResult convertInputResult(GUserInputResult gInputResult, LogicsProvider blProvider) {
-        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue(), blProvider));
+    public UserInputResult convertInputResult(GUserInputResult gInputResult) {
+        return new UserInputResult(gInputResult.isCanceled(), convertOrCast(gInputResult.getValue()));
     }
 
     @Converter(from = GClassViewType.class)

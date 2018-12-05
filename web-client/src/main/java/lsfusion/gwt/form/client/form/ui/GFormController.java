@@ -28,7 +28,6 @@ import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.*;
 import lsfusion.gwt.form.client.dispatch.DeferredRunner;
 import lsfusion.gwt.form.client.dispatch.FormDispatchAsync;
-import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.client.form.ServerMessageProvider;
 import lsfusion.gwt.form.client.form.dispatch.GFormActionDispatcher;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -8,13 +8,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ReadMemoryLimitsRequestHandler implements HttpRequestHandler {
 
     @Autowired
-    private LogicsProvider blProvider;
+    private LogicsHandlerProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -22,7 +23,7 @@ public class ReadMemoryLimitsRequestHandler implements HttpRequestHandler {
         Map<String, String> memoryLimits = new HashMap<>();
         try {
             memoryLimits = blProvider.getLogics().readMemoryLimits();
-        } catch (Exception e) {
+        } catch (RemoteException e) {
             blProvider.invalidate();
         }
         String url = "";

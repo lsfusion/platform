@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import com.google.common.io.ByteStreams;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.rmi.RemoteException;
 
 public class ReadLogoRequestHandler implements HttpRequestHandler {
 
@@ -17,7 +18,7 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
     private ServletContext context;
 
     @Autowired
-    private LogicsProvider blProvider;
+    private LogicsHandlerProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -25,7 +26,7 @@ public class ReadLogoRequestHandler implements HttpRequestHandler {
         InputStream inputStream;
         try {
             logo = blProvider.getLogics().getGUIPreferences().logicsLogo;
-        } catch (Exception e) {
+        } catch (RemoteException e) {
             blProvider.invalidate();
         }
         if (logo == null) {

@@ -29,7 +29,7 @@ public class PasteExternalTableHandler extends FormServerResponseActionHandler<P
             List<byte[]> rowValues = new ArrayList<>();
 
             for (Object gRowValue : gRowValues) {
-                Object oCell = gwtConverter.convertOrCast(gRowValue, servlet.getBLProvider());
+                Object oCell = gwtConverter.convertOrCast(gRowValue);
                 rowValues.add(serializeObject(oCell));
             }
 

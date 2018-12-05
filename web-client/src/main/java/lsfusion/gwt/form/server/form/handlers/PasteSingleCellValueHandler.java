@@ -27,7 +27,7 @@ public class PasteSingleCellValueHandler extends FormServerResponseActionHandler
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
 
         byte[] value = serializeObject(
-                gwtConverter.convertOrCast(action.value, servlet.getBLProvider())
+                gwtConverter.convertOrCast(action.value)
         );
 
         FormSessionObject form = getFormSessionObject(action.formSessionID);

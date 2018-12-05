@@ -1,7 +1,7 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.IOUtils;
-import lsfusion.gwt.form.server.logics.spring.LogicsProvider;
+import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import lsfusion.interop.VMOptions;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
     private static final String DEFAULT_MAX_HEAP_FREE_RATIO = "70";
 
     @Autowired
-    private LogicsProvider blProvider;
+    private LogicsHandlerProvider blProvider;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {

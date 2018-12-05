@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
 import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.form.server.navigator.spring.NavigatorSessionObject;
+import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorSessionObject;
 import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.ClientPushMessage;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
@@ -23,9 +23,8 @@ public class ClientPushMessagesHandler extends NavigatorActionHandler<ClientPush
 
     @Override
     public ClientMessageResult executeEx(ClientPushMessage action, ExecutionContext context) throws DispatchException, IOException {
-        NavigatorSessionObject navigatorSessionObject = getNavigatorSessionObject(action);
-        List<LifecycleMessage> messages = navigatorSessionObject.remoteCallback.pullMessages();
-        return getClientMessageResult(navigatorSessionObject.remoteNavigator, messages);
+        List<LifecycleMessage> messages = getClientCallback(action).pullMessages();
+        return getClientMessageResult(getRemoteNavigator(action), messages);
     }
 
     @Override

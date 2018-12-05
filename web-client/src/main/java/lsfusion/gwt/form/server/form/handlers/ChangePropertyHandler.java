@@ -24,7 +24,7 @@ public class ChangePropertyHandler extends FormServerResponseActionHandler<Chang
     @Override
     public ServerResponseResult executeEx(ChangeProperty action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
-        Object value = gwtConverter.convertOrCast(action.value, servlet.getBLProvider());
+        Object value = gwtConverter.convertOrCast(action.value);
         byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
         return getServerResponseResult(
                 form,
@@ -33,7 +33,7 @@ public class ChangePropertyHandler extends FormServerResponseActionHandler<Chang
                         defaultLastReceivedRequestIndex,
                         action.propertyId,
                         fullKey,
-                        serializeObject(gwtConverter.convertOrCast(value, servlet.getBLProvider())),
+                        serializeObject(gwtConverter.convertOrCast(value)),
                         action.addedObjectId
                 )
         );
