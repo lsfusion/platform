@@ -226,7 +226,8 @@ public class ReportGenerator {
     }
     
     // "fieldName.header" -> "fieldName"
-    public static String getBaseFieldName(String fieldName) {
+    public static String getBaseFieldName(String fullFieldName) {
+        String fieldName = removeIndexMarkerIfExists(fullFieldName);
         if (isHeaderFieldName(fieldName)) {
             return fieldName.substring(0, fieldName.length() - headerSuffix.length());
         } else if (isFooterFieldName(fieldName)) {
@@ -473,7 +474,7 @@ public class ReportGenerator {
     private Set<String> getHidingFieldsNames(JasperDesign design) {
         Set<String> hidingFieldsNames = new HashSet<>();
         for (JRField field : design.getFieldsList()) {
-            if (needToBeHidden(field.getName())) {
+            if (isActiveShowIfField(field.getName())) {
                 String baseFieldName = getBaseFieldName(field.getName());
                 hidingFieldsNames.add(baseFieldName);
             }
@@ -481,7 +482,7 @@ public class ReportGenerator {
         return hidingFieldsNames;        
     }
     
-    private boolean needToBeHidden(final String fieldName) {
+    private boolean isActiveShowIfField(final String fieldName) {
         if (isShowIfFieldName(fieldName))
             return propData.getFieldValue(new HashMap<Integer, Object>(), fieldName) == null;
         return false;
