@@ -14,15 +14,24 @@ public class ReportConstants {
     public static final String endIndexMarker = "]";
 
     public static boolean isHeaderFieldName(String name) {
-        return name != null && name.endsWith(headerSuffix);
+        return name != null && removeIndexMarkerIfExists(name).endsWith(headerSuffix);
     }
 
     public static boolean isFooterFieldName(String name) {
-        return name != null && name.endsWith(footerSuffix);
+        return name != null && removeIndexMarkerIfExists(name).endsWith(footerSuffix);
     }
 
     public static boolean isShowIfFieldName(String name) {
-        return name != null && name.endsWith(showIfSuffix);
+        return name != null && removeIndexMarkerIfExists(name).endsWith(showIfSuffix);
     }
+
+    public static String removeIndexMarkerIfExists(String name) {
+        if (name.matches(".*\\[\\d+]$")) {
+            return name.substring(0, name.lastIndexOf('['));
+        }
+        return name;
+    }
+
+
 }
  
