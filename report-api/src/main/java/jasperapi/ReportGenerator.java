@@ -28,8 +28,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -483,8 +483,12 @@ public class ReportGenerator {
     }
     
     private boolean isActiveShowIfField(final String fieldName) {
-        if (isShowIfFieldName(fieldName))
+        if (isShowIfFieldName(fieldName)) {
+            if (System.getProperty("lsfusion.server.testmode") != null) {
+                System.out.println(fieldName +  " : " + propData.getFieldValue(new HashMap<Integer, Object>(), fieldName));
+            }
             return propData.getFieldValue(new HashMap<Integer, Object>(), fieldName) == null;
+        }
         return false;
     }
 
