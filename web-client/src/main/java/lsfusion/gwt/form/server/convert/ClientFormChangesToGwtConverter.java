@@ -1,8 +1,8 @@
 package lsfusion.gwt.form.server.convert;
 
+import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
-import lsfusion.client.logics.classes.ClientFileClass;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
 import lsfusion.gwt.form.server.FileUtils;
@@ -15,8 +15,8 @@ import lsfusion.interop.ClassViewType;
 import java.awt.*;
 import java.sql.Date;
 import java.sql.Time;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientFormChangesToGwtConverter extends ObjectConverter {
