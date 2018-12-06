@@ -107,14 +107,10 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey(), blProvider);
 
                 Object propValue = convertOrCast(clientValues.getValue(), blProvider);
-                if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientFileClass) {
-                    propValues.put(
-                            groupObjectValue,
-                            convertFileValue((ClientPropertyDraw) reader, propValue)
-                    );
-                } else {
-                    propValues.put(groupObjectValue, propValue);
+                if (propValue instanceof FileData || propValue instanceof RawFileData) {
+                    propValue = convertFileValue(reader, propValue);
                 }
+                propValues.put(groupObjectValue, propValue);
             }
 
             dto.properties[i] = new GPropertyReaderDTO(reader.getID(), reader.getType());
@@ -148,9 +144,9 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
-    private Object convertFileValue(ClientPropertyDraw property, Object value) {
-        if (property.baseType instanceof ClientImageClass) {
-            return FileUtils.createPropertyImage(value != null ? ((RawFileData) value).getBytes() : null, property.getPropertyFormName());
+    private Object convertFileValue(ClientPropertyReader reader, Object value) {
+        if (reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass) {
+            return FileUtils.createPropertyImage(value != null ? ((RawFileData) value).getBytes() : null, ((ClientPropertyDraw) reader).getPropertyFormName());
         } else {
             return value == null ? null : true;
         }
