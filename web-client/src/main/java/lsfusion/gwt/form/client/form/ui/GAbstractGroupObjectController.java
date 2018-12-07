@@ -7,7 +7,7 @@ import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.form.shared.view.reader.GFooterReader;
 

@@ -2,9 +2,9 @@ package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.ImageGridCellRenderer;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.ImageGridCellRenderer;
 
 public class GImageType extends GFileType {
     @Override

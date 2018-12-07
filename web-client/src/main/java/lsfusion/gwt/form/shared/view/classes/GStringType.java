@@ -5,12 +5,12 @@ import lsfusion.gwt.form.shared.view.GExtInt;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
-import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.TextGridCellRenderer;
+import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.form.client.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.StringGridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.TextGridCellRenderer;
 
 import java.text.ParseException;
 

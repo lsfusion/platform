@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.shared.view.classes;
 
 import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
 
 public class GPDFType extends GFileType {
     @Override

@@ -15,11 +15,11 @@ import lsfusion.gwt.cellview.client.cell.AbstractCell;
 import lsfusion.gwt.form.client.form.ui.GPropertyTableBuilder;
 import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 import java.util.Arrays;

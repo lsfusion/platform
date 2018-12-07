@@ -4,8 +4,8 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.NumberGridCellRenderer;
 
 import java.text.ParseException;
 

@@ -5,11 +5,11 @@ import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
-import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.LogicalGridCellRenderer;
+import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.form.client.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.LogicalGridCellRenderer;
 
 import java.text.ParseException;
 

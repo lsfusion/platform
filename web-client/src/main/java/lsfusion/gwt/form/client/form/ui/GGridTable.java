@@ -28,9 +28,9 @@ import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.form.shared.view.classes.GObjectType;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
-import lsfusion.gwt.form.shared.view.grid.editor.TextBasedGridCellEditor;
+import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.GridEditableCell;
+import lsfusion.gwt.form.client.grid.editor.TextBasedGridCellEditor;
 
 import java.util.*;
 

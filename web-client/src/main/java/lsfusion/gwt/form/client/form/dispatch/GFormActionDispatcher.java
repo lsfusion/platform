@@ -9,7 +9,7 @@ import lsfusion.gwt.form.client.log.GLog;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.actions.*;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {

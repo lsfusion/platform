@@ -19,8 +19,8 @@ import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.NativeEditEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -18,8 +18,8 @@ import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
-import lsfusion.gwt.form.shared.view.grid.*;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.*;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
 
 import java.util.List;
 

@@ -2,7 +2,7 @@ package lsfusion.gwt.form.shared.view.classes.link;
 
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.classes.GTypeVisitor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
 
 public class GWordLinkType extends GLinkType {
     @Override

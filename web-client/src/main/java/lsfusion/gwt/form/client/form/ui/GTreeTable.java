@@ -18,8 +18,8 @@ import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
+import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.GridEditableCell;
 
 import java.util.*;
 

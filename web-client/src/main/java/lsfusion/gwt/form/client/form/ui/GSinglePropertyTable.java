@@ -11,7 +11,7 @@ import lsfusion.gwt.form.shared.view.GFontMetrics;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
-import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
+import lsfusion.gwt.form.client.grid.GridEditableCell;
 
 import java.util.Arrays;
 import java.util.List;

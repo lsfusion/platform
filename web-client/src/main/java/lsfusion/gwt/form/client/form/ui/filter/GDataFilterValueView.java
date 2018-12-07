@@ -4,7 +4,7 @@ import lsfusion.gwt.base.client.ui.ResizableLayoutPanel;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.filter.GDataFilterValue;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.io.Serializable;

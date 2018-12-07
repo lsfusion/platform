@@ -6,7 +6,7 @@ import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
 public interface FormsController {

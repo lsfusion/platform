@@ -2,9 +2,9 @@ package lsfusion.gwt.form.shared.view;
 
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.form.shared.view.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.grid.InternalEditEvent;
-import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
+import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.form.client.grid.InternalEditEvent;
+import lsfusion.gwt.form.client.grid.NativeEditEvent;
 
 import java.io.Serializable;
 import java.util.HashMap;

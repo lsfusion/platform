@@ -3,9 +3,9 @@ package lsfusion.gwt.form.shared.view.classes.link;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.classes.GTypeVisitor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.ImageLinkGridCellRenderer;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.ImageLinkGridCellRenderer;
 
 public class GImageLinkType extends GLinkType {
     @Override

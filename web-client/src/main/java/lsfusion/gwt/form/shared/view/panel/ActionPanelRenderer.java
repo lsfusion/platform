@@ -19,11 +19,11 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.form.shared.view.classes.GType;
-import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
-import lsfusion.gwt.form.shared.view.grid.editor.DialogBasedGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.PopupBasedGridCellEditor;
+import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.form.client.grid.editor.DialogBasedGridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.PopupBasedGridCellEditor;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;

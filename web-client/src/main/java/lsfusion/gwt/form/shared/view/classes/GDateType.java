@@ -6,11 +6,11 @@ import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
-import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
-import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.form.client.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.client.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 import java.util.Date;
