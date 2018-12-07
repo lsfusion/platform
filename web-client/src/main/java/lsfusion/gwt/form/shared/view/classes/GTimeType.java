@@ -7,8 +7,8 @@ import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.TimeGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
@@ -32,8 +32,13 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
+    }
+
+    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new TimeGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

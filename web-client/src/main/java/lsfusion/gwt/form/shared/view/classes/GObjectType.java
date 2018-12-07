@@ -6,8 +6,8 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.LongGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
@@ -26,6 +26,11 @@ public class GObjectType extends GType {
     }
 
     @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
+    }
+
+    @Override
     public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
         return GDataType.getFullWidthString(font, widthString, widthStringProcessor);
     }
@@ -37,7 +42,7 @@ public class GObjectType extends GType {
 
     @Override
     public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LongGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

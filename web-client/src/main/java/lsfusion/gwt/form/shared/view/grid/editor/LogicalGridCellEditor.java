@@ -8,7 +8,7 @@ import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 
-public class LogicalGridCellEditor implements GridCellEditor {
+public class LogicalGridCellEditor extends AbstractGridCellEditor {
     public LogicalGridCellEditor(EditManager editManager) {
         this.editManager = editManager;
     }

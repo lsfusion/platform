@@ -20,6 +20,8 @@ public abstract class GType implements Serializable {
 
     public abstract GridCellRenderer createGridCellRenderer(GPropertyDraw property);
 
+    public abstract GridCellEditor visit(GTypeVisitor visitor);
+
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
         return null;
     }

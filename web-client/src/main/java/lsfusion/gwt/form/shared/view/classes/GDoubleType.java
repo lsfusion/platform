@@ -4,7 +4,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.DoubleGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.DoubleGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -22,8 +22,13 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
+    }
+
+    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DoubleGridCellEditor(editManager, editProperty, getEditFormat(editProperty));
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

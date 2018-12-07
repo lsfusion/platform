@@ -5,7 +5,7 @@ import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.ColorGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.ColorGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -17,12 +17,17 @@ public class GColorType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new ColorGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ColorGridCellRenderer();
+    }
+
+    @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
     }
 
     @Override

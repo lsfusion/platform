@@ -6,10 +6,8 @@ import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.StringGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.TextGridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.rich.RichTextGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.StringGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.TextGridCellRenderer;
@@ -82,11 +80,13 @@ public class GStringType extends GDataType {
     }
 
     @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
+    }
+
+    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        if (length.isUnlimited()) {
-            return rich ? new RichTextGridCellEditor(editManager, editProperty) : new TextGridCellEditor(editManager, editProperty);
-        }
-        return new StringGridCellEditor(editManager, editProperty, !blankPadded, length.getValue());
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty, length, rich, blankPadded);
     }
 
     @Override

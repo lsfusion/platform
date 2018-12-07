@@ -4,8 +4,8 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.NumericGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
@@ -50,7 +50,7 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new NumericGridCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

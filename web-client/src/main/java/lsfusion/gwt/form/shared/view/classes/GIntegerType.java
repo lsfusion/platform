@@ -3,8 +3,8 @@ package lsfusion.gwt.form.shared.view.classes;
 import lsfusion.gwt.form.client.MainFrameMessages;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.IntegerGridCellEditor;
 
 import java.text.ParseException;
 
@@ -12,8 +12,13 @@ public class GIntegerType extends GIntegralType {
     public static GIntegerType instance = new GIntegerType();
 
     @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
+    }
+
+    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new IntegerGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

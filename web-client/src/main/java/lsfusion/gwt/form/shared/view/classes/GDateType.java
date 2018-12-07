@@ -7,7 +7,7 @@ import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.DateGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.DateGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -28,7 +28,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new DateGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override
@@ -39,6 +39,11 @@ public class GDateType extends GFormatType<DateTimeFormat> {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new DateGridCellRenderer(property);
+    }
+
+    @Override
+    public GridCellEditor visit(GTypeVisitor visitor) {
+        return (GridCellEditor) visitor.visit(this);
     }
 
     @Override

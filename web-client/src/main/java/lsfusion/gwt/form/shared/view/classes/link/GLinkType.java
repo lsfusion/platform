@@ -6,8 +6,8 @@ import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.classes.GDataType;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.shared.view.grid.editor.LinkGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.FileGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
 
@@ -39,7 +39,7 @@ public abstract class GLinkType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new LinkGridCellEditor(editManager, editProperty);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
     }
 
     @Override

@@ -5,7 +5,7 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
-import lsfusion.gwt.form.shared.view.grid.editor.FileGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.FileGridCellRenderer;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -42,7 +42,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new FileGridCellEditor(editManager, editProperty, description, multiple, storeName, extensions);
+        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty, description, multiple, storeName, extensions);
     }
 
     @Override
