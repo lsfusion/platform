@@ -2,8 +2,8 @@ package lsfusion.gwt.form.server.spring;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
-import lsfusion.gwt.base.shared.RemoteRetryException;
-import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.gwt.base.shared.exceptions.RemoteRetryException;
+import lsfusion.gwt.base.shared.exceptions.MessageException;
 import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.form.server.LookupLogicsAndCreateNavigatorHandler;
 import lsfusion.gwt.form.server.form.handlers.*;

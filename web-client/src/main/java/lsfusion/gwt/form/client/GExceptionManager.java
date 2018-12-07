@@ -1,15 +1,14 @@
 package lsfusion.gwt.form.client;
 
 import com.allen_sauer.gwt.log.client.Log;
-import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.logging.impl.StackTracePrintStream;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.gwt.base.shared.NonFatalHandledException;
+import lsfusion.gwt.base.shared.exceptions.MessageException;
+import lsfusion.gwt.base.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.dispatch.LogicsAndNavigatorDispatchAsync;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;

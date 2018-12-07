@@ -2,7 +2,7 @@ package lsfusion.gwt.form.server.logics.spring;
 
 import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
-import lsfusion.gwt.base.server.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.base.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;

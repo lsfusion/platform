@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.shared;
+package lsfusion.gwt.base.shared.exceptions;
 
 public class NonFatalHandledException extends Exception {
     public int count;

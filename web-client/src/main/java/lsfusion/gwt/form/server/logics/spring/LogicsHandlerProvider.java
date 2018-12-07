@@ -1,13 +1,8 @@
 package lsfusion.gwt.form.server.logics.spring;
 
-import lsfusion.gwt.base.server.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.base.server.spring.InvalidateListener;
+import lsfusion.gwt.base.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.form.server.logics.LogicsConnection;
-import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorProvider;
 import lsfusion.interop.RemoteLogicsInterface;
-
-import java.io.IOException;
-import java.rmi.RemoteException;
 
 public interface LogicsHandlerProvider {
 
