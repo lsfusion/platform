@@ -62,7 +62,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
 
     protected String getServerMessage(Throwable caught) {
-        if (caught instanceof MessageException) {
+        if (caught instanceof MessageException || caught instanceof AppServerNotAvailableException) {
             return caught.getMessage();
         }
         return null;

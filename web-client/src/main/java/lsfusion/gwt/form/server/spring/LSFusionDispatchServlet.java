@@ -2,6 +2,7 @@ package lsfusion.gwt.form.server.spring;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
+import lsfusion.gwt.base.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.base.shared.exceptions.RemoteRetryException;
 import lsfusion.gwt.base.shared.exceptions.MessageException;
 import lsfusion.gwt.base.shared.actions.RequestAction;
@@ -203,6 +204,8 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
     public Result execute(Action<?> action) throws DispatchException {
         try {
             return dispatch.execute(action);
+        } catch (AppServerNotAvailableException e) {
+            throw e; // just rethrow
         } catch (RemoteRetryException e) {
             if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
                 String actionTry = "";
