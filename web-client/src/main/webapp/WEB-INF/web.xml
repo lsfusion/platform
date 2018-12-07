@@ -10,7 +10,7 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>form.jsp</welcome-file>
+        <welcome-file>lsfusion.jsp</welcome-file>
     </welcome-file-list>
 
     <context-param>
@@ -37,14 +37,14 @@
     </listener>
 
     <servlet>
-        <servlet-name>formDispatch</servlet-name>
+        <servlet-name>lsfusionDispatch</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
 
     <!-- dispatch is the default value for remoteServiceRelativePath parameter of RemoteServiceProxy constructor in its super call in StandardDispatchService_Proxy constructor-->
     <servlet-mapping>
-        <servlet-name>formDispatch</servlet-name>
-        <url-pattern>/form/dispatch</url-pattern>
+        <servlet-name>lsfusionDispatch</servlet-name>
+        <url-pattern>/lsfusion/dispatch</url-pattern>
     </servlet-mapping>
 
     <servlet>

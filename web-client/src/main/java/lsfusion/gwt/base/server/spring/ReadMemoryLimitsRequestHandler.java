@@ -1,6 +1,8 @@
 package lsfusion.gwt.base.server.spring;
 
+import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -12,20 +14,12 @@ import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReadMemoryLimitsRequestHandler implements HttpRequestHandler {
-
-    @Autowired
-    private LogicsHandlerProvider blProvider;
+public class ReadMemoryLimitsRequestHandler extends HttpLogicsRequestHandler {
 
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         String contextPath = request.getParameter("path");
-        Map<String, String> memoryLimits = new HashMap<>();
-        try {
-            memoryLimits = blProvider.getLogics().readMemoryLimits();
-        } catch (RemoteException e) {
-            blProvider.invalidate();
-        }
+        Map<String, String> memoryLimits = remoteLogics.readMemoryLimits();
         String url = "";
         for(Map.Entry<String, String> memoryLimit : memoryLimits.entrySet()) {
             url += String.format("<a href=\"%s/client.jnlp?%s\">Run desktop client %s</a><br/>", contextPath, memoryLimit.getValue(), memoryLimit.getKey());

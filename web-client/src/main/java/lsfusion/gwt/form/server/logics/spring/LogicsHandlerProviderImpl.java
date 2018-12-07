@@ -1,7 +1,9 @@
 package lsfusion.gwt.form.server.logics.spring;
 
+import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
-import lsfusion.gwt.base.server.spring.InvalidateListener;
+import lsfusion.gwt.base.server.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
@@ -14,6 +16,8 @@ import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -22,13 +26,13 @@ import static lsfusion.base.BaseUtils.nvl;
 
 // singleton, one for whole application
 // needed for custom handler requests + RemoteAuthentificationManager (where gwt is not used)
-public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implements InitializingBean, LogicsHandlerProvider<T> {
+public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implements InitializingBean, LogicsHandlerProvider {
 
     protected final static Logger logger = Logger.getLogger(LogicsHandlerProviderImpl.class);
 
-    private String registryHostKey = "registryHost";
-    private String registryPortKey = "registryPort";
-    private String exportNameKey = "exportName";
+    private static final String registryHostKey = "registryHost";
+    private static final String registryPortKey = "registryPort";
+    private static final String exportNameKey = "exportName";
 
     private String registryHost;
     private int registryPort;
@@ -52,18 +56,6 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
         setRegistryHost(registryHost);
         setRegistryPort(Integer.parseInt(registryPort));
         setExportName(exportName);
-    }
-
-    public void setRegistryHostKey(String registryHostKey) {
-        this.registryHostKey = registryHostKey;
-    }
-
-    public void setRegistryPortKey(String registryPortKey) {
-        this.registryPortKey = registryPortKey;
-    }
-
-    public void setExportNameKey(String exportNameKey) {
-        this.exportNameKey = exportNameKey;
     }
 
     public String getRegistryHost() {
@@ -90,56 +82,80 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
         this.exportName = exportName;
     }
 
-    private final ReadWriteLock logicsLock = new ReentrantReadWriteLock();
-    private final Lock readLogicsLock = logicsLock.readLock();
-    private final Lock writeLogicsLock = logicsLock.writeLock();
-    private volatile T logics;
-    public T getLogics() throws RemoteException {
-        readLogicsLock.lock();
+    @Override
+    public LogicsConnection getLogicsConnection(String host, Integer port, String exportName) {
+        return new LogicsConnection(host != null ? host : registryHost, port != null ? port : registryPort, exportName != null ? exportName : this.exportName);
+    }
 
-        //double-check locking
-        if (logics == null) {
-            readLogicsLock.unlock();
+    private static class LogicsCache<T extends RemoteLogicsInterface> {
+        private final ReadWriteLock logicsLock = new ReentrantReadWriteLock();
+        private final Lock readLogicsLock = logicsLock.readLock();
+        private final Lock writeLogicsLock = logicsLock.writeLock();
+        private volatile T logics;
+
+        public T getLogics(LogicsConnection connection) throws AppServerNotAvailableException {
+            readLogicsLock.lock();
+
+            //double-check locking
+            if (logics == null) {
+                readLogicsLock.unlock();
+
+                writeLogicsLock.lock();
+                try {
+                    if (logics == null) {
+                        try {
+                            RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(connection.host, connection.port, connection.exportName, "RemoteLogicsLoader");
+                            this.logics = (T) loader.getLogics();
+                        } catch (MalformedURLException e) {
+                            throw Throwables.propagate(e);
+                        } catch (NotBoundException | RemoteException e) {
+                            throw new AppServerNotAvailableException();
+                        }
+                    }
+                    return logics;
+                } finally {
+                    writeLogicsLock.unlock();
+                }
+            }
+            try {
+                return logics;
+            } finally {
+                readLogicsLock.unlock();
+            }
+        }
+
+        public void invalidate() {
+            try {
+                GWT.log("Invalidating logics...", new Exception());
+            } catch (Throwable ignored) {} // валится при попытке подключиться после перестарта сервера
 
             writeLogicsLock.lock();
             try {
-                if (logics == null) {
-                    try {
-                        this.logics = lookupLogics(null, null, null);
-                    } catch (NotBoundException | MalformedURLException e) {
-                        logger.error("Ошибка при получении объекта логики: ", e);
-                        throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
-                    }
-                }
-                return logics;
+                logics = null;
             } finally {
                 writeLogicsLock.unlock();
             }
         }
-        try {
-            return logics;
-        } finally {
-            readLogicsLock.unlock();
+    }
+
+    private final Map<LogicsConnection, LogicsCache> logicsCaches = new ConcurrentHashMap<>();
+
+    @Override
+    public RemoteLogicsInterface getLogics(LogicsConnection connection) throws AppServerNotAvailableException {
+        LogicsCache logicsCache = logicsCaches.get(connection);
+        if(logicsCache == null) { // it's no big deal if we'll lost some cache
+            logicsCache = new LogicsCache();
+            logicsCaches.put(connection, logicsCache);
         }
+        return logicsCache.getLogics(connection);
     }
 
     @Override
-    public void invalidate() { // should be called if logics remote method call fails with remoteException
+    public void invalidate(LogicsConnection connection) { // should be called if logics remote method call fails with remoteException
         try {
             GWT.log("Invalidating logics...", new Exception());
         } catch (Throwable ignored) {} // валится при попытке подключиться после перестарта сервера
 
-        writeLogicsLock.lock();
-        try {
-            logics = null;
-        } finally {
-            writeLogicsLock.unlock();
-        }
-    }
-
-    // thread-safe, needed for default params
-    private T lookupLogics(String host, Integer port, String exportName) throws RemoteException, NotBoundException, MalformedURLException {
-        RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(host != null ? host : registryHost, port != null ? port : registryPort, exportName != null ? exportName : this.exportName, "RemoteLogicsLoader");
-        return (T) loader.getLogics();
+        logicsCaches.get(connection).invalidate();
     }
 }

@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.synchronizedMap;
@@ -24,8 +25,6 @@ import static lsfusion.gwt.form.server.convert.StaticConverters.convertFont;
 
 // session scoped - one for one browser (! not tab)
 public class FormProviderImpl implements FormProvider, InitializingBean, DisposableBean {
-
-    private final Map<String, FormSessionObject> currentForms = synchronizedMap(new HashMap<String, FormSessionObject>());
 
     public FormProviderImpl() {}
 
@@ -83,14 +82,10 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     }
 
     public FormSessionObject getFormSessionObject(String formSessionID) {
-        FormSessionObject formObject = getFormSessionObjectOrNull(formSessionID);
-
-        if (formObject == null) {
-            throw new RuntimeException("Форма не найдена.");
-        }
-
-        return formObject;
+        return currentForms.get(formSessionID);
     }
+
+    private final Map<String, FormSessionObject> currentForms = new ConcurrentHashMap<>();
 
     private AtomicInteger nextFormId = new AtomicInteger(0);
     private String nextFormSessionID() {
@@ -100,11 +95,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         String formSessionID = nextFormSessionID();
         currentForms.put(formSessionID, formSessionObject);
         return formSessionID;
-    }
-
-    @Override
-    public FormSessionObject getFormSessionObjectOrNull(String formSessionID) {
-        return currentForms.get(formSessionID);
     }
 
     public void removeFormSessionObject(String formSessionID) {

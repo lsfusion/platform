@@ -9,14 +9,14 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
 
-public class CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigator, VoidResult> {
+public class  CloseNavigatorHandler extends NavigatorActionHandler<CloseNavigator, VoidResult> {
     public CloseNavigatorHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }
 
     @Override
     public VoidResult executeEx(CloseNavigator action, ExecutionContext context) throws DispatchException, IOException {
-        removeLogicsAndNavigatorSessionObject(action.sessionID, servlet.getFormProvider());
+        removeLogicsAndNavigatorSessionObject(action.sessionID);
         return new VoidResult();
     }
 }

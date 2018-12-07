@@ -31,7 +31,7 @@ public class QueuedAction<R extends Result> {
         this.throwable = t;
     }
 
-    public Throwable proceed() {
+    public void proceed() {
         assert finished;
 
         if (succeeded) {
@@ -39,7 +39,6 @@ public class QueuedAction<R extends Result> {
         } else {
             callback.onFailure(throwable);
         }
-        return throwable;
     }
 
     public int getRequestIndex() {

@@ -45,7 +45,7 @@
 
     <b:bean id="successLoginHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/form.jsp" />
+        <b:property name="defaultTargetUrl" value="/lsfusion.jsp" />
         <b:property name="alwaysUseDefaultTargetUrl" value="true" />
     </b:bean>
 
@@ -55,7 +55,7 @@
 
     <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
         <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/form.jsp" />
+        <b:property name="defaultTargetUrl" value="/lsfusion.jsp" />
         <b:property name="alwaysUseDefaultTargetUrl" value="true" />
     </b:bean>
 
@@ -85,7 +85,7 @@
     </b:bean>
 
     <!-- GWT request handler -->
-    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.spring.LSFusionDispatchServlet"/>
+    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.form.server.spring.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
     <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>

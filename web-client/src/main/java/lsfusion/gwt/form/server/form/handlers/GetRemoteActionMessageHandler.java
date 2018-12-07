@@ -22,7 +22,7 @@ public class GetRemoteActionMessageHandler extends FormActionHandler<GetRemoteAc
 
     @Override
     public StringResult executeEx(GetRemoteActionMessage action, ExecutionContext context) throws DispatchException, IOException {
-        FormSessionObject form = getFormSessionObjectOrNull(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
         return new StringResult(form == null ? "" : form.remoteForm.getRemoteActionMessage());
     }
 }

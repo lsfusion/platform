@@ -18,7 +18,7 @@ public class InterruptHandler extends FormActionHandler<Interrupt, VoidResult> {
 
     @Override
     public VoidResult executeEx(Interrupt action, ExecutionContext context) throws DispatchException, IOException {
-        FormSessionObject form = getFormSessionObjectOrNull(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
         if (form != null)
             form.remoteForm.interrupt(action.cancelable);
         return new VoidResult();

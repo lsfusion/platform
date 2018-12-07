@@ -5,7 +5,6 @@ import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorSessionObject
 import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.CloseNavigator;
 import lsfusion.gwt.form.shared.actions.navigator.NavigatorAction;
-import lsfusion.gwt.form.shared.actions.logics.CreateNavigator;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
@@ -30,13 +29,9 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
     protected String getActionDetails(A action) {
         String message = super.getActionDetails(action);
 
-        if (action instanceof CreateNavigator) {
-            message += "TAB ID " + ((CreateNavigator) action).tabSID + " IN " + servlet.getSessionInfo();
-        }
         if (action instanceof CloseNavigator) {
-            message += "TAB ID " + ((CloseNavigator) action).sessionID + " IN " + servlet.getSessionInfo();
+            message += " TAB ID " + ((CloseNavigator) action).sessionID + " IN " + servlet.getSessionInfo();
         }
         return message;
     }
-
 }

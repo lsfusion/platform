@@ -1,11 +1,12 @@
 package lsfusion.gwt.base.server.spring;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.gwt.form.server.logics.LogicsConnection;
+import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.exceptions.RemoteServerException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationManager;
@@ -13,39 +14,47 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class LSFRemoteAuthenticationManager implements RemoteAuthenticationManager {
-    @Autowired
-    private LogicsHandlerProvider businessLogicProvider;
-    
+public class LSFRemoteAuthenticationManager extends LogicsRequestHandler implements RemoteAuthenticationManager {
+
     @Override
-    public Collection<GrantedAuthority> attemptAuthentication(String username, String password) throws RemoteAuthenticationException {
+    public Collection<GrantedAuthority> attemptAuthentication(final String username, final String password) throws RemoteAuthenticationException {
+
         try {
-            List<GrantedAuthority> result = new ArrayList<>();
-            List<String> roles = businessLogicProvider.getLogics().authenticateUser(username, password);
-            for (String role : roles) {
-                result.add(new GrantedAuthorityImpl(role));
-            }
+            return runRequest(null , null, null, new Runnable<Collection<GrantedAuthority>> () {
+                public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
+                    try {
+                        List<GrantedAuthority> result = new ArrayList<>();
+                        List<String> roles = remoteLogics.authenticateUser(username, password);
+                        for (String role : roles) {
+                            result.add(new GrantedAuthorityImpl(role));
+                        }
 
-            Integer oldApiVersion = BaseUtils.getApiVersion();
-            Integer newApiVersion = businessLogicProvider.getLogics().getApiVersion();
-            if (!oldApiVersion.equals(newApiVersion))
-                throw new DisabledException("Необходимо обновить web-клиент. изменилась версия API!");
+                        Integer oldApiVersion = BaseUtils.getApiVersion();
+                        Integer newApiVersion = remoteLogics.getApiVersion();
+                        if (!oldApiVersion.equals(newApiVersion))
+                            throw new DisabledException("Необходимо обновить web-клиент. изменилась версия API!");
 
-            return result;
-        } catch (LoginException le) {
-            throw new UsernameNotFoundException(le.getMessage());
-        } catch (RemoteMessageException le) {
-            throw new RuntimeException(le.getMessage());
-        } catch (RemoteServerException e) {
-            throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
-        } catch (RemoteException e) {
-            businessLogicProvider.invalidate();
-            throw new RuntimeException("Ошибка во время чтения данных о пользователе.", e);
+                        return result;
+                    } catch (LoginException le) {
+                        throw new UsernameNotFoundException(le.getMessage());
+                    } catch (RemoteMessageException le) {
+                        throw new RuntimeException(le.getMessage());
+                    }
+                }
+            });
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
+
+//    } catch (LoginException le) {
+//        throw new UsernameNotFoundException(le.getMessage());
+//    } catch (RemoteMessageException le) {
+//        throw new RuntimeException(le.getMessage());
     }
 }

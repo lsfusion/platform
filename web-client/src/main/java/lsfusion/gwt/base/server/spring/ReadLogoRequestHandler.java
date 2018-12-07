@@ -1,7 +1,9 @@
 package lsfusion.gwt.base.server.spring;
 
 import com.google.common.io.ByteStreams;
+import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 
@@ -12,23 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.rmi.RemoteException;
 
-public class ReadLogoRequestHandler implements HttpRequestHandler {
+public class ReadLogoRequestHandler extends HttpLogicsRequestHandler {
 
     @Autowired
     private ServletContext context;
 
-    @Autowired
-    private LogicsHandlerProvider blProvider;
-
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        byte[] logo = null;
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         InputStream inputStream;
-        try {
-            logo = blProvider.getLogics().getGUIPreferences().logicsLogo;
-        } catch (RemoteException e) {
-            blProvider.invalidate();
-        }
+        byte[] logo = remoteLogics.getGUIPreferences().logicsLogo;
         if (logo == null) {
             inputStream = new FileInputStream(new File(context.getRealPath("images/logo.png")));
         } else {

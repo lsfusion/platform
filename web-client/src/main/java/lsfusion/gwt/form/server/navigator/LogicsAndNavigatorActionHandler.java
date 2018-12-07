@@ -17,15 +17,14 @@ public abstract class LogicsAndNavigatorActionHandler<A extends LogicsAndNavigat
     }
 
     private LogicsAndNavigatorProvider getLogicsAndNavigatorProvider() {
-        return ((LSFusionDispatchServlet)servlet).getLogicsAndNavigatorProvider();
+        return servlet.getLogicsAndNavigatorProvider();
     }
     protected LogicsAndNavigatorSessionObject getLogicsAndNavigatorSessionObject(String sessionID) {
         return getLogicsAndNavigatorProvider().getLogicsAndNavigatorSessionObject(sessionID);
     }
-    protected void removeLogicsAndNavigatorSessionObject(String navigatorID, FormProvider formProvider) throws RemoteException {
-        LogicsAndNavigatorSessionObject logicsAndNavigatorSessionObject = getLogicsAndNavigatorProvider().removeLogicsAndNavigatorSessionObject(navigatorID);
-        formProvider.removeFormSessionObjects(navigatorID);
-        logicsAndNavigatorSessionObject.remoteNavigator.close(); // we d
+    protected void removeLogicsAndNavigatorSessionObject(String sessionID) throws RemoteException {
+        servlet.getFormProvider().removeFormSessionObjects(sessionID);
+        getLogicsAndNavigatorProvider().removeLogicsAndNavigatorSessionObject(sessionID);
     }
 
     // shortcut's

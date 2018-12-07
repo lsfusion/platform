@@ -3,7 +3,7 @@ package lsfusion.gwt.base.server.dispatch;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.gwt.base.server.ServerUtils;
 import lsfusion.gwt.base.server.exceptions.IODispatchException;
-import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
+import lsfusion.gwt.base.shared.RemoteRetryException;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
 import lsfusion.interop.RemoteLogicsInterface;
@@ -43,7 +43,7 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
             throw new MessageException(rme.getMessage());
         } catch (IOException ioe) {
             if (ioe instanceof RemoteException && !(ioe.getCause() instanceof ClassNotFoundException)) { // пробуем послать повторный запрос
-                throw new RemoteRetryException(ioe.getMessage(), (RemoteException) ioe, ExceptionUtils.getFatalRemoteExceptionCount(ioe));
+                throw new RemoteRetryException(ioe.getMessage(), ioe, ExceptionUtils.getFatalRemoteExceptionCount(ioe));
             }
             throw new IODispatchException("Ошибка ввода/вывода при выполнении action: ", ioe);
         }

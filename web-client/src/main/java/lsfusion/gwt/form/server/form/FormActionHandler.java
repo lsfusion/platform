@@ -14,17 +14,11 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
     }
 
     private FormProvider getFormProvider() {
-        return ((LSFusionDispatchServlet)servlet).getFormProvider();
+        return servlet.getFormProvider();
     }
-
     public FormSessionObject getFormSessionObject(String formSessionID) throws RuntimeException {
         return getFormProvider().getFormSessionObject(formSessionID);
     }
-
-    public FormSessionObject getFormSessionObjectOrNull(String formSessionID) throws RuntimeException {
-        return getFormProvider().getFormSessionObjectOrNull(formSessionID);
-    }
-
     public void removeFormSessionObject(String formSessionID) throws RuntimeException {
         getFormProvider().removeFormSessionObject(formSessionID);
     }
@@ -36,7 +30,7 @@ public abstract class FormActionHandler<A extends FormAction<R>, R extends Resul
         String message = super.getActionDetails(action);
 
         String formSessionID = action.formSessionID;
-        FormSessionObject form = getFormSessionObjectOrNull(formSessionID);
+        FormSessionObject form = getFormSessionObject(formSessionID);
         if (form != null) {
             message += " : " + form.clientForm.canonicalName + "(" + formSessionID + ")";
         }

@@ -1,7 +1,9 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.ExternalUtils;
+import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
@@ -10,17 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class ExternalRequestHandler implements HttpRequestHandler {
-
-    @Autowired
-    private LogicsHandlerProvider blProvider;
+public class ExternalRequestHandler extends HttpLogicsRequestHandler {
 
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             String query = request.getQueryString();
             String contentType = request.getContentType();
-            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(blProvider.getLogics(), request.getRequestURI(),
+            ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteLogics, request.getRequestURI(),
                     query == null ? "" : query, request.getInputStream(), contentType != null ? ContentType.create(contentType, request.getCharacterEncoding()) : null);
 
             if (responseHttpEntity.response != null) {

@@ -2,9 +2,8 @@ package lsfusion.gwt.form.server.spring;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
-import lsfusion.gwt.base.server.exceptions.RemoteRetryException;
+import lsfusion.gwt.base.shared.RemoteRetryException;
 import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.gwt.base.shared.RetryException;
 import lsfusion.gwt.base.shared.actions.RequestAction;
 import lsfusion.gwt.form.server.LookupLogicsAndCreateNavigatorHandler;
 import lsfusion.gwt.form.server.form.handlers.*;
@@ -13,8 +12,6 @@ import lsfusion.gwt.form.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
 import lsfusion.gwt.form.server.navigator.handlers.*;
 import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorProvider;
-import lsfusion.gwt.form.shared.view.GLogics;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
@@ -41,7 +38,7 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
     protected Dispatch dispatch;
 
     @Autowired
-    private LogicsHandlerProvider<RemoteLogicsInterface> logicsHandlerProvider;
+    private LogicsHandlerProvider logicsHandlerProvider;
     @Autowired
     private LogicsAndNavigatorProvider logicsAndNavigatorProvider;
     @Autowired
@@ -120,7 +117,7 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         return logicsAndNavigatorProvider;
     }
 
-    public LogicsHandlerProvider<RemoteLogicsInterface> getLogicsHandlerProvider() {
+    public LogicsHandlerProvider getLogicsHandlerProvider() {
         return logicsHandlerProvider;
     }
 
@@ -132,7 +129,7 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         this.rpcPolicyLocation = rpcPolicyLocation;
     }
 
-    public void setLogicsHandlerProvider(LogicsHandlerProvider<RemoteLogicsInterface> logicsHandlerProvider) {
+    public void setLogicsHandlerProvider(LogicsHandlerProvider logicsHandlerProvider) {
         this.logicsHandlerProvider = logicsHandlerProvider;
     }
 
@@ -207,22 +204,22 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         try {
             return dispatch.execute(action);
         } catch (RemoteRetryException e) {
-            String actionTry = "";
-            if(action instanceof RequestAction) {
-                actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + e.maxTries;
-            }
             if (!(action instanceof RequestAction) || ((RequestAction) action).logRemoteException()) {
-                logger.error("Ошибка в LogicsAwareDispatchServlet.execute: " + actionTry, e);
+                String actionTry = "";
+                if(action instanceof RequestAction) {
+                    actionTry = "\n" + action + " try: " + ((RequestAction) action).requestTry + ", maxTries: " + e.maxTries;
+                }
+                logger.error("Error in LogicsAwareDispatchServlet.execute: " + actionTry, e);
             }
-            throw new RetryException(e.getMessage(), e.maxTries);
+            throw e;
         } catch (MessageException e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
         } catch (RemoteInternalException e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.", e, e.lsfStack);
         } catch (Throwable e) {
-            logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
+            logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера.", e);
         }
     }

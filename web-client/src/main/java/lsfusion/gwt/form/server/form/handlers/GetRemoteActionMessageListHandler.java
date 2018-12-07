@@ -28,7 +28,7 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
 
     @Override
     public ListResult executeEx(GetRemoteActionMessageList action, ExecutionContext context) throws DispatchException, IOException {
-        FormSessionObject form = getFormSessionObjectOrNull(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
         List<Object> result = new ArrayList<>();
         if (form != null) {
 

@@ -32,7 +32,6 @@ import lsfusion.gwt.form.client.navigator.GNavigatorAction;
 import lsfusion.gwt.form.client.navigator.GNavigatorController;
 import lsfusion.gwt.form.client.window.WindowsController;
 import lsfusion.gwt.form.shared.actions.LookupLogicsAndCreateNavigator;
-import lsfusion.gwt.form.shared.actions.logics.CreateNavigator;
 import lsfusion.gwt.form.shared.actions.navigator.GetClientSettingsResult;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.actions.navigator.*;

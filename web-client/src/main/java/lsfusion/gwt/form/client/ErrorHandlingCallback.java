@@ -7,9 +7,10 @@ import lsfusion.gwt.base.client.AsyncCallbackEx;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper.OptionType;
+import lsfusion.gwt.base.server.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.gwt.base.shared.RetryException;
+import lsfusion.gwt.base.shared.RemoteRetryException;
 import lsfusion.gwt.form.shared.actions.navigator.NavigatorAction;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.baseMessages;
@@ -32,25 +33,8 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         if (message != null) {
             ErrorDialog.show(baseMessages.error(), message, getJavaStackTrace(caught), getLSFStackTrace(caught));
             return;
-        } else if(getMaxTries(caught) > -1) {
-            return;
         } else if (caught instanceof RequestTimeoutException) {
             DialogBoxHelper.showMessageBox(true, baseMessages.error(), baseMessages.actionTimeoutErrorMessage(), false, null);
-            return;
-        } else if (caught instanceof InvalidateException) {
-            DialogBoxHelper.CloseCallback closeCallback = new DialogBoxHelper.CloseCallback() {
-                @Override
-                public void closed(OptionType chosenOption) {
-                    if (chosenOption == OptionType.LOGOUT) {
-                        GwtClientUtils.logout();
-                    }
-                }
-            };
-            if (((InvalidateException) caught).action instanceof NavigatorAction) {
-                DialogBoxHelper.showLogoutMessageBox(baseMessages.error(), caught.getMessage(), closeCallback);
-            } else {
-                DialogBoxHelper.showMessageBox(true, baseMessages.error(),  caught.getMessage(), closeCallback);
-            }
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
@@ -70,8 +54,10 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     public static int getMaxTries(Throwable caught) {
         if (caught instanceof StatusCodeException)
             return MAX_REQUEST_TRIES;
-        else if (caught instanceof RetryException)
-            return ((RetryException) caught).maxTries;
+        if (caught instanceof AppServerNotAvailableException) // temporary, reconnect worker should handle this
+            return MAX_REQUEST_TRIES;
+        else if (caught instanceof RemoteRetryException)
+            return ((RemoteRetryException) caught).maxTries;
         if (caught instanceof IncompatibleRemoteServiceException)
             return 2;
         else return -1;

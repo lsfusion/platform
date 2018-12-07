@@ -9,7 +9,6 @@ public interface FormProvider {
 
     GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException;
 
-    FormSessionObject getFormSessionObjectOrNull(String formSessionID);
     FormSessionObject getFormSessionObject(String formSessionID);
     void removeFormSessionObject(String formSessionID);
     void removeFormSessionObjects(String sessionID);

@@ -1,7 +1,9 @@
 package lsfusion.gwt.base.server.spring;
 
 import lsfusion.base.IOUtils;
+import lsfusion.gwt.form.server.logics.LogicsConnection;
 import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,7 @@ import java.util.Properties;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
-public class ClientJNLPRequestHandler implements HttpRequestHandler {
+public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
     protected final static Logger logger = Logger.getLogger(ClientJNLPRequestHandler.class);
 
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
@@ -28,11 +30,8 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
     private static final String DEFAULT_MIN_HEAP_FREE_RATIO = "30";
     private static final String DEFAULT_MAX_HEAP_FREE_RATIO = "70";
 
-    @Autowired
-    private LogicsHandlerProvider blProvider;
-
     @Override
-    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void handleRequest(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection, HttpServletRequest request, HttpServletResponse response) throws IOException {
         logger.debug("Handling jnlp request");
 
         try {
@@ -40,22 +39,12 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             String codebaseUrl = requestURL.substring(0, requestURL.lastIndexOf("/"));
             String queryString = request.getQueryString();
             String jnlpUrl = "client.jnlp" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
-            VMOptions clientVMOptions;
-            try {
-                clientVMOptions = blProvider.getLogics().getClientVMOptions();
-            } catch (Exception e) {
-                //use default
-                clientVMOptions = new VMOptions(null, null, null, null, null);
-            }
 
+            VMOptions clientVMOptions = remoteLogics.getClientVMOptions();
             handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion", request.getServerName(),
-                    blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
+                    logicsConnection.port, logicsConnection.exportName, remoteLogics.isSingleInstance(),
                     clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMinHeapFreeRatio(),
                     clientVMOptions.getMaxHeapFreeRatio(), clientVMOptions.getVmargs());
-        } catch (RemoteException e) {
-            blProvider.invalidate();
-            logger.debug("Error handling jnlp request: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error generating jnlp. Please, try again.");
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");

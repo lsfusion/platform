@@ -4,7 +4,6 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.base.client.AsyncCallbackEx;
-import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.actions.form.FormAction;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
@@ -94,10 +93,7 @@ public class FormDispatchAsync {
     }
 
     private void execNextAction() {
-        Throwable result = q.remove().proceed();
-        if (result != null && result instanceof InvalidateException) {
-            formController.hideForm();
-        }
+        q.remove().proceed();
     }
 
     public <A extends FormAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {

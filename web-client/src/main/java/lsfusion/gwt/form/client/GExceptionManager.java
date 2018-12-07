@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.client;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
@@ -10,6 +11,7 @@ import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.MessageException;
 import lsfusion.gwt.base.shared.NonFatalHandledException;
 import lsfusion.gwt.base.shared.actions.VoidResult;
+import lsfusion.gwt.form.client.dispatch.LogicsAndNavigatorDispatchAsync;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
@@ -33,18 +35,29 @@ public class GExceptionManager {
         GWT.log(message, throwable);
         Log.error(message, throwable);
 
-        MainFrame.logicsAndNavigatorDispatchAsync.execute(action, new ErrorHandlingCallback<VoidResult>() {
-            @Override
-            public void failure(Throwable caught) {
-                Log.error("Error logging client exception", caught);
-
-                synchronized (unreportedThrowables) {
-                    unreportedThrowables.add(throwable);
-                }
+        try {
+            LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+            if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
+                dispatcher.execute(action, new ErrorHandlingCallback<VoidResult>() {
+                    @Override
+                    public void failure(Throwable caught) {
+                        loggingFailed(caught, throwable);
+                    }
+                });
             }
-        });
+        } catch (Throwable caught) {
+            loggingFailed(caught, throwable);
+        }
     }
-    
+
+    private static void loggingFailed(Throwable caught, Throwable throwable) {
+        Log.error("Error logging client exception", caught);
+
+        synchronized (unreportedThrowables) {
+            unreportedThrowables.add(throwable);
+        }
+    }
+
     private static SerializableThrowable toSerializable(Throwable t) {
         Throwable originalT = extractCause(t);
         SerializableThrowable st = new SerializableThrowable(originalT.getClass().getName(), originalT.getMessage());
@@ -71,18 +84,25 @@ public class GExceptionManager {
             final List<Throwable> stillUnreported = new ArrayList<>(unreportedThrowables);
             for (final Throwable t : unreportedThrowables) {
                 Integer tryCount = unreportedThrowablesTryCount.get(t);
-                MainFrame.logicsAndNavigatorDispatchAsync.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
-                    @Override
-                    public void failure(Throwable caught) {
-                        Log.error("Error logging unreported client exception", caught);
-                    }
+                try {
+                    LogicsAndNavigatorDispatchAsync dispatcher = MainFrame.logicsAndNavigatorDispatchAsync;
+                    if(dispatcher != null) { // dispatcher may be not initialized yet (at first look up logics call)
+                        dispatcher.execute(new LogClientExceptionAction("Unreported client error, try count : " + (tryCount == null ? 0 : tryCount), toSerializable(t)), new ErrorHandlingCallback<VoidResult>() {
+                            @Override
+                            public void failure(Throwable caught) {
+                                Log.error("Error logging unreported client exception", caught);
+                            }
 
-                    @Override
-                    public void success(VoidResult result) {
-                        stillUnreported.remove(t);
-                        unreportedThrowablesTryCount.remove(t);
+                            @Override
+                            public void success(VoidResult result) {
+                                stillUnreported.remove(t);
+                                unreportedThrowablesTryCount.remove(t);
+                            }
+                        });
                     }
-                });
+                } catch (Throwable caught) {
+                    Log.error("Error logging unreported client exception", caught);
+                }
             }
             unreportedThrowables.clear();
             for(Throwable throwable : stillUnreported) {
