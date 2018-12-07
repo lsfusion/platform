@@ -12,6 +12,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -28,8 +29,8 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
     public String createNavigator(RemoteLogicsInterface remoteLogics) throws RemoteException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
-            auth = new TestingAuthenticationToken("admin", "fusion");
-//            throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
+//            auth = new TestingAuthenticationToken("admin", "fusion");
+            throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
         }
 
         String username = auth.getName();
@@ -56,13 +57,13 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         String language = Locale.getDefault().getLanguage();
         String country = Locale.getDefault().getCountry();
 
-/*                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password,
-                bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
-                osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                javaVersion, null, language, country), true);*/
         RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
-                remoteLogics.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
-                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
+                remoteLogics.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
+                osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
+                javaVersion, null, language, country), true);
+//        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
+//                remoteLogics.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
+//                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
 
         return addLogicsAndNavigatorSessionObject(new LogicsAndNavigatorSessionObject(remoteLogics, remoteNavigator));
     }
