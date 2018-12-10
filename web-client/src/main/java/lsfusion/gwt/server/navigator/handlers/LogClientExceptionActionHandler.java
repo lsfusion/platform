@@ -5,7 +5,7 @@ import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.shared.base.actions.VoidResult;
+import lsfusion.gwt.shared.actions.VoidResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.form.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;

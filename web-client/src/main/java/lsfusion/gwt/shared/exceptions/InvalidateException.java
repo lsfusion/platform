@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.base.exceptions;
+package lsfusion.gwt.shared.exceptions;
 
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.DispatchException;

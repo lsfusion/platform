@@ -7,7 +7,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseMessages;
-import lsfusion.gwt.shared.base.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.MessageException;
 
 public class ErrorFrameWidget extends Composite {
     public static BaseMessages baseMessages = BaseMessages.Instance.get();

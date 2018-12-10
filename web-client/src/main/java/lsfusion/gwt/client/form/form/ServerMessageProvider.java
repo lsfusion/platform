@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.form;
 
-import lsfusion.gwt.shared.base.actions.ListResult;
+import lsfusion.gwt.shared.actions.ListResult;
 import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

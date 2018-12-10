@@ -1,6 +1,5 @@
-package lsfusion.gwt.shared.base.exceptions;
+package lsfusion.gwt.shared.exceptions;
 
-import lsfusion.base.ApiResourceBundle;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 public class AppServerNotAvailableException extends DispatchException {

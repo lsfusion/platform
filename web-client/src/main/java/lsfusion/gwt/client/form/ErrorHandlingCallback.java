@@ -7,9 +7,9 @@ import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper.OptionType;
-import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.base.exceptions.MessageException;
-import lsfusion.gwt.shared.base.exceptions.RemoteRetryException;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.baseMessages;
 

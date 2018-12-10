@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.base.ProgressBar;
-import lsfusion.gwt.shared.base.actions.ListResult;
+import lsfusion.gwt.shared.actions.ListResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;

@@ -2,10 +2,10 @@ package lsfusion.gwt.server;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
-import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.base.exceptions.RemoteRetryException;
-import lsfusion.gwt.shared.base.exceptions.MessageException;
-import lsfusion.gwt.shared.base.actions.RequestAction;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
+import lsfusion.gwt.shared.exceptions.MessageException;
+import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.form.provider.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.logics.provider;
 
-import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 

@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.shared.base.actions.VoidResult;
+import lsfusion.gwt.shared.actions.VoidResult;
 
 public class Interrupt extends FormAction<VoidResult> {
     public boolean cancelable;

@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.shared.base.actions.BooleanResult;
+import lsfusion.gwt.shared.actions.BooleanResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.form.actions.navigator.IsConfigurationAccessAllowedAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;

@@ -1,7 +1,7 @@
 package lsfusion.http;
 
 import com.google.common.base.Throwables;
-import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.server.logics.provider.LogicsHandlerProvider;
 import lsfusion.interop.RemoteLogicsInterface;

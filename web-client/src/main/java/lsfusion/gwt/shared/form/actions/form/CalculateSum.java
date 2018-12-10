@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.shared.base.actions.NumberResult;
+import lsfusion.gwt.shared.actions.NumberResult;
 import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
 
 public class CalculateSum extends FormRequestIndexCountingAction<NumberResult> {

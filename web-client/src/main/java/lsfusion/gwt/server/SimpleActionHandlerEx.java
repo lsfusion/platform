@@ -2,9 +2,9 @@ package lsfusion.gwt.server;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.http.ServerUtils;
-import lsfusion.gwt.shared.base.exceptions.IODispatchException;
-import lsfusion.gwt.shared.base.exceptions.RemoteRetryException;
-import lsfusion.gwt.shared.base.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.IODispatchException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
+import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
