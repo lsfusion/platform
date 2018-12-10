@@ -118,7 +118,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         /**
          * The path to the default CSS styles used by this resource.
          */
-        String DEFAULT_CSS = "lsfusion/gwt/cellview/client/DataGrid.css";
+        String DEFAULT_CSS = "lsfusion/gwt/client/cellview/DataGrid.css";
 
         /**
          * Applied to the table.

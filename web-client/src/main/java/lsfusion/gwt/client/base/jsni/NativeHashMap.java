@@ -234,7 +234,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][0]);
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, array[i][0]);
                 }
             }
         }
@@ -248,7 +248,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][1]);
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, array[i][1]);
                 }
             }
         }
@@ -262,7 +262,7 @@ public class NativeHashMap<K, V> implements Map<K, V> {
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
                             (f, array[i][0], array[i][1]);
                 }
             }

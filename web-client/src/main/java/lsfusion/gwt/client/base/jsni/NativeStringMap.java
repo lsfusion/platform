@@ -210,7 +210,7 @@ public class NativeStringMap<K, V> implements Map<K, V> {
     private native void jsForeach(Function f, JavaScriptObject map) /*-{
         for (var sKey in map) {
             if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
+                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/client/base/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
             }
         }
     }-*/;
@@ -221,7 +221,7 @@ public class NativeStringMap<K, V> implements Map<K, V> {
         var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
         for (var sKey in keyMap) {
             if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
+                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/client/base/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
                         (f, keyMap[sKey], valueMap[sKey]);
             }
         }
