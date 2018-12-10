@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;

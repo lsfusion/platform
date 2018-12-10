@@ -3,7 +3,7 @@ package lsfusion.gwt.shared.form.view.classes;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.grid.renderer.ActionGridCellRenderer;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;

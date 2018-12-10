@@ -5,8 +5,8 @@ import lsfusion.gwt.shared.form.view.GForm;
 import lsfusion.gwt.shared.form.view.GGroupObject;
 import lsfusion.gwt.shared.form.view.GObject;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValueBuilder;
 
 import java.util.*;
 

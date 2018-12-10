@@ -10,7 +10,7 @@ import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.view.GUserInputResult;
 import lsfusion.gwt.shared.view.actions.GRequestUserInputAction;
 import lsfusion.gwt.shared.view.actions.GUpdateEditValueAction;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.classes.GType;
 
 public class GEditPropertyDispatcher extends GFormActionDispatcher {

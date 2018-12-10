@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.form.view.GFont;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 
 import java.util.HashMap;
 import java.util.List;

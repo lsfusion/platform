@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.shared.form.view.*;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 
 import java.util.List;
 import java.util.Map;

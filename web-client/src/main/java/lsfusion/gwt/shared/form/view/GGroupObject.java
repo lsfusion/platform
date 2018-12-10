@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.form.view;
 
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.shared.form.view.reader.GRowBackgroundReader;
 import lsfusion.gwt.shared.form.view.reader.GRowForegroundReader;
 

@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.dto;
 
 import lsfusion.gwt.shared.form.view.GClassViewType;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 
 import java.io.Serializable;
 import java.util.ArrayList;

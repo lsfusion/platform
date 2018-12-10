@@ -18,7 +18,7 @@ import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.cellview.cell.CellPreviewEvent;
 import lsfusion.gwt.shared.form.view.GFont;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.NativeEditEvent;
 

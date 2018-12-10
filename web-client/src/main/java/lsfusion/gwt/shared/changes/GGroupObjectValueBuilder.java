@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.form.changes;
+package lsfusion.gwt.shared.changes;
 
 import lsfusion.gwt.shared.form.view.GObject;
 

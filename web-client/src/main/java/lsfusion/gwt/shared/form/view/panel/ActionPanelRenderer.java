@@ -17,7 +17,7 @@ import lsfusion.gwt.client.form.form.ui.TooltipManager;
 import lsfusion.gwt.shared.form.view.GEditBindingMap;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.view.ImageDescription;
-import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.classes.GType;
 import lsfusion.gwt.client.form.grid.EditManager;
 import lsfusion.gwt.client.form.grid.NativeEditEvent;
