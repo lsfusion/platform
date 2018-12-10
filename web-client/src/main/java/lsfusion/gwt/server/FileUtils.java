@@ -5,11 +5,10 @@ import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.RawFileData;
 import lsfusion.gwt.shared.form.view.ImageDescription;
-import lsfusion.gwt.shared.form.view.changes.dto.GFilesDTO;
+import lsfusion.gwt.shared.form.view.dto.GFilesDTO;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.SerializableImageIconHolder;
 import lsfusion.interop.form.ReportGenerationData;
-import net.sf.jasperreports.engine.JasperExportManager;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

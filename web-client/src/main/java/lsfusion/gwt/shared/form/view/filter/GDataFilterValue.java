@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.form.view.filter;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.form.view.changes.dto.GFilterValueDTO;
+import lsfusion.gwt.shared.form.view.dto.GFilterValueDTO;
 
 import java.io.Serializable;
 
