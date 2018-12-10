@@ -5,7 +5,7 @@ import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.classes.*;
 import lsfusion.gwt.shared.view.filter.GCompare;

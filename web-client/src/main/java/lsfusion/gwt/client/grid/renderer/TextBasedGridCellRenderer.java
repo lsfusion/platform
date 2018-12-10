@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 

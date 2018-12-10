@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.client.form.ui.GGridPropertyTable;
 
 public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 

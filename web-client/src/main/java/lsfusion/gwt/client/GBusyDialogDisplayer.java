@@ -4,7 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.PopupPanel;
 import lsfusion.gwt.shared.result.ListResult;
-import lsfusion.gwt.client.form.form.ServerMessageProvider;
+import lsfusion.gwt.client.form.ServerMessageProvider;
 
 import java.util.List;
 

@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.form.form.ui.GCaptionPanel;
+import lsfusion.gwt.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.shared.view.GNavigatorElement;
 import lsfusion.gwt.shared.view.panel.ImageButton;
 import lsfusion.gwt.shared.view.window.GPanelNavigatorWindow;

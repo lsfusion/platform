@@ -4,7 +4,7 @@ import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
-import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.shared.view.GForm;
