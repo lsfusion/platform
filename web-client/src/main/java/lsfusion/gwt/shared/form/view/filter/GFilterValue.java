@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.view.filter;
 
-import lsfusion.gwt.shared.view.dto.GFilterValueDTO;
+import lsfusion.gwt.shared.view.changes.dto.GFilterValueDTO;
 
 import java.io.Serializable;
 

@@ -17,7 +17,7 @@ import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.shared.base.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.dto.GDateDTO;
+import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.shared.form.view.classes.GDateType;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.EditManager;

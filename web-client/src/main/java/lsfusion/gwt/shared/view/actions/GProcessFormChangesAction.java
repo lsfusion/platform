@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.actions;
 
-import lsfusion.gwt.shared.view.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 
 public class GProcessFormChangesAction extends GExecuteAction {
     public GFormChangesDTO formChanges;

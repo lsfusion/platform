@@ -9,7 +9,7 @@ import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.shared.view.actions.*;
-import lsfusion.gwt.shared.view.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.form.view.classes.GObjectClass;
 import lsfusion.gwt.shared.form.view.classes.GType;
 import lsfusion.gwt.shared.form.view.window.GModalityType;

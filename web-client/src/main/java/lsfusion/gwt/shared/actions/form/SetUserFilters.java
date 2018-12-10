@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.view.dto.GPropertyFilterDTO;
+import lsfusion.gwt.shared.view.changes.dto.GPropertyFilterDTO;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.view.dto;
+package lsfusion.gwt.shared.view.changes.dto;
 
 import java.io.Serializable;
 import java.util.Date;

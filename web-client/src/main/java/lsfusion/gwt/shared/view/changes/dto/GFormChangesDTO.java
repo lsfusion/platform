@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.view.dto;
+package lsfusion.gwt.shared.view.changes.dto;
 
 import lsfusion.gwt.shared.form.view.GClassViewType;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
