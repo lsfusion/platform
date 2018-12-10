@@ -3,7 +3,6 @@ package lsfusion.gwt.shared.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 
 import java.io.Serializable;

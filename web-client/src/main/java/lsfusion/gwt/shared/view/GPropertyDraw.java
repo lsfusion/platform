@@ -1,7 +1,5 @@
 package lsfusion.gwt.shared.view;
 
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.MainFrameMessages;

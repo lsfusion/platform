@@ -1,7 +1,6 @@
 package lsfusion.gwt.shared.view;
 
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.GAlignment;
 
 import java.util.ArrayList;
 import java.util.List;

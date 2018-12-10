@@ -10,7 +10,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.DataGrid;

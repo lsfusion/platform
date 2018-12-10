@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.shared.view.GGroupObject;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.base.ui.GKeyStroke.isPossibleEditKeyEvent;
+import static lsfusion.gwt.shared.view.GKeyStroke.isPossibleEditKeyEvent;
 import static lsfusion.gwt.shared.GwtSharedUtils.getFromDoubleMap;
 import static lsfusion.gwt.shared.GwtSharedUtils.putToDoubleMap;
 

@@ -12,7 +12,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.DataGrid;

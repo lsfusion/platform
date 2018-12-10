@@ -11,7 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.MainFrameMessages;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.window;
+package lsfusion.gwt.shared.view;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 

@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.BaseMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.shared.view.GKeyStroke;
 
 public class DialogBoxHelper {
     private static final BaseMessages messages = BaseMessages.Instance.get();

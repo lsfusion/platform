@@ -4,7 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.shared.result.NumberResult;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.FormsController;

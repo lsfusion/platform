@@ -7,7 +7,7 @@ import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.GCaptionPanel;

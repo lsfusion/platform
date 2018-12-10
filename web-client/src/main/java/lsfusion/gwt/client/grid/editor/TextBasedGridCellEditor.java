@@ -7,7 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.base.ui.CopyPasteUtils;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.GGridPropertyTable;

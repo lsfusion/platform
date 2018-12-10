@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.form.ui.layout.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.ui.layout.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.client.form.ui.layout.table.TableCaptionPanel;

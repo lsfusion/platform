@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.base.ui.WindowBox;
 import lsfusion.gwt.client.base.ui.ProgressBar;
-import lsfusion.gwt.client.window.GProgressBar;
+import lsfusion.gwt.shared.view.GProgressBar;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

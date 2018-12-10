@@ -1,7 +1,6 @@
 package lsfusion.gwt.shared.view;
 
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.client.grid.InternalEditEvent;
 import lsfusion.gwt.client.grid.NativeEditEvent;
@@ -12,7 +11,7 @@ import java.util.LinkedHashMap;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static lsfusion.gwt.client.base.ui.GKeyStroke.*;
+import static lsfusion.gwt.shared.view.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";

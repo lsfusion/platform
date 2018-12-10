@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyHandler;

@@ -8,7 +8,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.ui.CopyPasteUtils;
-import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.AbstractCell;

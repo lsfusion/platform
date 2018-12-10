@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.ui.layout.flex;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.form.ui.layout.BeforeSelectionTabHandler;
 import lsfusion.gwt.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.client.form.ui.layout.SplitPanelBase;
