@@ -2,7 +2,7 @@ package lsfusion.gwt.server;
 
 import lsfusion.http.LogicsRequestHandler;
 import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.shared.form.actions.LookupLogicsAndCreateNavigator;
+import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

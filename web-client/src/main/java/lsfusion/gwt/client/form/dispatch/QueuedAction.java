@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
 

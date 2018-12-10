@@ -5,8 +5,8 @@ import lsfusion.gwt.server.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
-import lsfusion.gwt.shared.form.actions.form.ScrollToEnd;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.form.ScrollToEnd;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.interop.Scroll;
 
 import java.io.IOException;

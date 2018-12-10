@@ -4,7 +4,7 @@ import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorSessionObject;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.LogicsAndNavigatorAction;
+import lsfusion.gwt.shared.actions.navigator.LogicsAndNavigatorAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 

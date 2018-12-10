@@ -3,7 +3,7 @@ package lsfusion.gwt.server.navigator.handlers;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.CloseNavigator;
+import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

@@ -4,8 +4,8 @@ import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.shared.form.actions.form.PasteSingleCellValue;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.form.PasteSingleCellValue;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

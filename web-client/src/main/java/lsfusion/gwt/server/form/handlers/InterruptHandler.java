@@ -4,7 +4,7 @@ import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.form.FormActionHandler;
-import lsfusion.gwt.shared.form.actions.form.Interrupt;
+import lsfusion.gwt.shared.actions.form.Interrupt;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

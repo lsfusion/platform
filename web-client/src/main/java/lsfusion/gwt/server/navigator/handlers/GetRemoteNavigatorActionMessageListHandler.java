@@ -5,7 +5,7 @@ import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.shared.form.actions.navigator.GetRemoteNavigatorActionMessageList;
+import lsfusion.gwt.shared.actions.navigator.GetRemoteNavigatorActionMessageList;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

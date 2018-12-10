@@ -3,7 +3,7 @@ package lsfusion.gwt.server.navigator.handlers;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.result.BooleanResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.IsConfigurationAccessAllowedAction;
+import lsfusion.gwt.shared.actions.navigator.IsConfigurationAccessAllowedAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

@@ -2,7 +2,7 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.GetLocaleAction;
+import lsfusion.gwt.shared.actions.navigator.GetLocaleAction;
 import lsfusion.interop.LocalePreferences;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

@@ -6,7 +6,7 @@ import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
-import lsfusion.gwt.shared.form.actions.form.GetRemoteActionMessageList;
+import lsfusion.gwt.shared.actions.form.GetRemoteActionMessageList;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

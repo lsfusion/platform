@@ -7,7 +7,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.shared.result.NumberResult;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.form.actions.form.CalculateSum;
+import lsfusion.gwt.shared.actions.form.CalculateSum;
 
 import java.io.IOException;
 

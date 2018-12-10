@@ -2,8 +2,8 @@ package lsfusion.gwt.server.navigator.handlers;
 
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.ClientPushMessage;
-import lsfusion.gwt.shared.form.actions.navigator.ClientMessageResult;
+import lsfusion.gwt.shared.actions.navigator.ClientPushMessage;
+import lsfusion.gwt.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.LifecycleMessage;
 import lsfusion.interop.remote.PushMessage;

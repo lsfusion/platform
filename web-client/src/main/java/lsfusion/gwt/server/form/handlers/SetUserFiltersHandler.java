@@ -7,8 +7,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.actions.form.SetUserFilters;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.form.SetUserFilters;
 import lsfusion.gwt.shared.form.view.changes.dto.GPropertyFilterDTO;
 import lsfusion.interop.FilterType;
 

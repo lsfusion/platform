@@ -6,7 +6,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
-import lsfusion.gwt.shared.form.actions.form.GetRemoteActionMessage;
+import lsfusion.gwt.shared.actions.form.GetRemoteActionMessage;
 
 import java.io.IOException;
 

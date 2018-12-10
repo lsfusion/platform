@@ -14,7 +14,7 @@ import lsfusion.gwt.client.form.form.ui.GCaptionPanel;
 import lsfusion.gwt.client.form.form.ui.GGridTable;
 import lsfusion.gwt.client.form.form.ui.GGroupObjectController;
 import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.form.view.GFont;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;

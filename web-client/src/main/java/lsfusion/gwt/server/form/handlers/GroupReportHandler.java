@@ -5,7 +5,7 @@ import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
-import lsfusion.gwt.shared.form.actions.form.GroupReport;
+import lsfusion.gwt.shared.actions.form.GroupReport;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.customware.gwt.dispatch.server.ExecutionContext;

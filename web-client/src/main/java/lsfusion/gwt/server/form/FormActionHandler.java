@@ -4,8 +4,8 @@ import lsfusion.gwt.server.SimpleActionHandlerEx;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormProvider;
-import lsfusion.gwt.shared.form.actions.form.FormAction;
-import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.shared.actions.form.FormAction;
+import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 

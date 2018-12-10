@@ -1,8 +1,8 @@
 package lsfusion.gwt.server.navigator;
 
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.shared.form.actions.navigator.CloseNavigator;
-import lsfusion.gwt.shared.form.actions.navigator.NavigatorAction;
+import lsfusion.gwt.shared.actions.navigator.CloseNavigator;
+import lsfusion.gwt.shared.actions.navigator.NavigatorAction;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.shared.Result;

@@ -6,8 +6,8 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
-import lsfusion.gwt.shared.form.actions.form.ExpandGroupObject;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.form.ExpandGroupObject;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 
 import java.io.IOException;
 

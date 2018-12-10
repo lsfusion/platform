@@ -3,8 +3,8 @@ package lsfusion.gwt.server.navigator;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.actions.navigator.NavigatorRequestAction;
+import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.navigator.NavigatorRequestAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;
