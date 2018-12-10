@@ -1,4 +1,4 @@
-<%@ page import="lsfusion.gwt.server.base.spring.AccessDeniedHandlerImpl" %>
+<%@ page import="lsfusion.http.AccessDeniedHandlerImpl" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 

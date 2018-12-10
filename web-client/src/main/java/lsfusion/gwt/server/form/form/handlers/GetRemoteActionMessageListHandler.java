@@ -2,8 +2,8 @@ package lsfusion.gwt.server.form.form.handlers;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.gwt.shared.base.actions.ListResult;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.provider.FormSessionObject;
 import lsfusion.gwt.server.form.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.form.FormActionHandler;
 import lsfusion.gwt.shared.form.actions.form.GetRemoteActionMessageList;

@@ -6,7 +6,7 @@ import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
 import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.base.actions.VoidResult;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.form.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;

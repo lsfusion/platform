@@ -1,11 +1,8 @@
 package lsfusion.gwt.server.form.navigator;
 
-import lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorProvider;
-import lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorSessionObject;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.form.actions.navigator.CloseNavigator;
 import lsfusion.gwt.shared.form.actions.navigator.NavigatorAction;
-import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import net.customware.gwt.dispatch.shared.Result;

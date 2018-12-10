@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.form.navigator;
 
-import lsfusion.gwt.server.form.form.spring.FormSessionObject;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.provider.FormSessionObject;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.form.FormServerResponseActionHandler;
 import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.form.actions.navigator.NavigatorRequestAction;

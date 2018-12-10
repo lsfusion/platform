@@ -1,16 +1,16 @@
 package lsfusion.gwt.server.form.navigator;
 
-import lsfusion.gwt.server.form.form.spring.FormProvider;
-import lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorProvider;
-import lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorSessionObject;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.SimpleActionHandlerEx;
+import lsfusion.gwt.server.form.navigator.provider.LogicsAndNavigatorProvider;
+import lsfusion.gwt.server.form.navigator.provider.LogicsAndNavigatorSessionObject;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.form.actions.navigator.LogicsAndNavigatorAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.rmi.RemoteException;
 
-public abstract class LogicsAndNavigatorActionHandler<A extends LogicsAndNavigatorAction<R>, R extends Result> extends lsfusion.gwt.server.base.dispatch.SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
+public abstract class LogicsAndNavigatorActionHandler<A extends LogicsAndNavigatorAction<R>, R extends Result> extends SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
 
     public LogicsAndNavigatorActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);

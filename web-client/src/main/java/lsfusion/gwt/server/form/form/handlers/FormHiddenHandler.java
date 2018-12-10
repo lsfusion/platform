@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

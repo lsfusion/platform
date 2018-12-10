@@ -4,7 +4,7 @@ import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
 import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.shared.form.actions.navigator.GetNavigatorInfo;
 import lsfusion.gwt.shared.form.actions.navigator.GetNavigatorInfoResult;

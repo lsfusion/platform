@@ -2,7 +2,7 @@ package lsfusion.gwt.server.form.navigator.handlers;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.gwt.shared.base.actions.ListResult;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.form.actions.navigator.GetRemoteNavigatorActionMessageList;

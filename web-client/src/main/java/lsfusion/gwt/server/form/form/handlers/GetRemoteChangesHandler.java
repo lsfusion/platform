@@ -3,8 +3,8 @@ package lsfusion.gwt.server.form.form.handlers;
 import lsfusion.gwt.server.form.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.provider.FormSessionObject;
 import lsfusion.gwt.shared.form.actions.form.GetRemoteChanges;
 import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
 

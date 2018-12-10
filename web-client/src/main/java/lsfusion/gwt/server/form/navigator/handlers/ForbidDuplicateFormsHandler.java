@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.form.navigator.handlers;
 
 import lsfusion.gwt.shared.base.actions.BooleanResult;
-import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
 import lsfusion.gwt.shared.form.actions.navigator.ForbidDuplicateFormsAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
