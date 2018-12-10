@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.form.view.filter;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.shared.form.view.GObject;
-import lsfusion.gwt.shared.form.view.dto.GFilterValueDTO;
+import lsfusion.gwt.shared.form.changes.dto.GFilterValueDTO;
 
 public class GObjectFilterValue extends GFilterValue {
     public GObject object;

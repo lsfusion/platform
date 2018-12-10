@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.dto.GDateDTO;
-import lsfusion.gwt.shared.form.view.dto.GTimeDTO;
+import lsfusion.gwt.shared.form.changes.dto.GDateDTO;
+import lsfusion.gwt.shared.form.changes.dto.GTimeDTO;
 
 import java.util.Date;
 

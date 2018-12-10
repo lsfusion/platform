@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.gwt.shared.form.view.GFont;
-import lsfusion.gwt.shared.form.view.dto.ColorDTO;
+import lsfusion.gwt.shared.form.changes.dto.ColorDTO;
 import lsfusion.interop.FontInfo;
 
 import java.awt.*;
