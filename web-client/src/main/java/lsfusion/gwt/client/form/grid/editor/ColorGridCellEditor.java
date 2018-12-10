@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -7,13 +7,13 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.dto.ColorDTO;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.EditManager;
 import net.auroris.ColorPicker.client.ColorPicker;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {

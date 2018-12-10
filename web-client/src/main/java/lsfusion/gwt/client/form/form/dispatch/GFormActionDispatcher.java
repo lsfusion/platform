@@ -1,16 +1,16 @@
-package lsfusion.gwt.form.client.form.dispatch;
+package lsfusion.gwt.client.form.form.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.classes.ClassChosenHandler;
-import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.client.log.GLog;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.actions.*;
-import lsfusion.gwt.form.shared.view.classes.GObjectClass;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.classes.ClassChosenHandler;
+import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.client.form.log.GLog;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.actions.*;
+import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.shared.form.view.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.panel;
+package lsfusion.gwt.shared.form.view.panel;
 
 import com.google.gwt.user.client.ui.Widget;
 

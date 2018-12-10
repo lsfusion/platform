@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 public enum GAlignment {
     START, CENTER, END

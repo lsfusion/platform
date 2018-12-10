@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.jsni;
+package lsfusion.gwt.client.base.jsni;
 
 public interface Function<T> {
     void apply(T argument);

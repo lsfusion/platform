@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.user.client.ui.HasAlignment;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.cellview.client.cell.HasCell;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.cellview.cell.HasCell;
 
 /**
  * A representation of a column in a table.
@@ -28,7 +28,7 @@ import lsfusion.gwt.cellview.client.cell.HasCell;
 public abstract class Column<T, C> implements HasCell<T, C>, HasAlignment {
 
   /**
-   * The {@link lsfusion.gwt.cellview.client.cell.Cell} responsible for rendering items in the column.
+   * The {@link lsfusion.gwt.client.cellview.cell.Cell} responsible for rendering items in the column.
    */
   private final Cell<C> cell;
 

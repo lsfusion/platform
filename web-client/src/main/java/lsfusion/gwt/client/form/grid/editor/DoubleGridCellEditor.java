@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.GDoubleType;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.GDoubleType;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 import java.math.BigDecimal;
 

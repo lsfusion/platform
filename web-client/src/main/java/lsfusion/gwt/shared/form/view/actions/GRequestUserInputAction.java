@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.view.actions;
+package lsfusion.gwt.shared.form.view.actions;
 
-import lsfusion.gwt.form.shared.view.classes.GType;
+import lsfusion.gwt.shared.form.view.classes.GType;
 
 import java.io.Serializable;
 

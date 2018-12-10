@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 
 public class GExcelType extends GFileType {
     @Override

@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui.layout.flex;
+package lsfusion.gwt.client.form.form.ui.layout.flex;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
-import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.form.form.ui.layout.SplitPanelBase;
+import lsfusion.gwt.shared.form.view.GComponent;
 
 // почему то это решение приводит к странному багу в IE при ресайзе сплита
 // дерево компонентов, начиная с формы, на мгновение рендерится в (0, 0), а затем возращается в правильное состояние - что приводит к миганию...

@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client;
+package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -11,8 +11,8 @@ import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.ui.HasMaxPreferredSize;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
 
 import java.util.*;
 

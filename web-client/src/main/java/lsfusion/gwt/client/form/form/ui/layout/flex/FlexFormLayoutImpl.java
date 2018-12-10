@@ -1,22 +1,22 @@
-package lsfusion.gwt.form.client.form.ui.layout.flex;
+package lsfusion.gwt.client.form.form.ui.layout.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
-import lsfusion.gwt.form.client.form.ui.GTreeTable;
-import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.form.client.form.ui.layout.ScrollContainerView;
-import lsfusion.gwt.form.shared.view.GContainer;
-import lsfusion.gwt.form.shared.view.GGrid;
-import lsfusion.gwt.form.shared.view.GTreeGroup;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.client.form.form.ui.GTreeTable;
+import lsfusion.gwt.client.form.form.ui.layout.GAbstractContainerView;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.client.form.form.ui.layout.ScrollContainerView;
+import lsfusion.gwt.shared.form.view.GContainer;
+import lsfusion.gwt.shared.form.view.GGrid;
+import lsfusion.gwt.shared.form.view.GTreeGroup;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class FlexFormLayoutImpl extends GFormLayoutImpl {
 

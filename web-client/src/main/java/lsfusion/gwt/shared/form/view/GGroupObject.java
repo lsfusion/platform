@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
-import lsfusion.gwt.form.shared.view.reader.GRowBackgroundReader;
-import lsfusion.gwt.form.shared.view.reader.GRowForegroundReader;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.form.view.reader.GRowBackgroundReader;
+import lsfusion.gwt.shared.form.view.reader.GRowForegroundReader;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.view.reader;
+package lsfusion.gwt.shared.form.view.reader;
 
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.Map;
 

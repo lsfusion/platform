@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.ScriptInjector;
@@ -7,13 +7,13 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.CopyPasteUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.WindowBox;
-import lsfusion.gwt.form.client.progressbar.ProgressBar;
-import lsfusion.gwt.form.client.window.GProgressBar;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.CopyPasteUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.WindowBox;
+import lsfusion.gwt.client.form.progressbar.ProgressBar;
+import lsfusion.gwt.client.form.window.GProgressBar;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

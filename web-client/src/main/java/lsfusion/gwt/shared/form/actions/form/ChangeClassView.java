@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.actions.form;
+package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.form.shared.view.GClassViewType;
+import lsfusion.gwt.shared.form.view.GClassViewType;
 
 public class ChangeClassView extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupObjectId;

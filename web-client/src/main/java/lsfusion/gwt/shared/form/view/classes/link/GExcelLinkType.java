@@ -1,8 +1,8 @@
-package lsfusion.gwt.form.shared.view.classes.link;
+package lsfusion.gwt.shared.form.view.classes.link;
 
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.classes.GTypeVisitor;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.classes.GTypeVisitor;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 
 public class GExcelLinkType extends GLinkType {
     @Override

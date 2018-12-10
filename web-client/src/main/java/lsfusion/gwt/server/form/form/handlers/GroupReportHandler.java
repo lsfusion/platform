@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.convert.GwtToClientConverter;
-import lsfusion.gwt.form.server.form.FormActionHandler;
-import lsfusion.gwt.form.shared.actions.form.GroupReport;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.convert.GwtToClientConverter;
+import lsfusion.gwt.server.form.form.FormActionHandler;
+import lsfusion.gwt.shared.form.actions.form.GroupReport;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.customware.gwt.dispatch.server.ExecutionContext;

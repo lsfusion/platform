@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.jsni;
+package lsfusion.gwt.client.base.jsni;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -146,15 +146,15 @@ public class NativeStringMap<K, V> implements Map<K, V> {
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
     public native V jsGet(String key) /*-{
-        return this.@lsfusion.gwt.base.client.jsni.NativeStringMap::valueMap[':' + key];
+        return this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap[':' + key];
     }-*/;
 
     // Prepend ':' to avoid conflicts with built-in Object properties.
     private native V jsPut(String sKey, K key, V value) /*-{
         sKey = ':' + sKey;
 
-        var keyMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::valueMap;
+        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
+        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
 
         var previous = valueMap[sKey];
 
@@ -166,7 +166,7 @@ public class NativeStringMap<K, V> implements Map<K, V> {
 
     // only count keys with ':' prefix
     public native int jsSize() /*-{
-        var value = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::keyMap;
+        var value = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
         var count = 0;
         for(var key in value) {
             if (sKey.charCodeAt(0) == 58) ++count;
@@ -178,8 +178,8 @@ public class NativeStringMap<K, V> implements Map<K, V> {
     private native V jsRemove(String sKey) /*-{
         sKey = ':' + sKey;
 
-        var keyMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::valueMap;
+        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
+        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
 
         var previous = valueMap[sKey];
         delete valueMap[sKey];
@@ -198,7 +198,7 @@ public class NativeStringMap<K, V> implements Map<K, V> {
         for (var sKey in valueMap) {
             if (sKey.charCodeAt(0) == 58) {
                 var entryValue = valueMap[sKey];
-                if (this.@lsfusion.gwt.base.client.jsni.NativeStringMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, entryValue)) {
+                if (this.@lsfusion.gwt.client.base.jsni.NativeStringMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, entryValue)) {
                     return true;
                 }
             }
@@ -210,18 +210,18 @@ public class NativeStringMap<K, V> implements Map<K, V> {
     private native void jsForeach(Function f, JavaScriptObject map) /*-{
         for (var sKey in map) {
             if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.base.client.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
+                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, map[sKey]);
             }
         }
     }-*/;
 
     // only iterate keys with ':' prefix
     private native void jsForeachEntry(Function2 f) /*-{
-        var keyMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::keyMap;
-        var valueMap = this.@lsfusion.gwt.base.client.jsni.NativeStringMap::valueMap;
+        var keyMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::keyMap;
+        var valueMap = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::valueMap;
         for (var sKey in keyMap) {
             if (sKey.charCodeAt(0) == 58) {
-                this.@lsfusion.gwt.base.client.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
+                this.@lsfusion.gwt.client.base.jsni.NativeStringMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
                         (f, keyMap[sKey], valueMap[sKey]);
             }
         }

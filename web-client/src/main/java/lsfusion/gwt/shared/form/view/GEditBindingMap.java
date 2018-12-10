@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.InternalEditEvent;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.InternalEditEvent;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static lsfusion.gwt.base.client.ui.GKeyStroke.*;
+import static lsfusion.gwt.client.base.ui.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";

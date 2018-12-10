@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;

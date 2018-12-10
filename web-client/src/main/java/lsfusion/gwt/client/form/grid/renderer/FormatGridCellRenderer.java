@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 public abstract class FormatGridCellRenderer<T, F> extends TextBasedGridCellRenderer<T> {
     protected F format;

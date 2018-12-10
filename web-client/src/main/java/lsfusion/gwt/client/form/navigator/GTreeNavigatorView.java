@@ -1,19 +1,19 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.window.GTreeNavigatorWindow;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.window.GTreeNavigatorWindow;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GTreeNavigatorView extends GNavigatorView {
     private NavigatorTree tree;

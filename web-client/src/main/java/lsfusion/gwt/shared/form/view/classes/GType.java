@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.filter.GCompare;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.form.shared.view.panel.DataPanelRenderer;
-import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.filter.GCompare;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.form.view.panel.DataPanelRenderer;
+import lsfusion.gwt.shared.form.view.panel.PanelRenderer;
 
 import java.io.Serializable;
 import java.text.ParseException;

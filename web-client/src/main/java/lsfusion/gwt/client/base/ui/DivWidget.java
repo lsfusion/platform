@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.ui.Widget;

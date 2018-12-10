@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.form.shared.view.GComponent;
-import lsfusion.gwt.form.shared.view.GContainer;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.shared.form.view.GComponent;
+import lsfusion.gwt.shared.form.view.GContainer;
 
 import java.util.Map;
 

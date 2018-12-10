@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Messages;

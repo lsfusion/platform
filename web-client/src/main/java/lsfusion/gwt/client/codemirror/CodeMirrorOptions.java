@@ -1,7 +1,7 @@
-package lsfusion.gwt.codemirror.client;
+package lsfusion.gwt.client.codemirror;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import lsfusion.gwt.base.client.jsni.JSNIHelper;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
 
 public class CodeMirrorOptions {
     protected JavaScriptObject jsnObj = JSNIHelper.createObject();

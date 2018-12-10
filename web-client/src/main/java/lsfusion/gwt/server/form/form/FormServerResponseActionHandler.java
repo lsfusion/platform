@@ -1,12 +1,12 @@
-package lsfusion.gwt.form.server.form;
+package lsfusion.gwt.server.form.form;
 
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.convert.ClientActionToGwtConverter;
-import lsfusion.gwt.form.shared.actions.form.FormAction;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.actions.GAction;
-import lsfusion.gwt.form.shared.view.actions.GThrowExceptionAction;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.convert.ClientActionToGwtConverter;
+import lsfusion.gwt.shared.form.actions.form.FormAction;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.actions.GAction;
+import lsfusion.gwt.shared.form.view.actions.GThrowExceptionAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;

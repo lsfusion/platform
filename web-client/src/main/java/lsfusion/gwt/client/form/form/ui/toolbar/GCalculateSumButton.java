@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui.toolbar;
+package lsfusion.gwt.client.form.form.ui.toolbar;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 import java.math.BigDecimal;
 

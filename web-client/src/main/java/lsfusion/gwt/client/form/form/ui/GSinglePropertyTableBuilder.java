@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;

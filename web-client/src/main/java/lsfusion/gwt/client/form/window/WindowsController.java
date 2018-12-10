@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.window;
+package lsfusion.gwt.client.form.window;
 
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.form.view.window.GAbstractWindow;
 
 import java.util.*;
 

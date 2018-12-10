@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -7,17 +7,17 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.form.shared.view.GGroupObject;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.form.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.base.client.ui.GKeyStroke.isPossibleEditKeyEvent;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.getFromDoubleMap;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.putToDoubleMap;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.ui.GKeyStroke.isPossibleEditKeyEvent;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.getFromDoubleMap;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.putToDoubleMap;
 
 public class HotkeyManager {
     public interface Binding {

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.actions.form;
+package lsfusion.gwt.shared.form.actions.form;
 
 public class ExecuteNotification extends FormRequestIndexCountingAction<ServerResponseResult> {
     public Integer idNotification;

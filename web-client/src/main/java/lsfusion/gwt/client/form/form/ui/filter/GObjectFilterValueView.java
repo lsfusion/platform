@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui.filter;
+package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import lsfusion.gwt.form.shared.view.GObject;
-import lsfusion.gwt.form.shared.view.filter.GObjectFilterValue;
-import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.view.GObject;
+import lsfusion.gwt.shared.form.view.filter.GObjectFilterValue;
+import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
 
 public class GObjectFilterValueView extends GFilterValueView {
 

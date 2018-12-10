@@ -2,7 +2,7 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module>
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="lsfusion.gwt.settings.BasicSettings"/>
+    <inherits name="lsfusion.gwt.BasicSettings"/>
     
     <stylesheet src="ui/WindowBox.css" />
 
@@ -15,21 +15,21 @@
     <source path='shared'/>
 
     <!-- Standard FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplStandard">
-        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplStandard">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
     </replace-with>
 
     <!-- IE-10 FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplIE">
-        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplIE">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie10"/>
         </any>
     </replace-with>
 
     <!-- Webkit FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplWebkit">
-        <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplWebkit">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
         <any>
             <when-property-is name="user.agent" value="opera"/>
         </any>

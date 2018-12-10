@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -7,9 +7,9 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.client.base.Dimension;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateStackMaxPreferredSize;
+import static lsfusion.gwt.client.base.GwtClientUtils.calculateStackMaxPreferredSize;
 
 // выполняет роль JComponentPanel в desktop
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {

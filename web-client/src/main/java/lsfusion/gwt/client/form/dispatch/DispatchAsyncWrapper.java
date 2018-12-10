@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.dispatch;
+package lsfusion.gwt.client.form.dispatch;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestBuilder;
@@ -8,12 +8,12 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.shared.actions.RequestAction;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.GConnectionLostManager;
-import lsfusion.gwt.form.client.GExceptionManager;
-import lsfusion.gwt.form.shared.actions.navigator.NavigatorAction;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.shared.base.actions.RequestAction;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
+import lsfusion.gwt.client.form.GConnectionLostManager;
+import lsfusion.gwt.client.form.GExceptionManager;
+import lsfusion.gwt.shared.form.actions.navigator.NavigatorAction;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;

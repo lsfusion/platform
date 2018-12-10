@@ -1,16 +1,16 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
-import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.convert.ClientNavigatorToGwtConverter;
-import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfo;
-import lsfusion.gwt.form.shared.actions.navigator.GetNavigatorInfoResult;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
-import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
+import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.convert.ClientNavigatorToGwtConverter;
+import lsfusion.gwt.shared.form.actions.navigator.GetNavigatorInfo;
+import lsfusion.gwt.shared.form.actions.navigator.GetNavigatorInfoResult;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.form.view.window.GNavigatorWindow;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

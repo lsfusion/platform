@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.client.grid;
+package lsfusion.gwt.client.form.grid;
 
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class NativeEditEvent extends EditEvent {
     private final NativeEvent nativeEvent;

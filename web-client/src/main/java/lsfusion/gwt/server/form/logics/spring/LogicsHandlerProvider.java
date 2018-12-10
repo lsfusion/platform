@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.server.logics.spring;
+package lsfusion.gwt.server.form.logics.spring;
 
-import lsfusion.gwt.base.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.form.server.logics.LogicsConnection;
+import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.server.form.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 
 public interface LogicsHandlerProvider {

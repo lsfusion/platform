@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.form;
+package lsfusion.gwt.client.form.form;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.client.navigator.GNavigatorAction;
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.client.form.navigator.GNavigatorAction;
+import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.shared.form.view.window.GModalityType;
 
 public interface FormsController {
 

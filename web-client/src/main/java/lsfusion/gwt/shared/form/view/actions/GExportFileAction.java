@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.actions;
+package lsfusion.gwt.shared.form.view.actions;
 
 import java.util.ArrayList;
 

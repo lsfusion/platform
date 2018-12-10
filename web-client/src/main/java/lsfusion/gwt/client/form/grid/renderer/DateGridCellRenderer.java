@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.dto.GDateDTO;
+import lsfusion.gwt.shared.form.view.changes.dto.GTimeDTO;
 
 import java.util.Date;
 

@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.navigator.NavigatorServerResponseActionHandler;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.actions.navigator.ExecuteNavigatorAction;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.navigator.NavigatorServerResponseActionHandler;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.actions.navigator.ExecuteNavigatorAction;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

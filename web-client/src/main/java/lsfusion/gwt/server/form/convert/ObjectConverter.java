@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;

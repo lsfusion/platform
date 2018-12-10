@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.i18n.client.NumberFormat;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.GIntegralType;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.GIntegralType;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 import java.text.ParseException;
 

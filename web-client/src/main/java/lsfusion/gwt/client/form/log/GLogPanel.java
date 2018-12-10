@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.log;
+package lsfusion.gwt.client.form.log;
 
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HTMLPanel;

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.actions.logics;
+package lsfusion.gwt.shared.form.actions.logics;
 
 import net.customware.gwt.dispatch.shared.Result;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.layout.flex;
+package lsfusion.gwt.client.form.form.ui.layout.flex;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.*;
@@ -8,8 +8,8 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
 public class FlexTabBar extends Composite implements HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, TabBar {

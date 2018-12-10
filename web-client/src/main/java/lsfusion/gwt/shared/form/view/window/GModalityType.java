@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.window;
+package lsfusion.gwt.shared.form.view.window;
 
 public enum GModalityType {
     DOCKED, MODAL, DOCKED_MODAL, FULLSCREEN_MODAL, DIALOG_MODAL;

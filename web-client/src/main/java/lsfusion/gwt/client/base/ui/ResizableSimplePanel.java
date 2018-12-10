@@ -1,11 +1,11 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ResizableSimplePanel extends SimplePanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     public ResizableSimplePanel() {

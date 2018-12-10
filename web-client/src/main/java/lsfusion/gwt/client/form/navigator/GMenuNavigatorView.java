@@ -1,8 +1,8 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
 import com.google.gwt.user.client.ui.Label;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.window.GMenuNavigatorWindow;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.window.GMenuNavigatorWindow;
 
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.*;
@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 
-import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.isRedundantString;
 
 public class TooltipManager {
     private static final TooltipManager instance = new TooltipManager();

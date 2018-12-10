@@ -1,8 +1,8 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import lsfusion.base.IOUtils;
-import lsfusion.gwt.form.server.logics.LogicsConnection;
-import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.form.logics.spring.LogicsHandlerProvider;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import org.apache.log4j.Logger;

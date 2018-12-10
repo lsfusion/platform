@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.server.spring;
+package lsfusion.gwt.server.form.spring;
 
-import lsfusion.gwt.form.server.FileUtils;
+import lsfusion.gwt.server.form.FileUtils;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

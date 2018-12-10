@@ -13,13 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.cellview.client.DataGrid.Style;
-import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.client.cellview.DataGrid.Style;
+import lsfusion.gwt.client.cellview.cell.Cell;
 
 /**
  * Default cell table builder that renders row values into a grid of columns.

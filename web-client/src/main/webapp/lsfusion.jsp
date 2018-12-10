@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<%@ page import="lsfusion.gwt.base.server.ServerUtils" %>
+<%@ page import="lsfusion.gwt.server.base.ServerUtils" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
     <head>

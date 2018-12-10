@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form;
+package lsfusion.gwt.client.form.form;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
@@ -8,13 +8,13 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.client.MainFrame;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
-import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
+import lsfusion.gwt.client.form.MainFrame;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalForm;
+import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.shared.form.view.window.GModalityType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

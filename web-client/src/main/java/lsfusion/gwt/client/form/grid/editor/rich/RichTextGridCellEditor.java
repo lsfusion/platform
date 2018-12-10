@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid.editor.rich;
+package lsfusion.gwt.client.form.grid.editor.rich;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -9,16 +9,16 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.editor.DialogBasedGridCellEditor;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.DialogBasedGridCellEditor;
 
 public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

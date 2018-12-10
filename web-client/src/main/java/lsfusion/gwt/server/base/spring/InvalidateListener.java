@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 public interface InvalidateListener {
     void onInvalidate();

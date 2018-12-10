@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
-import lsfusion.gwt.base.client.ui.GKeyStroke;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
 
 import java.io.Serializable;
 

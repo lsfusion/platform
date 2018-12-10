@@ -1,16 +1,16 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.panel.ImageButton;
-import lsfusion.gwt.form.shared.view.window.GPanelNavigatorWindow;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.form.ui.GCaptionPanel;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.panel.ImageButton;
+import lsfusion.gwt.shared.form.view.window.GPanelNavigatorWindow;
 
 import java.util.Set;
 

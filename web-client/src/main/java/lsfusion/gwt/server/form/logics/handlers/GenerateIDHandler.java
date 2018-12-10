@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.server.logics.handlers;
+package lsfusion.gwt.server.form.logics.handlers;
 
-import lsfusion.gwt.form.server.logics.LogicsActionHandler;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.shared.actions.logics.GenerateID;
-import lsfusion.gwt.form.shared.actions.logics.GenerateIDResult;
+import lsfusion.gwt.server.form.logics.LogicsActionHandler;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.shared.form.actions.logics.GenerateID;
+import lsfusion.gwt.shared.form.actions.logics.GenerateIDResult;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

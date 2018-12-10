@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
 import lsfusion.base.ProgressBar;
-import lsfusion.gwt.base.shared.actions.ListResult;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.convert.ClientActionToGwtConverter;
-import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.form.shared.actions.navigator.GetRemoteNavigatorActionMessageList;
+import lsfusion.gwt.shared.base.actions.ListResult;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.convert.ClientActionToGwtConverter;
+import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
+import lsfusion.gwt.shared.form.actions.navigator.GetRemoteNavigatorActionMessageList;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

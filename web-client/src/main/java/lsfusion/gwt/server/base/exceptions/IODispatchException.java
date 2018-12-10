@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.exceptions;
+package lsfusion.gwt.server.base.exceptions;
 
 import net.customware.gwt.dispatch.shared.DispatchException;
 

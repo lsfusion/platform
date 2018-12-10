@@ -1,15 +1,15 @@
-package lsfusion.gwt.form.client.form.dispatch;
+package lsfusion.gwt.client.form.form.dispatch;
 
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.GExceptionManager;
-import lsfusion.gwt.form.client.log.GLog;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.actions.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
+import lsfusion.gwt.client.form.GExceptionManager;
+import lsfusion.gwt.client.form.log.GLog;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.actions.*;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;

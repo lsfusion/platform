@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.form.dispatch;
+package lsfusion.gwt.client.form.form.dispatch;
 
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.GEditBindingMap;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GUserInputResult;
-import lsfusion.gwt.form.shared.view.actions.GRequestUserInputAction;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.GEditBindingMap;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.GUserInputResult;
+import lsfusion.gwt.shared.form.view.actions.GRequestUserInputAction;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
 
 
 public class GSimpleChangePropertyDispatcher extends GFormActionDispatcher {

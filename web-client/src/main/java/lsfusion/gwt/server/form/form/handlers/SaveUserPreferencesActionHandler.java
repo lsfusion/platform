@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.convert.GwtToClientConverter;
-import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.form.shared.actions.form.SaveUserPreferencesAction;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.GColumnUserPreferences;
-import lsfusion.gwt.form.shared.view.GGroupObjectUserPreferences;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.convert.GwtToClientConverter;
+import lsfusion.gwt.server.form.form.FormServerResponseActionHandler;
+import lsfusion.gwt.shared.form.actions.form.SaveUserPreferencesAction;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.GColumnUserPreferences;
+import lsfusion.gwt.shared.form.view.GGroupObjectUserPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import net.customware.gwt.dispatch.server.ExecutionContext;

@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
 public class GToolbarView extends ResizableHorizontalPanel {
     public void addTool(Widget tool) {

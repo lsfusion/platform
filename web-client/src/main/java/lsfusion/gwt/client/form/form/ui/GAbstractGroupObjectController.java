@@ -1,15 +1,15 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.client.form.ui.filter.GFilterController;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.form.shared.view.reader.GFooterReader;
+import lsfusion.gwt.client.form.form.ui.filter.GFilterController;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.form.view.reader.GFooterReader;
 
 import java.util.ArrayList;
 import java.util.List;

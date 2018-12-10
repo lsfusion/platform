@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.dialog;
+package lsfusion.gwt.client.form.form.ui.dialog;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;

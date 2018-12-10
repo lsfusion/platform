@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.client.form.ui.classes;
+package lsfusion.gwt.client.form.form.ui.classes;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
-import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.shared.view.classes.GObjectClass;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
+import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.shared.form.view.classes.GObjectClass;
 
 public class GResizableClassDialog extends GResizableModalWindow {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

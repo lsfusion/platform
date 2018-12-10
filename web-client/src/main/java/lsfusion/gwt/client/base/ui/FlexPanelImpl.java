@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
@@ -7,7 +7,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Widget;
 
-import static lsfusion.gwt.base.client.ui.FlexPanel.Justify;
+import static lsfusion.gwt.client.base.ui.FlexPanel.Justify;
 
 public class FlexPanelImpl {
 

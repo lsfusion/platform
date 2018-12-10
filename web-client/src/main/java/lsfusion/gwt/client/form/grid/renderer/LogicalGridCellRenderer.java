@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
 
 public class LogicalGridCellRenderer extends AbstractGridCellRenderer {
 

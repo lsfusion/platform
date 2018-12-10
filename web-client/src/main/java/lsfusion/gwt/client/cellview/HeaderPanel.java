@@ -1,4 +1,4 @@
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;

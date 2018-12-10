@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.GGridTable;
-import lsfusion.gwt.form.client.form.ui.GGroupObjectController;
-import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.GGridTable;
+import lsfusion.gwt.client.form.form.ui.GGroupObjectController;
+import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 
 public class GUserPreferencesButton extends GToolbarButton {
     private final MainFrameMessages messages = MainFrameMessages.Instance.get();

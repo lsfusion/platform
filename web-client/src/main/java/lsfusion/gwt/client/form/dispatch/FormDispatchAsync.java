@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.dispatch;
+package lsfusion.gwt.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import lsfusion.gwt.base.client.AsyncCallbackEx;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.actions.form.FormAction;
-import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
-import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.client.base.AsyncCallbackEx;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.actions.form.FormAction;
+import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.shared.form.view.GForm;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;

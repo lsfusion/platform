@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.changes.dto;
+package lsfusion.gwt.shared.form.view.changes.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;

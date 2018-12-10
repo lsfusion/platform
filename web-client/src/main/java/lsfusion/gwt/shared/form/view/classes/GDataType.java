@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.filter.GCompare;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.filter.GCompare;
 
-import static lsfusion.gwt.form.shared.view.filter.GCompare.*;
+import static lsfusion.gwt.shared.form.view.filter.GCompare.*;
 
 public abstract class GDataType extends GType implements GClass {
     @Override

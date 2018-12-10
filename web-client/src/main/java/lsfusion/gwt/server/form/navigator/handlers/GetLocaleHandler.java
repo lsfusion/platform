@@ -1,8 +1,8 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
-import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.shared.actions.navigator.GetLocaleAction;
+import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.shared.form.actions.navigator.GetLocaleAction;
 import lsfusion.interop.LocalePreferences;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;

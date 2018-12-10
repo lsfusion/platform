@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.BrowserEvents;
@@ -117,8 +117,8 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
    * Initialize the event system.
    */
   private native void initEventSystem() /*-{
-    @lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard::dispatchNonBubblingEvent = $entry(function(evt) {
-      @lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)(evt);
+    @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent = $entry(function(evt) {
+      @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)(evt);
     });
   }-*/;
 
@@ -129,6 +129,6 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
    * @param typeName the name of the event to sink
    */
   private native void sinkEventImpl(Element elem, String typeName) /*-{
-    elem.addEventListener(typeName, @lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard::dispatchNonBubblingEvent, true);
+    elem.addEventListener(typeName, @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent, true);
   }-*/;
 }

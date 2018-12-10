@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.client.form;
+package lsfusion.gwt.client.form.form;
 
-import lsfusion.gwt.base.shared.actions.ListResult;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
+import lsfusion.gwt.shared.base.actions.ListResult;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public interface ServerMessageProvider {

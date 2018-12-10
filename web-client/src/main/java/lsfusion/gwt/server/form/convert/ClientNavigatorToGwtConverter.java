@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.navigator.*;
-import lsfusion.gwt.form.client.navigator.GNavigatorAction;
-import lsfusion.gwt.form.client.navigator.GNavigatorFolder;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.actions.GAction;
-import lsfusion.gwt.form.shared.view.window.*;
+import lsfusion.gwt.client.form.navigator.GNavigatorAction;
+import lsfusion.gwt.client.form.navigator.GNavigatorFolder;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.actions.GAction;
+import lsfusion.gwt.shared.form.view.window.*;
 import lsfusion.interop.action.ClientAction;
 
 import java.util.ArrayList;

@@ -1,8 +1,8 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import com.google.common.io.ByteStreams;
-import lsfusion.gwt.form.server.logics.LogicsConnection;
-import lsfusion.gwt.form.server.logics.spring.LogicsHandlerProvider;
+import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.form.logics.spring.LogicsHandlerProvider;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;

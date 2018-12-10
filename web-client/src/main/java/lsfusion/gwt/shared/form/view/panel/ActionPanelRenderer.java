@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.panel;
+package lsfusion.gwt.shared.form.view.panel;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -7,29 +7,29 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.form.dispatch.GEditPropertyDispatcher;
-import lsfusion.gwt.form.client.form.dispatch.GEditPropertyHandler;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GPropertyContextMenuPopup;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
-import lsfusion.gwt.form.shared.view.GEditBindingMap;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.ImageDescription;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.classes.GType;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
-import lsfusion.gwt.form.client.grid.editor.DialogBasedGridCellEditor;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.client.grid.editor.PopupBasedGridCellEditor;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.form.dispatch.GEditPropertyDispatcher;
+import lsfusion.gwt.client.form.form.dispatch.GEditPropertyHandler;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.GPropertyContextMenuPopup;
+import lsfusion.gwt.client.form.form.ui.TooltipManager;
+import lsfusion.gwt.shared.form.view.GEditBindingMap;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.ImageDescription;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.classes.GType;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
+import lsfusion.gwt.client.form.grid.editor.DialogBasedGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.PopupBasedGridCellEditor;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
-import static lsfusion.gwt.form.client.HotkeyManager.Binding;
-import static lsfusion.gwt.form.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.form.HotkeyManager.Binding;
+import static lsfusion.gwt.shared.form.view.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {
 

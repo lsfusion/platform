@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -7,9 +7,9 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.form.ServerMessageProvider;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.form.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class LoadingBlocker extends LoadingManager {

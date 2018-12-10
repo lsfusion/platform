@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.layout.flex;
+package lsfusion.gwt.client.form.form.ui.layout.flex;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;

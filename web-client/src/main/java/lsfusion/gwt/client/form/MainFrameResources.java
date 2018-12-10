@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;

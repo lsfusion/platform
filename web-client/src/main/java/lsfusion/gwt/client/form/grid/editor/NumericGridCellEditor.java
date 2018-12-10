@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.GNumericType;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.GNumericType;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 public class NumericGridCellEditor extends IntegralGridCellEditor {
     public NumericGridCellEditor(GNumericType numericType, EditManager editManager, GPropertyDraw property, NumberFormat format) {

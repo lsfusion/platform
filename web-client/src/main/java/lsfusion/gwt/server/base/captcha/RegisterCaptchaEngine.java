@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.captcha;
+package lsfusion.gwt.server.base.captcha;
 
 import com.octo.captcha.component.image.backgroundgenerator.*;
 import com.octo.captcha.component.image.color.RandomListColorGenerator;

@@ -1,8 +1,8 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
     

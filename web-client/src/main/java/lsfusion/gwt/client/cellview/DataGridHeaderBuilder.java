@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.base.client.jsni.JSNIHelper;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
 
 import java.util.HashMap;
 import java.util.Map;

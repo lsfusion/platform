@@ -1,25 +1,25 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.toolbar.GCalculateSumButton;
-import lsfusion.gwt.form.client.form.ui.toolbar.GCountQuantityButton;
-import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
-import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GUserPreferencesButton;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GFormChanges;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.classes.GIntegralType;
-import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.form.shared.view.reader.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.toolbar.GCalculateSumButton;
+import lsfusion.gwt.client.form.form.ui.toolbar.GCountQuantityButton;
+import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
+import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GUserPreferencesButton;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GFormChanges;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.classes.GIntegralType;
+import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
+import lsfusion.gwt.shared.form.view.reader.*;
 
 import java.util.*;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
-import static lsfusion.gwt.form.shared.view.GClassViewType.DEFAULT;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.shared.form.view.GClassViewType.DEFAULT;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     private final MainFrameMessages messages = MainFrameMessages.Instance.get();

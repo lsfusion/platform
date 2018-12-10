@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.actions.form;
+package lsfusion.gwt.shared.form.actions.form;
 
 public class SetRegularFilter extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int groupId;

@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.FormActionHandler;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.shared.actions.form.FormHidden;
+import lsfusion.gwt.shared.base.actions.VoidResult;
+import lsfusion.gwt.shared.form.actions.form.FormHidden;
 
 import java.io.IOException;
 

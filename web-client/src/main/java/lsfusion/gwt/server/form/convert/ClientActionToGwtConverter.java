@@ -1,19 +1,19 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import lsfusion.base.ProgressBar;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
-import lsfusion.gwt.form.client.window.GProgressBar;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.server.form.spring.FormProviderImpl;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.shared.view.actions.*;
-import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
-import lsfusion.gwt.form.shared.view.classes.GObjectClass;
-import lsfusion.gwt.form.shared.view.classes.GType;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
+import lsfusion.gwt.client.form.window.GProgressBar;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.server.form.form.spring.FormProviderImpl;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.shared.form.view.actions.*;
+import lsfusion.gwt.shared.form.view.changes.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.shared.form.view.classes.GType;
+import lsfusion.gwt.shared.form.view.window.GModalityType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 

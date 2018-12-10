@@ -1,18 +1,18 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.form.client.form.ui.toolbar.preferences.GGridUserPreferences;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
 
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GGridController {
     private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();

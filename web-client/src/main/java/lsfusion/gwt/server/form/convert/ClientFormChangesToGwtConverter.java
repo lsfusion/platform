@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.GClassViewType;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
-import lsfusion.gwt.form.shared.view.changes.dto.*;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.shared.form.view.GClassViewType;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.form.view.changes.dto.*;
 import lsfusion.interop.ClassViewType;
 
 import java.awt.*;

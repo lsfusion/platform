@@ -1,18 +1,18 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.cellview.client.AbstractDataGridBuilder;
-import lsfusion.gwt.cellview.client.Column;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.cellview.AbstractDataGridBuilder;
+import lsfusion.gwt.client.cellview.Column;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 import java.util.List;
 
 /**
- * Based on lsfusion.gwt.cellview.client.DefaultDataGridBuilder
+ * Based on lsfusion.gwt.client.cellview.DefaultDataGridBuilder
  */
 public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T> {
     private final String rowStyle;

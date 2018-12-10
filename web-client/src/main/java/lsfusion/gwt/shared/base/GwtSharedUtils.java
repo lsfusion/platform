@@ -1,9 +1,9 @@
-package lsfusion.gwt.base.shared;
+package lsfusion.gwt.shared.base;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
-import lsfusion.gwt.base.client.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 
 import java.util.*;
 

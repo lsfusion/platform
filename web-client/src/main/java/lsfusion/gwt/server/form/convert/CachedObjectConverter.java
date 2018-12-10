@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

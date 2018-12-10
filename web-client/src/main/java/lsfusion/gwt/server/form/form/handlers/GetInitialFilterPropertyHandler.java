@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.base.shared.actions.NumberResult;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.form.FormActionHandler;
-import lsfusion.gwt.form.shared.actions.form.GetInitialFilterProperty;
+import lsfusion.gwt.shared.base.actions.NumberResult;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.form.FormActionHandler;
+import lsfusion.gwt.shared.form.actions.form.GetInitialFilterProperty;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 

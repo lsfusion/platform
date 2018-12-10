@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.shared.view.GExtInt;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.*;
-import lsfusion.gwt.form.shared.view.classes.link.*;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.editor.rich.RichTextGridCellEditor;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.shared.form.view.GExtInt;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.*;
+import lsfusion.gwt.shared.form.view.classes.link.*;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.rich.RichTextGridCellEditor;
 
 import java.util.ArrayList;
 

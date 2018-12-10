@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -8,12 +8,12 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Callback;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.form.client.MainFrame;
-import lsfusion.gwt.form.client.MainFrameMessages;
+import lsfusion.gwt.client.base.Callback;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.form.MainFrame;
+import lsfusion.gwt.client.form.MainFrameMessages;
 
 @SuppressWarnings("GWTStyleCheck")
 public class GSaveResetConfirmDialog {

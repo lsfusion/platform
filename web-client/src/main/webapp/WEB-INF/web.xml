@@ -33,7 +33,7 @@
     </context-param>
 
     <listener>
-        <listener-class>lsfusion.gwt.form.server.spring.AppContextListener</listener-class>
+        <listener-class>lsfusion.gwt.server.form.spring.AppContextListener</listener-class>
     </listener>
 
     <servlet>
@@ -142,7 +142,7 @@
 
     <!-- Init RMI Listener -->
     <listener>
-        <listener-class>lsfusion.gwt.base.server.spring.InitRMIContextListener</listener-class>
+        <listener-class>lsfusion.gwt.server.base.spring.InitRMIContextListener</listener-class>
     </listener>
 
     <!-- UrlRewrite configuration -->
@@ -201,7 +201,7 @@
 
     <filter>
         <filter-name>springRequestContextFilter</filter-name>
-        <filter-class>lsfusion.gwt.base.server.spring.RequestContextFilter</filter-class>
+        <filter-class>lsfusion.gwt.server.base.spring.RequestContextFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>springRequestContextFilter</filter-name>

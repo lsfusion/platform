@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

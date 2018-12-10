@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.actions.navigator;
+package lsfusion.gwt.shared.form.actions.navigator;
 
-import lsfusion.gwt.base.shared.actions.ListResult;
+import lsfusion.gwt.shared.base.actions.ListResult;
 
 public class GetRemoteNavigatorActionMessageList extends NavigatorAction<ListResult> {
     @SuppressWarnings("UnusedDeclaration")

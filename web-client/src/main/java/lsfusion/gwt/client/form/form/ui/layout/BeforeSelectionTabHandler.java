@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 public interface BeforeSelectionTabHandler {
     void onBeforeSelection(int tabIndex);

@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.view.GContainer;
-import lsfusion.gwt.form.shared.view.GGrid;
-import lsfusion.gwt.form.shared.view.GTreeGroup;
+import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.view.GContainer;
+import lsfusion.gwt.shared.form.view.GGrid;
+import lsfusion.gwt.shared.form.view.GTreeGroup;
 
 public abstract class GFormLayoutImpl {
     private static GFormLayoutImpl impl;

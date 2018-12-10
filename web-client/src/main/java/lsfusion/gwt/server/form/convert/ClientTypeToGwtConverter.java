@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.*;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.GExtInt;
-import lsfusion.gwt.form.shared.view.classes.*;
-import lsfusion.gwt.form.shared.view.classes.link.*;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.shared.form.view.GExtInt;
+import lsfusion.gwt.shared.form.view.classes.*;
+import lsfusion.gwt.shared.form.view.classes.link.*;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;

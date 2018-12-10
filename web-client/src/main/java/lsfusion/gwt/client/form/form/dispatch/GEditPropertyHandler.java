@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.client.form.dispatch;
+package lsfusion.gwt.client.form.form.dispatch;
 
-import lsfusion.gwt.form.shared.view.classes.GType;
+import lsfusion.gwt.shared.form.view.classes.GType;
 
 public interface GEditPropertyHandler {
     void requestValue(GType valueType, Object oldValue);

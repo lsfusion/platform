@@ -1,17 +1,17 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
-import lsfusion.gwt.base.client.AsyncCallbackEx;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper.OptionType;
-import lsfusion.gwt.base.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.base.shared.exceptions.MessageException;
-import lsfusion.gwt.base.shared.exceptions.RemoteRetryException;
+import lsfusion.gwt.client.base.AsyncCallbackEx;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper.OptionType;
+import lsfusion.gwt.shared.base.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.base.exceptions.MessageException;
+import lsfusion.gwt.shared.base.exceptions.RemoteRetryException;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.baseMessages;
+import static lsfusion.gwt.client.base.GwtClientUtils.baseMessages;
 
 public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";

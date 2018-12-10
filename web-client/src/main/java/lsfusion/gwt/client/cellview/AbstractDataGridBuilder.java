@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.dom.builder.shared.ElementBuilderBase;
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.base.client.jsni.JSNIHelper;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.cellview.client.cell.Cell.Context;
-import lsfusion.gwt.cellview.client.cell.HasCell;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.cellview.cell.Cell.Context;
+import lsfusion.gwt.client.cellview.cell.HasCell;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
+import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 
 /**
  * Builder used to construct a CellTable.

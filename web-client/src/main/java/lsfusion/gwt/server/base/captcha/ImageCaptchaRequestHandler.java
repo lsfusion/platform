@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.captcha;
+package lsfusion.gwt.server.base.captcha;
 
 import com.octo.captcha.service.CaptchaServiceException;
 import org.springframework.web.HttpRequestHandler;

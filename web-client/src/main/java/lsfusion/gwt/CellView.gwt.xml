@@ -20,18 +20,18 @@
    <inherits name="com.google.gwt.editor.Editor"/>
    <inherits name="com.google.gwt.view.View"/>
    <inherits name="com.google.gwt.user.UserAgent"/>
-   <inherits name="lsfusion.gwt.base.Base"/>
+   <inherits name="lsfusion.gwt.Base"/>
 
    <source path="client"/>
 
     <!-- Standard CellBasedWidgetImpl implementation. -->
-  <replace-with class="lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard">
-    <when-type-is class="lsfusion.gwt.cellview.client.CellBasedWidgetImpl"/>
+  <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard">
+    <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
   </replace-with>
 
   <!-- IE-specific CellBasedWidgetImpl implementation. -->
-  <replace-with class="lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident">
-    <when-type-is class="lsfusion.gwt.cellview.client.CellBasedWidgetImpl"/>
+  <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident">
+    <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
     <any>
       <when-property-is name="user.agent" value="ie6"/>
       <when-property-is name="user.agent" value="ie8"/>
@@ -39,8 +39,8 @@
   </replace-with>
 
   <!-- StandardBase CellBasedWidgetImpl implementation. -->
-  <replace-with class="lsfusion.gwt.cellview.client.CellBasedWidgetImplStandardBase">
-    <when-type-is class="lsfusion.gwt.cellview.client.CellBasedWidgetImpl"/>
+  <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandardBase">
+    <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
     <any>
       <when-property-is name="user.agent" value="safari"/>
       <when-property-is name="user.agent" value="ie9"/>
@@ -49,16 +49,16 @@
   </replace-with>
 
   <!-- Mozilla-specific CellTable implementation. -->
-  <replace-with class="lsfusion.gwt.cellview.client.DataGridImplMozilla">
-    <when-type-is class="lsfusion.gwt.cellview.client.DataGridImpl"/>
+  <replace-with class="lsfusion.gwt.client.cellview.DataGridImplMozilla">
+    <when-type-is class="lsfusion.gwt.client.cellview.DataGridImpl"/>
     <any>
       <when-property-is name="user.agent" value="gecko1_8"/>
     </any>
   </replace-with>
 
   <!-- IE-specific CellTable implementation. -->
-  <replace-with class="lsfusion.gwt.cellview.client.DataGridImplTrident">
-    <when-type-is class="lsfusion.gwt.cellview.client.DataGridImpl"/>
+  <replace-with class="lsfusion.gwt.client.cellview.DataGridImplTrident">
+    <when-type-is class="lsfusion.gwt.client.cellview.DataGridImpl"/>
     <any>
       <when-property-is name="user.agent" value="ie6"/>
       <when-property-is name="user.agent" value="ie8"/>

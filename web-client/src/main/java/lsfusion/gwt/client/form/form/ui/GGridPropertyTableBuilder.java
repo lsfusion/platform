@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 public class GGridPropertyTableBuilder<T extends GridDataRecord> extends GPropertyTableBuilder<T> {
 

@@ -32,7 +32,7 @@
     </b:bean>
 
     <!-- Custom security filters -->
-    <b:bean id="expiredSessionFilter" class="lsfusion.gwt.base.server.spring.ExpiredSessionFilter">
+    <b:bean id="expiredSessionFilter" class="lsfusion.gwt.server.base.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
         <b:property name="urlPattern" value="/(?!login\.).*/dispatch.*"/>
     </b:bean>
@@ -49,7 +49,7 @@
         <b:property name="alwaysUseDefaultTargetUrl" value="true" />
     </b:bean>
 
-    <b:bean id="accessDeniedHandler" class="lsfusion.gwt.base.server.spring.AccessDeniedHandlerImpl" >
+    <b:bean id="accessDeniedHandler" class="lsfusion.gwt.server.base.spring.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />
     </b:bean>
 
@@ -66,42 +66,42 @@
 
     <b:bean id="authenticationProvider" class="org.springframework.security.authentication.rcp.RemoteAuthenticationProvider">
         <b:property name="remoteAuthenticationManager">
-            <b:bean class="lsfusion.gwt.base.server.spring.LSFRemoteAuthenticationManager"/>
+            <b:bean class="lsfusion.gwt.server.base.spring.LSFRemoteAuthenticationManager"/>
         </b:property>
     </b:bean>
 
     <!-- Custom beans -->
 
     <!-- Custom request beans-->
-    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.form.server.logics.spring.LogicsHandlerProviderImpl" />
+    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.form.logics.spring.LogicsHandlerProviderImpl" />
 
     <!-- GWT beans -->
-    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorProviderImpl">
+    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
-    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.form.server.form.spring.FormProviderImpl">
+    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.form.spring.FormProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
     <!-- GWT request handler -->
-    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.form.server.spring.LSFusionDispatchServlet"/>
+    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.form.spring.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
-    <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
+    <b:bean id="captchaHandler" class="lsfusion.gwt.server.base.captcha.ImageCaptchaRequestHandler"/>
 
-    <b:bean id="readLogoHandler" class="lsfusion.gwt.base.server.spring.ReadLogoRequestHandler"/>
+    <b:bean id="readLogoHandler" class="lsfusion.gwt.server.base.spring.ReadLogoRequestHandler"/>
 
-    <b:bean id="readMemoryLimitsHandler" class="lsfusion.gwt.base.server.spring.ReadMemoryLimitsRequestHandler"/>
+    <b:bean id="readMemoryLimitsHandler" class="lsfusion.gwt.server.base.spring.ReadMemoryLimitsRequestHandler"/>
 
-    <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
+    <b:bean id="propertyImageHandler" class="lsfusion.gwt.server.base.spring.GetPropertyImageRequestHandler" />
 
-    <b:bean id="fileUploadHandler" class="lsfusion.gwt.base.server.spring.UploadFileRequestHandler" />
+    <b:bean id="fileUploadHandler" class="lsfusion.gwt.server.base.spring.UploadFileRequestHandler" />
 
-    <b:bean id="fileDownloadHandler" class="lsfusion.gwt.base.server.spring.DownloadFileRequestHandler" />
+    <b:bean id="fileDownloadHandler" class="lsfusion.gwt.server.base.spring.DownloadFileRequestHandler" />
 
-    <b:bean id="jnlpHandler" class="lsfusion.gwt.base.server.spring.ClientJNLPRequestHandler" />
+    <b:bean id="jnlpHandler" class="lsfusion.gwt.server.base.spring.ClientJNLPRequestHandler" />
 
-    <b:bean id="externalHandler" class="lsfusion.gwt.base.server.spring.ExternalRequestHandler"/>
+    <b:bean id="externalHandler" class="lsfusion.gwt.server.base.spring.ExternalRequestHandler"/>
 
 </b:beans>

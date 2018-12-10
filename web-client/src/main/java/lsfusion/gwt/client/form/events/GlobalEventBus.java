@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.events;
+package lsfusion.gwt.client.form.events;
 
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.HandlerRegistration;

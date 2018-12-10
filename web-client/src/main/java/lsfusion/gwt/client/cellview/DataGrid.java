@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -31,10 +31,10 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.cellview.client.cell.Cell.Context;
-import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
-import lsfusion.gwt.cellview.client.cell.HasCell;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.cellview.cell.Cell.Context;
+import lsfusion.gwt.client.cellview.cell.CellPreviewEvent;
+import lsfusion.gwt.client.cellview.cell.HasCell;
 
 import java.util.*;
 
@@ -47,9 +47,9 @@ import static java.lang.Math.min;
  * Abstract base class for tabular views that supports paging and columns.
  * <p/>
  * <p>
- * <h3>Columns</h3> The {@link Column} class defines the {@link lsfusion.gwt.cellview.client.cell.Cell} used to
+ * <h3>Columns</h3> The {@link Column} class defines the {@link lsfusion.gwt.client.cellview.cell.Cell} used to
  * render a column. Implement {@link Column#getValue(Object)} to retrieve the
- * field value from the row object that will be rendered in the {@link lsfusion.gwt.cellview.client.cell.Cell}.
+ * field value from the row object that will be rendered in the {@link lsfusion.gwt.client.cellview.cell.Cell}.
  * </p>
  * <p/>
  * <p>

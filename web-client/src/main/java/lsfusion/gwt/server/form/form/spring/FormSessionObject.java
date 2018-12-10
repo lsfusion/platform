@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server.form.spring;
+package lsfusion.gwt.server.form.form.spring;
 
 import lsfusion.client.logics.ClientForm;
 import lsfusion.interop.form.RemoteFormInterface;

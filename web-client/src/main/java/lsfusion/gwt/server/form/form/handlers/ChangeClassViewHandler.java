@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.server.form.handlers;
+package lsfusion.gwt.server.form.form.handlers;
 
-import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
+import lsfusion.gwt.server.form.form.FormServerResponseActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.convert.GwtToClientConverter;
-import lsfusion.gwt.form.shared.actions.form.ChangeClassView;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.GClassViewType;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.convert.GwtToClientConverter;
+import lsfusion.gwt.shared.form.actions.form.ChangeClassView;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.GClassViewType;
 import lsfusion.interop.ClassViewType;
 
 import java.io.IOException;

@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.form.ui.layout.table;
+package lsfusion.gwt.client.form.form.ui.layout.table;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
-import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.form.ui.layout.SplitPanelBase;
+import lsfusion.gwt.shared.form.view.GComponent;
 
 public class TableSplitPanel extends SplitPanelBase<CellPanel> {
 

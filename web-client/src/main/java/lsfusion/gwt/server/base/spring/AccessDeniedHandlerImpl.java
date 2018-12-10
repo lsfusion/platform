@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.WebAttributes;

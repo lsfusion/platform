@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client;
+package lsfusion.gwt.client.base;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;

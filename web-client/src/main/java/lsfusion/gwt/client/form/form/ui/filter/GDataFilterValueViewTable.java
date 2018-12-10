@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.filter;
+package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
@@ -7,27 +7,27 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.base.client.ui.CopyPasteUtils;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.cellview.client.Column;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.AbstractCell;
-import lsfusion.gwt.form.client.form.ui.GPropertyTableBuilder;
-import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.base.ui.CopyPasteUtils;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.cellview.Column;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.AbstractCell;
+import lsfusion.gwt.client.form.form.ui.GPropertyTableBuilder;
+import lsfusion.gwt.client.form.form.ui.GSinglePropertyTable;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 import java.util.Arrays;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Unit;
-import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GDataFilterValueViewTable extends DataGrid implements EditManager {
     private GDataFilterValueView valueView;

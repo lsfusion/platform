@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.form.ui.filter;
+package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.user.client.ui.SimplePanel;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.client.grid.EditEvent;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.form.grid.EditEvent;
 
 public class GFilterValueView extends SimplePanel {
     protected GFilterValueListener listener;

@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
-import lsfusion.gwt.form.shared.view.classes.link.*;
+import lsfusion.gwt.shared.form.view.classes.link.*;
 
 public interface GTypeVisitor<R> {
 

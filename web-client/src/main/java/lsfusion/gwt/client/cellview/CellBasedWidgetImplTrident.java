@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -350,8 +350,8 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
    * Initialize the focus event listener.
    */
   private native void initFocusEventSystem() /*-{
-    @lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident::dispatchFocusEvent = $entry(function() {
-      @lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
+    @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent = $entry(function() {
+      @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
     });
   }-*/;
 
@@ -370,7 +370,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
 
     // Add an entry for the specified module.
     $wnd.__gwt_CellBasedWidgetImplLoadListeners[moduleName] = $entry(function() {
-      @lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
+      @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
     });
   }-*/;
 
@@ -381,8 +381,8 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
    */
   private native void sinkFocusEvents(Element elem) /*-{
     elem.attachEvent('onfocusin',
-        @lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident::dispatchFocusEvent);
+        @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
     elem.attachEvent('onfocusout',
-        @lsfusion.gwt.cellview.client.CellBasedWidgetImplTrident::dispatchFocusEvent);
+        @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
   }-*/;
 }

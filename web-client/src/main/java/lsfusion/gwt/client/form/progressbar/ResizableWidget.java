@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.progressbar;
+package lsfusion.gwt.client.form.progressbar;
 
 import com.google.gwt.user.client.Element;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client;
+package lsfusion.gwt.client.base;
 
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;

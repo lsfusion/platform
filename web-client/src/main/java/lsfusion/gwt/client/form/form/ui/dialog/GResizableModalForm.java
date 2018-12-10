@@ -1,17 +1,17 @@
-package lsfusion.gwt.form.client.form.ui.dialog;
+package lsfusion.gwt.client.form.form.ui.dialog;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.shared.actions.NumberResult;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.form.FormsController;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.base.actions.NumberResult;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
+import lsfusion.gwt.client.form.form.FormsController;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
 
 import static java.lang.Math.min;
 

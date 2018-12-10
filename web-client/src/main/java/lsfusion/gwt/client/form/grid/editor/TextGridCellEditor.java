@@ -1,12 +1,12 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 public class TextGridCellEditor extends TextBasedGridCellEditor {
     public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {

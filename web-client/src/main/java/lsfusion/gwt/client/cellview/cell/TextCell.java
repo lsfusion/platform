@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client.cell;
+package lsfusion.gwt.client.cellview.cell;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.base.client.EscapeUtils;
+import lsfusion.gwt.client.base.EscapeUtils;
 
 /**
  * A {@link Cell} used to render text.

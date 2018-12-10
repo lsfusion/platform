@@ -1,18 +1,18 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientFileClass;
-import lsfusion.gwt.base.client.ui.GAlignment;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.classes.GClass;
-import lsfusion.gwt.form.shared.view.filter.GCompare;
-import lsfusion.gwt.form.shared.view.reader.*;
+import lsfusion.gwt.client.base.ui.GAlignment;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.classes.GClass;
+import lsfusion.gwt.shared.form.view.filter.GCompare;
+import lsfusion.gwt.shared.form.view.reader.*;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.PropertyEditType;
@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.form.server.convert.StaticConverters.convertColor;
+import static lsfusion.gwt.server.form.convert.StaticConverters.convertColor;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientComponentToGwtConverter extends CachedObjectConverter {

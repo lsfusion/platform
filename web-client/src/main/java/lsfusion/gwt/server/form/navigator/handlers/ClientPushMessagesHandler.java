@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
-import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.form.server.navigator.spring.LogicsAndNavigatorSessionObject;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.shared.actions.navigator.ClientPushMessage;
-import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
+import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
+import lsfusion.gwt.server.form.navigator.spring.LogicsAndNavigatorSessionObject;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.shared.form.actions.navigator.ClientPushMessage;
+import lsfusion.gwt.shared.form.actions.navigator.ClientMessageResult;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.LifecycleMessage;
 import lsfusion.interop.remote.PushMessage;

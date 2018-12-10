@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.server.form;
+package lsfusion.gwt.server.form.form;
 
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.spring.FormProvider;
-import lsfusion.gwt.form.shared.actions.form.FormAction;
-import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.spring.FormProvider;
+import lsfusion.gwt.shared.form.actions.form.FormAction;
+import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.shared.Result;
 
-public abstract class FormActionHandler<A extends FormAction<R>, R extends Result> extends lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
+public abstract class FormActionHandler<A extends FormAction<R>, R extends Result> extends lsfusion.gwt.server.base.dispatch.SimpleActionHandlerEx<A, R, RemoteLogicsInterface> {
     public FormActionHandler(LSFusionDispatchServlet servlet) {
         super(servlet);
     }

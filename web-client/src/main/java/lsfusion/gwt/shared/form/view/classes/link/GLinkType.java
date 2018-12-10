@@ -1,20 +1,20 @@
-package lsfusion.gwt.form.shared.view.classes.link;
+package lsfusion.gwt.shared.form.view.classes.link;
 
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.GWidthStringProcessor;
-import lsfusion.gwt.form.shared.view.classes.GDataType;
-import lsfusion.gwt.form.shared.view.filter.GCompare;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.client.grid.renderer.FileGridCellRenderer;
-import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.GWidthStringProcessor;
+import lsfusion.gwt.shared.form.view.classes.GDataType;
+import lsfusion.gwt.shared.form.view.filter.GCompare;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.FileGridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 
-import static lsfusion.gwt.form.shared.view.filter.GCompare.EQUALS;
-import static lsfusion.gwt.form.shared.view.filter.GCompare.NOT_EQUALS;
+import static lsfusion.gwt.shared.form.view.filter.GCompare.EQUALS;
+import static lsfusion.gwt.shared.form.view.filter.GCompare.NOT_EQUALS;
 
 public abstract class GLinkType extends GDataType {
     public boolean multiple;

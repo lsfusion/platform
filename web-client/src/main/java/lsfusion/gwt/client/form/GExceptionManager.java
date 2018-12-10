@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
@@ -6,13 +6,13 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.logging.impl.StackTracePrintStream;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.base.shared.exceptions.MessageException;
-import lsfusion.gwt.base.shared.exceptions.NonFatalHandledException;
-import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.client.dispatch.LogicsAndNavigatorDispatchAsync;
-import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
-import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.base.exceptions.MessageException;
+import lsfusion.gwt.shared.base.exceptions.NonFatalHandledException;
+import lsfusion.gwt.shared.base.actions.VoidResult;
+import lsfusion.gwt.client.form.dispatch.LogicsAndNavigatorDispatchAsync;
+import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
+import lsfusion.gwt.shared.form.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
 
 import java.io.PrintStream;

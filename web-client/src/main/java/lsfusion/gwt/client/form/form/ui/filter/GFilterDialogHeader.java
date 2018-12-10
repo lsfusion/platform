@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.filter;
+package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.shared.HandlerManager;
@@ -7,9 +7,9 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 
 public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

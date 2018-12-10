@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.shared.view.filter;
+package lsfusion.gwt.shared.form.view.filter;
 
-import lsfusion.gwt.form.shared.view.GGroupObject;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.dto.GPropertyFilterDTO;
+import lsfusion.gwt.shared.form.view.GGroupObject;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.dto.GPropertyFilterDTO;
 
 public class GPropertyFilter {
     public GGroupObject groupObject;

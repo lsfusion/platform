@@ -1,4 +1,4 @@
-package lsfusion.gwt.codemirror.client;
+package lsfusion.gwt.client.codemirror;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.DOM;
@@ -34,7 +34,7 @@ public class CodeMirror extends Widget {
     }
 
     private native JavaScriptObject initialize(String id, CodeMirrorOptions options) /*-{
-        var opts = options.@lsfusion.gwt.codemirror.client.CodeMirrorOptions::getJSNObj()();
+        var opts = options.@lsfusion.gwt.client.codemirror.CodeMirrorOptions::getJSNObj()();
 
         $doc.getElementById(id).value = opts.value;
 
@@ -50,7 +50,7 @@ public class CodeMirror extends Widget {
     }
 
     public native String getValueJS() /*-{
-        var editor = this.@lsfusion.gwt.codemirror.client.CodeMirror::editor;
+        var editor = this.@lsfusion.gwt.client.codemirror.CodeMirror::editor;
         return editor.getValue();
     }-*/;
 
@@ -63,7 +63,7 @@ public class CodeMirror extends Widget {
     }
 
     private native void setValueJS(String value) /*-{
-        var editor = this.@lsfusion.gwt.codemirror.client.CodeMirror::editor;
+        var editor = this.@lsfusion.gwt.client.codemirror.CodeMirror::editor;
         editor.setValue(value);
         editor.refresh();
     }-*/;

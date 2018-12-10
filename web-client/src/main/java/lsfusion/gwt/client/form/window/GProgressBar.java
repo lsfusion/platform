@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.window;
+package lsfusion.gwt.client.form.window;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 

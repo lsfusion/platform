@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.shared.form.view.*;
 
 import java.util.Comparator;
 import java.util.HashMap;

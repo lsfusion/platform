@@ -1,12 +1,12 @@
-package lsfusion.gwt.form.client.grid;
+package lsfusion.gwt.client.form.grid;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.cellview.client.cell.AbstractCell;
-import lsfusion.gwt.form.client.form.ui.GPropertyTable;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.cellview.cell.AbstractCell;
+import lsfusion.gwt.client.form.form.ui.GPropertyTable;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 

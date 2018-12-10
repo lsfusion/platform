@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.bfr.client.selection.Range;
 import com.bfr.client.selection.RangeEndPoint;
@@ -6,7 +6,7 @@ import com.bfr.client.selection.Selection;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class CopyPasteUtils {
     private static Selection selection = Selection.getSelection();

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
 import java.io.Serializable;
 

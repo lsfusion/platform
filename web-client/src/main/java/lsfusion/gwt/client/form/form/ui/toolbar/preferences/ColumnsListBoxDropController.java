@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.drop.AbstractDropController;

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
@@ -6,20 +6,20 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.jsni.NativeHashMap;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.cellview.client.Column;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.HeaderPanel;
-import lsfusion.gwt.cellview.client.KeyboardRowChangedEvent;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.cellview.client.cell.CellPreviewEvent;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.GridEditableCell;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.cellview.Column;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.HeaderPanel;
+import lsfusion.gwt.client.cellview.KeyboardRowChangedEvent;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.cellview.cell.CellPreviewEvent;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.GridEditableCell;
 
 import java.util.*;
 

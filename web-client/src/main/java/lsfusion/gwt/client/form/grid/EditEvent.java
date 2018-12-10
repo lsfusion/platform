@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid;
+package lsfusion.gwt.client.form.grid;
 
 public abstract class EditEvent {
     public abstract void stopPropagation();

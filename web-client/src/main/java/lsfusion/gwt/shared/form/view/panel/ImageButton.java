@@ -1,12 +1,12 @@
-package lsfusion.gwt.form.shared.view.panel;
+package lsfusion.gwt.shared.form.view.panel;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.shared.view.ImageDescription;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.form.view.ImageDescription;
 
 public class ImageButton extends Button {
     private final Image image;

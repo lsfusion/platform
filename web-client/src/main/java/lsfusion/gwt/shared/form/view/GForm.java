@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.MainFrame;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.MainFrame;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.changes.dto.GFormChangesDTO;
 
 import java.io.Serializable;
 import java.util.ArrayList;

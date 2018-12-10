@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
@@ -6,21 +6,21 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
-import lsfusion.gwt.base.client.ui.CopyPasteUtils;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.client.base.ui.CopyPasteUtils;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
 
 import java.text.ParseException;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);

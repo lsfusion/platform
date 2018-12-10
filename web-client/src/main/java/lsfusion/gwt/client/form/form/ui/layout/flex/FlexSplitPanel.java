@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.form.ui.layout.flex;
+package lsfusion.gwt.client.form.form.ui.layout.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.form.ui.layout.BeforeSelectionTabHandler;
-import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
-import lsfusion.gwt.form.client.form.ui.layout.SplitPanelBase;
-import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.form.form.ui.layout.BeforeSelectionTabHandler;
+import lsfusion.gwt.client.form.form.ui.layout.GAbstractContainerView;
+import lsfusion.gwt.client.form.form.ui.layout.SplitPanelBase;
+import lsfusion.gwt.shared.form.view.GComponent;
 
 import java.util.ArrayList;
 import java.util.List;

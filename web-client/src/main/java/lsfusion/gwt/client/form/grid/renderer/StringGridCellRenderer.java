@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
-import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.multiplyString;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.multiplyString;
 
 public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     private boolean echoSymbols;

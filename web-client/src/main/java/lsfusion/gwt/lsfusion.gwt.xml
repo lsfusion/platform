@@ -2,10 +2,10 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module rename-to="lsfusion">
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="lsfusion.gwt.base.Base"/>
-    <inherits name="lsfusion.gwt.cellview.CellView"/>
+    <inherits name="lsfusion.gwt.Base"/>
+    <inherits name="lsfusion.gwt.CellView"/>
 
-    <entry-point class='lsfusion.gwt.form.client.MainFrame'/>
+    <entry-point class='lsfusion.gwt.client.form.MainFrame'/>
 
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />
@@ -45,8 +45,8 @@
 
     <!-- отключил лэйаут через таблицы по причине резкого снижения скорости отрисовки в Chrome 56 и Firefox ~51  -->
     <!-- GFormLayout implementation using flex css syntax. -->
-    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
+    <replace-with class="lsfusion.gwt.client.form.form.ui.layout.flex.FlexFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl"/>
         <!--<none>-->
             <!--<when-property-is name="user.agent" value="gecko1_8" />-->
             <!--<when-property-is name="user.agent" value="safari" />-->
@@ -54,8 +54,8 @@
     </replace-with>
 
     <!-- Tables-based GFormLayout implementation. -->
-    <!--<replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">-->
-        <!--<when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>-->
+    <!--<replace-with class="lsfusion.gwt.client.form.form.ui.layout.table.TableFormLayoutImpl">-->
+        <!--<when-type-is class="lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl"/>-->
         <!--<any>-->
             <!--<when-property-is name="user.agent" value="gecko1_8" />-->
             <!--<when-property-is name="user.agent" value="safari" />-->

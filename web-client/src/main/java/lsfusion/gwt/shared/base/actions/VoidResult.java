@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.shared.actions;
+package lsfusion.gwt.shared.base.actions;
 
 import net.customware.gwt.dispatch.shared.Result;
 

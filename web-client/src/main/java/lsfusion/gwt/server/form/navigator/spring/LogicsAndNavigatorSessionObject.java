@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.server.navigator.spring;
+package lsfusion.gwt.server.form.navigator.spring;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;

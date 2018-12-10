@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.jsni;
+package lsfusion.gwt.client.base.jsni;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;

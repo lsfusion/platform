@@ -1,8 +1,8 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.GIntegerType;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.GIntegerType;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 public class IntegerGridCellEditor extends IntegralGridCellEditor {
     public IntegerGridCellEditor(EditManager editManager, GPropertyDraw property) {

@@ -1,23 +1,23 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.cellview.client.Column;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.shared.view.GFontMetrics;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
-import lsfusion.gwt.form.client.grid.GridEditableCell;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.cellview.Column;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.shared.form.view.GFontMetrics;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.dto.ColorDTO;
+import lsfusion.gwt.client.form.grid.GridEditableCell;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static com.google.gwt.dom.client.Style.Unit;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class GSinglePropertyTable extends GPropertyTable<Object> {
     /**

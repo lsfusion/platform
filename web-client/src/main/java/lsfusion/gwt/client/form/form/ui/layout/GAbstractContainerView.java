@@ -1,24 +1,24 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.form.ui.layout.flex.FlexCaptionPanel;
-import lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl;
-import lsfusion.gwt.form.client.form.ui.layout.table.TableCaptionPanel;
-import lsfusion.gwt.form.shared.view.GComponent;
-import lsfusion.gwt.form.shared.view.GContainer;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.form.form.ui.layout.flex.FlexCaptionPanel;
+import lsfusion.gwt.client.form.form.ui.layout.flex.FlexFormLayoutImpl;
+import lsfusion.gwt.client.form.form.ui.layout.table.TableCaptionPanel;
+import lsfusion.gwt.shared.form.view.GComponent;
+import lsfusion.gwt.shared.form.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.max;
-import static lsfusion.gwt.base.client.GwtClientUtils.calculateMaxPreferredSize;
-import static lsfusion.gwt.base.client.GwtClientUtils.enlargeDimension;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
+import static lsfusion.gwt.client.base.GwtClientUtils.calculateMaxPreferredSize;
+import static lsfusion.gwt.client.base.GwtClientUtils.enlargeDimension;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
     protected final GContainer container;

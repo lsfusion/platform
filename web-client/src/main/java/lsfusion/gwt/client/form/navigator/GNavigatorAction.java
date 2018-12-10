@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
 
 public class GNavigatorAction extends GNavigatorElement {
 }

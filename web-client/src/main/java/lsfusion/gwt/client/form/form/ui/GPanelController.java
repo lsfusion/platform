@@ -1,18 +1,18 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.panel.PanelRenderer;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 
 public class GPanelController {
     private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();

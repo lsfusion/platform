@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.view.actions;
+package lsfusion.gwt.shared.form.view.actions;
 
-import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.shared.view.window.GModalityType;
+import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.shared.form.view.window.GModalityType;
 
 public class GFormAction extends GExecuteAction {
     public GModalityType modalityType;

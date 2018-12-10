@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.jsni.JSNIHelper;
-import lsfusion.gwt.cellview.client.cell.AbstractCell;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.JSNIHelper;
+import lsfusion.gwt.client.cellview.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;

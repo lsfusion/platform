@@ -1,11 +1,11 @@
-package lsfusion.gwt.base.server.dispatch;
+package lsfusion.gwt.server.base.dispatch;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.gwt.base.server.ServerUtils;
-import lsfusion.gwt.base.server.exceptions.IODispatchException;
-import lsfusion.gwt.base.shared.exceptions.RemoteRetryException;
-import lsfusion.gwt.base.shared.exceptions.MessageException;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.base.ServerUtils;
+import lsfusion.gwt.server.base.exceptions.IODispatchException;
+import lsfusion.gwt.shared.base.exceptions.RemoteRetryException;
+import lsfusion.gwt.shared.base.exceptions.MessageException;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -17,7 +17,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import static lsfusion.gwt.form.server.GLoggers.invocationLogger;
+import static lsfusion.gwt.server.form.GLoggers.invocationLogger;
 
 public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Result, L extends RemoteLogicsInterface> extends SimpleActionHandler<A, R> {
     protected final LSFusionDispatchServlet servlet;

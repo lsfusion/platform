@@ -1,22 +1,22 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.GEditBindingMap;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.form.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.form.client.grid.renderer.DateGridCellRenderer;
-import lsfusion.gwt.form.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.GEditBindingMap;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.dto.GTimeDTO;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 
-import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeFormat;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.getDefaultTimeShortFormat;
-import static lsfusion.gwt.form.shared.view.classes.GDateType.parseDate;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.getDefaultTimeFormat;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.getDefaultTimeShortFormat;
+import static lsfusion.gwt.shared.form.view.classes.GDateType.parseDate;
 
 public class GTimeType extends GFormatType<DateTimeFormat> {
     public static GTimeType instance = new GTimeType();

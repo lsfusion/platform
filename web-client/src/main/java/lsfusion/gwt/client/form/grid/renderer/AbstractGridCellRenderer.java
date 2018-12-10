@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.MainFrameMessages;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.MainFrameMessages;
 
 public abstract class AbstractGridCellRenderer implements GridCellRenderer {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

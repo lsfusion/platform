@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import com.google.common.io.ByteStreams;
 import org.springframework.beans.factory.annotation.Autowired;

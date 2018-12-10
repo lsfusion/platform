@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import com.google.gwt.user.client.ui.FocusPanel;
 

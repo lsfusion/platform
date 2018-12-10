@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;

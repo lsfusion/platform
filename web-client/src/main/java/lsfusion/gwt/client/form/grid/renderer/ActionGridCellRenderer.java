@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GFontMetrics;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GFontMetrics;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 public class ActionGridCellRenderer extends AbstractGridCellRenderer {
     public ActionGridCellRenderer(GPropertyDraw property) {

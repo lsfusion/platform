@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server;
+package lsfusion.gwt.server.base;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;

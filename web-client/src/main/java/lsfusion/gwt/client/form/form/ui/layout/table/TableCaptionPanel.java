@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.form.ui.layout.table;
+package lsfusion.gwt.client.form.form.ui.layout.table;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 
 public class TableCaptionPanel extends ResizableVerticalPanel {
 

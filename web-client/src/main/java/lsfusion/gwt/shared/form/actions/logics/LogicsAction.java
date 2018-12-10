@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.actions.logics;
+package lsfusion.gwt.shared.form.actions.logics;
 
-import lsfusion.gwt.base.shared.actions.RequestAction;
-import lsfusion.gwt.form.shared.actions.navigator.LogicsAndNavigatorAction;
+import lsfusion.gwt.shared.base.actions.RequestAction;
+import lsfusion.gwt.shared.form.actions.navigator.LogicsAndNavigatorAction;
 import net.customware.gwt.dispatch.shared.Result;
 
 public class LogicsAction<R extends Result> extends LogicsAndNavigatorAction<R> {

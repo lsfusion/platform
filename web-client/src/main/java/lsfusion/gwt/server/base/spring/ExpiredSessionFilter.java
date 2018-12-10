@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;

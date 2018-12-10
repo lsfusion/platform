@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view.panel;
+package lsfusion.gwt.shared.form.view.panel;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -8,23 +8,23 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.client.ui.ResizableComplexPanel;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GSinglePropertyTable;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
-import lsfusion.gwt.form.shared.view.GEditBindingMap;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.base.ui.ResizableComplexPanel;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.GSinglePropertyTable;
+import lsfusion.gwt.client.form.form.ui.TooltipManager;
+import lsfusion.gwt.shared.form.view.GEditBindingMap;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.dto.ColorDTO;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
-import static lsfusion.gwt.form.client.HotkeyManager.Binding;
+import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.form.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
     public final GPropertyDraw property;

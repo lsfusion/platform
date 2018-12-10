@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server.logics;
+package lsfusion.gwt.server.form.logics;
 
 import java.util.Objects;
 

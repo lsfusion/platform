@@ -1,4 +1,4 @@
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableElement;
@@ -6,7 +6,7 @@ import com.google.gwt.dom.client.TableSectionElement;
 import com.google.gwt.safehtml.shared.SafeHtml;
 
 /**
- * Implementation of {@link lsfusion.gwt.cellview.client.DataGrid} used by IE.
+ * Implementation of {@link lsfusion.gwt.client.cellview.DataGrid} used by IE.
  */
 @SuppressWarnings("unused")
 class DataGridImplTrident extends DataGridImpl {
@@ -38,7 +38,7 @@ class DataGridImplTrident extends DataGridImpl {
 
     /**
      * This method is used for legacy AbstractCellTable that's not a
-     * {@link lsfusion.gwt.cellview.client.DataGridImpl.TableSectionChangeHandler}.
+     * {@link lsfusion.gwt.client.cellview.DataGridImpl.TableSectionChangeHandler}.
      */
     protected void replaceAllRowsImplLegacy(DataGrid<?> table, TableSectionElement section,
                                             SafeHtml html) {
@@ -65,7 +65,7 @@ class DataGridImplTrident extends DataGridImpl {
      * element, and then swap the table section with the corresponding element in the DIV. This
      * method is used in IE since the normal optimizations are not feasible.
      *
-     * @param table   the {@link lsfusion.gwt.cellview.client.DataGrid}
+     * @param table   the {@link lsfusion.gwt.client.cellview.DataGrid}
      * @param section the {@link com.google.gwt.dom.client.TableSectionElement} to replace
      * @param html    the html of a table section element containing the rows
      */

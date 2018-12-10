@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.form.ui.GGridPropertyTable;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
-import static lsfusion.gwt.base.client.EscapeUtils.unicodeEscape;
+import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected final Style.TextAlign textAlign;

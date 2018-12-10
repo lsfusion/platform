@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.client.form;
+package lsfusion.gwt.client.form.form;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
-import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.client.form.form.ui.TooltipManager;
+import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
+import lsfusion.gwt.shared.form.view.GForm;
 
 final class FormDockable {
     private TabWidget tabWidget;

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.actions.navigator;
+package lsfusion.gwt.shared.form.actions.navigator;
 
 import java.io.Serializable;
 

@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.server.navigator.spring;
+package lsfusion.gwt.server.form.navigator.spring;
 
-import lsfusion.gwt.form.server.form.spring.FormProvider;
-import lsfusion.gwt.form.shared.view.GForm;
+import lsfusion.gwt.server.form.form.spring.FormProvider;
+import lsfusion.gwt.shared.form.view.GForm;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.remote.ClientCallBackInterface;

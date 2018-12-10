@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.server.form.spring;
+package lsfusion.gwt.server.form.form.spring;
 
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
-import lsfusion.gwt.form.server.convert.ClientComponentToGwtConverter;
-import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.form.shared.view.*;
+import lsfusion.gwt.server.form.convert.ClientComponentToGwtConverter;
+import lsfusion.gwt.server.form.convert.ClientFormChangesToGwtConverter;
+import lsfusion.gwt.shared.form.view.*;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Collections.synchronizedMap;
-import static lsfusion.gwt.form.server.convert.StaticConverters.convertFont;
+import static lsfusion.gwt.server.form.convert.StaticConverters.convertFont;
 
 // session scoped - one for one browser (! not tab)
 public class FormProviderImpl implements FormProvider, InitializingBean, DisposableBean {

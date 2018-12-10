@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.filter;
+package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.user.client.ui.ListBox;
 

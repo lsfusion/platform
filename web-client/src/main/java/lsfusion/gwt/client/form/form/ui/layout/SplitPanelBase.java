@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -7,7 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.form.shared.view.GComponent;
+import lsfusion.gwt.shared.form.view.GComponent;
 
 public abstract class SplitPanelBase<P extends Panel> {
     private final static int splitterSize = 8;

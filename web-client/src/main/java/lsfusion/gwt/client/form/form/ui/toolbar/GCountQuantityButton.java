@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.client.form.ui.toolbar;
+package lsfusion.gwt.client.form.form.ui.toolbar;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import lsfusion.gwt.form.client.MainFrameMessages;
+import lsfusion.gwt.client.form.MainFrameMessages;
 
 public abstract class GCountQuantityButton extends GToolbarButton {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

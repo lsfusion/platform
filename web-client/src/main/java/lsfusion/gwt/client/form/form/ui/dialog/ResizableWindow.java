@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui.dialog;
+package lsfusion.gwt.client.form.form.ui.dialog;
 
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.util.Location;
@@ -9,9 +9,9 @@ import com.google.gwt.event.logical.shared.HasCloseHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
+import lsfusion.gwt.client.form.form.ui.TooltipManager;
 
-import static lsfusion.gwt.form.client.form.ui.dialog.ResizableWindow.Direction.*;
+import static lsfusion.gwt.client.form.form.ui.dialog.ResizableWindow.Direction.*;
 
 /**
  * based on https://github.com/fredsa/gwt-dnd/blob/master/DragDrop/demo/com/allen_sauer/gwt/dnd/demo/client/example/window/WindowPanel.java

@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.server.navigator;
+package lsfusion.gwt.server.form.navigator;
 
-import lsfusion.gwt.form.server.form.spring.FormSessionObject;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.server.form.FormServerResponseActionHandler;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.actions.navigator.NavigatorRequestAction;
+import lsfusion.gwt.server.form.form.spring.FormSessionObject;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.server.form.form.FormServerResponseActionHandler;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.actions.navigator.NavigatorRequestAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;

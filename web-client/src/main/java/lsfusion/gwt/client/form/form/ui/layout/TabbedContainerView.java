@@ -1,19 +1,19 @@
-package lsfusion.gwt.form.client.form.ui.layout;
+package lsfusion.gwt.client.form.form.ui.layout;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.shared.view.GComponent;
-import lsfusion.gwt.form.shared.view.GContainer;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.form.form.ui.GFormController;
+import lsfusion.gwt.shared.form.view.GComponent;
+import lsfusion.gwt.shared.form.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.*;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.relativePosition;
+import static lsfusion.gwt.client.base.GwtClientUtils.*;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
 

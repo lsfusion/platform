@@ -1,12 +1,12 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GAlignment;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.form.shared.view.GContainerType.*;
+import static lsfusion.gwt.shared.form.view.GContainerType.*;
 
 public class GContainer extends GComponent {
     public String caption;

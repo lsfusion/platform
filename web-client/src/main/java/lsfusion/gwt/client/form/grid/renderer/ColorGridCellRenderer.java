@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.client.grid.renderer;
+package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.cellview.client.DataGrid;
-import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.cellview.DataGrid;
+import lsfusion.gwt.client.cellview.cell.Cell;
 
 public class ColorGridCellRenderer extends AbstractGridCellRenderer {
 

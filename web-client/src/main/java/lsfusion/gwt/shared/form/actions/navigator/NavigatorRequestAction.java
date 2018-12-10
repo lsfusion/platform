@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.actions.navigator;
+package lsfusion.gwt.shared.form.actions.navigator;
 
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
 
 public class NavigatorRequestAction extends NavigatorAction<ServerResponseResult> {
 }

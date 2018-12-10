@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.view.classes;
+package lsfusion.gwt.shared.form.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 import java.util.Date;
 

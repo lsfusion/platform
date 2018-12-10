@@ -25,7 +25,7 @@
  * @return true if successful.
  */
 
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 /**
  * GWT emulation of AtomicBoolean.

@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
 
 public class GNavigatorFolder extends GNavigatorElement implements IsSerializable {
 }

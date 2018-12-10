@@ -1,20 +1,20 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
-import lsfusion.gwt.base.client.Dimension;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayout;
-import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.form.shared.view.GClassViewType;
-import lsfusion.gwt.form.shared.view.GGroupObject;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
+import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
+import lsfusion.gwt.shared.form.view.GClassViewType;
+import lsfusion.gwt.shared.form.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.getOffsetSize;
+import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
 public class GShowTypeView extends ResizableHorizontalPanel {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

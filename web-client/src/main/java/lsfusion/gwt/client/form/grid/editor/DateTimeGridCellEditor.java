@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.classes.GDateTimeType;
-import lsfusion.gwt.form.client.grid.EditManager;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.classes.GDateTimeType;
+import lsfusion.gwt.client.form.grid.EditManager;
 
 import java.sql.Timestamp;
 import java.text.ParseException;

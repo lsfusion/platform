@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.navigator;
+package lsfusion.gwt.client.form.navigator;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
@@ -6,12 +6,12 @@ import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.SimplePanel;
-import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.form.client.form.ui.TooltipManager;
-import lsfusion.gwt.form.shared.view.GNavigatorElement;
-import lsfusion.gwt.form.shared.view.panel.ImageButton;
-import lsfusion.gwt.form.shared.view.window.GToolbarNavigatorWindow;
+import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.client.form.form.ui.TooltipManager;
+import lsfusion.gwt.shared.form.view.GNavigatorElement;
+import lsfusion.gwt.shared.form.view.panel.ImageButton;
+import lsfusion.gwt.shared.form.view.window.GToolbarNavigatorWindow;
 
 import java.util.Set;
 

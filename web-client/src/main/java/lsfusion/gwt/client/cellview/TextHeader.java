@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.dom.client.TableCellElement;
-import lsfusion.gwt.base.client.EscapeUtils;
+import lsfusion.gwt.client.base.EscapeUtils;
 
 public class TextHeader extends Header<String> {
 

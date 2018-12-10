@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid.editor;
+package lsfusion.gwt.client.form.grid.editor;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -12,16 +12,16 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
-import lsfusion.gwt.base.client.ui.GKeyStroke;
-import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.cellview.client.cell.Cell;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
-import lsfusion.gwt.form.shared.view.classes.GDateType;
-import lsfusion.gwt.form.client.grid.EditEvent;
-import lsfusion.gwt.form.client.grid.EditManager;
-import lsfusion.gwt.form.client.grid.NativeEditEvent;
+import lsfusion.gwt.client.base.ui.GKeyStroke;
+import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
+import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.dto.GDateDTO;
+import lsfusion.gwt.shared.form.view.classes.GDateType;
+import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.NativeEditEvent;
 
 import java.text.ParseException;
 import java.util.Date;

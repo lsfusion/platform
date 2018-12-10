@@ -1,9 +1,9 @@
-package lsfusion.gwt.form.shared.view.changes;
+package lsfusion.gwt.shared.form.view.changes;
 
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GPropertyReaderDTO;
-import lsfusion.gwt.form.shared.view.reader.GPropertyReader;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.form.view.changes.dto.GPropertyReaderDTO;
+import lsfusion.gwt.shared.form.view.reader.GPropertyReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;

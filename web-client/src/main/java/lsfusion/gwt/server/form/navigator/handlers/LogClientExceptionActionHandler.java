@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.server.navigator.handlers;
+package lsfusion.gwt.server.form.navigator.handlers;
 
 import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import lsfusion.base.ConcurrentIdentityWeakHashMap;
 import lsfusion.base.col.MapFact;
-import lsfusion.gwt.form.server.navigator.NavigatorActionHandler;
-import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.server.spring.LSFusionDispatchServlet;
-import lsfusion.gwt.form.shared.actions.navigator.LogClientExceptionAction;
+import lsfusion.gwt.server.form.navigator.NavigatorActionHandler;
+import lsfusion.gwt.shared.base.actions.VoidResult;
+import lsfusion.gwt.server.form.spring.LSFusionDispatchServlet;
+import lsfusion.gwt.shared.form.actions.navigator.LogClientExceptionAction;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -21,7 +21,7 @@ import java.rmi.RemoteException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static lsfusion.gwt.form.server.GLoggers.invocationLogger;
+import static lsfusion.gwt.server.form.GLoggers.invocationLogger;
 
 public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogClientExceptionAction, VoidResult> {
     public static final long COUNTER_CLEANER_PERIOD = 3 * 60 * 1000;

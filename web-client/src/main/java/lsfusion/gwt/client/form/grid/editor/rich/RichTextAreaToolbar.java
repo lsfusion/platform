@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.grid.editor.rich;
+package lsfusion.gwt.client.form.grid.editor.rich;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
@@ -12,8 +12,8 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.RichTextAreaImpl;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.FlexPanel;
 
 public class RichTextAreaToolbar extends Composite {
     private Images images = GWT.create(Images.class);

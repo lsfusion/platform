@@ -1,7 +1,7 @@
-package lsfusion.gwt.form.shared.view.filter;
+package lsfusion.gwt.shared.form.view.filter;
 
 
-import lsfusion.gwt.form.client.MainFrameMessages;
+import lsfusion.gwt.client.form.MainFrameMessages;
 
 public enum GCompare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, INARRAY;

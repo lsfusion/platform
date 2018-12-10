@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -8,9 +8,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.BaseMessages;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.client.base.BaseMessages;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class DialogBoxHelper {
     private static final BaseMessages messages = BaseMessages.Instance.get();

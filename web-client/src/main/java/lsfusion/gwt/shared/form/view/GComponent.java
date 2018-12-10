@@ -1,10 +1,10 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.shared.form.view.changes.dto.ColorDTO;
 
 import java.io.Serializable;
 

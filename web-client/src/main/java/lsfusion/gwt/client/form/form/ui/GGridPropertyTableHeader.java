@@ -1,22 +1,22 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.cellview.client.Column;
-import lsfusion.gwt.cellview.client.Header;
-import lsfusion.gwt.cellview.client.HeaderPanel;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
+import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.cellview.Column;
+import lsfusion.gwt.client.cellview.Header;
+import lsfusion.gwt.client.cellview.HeaderPanel;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;

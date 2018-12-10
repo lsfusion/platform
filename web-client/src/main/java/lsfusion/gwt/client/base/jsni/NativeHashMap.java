@@ -1,4 +1,4 @@
-package lsfusion.gwt.base.client.jsni;
+package lsfusion.gwt.client.base.jsni;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -144,11 +144,11 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }
 
     public native V jsGet(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
-                if (this.@lsfusion.gwt.base.client.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
+                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
                     return entry[1];
                 }
             }
@@ -157,11 +157,11 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native V jsPut(K key, V value, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
-                if (this.@lsfusion.gwt.base.client.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
+                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
                     // Found an exact match, just update the existing entry
                     var previous = entry[1];
                     entry[1] = value;
@@ -169,27 +169,27 @@ public class NativeHashMap<K, V> implements Map<K, V> {
                 }
             }
         } else {
-            array = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode] = []
+            array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode] = []
         }
 
         array.push([key, value]);
-        ++this.@lsfusion.gwt.base.client.jsni.NativeHashMap::size;
+        ++this.@lsfusion.gwt.client.base.jsni.NativeHashMap::size;
         return null;
     }-*/;
 
     private native V jsRemove(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
                 var entry = array[i];
-                if (this.@lsfusion.gwt.base.client.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
+                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, entry[0])) {
                     if (array.length == 1) {
                         // remove the whole array
-                        delete this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode];
+                        delete this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
                     } else {
                         array.splice(i, 1)
                     }
-                    --this.@lsfusion.gwt.base.client.jsni.NativeHashMap::size;
+                    --this.@lsfusion.gwt.client.base.jsni.NativeHashMap::size;
                     return entry[1]
                 }
             }
@@ -198,10 +198,10 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native boolean jsContainsKey(Object key, int hashCode) /*-{
-        var array = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap[hashCode];
+        var array = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap[hashCode];
         if (array) {
             for (var i = 0, c = array.length; i < c; ++i) {
-                if (this.@lsfusion.gwt.base.client.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, array[i][0])) {
+                if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(key, array[i][0])) {
                     return true;
                 }
             }
@@ -210,14 +210,14 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native boolean jsContainsValue(Object value) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    if (this.@lsfusion.gwt.base.client.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, array[i][1])) {
+                    if (this.@lsfusion.gwt.client.base.jsni.NativeHashMap::equalsBridge(Ljava/lang/Object;Ljava/lang/Object;)(value, array[i][1])) {
                         return true;
                     }
                 }
@@ -227,42 +227,42 @@ public class NativeHashMap<K, V> implements Map<K, V> {
     }-*/;
 
     private native void jsForeachKey(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.base.client.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][0]);
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][0]);
                 }
             }
         }
     }-*/;
 
     private native void jsForeachValue(Function f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.base.client.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][1]);
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply(Llsfusion/gwt/base/client/jsni/Function;Ljava/lang/Object;)(f, array[i][1]);
                 }
             }
         }
     }-*/;
 
     private native void jsForeachEntry(Function2 f) /*-{
-        var hashCodeMap = this.@lsfusion.gwt.base.client.jsni.NativeHashMap::hasCodeMap;
+        var hashCodeMap = this.@lsfusion.gwt.client.base.jsni.NativeHashMap::hasCodeMap;
         for (var hashCode in hashCodeMap) {
             // sanity check that it's really one of ours
             var hashCodeInt = parseInt(hashCode, 10);
             if (hashCode == hashCodeInt) {
                 var array = hashCodeMap[hashCodeInt];
                 for (var i = 0, c = array.length; i < c; ++i) {
-                    this.@lsfusion.gwt.base.client.jsni.NativeHashMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
+                    this.@lsfusion.gwt.client.base.jsni.NativeHashMap::bridgeApply2(Llsfusion/gwt/base/client/jsni/Function2;Ljava/lang/Object;Ljava/lang/Object;)
                             (f, array[i][0], array[i][1]);
                 }
             }

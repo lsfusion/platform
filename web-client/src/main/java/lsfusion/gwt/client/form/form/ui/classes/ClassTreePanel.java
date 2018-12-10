@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client.form.ui.classes;
+package lsfusion.gwt.client.form.form.ui.classes;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.form.shared.view.classes.GObjectClass;
+import lsfusion.gwt.shared.form.view.classes.GObjectClass;
 
 import static com.google.gwt.safehtml.shared.SafeHtmlUtils.fromString;
-import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public abstract class ClassTreePanel extends Composite {
     private GObjectClass baseClass;

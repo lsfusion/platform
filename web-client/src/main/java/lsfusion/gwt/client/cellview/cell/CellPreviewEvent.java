@@ -13,24 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.cellview.client.cell;
+package lsfusion.gwt.client.cellview.cell;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
-import lsfusion.gwt.cellview.client.HasData;
+import lsfusion.gwt.client.cellview.HasData;
 
 /**
  * Allows the previewing of events before they are fired to Cells.
  *
- * @param <T> the data type of the {@link lsfusion.gwt.cellview.client.HasData} source
+ * @param <T> the data type of the {@link lsfusion.gwt.client.cellview.HasData} source
  */
 public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
 
     /**
      * Handler for {@link CellPreviewEvent}.
      *
-     * @param <T> the data type of the {@link lsfusion.gwt.cellview.client.HasData}
+     * @param <T> the data type of the {@link lsfusion.gwt.client.cellview.HasData}
      */
     public interface Handler<T> extends EventHandler {
 
@@ -55,8 +55,8 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      * @param <T> the old value type
      * @param source the source of the handlers
      * @param nativeEvent the event to preview
-     * @param display the {@link lsfusion.gwt.cellview.client.HasData} source of the event
-     * @param context the Cell {@link lsfusion.gwt.cellview.client.cell.Cell.Context}
+     * @param display the {@link lsfusion.gwt.client.cellview.HasData} source of the event
+     * @param context the Cell {@link lsfusion.gwt.client.cellview.cell.Cell.Context}
      * @param value the value where the event occurred
      * @param isCellEditing indicates whether or not the cell is being edited
      * @return the {@link CellPreviewEvent} that was fired
@@ -96,7 +96,7 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
      *
      * @param nativeEvent the event to preview
      * @param display the {@link HasData} source of the event
-     * @param context the Cell {@link lsfusion.gwt.cellview.client.cell.Cell.Context}
+     * @param context the Cell {@link lsfusion.gwt.client.cellview.cell.Cell.Context}
      * @param value the value where the event occurred
      * @param isCellEditing indicates whether or not the cell is being edited
      */
@@ -128,9 +128,9 @@ public class CellPreviewEvent<T> extends GwtEvent<CellPreviewEvent.Handler<T>> {
     }
 
     /**
-     * Get the cell {@link lsfusion.gwt.cellview.client.cell.Cell.Context}.
+     * Get the cell {@link lsfusion.gwt.client.cellview.cell.Cell.Context}.
      *
-     * @return the cell {@link lsfusion.gwt.cellview.client.cell.Cell.Context}
+     * @return the cell {@link lsfusion.gwt.client.cellview.cell.Cell.Context}
      */
     public Cell.Context getContext() {
         return context;

@@ -1,8 +1,8 @@
-package lsfusion.gwt.form.shared.view.filter;
+package lsfusion.gwt.shared.form.view.filter;
 
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.dto.GFilterValueDTO;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.dto.GFilterValueDTO;
 
 public class GPropertyFilterValue extends GFilterValue {
     public GPropertyDraw property;

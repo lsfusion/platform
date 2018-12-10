@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.shared.form.view;
 
 public enum GClassViewType {
     PANEL, TOOLBAR, GRID, HIDE;

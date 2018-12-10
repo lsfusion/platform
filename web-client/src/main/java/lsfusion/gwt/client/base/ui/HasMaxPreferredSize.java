@@ -1,6 +1,6 @@
-package lsfusion.gwt.base.client.ui;
+package lsfusion.gwt.client.base.ui;
 
-import lsfusion.gwt.base.client.Dimension;
+import lsfusion.gwt.client.base.Dimension;
 
 public interface HasMaxPreferredSize {
     Dimension getMaxPreferredSize();

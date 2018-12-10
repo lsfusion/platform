@@ -1,32 +1,32 @@
-package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
+package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.Callback;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.DialogBoxHelper;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.ErrorHandlingCallback;
-import lsfusion.gwt.form.client.MainFrameMessages;
-import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
-import lsfusion.gwt.form.client.form.ui.GGridTable;
-import lsfusion.gwt.form.client.form.ui.GGroupObjectController;
-import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
-import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.form.shared.view.GFont;
-import lsfusion.gwt.form.shared.view.GPropertyDraw;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.client.base.Callback;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.form.ErrorHandlingCallback;
+import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.form.ui.GCaptionPanel;
+import lsfusion.gwt.client.form.form.ui.GGridTable;
+import lsfusion.gwt.client.form.form.ui.GGroupObjectController;
+import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
+import lsfusion.gwt.shared.form.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.form.view.GFont;
+import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.createHorizontalStrut;
-import static lsfusion.gwt.base.client.GwtClientUtils.createVerticalStrut;
-import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_FAMILY;
-import static lsfusion.gwt.form.shared.view.GFont.DEFAULT_FONT_SIZE;
+import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
+import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
+import static lsfusion.gwt.shared.form.view.GFont.DEFAULT_FONT_FAMILY;
+import static lsfusion.gwt.shared.form.view.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends GResizableModalWindow {

@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.server;
+package lsfusion.gwt.server.form;
 
 import org.apache.log4j.Logger;
 

@@ -1,4 +1,4 @@
-package lsfusion.gwt.cellview.client;
+package lsfusion.gwt.client.cellview;
 
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ScrollPanel;

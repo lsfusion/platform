@@ -1,14 +1,14 @@
-package lsfusion.gwt.form.server.convert;
+package lsfusion.gwt.server.form.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
-import lsfusion.gwt.form.server.FileUtils;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.changes.dto.ColorDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GDateDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
-import lsfusion.gwt.form.shared.view.changes.dto.GTimeDTO;
+import lsfusion.gwt.server.form.FileUtils;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.changes.dto.ColorDTO;
+import lsfusion.gwt.shared.form.view.changes.dto.GDateDTO;
+import lsfusion.gwt.shared.form.view.changes.dto.GFilesDTO;
+import lsfusion.gwt.shared.form.view.changes.dto.GTimeDTO;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.ColumnUserPreferences;

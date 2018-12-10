@@ -1,21 +1,21 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.user.client.ui.Panel;
-import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
-import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.form.shared.view.*;
-import lsfusion.gwt.form.shared.view.changes.GFormChanges;
-import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.form.shared.view.reader.*;
+import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
+import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
+import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.form.view.changes.GFormChanges;
+import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
+import lsfusion.gwt.shared.form.view.reader.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
-import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
+import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
+import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
     private static final GFormLayoutImpl layoutImpl = GFormLayoutImpl.get();

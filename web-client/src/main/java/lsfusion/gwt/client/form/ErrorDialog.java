@@ -1,13 +1,13 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.BaseMessages;
-import lsfusion.gwt.base.client.ui.FlexPanel;
-import lsfusion.gwt.base.client.ui.GFlexAlignment;
-import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalWindow;
-import lsfusion.gwt.form.client.form.ui.layout.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.base.BaseMessages;
+import lsfusion.gwt.client.base.ui.FlexPanel;
+import lsfusion.gwt.client.base.ui.GFlexAlignment;
+import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
+import lsfusion.gwt.client.form.form.ui.layout.flex.FlexTabbedPanel;
 
 @SuppressWarnings("GWTStyleCheck")
 public class ErrorDialog extends GResizableModalWindow {

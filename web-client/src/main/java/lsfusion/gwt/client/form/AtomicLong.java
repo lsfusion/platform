@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client.form;
 
 /**
  * GWT emulated version of {@link AtomicLong}.  It's a thin wrapper

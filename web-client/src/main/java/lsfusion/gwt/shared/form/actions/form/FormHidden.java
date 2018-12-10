@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.actions.form;
+package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.base.shared.actions.VoidResult;
+import lsfusion.gwt.shared.base.actions.VoidResult;
 
 public class FormHidden extends FormAction<VoidResult> {
     public FormHidden() {

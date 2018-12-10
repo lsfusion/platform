@@ -1,6 +1,6 @@
-package lsfusion.gwt.form.shared.actions.form;
+package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.form.shared.view.GFormUserPreferences;
+import lsfusion.gwt.shared.form.view.GFormUserPreferences;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class GroupReport extends FormRequestIndexCountingAction<StringResult> {

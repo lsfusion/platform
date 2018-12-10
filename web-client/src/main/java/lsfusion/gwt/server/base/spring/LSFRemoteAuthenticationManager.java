@@ -1,8 +1,8 @@
-package lsfusion.gwt.base.server.spring;
+package lsfusion.gwt.server.base.spring;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.gwt.form.server.logics.LogicsConnection;
+import lsfusion.gwt.server.form.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
