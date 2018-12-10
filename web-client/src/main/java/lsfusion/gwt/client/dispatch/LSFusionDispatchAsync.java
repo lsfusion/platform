@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.form.dispatch;
+package lsfusion.gwt.client.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;

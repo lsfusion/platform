@@ -1,8 +1,7 @@
-package lsfusion.gwt.client.form.dispatch;
+package lsfusion.gwt.client.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.shared.actions.navigator.LogicsAndNavigatorAction;
-import lsfusion.gwt.shared.actions.navigator.NavigatorAction;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Result;
 

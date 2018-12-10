@@ -10,7 +10,7 @@ import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
 import lsfusion.gwt.shared.result.VoidResult;
-import lsfusion.gwt.client.form.dispatch.LogicsAndNavigatorDispatchAsync;
+import lsfusion.gwt.client.dispatch.LogicsAndNavigatorDispatchAsync;
 import lsfusion.gwt.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.shared.actions.navigator.LogClientExceptionAction;
 import net.customware.gwt.dispatch.shared.Action;
