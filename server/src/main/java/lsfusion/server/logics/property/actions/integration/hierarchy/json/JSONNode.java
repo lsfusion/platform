@@ -22,7 +22,12 @@ public class JSONNode implements Node<JSONNode> {
     }
     
     public static JSONNode getJSONNode(Object object, boolean convertValue) throws JSONException {
-        return new JSONNode(JSONReader.toJSONObject(object, convertValue));
+        JSONObject jsonObject = JSONReader.toJSONObject(object, convertValue);
+        if(jsonObject == null) {
+            assert !convertValue;
+            return null;
+        }
+        return new JSONNode(jsonObject);
     }
 
     public static Object putJSONNode(JSONNode node, boolean convertValue) throws JSONException {

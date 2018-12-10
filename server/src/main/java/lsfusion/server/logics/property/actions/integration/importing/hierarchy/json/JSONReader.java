@@ -69,8 +69,11 @@ public class JSONReader {
     }
 
     public static JSONObject toJSONObject(Object object, boolean convertValue) throws JSONException {
-        if(object instanceof JSONObject || !convertValue)
+        if(object instanceof JSONObject)
             return (JSONObject) object;
+
+        if(!convertValue)
+            return null;
         
         JSONObject virtObject = new JSONObject();
         virtObject.put("value", object);
