@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GUserPreferencesButton;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GFormChanges;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;

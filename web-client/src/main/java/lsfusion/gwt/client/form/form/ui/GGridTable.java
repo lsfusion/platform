@@ -24,7 +24,6 @@ import lsfusion.gwt.client.form.HotkeyManager;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;

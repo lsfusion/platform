@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 

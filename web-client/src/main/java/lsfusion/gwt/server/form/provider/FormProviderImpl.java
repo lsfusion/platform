@@ -5,7 +5,6 @@ import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;

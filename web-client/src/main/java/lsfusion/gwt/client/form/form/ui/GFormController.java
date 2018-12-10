@@ -42,7 +42,6 @@ import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences
 import lsfusion.gwt.shared.actions.form.*;
 import lsfusion.gwt.shared.actions.logics.GenerateID;
 import lsfusion.gwt.shared.actions.logics.GenerateIDResult;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.actions.GAction;
 import lsfusion.gwt.shared.view.actions.GLogMessageAction;

@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.form.ui;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GFormChanges;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;

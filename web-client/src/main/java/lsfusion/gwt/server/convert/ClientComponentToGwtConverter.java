@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.ui.GAlignment;
 import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.classes.GClass;
 import lsfusion.gwt.shared.view.filter.GCompare;
