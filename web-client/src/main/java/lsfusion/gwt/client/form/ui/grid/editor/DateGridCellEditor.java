@@ -15,7 +15,7 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 import lsfusion.gwt.shared.view.GKeyStroke;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.shared.view.classes.GDateType;

@@ -13,13 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.dom.client.TableSectionElement;
-import lsfusion.gwt.client.cellview.cell.Cell.Context;
-import lsfusion.gwt.client.cellview.cell.HasCell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell.Context;
+import lsfusion.gwt.client.form.ui.cellview.cell.HasCell;
 
 import java.util.Collection;
 import java.util.List;

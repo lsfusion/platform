@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.EscapeUtils;

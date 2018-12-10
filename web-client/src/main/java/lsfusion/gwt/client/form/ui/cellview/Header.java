@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -28,7 +28,7 @@ import static java.util.Collections.unmodifiableSet;
 /**
  * A table column header or footer.
  *
- * @param <H> the {@link lsfusion.gwt.client.cellview.cell.Cell} type
+ * @param <H> the {@link lsfusion.gwt.client.form.ui.cellview.cell.Cell} type
  */
 public abstract class Header<H> {
 

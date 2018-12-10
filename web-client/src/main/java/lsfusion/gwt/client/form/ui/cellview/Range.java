@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 public class Range {
     public final int start;

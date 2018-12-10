@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview.cell;
+package lsfusion.gwt.client.form.ui.cellview.cell;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.safehtml.shared.SafeHtml;

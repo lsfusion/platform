@@ -1,16 +1,8 @@
 package lsfusion.gwt.client.form.ui.grid.editor;
 
 import com.google.gwt.dom.client.DivElement;
-import lsfusion.gwt.client.cellview.DataGrid;
-import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.shared.view.GExtInt;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.classes.*;
-import lsfusion.gwt.shared.view.classes.link.*;
-import lsfusion.gwt.client.form.ui.grid.EditManager;
-import lsfusion.gwt.client.form.ui.grid.editor.rich.RichTextGridCellEditor;
-
-import java.util.ArrayList;
+import lsfusion.gwt.client.form.ui.cellview.DataGrid;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 
 public abstract class AbstractGridCellEditor implements GridCellEditor {
     @Override

@@ -9,7 +9,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.base.ui.ProgressBar;
 import lsfusion.gwt.shared.view.GPropertyDraw;

@@ -3,10 +3,10 @@ package lsfusion.gwt.client.form.ui;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.cellview.AbstractDataGridBuilder;
-import lsfusion.gwt.client.cellview.Column;
-import lsfusion.gwt.client.cellview.DataGrid;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.AbstractDataGridBuilder;
+import lsfusion.gwt.client.form.ui.cellview.Column;
+import lsfusion.gwt.client.form.ui.cellview.DataGrid;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.util.List;

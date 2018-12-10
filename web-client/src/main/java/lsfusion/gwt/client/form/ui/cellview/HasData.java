@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.event.shared.HasHandlers;
-import lsfusion.gwt.client.cellview.cell.HasCellPreviewHandlers;
+import lsfusion.gwt.client.form.ui.cellview.cell.HasCellPreviewHandlers;
 
 import java.util.List;
 

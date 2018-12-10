@@ -3,8 +3,8 @@ package lsfusion.gwt.client.form.ui.grid.editor;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import lsfusion.gwt.client.cellview.DataGrid;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.DataGrid;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;
 
 public interface GridCellEditor {

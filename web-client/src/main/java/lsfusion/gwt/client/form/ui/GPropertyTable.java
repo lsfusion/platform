@@ -8,10 +8,10 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.CopyPasteUtils;
 import lsfusion.gwt.shared.view.GKeyStroke;
-import lsfusion.gwt.client.cellview.Column;
-import lsfusion.gwt.client.cellview.DataGrid;
-import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.cellview.cell.HasCell;
+import lsfusion.gwt.client.form.ui.cellview.Column;
+import lsfusion.gwt.client.form.ui.cellview.DataGrid;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.cell.HasCell;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.shared.view.GEditBindingMap;
@@ -26,7 +26,7 @@ import java.util.List;
 import static com.google.gwt.dom.client.BrowserEvents.CONTEXTMENU;
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.client.cellview.cell.Cell.Context;
+import static lsfusion.gwt.client.form.ui.cellview.cell.Cell.Context;
 import static lsfusion.gwt.shared.view.GEditBindingMap.*;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {

@@ -87,12 +87,12 @@
 
     <!-- Standard CellBasedWidgetImpl implementation. -->
     <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard">
-        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+        <when-type-is class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImpl"/>
     </replace-with>
 
     <!-- IE-specific CellBasedWidgetImpl implementation. -->
     <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident">
-        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+        <when-type-is class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="ie6"/>
             <when-property-is name="user.agent" value="ie8"/>
@@ -100,8 +100,8 @@
     </replace-with>
 
     <!-- StandardBase CellBasedWidgetImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandardBase">
-        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+    <replace-with class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandardBase">
+        <when-type-is class="lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="safari"/>
             <when-property-is name="user.agent" value="ie9"/>

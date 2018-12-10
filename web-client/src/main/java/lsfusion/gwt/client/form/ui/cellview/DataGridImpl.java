@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;

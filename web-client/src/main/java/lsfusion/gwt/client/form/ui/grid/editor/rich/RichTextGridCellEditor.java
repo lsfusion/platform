@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.shared.view.GFlexAlignment;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;

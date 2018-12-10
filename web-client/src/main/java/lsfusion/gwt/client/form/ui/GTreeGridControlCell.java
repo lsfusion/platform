@@ -4,10 +4,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
-import lsfusion.gwt.client.cellview.cell.AbstractCell;
+import lsfusion.gwt.client.form.ui.cellview.cell.AbstractCell;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
 
 public class GTreeGridControlCell extends AbstractCell<Object> {
     private final String ICON_LEAF = "tree_leaf.png";

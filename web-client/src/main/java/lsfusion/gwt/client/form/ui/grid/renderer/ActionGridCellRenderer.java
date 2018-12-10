@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.ui.grid.renderer;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.cellview.DataGrid;
-import lsfusion.gwt.client.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.DataGrid;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GFontMetrics;

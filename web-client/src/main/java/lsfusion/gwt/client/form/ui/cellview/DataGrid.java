@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package lsfusion.gwt.client.cellview;
+package lsfusion.gwt.client.form.ui.cellview;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -31,10 +31,10 @@ import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.cellview.cell.Cell.Context;
-import lsfusion.gwt.client.cellview.cell.CellPreviewEvent;
-import lsfusion.gwt.client.cellview.cell.HasCell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell.Context;
+import lsfusion.gwt.client.form.ui.cellview.cell.CellPreviewEvent;
+import lsfusion.gwt.client.form.ui.cellview.cell.HasCell;
 
 import java.util.*;
 
@@ -47,9 +47,9 @@ import static java.lang.Math.min;
  * Abstract base class for tabular views that supports paging and columns.
  * <p/>
  * <p>
- * <h3>Columns</h3> The {@link Column} class defines the {@link lsfusion.gwt.client.cellview.cell.Cell} used to
+ * <h3>Columns</h3> The {@link Column} class defines the {@link lsfusion.gwt.client.form.ui.cellview.cell.Cell} used to
  * render a column. Implement {@link Column#getValue(Object)} to retrieve the
- * field value from the row object that will be rendered in the {@link lsfusion.gwt.client.cellview.cell.Cell}.
+ * field value from the row object that will be rendered in the {@link lsfusion.gwt.client.form.ui.cellview.cell.Cell}.
  * </p>
  * <p/>
  * <p>
@@ -118,7 +118,7 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         /**
          * The path to the default CSS styles used by this resource.
          */
-        String DEFAULT_CSS = "lsfusion/gwt/client/cellview/DataGrid.css";
+        String DEFAULT_CSS = "lsfusion/gwt/client/form/ui/cellview/DataGrid.css";
 
         /**
          * Applied to the table.
