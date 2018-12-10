@@ -1,7 +1,7 @@
 package lsfusion.http;
 
 import lsfusion.base.ExternalUtils;
-import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.entity.ContentType;
 

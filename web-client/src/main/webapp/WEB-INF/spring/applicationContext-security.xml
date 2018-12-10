@@ -73,19 +73,19 @@
     <!-- Custom beans -->
 
     <!-- Custom request beans-->
-    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.form.logics.provider.LogicsHandlerProviderImpl" />
+    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl" />
 
     <!-- GWT beans -->
-    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.form.navigator.provider.LogicsAndNavigatorProviderImpl">
+    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
-    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.form.provider.FormProviderImpl">
+    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.provider.FormProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
 
     <!-- GWT request handler -->
-    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.form.LSFusionDispatchServlet"/>
+    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
     <b:bean id="captchaHandler" class="lsfusion.http.captcha.ImageCaptchaRequestHandler"/>

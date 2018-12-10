@@ -33,7 +33,7 @@
     </context-param>
 
     <listener>
-        <listener-class>lsfusion.gwt.server.form.AppContextListener</listener-class>
+        <listener-class>lsfusion.gwt.server.AppContextListener</listener-class>
     </listener>
 
     <servlet>

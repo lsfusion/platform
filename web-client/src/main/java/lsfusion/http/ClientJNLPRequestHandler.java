@@ -1,7 +1,7 @@
 package lsfusion.http;
 
 import lsfusion.base.IOUtils;
-import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import org.apache.log4j.Logger;

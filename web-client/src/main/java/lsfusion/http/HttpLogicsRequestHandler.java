@@ -1,6 +1,6 @@
 package lsfusion.http;
 
-import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.web.HttpRequestHandler;
 

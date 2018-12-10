@@ -1,7 +1,7 @@
 package lsfusion.http;
 
 import com.google.common.io.ByteStreams;
-import lsfusion.gwt.server.form.logics.LogicsConnection;
+import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 
