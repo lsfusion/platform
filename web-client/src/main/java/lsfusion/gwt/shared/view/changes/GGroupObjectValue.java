@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.changes;
+package lsfusion.gwt.shared.view.changes;
 
 import java.io.Serializable;
 import java.util.Arrays;

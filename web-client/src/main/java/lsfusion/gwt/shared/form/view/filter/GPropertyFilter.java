@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.form.view.filter;
 
 import lsfusion.gwt.shared.form.view.GGroupObject;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.dto.GPropertyFilterDTO;
 
 public class GPropertyFilter {

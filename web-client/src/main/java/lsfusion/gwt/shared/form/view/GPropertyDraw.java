@@ -6,7 +6,7 @@ import lsfusion.gwt.shared.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrame;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.GFormController;
-import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.classes.*;
 import lsfusion.gwt.shared.form.view.filter.GCompare;
 import lsfusion.gwt.client.form.grid.EditManager;

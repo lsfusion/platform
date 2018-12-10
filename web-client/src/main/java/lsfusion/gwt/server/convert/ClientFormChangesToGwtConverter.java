@@ -6,8 +6,8 @@ import lsfusion.client.logics.*;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.form.view.GClassViewType;
-import lsfusion.gwt.shared.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.changes.GGroupObjectValueBuilder;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.shared.view.dto.*;
 import lsfusion.interop.ClassViewType;
 

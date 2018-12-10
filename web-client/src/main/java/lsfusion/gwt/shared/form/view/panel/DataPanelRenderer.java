@@ -19,7 +19,7 @@ import lsfusion.gwt.client.form.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.client.form.form.ui.TooltipManager;
 import lsfusion.gwt.shared.form.view.GEditBindingMap;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.dto.ColorDTO;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 
 import java.io.Serializable;
 
