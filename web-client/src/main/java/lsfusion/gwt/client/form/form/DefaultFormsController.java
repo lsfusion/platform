@@ -8,7 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.form.MainFrame;
+import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;

@@ -1,9 +1,8 @@
-package lsfusion.gwt.client.form;
+package lsfusion.gwt.client;
 
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
-import lsfusion.gwt.client.ErrorDialog;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;

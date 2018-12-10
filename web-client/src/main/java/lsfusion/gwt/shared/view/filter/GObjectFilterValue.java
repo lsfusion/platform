@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.filter;
 
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.GObject;
 import lsfusion.gwt.shared.view.changes.dto.GFilterValueDTO;
 

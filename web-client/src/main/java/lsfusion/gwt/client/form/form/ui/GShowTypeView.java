@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GClassViewType;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.grid.EditManager;
 import lsfusion.gwt.client.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.grid.editor.LongGridCellEditor;

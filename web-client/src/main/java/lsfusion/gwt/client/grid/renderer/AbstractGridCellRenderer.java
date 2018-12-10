@@ -3,7 +3,7 @@ package lsfusion.gwt.client.grid.renderer;
 import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 
 public abstract class AbstractGridCellRenderer implements GridCellRenderer {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

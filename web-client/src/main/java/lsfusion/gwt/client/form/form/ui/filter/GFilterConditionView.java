@@ -8,7 +8,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.*;

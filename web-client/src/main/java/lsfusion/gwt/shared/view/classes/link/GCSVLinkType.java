@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes.link;
 
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 
 public class GCSVLinkType extends GLinkType {
     @Override

@@ -15,7 +15,7 @@ import lsfusion.gwt.client.cellview.HeaderPanel;
 import lsfusion.gwt.client.cellview.KeyboardRowChangedEvent;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.cellview.cell.CellPreviewEvent;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.client.grid.EditEvent;

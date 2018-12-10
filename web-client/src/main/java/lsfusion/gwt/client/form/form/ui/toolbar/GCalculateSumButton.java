@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.form.ui.toolbar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.math.BigDecimal;

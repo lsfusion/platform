@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.shared.view.classes.GObjectClass;

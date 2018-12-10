@@ -24,7 +24,7 @@ import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.client.form.HotkeyManager.Binding;
+import static lsfusion.gwt.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
     public final GPropertyDraw property;

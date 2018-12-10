@@ -28,7 +28,7 @@ import lsfusion.gwt.client.grid.editor.PopupBasedGridCellEditor;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
-import static lsfusion.gwt.client.form.HotkeyManager.Binding;
+import static lsfusion.gwt.client.HotkeyManager.Binding;
 import static lsfusion.gwt.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
 
 public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler {

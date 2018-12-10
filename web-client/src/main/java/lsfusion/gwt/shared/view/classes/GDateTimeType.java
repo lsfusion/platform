@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.shared.DateTimeFormat;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.grid.EditManager;
 import lsfusion.gwt.client.grid.editor.DateTimeGridCellEditor;
 import lsfusion.gwt.client.grid.editor.GridCellEditor;

@@ -130,7 +130,7 @@
 
     <!-- - - - - - - - - - - MAIN - - - - - - - - - - - - - - - - -->
 
-    <entry-point class='lsfusion.gwt.client.form.MainFrame'/>
+    <entry-point class='lsfusion.gwt.client.MainFrame'/>
 
     <!--  GWT dispatch -->
     <inherits name='net.customware.gwt.dispatch.Dispatch' />

@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.client.grid.EditEvent;

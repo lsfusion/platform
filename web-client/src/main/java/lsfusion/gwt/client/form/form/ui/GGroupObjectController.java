@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.client.form.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;

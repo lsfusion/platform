@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.ResizableFocusPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
