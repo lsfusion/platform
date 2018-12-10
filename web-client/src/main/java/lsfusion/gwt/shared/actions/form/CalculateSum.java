@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.actions.form;
 
 import lsfusion.gwt.shared.result.NumberResult;
-import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 
 public class CalculateSum extends FormRequestIndexCountingAction<NumberResult> {
     public int propertyID;

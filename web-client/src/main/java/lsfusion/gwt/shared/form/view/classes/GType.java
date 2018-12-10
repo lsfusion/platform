@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.form.view.classes;
 
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.shared.form.view.*;
-import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.filter.GCompare;
 import lsfusion.gwt.client.form.grid.EditManager;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;

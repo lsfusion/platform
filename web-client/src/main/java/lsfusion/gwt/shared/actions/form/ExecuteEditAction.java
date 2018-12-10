@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 
 public class ExecuteEditAction extends FormRequestIndexCountingAction<ServerResponseResult> {
     public int propertyId;

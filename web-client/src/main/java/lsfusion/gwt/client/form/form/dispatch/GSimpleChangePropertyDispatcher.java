@@ -7,7 +7,7 @@ import lsfusion.gwt.shared.form.view.GEditBindingMap;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.view.GUserInputResult;
 import lsfusion.gwt.shared.view.actions.GRequestUserInputAction;
-import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 
 
 public class GSimpleChangePropertyDispatcher extends GFormActionDispatcher {

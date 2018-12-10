@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.form.view.*;
-import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.dto.ColorDTO;
 import lsfusion.gwt.shared.form.view.dto.GDateDTO;
 import lsfusion.gwt.shared.form.view.dto.GFilesDTO;
