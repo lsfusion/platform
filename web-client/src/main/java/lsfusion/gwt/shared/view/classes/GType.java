@@ -4,9 +4,9 @@ import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GCompare;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.grid.EditManager;
+import lsfusion.gwt.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.view.panel.DataPanelRenderer;
 import lsfusion.gwt.shared.view.panel.PanelRenderer;
 

@@ -4,7 +4,7 @@ import lsfusion.base.ProgressBar;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
-import lsfusion.gwt.client.form.window.GProgressBar;
+import lsfusion.gwt.client.window.GProgressBar;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;

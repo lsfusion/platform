@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.view.window;
 
-import lsfusion.gwt.client.form.navigator.GINavigatorController;
-import lsfusion.gwt.client.form.navigator.GNavigatorView;
-import lsfusion.gwt.client.form.navigator.GPanelNavigatorView;
+import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.GNavigatorView;
+import lsfusion.gwt.client.navigator.GPanelNavigatorView;
 
 public class GPanelNavigatorWindow extends GNavigatorWindow {
     public int orientation;

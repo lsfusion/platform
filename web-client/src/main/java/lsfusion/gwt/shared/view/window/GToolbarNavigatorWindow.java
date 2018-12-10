@@ -2,9 +2,9 @@ package lsfusion.gwt.shared.view.window;
 
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import lsfusion.gwt.client.form.navigator.GINavigatorController;
-import lsfusion.gwt.client.form.navigator.GNavigatorView;
-import lsfusion.gwt.client.form.navigator.GToolbarNavigatorView;
+import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.GNavigatorView;
+import lsfusion.gwt.client.navigator.GToolbarNavigatorView;
 
 public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final float TOP_ALIGNMENT = 0.0f;

@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.*;
-import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.HashMap;

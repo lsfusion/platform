@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.view.window;
 
-import lsfusion.gwt.client.form.navigator.GINavigatorController;
-import lsfusion.gwt.client.form.navigator.GNavigatorView;
-import lsfusion.gwt.client.form.navigator.GTreeNavigatorView;
+import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.GNavigatorView;
+import lsfusion.gwt.client.navigator.GTreeNavigatorView;
 
 public class GTreeNavigatorWindow extends GNavigatorWindow {
     @Override

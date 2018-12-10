@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.view.classes.link;
 
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.LinkGridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.FileGridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.grid.EditManager;
+import lsfusion.gwt.client.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.grid.editor.LinkGridCellEditor;
+import lsfusion.gwt.client.grid.renderer.FileGridCellRenderer;
+import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;

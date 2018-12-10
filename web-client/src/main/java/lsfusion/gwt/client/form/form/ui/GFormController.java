@@ -52,7 +52,7 @@ import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.view.changes.dto.GPropertyFilterDTO;
 import lsfusion.gwt.shared.view.classes.GObjectClass;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.client.form.grid.EditEvent;
+import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.shared.view.panel.PanelRenderer;
 import lsfusion.gwt.shared.view.window.GModalityType;

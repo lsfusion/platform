@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.window;
 
-import lsfusion.gwt.client.form.navigator.GINavigatorController;
-import lsfusion.gwt.client.form.navigator.GNavigatorView;
+import lsfusion.gwt.client.navigator.GINavigatorController;
+import lsfusion.gwt.client.navigator.GNavigatorView;
 import lsfusion.gwt.shared.view.GNavigatorElement;
 
 import java.util.ArrayList;

@@ -2,8 +2,8 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.ClientNavigatorFolder;
 import lsfusion.client.navigator.*;
-import lsfusion.gwt.client.form.navigator.GNavigatorAction;
-import lsfusion.gwt.client.form.navigator.GNavigatorFolder;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
+import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.view.GNavigatorElement;
 import lsfusion.gwt.shared.view.actions.GAction;
