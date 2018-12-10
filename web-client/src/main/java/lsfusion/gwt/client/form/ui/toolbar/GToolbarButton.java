@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.ui.toolbar;
 
-import lsfusion.gwt.client.panel.ImageButton;
+import lsfusion.gwt.client.form.ui.panel.ImageButton;
 
 public abstract class GToolbarButton extends ImageButton {
     public GToolbarButton(String imagePath) {

@@ -2,11 +2,11 @@ package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.client.grid.EditManager;
-import lsfusion.gwt.client.grid.editor.DateGridCellEditor;
-import lsfusion.gwt.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.grid.renderer.DateGridCellRenderer;
-import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.ui.grid.EditManager;
+import lsfusion.gwt.client.form.ui.grid.editor.DateGridCellEditor;
+import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.ui.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.GEditBindingMap;
 import lsfusion.gwt.shared.view.GPropertyDraw;

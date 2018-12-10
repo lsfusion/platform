@@ -1,11 +1,11 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.client.grid.EditManager;
-import lsfusion.gwt.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.grid.editor.LongGridCellEditor;
-import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.grid.renderer.NumberGridCellRenderer;
+import lsfusion.gwt.client.form.ui.grid.EditManager;
+import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.ui.grid.editor.LongGridCellEditor;
+import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.ui.grid.renderer.NumberGridCellRenderer;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;

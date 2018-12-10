@@ -7,7 +7,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.GExceptionManager;
-import lsfusion.gwt.client.log.GLog;
+import lsfusion.gwt.client.GLog;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.actions.*;
 

@@ -4,11 +4,11 @@ import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GCompare;
-import lsfusion.gwt.client.grid.EditManager;
-import lsfusion.gwt.client.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.panel.DataPanelRenderer;
-import lsfusion.gwt.client.panel.PanelRenderer;
+import lsfusion.gwt.client.form.ui.grid.EditManager;
+import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.ui.panel.DataPanelRenderer;
+import lsfusion.gwt.client.form.ui.panel.PanelRenderer;
 
 import java.io.Serializable;
 import java.text.ParseException;

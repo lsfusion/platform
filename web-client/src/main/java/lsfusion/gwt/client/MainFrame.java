@@ -27,7 +27,6 @@ import lsfusion.gwt.client.form.ServerMessageProvider;
 import lsfusion.gwt.client.form.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.client.log.GLog;
 import lsfusion.gwt.shared.view.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorController;
 import lsfusion.gwt.client.window.WindowsController;

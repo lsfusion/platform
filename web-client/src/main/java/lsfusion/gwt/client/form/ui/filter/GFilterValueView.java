@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.ui.filter;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.client.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
 
 public class GFilterValueView extends SimplePanel {
     protected GFilterValueListener listener;

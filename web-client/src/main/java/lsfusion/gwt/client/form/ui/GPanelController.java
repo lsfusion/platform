@@ -6,7 +6,7 @@ import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.client.panel.PanelRenderer;
+import lsfusion.gwt.client.form.ui.panel.PanelRenderer;
 
 import java.util.HashMap;
 import java.util.List;

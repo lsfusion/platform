@@ -10,8 +10,8 @@ import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.FormsController;
 import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.shared.view.GForm;
-import lsfusion.gwt.client.grid.EditEvent;
-import lsfusion.gwt.client.grid.NativeEditEvent;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.grid.NativeEditEvent;
 
 import static java.lang.Math.min;
 

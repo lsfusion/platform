@@ -5,11 +5,11 @@ import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.client.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.client.log.GLog;
+import lsfusion.gwt.client.GLog;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.actions.*;
 import lsfusion.gwt.shared.view.classes.GObjectClass;
-import lsfusion.gwt.client.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.shared.view.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {

@@ -9,9 +9,9 @@ import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.client.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.client.panel.ImageButton;
+import lsfusion.gwt.client.form.ui.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
