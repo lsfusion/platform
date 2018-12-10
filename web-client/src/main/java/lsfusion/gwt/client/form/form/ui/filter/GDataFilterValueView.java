@@ -1,11 +1,11 @@
 package lsfusion.gwt.client.form.form.ui.filter;
 
 import lsfusion.gwt.client.base.ui.ResizableLayoutPanel;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.view.filter.GDataFilterValue;
+import lsfusion.gwt.shared.view.filter.GDataFilterValue;
 import lsfusion.gwt.client.form.grid.EditEvent;
-import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.io.Serializable;
 

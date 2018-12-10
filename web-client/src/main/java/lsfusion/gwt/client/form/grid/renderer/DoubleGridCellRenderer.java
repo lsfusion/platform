@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.grid.renderer;
 
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.math.BigDecimal;
 

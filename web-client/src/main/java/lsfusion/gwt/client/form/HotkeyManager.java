@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
-import lsfusion.gwt.shared.form.view.GGroupObject;
+import lsfusion.gwt.shared.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;

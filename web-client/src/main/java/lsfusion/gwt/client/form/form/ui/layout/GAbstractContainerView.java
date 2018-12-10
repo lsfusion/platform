@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.form.form.ui.layout.flex.FlexCaptionPanel;
 import lsfusion.gwt.client.form.form.ui.layout.flex.FlexFormLayoutImpl;
 import lsfusion.gwt.client.form.form.ui.layout.table.TableCaptionPanel;
-import lsfusion.gwt.shared.form.view.GComponent;
-import lsfusion.gwt.shared.form.view.GContainer;
+import lsfusion.gwt.shared.view.GComponent;
+import lsfusion.gwt.shared.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.List;

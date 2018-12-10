@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.form.ui.classes;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.shared.view.classes.GObjectClass;
 
 import static com.google.gwt.safehtml.shared.SafeHtmlUtils.fromString;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;

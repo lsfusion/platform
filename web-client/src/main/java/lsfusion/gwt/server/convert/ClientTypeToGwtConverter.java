@@ -3,9 +3,9 @@ package lsfusion.gwt.server.convert;
 import lsfusion.client.logics.classes.*;
 import lsfusion.client.logics.classes.link.*;
 import lsfusion.gwt.server.FileUtils;
-import lsfusion.gwt.shared.form.view.GExtInt;
-import lsfusion.gwt.shared.form.view.classes.*;
-import lsfusion.gwt.shared.form.view.classes.link.*;
+import lsfusion.gwt.shared.view.GExtInt;
+import lsfusion.gwt.shared.view.classes.*;
+import lsfusion.gwt.shared.view.classes.link.*;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.IOException;

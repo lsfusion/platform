@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.form.ui.toolbar.preferences;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 public class PropertyListItem {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

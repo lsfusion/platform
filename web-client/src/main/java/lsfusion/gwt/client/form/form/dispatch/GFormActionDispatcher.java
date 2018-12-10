@@ -8,9 +8,9 @@ import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.client.form.log.GLog;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.actions.*;
-import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.shared.view.classes.GObjectClass;
 import lsfusion.gwt.client.form.grid.EditEvent;
-import lsfusion.gwt.shared.form.view.window.GModalityType;
+import lsfusion.gwt.shared.view.window.GModalityType;
 
 public class GFormActionDispatcher extends GwtActionDispatcher {
     protected final GFormController form;

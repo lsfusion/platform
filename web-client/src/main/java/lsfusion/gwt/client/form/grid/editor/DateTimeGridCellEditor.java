@@ -3,8 +3,8 @@ package lsfusion.gwt.client.form.grid.editor;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.shared.base.GwtSharedUtils;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.classes.GDateTimeType;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.classes.GDateTimeType;
 import lsfusion.gwt.client.form.grid.EditManager;
 
 import java.sql.Timestamp;

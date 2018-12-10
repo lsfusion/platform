@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.grid.renderer;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.shared.view.changes.dto.GTimeDTO;
 

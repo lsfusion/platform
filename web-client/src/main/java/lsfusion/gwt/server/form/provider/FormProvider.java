@@ -1,6 +1,6 @@
 package lsfusion.gwt.server.form.provider;
 
-import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.shared.view.GForm;
 import lsfusion.interop.form.RemoteFormInterface;
 
 import java.io.IOException;

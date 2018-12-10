@@ -3,10 +3,10 @@ package lsfusion.gwt.client.form.grid.editor;
 import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.Cell;
-import lsfusion.gwt.shared.form.view.GExtInt;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.classes.*;
-import lsfusion.gwt.shared.form.view.classes.link.*;
+import lsfusion.gwt.shared.view.GExtInt;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.classes.*;
+import lsfusion.gwt.shared.view.classes.link.*;
 import lsfusion.gwt.client.form.grid.EditManager;
 import lsfusion.gwt.client.form.grid.editor.rich.RichTextGridCellEditor;
 

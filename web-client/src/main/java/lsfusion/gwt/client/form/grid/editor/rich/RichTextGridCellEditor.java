@@ -15,7 +15,7 @@ import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.EditManager;
 import lsfusion.gwt.client.form.grid.editor.DialogBasedGridCellEditor;

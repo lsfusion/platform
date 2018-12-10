@@ -8,7 +8,7 @@ import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.shared.actions.form.ChangeClassView;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.GClassViewType;
+import lsfusion.gwt.shared.view.GClassViewType;
 import lsfusion.interop.ClassViewType;
 
 import java.io.IOException;

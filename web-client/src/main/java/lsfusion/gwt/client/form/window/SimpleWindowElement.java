@@ -2,10 +2,10 @@ package lsfusion.gwt.client.form.window;
 
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.shared.form.view.window.GAbstractWindow;
-import lsfusion.gwt.shared.form.view.window.GPanelNavigatorWindow;
-import lsfusion.gwt.shared.form.view.window.GToolbarNavigatorWindow;
-import lsfusion.gwt.shared.form.view.window.GTreeNavigatorWindow;
+import lsfusion.gwt.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.view.window.GPanelNavigatorWindow;
+import lsfusion.gwt.shared.view.window.GToolbarNavigatorWindow;
+import lsfusion.gwt.shared.view.window.GTreeNavigatorWindow;
 
 public class SimpleWindowElement extends WindowElement {
     public GAbstractWindow window;

@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.actions;
 
-import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.shared.view.classes.GObjectClass;
 
 public class GChooseClassAction implements GAction {
     public boolean concreate;

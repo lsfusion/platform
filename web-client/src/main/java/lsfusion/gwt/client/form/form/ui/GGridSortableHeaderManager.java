@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.form.ui;
 
-import lsfusion.gwt.shared.form.view.GGroupObject;
-import lsfusion.gwt.shared.form.view.GOrder;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GGroupObject;
+import lsfusion.gwt.shared.view.GOrder;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

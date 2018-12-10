@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.client.cellview.cell.AbstractCell;
 import lsfusion.gwt.client.form.form.ui.GPropertyTable;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;

@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.shared.form.view.classes.GObjectClass;
+import lsfusion.gwt.shared.view.classes.GObjectClass;
 
 public class GResizableClassDialog extends GResizableModalWindow {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

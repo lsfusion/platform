@@ -5,9 +5,9 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.client.form.navigator.GNavigatorAction;
-import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.shared.view.GForm;
 import lsfusion.gwt.client.form.grid.EditEvent;
-import lsfusion.gwt.shared.form.view.window.GModalityType;
+import lsfusion.gwt.shared.view.window.GModalityType;
 
 public interface FormsController {
 

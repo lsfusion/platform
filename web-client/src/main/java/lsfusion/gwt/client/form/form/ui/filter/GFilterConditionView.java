@@ -10,10 +10,10 @@ import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.filter.*;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.filter.*;
 import lsfusion.gwt.client.form.grid.EditEvent;
-import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.HashMap;
 import java.util.Map;

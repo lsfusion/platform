@@ -6,8 +6,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.form.form.ui.GFormController;
-import lsfusion.gwt.shared.form.view.GComponent;
-import lsfusion.gwt.shared.form.view.GContainer;
+import lsfusion.gwt.shared.view.GComponent;
+import lsfusion.gwt.shared.view.GContainer;
 
 import java.util.ArrayList;
 import java.util.Map;

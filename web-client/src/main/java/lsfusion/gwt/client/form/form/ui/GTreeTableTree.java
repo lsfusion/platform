@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.form.ui;
 
 import lsfusion.gwt.shared.base.GwtSharedUtils;
-import lsfusion.gwt.shared.form.view.GForm;
-import lsfusion.gwt.shared.form.view.GGroupObject;
-import lsfusion.gwt.shared.form.view.GObject;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GForm;
+import lsfusion.gwt.shared.view.GGroupObject;
+import lsfusion.gwt.shared.view.GObject;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
 

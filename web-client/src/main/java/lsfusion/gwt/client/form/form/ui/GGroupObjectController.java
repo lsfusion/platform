@@ -10,16 +10,17 @@ import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GGridUserPreferences;
 import lsfusion.gwt.client.form.form.ui.toolbar.preferences.GUserPreferencesButton;
 import lsfusion.gwt.shared.form.view.*;
+import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GFormChanges;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.view.classes.GIntegralType;
-import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
-import lsfusion.gwt.shared.form.view.reader.*;
+import lsfusion.gwt.shared.view.classes.GIntegralType;
+import lsfusion.gwt.shared.view.filter.GPropertyFilter;
+import lsfusion.gwt.shared.view.reader.*;
 
 import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.shared.form.view.GClassViewType.DEFAULT;
+import static lsfusion.gwt.shared.view.GClassViewType.DEFAULT;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     private final MainFrameMessages messages = MainFrameMessages.Instance.get();

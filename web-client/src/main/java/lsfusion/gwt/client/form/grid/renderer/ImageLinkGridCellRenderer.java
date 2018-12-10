@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.grid.renderer;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.ImageElement;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import static lsfusion.gwt.client.form.grid.renderer.FileGridCellRenderer.ICON_EMPTY;
 

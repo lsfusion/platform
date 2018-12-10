@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.dispatch;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Scheduler;
-import lsfusion.gwt.shared.form.view.GGroupObject;
+import lsfusion.gwt.shared.view.GGroupObject;
 
 import java.util.HashMap;
 import java.util.Map;

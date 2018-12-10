@@ -14,7 +14,7 @@ import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.cell.AbstractCell;
 import lsfusion.gwt.client.form.form.ui.GPropertyTableBuilder;
 import lsfusion.gwt.client.form.form.ui.GSinglePropertyTable;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.EditManager;
 import lsfusion.gwt.client.form.grid.NativeEditEvent;

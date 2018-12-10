@@ -12,7 +12,7 @@ import lsfusion.gwt.shared.base.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.progressbar.ProgressBar;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.EditManager;

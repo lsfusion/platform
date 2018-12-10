@@ -14,10 +14,10 @@ import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.cellview.cell.HasCell;
 import lsfusion.gwt.client.form.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.form.dispatch.GEditPropertyHandler;
-import lsfusion.gwt.shared.form.view.GEditBindingMap;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GEditBindingMap;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.view.classes.GType;
+import lsfusion.gwt.shared.view.classes.GType;
 import lsfusion.gwt.client.form.grid.*;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 
@@ -27,7 +27,7 @@ import static com.google.gwt.dom.client.BrowserEvents.CONTEXTMENU;
 import static lsfusion.gwt.client.base.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.cellview.cell.Cell.Context;
-import static lsfusion.gwt.shared.form.view.GEditBindingMap.*;
+import static lsfusion.gwt.shared.view.GEditBindingMap.*;
 
 public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManager, GEditPropertyHandler {
 

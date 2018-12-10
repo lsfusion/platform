@@ -4,8 +4,8 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.client.form.form.ui.layout.TabbedContainerView;
-import lsfusion.gwt.shared.form.view.GComponent;
-import lsfusion.gwt.shared.form.view.GContainer;
+import lsfusion.gwt.shared.view.GComponent;
+import lsfusion.gwt.shared.view.GContainer;
 
 public class FlexTabbedContainerView extends TabbedContainerView {
 

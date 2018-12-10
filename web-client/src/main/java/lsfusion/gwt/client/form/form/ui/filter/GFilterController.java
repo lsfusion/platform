@@ -6,12 +6,12 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.view.filter.GPropertyFilter;
+import lsfusion.gwt.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.client.form.grid.EditEvent;
-import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.shared.form.view.panel.ImageButton;
+import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.view.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;

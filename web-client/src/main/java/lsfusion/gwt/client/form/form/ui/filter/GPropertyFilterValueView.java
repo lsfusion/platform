@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.form.ui.filter;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.filter.GPropertyFilterValue;
-import lsfusion.gwt.shared.form.view.logics.GGroupObjectLogicsSupplier;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.filter.GPropertyFilterValue;
+import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.List;
 

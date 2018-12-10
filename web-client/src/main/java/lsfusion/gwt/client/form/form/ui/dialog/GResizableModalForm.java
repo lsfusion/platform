@@ -9,7 +9,7 @@ import lsfusion.gwt.shared.result.NumberResult;
 import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.form.FormsController;
 import lsfusion.gwt.client.form.form.ui.GFormController;
-import lsfusion.gwt.shared.form.view.GForm;
+import lsfusion.gwt.shared.view.GForm;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.NativeEditEvent;
 

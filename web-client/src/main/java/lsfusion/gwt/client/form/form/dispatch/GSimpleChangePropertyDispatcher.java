@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.form.dispatch;
 import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.GEditBindingMap;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.view.GUserInputResult;
+import lsfusion.gwt.shared.view.GEditBindingMap;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GUserInputResult;
 import lsfusion.gwt.shared.view.actions.GRequestUserInputAction;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 

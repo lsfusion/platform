@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.form.view.GGroupObjectUserPreferences;
+import lsfusion.gwt.shared.view.GGroupObjectUserPreferences;
 
 public class SaveUserPreferencesAction extends FormRequestIndexCountingAction<ServerResponseResult> {
     public GGroupObjectUserPreferences groupObjectUserPreferences;

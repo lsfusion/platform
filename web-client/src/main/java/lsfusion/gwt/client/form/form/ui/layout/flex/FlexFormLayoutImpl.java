@@ -12,9 +12,9 @@ import lsfusion.gwt.client.form.form.ui.GTreeTable;
 import lsfusion.gwt.client.form.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.client.form.form.ui.layout.ScrollContainerView;
-import lsfusion.gwt.shared.form.view.GContainer;
-import lsfusion.gwt.shared.form.view.GGrid;
-import lsfusion.gwt.shared.form.view.GTreeGroup;
+import lsfusion.gwt.shared.view.GContainer;
+import lsfusion.gwt.shared.view.GGrid;
+import lsfusion.gwt.shared.view.GTreeGroup;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
 

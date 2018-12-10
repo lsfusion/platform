@@ -15,8 +15,8 @@ import lsfusion.gwt.client.form.form.ui.GGridTable;
 import lsfusion.gwt.client.form.form.ui.GGroupObjectController;
 import lsfusion.gwt.client.form.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.GFont;
-import lsfusion.gwt.shared.form.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GFont;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 
 import java.util.HashMap;
@@ -25,8 +25,8 @@ import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
-import static lsfusion.gwt.shared.form.view.GFont.DEFAULT_FONT_FAMILY;
-import static lsfusion.gwt.shared.form.view.GFont.DEFAULT_FONT_SIZE;
+import static lsfusion.gwt.shared.view.GFont.DEFAULT_FONT_FAMILY;
+import static lsfusion.gwt.shared.view.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends GResizableModalWindow {

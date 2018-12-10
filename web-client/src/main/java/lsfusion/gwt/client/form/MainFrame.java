@@ -39,8 +39,8 @@ import lsfusion.gwt.shared.view.actions.GAction;
 import lsfusion.gwt.shared.view.actions.GActivateFormAction;
 import lsfusion.gwt.shared.view.actions.GFormAction;
 import lsfusion.gwt.shared.view.actions.GMaximizeFormAction;
-import lsfusion.gwt.shared.form.view.window.GAbstractWindow;
-import lsfusion.gwt.shared.form.view.window.GNavigatorWindow;
+import lsfusion.gwt.shared.view.window.GAbstractWindow;
+import lsfusion.gwt.shared.view.window.GNavigatorWindow;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

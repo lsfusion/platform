@@ -8,8 +8,8 @@ import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayout;
 import lsfusion.gwt.client.form.form.ui.toolbar.GToolbarButton;
-import lsfusion.gwt.shared.form.view.GClassViewType;
-import lsfusion.gwt.shared.form.view.GGroupObject;
+import lsfusion.gwt.shared.view.GClassViewType;
+import lsfusion.gwt.shared.view.GGroupObject;
 
 import java.util.ArrayList;
 import java.util.List;

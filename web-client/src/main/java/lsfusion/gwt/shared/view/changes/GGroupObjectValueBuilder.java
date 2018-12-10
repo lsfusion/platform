@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.changes;
 
-import lsfusion.gwt.shared.form.view.GObject;
+import lsfusion.gwt.shared.view.GObject;
 
 import java.util.Collection;
 import java.util.TreeMap;

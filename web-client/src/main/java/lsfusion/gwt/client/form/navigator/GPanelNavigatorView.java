@@ -8,9 +8,9 @@ import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.form.ui.GCaptionPanel;
-import lsfusion.gwt.shared.form.view.GNavigatorElement;
-import lsfusion.gwt.shared.form.view.panel.ImageButton;
-import lsfusion.gwt.shared.form.view.window.GPanelNavigatorWindow;
+import lsfusion.gwt.shared.view.GNavigatorElement;
+import lsfusion.gwt.shared.view.panel.ImageButton;
+import lsfusion.gwt.shared.view.window.GPanelNavigatorWindow;
 
 import java.util.Set;
 
