@@ -132,6 +132,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         Object o = object.opt(key);
         if(o == JSONObject.NULL)
             o = null;
+        if(!(o instanceof String)) // if incorrect type just consider it missing
+            o = null;
         return parseNullableString((String)o, false); // json supports nulls
     }
     @Override
