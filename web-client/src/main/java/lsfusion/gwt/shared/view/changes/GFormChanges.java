@@ -1,6 +1,5 @@
 package lsfusion.gwt.shared.view.changes;
 
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.shared.view.changes.dto.GPropertyReaderDTO;

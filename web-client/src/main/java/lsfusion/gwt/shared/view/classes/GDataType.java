@@ -1,7 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.filter.GCompare;
 

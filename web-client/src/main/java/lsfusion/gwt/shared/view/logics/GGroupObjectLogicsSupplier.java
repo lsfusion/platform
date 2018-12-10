@@ -1,6 +1,5 @@
 package lsfusion.gwt.shared.view.logics;
 
-import lsfusion.gwt.shared.form.view.*;
 import lsfusion.gwt.shared.view.GGroupObject;
 import lsfusion.gwt.shared.view.GObject;
 import lsfusion.gwt.shared.view.GOrder;
