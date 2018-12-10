@@ -1,3 +1,4 @@
+<%@ page import="java.util.Map" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
@@ -22,7 +23,17 @@
                               method="POST"
                               action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
                             <fieldset>
-                                <div class="image-center"><img src="readLogo" alt="LSFusion"></div>
+
+                                <%
+                                    String queryString = "";
+                                    for(Object p : request.getParameterMap().entrySet()) {
+                                        Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>) p;
+                                        queryString += (queryString.isEmpty() ? "" : "&") + entry.getKey() + "=" + entry.getValue()[0];
+                                    }
+                                    session.setAttribute("queryString", queryString);
+                                %>
+
+                                <div class="image-center"><img src="readLogo<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="j_username">login</label>
@@ -34,7 +45,7 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
                                 <div class="desktop-link">
-                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp">Run desktop client</a>
+                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>">Run desktop client</a>
                                     <div id="spoiler" style="display:none"></div>
                                         <script>
                                             function showSpoiler() {
@@ -44,7 +55,7 @@
                                                     xhttp.onload = function() {
                                                         document.getElementById('spoiler').innerHTML = this.responseText;
                                                     };
-                                                    xhttp.open("GET", "readMemoryLimits?path=${pageContext.request.contextPath}", true);
+                                                    xhttp.open("GET", "readMemoryLimits?path=${pageContext.request.contextPath}<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("&" + session.getAttribute("queryString"))%>", true);
                                                     xhttp.send();
 
                                                     document.getElementById('spoiler') .style.display='';
