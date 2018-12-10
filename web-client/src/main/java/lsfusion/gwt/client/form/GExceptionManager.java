@@ -9,7 +9,7 @@ import com.google.gwt.logging.impl.StackTracePrintStream;
 import lsfusion.gwt.shared.base.GwtSharedUtils;
 import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.exceptions.NonFatalHandledException;
-import lsfusion.gwt.shared.actions.VoidResult;
+import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.client.form.dispatch.LogicsAndNavigatorDispatchAsync;
 import lsfusion.gwt.shared.form.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.shared.form.actions.navigator.LogClientExceptionAction;

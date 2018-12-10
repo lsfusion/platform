@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.actions.navigator;
 
-import lsfusion.gwt.shared.actions.VoidResult;
+import lsfusion.gwt.shared.result.VoidResult;
 
 public class InterruptNavigator extends NavigatorAction<VoidResult> {
     public boolean cancelable;

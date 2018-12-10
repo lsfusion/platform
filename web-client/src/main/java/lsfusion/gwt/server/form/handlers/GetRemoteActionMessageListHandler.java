@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.form.handlers;
 
 import lsfusion.base.ProgressBar;
-import lsfusion.gwt.shared.actions.ListResult;
+import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.provider.FormSessionObject;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;

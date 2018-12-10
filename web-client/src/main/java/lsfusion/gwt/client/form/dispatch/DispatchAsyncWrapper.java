@@ -8,7 +8,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.shared.result.RequestAction;
 import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.GConnectionLostManager;
 import lsfusion.gwt.client.form.GExceptionManager;

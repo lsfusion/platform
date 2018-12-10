@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.actions.form;
 
-import lsfusion.gwt.shared.actions.ListResult;
+import lsfusion.gwt.shared.result.ListResult;
 
 public class GetRemoteActionMessageList extends FormAction<ListResult> {
     @SuppressWarnings("UnusedDeclaration")

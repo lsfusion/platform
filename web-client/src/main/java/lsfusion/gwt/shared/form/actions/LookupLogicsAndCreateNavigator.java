@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.form.actions;
 
-import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.shared.result.RequestAction;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class LookupLogicsAndCreateNavigator extends RequestAction<StringResult> {

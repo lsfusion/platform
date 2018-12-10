@@ -4,7 +4,7 @@ import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.form.FormActionHandler;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import lsfusion.gwt.shared.actions.VoidResult;
+import lsfusion.gwt.shared.result.VoidResult;
 import lsfusion.gwt.shared.form.actions.form.FormHidden;
 
 import java.io.IOException;
