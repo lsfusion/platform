@@ -1,6 +1,6 @@
-package lsfusion.gwt.shared.form.actions;
+package lsfusion.gwt.shared.view.actions;
 
-public class GLogOutAction extends GExecuteAction {
+public class GEditNotPerformedAction extends GExecuteAction {
     @Override
     public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);

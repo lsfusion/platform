@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.form.actions;
+package lsfusion.gwt.shared.view.actions;
 
 public class GThrowExceptionAction extends GExecuteAction {
     public Throwable throwable;

@@ -5,8 +5,8 @@ import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.shared.actions.form.FormAction;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.actions.GAction;
-import lsfusion.gwt.shared.form.actions.GThrowExceptionAction;
+import lsfusion.gwt.shared.view.actions.GAction;
+import lsfusion.gwt.shared.view.actions.GThrowExceptionAction;
 import lsfusion.interop.form.ServerResponse;
 
 import java.io.IOException;

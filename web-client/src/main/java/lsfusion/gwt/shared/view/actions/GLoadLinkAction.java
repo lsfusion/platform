@@ -1,9 +1,10 @@
-package lsfusion.gwt.shared.form.actions;
+package lsfusion.gwt.shared.view.actions;
 
-public class GHideFormAction extends GExecuteAction {
+public class GLoadLinkAction extends GExecuteAction {
+
     //needed for it to be gwt-serializable
     @SuppressWarnings("UnusedDeclaration")
-    public GHideFormAction() {}
+    public GLoadLinkAction() {}
 
     @Override
     public void execute(GActionDispatcher dispatcher) throws Throwable {

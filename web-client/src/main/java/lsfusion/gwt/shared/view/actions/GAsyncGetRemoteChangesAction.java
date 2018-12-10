@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.form.actions;
+package lsfusion.gwt.shared.view.actions;
 
 public class GAsyncGetRemoteChangesAction extends GExecuteAction {
     //needed for it to be gwt-serializable
