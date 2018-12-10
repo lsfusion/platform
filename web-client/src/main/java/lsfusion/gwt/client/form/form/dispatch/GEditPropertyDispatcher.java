@@ -8,8 +8,8 @@ import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.form.view.GEditBindingMap;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.view.GUserInputResult;
-import lsfusion.gwt.shared.form.view.actions.GRequestUserInputAction;
-import lsfusion.gwt.shared.form.view.actions.GUpdateEditValueAction;
+import lsfusion.gwt.shared.form.actions.GRequestUserInputAction;
+import lsfusion.gwt.shared.form.actions.GUpdateEditValueAction;
 import lsfusion.gwt.shared.form.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.view.classes.GType;
 

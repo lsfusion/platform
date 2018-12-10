@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.actions.form;
 
 import net.customware.gwt.dispatch.shared.Result;
-import lsfusion.gwt.shared.form.view.actions.GAction;
+import lsfusion.gwt.shared.form.actions.GAction;
 
 public class ServerResponseResult implements Result {
     public GAction[] actions;

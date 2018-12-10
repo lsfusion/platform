@@ -9,7 +9,7 @@ import lsfusion.gwt.client.form.ErrorHandlingCallback;
 import lsfusion.gwt.client.form.GExceptionManager;
 import lsfusion.gwt.client.form.log.GLog;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.actions.*;
+import lsfusion.gwt.shared.form.actions.*;
 
 public abstract class GwtActionDispatcher implements GActionDispatcher {
     private boolean dispatchingPaused;

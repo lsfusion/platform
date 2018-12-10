@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.form.ui.classes.ClassChosenHandler;
 import lsfusion.gwt.client.form.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.client.form.log.GLog;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
-import lsfusion.gwt.shared.form.view.actions.*;
+import lsfusion.gwt.shared.form.actions.*;
 import lsfusion.gwt.shared.form.view.classes.GObjectClass;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.shared.form.view.window.GModalityType;
