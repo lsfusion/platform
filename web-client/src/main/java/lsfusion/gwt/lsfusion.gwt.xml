@@ -2,8 +2,133 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module rename-to="lsfusion">
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="lsfusion.gwt.Base"/>
-    <inherits name="lsfusion.gwt.CellView"/>
+
+    <source path='client'/>
+    <source path='shared'/>
+
+    <!-- - - - - - - - - - - BASIC SETTINGS - - - - - - - - - - - - - - - - -->
+    <set-configuration-property name="UiBinder.useSafeHtmlTemplates" value="true" />
+
+    <extend-property name="locale" values="en,ru"/>
+    <set-property-fallback name="locale" value="ru"/>
+
+    <!-- убираем дефолтную локаль -->
+    <set-property name="locale" value="en,ru"/>
+
+    <!-- note:
+         Раскомментить при разработке для быстрой компиляции.
+         При этом будет работать только в firefox и только с английской локалью
+     -->
+    <!--<set-property name="user.agent" value="safari" />-->
+    <!--<set-property name="user.agent" value="gecko1_8" />-->
+    <!--<set-property name="locale" value="ru" />-->
+
+    <!-- выключить обфускацию стилей -->
+    <!--<set-configuration-property name="CssResource.style" value="pretty" />-->
+
+    <!-- частичная деобфускация: сохраняются имена классов и номера строк. делалось для читабельности стека ошибок -->
+    <set-property name="compiler.stackMode" value="emulated" />
+    <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true"/>
+    <!--<set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true"/>-->
+
+    <!--Super Dev Mode doesn't like <script> tags. We have some in Uploader. Adding this just to ignore errors.-->
+    <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/>
+
+    <!-- For production most teams prefer to set the default log level to `OFF` -->
+    <inherits name="com.allen_sauer.gwt.log.gwt-log-ERROR" />
+
+    <!-- For development a default of `DEBUG` is recommended -->
+    <!--<inherits name="com.allen_sauer.gwt.log.gwt-log-DEBUG"/>-->
+
+    <!-- Loggers -->
+    <set-property name="log_ConsoleLogger" value="ENABLED"/>
+    <set-property name="log_DivLogger" value="DISABLED"/>
+    <set-property name="log_GWTLogger" value="ENABLED"/>
+    <set-property name="log_SystemLogger" value="DISABLED"/>
+    <set-property name="log_WindowLogger" value="DISABLED"/>
+
+    <!-- - - - - - - - - - - BASE - - - - - - - - - - - - - - - - -->
+
+    <stylesheet src="ui/WindowBox.css" />
+
+    <!-- GIN configuration -->
+    <inherits name="com.google.gwt.inject.Inject"/>
+    <inherits name="net.customware.gwt.dispatch.Dispatch"/>
+    <inherits name="com.bfr.client.Selection"/>
+
+    <!-- Standard FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplStandard">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+    </replace-with>
+
+    <!-- IE-10 FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplIE">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="ie10"/>
+        </any>
+    </replace-with>
+
+    <!-- Webkit FlexPanelImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.base.ui.FlexPanelImplWebkit">
+        <when-type-is class="lsfusion.gwt.client.base.ui.FlexPanelImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="opera"/>
+        </any>
+    </replace-with>
+
+    <!-- - - - - - - - - - - CELL VIEW - - - - - - - - - - - - - - - - -->
+
+    <inherits name="com.google.gwt.aria.Aria"/>
+    <inherits name="com.google.gwt.cell.Cell"/>
+    <inherits name="com.google.gwt.editor.Editor"/>
+    <inherits name="com.google.gwt.view.View"/>
+    <inherits name="com.google.gwt.user.UserAgent"/>
+
+    <!-- Standard CellBasedWidgetImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard">
+        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+    </replace-with>
+
+    <!-- IE-specific CellBasedWidgetImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident">
+        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="ie6"/>
+            <when-property-is name="user.agent" value="ie8"/>
+        </any>
+    </replace-with>
+
+    <!-- StandardBase CellBasedWidgetImpl implementation. -->
+    <replace-with class="lsfusion.gwt.client.cellview.CellBasedWidgetImplStandardBase">
+        <when-type-is class="lsfusion.gwt.client.cellview.CellBasedWidgetImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="safari"/>
+            <when-property-is name="user.agent" value="ie9"/>
+            <when-property-is name="user.agent" value="ie10"/>
+        </any>
+    </replace-with>
+
+    <!-- Mozilla-specific CellTable implementation. -->
+    <replace-with class="lsfusion.gwt.client.cellview.DataGridImplMozilla">
+        <when-type-is class="lsfusion.gwt.client.cellview.DataGridImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="gecko1_8"/>
+        </any>
+    </replace-with>
+
+    <!-- IE-specific CellTable implementation. -->
+    <replace-with class="lsfusion.gwt.client.cellview.DataGridImplTrident">
+        <when-type-is class="lsfusion.gwt.client.cellview.DataGridImpl"/>
+        <any>
+            <when-property-is name="user.agent" value="ie6"/>
+            <when-property-is name="user.agent" value="ie8"/>
+            <when-property-is name="user.agent" value="ie9"/>
+            <when-property-is name="user.agent" value="ie10"/>
+        </any>
+    </replace-with>
+
+    <!-- - - - - - - - - - - MAIN - - - - - - - - - - - - - - - - -->
 
     <entry-point class='lsfusion.gwt.client.form.MainFrame'/>
 
@@ -24,9 +149,6 @@
 
     <!-- GWT browser selection -->
     <inherits name='com.bfr.client.Selection'/>
-
-    <source path='client'/>
-    <source path='shared'/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">
