@@ -20,7 +20,7 @@
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
-                              action="login_check">
+                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
                             <fieldset>
                                 <div class="image-center"><img src="readLogo" alt="LSFusion"></div>
                                 <p>
