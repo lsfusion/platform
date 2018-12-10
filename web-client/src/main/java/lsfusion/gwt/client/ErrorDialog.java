@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.form;
+package lsfusion.gwt.client;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
