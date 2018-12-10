@@ -5,7 +5,7 @@ import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.gwt.shared.exceptions.MessageException;
-import lsfusion.gwt.shared.result.RequestAction;
+import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.form.provider.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;

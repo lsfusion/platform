@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.actions.form;
 
-import lsfusion.gwt.shared.result.RequestAction;
+import lsfusion.gwt.shared.actions.RequestAction;
 import net.customware.gwt.dispatch.shared.Result;
 
 public class FormAction<R extends Result> extends RequestAction<R> {
