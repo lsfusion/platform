@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.progressbar;
+package lsfusion.gwt.client.base.ui;
 
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;

@@ -12,7 +12,7 @@ import lsfusion.gwt.client.base.ui.CopyPasteUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.base.ui.WindowBox;
-import lsfusion.gwt.client.progressbar.ProgressBar;
+import lsfusion.gwt.client.base.ui.ProgressBar;
 import lsfusion.gwt.client.window.GProgressBar;
 
 import java.util.ArrayList;
