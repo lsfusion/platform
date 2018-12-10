@@ -6,8 +6,8 @@ import lsfusion.gwt.client.grid.renderer.ActionGridCellRenderer;
 import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.panel.ActionPanelRenderer;
-import lsfusion.gwt.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.panel.ActionPanelRenderer;
+import lsfusion.gwt.client.panel.PanelRenderer;
 
 import java.text.ParseException;
 

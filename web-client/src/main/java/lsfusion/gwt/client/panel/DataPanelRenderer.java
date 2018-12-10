@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.view.panel;
+package lsfusion.gwt.client.panel;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;

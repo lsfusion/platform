@@ -54,7 +54,7 @@ import lsfusion.gwt.shared.view.classes.GObjectClass;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.panel.PanelRenderer;
 import lsfusion.gwt.shared.view.window.GModalityType;
 import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;

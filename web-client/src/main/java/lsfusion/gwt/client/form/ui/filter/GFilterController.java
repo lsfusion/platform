@@ -11,7 +11,7 @@ import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.shared.view.panel.ImageButton;
+import lsfusion.gwt.client.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;

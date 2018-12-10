@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.client.navigator.GNavigatorAction;
+import lsfusion.gwt.shared.view.GNavigatorAction;
 import lsfusion.gwt.shared.view.GForm;
 import lsfusion.gwt.client.grid.EditEvent;
 import lsfusion.gwt.shared.view.window.GModalityType;

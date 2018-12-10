@@ -7,8 +7,8 @@ import lsfusion.gwt.shared.view.filter.GCompare;
 import lsfusion.gwt.client.grid.EditManager;
 import lsfusion.gwt.client.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.shared.view.panel.DataPanelRenderer;
-import lsfusion.gwt.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.panel.DataPanelRenderer;
+import lsfusion.gwt.client.panel.PanelRenderer;
 
 import java.io.Serializable;
 import java.text.ParseException;

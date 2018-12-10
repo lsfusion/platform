@@ -14,7 +14,7 @@ import lsfusion.gwt.client.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.grid.renderer.FormatGridCellRenderer;
 import lsfusion.gwt.client.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.shared.view.panel.PanelRenderer;
+import lsfusion.gwt.client.panel.PanelRenderer;
 import lsfusion.gwt.shared.view.reader.*;
 
 import java.io.Serializable;

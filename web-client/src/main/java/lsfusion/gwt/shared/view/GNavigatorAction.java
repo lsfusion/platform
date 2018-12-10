@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.navigator;
+package lsfusion.gwt.shared.view;
 
 import lsfusion.gwt.shared.view.GNavigatorElement;
 
