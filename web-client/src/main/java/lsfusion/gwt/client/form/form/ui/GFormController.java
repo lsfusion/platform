@@ -21,7 +21,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.client.base.ui.ResizableSimplePanel;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.NumberResult;
 import lsfusion.gwt.shared.result.VoidResult;
@@ -66,8 +66,8 @@ import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.setupFillParent;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.putToDoubleNativeMap;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.removeFromDoubleMap;
+import static lsfusion.gwt.shared.GwtSharedUtils.putToDoubleNativeMap;
+import static lsfusion.gwt.shared.GwtSharedUtils.removeFromDoubleMap;
 
 public class GFormController extends ResizableSimplePanel implements ServerMessageProvider {
     private static final int ASYNC_TIME_OUT = 50;

@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.shared.view.GEditBindingMap;
 import lsfusion.gwt.shared.view.GPropertyDraw;
@@ -15,7 +15,7 @@ import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 import java.text.ParseException;
 import java.util.Date;
 
-import static lsfusion.gwt.shared.base.GwtSharedUtils.getDateFormat;
+import static lsfusion.gwt.shared.GwtSharedUtils.getDateFormat;
 
 public class GDateType extends GFormatType<DateTimeFormat> {
 

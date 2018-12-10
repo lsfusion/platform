@@ -4,7 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.shared.view.GFontMetrics;

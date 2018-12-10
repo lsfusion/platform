@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.form.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;

@@ -12,7 +12,7 @@ import lsfusion.gwt.client.form.grid.renderer.NumberGridCellRenderer;
 import java.math.BigDecimal;
 import java.text.ParseException;
 
-import static lsfusion.gwt.shared.base.GwtSharedUtils.countMatches;
+import static lsfusion.gwt.shared.GwtSharedUtils.countMatches;
 
 public class GNumericType extends GDoubleType {
     private int length = 10;

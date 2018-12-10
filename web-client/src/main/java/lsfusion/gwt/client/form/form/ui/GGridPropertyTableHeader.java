@@ -9,14 +9,13 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.Header;
 import lsfusion.gwt.client.cellview.HeaderPanel;
-import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.dom.client.Style.Cursor;
 import static com.google.gwt.user.client.Event.NativePreviewEvent;
 import static com.google.gwt.user.client.Event.NativePreviewHandler;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
 
 public class GGridPropertyTableHeader extends Header<String> {
     private static final int ANCHOR_WIDTH = 10;

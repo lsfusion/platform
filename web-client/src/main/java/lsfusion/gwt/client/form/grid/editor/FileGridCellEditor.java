@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.progressbar.ProgressBar;

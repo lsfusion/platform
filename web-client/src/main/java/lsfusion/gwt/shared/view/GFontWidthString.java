@@ -2,7 +2,7 @@ package lsfusion.gwt.shared.view;
 
 import java.io.Serializable;
 
-import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
 
 public class GFontWidthString implements Serializable {
     public GFont font;

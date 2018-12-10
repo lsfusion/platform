@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Style;
 
 import java.io.Serializable;
 
-import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
 
 public class GFont implements Serializable {
     public static final Integer DEFAULT_FONT_SIZE = 11;

@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.ImageDescription;
 
 public class ImageButton extends Button {

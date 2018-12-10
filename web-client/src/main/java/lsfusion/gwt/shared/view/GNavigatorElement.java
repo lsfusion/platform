@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view;
 
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrame;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.shared.view.window.GNavigatorWindow;

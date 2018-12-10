@@ -3,7 +3,7 @@ package lsfusion.gwt.server.navigator.provider;
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;

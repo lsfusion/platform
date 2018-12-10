@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.relativePosition;
+import static lsfusion.gwt.shared.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
 

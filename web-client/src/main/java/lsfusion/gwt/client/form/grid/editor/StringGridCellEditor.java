@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.grid.editor;
 
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.grid.EditManager;
 

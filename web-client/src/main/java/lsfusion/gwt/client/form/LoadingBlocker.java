@@ -8,7 +8,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.form.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 

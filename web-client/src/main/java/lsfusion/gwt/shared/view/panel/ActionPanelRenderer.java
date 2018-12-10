@@ -8,7 +8,7 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.form.dispatch.GEditPropertyDispatcher;
 import lsfusion.gwt.client.form.form.dispatch.GEditPropertyHandler;
 import lsfusion.gwt.client.form.form.ui.GFormController;
@@ -27,7 +27,7 @@ import lsfusion.gwt.client.form.grid.editor.PopupBasedGridCellEditor;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.shared.GwtSharedUtils.nullEquals;
 import static lsfusion.gwt.client.form.HotkeyManager.Binding;
 import static lsfusion.gwt.shared.view.GEditBindingMap.getPropertyKeyPressActionSID;
 

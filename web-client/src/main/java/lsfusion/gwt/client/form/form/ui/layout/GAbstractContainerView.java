@@ -18,7 +18,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtClientUtils.calculateMaxPreferredSize;
 import static lsfusion.gwt.client.base.GwtClientUtils.enlargeDimension;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.relativePosition;
+import static lsfusion.gwt.shared.GwtSharedUtils.relativePosition;
 
 public abstract class GAbstractContainerView {
     protected final GContainer container;

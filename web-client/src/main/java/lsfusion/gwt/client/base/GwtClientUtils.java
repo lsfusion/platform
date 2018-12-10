@@ -12,11 +12,10 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 
 import java.util.*;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 

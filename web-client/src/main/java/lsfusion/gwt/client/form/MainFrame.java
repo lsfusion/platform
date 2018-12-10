@@ -16,7 +16,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.result.BooleanResult;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.VoidResult;

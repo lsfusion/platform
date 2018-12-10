@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.ui.FlexPanel;
 import lsfusion.gwt.client.base.ui.GFlexAlignment;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
 import lsfusion.gwt.client.base.ui.ResizableComplexPanel;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.form.ui.GFormController;
 import lsfusion.gwt.client.form.form.ui.GSinglePropertyTable;
 import lsfusion.gwt.client.form.form.ui.TooltipManager;

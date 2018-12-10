@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.DivElement;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
-import static lsfusion.gwt.shared.base.GwtSharedUtils.isRedundantString;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.multiplyString;
+import static lsfusion.gwt.shared.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.shared.GwtSharedUtils.multiplyString;
 
 public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     private boolean echoSymbols;

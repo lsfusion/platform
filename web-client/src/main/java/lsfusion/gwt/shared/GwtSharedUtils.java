@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.base;
+package lsfusion.gwt.shared;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;

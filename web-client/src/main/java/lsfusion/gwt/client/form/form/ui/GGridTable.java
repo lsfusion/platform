@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.GKeyStroke;
-import lsfusion.gwt.shared.base.GwtSharedUtils;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.cellview.Column;
 import lsfusion.gwt.client.cellview.DataGrid;
 import lsfusion.gwt.client.cellview.KeyboardRowChangedEvent;
@@ -40,7 +40,7 @@ import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static java.util.Collections.singleton;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.*;
+import static lsfusion.gwt.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();

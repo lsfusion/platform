@@ -16,8 +16,8 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.ui.GKeyStroke.isPossibleEditKeyEvent;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.getFromDoubleMap;
-import static lsfusion.gwt.shared.base.GwtSharedUtils.putToDoubleMap;
+import static lsfusion.gwt.shared.GwtSharedUtils.getFromDoubleMap;
+import static lsfusion.gwt.shared.GwtSharedUtils.putToDoubleMap;
 
 public class HotkeyManager {
     public interface Binding {
