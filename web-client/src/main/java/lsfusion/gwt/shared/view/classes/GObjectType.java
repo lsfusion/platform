@@ -1,15 +1,15 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.LongGridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.NumberGridCellRenderer;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.shared.view.filter.GCompare;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.NumberGridCellRenderer;
 
 import java.text.ParseException;
 
@@ -26,11 +26,6 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
-    }
-
-    @Override
     public int getFullWidthString(String widthString, GFont font, GWidthStringProcessor widthStringProcessor) {
         return GDataType.getFullWidthString(font, widthString, widthStringProcessor);
     }
@@ -42,7 +37,7 @@ public class GObjectType extends GType {
 
     @Override
     public GridCellEditor createValueCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new LongGridCellEditor(editManager, editProperty);
     }
 
     @Override

@@ -2,11 +2,10 @@ package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.form.ui.GFormController;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.grid.renderer.ActionGridCellRenderer;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.panel.ActionPanelRenderer;
 import lsfusion.gwt.shared.view.panel.PanelRenderer;
 
@@ -23,11 +22,6 @@ public class GActionType extends GDataType {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ActionGridCellRenderer(property);
-    }
-
-    @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
     }
 
     @Override

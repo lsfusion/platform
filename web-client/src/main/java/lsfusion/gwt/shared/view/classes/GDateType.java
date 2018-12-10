@@ -1,16 +1,16 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.view.GEditBindingMap;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.DateGridCellEditor;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.grid.renderer.DateGridCellRenderer;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.view.GEditBindingMap;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.changes.dto.GDateDTO;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -28,7 +28,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new DateGridCellEditor(editManager, editProperty);
     }
 
     @Override
@@ -39,11 +39,6 @@ public class GDateType extends GFormatType<DateTimeFormat> {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new DateGridCellRenderer(property);
-    }
-
-    @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
     }
 
     @Override

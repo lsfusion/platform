@@ -1,16 +1,18 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.StringGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.TextGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.rich.RichTextGridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.StringGridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.TextGridCellRenderer;
 import lsfusion.gwt.shared.view.GExtInt;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.GCompare;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.StringGridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.TextGridCellRenderer;
 
 import java.text.ParseException;
 
@@ -80,13 +82,11 @@ public class GStringType extends GDataType {
     }
 
     @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
-    }
-
-    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty, length, rich, blankPadded);
+        if (length.isUnlimited()) {
+            return rich ? new RichTextGridCellEditor(editManager, editProperty) : new TextGridCellEditor(editManager, editProperty);
+        }
+        return new StringGridCellEditor(editManager, editProperty, !blankPadded, length.getValue());
     }
 
     @Override

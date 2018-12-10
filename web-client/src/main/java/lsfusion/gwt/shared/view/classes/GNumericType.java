@@ -2,12 +2,12 @@ package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.NumericGridCellEditor;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.client.form.grid.renderer.NumberGridCellRenderer;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -50,7 +50,7 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new NumericGridCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
     }
 
     @Override

@@ -1,16 +1,16 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.TimeGridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.DateGridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.GEditBindingMap;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.GTimeDTO;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.DateGridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 
@@ -32,13 +32,8 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
-    }
-
-    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new TimeGridCellEditor(editManager, editProperty);
     }
 
     @Override

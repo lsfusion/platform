@@ -1,14 +1,14 @@
 package lsfusion.gwt.shared.view.classes;
 
 import lsfusion.gwt.client.form.MainFrameMessages;
-import lsfusion.gwt.shared.view.GFont;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.ColorGridCellEditor;
 import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.grid.renderer.ColorGridCellRenderer;
 import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.shared.view.GFont;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.GWidthStringProcessor;
 
 import java.text.ParseException;
 
@@ -17,17 +17,12 @@ public class GColorType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new ColorGridCellEditor(editManager, editProperty);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new ColorGridCellRenderer();
-    }
-
-    @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
     }
 
     @Override

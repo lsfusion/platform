@@ -1,15 +1,15 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.MainFrameMessages;
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.LogicalGridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.LogicalGridCellRenderer;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.LogicalGridCellRenderer;
 
 import java.text.ParseException;
 
@@ -22,13 +22,8 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public GridCellEditor visit(GTypeVisitor visitor) {
-        return (GridCellEditor) visitor.visit(this);
-    }
-
-    @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, null);
+        return new LogicalGridCellEditor(editManager);
     }
 
     @Override

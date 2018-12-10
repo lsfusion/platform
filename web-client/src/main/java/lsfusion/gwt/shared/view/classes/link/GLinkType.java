@@ -1,15 +1,15 @@
 package lsfusion.gwt.shared.view.classes.link;
 
+import lsfusion.gwt.client.form.grid.EditManager;
+import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
+import lsfusion.gwt.client.form.grid.editor.LinkGridCellEditor;
+import lsfusion.gwt.client.form.grid.renderer.FileGridCellRenderer;
+import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.GWidthStringProcessor;
 import lsfusion.gwt.shared.view.classes.GDataType;
 import lsfusion.gwt.shared.view.filter.GCompare;
-import lsfusion.gwt.client.form.grid.EditManager;
-import lsfusion.gwt.client.form.grid.editor.AbstractGridCellEditor;
-import lsfusion.gwt.client.form.grid.editor.GridCellEditor;
-import lsfusion.gwt.client.form.grid.renderer.FileGridCellRenderer;
-import lsfusion.gwt.client.form.grid.renderer.GridCellRenderer;
 
 import java.text.ParseException;
 
@@ -39,7 +39,7 @@ public abstract class GLinkType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return AbstractGridCellEditor.createGridCellEditor(this, editManager, editProperty);
+        return new LinkGridCellEditor(editManager, editProperty);
     }
 
     @Override
