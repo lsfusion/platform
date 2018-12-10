@@ -7,6 +7,8 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.AtomicBoolean;
+import lsfusion.gwt.client.base.AtomicLong;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.WindowBox;
 
