@@ -10,7 +10,7 @@ import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.shared.form.view.GFontMetrics;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
 import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.form.changes.dto.ColorDTO;
+import lsfusion.gwt.shared.view.dto.ColorDTO;
 import lsfusion.gwt.client.form.grid.GridEditableCell;
 
 import java.util.Arrays;

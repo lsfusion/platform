@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.form.changes;
 
 import lsfusion.gwt.shared.form.view.*;
-import lsfusion.gwt.shared.form.changes.dto.GFormChangesDTO;
-import lsfusion.gwt.shared.form.changes.dto.GPropertyReaderDTO;
+import lsfusion.gwt.shared.view.dto.GFormChangesDTO;
+import lsfusion.gwt.shared.view.dto.GPropertyReaderDTO;
 import lsfusion.gwt.shared.form.view.reader.GPropertyReader;
 
 import java.util.ArrayList;

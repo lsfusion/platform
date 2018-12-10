@@ -1,4 +1,4 @@
-package lsfusion.gwt.shared.form.changes.dto;
+package lsfusion.gwt.shared.view.dto;
 
 import java.io.Serializable;
 import java.sql.Time;

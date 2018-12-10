@@ -13,7 +13,7 @@ import lsfusion.gwt.client.cellview.cell.Cell;
 import lsfusion.gwt.client.form.MainFrameMessages;
 import lsfusion.gwt.client.form.progressbar.ProgressBar;
 import lsfusion.gwt.shared.form.view.GPropertyDraw;
-import lsfusion.gwt.shared.form.changes.dto.GFilesDTO;
+import lsfusion.gwt.shared.view.dto.GFilesDTO;
 import lsfusion.gwt.client.form.grid.EditEvent;
 import lsfusion.gwt.client.form.grid.EditManager;
 import org.moxieapps.gwt.uploader.client.File;

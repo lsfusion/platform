@@ -8,7 +8,7 @@ import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.shared.form.view.GClassViewType;
 import lsfusion.gwt.shared.form.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.form.changes.GGroupObjectValueBuilder;
-import lsfusion.gwt.shared.form.changes.dto.*;
+import lsfusion.gwt.shared.view.dto.*;
 import lsfusion.interop.ClassViewType;
 
 import java.awt.*;
