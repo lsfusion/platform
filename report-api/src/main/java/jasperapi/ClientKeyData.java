@@ -2,16 +2,12 @@ package jasperapi;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.MAddExclSet;
-import lsfusion.interop.form.PropertyReadType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
-import static lsfusion.interop.form.ReportConstants.*;
+import static lsfusion.interop.form.ReportConstants.objectSuffix;
 
 public class ClientKeyData {
     private final Map<String, Integer> objects = new HashMap<>(); // for getting object values by name
@@ -68,6 +64,14 @@ public class ClientKeyData {
         }
         
         return null;
+    }
+    
+    public boolean keyRowsIsEmpty() {
+        return keyRows.isEmpty();
+    }
+    
+    public Map<Integer, Object> getKeyRowsFirst() {
+        return keyRows.get(0);
     }
 }
 
