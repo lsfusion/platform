@@ -37,7 +37,7 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
             if (attribs != null) {
                 HttpServletRequest request = ((ServletRequestAttributes) attribs).getRequest();
                 host = request.getParameter("host");
-                port = parseInt(request.getParameter("port"));
+                port = BaseUtils.parseInt(request.getParameter("port"));
                 exportName = request.getParameter("exportName");
             }
 
@@ -72,13 +72,5 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
 //        throw new UsernameNotFoundException(le.getMessage());
 //    } catch (RemoteMessageException le) {
 //        throw new RuntimeException(le.getMessage());
-    }
-
-    private Integer parseInt(String value) {
-        try {
-            return value == null ? null : Integer.parseInt(value);
-        } catch (Exception e) {
-            return null;
-        }
     }
 }

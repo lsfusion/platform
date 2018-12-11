@@ -20,8 +20,9 @@
                     <div id="content">
 
                         <%
-                            String queryString = request.getQueryString() == null || request.getQueryString().isEmpty() ? "" : ("?" + request.getQueryString());
-                            String queryStringMemoryLimits = "?path=" + request.getContextPath() + (request.getQueryString() == null || request.getQueryString().isEmpty() ? "" : ("&" + request.getQueryString()));
+                            String query = request.getQueryString();
+                            String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                            String queryStringMemoryLimits = "?path=" + request.getContextPath() + (query == null || query.isEmpty() ? "" : ("&" + query));
                         %>
 
                         <form id="login-form"
