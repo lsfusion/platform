@@ -168,6 +168,7 @@ requestPushed() = DATA LOCAL NESTED BOOLEAN ();
 
 requestedObject = DATA LOCAL NESTED Object ();
 requestedString = DATA LOCAL NESTED STRING[4000] ();
+requestedVarString = DATA LOCAL NESTED VARSTRING[4000] ();
 requestedText = DATA LOCAL NESTED TEXT ();
 requestedInteger = DATA LOCAL NESTED INTEGER ();
 requestedLong = DATA LOCAL NESTED LONG ();

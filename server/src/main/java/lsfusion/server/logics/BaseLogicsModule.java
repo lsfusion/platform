@@ -602,6 +602,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         return new AnyValuePropertyHolder(
                 getLCPByUniqueName(namePrefix + "Object"),
                 getLCPByUniqueName(namePrefix + "String"),
+                getLCPByUniqueName(namePrefix + "VarString"),
                 getLCPByUniqueName(namePrefix + "Text"),
                 getLCPByUniqueName(namePrefix + "Integer"),
                 getLCPByUniqueName(namePrefix + "Long"),

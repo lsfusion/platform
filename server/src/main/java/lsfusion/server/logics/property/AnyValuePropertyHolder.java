@@ -24,6 +24,7 @@ import java.util.Set;
 public class AnyValuePropertyHolder {
     private final LCP objectProperty;
     private final LCP stringProperty;
+    private final LCP varStringProperty;
     private final LCP textProperty;
     private final LCP intProperty;
     private final LCP longProperty;
@@ -58,7 +59,7 @@ public class AnyValuePropertyHolder {
     private final LCP xmlLinkProperty;
     private final LCP tableLinkProperty;
 
-    public AnyValuePropertyHolder(LCP<?> objectProperty, LCP<?> stringProperty, LCP<?> textProperty, LCP<?> intProperty, LCP<?> longProperty, LCP<?> doubleProperty, LCP<?> numericProperty, LCP<?> yearProperty,
+    public AnyValuePropertyHolder(LCP<?> objectProperty, LCP<?> stringProperty, LCP<?> varStringProperty, LCP<?> textProperty, LCP<?> intProperty, LCP<?> longProperty, LCP<?> doubleProperty, LCP<?> numericProperty, LCP<?> yearProperty,
                                   LCP<?> dateTimeProperty, LCP<?> logicalProperty, LCP<?> dateProperty, LCP<?> timeProperty, LCP<?> colorProperty, LCP<?> wordFileProperty, LCP<?> imageFileProperty,
                                   LCP<?> pdfFileProperty, LCP<?> rawFileProperty, LCP<?> customFileProperty, LCP<?> excelFileProperty, 
                                   LCP<?> csvFileProperty, LCP<?> htmlFileProperty, LCP<?> jsonFileProperty, LCP<?> xmlFileProperty, LCP<?> tableFileProperty,
@@ -67,6 +68,7 @@ public class AnyValuePropertyHolder {
                                   LCP<?> htmlLinkProperty, LCP<?> jsonLinkProperty, LCP<?> xmlLinkProperty, LCP<?> tableLinkProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
+                && varStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
@@ -104,6 +106,7 @@ public class AnyValuePropertyHolder {
 
         this.objectProperty = objectProperty;
         this.stringProperty = stringProperty;
+        this.varStringProperty = varStringProperty;
         this.textProperty = textProperty;
         this.intProperty = intProperty;
         this.longProperty = longProperty;
@@ -146,7 +149,7 @@ public class AnyValuePropertyHolder {
             if (((StringClass) valueType).length.isUnlimited()) {
                 return textProperty;
             }
-            return stringProperty;
+            return ((StringClass) valueType).blankPadded ? stringProperty : varStringProperty;
         } else if (valueType instanceof IntegerClass) {
             if (valueType instanceof YearClass) {
                 return yearProperty;
@@ -224,7 +227,7 @@ public class AnyValuePropertyHolder {
     @IdentityLazy
     public ImOrderSet<SessionDataProperty> getProps() {
         return SetFact.toOrderExclSet(
-                objectProperty, stringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
+                objectProperty, stringProperty, varStringProperty, textProperty, intProperty, longProperty, doubleProperty, numericProperty, yearProperty, dateTimeProperty, logicalProperty,
                 dateProperty, timeProperty, colorProperty, wordFileProperty, imageFileProperty, pdfFileProperty, rawFileProperty, customFileProperty, excelFileProperty, 
                 csvFileProperty, htmlFileProperty, jsonFileProperty, xmlFileProperty, tableFileProperty, imageLinkProperty, pdfLinkProperty, rawLinkProperty, customLinkProperty, excelLinkProperty,
                 csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty
