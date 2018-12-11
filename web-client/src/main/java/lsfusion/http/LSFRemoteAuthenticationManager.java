@@ -12,6 +12,9 @@ import org.springframework.security.authentication.rcp.RemoteAuthenticationManag
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -21,18 +24,24 @@ import java.util.Collection;
 import java.util.List;
 
 public class LSFRemoteAuthenticationManager extends LogicsRequestHandler implements RemoteAuthenticationManager {
-    public HttpServletRequest request;
-
-    public void setHttpServletRequest(HttpServletRequest request) {
-       this.request = request;
-    }
 
     @Override
     public Collection<GrantedAuthority> attemptAuthentication(final String username, final String password) throws RemoteAuthenticationException {
 
         try {
-            return runRequest(request != null ? request.getParameter("host") : null, request != null ? parseInt(request.getParameter("port")) : null,
-                    request != null ? request.getParameter("exportName") : null, new Runnable<Collection<GrantedAuthority>> () {
+            //https://stackoverflow.com/questions/24025924/java-lang-illegalstateexception-no-thread-bound-request-found-exception-in-asp
+            String host = null;
+            Integer port = null;
+            String exportName = null;
+            RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
+            if (attribs != null) {
+                HttpServletRequest request = ((ServletRequestAttributes) attribs).getRequest();
+                host = request.getParameter("host");
+                port = parseInt(request.getParameter("port"));
+                exportName = request.getParameter("exportName");
+            }
+
+            return runRequest(host, port, exportName, new Runnable<Collection<GrantedAuthority>> () {
                 public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
                         List<GrantedAuthority> result = new ArrayList<>();

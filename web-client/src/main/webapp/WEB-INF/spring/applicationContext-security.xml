@@ -64,7 +64,7 @@
         <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 
-    <b:bean id="authenticationProvider" class="lsfusion.gwt.server.base.spring.LSFRemoteAuthenticationProvider">
+    <b:bean id="authenticationProvider" class="org.springframework.security.authentication.rcp.RemoteAuthenticationProvider">
         <b:property name="remoteAuthenticationManager">
             <b:bean class="lsfusion.http.LSFRemoteAuthenticationManager"/>
         </b:property>

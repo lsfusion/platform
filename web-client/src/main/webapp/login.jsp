@@ -20,21 +20,17 @@
                     <div id="content">
 
                         <%
-                            String queryString = "";
-                            for(Object p : request.getParameterMap().entrySet()) {
-                                Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>) p;
-                                queryString += (queryString.isEmpty() ? "" : "&") + entry.getKey() + "=" + entry.getValue()[0];
-                            }
-                            session.setAttribute("queryString", queryString);
+                            String queryString = request.getQueryString() == null || request.getQueryString().isEmpty() ? "" : ("?" + request.getQueryString());
+                            String queryStringMemoryLimits = "?path=" + request.getContextPath() + (request.getQueryString() == null || request.getQueryString().isEmpty() ? "" : ("&" + request.getQueryString()));
                         %>
 
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
-                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/><%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>" >
+                              action="login_check<%=queryString%>" >
                             <fieldset>
 
-                                <div class="image-center"><img src="readLogo<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>" alt="LSFusion"></div>
+                                <div class="image-center"><img src="readLogo<%=queryString%>" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="j_username">login</label>
@@ -46,7 +42,7 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
                                 <div class="desktop-link">
-                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>">Run desktop client</a>
+                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp<%=queryString%>">Run desktop client</a>
                                     <div id="spoiler" style="display:none"></div>
                                         <script>
                                             function showSpoiler() {
@@ -56,7 +52,7 @@
                                                     xhttp.onload = function() {
                                                         document.getElementById('spoiler').innerHTML = this.responseText;
                                                     };
-                                                    xhttp.open("GET", "readMemoryLimits?path=${pageContext.request.contextPath}<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("&" + session.getAttribute("queryString"))%>", true);
+                                                    xhttp.open("GET", "readMemoryLimits<%=queryStringMemoryLimits%>", true);
                                                     xhttp.send();
 
                                                     document.getElementById('spoiler') .style.display='';
