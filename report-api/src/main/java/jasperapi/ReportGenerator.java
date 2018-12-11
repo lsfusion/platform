@@ -75,25 +75,6 @@ public class ReportGenerator {
         TRAY_VALUES.put("side", MediaTray.SIDE);
     }
 
-    public boolean hasColumns(String fieldName, String subreportID) { // optimization
-        Result<Integer> minColumnsCount = new Result<>(); 
-        int columnsCount = getColumnsCount(fieldName, subreportID, minColumnsCount);
-        if(columnsCount != 1)
-            return true;
-        return !minColumnsCount.result.equals(1);
-    }
-    public int getColumnsCount(String fieldName, String subreportID) {
-        assert hasColumns(fieldName, subreportID);
-        return getColumnsCount(fieldName, subreportID, null); 
-    }
-    public int getColumnsCount(String fieldName, String subreportID, Result<Integer> minColumnsCount) {
-        Integer columnsCount = keyData.get(subreportID).getColumnsCount(fieldName, minColumnsCount);
-        if(columnsCount != null)
-            return columnsCount;
-        
-        return propData.getColumnsCount(fieldName, minColumnsCount);
-    }
-
     public ReportGenerator(ReportGenerationData generationData) {
         this.generationData = generationData;
         // Числовые значения 2048 и 1024 взяты из примеров, 40 было выбрано в результате тестирования
@@ -218,7 +199,7 @@ public class ReportGenerator {
         return beginIndexMarker + i + endIndexMarker;
     }
     
-    public static final Pattern fieldPattern = Pattern.compile("\\$F\\{[\\w.\\[\\](),]+\\}");
+    private static final Pattern fieldPattern = Pattern.compile("\\$F\\{[\\w.\\[\\](),]+\\}");
 
     // "$F{fieldName}" -> "fieldName"
     private String getFieldName(String fieldString) {
@@ -250,7 +231,28 @@ public class ReportGenerator {
         }
         return null;
     }
+
+    private boolean hasColumns(String fieldName, String subreportID) { // optimization
+        Result<Integer> minColumnsCount = new Result<>();
+        int columnsCount = getColumnsCount(fieldName, subreportID, minColumnsCount);
+        if(columnsCount != 1)
+            return true;
+        return !minColumnsCount.result.equals(1);
+    }
     
+    private int getColumnsCount(String fieldName, String subreportID) {
+        assert hasColumns(fieldName, subreportID);
+        return getColumnsCount(fieldName, subreportID, null);
+    }
+    
+    private int getColumnsCount(String fieldName, String subreportID, Result<Integer> minColumnsCount) {
+        Integer columnsCount = keyData.get(subreportID).getColumnsCount(fieldName, minColumnsCount);
+        if(columnsCount != null)
+            return columnsCount;
+
+        return propData.getColumnsCount(fieldName, minColumnsCount);
+    }
+
     private String findFieldNameToSplitStyle(JRStyle style, String subreportID) {
         final JRConditionalStyle[] condStyles = style.getConditionalStyles();
         if (condStyles != null) {
@@ -405,7 +407,7 @@ public class ReportGenerator {
         }
         
         if (generationData.useShowIf) {
-            Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design);
+            Collection<JRTextField> fieldsToHide = findTextFieldsToHide(design, subreportID);
             if (!fieldsToHide.isEmpty()) {
                 cutSegments(design, findCutSegments(fieldsToHide));
             }
@@ -447,8 +449,8 @@ public class ReportGenerator {
         return segments;
     }
     
-    private Collection<JRTextField> findTextFieldsToHide(JasperDesign design) {
-        return findTextFieldsToHide(design, getHidingFieldsNames(design));
+    private Collection<JRTextField> findTextFieldsToHide(JasperDesign design, String subreportID) {
+        return findTextFieldsToHide(design, getHidingFieldsNames(design, subreportID));
     }
     
     private List<JRTextField> findTextFieldsToHide(JasperDesign design, Set<String> hidingFieldsNames) {
@@ -461,7 +463,7 @@ public class ReportGenerator {
                     if (exprText.startsWith("$F{")) {
                         String fieldName = getFieldName(exprText);
                         // We need to check already divided fields as well
-                        if (hidingFieldsNames.contains(fieldName) || hidingFieldsNames.contains(nameWithoutIndexSuffix(fieldName))) { 
+                        if (hidingFieldsNames.contains(removeIndexMarkerIfExists(fieldName))) { 
                             textFieldsToHide.add(textElement);
                         }
                     }
@@ -471,10 +473,10 @@ public class ReportGenerator {
         return textFieldsToHide;
     }
     
-    private Set<String> getHidingFieldsNames(JasperDesign design) {
+    private Set<String> getHidingFieldsNames(JasperDesign design, String subreportID) {
         Set<String> hidingFieldsNames = new HashSet<>();
         for (JRField field : design.getFieldsList()) {
-            if (isActiveShowIfField(field.getName())) {
+            if (isActiveShowIfField(field.getName(), subreportID)) {
                 String baseFieldName = getBaseFieldName(field.getName());
                 hidingFieldsNames.add(baseFieldName);
             }
@@ -482,19 +484,16 @@ public class ReportGenerator {
         return hidingFieldsNames;        
     }
     
-    private boolean isActiveShowIfField(final String fieldName) {
-        if (isShowIfFieldName(fieldName))
-            return propData.getFieldValue(new HashMap<Integer, Object>(), fieldName) == null;
+    private boolean isActiveShowIfField(final String fieldName, String subreportID) {
+        if (isShowIfFieldName(fieldName)) {
+            ClientKeyData clientKeyData = keyData.get(subreportID);
+            if (!clientKeyData.keyRowsIsEmpty()) {
+                return propData.getFieldValue(clientKeyData.getKeyRowsFirst(), fieldName) == null;
+            }
+        }
         return false;
     }
 
-    private String nameWithoutIndexSuffix(String fieldName) {
-        if (fieldName.endsWith(endIndexMarker) && fieldName.contains(beginIndexMarker)) {
-            return fieldName.substring(0, fieldName.indexOf(beginIndexMarker));
-        }
-        return fieldName;
-    }
-    
     private Collection<JRElement> getDesignElements(JasperDesign design) {
         Collection<JRElement> elements = new ArrayList<>();
         for (JRBand band : design.getAllBands()) {
