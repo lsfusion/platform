@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.json;
 
 import lsfusion.base.RawFileData;
+import org.apache.commons.io.input.BOMInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +25,7 @@ public class JSONReader {
 
     public static Object readObject(RawFileData file, String charset) throws IOException, JSONException {
         try (InputStream is = file.getInputStream()) {
-            final BufferedReader rd = new BufferedReader(new InputStreamReader(is, charset));
+            final BufferedReader rd = new BufferedReader(new InputStreamReader(new BOMInputStream(is), charset));
             final String jsonText = readAll(rd).trim();
 
             if(jsonText.startsWith("["))
