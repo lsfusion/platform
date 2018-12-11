@@ -18,20 +18,21 @@
             <tr>
                 <td>
                     <div id="content">
+
+                        <%
+                            String queryString = "";
+                            for(Object p : request.getParameterMap().entrySet()) {
+                                Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>) p;
+                                queryString += (queryString.isEmpty() ? "" : "&") + entry.getKey() + "=" + entry.getValue()[0];
+                            }
+                            session.setAttribute("queryString", queryString);
+                        %>
+
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
-                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
+                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/><%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>" >
                             <fieldset>
-
-                                <%
-                                    String queryString = "";
-                                    for(Object p : request.getParameterMap().entrySet()) {
-                                        Map.Entry<String, String[]> entry = (Map.Entry<String, String[]>) p;
-                                        queryString += (queryString.isEmpty() ? "" : "&") + entry.getKey() + "=" + entry.getValue()[0];
-                                    }
-                                    session.setAttribute("queryString", queryString);
-                                %>
 
                                 <div class="image-center"><img src="readLogo<%=((String) session.getAttribute("queryString")).isEmpty() ? "" : ("?" + session.getAttribute("queryString"))%>" alt="LSFusion"></div>
                                 <p>

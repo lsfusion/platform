@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -20,12 +21,18 @@ import java.util.Collection;
 import java.util.List;
 
 public class LSFRemoteAuthenticationManager extends LogicsRequestHandler implements RemoteAuthenticationManager {
+    public HttpServletRequest request;
+
+    public void setHttpServletRequest(HttpServletRequest request) {
+       this.request = request;
+    }
 
     @Override
     public Collection<GrantedAuthority> attemptAuthentication(final String username, final String password) throws RemoteAuthenticationException {
 
         try {
-            return runRequest(null , null, null, new Runnable<Collection<GrantedAuthority>> () {
+            return runRequest(request != null ? request.getParameter("host") : null, request != null ? parseInt(request.getParameter("port")) : null,
+                    request != null ? request.getParameter("exportName") : null, new Runnable<Collection<GrantedAuthority>> () {
                 public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
                         List<GrantedAuthority> result = new ArrayList<>();
@@ -34,6 +41,7 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
                             result.add(new GrantedAuthorityImpl(role));
                         }
 
+                        //TODO: добавить проверку platform version!
                         Integer oldApiVersion = BaseUtils.getApiVersion();
                         Integer newApiVersion = remoteLogics.getApiVersion();
                         if (!oldApiVersion.equals(newApiVersion))
@@ -55,5 +63,13 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
 //        throw new UsernameNotFoundException(le.getMessage());
 //    } catch (RemoteMessageException le) {
 //        throw new RuntimeException(le.getMessage());
+    }
+
+    private Integer parseInt(String value) {
+        try {
+            return value == null ? null : Integer.parseInt(value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

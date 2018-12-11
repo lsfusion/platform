@@ -140,6 +140,11 @@
         <url-pattern>/jcaptcha</url-pattern>
     </servlet-mapping>
 
+
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+    </listener>
+
     <!-- Init RMI Listener -->
     <listener>
         <listener-class>lsfusion.http.InitRMIContextListener</listener-class>
