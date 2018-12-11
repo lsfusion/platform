@@ -585,35 +585,34 @@ public abstract class LogicsModule {
     
     protected <O extends ObjectSelector> LAP addImportFAProp(FormIntegrationType format, FormEntity formEntity, int paramsCount, ImOrderSet<GroupObjectEntity> groupFiles, boolean sheetAll, String separator, boolean noHeader, boolean noEscape, String charset, boolean hasWhere) {
         ImportActionProperty importAction;
-        
+
         if(format == null)
             return addAutoImportFAProp(formEntity, paramsCount, groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasWhere);
-        else {
-            switch (format) {
-                // hierarchical
-                case XML:
-                    importAction = new ImportXMLActionProperty(paramsCount, formEntity, charset);
-                    break;
-                case JSON:
-                    importAction = new ImportJSONActionProperty(paramsCount, formEntity, charset);
-                    break;
-                // plain
-                case CSV:
-                    importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
-                    break;
-                case DBF:
-                    importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
-                    break;
-                case XLS:
-                case XLSX:
-                    importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
-                    break;
-                case TABLE:
-                    importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity, charset);
-                    break;
-                default:
-                    throw new UnsupportedOperationException();
-            }
+
+        switch (format) {
+            // hierarchical
+            case XML:
+                importAction = new ImportXMLActionProperty(paramsCount, formEntity, charset);
+                break;
+            case JSON:
+                importAction = new ImportJSONActionProperty(paramsCount, formEntity, charset);
+                break;
+            // plain
+            case CSV:
+                importAction = new ImportCSVActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, noEscape, separator);
+                break;
+            case DBF:
+                importAction = new ImportDBFActionProperty(paramsCount, groupFiles, formEntity, charset, hasWhere);
+                break;
+            case XLS:
+            case XLSX:
+                importAction = new ImportXLSActionProperty(paramsCount, groupFiles, formEntity, charset, noHeader, sheetAll);
+                break;
+            case TABLE:
+                importAction = new ImportTableActionProperty(paramsCount, groupFiles, formEntity, charset);
+                break;
+            default:
+                throw new UnsupportedOperationException();
         }
         return addProperty(null, new LAP<>(importAction));
     }

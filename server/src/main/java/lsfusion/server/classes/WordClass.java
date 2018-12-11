@@ -2,6 +2,7 @@ package lsfusion.server.classes;
 
 import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import org.apache.poi.poifs.filesystem.DocumentFactoryHelper;
 
 import java.io.ByteArrayInputStream;
@@ -51,5 +52,10 @@ public class WordClass extends StaticFormatFileClass {
     @Override
     public String getDefaultCastExtension() {
         return "doc";
+    }
+
+    @Override
+    public FormIntegrationType getIntegrationType() {
+        throw new UnsupportedOperationException();
     }
 }

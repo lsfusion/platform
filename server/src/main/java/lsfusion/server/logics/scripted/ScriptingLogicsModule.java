@@ -3418,6 +3418,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return PropertyCanonicalNameUtils.createSignature(signature);
     }
 
+    private FormIntegrationType adjustImportFormatFromFileType(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps, List<TypedParameter> context) {
+        if(format == null) {
+            if(fileProps != null && !fileProps.isEmpty())
+                fileProp = fileProps.values().iterator().next();
+            Type type = getTypeByParamProperty(fileProp, context);
+            if(type instanceof StaticFormatFileClass)
+                return ((StaticFormatFileClass)type).getIntegrationType();
+        }
+        return format;
+    }
+
     public LAPWithParams addScriptedImportActionProperty(FormIntegrationType format, LCPWithParams fileProp, List<String> ids, List<Boolean> literals, List<PropertyUsage> propUsages,
                                                          List<Boolean> nulls, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> context, List<TypedParameter> newContext,
                                                          PropertyUsage wherePropertyUsage, LCPWithParams sheet, boolean sheetAll, String separator, boolean noHeader, boolean noEscape,
@@ -3430,6 +3441,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(toParamClasses != null && toParamClasses.size() > 1) {
             errLog.emitSimpleError(parser, "IMPORT TO/FIELDS params with multiple classes not supported");
         }
+
+        format = adjustImportFormatFromFileType(format, fileProp, null, context);
 
         ImList<LCP> props;
         ImList<ValueClass> paramClasses;
@@ -3470,9 +3483,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableList();
     }
 
-    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps,
+    public LAPWithParams addScriptedImportFormActionProperty(FormIntegrationType format, List<TypedParameter> context, LCPWithParams fileProp, OrderedMap<GroupObjectEntity, LCPWithParams> fileProps,
                                                              FormEntity formEntity, LCPWithParams sheet, boolean sheetAll, boolean noHeader, boolean noEscape, boolean attr, String charset, String separator,
                                                              LCPWithParams rootProp, LCPWithParams whereProp,  LCPWithParams memoProp) throws ScriptingErrorLog.SemanticErrorException {
+        format = adjustImportFormatFromFileType(format, fileProp, fileProps, context);
+
         List<LCPWithParams> params = new ArrayList<>();
         boolean hasFileProps = fileProps != null && !fileProps.isEmpty();
         boolean isPlain = format != null ? format.isPlain() : hasFileProps;

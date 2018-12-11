@@ -8,6 +8,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import org.apache.commons.net.util.Base64;
 
 import java.sql.PreparedStatement;
@@ -102,4 +103,5 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         return value != null ? Base64.encodeBase64String(value.getBytes()) : null;
     }
 
+    public abstract FormIntegrationType getIntegrationType();
 }

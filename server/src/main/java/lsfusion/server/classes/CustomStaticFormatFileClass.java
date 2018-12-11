@@ -4,6 +4,7 @@ import lsfusion.base.RawFileData;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Data;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -140,5 +141,10 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
         }
 
         return result;
+    }
+
+    @Override
+    public FormIntegrationType getIntegrationType() {
+        throw new UnsupportedOperationException();
     }
 }
