@@ -2,6 +2,7 @@ package lsfusion.server.classes;
 
 import lsfusion.base.RawFileData;
 import lsfusion.interop.Data;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,5 +44,10 @@ public class PDFClass extends StaticFormatFileClass {
     @Override
     public String getDefaultCastExtension() {
         return "pdf";
+    }
+
+    @Override
+    public FormIntegrationType getIntegrationType() {
+        throw new UnsupportedOperationException();
     }
 }

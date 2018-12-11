@@ -5,6 +5,7 @@ import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,5 +55,10 @@ public class HTMLClass extends StaticFormatFileClass {
             return "cast_string_to_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
+    }
+
+    @Override
+    public FormIntegrationType getIntegrationType() {
+        throw new UnsupportedOperationException();
     }
 }
