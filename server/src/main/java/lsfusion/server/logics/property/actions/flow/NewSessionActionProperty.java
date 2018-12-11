@@ -68,6 +68,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
                 throw Throwables.propagate(e);
             }
             newContext = context.newSession(sql);
+            newContext.getSession().isPrivateSql = true; // not pretty, in theory createSQL and isPrivateSql should be in DataSession constructor but it is a really rare case
         } else {
             newContext = context.newSession();
             DataSession newSession = newContext.getSession();
@@ -108,12 +109,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-        try {
-            ((ExecutionContext.NewSession<PropertyInterface>)innerContext).close(); // по сути и есть аналог try with resources ()
-        } finally {
-            if(newSQL) // тут конечно нюанс, что делать если newSession продолжит жить своей жизнью (скажем NEWSESSION NEWTHREAD, а не наоборот), реализуем потом (по аналогии с NEWSESSION) вместе с NESTED
-                innerContext.getSession().sql.close();
-        }
+        ((ExecutionContext.NewSession<PropertyInterface>)innerContext).close(); // по сути и есть аналог try with resources ()
     }
 
     @Override

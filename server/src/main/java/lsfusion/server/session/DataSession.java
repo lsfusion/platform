@@ -285,6 +285,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public final SQLSession sql;
+    public boolean isPrivateSql; // if this sql is private and should be closed with data session close
     public final SQLSession idSession;
     
     @Override
@@ -297,11 +298,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sessionEventChangedOld.clear(sql, getOwner());
 
             sessionEventNotChangedOld.clear();
+
+            updateNotChangedOld.clear();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
+        } finally {
+            if(isPrivateSql)
+                sql.close();
         }
 
-        updateNotChangedOld.clear();
     }
 
     public static class UpdateChanges {
