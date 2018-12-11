@@ -12,7 +12,7 @@ import lsfusion.gwt.shared.view.GPropertyDraw;
 import java.util.List;
 
 /**
- * Based on lsfusion.gwt.client.cellview.DefaultDataGridBuilder
+ * Based on lsfusion.gwt.client.form.ui.cellview.DefaultDataGridBuilder
  */
 public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T> {
     private final String rowStyle;

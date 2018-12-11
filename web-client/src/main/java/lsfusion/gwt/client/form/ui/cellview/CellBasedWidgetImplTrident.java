@@ -350,8 +350,8 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
    * Initialize the focus event listener.
    */
   private native void initFocusEventSystem() /*-{
-    @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent = $entry(function() {
-      @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
+    @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent = $entry(function() {
+      @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
     });
   }-*/;
 
@@ -370,7 +370,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
 
     // Add an entry for the specified module.
     $wnd.__gwt_CellBasedWidgetImplLoadListeners[moduleName] = $entry(function() {
-      @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
+      @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)($wnd.event);
     });
   }-*/;
 
@@ -381,8 +381,8 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
    */
   private native void sinkFocusEvents(Element elem) /*-{
     elem.attachEvent('onfocusin',
-        @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
+        @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
     elem.attachEvent('onfocusout',
-        @lsfusion.gwt.client.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
+        @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplTrident::dispatchFocusEvent);
   }-*/;
 }

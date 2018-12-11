@@ -117,8 +117,8 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
    * Initialize the event system.
    */
   private native void initEventSystem() /*-{
-    @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent = $entry(function(evt) {
-      @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)(evt);
+    @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent = $entry(function(evt) {
+      @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandard::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)(evt);
     });
   }-*/;
 
@@ -129,6 +129,6 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
    * @param typeName the name of the event to sink
    */
   private native void sinkEventImpl(Element elem, String typeName) /*-{
-    elem.addEventListener(typeName, @lsfusion.gwt.client.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent, true);
+    elem.addEventListener(typeName, @lsfusion.gwt.client.form.ui.cellview.CellBasedWidgetImplStandard::dispatchNonBubblingEvent, true);
   }-*/;
 }
