@@ -27,6 +27,9 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     protected void showErrorMessage(final Throwable caught) {
         GExceptionManager.logClientError("Failure, while performing an action. ", caught);
 
+        if(getMaxTries(caught) > -1) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
+            return;
+
         String message = getServerMessage(caught);
         if (message != null) {
             ErrorDialog.show(baseMessages.error(), message, getJavaStackTrace(caught), getLSFStackTrace(caught));
@@ -51,8 +54,6 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
     public static int getMaxTries(Throwable caught) {
         if (caught instanceof StatusCodeException)
-            return MAX_REQUEST_TRIES;
-        if (caught instanceof AppServerNotAvailableException) // temporary, reconnect worker should handle this
             return MAX_REQUEST_TRIES;
         else if (caught instanceof RemoteRetryException)
             return ((RemoteRetryException) caught).maxTries;
