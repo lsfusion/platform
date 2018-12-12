@@ -50,12 +50,6 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
                             result.add(new GrantedAuthorityImpl(role));
                         }
 
-                        //TODO: добавить проверку platform version!
-                        Integer oldApiVersion = BaseUtils.getApiVersion();
-                        Integer newApiVersion = remoteLogics.getApiVersion();
-                        if (!oldApiVersion.equals(newApiVersion))
-                            throw new DisabledException("Необходимо обновить web-клиент. изменилась версия API!");
-
                         return result;
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());

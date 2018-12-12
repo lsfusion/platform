@@ -1,11 +1,11 @@
-package lsfusion.gwt.form.client;
+package lsfusion.gwt.client;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.base.client.GwtClientUtils;
-import lsfusion.gwt.base.client.ui.WindowBox;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.WindowBox;
 
 public class GLogoutMessageManager {
     private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
