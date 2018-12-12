@@ -2,6 +2,7 @@ package lsfusion.gwt.server;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
+import lsfusion.gwt.server.logics.handlers.CheckApiVersionHandler;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.gwt.shared.exceptions.MessageException;
@@ -56,6 +57,7 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         registry.addHandler(new LookupLogicsAndCreateNavigatorHandler(this));
 
         // logics
+        registry.addHandler(new CheckApiVersionHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
 
         // navigator
