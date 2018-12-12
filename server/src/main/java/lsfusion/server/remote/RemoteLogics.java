@@ -215,19 +215,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public List<String> authenticateUser(String userName, String password) throws RemoteException {
-        DataSession session;
-        try {
-            session = dbManager.createSession();
+        User user;
+        try(DataSession session = dbManager.createSession()) {
+            user = securityManager.authenticateUser(session, userName, password, getStack());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        try {
-            User user = securityManager.authenticateUser(session, userName, password, getStack());
-            if (user != null) {
-                return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));    
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        if (user != null) {
+            return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));
         }
         return null;
     }

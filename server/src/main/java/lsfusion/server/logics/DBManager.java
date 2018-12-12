@@ -147,7 +147,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = businessLogics;
     }
-    
+
     public BusinessLogics getBusinessLogics(){
         return businessLogics;
     }
@@ -669,7 +669,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
-        
+
         checkModules(oldDBStructure);
 
         // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
@@ -1587,7 +1587,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // Сохраним изменения имен свойств на форме и элементов навигатора для reflectionManager
         finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
         finalNavigatorElementNameChanges = getChangesAfter(oldData.dbVersion, navigatorCNChanges);
-        
+
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
         addLogPropertiesToMigration(oldData, newData.dbVersion);
         
@@ -1610,9 +1610,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
         DBVersion curVersion = oldVersion;
-        List<TreeMap<DBVersion, List<SIDChange>>> changesMaps = Arrays.asList(propertyCNChanges, actionCNChanges, 
+        List<TreeMap<DBVersion, List<SIDChange>>> changesMaps = Arrays.asList(propertyCNChanges, actionCNChanges,
                 classSIDChanges, objectSIDChanges, tableSIDChanges, propertyDrawNameChanges, navigatorCNChanges);
-        
+
         for (TreeMap<DBVersion, List<SIDChange>> changeMap : changesMaps) {
             if (!changeMap.isEmpty() && curVersion.compare(changeMap.lastKey()) < 0) {
                 curVersion = changeMap.lastKey();
@@ -1663,8 +1663,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void addNavigatorElementCNChange(String version, String oldCN, String newCN) {
         addSIDChange(navigatorCNChanges, version, oldCN, newCN);
-    } 
-    
+    }
+
     private String transformUSID(String userSID) {
         return userSID.replaceFirst("\\.", "_");                            
     }
@@ -1683,7 +1683,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     public Map<String, String> getNavigatorElementNameChanges() {
         return finalNavigatorElementNameChanges;
     }
-    
+
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
         Map<String, String> resultChanges = new OrderedMap<>();
 
