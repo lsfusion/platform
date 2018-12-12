@@ -58,19 +58,8 @@ public class NavigatorController implements INavigatorController {
     }
 
     public void openElement(ClientNavigatorElement element, int modifiers) {
-        try {
-            if (element instanceof ClientNavigatorForm) {
-                ClientNavigatorForm form = (ClientNavigatorForm) element;
-                if (form.modalityType.isModal()) {
-                    mainNavigator.openModalForm(form, modifiers);
-                } else {
-                    mainNavigator.openForm(form, modifiers);
-                }
-            } else if (element instanceof ClientNavigatorAction) {
-                mainNavigator.openAction((ClientNavigatorAction) element, modifiers);
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        if (element instanceof ClientNavigatorAction) {
+            mainNavigator.openAction((ClientNavigatorAction) element, modifiers);
         }
     }
 

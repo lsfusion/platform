@@ -63,9 +63,6 @@ public class NavigatorTreeNode extends ClientTreeNode<ClientNavigatorElement, Na
 
     @Override
     public Icon getIcon() {
-        if (navigatorElement instanceof ClientNavigatorForm) {
-            return formIcon;
-        }
         return null;
     }
 

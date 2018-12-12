@@ -145,7 +145,7 @@ public class DockableManager {
             }
             
             try {
-                ClientFormDockable page = mainNavigator.createFormDockableByCanonicalName(layout.getCanonicalName(), DockableManager.this);
+                ClientFormDockable page = null; //mainNavigator.createFormDockableByCanonicalName(layout.getCanonicalName(), DockableManager.this);
                 if (page == null) {
                     return null;
                 }

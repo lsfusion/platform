@@ -28,7 +28,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
                 <configuration>
-                    <module>lsfusion.gwt.form.lsfusion</module>
+                    <module>lsfusion.gwt.LSFusion</module>
 
                     <webappDirectory>${war.explodedDir}</webappDirectory>
                     <force>true</force>

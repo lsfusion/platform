@@ -12,8 +12,8 @@
 
     <!-- Security configuration -->
     <http auto-config="true" use-expressions="true" entry-point-ref="entryPoint">
-        <intercept-url pattern="/form.jsp" access="isAuthenticated()"/>
-        <intercept-url pattern="/form/*" access="isAuthenticated()"/>
+        <intercept-url pattern="/lsfusion.jsp" access="isAuthenticated()"/>
+        <intercept-url pattern="/lsfusion/*" access="isAuthenticated()"/>
 
         <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
         <access-denied-handler ref="accessDeniedHandler" />
@@ -32,7 +32,7 @@
     </b:bean>
 
     <!-- Custom security filters -->
-    <b:bean id="expiredSessionFilter" class="lsfusion.gwt.base.server.spring.ExpiredSessionFilter">
+    <b:bean id="expiredSessionFilter" class="lsfusion.http.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
         <b:property name="urlPattern" value="/(?!login\.).*/dispatch.*"/>
     </b:bean>
@@ -43,20 +43,14 @@
         <b:property name="loginFormUrl" value="/login.jsp"/>
     </b:bean>
 
-    <b:bean id="successLoginHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
-        <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/form.jsp" />
-        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
+    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler" >
     </b:bean>
 
-    <b:bean id="accessDeniedHandler" class="lsfusion.gwt.base.server.spring.AccessDeniedHandlerImpl" >
+    <b:bean id="accessDeniedHandler" class="lsfusion.http.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />
     </b:bean>
 
-    <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
-        <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/form.jsp" />
-        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
+    <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
     </b:bean>
 
     <!-- Authentication configuration -->
@@ -66,38 +60,42 @@
 
     <b:bean id="authenticationProvider" class="org.springframework.security.authentication.rcp.RemoteAuthenticationProvider">
         <b:property name="remoteAuthenticationManager">
-            <b:bean class="lsfusion.gwt.base.server.spring.GwtRemoteAuthenticationManager"/>
+            <b:bean class="lsfusion.http.LSFRemoteAuthenticationManager"/>
         </b:property>
     </b:bean>
 
     <!-- Custom beans -->
-    <b:bean id="blProvider" class="lsfusion.gwt.base.server.spring.ContextBusinessLogicsProvider" />
 
-    <b:bean id="navigatorProvider" scope="session" class="lsfusion.gwt.base.server.spring.NavigatorProviderImpl">
-        <aop:scoped-proxy proxy-target-class="false" />
-        <b:constructor-arg ref="blProvider"/>
-    </b:bean>
+    <!-- Custom request beans-->
+    <b:bean id="logicsHandlerProvider" class="lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl" />
 
-    <b:bean id="formManager" scope="session" class="lsfusion.gwt.form.server.FormSessionManagerImpl">
+    <!-- GWT beans -->
+    <b:bean id="logicsAndNavigatorProvider" scope="session" class="lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProviderImpl">
         <aop:scoped-proxy proxy-target-class="false" />
     </b:bean>
+
+    <b:bean id="formProvider" scope="session" class="lsfusion.gwt.server.form.provider.FormProviderImpl">
+        <aop:scoped-proxy proxy-target-class="false" />
+    </b:bean>
+
+    <!-- GWT request handler -->
+    <b:bean id="lsfusionDispatch" class="lsfusion.gwt.server.LSFusionDispatchServlet"/>
 
     <!-- Custom request handlers -->
-    <b:bean id="formDispatch" class="lsfusion.gwt.form.server.LSFusionDispatchServlet"/>
+    <b:bean id="captchaHandler" class="lsfusion.http.captcha.ImageCaptchaRequestHandler"/>
 
-    <b:bean id="captchaHandler" class="lsfusion.gwt.base.server.captcha.ImageCaptchaRequestHandler"/>
+    <b:bean id="readLogoHandler" class="lsfusion.http.ReadLogoRequestHandler"/>
 
-    <b:bean id="readLogoHandler" class="lsfusion.gwt.base.server.spring.ReadLogoRequestHandler"/>
+    <b:bean id="readMemoryLimitsHandler" class="lsfusion.http.ReadMemoryLimitsRequestHandler"/>
 
-    <b:bean id="readMemoryLimitsHandler" class="lsfusion.gwt.base.server.spring.ReadMemoryLimitsRequestHandler"/>
+    <b:bean id="propertyImageHandler" class="lsfusion.http.GetPropertyImageRequestHandler" />
 
-    <b:bean id="externalHandler" class="lsfusion.gwt.base.server.spring.ExternalRequestHandler"/>
+    <b:bean id="fileUploadHandler" class="lsfusion.http.UploadFileRequestHandler" />
 
-    <b:bean id="propertyImageHandler" class="lsfusion.gwt.base.server.spring.GetPropertyImageRequestHandler" />
+    <b:bean id="fileDownloadHandler" class="lsfusion.http.DownloadFileRequestHandler" />
 
-    <b:bean id="fileUploadHandler" class="lsfusion.gwt.base.server.spring.UploadFileRequestHandler" />
+    <b:bean id="jnlpHandler" class="lsfusion.http.ClientJNLPRequestHandler" />
 
-    <b:bean id="fileDownloadHandler" class="lsfusion.gwt.base.server.spring.DownloadFileRequestHandler" />
+    <b:bean id="externalHandler" class="lsfusion.http.ExternalRequestHandler"/>
 
-    <b:bean id="jnlpHandler" class="lsfusion.gwt.base.server.spring.ClientJNLPRequestHandler" />
 </b:beans>

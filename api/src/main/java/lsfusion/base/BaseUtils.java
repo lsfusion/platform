@@ -1221,6 +1221,14 @@ public class BaseUtils {
         else return Integer.parseInt(s);
     }
 
+    public static Integer parseInt(String value) {
+        try {
+            return value == null ? null : Integer.parseInt(value);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static <K, T extends K, V> void clearNotKeys(Map<K, V> map, FunctionSet<T> keep, Class<T> aClass) {
         if (keep.isEmpty())
             map.clear();
