@@ -382,7 +382,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             if(pending.contains(key)) {
-                stackUsedPendingKeys.peek().add(key); // если stackUsedPendingKeys пустой, значит висячий ключ, например PREV с датой ключем и в событии
+                if(stackUsedPendingKeys.empty())
+                    throw new RuntimeException(ThreadLocalContext.localize("{exceptions.incorrect.set.operation}"));
+                else
+                    stackUsedPendingKeys.peek().add(key);
             }
 
             return source;
