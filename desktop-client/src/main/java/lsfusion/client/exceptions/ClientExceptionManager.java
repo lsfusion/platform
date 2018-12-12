@@ -29,11 +29,7 @@ public class ClientExceptionManager {
                     reportClientThrowable(e); // обычный throwable
                 }
                 if (remote instanceof RemoteServerException) {
-                    if(remote instanceof RemoteInternalException) {
-                        Log.error(remote.getMessage() + "\nОбратитесь к администратору.", remote, ((RemoteInternalException) remote).lsfStack);
-                    } else {
-                        Log.error(remote.getMessage(), remote);
-                    }
+                    Log.error((RemoteServerException) remote);
                     reportServerRemoteThrowable((RemoteServerException) remote);
                 }
                 if(remote instanceof FatalHandledRemoteException) {
