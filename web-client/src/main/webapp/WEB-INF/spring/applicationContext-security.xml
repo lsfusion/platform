@@ -43,20 +43,14 @@
         <b:property name="loginFormUrl" value="/login.jsp"/>
     </b:bean>
 
-    <b:bean id="successLoginHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
-        <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/lsfusion.jsp" />
-        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
+    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler" >
     </b:bean>
 
     <b:bean id="accessDeniedHandler" class="lsfusion.http.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />
     </b:bean>
 
-    <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
-        <b:property name="targetUrlParameter" value="targetUrl" />
-        <b:property name="defaultTargetUrl" value="/lsfusion.jsp" />
-        <b:property name="alwaysUseDefaultTargetUrl" value="true" />
+    <b:bean id="successLogoutHandler" class="lsfusion.http.LSFSimpleUrlLogoutSuccessHandler" >
     </b:bean>
 
     <!-- Authentication configuration -->
