@@ -1,3 +1,4 @@
+<%@ page import="java.util.Map" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
@@ -17,12 +18,20 @@
             <tr>
                 <td>
                     <div id="content">
+
+                        <%
+                            String query = request.getQueryString();
+                            String queryString = query == null || query.isEmpty() ? "" : ("?" + query);
+                            String queryStringMemoryLimits = "?path=" + request.getContextPath() + (query == null || query.isEmpty() ? "" : ("&" + query));
+                        %>
+
                         <form id="login-form"
                               name="loginForm"
                               method="POST"
-                              action="login_check<c:out value="${(empty param.targetUrl) ? '' : '?targetUrl='}${(empty param.targetUrl) ? '' : param.targetUrl}"/>" >
+                              action="login_check<%=queryString%>" >
                             <fieldset>
-                                <div class="image-center"><img src="readLogo" alt="LSFusion"></div>
+
+                                <div class="image-center"><img src="readLogo<%=queryString%>" alt="LSFusion"></div>
                                 <p>
                                     <br/>
                                     <label for="j_username">login</label>
@@ -34,7 +43,7 @@
                                 </p>
                                 <input name="submit" type="submit" class="button round blue image-right ic-right-arrow" value="log in"/>
                                 <div class="desktop-link">
-                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp">Run desktop client</a>
+                                    <span id="triangle" class="triangle" onclick="showSpoiler()">&#9658;</span><a href="${pageContext.request.contextPath}/client.jnlp<%=queryString%>">Run desktop client</a>
                                     <div id="spoiler" style="display:none"></div>
                                         <script>
                                             function showSpoiler() {
@@ -44,7 +53,7 @@
                                                     xhttp.onload = function() {
                                                         document.getElementById('spoiler').innerHTML = this.responseText;
                                                     };
-                                                    xhttp.open("GET", "readMemoryLimits?path=${pageContext.request.contextPath}", true);
+                                                    xhttp.open("GET", "readMemoryLimits<%=queryStringMemoryLimits%>", true);
                                                     xhttp.send();
 
                                                     document.getElementById('spoiler') .style.display='';

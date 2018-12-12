@@ -27,7 +27,6 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.navigator.NavigatorForm;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
@@ -217,19 +216,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     @Override
     public List<String> authenticateUser(String userName, String password) throws RemoteException {
-        DataSession session;
-        try {
-            session = dbManager.createSession();
+        User user;
+        try(DataSession session = dbManager.createSession()) {
+            user = securityManager.authenticateUser(session, userName, password, getStack());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        try {
-            User user = securityManager.authenticateUser(session, userName, password, getStack());
-            if (user != null) {
-                return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));    
-            }
-        } catch (Exception e) {
-            Throwables.propagate(e);
+        if (user != null) {
+            return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));
         }
         return null;
     }
@@ -271,16 +265,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             throw new RemoteMessageException(localize("{mail.error.sending.password.remind}"), e);
         }
     }
-
-    @Override
-    public String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException {
-        NavigatorElement element = businessLogics.findNavigatorElement(navigatorElementCanonicalName);
-        if (element != null && element instanceof NavigatorForm) {
-            return ((NavigatorForm) element).getForm().getCanonicalName();
-        } else {
-            return null;
-        }
-    } 
 
     public boolean isSingleInstance() throws RemoteException {
         return Settings.get().isSingleInstance();

@@ -42,15 +42,11 @@ public class PanelNavigatorView extends NavigatorView {
 
         JPanel insidePanel = new JPanel(new VerticalLayout());
 
-        if (element instanceof ClientNavigatorForm) {
-            insidePanel.add(createButton(element));
-        } else {
-            for (ClientNavigatorElement child : element.children) {
-                if (child.hasChildren()) {
-                    addElement(child, insidePanel);
-                } else {
-                    insidePanel.add(createButton(child));
-                }
+        for (ClientNavigatorElement child : element.children) {
+            if (child.hasChildren()) {
+                addElement(child, insidePanel);
+            } else {
+                insidePanel.add(createButton(child));
             }
         }
 

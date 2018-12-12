@@ -44,8 +44,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     List<Object> exec(String action, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
     List<Object> eval(boolean action, Object paramScript, String[] returnCanonicalNames, Object[] params, String charset) throws RemoteException;
 
-    String getFormCanonicalName(String navigatorElementCanonicalName) throws RemoteException; 
-
     boolean isSingleInstance() throws RemoteException;
 
     long generateID() throws RemoteException;

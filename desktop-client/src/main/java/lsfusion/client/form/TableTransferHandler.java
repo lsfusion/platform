@@ -68,7 +68,7 @@ public class TableTransferHandler extends TransferHandler {
     }
 
     /**
-     * should always be consistent with lsfusion.gwt.base.client.GwtClientUtils#getClipboardTable(java.lang.String)
+     * should always be consistent with lsfusion.gwt.client.base.GwtClientUtils#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<>();
