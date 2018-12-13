@@ -101,7 +101,7 @@
         <servlet.api.version>2.5</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
-        <json.version>20090211</json.version>
+        <json.version>20180813</json.version>
         <junrar.version>0.7</junrar.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
