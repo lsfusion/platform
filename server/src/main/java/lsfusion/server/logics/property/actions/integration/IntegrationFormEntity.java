@@ -78,6 +78,9 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends FormEnti
                     alias = null;
                 } else
                     mapAliases.exclAdd(alias, propertyDraw);
+            } else {
+                if(!addProperty.isNamed() && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
+                    alias = "value";
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
