@@ -115,7 +115,6 @@ public class ExternalHttpServer extends MonitorServer {
         private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
             request.sendResponseHeaders(error ? 500 : 200, response.length);
-            request.getResponseHeaders().add("Content-Type", "text/html; charset=UTF-8");
             OutputStream os = request.getResponseBody();
             os.write(response);
             os.close();
