@@ -12,6 +12,6 @@
 !define TOMCAT_VERSION ${TOMCAT_MAJOR_VERSION}.5
 !define TOMCAT_FULL_VERSION ${TOMCAT_VERSION}.20
 
-!define JASPER_VERSION 6.4.3
+!define JASPER_VERSION 6.6.0
 
 #LSFUSION_VERSION and VI_LSFUSION_VERSION will be added automatically before building installers
