@@ -1419,11 +1419,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(notNull) {
             ObjectValue defaultValue = getDefaultDataObject();
             if(defaultValue != null) {
-                Object value = defaultValue.getValue();
                 StaticClass objectClass = (StaticClass) ((DataObject) defaultValue).objectClass;
-                if(objectClass instanceof StringClass)
-                    value = LocalizedString.create((String)value, false);
-                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(value, objectClass));
+                return DerivedProperty.createSetAction(interfaces, getImplement(), DerivedProperty.<T>createStatic(DerivedProperty.getValueForProp(defaultValue.getValue(), objectClass), objectClass));
             }
             return null;
         } else
