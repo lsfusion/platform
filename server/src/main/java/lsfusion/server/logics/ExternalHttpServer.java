@@ -85,7 +85,7 @@ public class ExternalHttpServer extends MonitorServer {
             } catch (Exception e) {
                 ServerLoggers.importLogger.error("ExternalHttpServer error: ", e);
                 try {
-                    sendErrorResponse(request, "Internal error occurred: " + e.getMessage());
+                    sendErrorResponse(request, "Internal Server Error: " + e.getMessage());
                 } catch (Exception ignored) {
                 }
             } finally {
@@ -113,6 +113,7 @@ public class ExternalHttpServer extends MonitorServer {
         }
 
         private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
+            request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
             request.sendResponseHeaders(error ? 500 : 200, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
