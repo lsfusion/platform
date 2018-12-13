@@ -30,8 +30,10 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.addHeader("Content-Type", "text/html; charset=" + request.getCharacterEncoding());
-            response.getWriter().print(e.getMessage() != null ? e.getMessage() : "Internal Server Error");
+            response.setContentType("text/html; charset=utf-8");
+            response.getWriter().print("Internal Server Error: " + e.getMessage());
+            response.flushBuffer(); //marks response as committed -- if we don't do this the request will go through normally!
+            throw new RuntimeException(e);
         }
     }
 }
