@@ -3317,9 +3317,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LPWithParams[exprs.size()+1]));
 
-        boolean extendContext = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props);
-        if(type == null)
-            type = extendContext ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
+//        if(type == null)
+//            type = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props) ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
+        type = FormIntegrationType.JSON;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {

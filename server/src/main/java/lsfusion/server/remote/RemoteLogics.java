@@ -309,21 +309,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return returnList;
     }
 
-    public List<Object> read(String property, Object[] params, Charset charset) {
-        try {
-            LCP lcp = businessLogics.findPropertyByCompoundName(property);
-            if (lcp != null) {
-                try (DataSession session = createSession()) {
-                    return readReturnProperty(session, lcp, ExternalHTTPActionProperty.getParams(session, lcp, params, charset));
-                }
-            } else
-                throw new RuntimeException(String.format("Property %s was not found", property));
-
-        } catch (SQLException | SQLHandledException | ParseException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private List<Object> executeExternal(LAP property, String[] returnCanonicalNames, Object[] params, Charset charset) throws SQLException, ParseException, SQLHandledException, IOException {
         try (DataSession session = createSession()) {
             property.execute(session, getStack(), ExternalHTTPActionProperty.getParams(session, property, params, charset));
@@ -361,24 +346,24 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     private List<Object> readReturnProperty(Object returnValue, Type returnType) throws IOException {
         List<Object> returnList = new ArrayList<>();
-        boolean jdbcSingleRow = false;
-        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
-            if (((FileData) returnValue).getExtension().equals("jdbc")) {
-                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) returnValue).getRawFile());
-                if (jdbcTable.singleRow) {
-                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
-                    for (String field : jdbcTable.fields) {
-                        Type fieldType = jdbcTable.fieldTypes.get(field);
-                        if(row == null)
-                            returnList.add(null);
-                        else
-                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
-                    }
-                    jdbcSingleRow = true;
-                }
-            }
-        }
-        if (!jdbcSingleRow)
+//        boolean jdbcSingleRow = false;
+//        if (returnType instanceof DynamicFormatFileClass && returnValue != null) {
+//            if (((FileData) returnValue).getExtension().equals("jdbc")) {
+//                JDBCTable jdbcTable = JDBCTable.deserializeJDBC(((FileData) returnValue).getRawFile());
+//                if (jdbcTable.singleRow) {
+//                    ImMap<String, Object> row = jdbcTable.set.isEmpty() ? null : jdbcTable.set.get(0);
+//                    for (String field : jdbcTable.fields) {
+//                        Type fieldType = jdbcTable.fieldTypes.get(field);
+//                        if(row == null)
+//                            returnList.add(null);
+//                        else
+//                            returnList.addAll(readReturnProperty(row.get(field), fieldType));
+//                    }
+//                    jdbcSingleRow = true;
+//                }
+//            }
+//        }
+//        if (!jdbcSingleRow)
             returnList.add(returnType.formatHTTP(returnValue, null));
         return returnList;
     }
