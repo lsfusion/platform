@@ -667,7 +667,7 @@ public abstract class LogicsModule {
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
 
         // determining where
-        CalcPropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1? whereLCP.getImplement(innerInterfaces.single()) : null;
+        CalcPropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1 && whereLCP != null ? whereLCP.getImplement(innerInterfaces.single()) : null;
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.<PropertyInterface>EMPTYORDER(), aliases, literals, exprs, where, MapFact.<String, Boolean>EMPTYORDER(), attr, version);
@@ -677,10 +677,6 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Set property action ----------------- //
-
-    protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(int resInterfaces,boolean conditional, Object... params) {
-        return addSetPropertyAProp(null, LocalizedString.NONAME, resInterfaces, conditional, params);
-    }
 
     protected <C extends PropertyInterface, W extends PropertyInterface> LAP addSetPropertyAProp(AbstractGroup group, LocalizedString caption, int resInterfaces,
                                                                                                  boolean conditional, Object... params) {

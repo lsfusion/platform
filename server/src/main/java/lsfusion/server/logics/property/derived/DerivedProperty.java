@@ -16,6 +16,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.i18n.LocalizedString;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.AddObjectActionProperty;
@@ -322,6 +323,11 @@ public class DerivedProperty {
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createNotNull(CalcPropertyInterfaceImplement<T> notNull) {
         return createAnd(getUsedInterfaces(notNull), DerivedProperty.<T>createTrue(), notNull);
+    }
+    public static Object getValueForProp(Object value, StaticClass objectClass) {
+        if(objectClass instanceof StringClass)
+            return LocalizedString.create((String)value, false);
+        return value;
     }
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?,T> createStatic(Object value, StaticClass valueClass) {
         return new CalcPropertyMapImplement<>(new ValueProperty(LocalizedString.NONAME, value, valueClass), MapFact.<PropertyInterface, T>EMPTYREV());
@@ -705,8 +711,8 @@ public class DerivedProperty {
         return new SessionDataProperty(LocalizedString.NONAME, valueClass);
     }
 
-    public static SessionDataProperty createImportDataProp(ValueClass valueClass, ValueClass... paramClasses) {
-        return new SessionDataProperty(LocalizedString.NONAME, paramClasses, valueClass);
+    public static SessionDataProperty createImportDataProp(ValueClass valueClass, ImList<ValueClass> paramClasses) {
+        return new SessionDataProperty(LocalizedString.NONAME, paramClasses.toArray(new ValueClass[paramClasses.size()]), valueClass);
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {

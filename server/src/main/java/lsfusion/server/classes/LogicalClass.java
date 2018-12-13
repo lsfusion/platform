@@ -17,7 +17,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -136,8 +135,8 @@ public class LogicalClass extends DataClass<Boolean> {
         return readDBF(dbfRecord.getBoolean(fieldName));
     }
     @Override
-    public Boolean parseJSON(JSONObject object, String key) throws JSONException {
-        return readJSON(object.optBoolean(key));
+    public Boolean parseJSON(Object value) throws JSONException {
+        return readJSON(value);
     }
     @Override
     public Boolean parseXLS(Cell cell, CellValue formulaValue) throws ParseException {
