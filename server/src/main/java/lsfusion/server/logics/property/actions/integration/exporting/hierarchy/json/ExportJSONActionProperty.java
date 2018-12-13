@@ -9,6 +9,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.integration.FormIntegrationType;
 import lsfusion.server.logics.property.actions.integration.exporting.hierarchy.ExportHierarchicalActionProperty;
 import lsfusion.server.logics.property.actions.integration.hierarchy.json.JSONNode;
+import lsfusion.server.logics.property.actions.integration.importing.hierarchy.json.JSONReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,7 +30,7 @@ public class ExportJSONActionProperty<O extends ObjectSelector> extends ExportHi
     @Override
     protected void writeRootNode(PrintWriter printWriter, JSONNode rootNode) throws IOException {
         try {
-            printWriter.println(JSONNode.putJSONNode(rootNode, true).toString());
+            JSONReader.writeRootObject(JSONNode.putJSONNode(rootNode, true), printWriter);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
