@@ -27,9 +27,14 @@ public class LinkToStringActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(stringInterface).getValue();
         try {
-            findProperty("resultString[]").change(URLDecoder.decode(value, "UTF-8"), context);
+            findProperty("resultString[]").change(value != null ? URLDecoder.decode(value, "UTF-8") : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException | UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }
