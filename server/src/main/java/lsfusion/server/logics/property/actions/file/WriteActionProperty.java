@@ -62,7 +62,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
             if (sourcePropertyType instanceof StaticFormatFileClass) {
                 rawFileData = (RawFileData) sourceObject.object;
                 extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(rawFileData);
-            } else if (sourcePropertyType instanceof DynamicFormatFileClass) {
+            } else {
                 extension = ((FileData) sourceObject.object).getExtension();
                 rawFileData = ((FileData) sourceObject.object).getRawFile();
             }
