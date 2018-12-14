@@ -62,12 +62,12 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result, headers);
                 HttpEntity responseEntity = response.getEntity();
 
-                if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
-                    ContentType contentType = ContentType.get(responseEntity);
-                    List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
-                    fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
-                } else
+                ContentType contentType = ContentType.get(responseEntity);
+                List<Object> requestParams = ExternalUtils.getListFromInputStream(responseEntity.getContent(), contentType);
+                fillResults(context, targetPropList, requestParams, ExternalUtils.getCharsetFromContentType(contentType)); // важно игнорировать параметры, так как иначе при общении с LSF пришлось бы всегда TO писать (так как он по умолчанию exportFile возвращает)
+                if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >= 300) {
                     throw new RuntimeException(response.getStatusLine().toString());
+                }
             } else {
                 throw new RuntimeException("connectionString not specified");
             }
