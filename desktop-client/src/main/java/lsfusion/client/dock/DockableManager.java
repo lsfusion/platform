@@ -35,6 +35,8 @@ public class DockableManager {
 
     public List<ClientDockable> openedForms = new ArrayList<>();
 
+    private ClientDockable prevFocusPage = null;
+
     public DockableManager(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
         this.dockableFactory = new ClientDockableFactory(mainNavigator);
@@ -67,6 +69,9 @@ public class DockableManager {
             public void changed(CDockableLocationEvent event) {
                 if (event.getOldShowing() != event.getNewShowing()) {
                     page.onShowingChanged(event.getOldShowing(), event.getNewShowing());
+                    if(event.getOldShowing()) {
+                        prevFocusPage = page;
+                    }
                 }
             }
         });
@@ -182,6 +187,14 @@ public class DockableManager {
 
                 dockable.onClosed();
                 openedForms.remove(dockable);
+                //return focus to previous page (by default in maximized mode after closing page focus returns to the last page from the list)
+                if(prevFocusPage != null) {
+                    ExtendedMode mode = prevFocusPage.getExtendedMode();
+                    if(mode != null && mode == ExtendedMode.MAXIMIZED) {
+                        prevFocusPage.toFront();
+                        prevFocusPage.requestFocusInWindow();
+                    }
+                }
             }
         }
 
