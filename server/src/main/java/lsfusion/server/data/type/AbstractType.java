@@ -129,7 +129,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     @Override
     public T parseJSON(Object value) throws ParseException, JSONException {
-        return parseNullableString(BaseUtils.nullToString(value), false); // json supports nulls
+        return parseNullableString(value != null ? value.toString() : null, false); // json supports nulls
     }
     @Override
     public T parseCSV(String value) throws ParseException {
