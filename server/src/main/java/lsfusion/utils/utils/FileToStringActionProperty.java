@@ -28,13 +28,11 @@ public class FileToStringActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         FileData fileData = (FileData) context.getKeyValue(fileInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();
-        if(fileData != null) {
-            try {
-                String fileString = IOUtils.readStreamToString(fileData.getRawFile().getInputStream(), charset);
-                findProperty("resultString[]").change(fileString, context);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
+        try {
+            String fileString = fileData != null ? IOUtils.readStreamToString(fileData.getRawFile().getInputStream(), charset) : null;
+            findProperty("resultString[]").change(fileString, context);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 
