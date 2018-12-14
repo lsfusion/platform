@@ -4,9 +4,11 @@ import java.sql.SQLException;
 
 public class SQLTooLongQueryException extends SQLHandledException {
     
+    private final int length;
     private final String select;
 
-    public SQLTooLongQueryException(String select) {
+    public SQLTooLongQueryException(int length, String select) {
+        this.length = length;
         this.select = select;
     }
 
@@ -15,7 +17,7 @@ public class SQLTooLongQueryException extends SQLHandledException {
     }
 
     public String toString() {
-        return "TOO LONG QUERY ROWS, LENGTH : " + select.length() + ", QUERY : " + select;
+        return "TOO LONG QUERY ROWS, LENGTH : " + length + ", QUERY : " + select;
     }
 
     @Override

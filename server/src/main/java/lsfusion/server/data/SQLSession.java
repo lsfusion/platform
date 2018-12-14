@@ -1896,7 +1896,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime, boolean setRepeatDate) throws SQLException, SQLHandledException {
         if(command.getLength() > Settings.get().getQueryLengthLimit()) {
             String fullCommand = command.getFullText();
-            throw new SQLTooLongQueryException(fullCommand.substring(0, Math.min(10000, fullCommand.length())));
+            int length = fullCommand.length();
+            throw new SQLTooLongQueryException(length, fullCommand.substring(0, Math.min(10000, length)));
         }
 
         S snapEnv = queryExecEnv.getSnapshot(command, transactTimeout, outerEnv);
