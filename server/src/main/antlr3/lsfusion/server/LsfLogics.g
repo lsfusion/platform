@@ -3151,28 +3151,28 @@ emailActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 @init {
 	LCPWithParams fromProp = null;
 	LCPWithParams subjProp = null;
-	
+	LCPWithParams bodyProp = null;
+
 	List<Message.RecipientType> recipTypes = new ArrayList<>();
 	List<LCPWithParams> recipProps = new ArrayList<>();
 
 	List<LCPWithParams> attachFileNames = new ArrayList<>();
 	List<LCPWithParams> attachFiles = new ArrayList<>();
-	List<LCPWithParams> inlineFiles = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, attachFileNames, attachFiles, inlineFiles);
+		$property = self.addScriptedEmailProp(fromProp, subjProp, bodyProp, recipTypes, recipProps, attachFileNames, attachFiles);
 	}
 }
 	:	'EMAIL'
 		('FROM' fromExpr=propertyExpression[context, dynamic] { fromProp = $fromExpr.property; } )?
-		'SUBJECT' subjExpr=propertyExpression[context, dynamic] { subjProp = $subjExpr.property; }
+		('SUBJECT' subjExpr=propertyExpression[context, dynamic] { subjProp = $subjExpr.property; })?
 		(
 			recipType=emailRecipientTypeLiteral { recipTypes.add($recipType.val); }
 			recipExpr=propertyExpression[context, dynamic] { recipProps.add($recipExpr.property); }
-		)*
-		(	(	'INLINE' inlineFile=propertyExpression[context, dynamic] { inlineFiles.add($inlineFile.property); })
-		|	(	'ATTACH' attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
+		)+
+		('BODY' bodyExpr=propertyExpression[context, dynamic] { bodyProp = $bodyExpr.property; })?
+		(	(	'ATTACH' attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
 				{ LCPWithParams attachFileName = null;}
                 ('NAME' attachFileNameExpr=propertyExpression[context, dynamic] { attachFileName = $attachFileNameExpr.property; } )?
                 { attachFileNames.add(attachFileName); }

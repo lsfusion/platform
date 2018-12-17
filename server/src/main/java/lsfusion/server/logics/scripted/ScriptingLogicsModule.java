@@ -1632,18 +1632,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAPWithParams addScriptedEmailProp(LCPWithParams fromProp,
                                              LCPWithParams subjProp,
+                                             LCPWithParams bodyProp,
                                              List<Message.RecipientType> recipTypes,
                                              List<LCPWithParams> recipProps,
                                              List<LCPWithParams> attachFileNames,
-                                             List<LCPWithParams> attachFiles,
-                                             List<LCPWithParams> inlineFiles) throws ScriptingErrorLog.SemanticErrorException {
+                                             List<LCPWithParams> attachFiles) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> allProps = new ArrayList<>();
 
         if (fromProp != null) {
             allProps.add(fromProp);
         }
-        allProps.add(subjProp);
+        if(subjProp != null) {
+            allProps.add(subjProp);
+        }
+        if(bodyProp != null) {
+            allProps.add(bodyProp);
+        }
         allProps.addAll(recipProps);
 
         for (int i = 0; i < attachFileNames.size(); i++) {
@@ -1652,8 +1657,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             allProps.add(attachFiles.get(i));
         }
-
-        allProps.addAll(inlineFiles);
 
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
@@ -1672,7 +1675,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             // по умолчанию используем стандартный fromAddressAccount
             eaProp.setFromAddressAccount(new CalcPropertyMapImplement(BL.emailLM.findProperty("fromAddressDefaultNotificationAccount[]").property));
         }
-        eaProp.setSubject(allImplements.get(i++));
+        eaProp.setSubject(subjProp != null ? allImplements.get(i++) : null);
+
+        if(bodyProp != null) {
+            eaProp.addInlineFile(allImplements.get(i++));
+        }
 
         for (Message.RecipientType recipType : recipTypes) {
             eaProp.addRecipient(allImplements.get(i++), recipType);
@@ -1681,9 +1688,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LCPWithParams fileName : attachFileNames) {
             eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
         }
-
-        for(int j = 0; j < inlineFiles.size(); j++)
-            eaProp.addInlineFile(allImplements.get(i++));
 
         return new LAPWithParams(eaPropLP, mergeAllParams(allProps));
     }
