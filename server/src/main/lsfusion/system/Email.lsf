@@ -142,9 +142,9 @@ FORM remindUserPass 'Напоминание пароля'
 ;
 
 emailUserPass 'Напоминание пароля' (Contact user)  { 
-    LOCAL inlineFile = FILE (); 
-    PRINT remindUserPass OBJECTS u = user HTML TO inlineFile;
-    EMAIL SUBJECT 'Напоминание пароля' IF user IS CustomUser TO email(user) INLINE inlineFile(); 
+    LOCAL bodyFile = FILE (); 
+    PRINT remindUserPass OBJECTS u = user HTML TO bodyFile;
+    EMAIL SUBJECT 'Напоминание пароля' IF user IS CustomUser TO email(user) BODY bodyFile(); 
 }                         
 
 FORM mail 'Почта' 

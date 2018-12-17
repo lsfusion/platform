@@ -96,7 +96,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
                 String fromAddressAccount = (String) (fromAddress != null ? fromAddress : emailLM.fromAddressAccount.read(context, account));
 
-                String subject = (String) this.subject.read(context, context.getKeys());
+                String subject = this.subject != null ? (String) this.subject.read(context, context.getKeys()) : localize("{mail.nosubject}");
                 String nameAccount = (String) emailLM.nameAccount.read(context, account);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, account);
                 
