@@ -13,6 +13,7 @@ import lsfusion.server.remote.RemoteLogics;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -114,7 +115,7 @@ public class ExternalHttpServer extends MonitorServer {
 
         private void sendResponse(HttpExchange request, byte[] response, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
-            request.sendResponseHeaders(error ? 500 : 200, response.length);
+            request.sendResponseHeaders(error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
             os.close();
@@ -125,7 +126,7 @@ public class ExternalHttpServer extends MonitorServer {
                 request.getResponseHeaders().add("Content-Type", contentType);
             if(contentDisposition != null)
                 request.getResponseHeaders().add("Content-Disposition", contentDisposition);
-            request.sendResponseHeaders(200, response.getContentLength());
+            request.sendResponseHeaders(HttpServletResponse.SC_OK, response.getContentLength());
             OutputStream os = request.getResponseBody();
             response.writeTo(os);
             os.close();
