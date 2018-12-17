@@ -1,6 +1,7 @@
 package lsfusion.utils.word;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -27,10 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
@@ -94,7 +92,6 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     if (isDocx) {
                         XWPFDocument document = new XWPFDocument(((RawFileData) wordObject.object).getInputStream());
-                        List<XWPFParagraph> docParagraphs = document.getParagraphs();
                         for (List<Object> entry : templateEntriesList) {
                             String key = (String) entry.get(0);
                             String value = (String) entry.get(1);
@@ -105,7 +102,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             for (XWPFTable tbl : document.getTables()) {
                                 replaceTableDataDocx(tbl, key, value, isTable, firstRow, columnSeparator, rowSeparator);
                             }
-                            replaceRegularDataDocx(docParagraphs, key, value);
+                            replaceInParagraphs(document, key, value);
                         }
                         document.write(outputStream);
                     } else {
@@ -175,25 +172,59 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             }
         }
     }
+    
+    private void replaceInParagraphs(XWPFDocument document, String find, String repl) {
 
-    private void replaceRegularDataDocx(List<XWPFParagraph> docParagraphs, String key, String value) {
-        for (XWPFParagraph p : docParagraphs) {
-            List<XWPFRun> runs = p.getRuns();
-            for (int i = runs.size() - 1; i >= 0; i--) {
-                String text = runs.get(i).getText(0);
-                if (text != null && text.contains(key)) {
-                    text = text.replace(key, value);
-                    String[] splitted = text.split("\r");
-                    for (int j = 0; j < splitted.length; j++) {
-                        if(j == 0)
-                            runs.get(i).setText(splitted[j], 0);
-                        else
-                            runs.get(i).setText(splitted[j]);
-                        if(j < (splitted.length - 1))
-                            runs.get(i).addBreak();
+        Set<XWPFParagraph> toDelete = new HashSet<XWPFParagraph>();
+
+        for (XWPFParagraph paragraph : document.getParagraphs()) {
+            List<XWPFRun> runs = paragraph.getRuns();
+
+            TextSegement found = paragraph.searchText(find, new PositionInParagraph());
+            if (found != null) {
+                if (found.getBeginRun() == found.getEndRun()) {
+                    // whole search string is in one Run
+                    XWPFRun run = runs.get(found.getBeginRun());
+                    String runText = run.getText(run.getTextPosition());
+                    String replaced = runText.replace(find, repl);
+                    setText(run, replaced);
+                } else {
+                    // The search string spans over more than one Run
+                    // Put the Strings together
+                    StringBuilder b = new StringBuilder();
+                    for (int runPos = found.getBeginRun(); runPos <= found.getEndRun(); runPos++) {
+                        XWPFRun run = runs.get(runPos);
+                        b.append(run.getText(run.getTextPosition()));
+                    }
+                    String connectedRuns = b.toString();
+                    String replaced = connectedRuns.replace(find, repl);
+
+                    // The first Run receives the replaced String of all connected Runs
+                    XWPFRun partOne = runs.get(found.getBeginRun());
+                    setText(partOne, replaced);
+                    // Removing the text in the other Runs.
+                    for (int runPos = found.getBeginRun() + 1; runPos <= found.getEndRun(); runPos++) {
+                        XWPFRun partNext = runs.get(runPos);
+                        partNext.setText("", 0);
                     }
                 }
+                if (paragraph.getText().isEmpty())
+                    toDelete.add(paragraph);
             }
+        }
+        for (XWPFParagraph paragraph : toDelete) {
+            document.removeBodyElement(document.getPosOfParagraph(paragraph));
+        }
+    }
+    
+    private void setText(XWPFRun run, String newText) {
+        List<String> splitted = BaseUtils.split(newText,"\r");
+        for (int j = 0; j < splitted.size(); j++) {
+            if (j > 0) {
+                run.addBreak();
+                run.setText(splitted.get(j));
+            } else
+                run.setText(splitted.get(j), 0);
         }
     }
 }
