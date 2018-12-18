@@ -99,8 +99,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             case PUT: {
                 httpRequest = new HttpPut(connectionString);
                 HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
-                if (!headers.containsKey("Content-type"))
-                    httpRequest.addHeader("Content-type", entity.getContentType().getValue());
+                if (!headers.containsKey("Content-Type"))
+                    httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
                 ((HttpPut) httpRequest).setEntity(entity);
                 break;
             }
@@ -108,8 +108,8 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             default: {
                 httpRequest = new HttpPost(connectionString);
                 HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
-                if (!headers.containsKey("Content-type"))
-                    httpRequest.addHeader("Content-type", entity.getContentType().getValue());
+                if (!headers.containsKey("Content-Type"))
+                    httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
                 ((HttpPost) httpRequest).setEntity(entity);
                 break;
             }
