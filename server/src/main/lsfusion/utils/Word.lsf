@@ -34,15 +34,24 @@ value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 //Deprecated
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
 
-CLASS Type {
-    plain 'Плоский',
-    table 'Таблица',
-    list 'Список'
+CLASS Type 'Тип строки шаблона' {
+   plain 'Плоский',
+   table 'Таблица',
+   list 'Список'
 }
+TABLE type (Type);
+name 'Наименование' (Type o) = staticCaption(o) IF o IS Type CHARWIDTH 8;
+
+FORM dialogTypes 'Тип строки шаблона'
+    OBJECTS o = Type
+    PROPERTIES(o) READONLY name
+    
+    LIST Type OBJECT o
+;
 
 type 'Тип' = DATA Type(TemplateEntry);
-captionType 'Тип' (TemplateEntry t) = staticCaption(type(t));
-nameType 'Тип' (TemplateEntry t) = staticName(type(t));
+nameType 'Тип' (TemplateEntry t) = name(type(t));
+idType 'Тип' (TemplateEntry t) = staticName(type(t));
 
 isTableMigrated = DATA BOOLEAN();
 onStarted() + {
@@ -75,7 +84,7 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) captionType, key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) nameType, key, description, value, NEW, DELETE GRID
     PROPERTIES (te) PANEL SHOWIF isTableTemplateEntry(te) firstRow, columnSeparator
     PROPERTIES (te) PANEL SHOWIF notPlainTemplateEntry(te) rowSeparator
     PROPERTIES (t) DRAW te TOOLBAR openProcess
@@ -114,7 +123,7 @@ FORM templates 'Шаблоны Word'
     PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY captionType, key, description, value
+    PROPERTIES (te) READONLY nameType, key, description, value
     FILTERS template (te) == t
 ;
 
