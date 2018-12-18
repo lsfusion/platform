@@ -23,10 +23,12 @@ import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.usermodel.*;
+import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.impl.values.XmlValueDisconnectedException;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -61,7 +63,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
                     templateEntryQuery.addProperty("keyTemplateEntry", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("valueTemplateEntry", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("isTableTemplateEntry", findProperty("isTable[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("typeTemplateEntry", findProperty("nameType[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("firstRowTemplateEntry", findProperty("firstRow[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("columnSeparatorTemplateEntry", findProperty("columnSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("rowSeparatorTemplateEntry", findProperty("rowSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
@@ -74,14 +76,14 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                         String keyTemplateEntry = (String) templateEntry.get("keyTemplateEntry");
                         String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
-                        boolean isTableTemplateEntry = templateEntry.get("isTableTemplateEntry") != null;
+                        String type = (String) templateEntry.get("typeTemplateEntry");
                         Integer firstRowTemplateEntry = (Integer) templateEntry.get("firstRowTemplateEntry");
                         String columnSeparatorTemplateEntry = (String) templateEntry.get("columnSeparatorTemplateEntry");
                         String rowSeparatorTemplateEntry = (String) templateEntry.get("rowSeparatorTemplateEntry");
 
                         if (keyTemplateEntry != null && valueTemplateEntry != null)
                             templateEntriesList.add(Arrays.asList((Object) keyTemplateEntry, valueTemplateEntry.replace('\n', '\r'), 
-                                                                  isTableTemplateEntry, firstRowTemplateEntry, columnSeparatorTemplateEntry, rowSeparatorTemplateEntry));
+                                                                  type, firstRowTemplateEntry, columnSeparatorTemplateEntry, rowSeparatorTemplateEntry));
                     }
 
                     RawFileData fileObject = (RawFileData) fileObjectValue.getValue();
@@ -92,17 +94,25 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     if (isDocx) {
                         XWPFDocument document = new XWPFDocument(((RawFileData) wordObject.object).getInputStream());
+                        List<XWPFParagraph> docParagraphs = new ArrayList<>(document.getParagraphs()); //copy of mutable list
+                        XWPFNumbering numbering = document.getNumbering();
                         for (List<Object> entry : templateEntriesList) {
                             String key = (String) entry.get(0);
                             String value = (String) entry.get(1);
-                            boolean isTable = (boolean) entry.get(2);
+                            String type = (String) entry.get(2);
+                            boolean isTable = type != null && type.endsWith("table");
+                            boolean isList = type != null && type.endsWith("list");
                             Integer firstRow = (Integer) entry.get(3);
                             String columnSeparator = (String) entry.get(4);
                             String rowSeparator = (String) entry.get(5);
-                            for (XWPFTable tbl : document.getTables()) {
-                                replaceTableDataDocx(tbl, key, value, isTable, firstRow, columnSeparator, rowSeparator);
+                            if(isList) {
+                                replaceListDataDocx(document, docParagraphs, numbering, key, value, rowSeparator);
+                            } else {
+                                for (XWPFTable tbl : document.getTables()) {
+                                    replaceTableDataDocx(tbl, key, value, isTable, firstRow, columnSeparator, rowSeparator);
+                                }
+                                replaceInParagraphs(document, key, value);
                             }
-                            replaceInParagraphs(document, key, value);
                         }
                         document.write(outputStream);
                     } else {
@@ -214,6 +224,43 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
         }
         for (XWPFParagraph paragraph : toDelete) {
             document.removeBodyElement(document.getPosOfParagraph(paragraph));
+        }
+    }
+
+    private void replaceListDataDocx(XWPFDocument document, List<XWPFParagraph> docParagraphs, XWPFNumbering numbering, String key, String value, String rowSeparator) {
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < docParagraphs.size(); i++) {
+            XWPFParagraph p = docParagraphs.get(i);
+            BigInteger numID = getNumID(p);
+            if (numID != null) {
+                String pText = p.getText();//getText(p);
+                if (pText != null && pText.equals(key)) {
+                    XmlCursor cursor = p.getCTP().newCursor();
+                    for (String row : value.split(rowSeparator)) {
+                        XWPFParagraph newParagraph = document.createParagraph();
+                        newParagraph.getCTP().setPPr(p.getCTP().getPPr());
+                        XWPFRun newRun = newParagraph.createRun();
+                        newRun.getCTR().setRPr(p.getRuns().get(0).getCTR().getRPr());
+                        newRun.setText(row, 0);
+                        XmlCursor newCursor = newParagraph.getCTP().newCursor();
+                        newCursor.moveXml(cursor);
+                        newCursor.dispose();
+                    }
+                    cursor.removeXml(); // Removes replacement text paragraph
+                    cursor.dispose();
+
+                }
+            }
+        }
+    }
+
+    private BigInteger getNumID(XWPFParagraph p) {
+        try {
+            //due to bug we can't read already changed paragraphs
+            //https://stackoverflow.com/questions/8253653/exception-when-writing-to-the-xlsx-document-several-times-using-apache-poi-3-7
+            return p.getNumID();
+        } catch (XmlValueDisconnectedException e) {
+            return null;
         }
     }
     

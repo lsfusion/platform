@@ -31,8 +31,31 @@ key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
-// Таблица
+//Deprecated
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+
+CLASS Type {
+    plain 'Плоский',
+    table 'Таблица',
+    list 'Список'
+}
+
+type 'Тип' = DATA Type(TemplateEntry);
+captionType 'Тип' (TemplateEntry t) = staticCaption(type(t));
+nameType 'Тип' (TemplateEntry t) = staticName(type(t));
+
+isTableMigrated = DATA BOOLEAN();
+onStarted() + {
+    IF NOT isTableMigrated() THEN {
+        type(TemplateEntry t) <- Type.table WHERE isTable(t);
+        isTableMigrated() <- TRUE;
+    }
+}
+
+isTableTemplateEntry 'Таблица' (TemplateEntry t) = type(t) == Type.table;
+isListTemplateEntry 'Список' (TemplateEntry t) = type(t) == Type.list;
+notPlainTemplateEntry (TemplateEntry t) = isTableTemplateEntry(t) OR isListTemplateEntry(t);
+
 
 dataFirstRow = DATA INTEGER (TemplateEntry);
 firstRow 'Первый ряд с данными (начиная с 0)' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
@@ -52,8 +75,9 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
-    PROPERTIES (te) PANEL SHOWIF isTable(te) firstRow, columnSeparator, rowSeparator
+    PROPERTIES (te) captionType, key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) PANEL SHOWIF isTableTemplateEntry(te) firstRow, columnSeparator
+    PROPERTIES (te) PANEL SHOWIF notPlainTemplateEntry(te) rowSeparator
     PROPERTIES (t) DRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -90,7 +114,7 @@ FORM templates 'Шаблоны Word'
     PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY isTable, key, description, value
+    PROPERTIES (te) READONLY captionType, key, description, value
     FILTERS template (te) == t
 ;
 
