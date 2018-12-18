@@ -50,8 +50,8 @@ import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1607,7 +1607,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private Double getTime(String ptString, String ptRow) {
-        Pattern pt = Pattern.compile(ptString);
+        Pattern pt = Pattern.compile(ptString, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pt.matcher(ptRow);
         Double rtime = null;
         if(matcher.find()) {
