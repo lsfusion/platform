@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -24,8 +25,8 @@ import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.xmlbeans.XmlCursor;
-import org.apache.xmlbeans.impl.values.XmlValueDisconnectedException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -55,35 +56,41 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 if (fileObjectValue instanceof DataObject) {
 
                     DataObject wordObject = (DataObject)fileObjectValue;
-                    List<List<Object>> templateEntriesList = new ArrayList<>();
+                    List<TemplateEntry> listTemplateEntriesList = new ArrayList<>();
+                    List<TemplateEntry> templateEntriesList = new ArrayList<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
-                    templateEntryQuery.addProperty("keyTemplateEntry", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("valueTemplateEntry", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("typeTemplateEntry", findProperty("idType[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("firstRowTemplateEntry", findProperty("firstRow[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("columnSeparatorTemplateEntry", findProperty("columnSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("rowSeparatorTemplateEntry", findProperty("rowSeparator[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    String[] templateEntryNames = new String[]{"objValue", "key", "value", "type", "firstRow", "columnSeparator", "rowSeparator"};
+                    LCP[] templateEntryProperties = findProperties("objValue[TemplateEntry]", "key[TemplateEntry]", "value[TemplateEntry]", "idType[TemplateEntry]",
+                            "firstRow[TemplateEntry]", "columnSeparator[TemplateEntry]", "rowSeparator[TemplateEntry]");
+                    for (int i = 0; i < templateEntryProperties.length; i++) {
+                        templateEntryQuery.addProperty(templateEntryNames[i], templateEntryProperties[i].getExpr(context.getModifier(), templateEntryExpr));
+                    }
 
                     templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context);
+                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context, MapFact.singletonOrder((Object) "objValue", false));
 
                     for (ImMap<Object, Object> templateEntry : templateEntryResult.values()) {
 
-                        String keyTemplateEntry = (String) templateEntry.get("keyTemplateEntry");
-                        String valueTemplateEntry = (String) templateEntry.get("valueTemplateEntry");
-                        String type = (String) templateEntry.get("typeTemplateEntry");
-                        Integer firstRowTemplateEntry = (Integer) templateEntry.get("firstRowTemplateEntry");
-                        String columnSeparatorTemplateEntry = (String) templateEntry.get("columnSeparatorTemplateEntry");
-                        String rowSeparatorTemplateEntry = (String) templateEntry.get("rowSeparatorTemplateEntry");
+                        String key = (String) templateEntry.get("key");
+                        String value = (String) templateEntry.get("value");
+                        String type = (String) templateEntry.get("type");
+                        Integer firstRow = (Integer) templateEntry.get("firstRow");
+                        String columnSeparator = (String) templateEntry.get("columnSeparator");
+                        String rowSeparator = (String) templateEntry.get("rowSeparator");
 
-                        if (keyTemplateEntry != null && valueTemplateEntry != null)
-                            templateEntriesList.add(Arrays.asList((Object) keyTemplateEntry, valueTemplateEntry.replace('\n', '\r'), 
-                                                                  type, firstRowTemplateEntry, columnSeparatorTemplateEntry, rowSeparatorTemplateEntry));
+                        if (key != null && value != null) {
+                            TemplateEntry entry = new TemplateEntry(key, value.replace('\n', '\r'), type, firstRow, columnSeparator, rowSeparator);
+                            if(entry.isList()) {
+                                listTemplateEntriesList.add(entry);
+                            } else {
+                                templateEntriesList.add(entry);
+                            }
+                        }
                     }
 
                     RawFileData fileObject = (RawFileData) fileObjectValue.getValue();
@@ -94,32 +101,27 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     if (isDocx) {
                         XWPFDocument document = new XWPFDocument(((RawFileData) wordObject.object).getInputStream());
-                        List<XWPFParagraph> docParagraphs = new ArrayList<>(document.getParagraphs()); //copy of mutable list
-                        XWPFNumbering numbering = document.getNumbering();
-                        for (List<Object> entry : templateEntriesList) {
-                            String key = (String) entry.get(0);
-                            String value = (String) entry.get(1);
-                            String type = (String) entry.get(2);
-                            boolean isTable = type != null && type.endsWith("table");
-                            boolean isList = type != null && type.endsWith("list");
-                            Integer firstRow = (Integer) entry.get(3);
-                            String columnSeparator = (String) entry.get(4);
-                            String rowSeparator = (String) entry.get(5);
-                            if(isList) {
-                                replaceListDataDocx(document, docParagraphs, numbering, key, value, rowSeparator);
-                            } else {
-                                for (XWPFTable tbl : document.getTables()) {
-                                    replaceTableDataDocx(tbl, key, value, isTable, firstRow, columnSeparator, rowSeparator);
-                                }
-                                replaceInParagraphs(document, key, value);
+                        for (TemplateEntry entry : listTemplateEntriesList) {
+                            replaceListDataDocx(document, entry);
+                            try(ByteArrayOutputStream os = new ByteArrayOutputStream()) { //save and reopen
+                                document.write(os);
+                                document = new XWPFDocument(new ByteArrayInputStream(os.toByteArray()));
                             }
+                        }
+
+                        for (TemplateEntry entry : templateEntriesList) {
+                            for (XWPFTable tbl : document.getTables()) {
+                                replaceTableDataDocx(tbl, entry);
+                            }
+                            replaceInParagraphs(document, entry.key, entry.value);
                         }
                         document.write(outputStream);
                     } else {
                         HWPFDocument document = new HWPFDocument(new POIFSFileSystem(((RawFileData) wordObject.object).getInputStream()));
                         Range range = document.getRange();
-                        for (List<Object> entry : templateEntriesList) {
-                            range.replaceText((String) entry.get(0), (String) entry.get(1));
+                        listTemplateEntriesList.addAll(templateEntriesList);
+                        for (TemplateEntry entry : listTemplateEntriesList) {
+                            range.replaceText(entry.key, entry.value);
                         }
                         document.write(outputStream);
                     }
@@ -132,20 +134,20 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void replaceTableDataDocx(XWPFTable tbl, String key, String value, boolean isTable, Integer firstRow, String columnSeparator, String rowSeparator) {
-        if(isTable) {
-            XWPFTableRow row = tbl.getRow(firstRow);
+    private void replaceTableDataDocx(XWPFTable tbl, TemplateEntry entry) {
+        if(entry.isTable()) {
+            XWPFTableRow row = tbl.getRow(entry.firstRow);
             if (row == null) return;
             XWPFTableCell cell = row.getCell(0);
             String text = cell.getText();
-            if (text != null && text.contains(key)) {
-                String[] tableRows = value.split(rowSeparator);
-                int i = firstRow;
+            if (text != null && text.contains(entry.key)) {
+                String[] tableRows = entry.value.split(entry.rowSeparator);
+                int i = entry.firstRow;
                 for (String tableRow : tableRows) {
-                    if (i == firstRow) {
+                    if (i == entry.firstRow) {
                         XWPFTableRow newRow = tbl.getRow(i);
                         int j = 0;
-                        for (String tableCell : tableRow.split(columnSeparator)) {
+                        for (String tableCell : tableRow.split(entry.columnSeparator)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             if (newCell.getText().isEmpty())
                                 newCell.setText(tableCell);
@@ -157,7 +159,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     } else {
                         XWPFTableRow newRow = tbl.createRow();
                         int j = 0;
-                        for (String tableCell : tableRow.split(columnSeparator)) {
+                        for (String tableCell : tableRow.split(entry.columnSeparator)) {
                             XWPFTableCell newCell = newRow.getTableICells().size() > j ? newRow.getCell(j) : newRow.createCell();
                             newCell.setText(tableCell);
                             j++;
@@ -172,8 +174,8 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     for (XWPFParagraph p : cell.getParagraphs()) {
                         for (XWPFRun r : p.getRuns()) {
                             String text = r.getText(0);
-                            if (text != null && text.contains(key)) {
-                                text = text.replace(key, value);
+                            if (text != null && text.contains(entry.key)) {
+                                text = text.replace(entry.key, entry.value);
                                 r.setText(text, 0);
                             }
                         }
@@ -185,7 +187,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     
     private void replaceInParagraphs(XWPFDocument document, String find, String repl) {
 
-        Set<XWPFParagraph> toDelete = new HashSet<XWPFParagraph>();
+        Set<XWPFParagraph> toDelete = new HashSet<>();
 
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             List<XWPFRun> runs = paragraph.getRuns();
@@ -227,16 +229,14 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void replaceListDataDocx(XWPFDocument document, List<XWPFParagraph> docParagraphs, XWPFNumbering numbering, String key, String value, String rowSeparator) {
-        //noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < docParagraphs.size(); i++) {
-            XWPFParagraph p = docParagraphs.get(i);
-            BigInteger numID = getNumID(p);
-            if (numID != null) {
-                String pText = p.getText();//getText(p);
-                if (pText != null && pText.equals(key)) {
+    private void replaceListDataDocx(XWPFDocument document, TemplateEntry entry) {
+        List<XWPFParagraph> docParagraphs = new ArrayList<>(document.getParagraphs()); //copy of mutable list
+        for (XWPFParagraph p : docParagraphs) {
+            if (p.getNumID() != null) { //part of numerator
+                String pText = p.getText();
+                if (pText != null && pText.equals(entry.key)) {
                     XmlCursor cursor = p.getCTP().newCursor();
-                    for (String row : value.split(rowSeparator)) {
+                    for (String row : entry.value.split(entry.rowSeparator)) {
                         XWPFParagraph newParagraph = document.createParagraph();
                         newParagraph.getCTP().setPPr(p.getCTP().getPPr());
                         XWPFRun newRun = newParagraph.createRun();
@@ -253,16 +253,6 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             }
         }
     }
-
-    private BigInteger getNumID(XWPFParagraph p) {
-        try {
-            //due to bug we can't read already changed paragraphs
-            //https://stackoverflow.com/questions/8253653/exception-when-writing-to-the-xlsx-document-several-times-using-apache-poi-3-7
-            return p.getNumID();
-        } catch (XmlValueDisconnectedException e) {
-            return null;
-        }
-    }
     
     private void setText(XWPFRun run, String newText) {
         List<String> splitted = BaseUtils.split(newText,"\r");
@@ -272,6 +262,32 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 run.setText(splitted.get(j));
             } else
                 run.setText(splitted.get(j), 0);
+        }
+    }
+
+    private class TemplateEntry {
+        public String key;
+        public String value;
+        public String type;
+        public Integer firstRow;
+        public String columnSeparator;
+        public String rowSeparator;
+
+        public TemplateEntry(String key, String value, String type, Integer firstRow, String columnSeparator, String rowSeparator) {
+            this.key = key;
+            this.value = value;
+            this.type = type;
+            this.firstRow = firstRow;
+            this.columnSeparator = columnSeparator;
+            this.rowSeparator = rowSeparator;
+        }
+
+        public boolean isTable() {
+          return type != null && type.endsWith("table");
+        }
+
+        public boolean isList() {
+           return type != null && type.endsWith("list");
         }
     }
 }
