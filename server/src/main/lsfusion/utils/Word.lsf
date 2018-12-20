@@ -26,6 +26,7 @@ templateId (string1) = GROUP AGGR Template template WHERE template IS Template B
 CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
+objValue (TemplateEntry t) = INTEGER(t AS TemplateEntry);
 template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
