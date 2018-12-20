@@ -29,7 +29,6 @@ import org.apache.xmlbeans.XmlCursor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -235,20 +234,23 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
             if (p.getNumID() != null) { //part of numerator
                 String pText = p.getText();
                 if (pText != null && pText.equals(entry.key)) {
-                    XmlCursor cursor = p.getCTP().newCursor();
-                    for (String row : entry.value.split(entry.rowSeparator)) {
-                        XWPFParagraph newParagraph = document.createParagraph();
-                        newParagraph.getCTP().setPPr(p.getCTP().getPPr());
-                        XWPFRun newRun = newParagraph.createRun();
-                        newRun.getCTR().setRPr(p.getRuns().get(0).getCTR().getRPr());
-                        newRun.setText(row, 0);
-                        XmlCursor newCursor = newParagraph.getCTP().newCursor();
-                        newCursor.moveXml(cursor);
-                        newCursor.dispose();
+                    if(entry.value.isEmpty()) {
+                        document.removeBodyElement(document.getPosOfParagraph(p));
+                    } else {
+                        XmlCursor cursor = p.getCTP().newCursor();
+                        for (String row : entry.value.split(entry.rowSeparator)) {
+                            XWPFParagraph newParagraph = document.createParagraph();
+                            newParagraph.getCTP().setPPr(p.getCTP().getPPr());
+                            XWPFRun newRun = newParagraph.createRun();
+                            newRun.getCTR().setRPr(p.getRuns().get(0).getCTR().getRPr());
+                            newRun.setText(row, 0);
+                            XmlCursor newCursor = newParagraph.getCTP().newCursor();
+                            newCursor.moveXml(cursor);
+                            newCursor.dispose();
+                        }
+                        cursor.removeXml(); // Removes replacement text paragraph
+                        cursor.dispose();
                     }
-                    cursor.removeXml(); // Removes replacement text paragraph
-                    cursor.dispose();
-
                 }
             }
         }
