@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.StringWriter;
 import java.util.Iterator;
 
 public class JSONNode implements Node<JSONNode> {
@@ -57,7 +58,10 @@ public class JSONNode implements Node<JSONNode> {
     @Override
     public Object getValue(String key, boolean attr, Type type) throws ParseException {
         try {
-            return type.parseJSON(element, key);
+            Object value = element.opt(key);
+            if(value == JSONObject.NULL || value instanceof JSONArray || value instanceof JSONObject) // if incorrect structure just consider it missing
+                value = null;
+            return type.parseJSON(value);
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }

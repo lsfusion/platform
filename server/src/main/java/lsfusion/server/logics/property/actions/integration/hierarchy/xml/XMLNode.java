@@ -68,7 +68,7 @@ public class XMLNode implements Node<XMLNode> {
             stringValue = getXMLAttributeValue(key);
         else {
             Element childElement = getXMLChild(key);
-            stringValue = childElement != null ? childElement.getText() : null;
+            stringValue = childElement != null ? childElement.getText() : null; // array and objects will be ignored (see getText implementation)
         }
         return type.parseXML(stringValue);
     }

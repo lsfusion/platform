@@ -28,8 +28,9 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                 response.getWriter().print("Executed successfully");
 
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
-            throw new RuntimeException(e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("text/html; charset=utf-8");
+            response.getWriter().print("Internal Server Error: " + e.getMessage());
         }
     }
 }

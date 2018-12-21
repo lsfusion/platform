@@ -19,7 +19,6 @@ import lsfusion.server.logics.property.actions.integration.importing.plain.dbf.C
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -72,7 +71,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     ExtInt getCharLength();
 
     T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException, java.text.ParseException, IOException;
-    T parseJSON(JSONObject object, String key) throws ParseException, JSONException;
+    T parseJSON(Object value) throws ParseException, JSONException;
     T parseCSV(String value) throws ParseException;
     T parseXML(String value) throws ParseException;
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;

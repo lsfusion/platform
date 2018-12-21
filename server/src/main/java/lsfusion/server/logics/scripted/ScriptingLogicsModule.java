@@ -1628,18 +1628,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAPWithParams addScriptedEmailProp(LCPWithParams fromProp,
                                              LCPWithParams subjProp,
+                                             LCPWithParams bodyProp,
                                              List<Message.RecipientType> recipTypes,
                                              List<LCPWithParams> recipProps,
                                              List<LCPWithParams> attachFileNames,
-                                             List<LCPWithParams> attachFiles,
-                                             List<LCPWithParams> inlineFiles) throws ScriptingErrorLog.SemanticErrorException {
+                                             List<LCPWithParams> attachFiles) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> allProps = new ArrayList<>();
 
         if (fromProp != null) {
             allProps.add(fromProp);
         }
-        allProps.add(subjProp);
+        if(subjProp != null) {
+            allProps.add(subjProp);
+        }
+        if(bodyProp != null) {
+            allProps.add(bodyProp);
+        }
         allProps.addAll(recipProps);
 
         for (int i = 0; i < attachFileNames.size(); i++) {
@@ -1648,8 +1653,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             allProps.add(attachFiles.get(i));
         }
-
-        allProps.addAll(inlineFiles);
 
         Object[] allParams = getParamsPlainList(allProps).toArray();
 
@@ -1668,7 +1671,11 @@ public class ScriptingLogicsModule extends LogicsModule {
             // по умолчанию используем стандартный fromAddressAccount
             eaProp.setFromAddressAccount(new CalcPropertyMapImplement(BL.emailLM.findProperty("fromAddressDefaultNotificationAccount[]").property));
         }
-        eaProp.setSubject(allImplements.get(i++));
+        eaProp.setSubject(subjProp != null ? allImplements.get(i++) : null);
+
+        if(bodyProp != null) {
+            eaProp.addInlineFile(allImplements.get(i++));
+        }
 
         for (Message.RecipientType recipType : recipTypes) {
             eaProp.addRecipient(allImplements.get(i++), recipType);
@@ -1677,9 +1684,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LCPWithParams fileName : attachFileNames) {
             eaProp.addAttachmentFile(fileName != null ? allImplements.get(i++) : null, allImplements.get(i++));
         }
-
-        for(int j = 0; j < inlineFiles.size(); j++)
-            eaProp.addInlineFile(allImplements.get(i++));
 
         return new LAPWithParams(eaPropLP, mergeAllParams(allProps));
     }
@@ -2904,30 +2908,71 @@ public class ScriptingLogicsModule extends LogicsModule {
         return proceedAction;
     }
 
-    private LAPWithParams proceedImportDoClause(boolean noParams, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, LCP<?> whereLCP, ImList<LCP> importParamProps, List<Boolean> nulls, LAPWithParams proceedAction) throws ScriptingErrorLog.SemanticErrorException {
+    private LAPWithParams proceedImportDoClause(boolean noParams, LAPWithParams doAction, LAPWithParams elseAction, List<TypedParameter> oldContext, List<TypedParameter> newContext, LCP<?> whereLCP, ImList<LCP> importParamProps, ImList<Boolean> nulls, LAPWithParams proceedAction) throws ScriptingErrorLog.SemanticErrorException {
         if (doAction != null) {
+            assert nulls != null;
+
             int paramOld = oldContext.size() + (!noParams ? 1 : 0);
             if(paramOld == newContext.size()) // хак, потом можно будет красивее сделать
                 importParamProps = SetFact.EMPTYORDER();
 
-            ImList<Pair<LCPWithParams, DebugInfo.DebugPoint>> assignProps = ListFact.toList(importParamProps.size(), new GetIndex<Pair<LCPWithParams, DebugInfo.DebugPoint>>() {
-                public Pair<LCPWithParams, DebugInfo.DebugPoint> getMapValue(int i) {
-                    return null;
-                }});
+            List<LAPWithParams> actions = new ArrayList<>();
+            actions.add(proceedAction);
 
-            doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls != null ? ListFact.fromJavaList(nulls) : null, assignProps); // row тоже не вырезаем
+            LAPWithParams fillNullsAction = fillImportNullsAction(noParams, paramOld, oldContext, newContext, whereLCP, importParamProps, nulls);
+            if(fillNullsAction != null)
+                actions.add(fillNullsAction);
 
-            if(!noParams) {
-                modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false); // "добавляем" row параметр
+            actions.add(extendImportDoAction(noParams, paramOld, oldContext, newContext, doAction, elseAction, whereLCP, importParamProps, nulls));
 
-                doAction = addScriptedForAProp(oldContext, new LCPWithParams(whereLCP, oldContext.size()), Collections.singletonList(new LCPWithParams(oldContext.size())), doAction,
-                        elseAction, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
-            }
-            LAPWithParams listAction = addScriptedListAProp(BaseUtils.toList(proceedAction, doAction), Collections.<LCP>emptyList());
+            LAPWithParams listAction = addScriptedListAProp(actions, Collections.<LCP>emptyList());
             // хак - в ifAProp оборачиваем что delegationType был AFTER_DELEGATE, а не BEFORE или null, вообще по хорошему надо delegationType в момент parsing'а проставлять, а не в самих свойствах
             return addScriptedIfAProp(new LCPWithParams(baseLM.vtrue), listAction, null);
         }
         return proceedAction;
+    }
+
+    private LAPWithParams extendImportDoAction(boolean noParams, int paramOld, List<TypedParameter> oldContext, List<TypedParameter> newContext, LAPWithParams doAction, LAPWithParams elseAction, LCP<?> whereLCP, ImList<LCP> importParamProps, ImList<Boolean> nulls) throws ScriptingErrorLog.SemanticErrorException {
+        ImList<Pair<LCPWithParams, DebugInfo.DebugPoint>> assignProps = ListFact.toList(importParamProps.size(), new GetIndex<Pair<LCPWithParams, DebugInfo.DebugPoint>>() {
+            public Pair<LCPWithParams, DebugInfo.DebugPoint> getMapValue(int i) {
+                return null;
+            }});
+        doAction = extendDoParams(doAction, newContext, paramOld, !noParams, importParamProps, nulls, assignProps); // row parameter consider to be external (it will be proceeded separately)
+        if(!noParams) { // adding row parameter
+            modifyContextFlowActionPropertyDefinitionBodyCreated(doAction, BaseUtils.add(oldContext, newContext.get(oldContext.size())), oldContext, false);
+
+            doAction = addScriptedForAProp(oldContext, new LCPWithParams(whereLCP, oldContext.size()), Collections.singletonList(new LCPWithParams(oldContext.size())), doAction,
+                    elseAction, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
+        }
+        return doAction;
+    }
+
+    // filling null values if necessary
+    private LAPWithParams fillImportNullsAction(boolean noParams, int paramOld, List<TypedParameter> oldContext, List<TypedParameter> newContext, LCP<?> whereLCP, ImList<LCP> importParamProps, ImList<Boolean> nulls) throws ScriptingErrorLog.SemanticErrorException {
+        List<Integer> params = !noParams ? Collections.<Integer>singletonList(oldContext.size()) : Collections.<Integer>emptyList();
+        List<TypedParameter> oldAndRowContext = newContext.subList(0, paramOld);
+        List<LAPWithParams> fillNulls = null;
+        for(int i=paramOld;i<newContext.size();i++) {
+            int importIndex = i - paramOld;
+            if (!nulls.get(importIndex)) { // no null
+                if (fillNulls == null)
+                    fillNulls = new ArrayList<>();
+
+                LCPWithParams importProp = new LCPWithParams(importParamProps.get(importIndex), params);
+                DataClass cls = (DataClass) newContext.get(i).cls;
+                LCPWithParams defaultValueProp = new LCPWithParams(addCProp(cls, DerivedProperty.getValueForProp(cls.getDefaultValue(), cls)));
+                // prop(row) <- defvalue WHERE NOT prop(row)
+                fillNulls.add(addScriptedAssignAProp(oldAndRowContext, defaultValueProp, addScriptedNotProp(importProp), importProp));
+            }
+        }
+        if(fillNulls != null) {
+            LAPWithParams fillNullsAction = addScriptedListAProp(fillNulls, Collections.<LCP>emptyList());
+            if(!noParams) // FOR where(row)
+                fillNullsAction = addScriptedForAProp(oldContext, new LCPWithParams(noParams ? baseLM.vtrue : whereLCP, params), Collections.<LCPWithParams>emptyList(), fillNullsAction,
+                    null, null, null, false, false, false, Collections.<LCPWithParams>emptyList(), false);
+            return fillNullsAction;
+        }
+        return null;
     }
 
 //    private int findOldParam(List<TypedParameter> params, ImList<Integer> inputParams, Result<ImList<LCP>> rInputParamProps) throws ScriptingErrorLog.SemanticErrorException {
@@ -3276,9 +3321,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LPWithParams[exprs.size()+1]));
 
-        boolean extendContext = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props);
         if(type == null)
-            type = extendContext ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
+            type = FormIntegrationType.JSON;
+//            type = doesExtendContext(oldContext.size(), new ArrayList<LPWithParams>(), props) ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
 
         List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -3363,11 +3408,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private ImList<LCP> genLCPsForImport(List<TypedParameter> oldContext, List<TypedParameter> newContext, ImList<ValueClass> paramClasses) throws ScriptingErrorLog.SemanticErrorException {
         int size=newContext.size() - oldContext.size() - paramClasses.size();
-        ValueClass[] params = paramClasses.toArray(new ValueClass[paramClasses.size()]);
 
         MList<LCP> mResult = ListFact.mList(size);
         for(int i=size-1;i>=0;i--)
-            mResult.add(new LCP<>(DerivedProperty.createImportDataProp(newContext.get(newContext.size() - 1 - i).cls, params)));
+            mResult.add(new LCP<>(DerivedProperty.createImportDataProp(newContext.get(newContext.size() - 1 - i).cls, paramClasses)));
         return mResult.immutableList();
     }
 
@@ -3454,7 +3498,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             props = findLCPsForImport(propUsages, paramClasses);
         }
 
-        LCP<?> whereLCP = wherePropertyUsage != null ? findLCPByPropertyUsage(wherePropertyUsage) : baseLM.imported;
+        boolean noParams = paramClasses.isEmpty();
+
+        LCP<?> whereLCP;
+        if(fieldParams != null) { // FIELDS
+            assert wherePropertyUsage == null;
+            whereLCP = !noParams ? new LCP<>(DerivedProperty.createImportDataProp(LogicalClass.instance, paramClasses)) : null;
+        } else { // TO
+            if(wherePropertyUsage != null)
+                whereLCP = findLCPByPropertyUsage(wherePropertyUsage);
+            else
+                whereLCP = findLCPByPropertyUsage(new PropertyUsage("imported", toParamClasses), false, true);
+        }
 
         List<LCPWithParams> params = new ArrayList<>();
         params.add(fileProp);
@@ -3473,7 +3528,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
-        return proceedImportDoClause(paramClasses.isEmpty(), doAction, elseAction, context, newContext, whereLCP, props, nulls, addScriptedJoinAProp(importAction, params));
+        return proceedImportDoClause(noParams, doAction, elseAction, context, newContext, whereLCP, props, nulls != null ? ListFact.fromJavaList(nulls) : null, addScriptedJoinAProp(importAction, params));
     }
 
     public ImList<ValueClass> findClasses(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {

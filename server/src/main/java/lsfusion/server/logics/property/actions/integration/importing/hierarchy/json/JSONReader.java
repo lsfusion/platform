@@ -1,10 +1,12 @@
 package lsfusion.server.logics.property.actions.integration.importing.hierarchy.json;
 
 import lsfusion.base.RawFileData;
+import lsfusion.base.ReflectionUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -22,18 +24,23 @@ public class JSONReader {
         return rootNode;
     }
 
+    public static void writeRootObject(Object object, PrintWriter printWriter) throws IOException, JSONException {
+        writeObject(object, printWriter);
+    }
 
     public static Object readObject(RawFileData file, String charset) throws IOException, JSONException {
         try (InputStream is = file.getInputStream()) {
             final BufferedReader rd = new BufferedReader(new InputStreamReader(new BOMInputStream(is), charset));
-            final String jsonText = readAll(rd).trim();
-
-            if(jsonText.startsWith("["))
-                return new JSONArray(jsonText);
-            if(jsonText.startsWith("{"))
-                return new JSONObject(jsonText);
-            return jsonText;
+            return readObject(rd);
         }
+    }
+
+    public static Object readObject(Reader r) throws IOException {
+        return new JSONTokener(readAll(r)).nextValue();
+    }
+
+    public static void writeObject(Object object, Writer w) {
+        ReflectionUtils.invokePrivateMethod(JSONObject.class, null, "writeValue", new Class[]{Writer.class, Object.class, int.class, int.class}, w, object, 0, 0);
     }
 
     private static String readAll(final Reader rd) throws IOException {

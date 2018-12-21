@@ -1,6 +1,7 @@
 package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -12,7 +13,6 @@ import net.iryndin.jdbf.core.DbfFieldTypeEnum;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -128,13 +128,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return parseNullableString(string, false); // dbf supports nulls
     }
     @Override
-    public T parseJSON(JSONObject object, String key) throws ParseException, JSONException {
-        Object o = object.opt(key);
-        if(o == JSONObject.NULL)
-            o = null;
-        if(!(o instanceof String)) // if incorrect type just consider it missing
-            o = null;
-        return parseNullableString((String)o, false); // json supports nulls
+    public T parseJSON(Object value) throws ParseException, JSONException {
+        return parseNullableString(value != null ? value.toString() : null, false); // json supports nulls
     }
     @Override
     public T parseCSV(String value) throws ParseException {

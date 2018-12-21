@@ -50,8 +50,8 @@ import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1607,7 +1607,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private Double getTime(String ptString, String ptRow) {
-        Pattern pt = Pattern.compile(ptString);
+        Pattern pt = Pattern.compile(ptString, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pt.matcher(ptRow);
         Double rtime = null;
         if(matcher.find()) {
@@ -1896,7 +1896,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage (profile = false) final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime, boolean setRepeatDate) throws SQLException, SQLHandledException {
         if(command.getLength() > Settings.get().getQueryLengthLimit()) {
             String fullCommand = command.getFullText();
-            throw new SQLTooLongQueryException(fullCommand.substring(0, Math.min(10000, fullCommand.length())));
+            int length = fullCommand.length();
+            throw new SQLTooLongQueryException(length, fullCommand.substring(0, Math.min(10000, length)));
         }
 
         S snapEnv = queryExecEnv.getSnapshot(command, transactTimeout, outerEnv);

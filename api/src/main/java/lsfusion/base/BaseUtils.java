@@ -2705,4 +2705,23 @@ public class BaseUtils {
             return s.substring(0, s.length() - 1);
         return s;
     }
+    
+    public static List<String> split(String s, String f) {
+        List<String> result = new ArrayList<String>();
+        int i = 0;
+        while (true) {
+            int j = s.indexOf(f, i);
+            if (j == -1) {
+                result.add(s.substring(i));
+                break;
+            } else {
+                if (j <= i)
+                    result.add("");
+                else
+                    result.add(s.substring(i, j-1));
+                i = j + f.length();
+            }
+        }
+        return result;
+    }
 }

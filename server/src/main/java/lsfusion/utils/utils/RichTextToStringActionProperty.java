@@ -30,9 +30,14 @@ public class RichTextToStringActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String value = (String) context.getDataKeyValue(richTextInterface).getValue();
         try {
-            findProperty("resultString[]").change(Jsoup.clean(URLDecoder.decode(value, "UTF-8"), Whitelist.none()), context);
+            findProperty("resultString[]").change(value != null ? Jsoup.clean(URLDecoder.decode(value, "UTF-8"), Whitelist.none()) : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException | UnsupportedEncodingException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

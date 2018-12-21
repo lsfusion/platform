@@ -26,13 +26,46 @@ templateId (string1) = GROUP AGGR Template template WHERE template IS Template B
 CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
+objValue (TemplateEntry t) = INTEGER(t AS TemplateEntry);
 template 'Шаблон' = DATA Template (TemplateEntry);
 key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 description 'Описание' = DATA VARSTRING[100](TemplateEntry);
 value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
-// Таблица
+//Deprecated
 isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+
+CLASS Type 'Тип строки шаблона' {
+   plain 'Плоский',
+   table 'Таблица',
+   list 'Список'
+}
+TABLE type (Type);
+name 'Наименование' (Type o) = staticCaption(o) IF o IS Type CHARWIDTH 8;
+
+FORM dialogTypes 'Тип строки шаблона'
+    OBJECTS o = Type
+    PROPERTIES(o) READONLY name
+    
+    LIST Type OBJECT o
+;
+
+type 'Тип' = DATA Type(TemplateEntry);
+nameType 'Тип' (TemplateEntry t) = name(type(t));
+idType 'Тип' (TemplateEntry t) = staticName(type(t));
+
+isTableMigrated = DATA BOOLEAN();
+onStarted() + {
+    IF NOT isTableMigrated() THEN {
+        type(TemplateEntry t) <- Type.table WHERE isTable(t);
+        isTableMigrated() <- TRUE;
+    }
+}
+
+isTableTemplateEntry 'Таблица' (TemplateEntry t) = type(t) == Type.table;
+isListTemplateEntry 'Список' (TemplateEntry t) = type(t) == Type.list;
+notPlainTemplateEntry (TemplateEntry t) = isTableTemplateEntry(t) OR isListTemplateEntry(t);
+
 
 dataFirstRow = DATA INTEGER (TemplateEntry);
 firstRow 'Первый ряд с данными (начиная с 0)' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
@@ -52,8 +85,9 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) isTable, key, description, value, NEW, DELETE GRID
-    PROPERTIES (te) PANEL SHOWIF isTable(te) firstRow, columnSeparator, rowSeparator
+    PROPERTIES (te) nameType, key, description, value, NEW, DELETE GRID
+    PROPERTIES (te) PANEL SHOWIF isTableTemplateEntry(te) firstRow, columnSeparator
+    PROPERTIES (te) PANEL SHOWIF notPlainTemplateEntry(te) rowSeparator
     PROPERTIES (t) DRAW te TOOLBAR openProcess
 
     FILTERS template (te) == t
@@ -90,7 +124,7 @@ FORM templates 'Шаблоны Word'
     PROPERTIES (t) NEWSESSION NEW, EDIT, DELETE GRID
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY isTable, key, description, value
+    PROPERTIES (te) READONLY nameType, key, description, value
     FILTERS template (te) == t
 ;
 

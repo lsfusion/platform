@@ -12,6 +12,7 @@ import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.GConnectionLostManager;
 import lsfusion.gwt.client.GExceptionManager;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;
@@ -67,6 +68,8 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
                 int maxTries = ErrorHandlingCallback.getMaxTries(caught);
+                if (caught instanceof AppServerNotAvailableException) // temporary, reconnect worker should handle this
+                    maxTries = 30;
                 if (finalRequestTry <= maxTries) {
                     if(finalRequestTry == 2) //first retry
                         GConnectionLostManager.registerFailedRmiRequest();
@@ -80,7 +83,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     };
                     timer.schedule(1000);
                 } else {
-                    if(maxTries > -1) //известный нам тип ошибки
+                    if(maxTries > -1) // some connection problem
                         GConnectionLostManager.connectionLost();
                     DispatchAsyncWrapper.this.onFailure(action, caught, callback);
                 }
