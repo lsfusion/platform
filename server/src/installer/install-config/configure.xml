@@ -47,6 +47,9 @@
         <replace file="jdk.table.xml" token="java.version" value="${jdk.version}" />
         <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/jdk.table.xml" />
 
+        <replaceregexp file="${idea.dir}/bin/idea.exe.vmoptions" match="Xmx.*m" replace="Xmx2g"/>
+        <replaceregexp file="${idea.dir}/bin/idea64.exe.vmoptions" match="Xmx.*m" replace="Xmx2g"/>
+
         <if>
             <not>
                 <equals arg1="${lsfusion.library.name}" arg2="" />
