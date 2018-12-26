@@ -15,7 +15,7 @@ TABLE userProperty (User, Property);
 TABLE userAction (User, Action);
 TABLE userRoleNavigatorElement (UserRole, NavigatorElement);
 
-name 'Наименование' = DATA VARISTRING[100](UserRole);
+name 'Наименование' = DATA VARISTRING[100](UserRole) CHARWIDTH 20;
 
 sid 'Идентификатор' = DATA VARSTRING[30] (UserRole);
 overSID (UserRole ur) = OVERRIDE sid(ur), name(ur);
@@ -29,9 +29,6 @@ currentUserMainRoleName () = nameMainRole(currentUser());
 
 defaultMainRole 'Роль по умолчанию' = DATA UserRole ();
 nameDefaultMainRole 'Роль по умолчанию' = name(defaultMainRole());
-EXTEND FORM customUsers
-    PROPERTIES() nameDefaultMainRole
-;
 mainRole[User](CustomUser u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 in 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
@@ -267,9 +264,11 @@ EXTEND FORM customUser
 ;
 
 DESIGN customUser {
-    container {
-        MOVE BOX(ur) {
-            flex = 1.0;
+    details {
+        NEW roles {
+            caption = 'Роли';
+            MOVE PROPERTY(nameMainRole(u));
+            MOVE BOX(ur);
         }
     }
 }
@@ -398,7 +397,7 @@ FORM securityPolicy 'Политика безопасности'
     
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY name[Contact], login
-    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, forbidEditProfile, cachePropertyPolicy
+    PROPERTIES(u) dataForbidDuplicateForms, dataForbidChangePassword, dataForbidEditProfile, cachePropertyPolicy
     
     FILTERS mainRole(u) == ur2 
 
@@ -481,6 +480,8 @@ FORM userRoles 'Роли'
     PROPERTIES(ur) READONLY name, sid
     PROPERTIES(ur) copy 
     PROPERTIES(ur) NEWSESSION NEW, EDIT, DELETE GRID
+    
+    PROPERTIES() nameDefaultMainRole
 ;
 
 FORM userRolesDialog 'Роли'

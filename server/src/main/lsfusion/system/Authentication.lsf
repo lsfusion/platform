@@ -1,13 +1,13 @@
 MODULE Authentication;
 
-REQUIRE System;
+REQUIRE System, Utils;
 
-// ------------------------- Рабочие места ---------------------- //
+// ------------------------- Computers ---------------------- //
 
-CLASS Computer 'Рабочее место';
+CLASS Computer '{authentication.computer}';
 TABLE computer (Computer);
 
-hostname 'Имя хоста' = DATA VARISTRING[100] (Computer) IN id;
+hostname '{authentication.host.name.computer}' = DATA VARISTRING[100] (Computer) IN id;
 
 // Сканер
 scannerComPort 'Com-port сканнера' = DATA INTEGER (Computer);
@@ -19,20 +19,20 @@ useDiscountCardReader 'Включить считыватель дисконтн�
 //Весы
 scalesComPort 'Com-port весов' = DATA INTEGER (Computer);
 
-FORM computer 'Рабочее место'
+FORM computer '{authentication.computer}'
     OBJECTS c = Computer PANEL
     PROPERTIES(c) hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
     
     EDIT Computer OBJECT c
 ;
 
-FORM computers 'Рабочие места'
+FORM computers '{authentication.computers}'
     OBJECTS c = Computer
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
     PROPERTIES(c) NEWSESSION NEW, EDIT, DELETE GRID
 ;
 
-FORM computersDialog 'Рабочие места'
+FORM computersDialog '{authentication.computers}'
     OBJECTS c = Computer
     
     PROPERTIES(c) READONLY hostname, scannerComPort, scannerSingleRead, useDiscountCardReader, scalesComPort
@@ -42,8 +42,12 @@ FORM computersDialog 'Рабочие места'
 ;
 DESIGN computersDialog { BOX { size = (1024, 768); }}
 
-// -------------------------- Пользователи ---------------------------- //
+currentComputer = NATIVE Computer ();
+hostnameCurrentComputer () = hostname(currentComputer());
 
+// -------------------------- Users ---------------------------- //
+
+// Contact
 CLASS ABSTRACT Contact '{authentication.contact}';
 TABLE contact (Contact);
 
@@ -51,13 +55,14 @@ firstName '{authentication.first.name.contact}' = DATA VARISTRING[100] (Contact)
 lastName '{authentication.last.name.contact}' = DATA VARISTRING[100] (Contact) CHARWIDTH 15 IN base;
 name '{authentication.name.contact}' (Contact contact) = CONCAT ' ', firstName(contact), lastName(contact) IN id CHARWIDTH 20;
 
-phone 'Телефон' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
-postAddress 'Почтовый адрес' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
-birthday 'День рождения' = DATA DATE (Contact);
+phone '{authentication.phone.contact}' = DATA VARSTRING[100] (Contact) CHARWIDTH 10;
+postAddress '{authentication.post.address.contact}' = DATA VARSTRING[150] (Contact) CHARWIDTH 20;
+birthday '{authentication.birthday.contact}' = DATA DATE (Contact);
 
-email '{authentication.email.contact}'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>Неверный формат e-mail</html>';
+email '{authentication.email.contact}'= DATA VARSTRING[400] (Contact) CHARWIDTH 20 REGEXP '[-!#-\'*+/-9=?A-Z^-~]+(\\.[-!#-\'*+/-9=?A-Z^-~]+)*@[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?(\\.[0-9A-Za-z]([0-9A-Za-z-]{0,61}[0-9A-Za-z])?)+' '<html>{authentication.email.contact.incorrect}</html>';
 contact (email) = GROUP MAX Contact contact BY email(contact);
 
+// User
 
 CLASS ABSTRACT User '{authentication.user}';
 TABLE user (User);
@@ -66,118 +71,22 @@ CLASS SystemUser '{authentication.system.user}' : User;
 
 CLASS CustomUser '{authentication.custom.user}' : User, Contact;
 TABLE customUser (CustomUser);
-TABLE loginSID (STRING[100], STRING[100]);
-
-currentUser = NATIVE User ();
-currentUserName 'Имя Тек. Польз.' () = name[Contact](currentUser());
 
 name '{authentication.name.user}' (User user) = IF user IS SystemUser 
                         THEN VARSTRING[100]('{authentication.system.user}')
                         ELSE name[Contact](user) CHARWIDTH 10;
 name '{authentication.name.user}' (CustomUser user) = name[User](user AS CustomUser) CHARWIDTH 10;
 
-currentComputer = NATIVE Computer ();
-hostnameCurrentComputer 'Текущий компьютер' () = hostname(currentComputer());
+// login
+login '{authentication.login}' = DATA STRING[100] (CustomUser) CHARWIDTH 15;
+customUser (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
+upcaseLogin (CustomUser customUser) = upper(login(customUser));
+customUserUpcase (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
 
-isLocked 'Заблокирован' = DATA BOOLEAN (CustomUser);
-login '{authentication.login}' = DATA STRING[100] (CustomUser);
-currentUserLogin 'Логин Тек. Польз.' () = login[CustomUser](currentUser());
-allowExcessAllocatedBytes 'Разрешено превышение allocated bytes' = DATA BOOLEAN (CustomUser);
-currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login[CustomUser](currentUser()) == 'admin';
-customUser 'Обычный пользователь' (login) = GROUP AGGR CustomUser customUser WHERE customUser IS CustomUser BY login(customUser);
-upcaseLogin 'Логин в верхнем регистре' (CustomUser customUser) = upper(login(customUser));
-customUserUpcase 'Обычный пользователь' (login) = GROUP MAX CustomUser customUser BY upcaseLogin(customUser);
-sha256Password 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
-calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
-forbidChangePassword 'Запретить пользователю изменять пароль' = ABSTRACT BOOLEAN (CustomUser);
-forbidEditProfile 'Запретить пользователю редактировать профиль' = ABSTRACT BOOLEAN (CustomUser);
-isLockedLogin 'Заблокирован' (login) = isLocked(customUser(login));
-
-lastActivity 'Последняя активность' = DATA DATETIME (CustomUser);
-lastComputer 'Рабочее место' = DATA Computer (CustomUser);
-hostnameLastComputer 'Рабочее место' (CustomUser user) = hostname(lastComputer(user));
-
-calculateBase64Hash 'Вычислить Base64 хэш'  INTERNAL  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
-logOut (restart, reconnect)  INTERNAL  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
-shutdown 'Отключить'  { 
-    logOut(NULL, NULL);
-}
-reconnect 'Переподключить'  { 
-    logOut(TRUE, TRUE);
-}
-restart 'Выйти'  { 
-    logOut(TRUE, NULL);
-}
-
-relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
-
-generateLoginPassword 'Сгенерировать логин и пароль'  INTERNAL  'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
-
-minHashLength 'Минимальное совпадение хэша пароля (символов)' = DATA INTEGER ();
-useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
-serverLDAP 'Сервер' = DATA VARSTRING[100] ();
-portLDAP 'Порт' = DATA INTEGER ();
-baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
-userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
-
-//показ busyDialog конкретному пользователю. В будущем станет не нужным.
-useBusyDialogCustom 'Показывать BusyDialog' = DATA BOOLEAN (CustomUser);
-useBusyDialog () = useBusyDialogCustom[CustomUser](currentUser());
-
-useRequestTimeout 'Использовать таймаут в запросах' = DATA BOOLEAN(CustomUser); 
-useRequestTimeout() = useRequestTimeout[CustomUser](currentUser());
-
-userLanguage 'Язык локали пользователя' = DATA VARSTRING[3] (CustomUser);
-userCountry 'Страна локали пользователя' = DATA VARSTRING[3] (CustomUser);
-userTimeZone 'Часовой пояс пользователя' = DATA VARSTRING[30] (CustomUser);
-userTwoDigitYearStart 'Первый год двумя цифрами пользователя' = DATA INTEGER (CustomUser);
-
-clientLanguage 'Язык локали клиента' = DATA VARSTRING[3] (CustomUser);
-clientCountry 'Страна локали клиента' = DATA VARSTRING[3] (CustomUser);
-useClientLocale 'Использовать локаль клиента' = DATA BOOLEAN (CustomUser);
-
-defaultUserLanguage 'Язык локали по умолчанию' = DATA VARSTRING[3] ();
-defaultUserCountry 'Страна локали по умолчанию' = DATA VARSTRING[3] ();
-defaultUserTimeZone 'Часовой пояс по умолчанию' = DATA VARSTRING[30] ();
-defaultUserTwoDigitYearStart 'Первый год двумя цифрами по умолчанию' = DATA INTEGER ();
-
-language 'Язык локали' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
-country 'Страна локали' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
-                                                                THEN clientCountry(user)
-                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
-
-timeZone 'Часовой пояс' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
-twoDigitYearStart 'Первый год двумя цифрами' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
-
-fontSize 'Размер шрифта, %' = DATA INTEGER (CustomUser); 
-
-deliveredNotificationAction  ABSTRACT LIST ( CustomUser);
-
-locked = DATA User (Object);
-lockResult = DATA LOCAL NESTED BOOLEAN ();
-
-lock(Object object)  { 
-	NEWSESSION {    
-	    lockResult() <- NULL;
-	    APPLY SERIALIZABLE {
-	        IF NOT object THEN
-	            RETURN;
-	        IF locked(object) THEN {
-	            cancel();
-	        } ELSE {
-	            locked(object) <- currentUser();
-	            lockResult() <- TRUE;
-	        }
-	    }
-	}
-}
-
-unlock(Object object)  { 
-	NEWSESSION { 
-	    APPLY locked(object) <- NULL;
-	}
-}
-
+// password
+sha256Password '{authentication.password}' = DATA VARSTRING[100] (CustomUser) ECHO;
+calculatedHash = DATA LOCAL VARSTRING[100] ();
+calculateBase64Hash INTERNAL  'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 changeSHA256Password(CustomUser customUser)  { 
     INPUT st=STRING[30] DO {
         calculateBase64Hash('SHA-256', st);
@@ -185,18 +94,144 @@ changeSHA256Password(CustomUser customUser)  {
     }
 }
 
+forbidChangePassword = ABSTRACT BOOLEAN (CustomUser);
+
+minHashLength = DATA INTEGER ();
+
+// LDAP
+useLDAP '{authentication.use.ldap}' = DATA BOOLEAN ();
+serverLDAP '{authentication.server.ldap}' = DATA VARSTRING[100] ();
+portLDAP '{authentication.port.ldap}' = DATA INTEGER ();
+baseDNLDAP '{authentication.base.dn.ldap}' = DATA VARSTRING[100] ();
+userDNSuffixLDAP '{authentication.user.dn.suffix.ldap}' = DATA VARSTRING[100] ();
+
+// lock
+isLocked '{authentication.is.locked.user}' = DATA BOOLEAN (CustomUser);
+isLockedLogin (login) = isLocked(customUser(login));
+
+// Last activity
+lastActivity '{authentication.last.activity.user}' = DATA DATETIME (CustomUser);
+lastComputer = DATA Computer (CustomUser);
+hostnameLastComputer '{authentication.hostname.last.computer.user}' (CustomUser user) = hostname(lastComputer(user));
+
+// Current User
+currentUser = NATIVE User ();
+currentUserName '{authentication.current.user.name}' () = name[Contact](currentUser());
+
+// User management
+logOut (restart, reconnect)  INTERNAL  'lsfusion.server.logics.authentication.LogOutActionProperty' (BOOLEAN, BOOLEAN);
+shutdown { logOut(NULL, NULL); }
+reconnect { logOut(TRUE, TRUE); }
+restart { logOut(TRUE, NULL); }
+
+// Locale settings
+userLanguage '{authentication.user.language.user}' = DATA VARSTRING[3] (CustomUser);
+userCountry '{authentication.user.country.user}' = DATA VARSTRING[3] (CustomUser);
+userTimeZone '{authentication.user.time.zone.user}' = DATA VARSTRING[30] (CustomUser);
+userTwoDigitYearStart '{authentication.user.two.digit.year.start.user}' = DATA INTEGER (CustomUser);
+
+clientLanguage '{authentication.client.language.user}' = DATA VARSTRING[3] (CustomUser);
+clientCountry '{authentication.client.country.user}' = DATA VARSTRING[3] (CustomUser);
+useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser);
+
+defaultUserLanguage '{authentication.default.user.language}' = DATA VARSTRING[3] ();
+defaultUserCountry '{authentication.default.user.country}' = DATA VARSTRING[3] ();
+defaultUserTimeZone '{authentication.default.user.time.zone}' = DATA VARSTRING[30] ();
+defaultUserTwoDigitYearStart '{authentication.default.user.two.digit.year.start}' = DATA INTEGER ();
+
+language '{authentication.language.user}' (CustomUser user) = OVERRIDE (clientLanguage(user) IF useClientLocale(user)), userLanguage(user), defaultUserLanguage();
+country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(user) AND clientLanguage(user) 
+                                                                THEN clientCountry(user)
+                                                                ELSE IF userLanguage(user) THEN userCountry(user) ELSE defaultUserCountry();
+
+timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimeZone();
+twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart();
+
+// Technical settings
+useBusyDialogCustom '{authentication.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
+useBusyDialog () = useBusyDialogCustom(currentUser());
+
+allowExcessAllocatedBytes '{authentication.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser);
+currentUserAllowExcessAllocatedBytes () = allowExcessAllocatedBytes(currentUser()) OR login(currentUser()) == 'admin';
+
+useRequestTimeout '{authentication.use.request.timeout.user}' = DATA BOOLEAN(CustomUser); 
+useRequestTimeout() = useRequestTimeout(currentUser());
+
+// GUI settings
+fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser); 
+
+// -------------------------- Forms ---------------------------- //
+
 FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL
-    PROPERTIES(u) firstName, lastName, login,
-                  sha256Password ON CHANGE changeSHA256Password(u), email,
-                  isLocked, lastActivity, hostnameLastComputer, useBusyDialogCustom, useRequestTimeout,
-                  allowExcessAllocatedBytes, language, country, timeZone, twoDigitYearStart, 
-                  clientLanguage, clientCountry, useClientLocale, fontSize
+    PROPERTIES(u) login, sha256Password ON CHANGE changeSHA256Password(u), isLocked ,
+                  firstName, lastName, email, phone, postAddress, birthday,
+                  language, clientLanguage, country, clientCountry, useClientLocale, timeZone, twoDigitYearStart,
+                  useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes, 
+                  fontSize
 
     EDIT CustomUser OBJECT u
 ;
 
 DESIGN customUser {
+    OBJECTS {
+        NEW pane {
+            type = SPLITH;
+            fill = 1;
+            NEW header {
+                fill = 1;
+                NEW login {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.login}';
+                    MOVE PROPERTY(login(u));    
+                    MOVE PROPERTY(sha256Password(u));
+                    MOVE PROPERTY(isLocked(u));    
+                }
+                NEW info {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.info}';
+                    MOVE PROPERTY(firstName(u));
+                    MOVE PROPERTY(lastName(u));
+                    MOVE PROPERTY(email(u));
+                    MOVE PROPERTY(phone(u));
+                    MOVE PROPERTY(postAddress(u));
+                    MOVE PROPERTY(birthday(u));
+                }
+                NEW locale {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.locale}';
+                    MOVE PROPERTY(language(u));
+                    MOVE PROPERTY(clientLanguage(u));
+                    MOVE PROPERTY(country(u));
+                    MOVE PROPERTY(clientCountry(u));
+                    MOVE PROPERTY(useClientLocale(u));
+                    MOVE PROPERTY(timeZone(u));
+                    MOVE PROPERTY(twoDigitYearStart(u));
+                }
+                NEW system {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.system}';
+                    MOVE PROPERTY(useBusyDialogCustom(u));
+                    MOVE PROPERTY(useRequestTimeout(u));
+                    MOVE PROPERTY(allowExcessAllocatedBytes(u));
+                }
+                NEW GUI {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.gui}';
+                    MOVE PROPERTY(fontSize(u));
+                }
+                NEW security {
+                    alignment = STRETCH;
+                    caption = '{authentication.custom.user.security}';
+                }
+                MOVE BOX(u);
+            }
+            NEW details {
+                type = TABBED;
+                fill = 3;
+            }
+        }
+    }
     NEW container BEFORE TOOLBARBOX {
         type = SPLITH;
         fill = 1;
@@ -211,24 +246,75 @@ DESIGN customUser {
 }
 
 FORM customUsers '{authentication.users}'
-    OBJECTS u=CustomUser
-    PROPERTIES(u) READONLY name[Contact], login, email
-    PROPERTIES(u) NEWSESSION useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes,
-                  language, userLanguage, clientLanguage, country, userCountry, clientCountry, useClientLocale, 
-                  timeZone, userTimeZone, twoDigitYearStart, userTwoDigitYearStart, fontSize, isLocked READONLY,
-                  lastActivity, hostnameLastComputer, NEW, EDIT, DELETE 
+    OBJECTS u = CustomUser
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP, minHashLength, defaultUserLanguage, defaultUserCountry
+    PROPERTIES(u) READONLYIF isReadonly() name, login, email
+    PROPERTIES(u) READONLYIF isReadonly() isLocked
+    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
+    
+    PROPERTIES(u) READONLY lastActivity, hostnameLastComputer
+                  
+    PROPERTIES(u) NEWSESSION NEW, EDIT, DELETE 
+
+    OBJECTS lu = CustomUser
+    PROPERTIES(lu) READONLY                name, login, email
+    PROPERTIES(lu) READONLYIF isReadonly() language, userLanguage, clientLanguage, 
+                                           country, userCountry, clientCountry, 
+                                           useClientLocale, 
+                                           timeZone, userTimeZone, 
+                                           twoDigitYearStart, userTwoDigitYearStart, 
+                                           fontSize
+
+    PROPERTIES() defaultUserLanguage, defaultUserCountry, defaultUserTimeZone, defaultUserTwoDigitYearStart
+
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 ;
+
+DESIGN customUsers {
+    OBJECTS {
+        NEW pane {
+            type = TABBED;
+            fill = 1;
+            NEW users {
+                caption = '{authentication.users}';
+                MOVE BOX(u);
+            }
+            NEW locale {
+                caption = '{authentication.locale}';
+                NEW headerLocale {
+                    type = CONTAINERH;
+                    MOVE PROPERTY(defaultUserLanguage());
+                    MOVE PROPERTY(defaultUserCountry());
+                    MOVE PROPERTY(defaultUserTimeZone());
+                    MOVE PROPERTY(defaultUserTwoDigitYearStart());
+                }
+                MOVE BOX(lu);
+            }
+            NEW LDAP {
+                caption = 'LDAP';
+                MOVE PROPERTY(useLDAP());
+                MOVE PROPERTY(serverLDAP());
+                MOVE PROPERTY(portLDAP());
+                MOVE PROPERTY(baseDNLDAP());
+                MOVE PROPERTY(userDNSuffixLDAP());
+            }
+        }
+    }
+}
+
+@extendFormEditable(customUsers);
 
 FORM customUsersDialog '{authentication.users}'
     OBJECTS u=CustomUser
-    PROPERTIES(u) READONLY name[Contact], login, email
+    PROPERTIES(u) READONLY name, login, email
 
     LIST CustomUser OBJECT u
 ;
 
 DESIGN customUsersDialog { BOX { size = (1024, 768); } }
+
+// User profile
+forbidEditProfile = ABSTRACT BOOLEAN (CustomUser);
 
 FORM editProfile '{navigator.account.edit.profile}' IMAGE '/images/editReport.png'
     OBJECTS u = CustomUser PANEL
@@ -278,6 +364,8 @@ DESIGN reloginLoginUser {
     REMOVE TOOLBARLEFT;
     REMOVE PROPERTY(formRefresh());
 }
+
+relogin '{authentication.relogin}'  INTERNAL  'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
 reloginLoginUser()  { 
     DIALOG reloginLoginUser OBJECTS login INPUT, password INPUT DO {
@@ -420,4 +508,34 @@ NAVIGATOR {
         NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE '/images/change_password.png';
         NEW ACTION logOutAction '{navigator.account.logout}' = restart[] IMAGE '/images/logout.png';
     }
+}
+
+// Notifications
+deliveredNotificationAction  ABSTRACT LIST ( CustomUser);
+
+// -------------------------- Object locks ---------------------------- //
+
+locked = DATA User (Object);
+lockResult = DATA LOCAL NESTED BOOLEAN ();
+
+lock(Object object)  { 
+	NEWSESSION {    
+	    lockResult() <- NULL;
+	    APPLY SERIALIZABLE {
+	        IF NOT object THEN
+	            RETURN;
+	        IF locked(object) THEN {
+	            cancel();
+	        } ELSE {
+	            locked(object) <- currentUser();
+	            lockResult() <- TRUE;
+	        }
+	    }
+	}
+}
+
+unlock(Object object)  { 
+	NEWSESSION { 
+	    APPLY locked(object) <- NULL;
+	}
 }
