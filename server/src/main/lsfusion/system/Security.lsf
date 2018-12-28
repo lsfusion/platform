@@ -312,7 +312,6 @@ forbidDuplicateFormsCurrentUser () = forbidDuplicateForms(currentUser());
 // Default forms
 CLASS DefaultForms '{security.default.forms}' {
     none 'None', //'{security.default.forms.none}',
-    restore 'Restore', //'{security.default.forms.restore}',
     default 'Default' //'{security.default.forms.default}'
 }
 TABLE defaultForms (DefaultForms);
