@@ -36,12 +36,6 @@ CONSTRAINT DROPPED(UserRole r IS UserRole) AND PREV(has(User user, r))
     MESSAGE '{security.this.role.is.assigned.to.user}';
 
 // Forms
-FORM userRole '{security.user.role}'
-    OBJECTS ur = UserRole PANEL
-    PROPERTIES(ur) name, sid
-    EDIT UserRole OBJECT ur
-;
-
 FORM userRolesDialog '{security.user.roles}'
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -504,10 +498,16 @@ DESIGN securityPolicy {
                         GRID(u) { headerHeight = 60; }
                     }
                     
-                    NEW roleApplicationSettings {
+                    NEW roleApplicationScroll {
                         caption = '{security.form.application.settings}';
-                        type = COLUMNS;
-                        columns = 3;
+                        type = SCROLL;
+                        NEW roleApplicationPane {
+                            MOVE PANEL(ur);
+                            NEW roleApplicationSettings {
+                                type = COLUMNS;
+                                columns = 3;
+                            }
+                        }
                     }
                 }
             }
