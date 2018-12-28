@@ -224,7 +224,7 @@ onWebClientStarted  ABSTRACT LIST ( );
 showDefaultForms()  { 
     IF defaultForms(currentUser()) == DefaultForms.default THEN {
         LOCAL firstForm = VARSTRING[100] ();
-        FOR actionName = canonicalName(action(NavigatorAction e)) AND overDefaultNumber(currentUser(), e) ORDER overDefaultNumber(currentUser(), e) DO {
+        FOR actionName = canonicalName(action(NavigatorAction e)) AND defaultNumber(currentUser(), e) ORDER defaultNumber(currentUser(), e) DO {
             LOCAL NESTED action = TEXT ();
             LOCAL NESTED maximize = BOOLEAN();
             FOR formName = canonicalName(form(e)) DO { 
