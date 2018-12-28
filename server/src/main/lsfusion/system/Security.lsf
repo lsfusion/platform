@@ -503,11 +503,22 @@ DESIGN securityPolicy {
                         caption = '{authentication.users}';
                         GRID(u) { headerHeight = 60; }
                     }
+                    
+                    NEW roleApplicationSettings {
+                        caption = '{security.form.application.settings}';
+                    }
                 }
             }
         }
     }
 }
+
+META addRoleApplicationSetting (name, caption, type)
+    name caption = DATA type (UserRole) COMPLEX;
+    
+    EXTEND FORM securityPolicy PROPERTIES (ur) PANEL name;
+    DESIGN securityPolicy { roleApplicationSettings { MOVE PROPERTY(name(ur)); }}
+END
 
 copy '{security.copy.role}' (UserRole from)  { 
     NEW to = UserRole {
