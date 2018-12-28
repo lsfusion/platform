@@ -78,10 +78,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP useBusyDialog;
     public LCP useRequestTimeout;
 
-    public LCP userLanguage;
-    public LCP userCountry;
-    public LCP userTimeZone;
-    public LCP userTwoDigitYearStart;
+    public LCP language;
+    public LCP country;
+    public LCP timeZone;
+    public LCP twoDigitYearStart;
     
     public LCP clientLanguage;
     public LCP clientCountry;
@@ -161,10 +161,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         useBusyDialog = findProperty("useBusyDialog[]");
         useRequestTimeout = findProperty("useRequestTimeout[]");
 
-        userLanguage = findProperty("language[CustomUser]");
-        userCountry = findProperty("country[CustomUser]");
-        userTimeZone = findProperty("timeZone[CustomUser]");
-        userTwoDigitYearStart = findProperty("twoDigitYearStart[CustomUser]");
+        language = findProperty("language[CustomUser]");
+        country = findProperty("country[CustomUser]");
+        timeZone = findProperty("timeZone[CustomUser]");
+        twoDigitYearStart = findProperty("twoDigitYearStart[CustomUser]");
         
         clientCountry = findProperty("clientCountry[CustomUser]");
         clientLanguage = findProperty("clientLanguage[CustomUser]");

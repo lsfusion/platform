@@ -125,14 +125,14 @@ reconnect { logOut(TRUE, TRUE); }
 restart { logOut(TRUE, NULL); }
 
 // Locale settings
-userLanguage '{authentication.user.language.user}' = DATA VARSTRING[3] (CustomUser);
-userCountry '{authentication.user.country.user}' = DATA VARSTRING[3] (CustomUser);
+userLanguage '{authentication.user.language.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
+userCountry '{authentication.user.country.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
 userTimeZone '{authentication.user.time.zone.user}' = DATA VARSTRING[30] (CustomUser);
 userTwoDigitYearStart '{authentication.user.two.digit.year.start.user}' = DATA INTEGER (CustomUser);
 
-clientLanguage '{authentication.client.language.user}' = DATA VARSTRING[3] (CustomUser);
-clientCountry '{authentication.client.country.user}' = DATA VARSTRING[3] (CustomUser);
-useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser);
+clientLanguage '{authentication.client.language.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
+clientCountry '{authentication.client.country.user}' = DATA VARSTRING[3] (CustomUser) CHARWIDTH 5;
+useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 
 defaultUserLanguage '{authentication.default.user.language}' = DATA VARSTRING[3] ();
 defaultUserCountry '{authentication.default.user.country}' = DATA VARSTRING[3] ();
@@ -166,7 +166,8 @@ FORM customUser '{authentication.custom.user}'
     OBJECTS u=CustomUser PANEL
     PROPERTIES(u) login, sha256Password ON CHANGE changeSHA256Password(u), isLocked ,
                   firstName, lastName, email, phone, postAddress, birthday,
-                  language, clientLanguage, country, clientCountry, useClientLocale, timeZone, twoDigitYearStart,
+                  useClientLocale, userLanguage SHOWIF NOT useClientLocale(u), userCountry SHOWIF NOT useClientLocale(u), 
+                  userTimeZone, userTwoDigitYearStart,
                   useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes, 
                   fontSize
 
@@ -200,13 +201,11 @@ DESIGN customUser {
                 NEW locale {
                     alignment = STRETCH;
                     caption = '{authentication.custom.user.locale}';
-                    MOVE PROPERTY(language(u));
-                    MOVE PROPERTY(clientLanguage(u));
-                    MOVE PROPERTY(country(u));
-                    MOVE PROPERTY(clientCountry(u));
                     MOVE PROPERTY(useClientLocale(u));
-                    MOVE PROPERTY(timeZone(u));
-                    MOVE PROPERTY(twoDigitYearStart(u));
+                    MOVE PROPERTY(userLanguage(u));
+                    MOVE PROPERTY(userCountry(u));
+                    MOVE PROPERTY(userTimeZone(u));
+                    MOVE PROPERTY(userTwoDigitYearStart(u));
                 }
                 NEW system {
                     alignment = STRETCH;
@@ -250,7 +249,7 @@ FORM customUsers '{authentication.users}'
 
     PROPERTIES(u) READONLYIF isReadonly() name, login, email
     PROPERTIES(u) READONLYIF isReadonly() isLocked
-    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes
+    PROPERTIES(u) READONLYIF isReadonly() useBusyDialogCustom, useRequestTimeout, allowExcessAllocatedBytes, fontSize
     
     PROPERTIES(u) READONLY lastActivity, hostnameLastComputer
                   
@@ -258,12 +257,11 @@ FORM customUsers '{authentication.users}'
 
     OBJECTS lu = CustomUser
     PROPERTIES(lu) READONLY                name, login, email
-    PROPERTIES(lu) READONLYIF isReadonly() language READONLY, userLanguage, clientLanguage, 
-                                           country READONLY, userCountry, clientCountry, 
-                                           useClientLocale, 
-                                           timeZone READONLY, userTimeZone, 
-                                           twoDigitYearStart READONLY, userTwoDigitYearStart, 
-                                           fontSize
+    PROPERTIES(lu) READONLYIF isReadonly() userLanguage BACKGROUND RGB(232,232,255), 
+                                           userCountry BACKGROUND RGB(232,232,255), 
+                                           useClientLocale, clientLanguage READONLY, clientCountry READONLY,
+                                           userTimeZone BACKGROUND RGB(232,232,255), userTwoDigitYearStart BACKGROUND RGB(232,232,255) 
+    PROPERTIES(lu) NEWSESSION EDIT
 
     PROPERTIES() READONLY defaultUserLanguage, defaultUserCountry, defaultUserTimeZone, defaultUserTwoDigitYearStart
 
@@ -288,7 +286,9 @@ DESIGN customUsers {
                     MOVE PROPERTY(defaultUserTimeZone());
                     MOVE PROPERTY(defaultUserTwoDigitYearStart());
                 }
-                MOVE BOX(lu);
+                MOVE BOX(lu) {
+                    GRID(lu) { headerHeight = 50; }
+                }
             }
             NEW LDAP {
                 caption = 'LDAP';

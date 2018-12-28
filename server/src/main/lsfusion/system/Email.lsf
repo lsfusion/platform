@@ -8,6 +8,8 @@ CLASS EncryptedConnectionTypeStatus 'Тип шифрованного подкл�
     SSL 'SSL',
     TLS 'TLS'
 }
+TABLE encryptedConnectionTypeStatus(EncryptedConnectionTypeStatus);
+
 FORM encryptedConnectionTypeStatuses
     OBJECTS s = EncryptedConnectionTypeStatus
     PROPERTIES(s) READONLY staticCaption
@@ -18,6 +20,7 @@ CLASS ReceiveAccountType 'Тип учётной записи' {
     POP3 'POP3',
     IMAP 'IMAP'
 }
+TABLE receiveAccountType(ReceiveAccountType);
 
 FORM receiveAccountTypes
     OBJECTS r = ReceiveAccountType
