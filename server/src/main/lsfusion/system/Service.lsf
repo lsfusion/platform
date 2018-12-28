@@ -312,7 +312,7 @@ onStarted() + {
 
 WHEN CHANGED (baseValue(Setting r)) DO {
     saveSetting(r, NULL); //системный пользователь и пользователи без роли
-    FOR overSID(UserRole ur) DO saveSetting(r, ur);
+    FOR UserRole ur IS UserRole DO saveSetting(r, ur);
 }
 WHEN CHANGED (baseValue(Setting r, UserRole ur)) DO saveSetting(r, ur);
 

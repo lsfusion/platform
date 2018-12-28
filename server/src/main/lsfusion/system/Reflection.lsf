@@ -29,7 +29,10 @@ caption 'Название элемента навигатора' = DATA VARSTRIN
 canonicalName 'Каноническое имя элемента навигатора' = DATA VARSTRING[100] (NavigatorElement);
 number 'Номер' = DATA INTEGER (NavigatorElement);
 navigatorElementCanonicalName 'Элемент навигатора' (sid) = GROUP AGGR NavigatorElement navigatorElement WHERE navigatorElement IS NavigatorElement BY canonicalName(navigatorElement);
+
 parent 'Родительский элемент' = DATA NavigatorElement (NavigatorElement);
+level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
+                                                              STEP 2l IF parent == parent($parent) MATERIALIZED;
 
 isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
 isNavigatorAction (NavigatorElement element) = element IS NavigatorAction;
