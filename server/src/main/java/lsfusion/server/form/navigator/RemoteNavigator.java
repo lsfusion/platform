@@ -533,10 +533,10 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
                 businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
             }
             
-            language = (String) businessLogics.authenticationLM.userLanguage.read(session, user);
-            country = (String) businessLogics.authenticationLM.userCountry.read(session, user);
-            timeZone = (String) businessLogics.authenticationLM.userTimeZone.read(session, user);
-            twoDigitYearStart = (Integer) businessLogics.authenticationLM.userTwoDigitYearStart.read(session, user);
+            language = (String) businessLogics.authenticationLM.language.read(session, user);
+            country = (String) businessLogics.authenticationLM.country.read(session, user);
+            timeZone = (String) businessLogics.authenticationLM.timeZone.read(session, user);
+            twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user);
             session.applyException(businessLogics, stack);
         } catch (SQLException | SQLHandledException ignored) {
         }
