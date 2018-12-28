@@ -117,6 +117,8 @@ CLASS PropertyDrawShowStatus 'Показ свойства' {
     Show 'Показать',
     Hide 'Спрятать'
 }
+TABLE propertyDrawShowStatus(PropertyDrawShowStatus);
+
 FORM propertyDrawShowStatuses
     OBJECTS s = PropertyDrawShowStatus
     PROPERTIES(s) staticCaption

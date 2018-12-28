@@ -7,6 +7,7 @@ CLASS SchedulerStartType 'Отсчёт времени' {
     afterStart 'От запуска предыдущего',
     afterFinish 'От окончания предыдущего'
 }
+TABLE schedulerStartType(SchedulerStartType);
 
 FORM schedulerStartTypes 'Способ отсчета времени'
     OBJECTS s = SchedulerStartType
