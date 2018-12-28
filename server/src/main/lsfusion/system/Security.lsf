@@ -506,6 +506,8 @@ DESIGN securityPolicy {
                     
                     NEW roleApplicationSettings {
                         caption = '{security.form.application.settings}';
+                        type = COLUMNS;
+                        columns = 3;
                     }
                 }
             }
