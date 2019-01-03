@@ -2,35 +2,29 @@ package lsfusion.client;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ERunnable;
 import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
-import lsfusion.utils.WriteUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jdesktop.swingx.SwingXUtilities;
-import org.jfree.ui.ExtensionFileFilter;
 import sun.swing.SwingUtilities2;
 
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static lsfusion.client.ClientResourceBundle.getString;
 
 public class SwingUtils {
 
@@ -560,7 +554,7 @@ public class SwingUtils {
      * Все компоненты, для которых показывается всплывающая подсказка, регистрируются в <code>ToolTipManager</code> 
      * ({@link javax.swing.ToolTipManager#registerComponent(JComponent)}), который добавляет им свои <code>MouseMotionListener</code> 
      * и <code>KeyListener</code>. <code>KeyListener</code> оповещается глобально каждым компонентом, у которого он есть, 
-     * при возникновении любого события клавиатуры в {@link Component#processKeyEvent(KeyEvent)}. 
+     * при возникновении любого события клавиатуры в {@link Component#processKeyEvent(KeyEvent)}.
      * <p>
      * На время обработки нажатия клавиши Escape отключаем этот listener для некоторых focusable компонентов формы. Делалось, 
      * чтобы не нажимать Escape дважды для закрытия модальной формы, а также отмены редактирования дат и закрытия панели отбора
@@ -587,110 +581,6 @@ public class SwingUtils {
             }
         } else {
             process.run();
-        }
-    }
-
-    public static void showSaveFileDialog(Map<String, RawFileData> files) {
-        showSaveFileDialog(files, false, false);
-    }
-
-    public static void showSaveFileDialog(Map<String, RawFileData> files, boolean noDialog, boolean append) {
-        try {
-            if (noDialog) {
-                for (Map.Entry<String, RawFileData> fileEntry : files.entrySet()) {
-                    writeFile(fileEntry.getKey(), fileEntry.getValue(), append);
-                }
-            } else {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
-                boolean singleFile;
-                fileChooser.setAcceptAllFileFilterUsed(false);
-                if (files.size() > 1) {
-                    singleFile = false;
-                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                } else {
-                    singleFile = true;
-                    File file = new File(files.keySet().iterator().next());
-                    fileChooser.setSelectedFile(file);
-                    String extension = BaseUtils.getFileExtension(file);
-                    if (!BaseUtils.isRedundantString(extension)) {
-                        ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                        fileChooser.addChoosableFileFilter(filter);
-                    }
-                }
-                if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                    String path = fileChooser.getSelectedFile().getAbsolutePath();
-                    for (String file : files.keySet()) {
-                        if (singleFile) {
-                            File file1 = new File(path);
-                            if (file1.exists()) {
-                                int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
-                                        getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
-                                if (answer == JOptionPane.YES_OPTION) {
-                                    files.get(file).write(file1);
-                                }
-                            } else {
-                                files.get(file).write(file1);
-                            }
-                        } else {
-                            files.get(file).write(new File(path + "\\" + file));
-                        }
-                    }
-                    SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void writeFile(String filePath, RawFileData rawFile, boolean append) throws IOException {
-        if (append) {
-            String extension = BaseUtils.getFileExtension(filePath);
-            switch (extension) {
-                case "csv":
-                    if (new File(filePath).exists()) {
-                        rawFile.append(filePath);
-                    } else {
-                        rawFile.write(filePath);
-                    }
-                    break;
-                case "xls": {
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        HSSFWorkbook sourceWB = new HSSFWorkbook(rawFile.getInputStream());
-                        HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
-                        WriteUtils.copyHSSFSheets(sourceWB, destinationWB);
-
-                        try (FileOutputStream fos = new FileOutputStream(new File(filePath))) {
-                            destinationWB.write(fos);
-                        }
-
-                    } else {
-                        rawFile.write(filePath);
-                    }
-                    break;
-                }
-                case "xlsx":
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        XSSFWorkbook sourceWB = new XSSFWorkbook(rawFile.getInputStream());
-                        XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
-                        WriteUtils.copyXSSFSheets(sourceWB, destinationWB);
-
-                        try (FileOutputStream fos = new FileOutputStream(new File(filePath))) {
-                            destinationWB.write(fos);
-                        }
-
-                    } else {
-                        rawFile.write(filePath);
-                    }
-                    break;
-                default:
-                    throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
-            }
-        } else {
-            rawFile.write(filePath);
         }
     }
 

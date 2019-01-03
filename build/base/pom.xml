@@ -94,6 +94,7 @@
         <commons.httpclient.version>3.1</commons.httpclient.version>
         <jdbf.version>2.1.0</jdbf.version>
         <org.jdbf.version>1.1</org.jdbf.version>
+        <org.jfree.version>1.0.23</org.jfree.version>
 
         <spring.version>3.0.5.RELEASE</spring.version>
         <aspectj.version>1.8.5</aspectj.version>
@@ -592,6 +593,11 @@
                 <groupId>org.jdbf</groupId>
                 <artifactId>jdbf</artifactId>
                 <version>${org.jdbf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jfree</groupId>
+                <artifactId>jcommon</artifactId>
+                <version>${org.jfree.version}</version>
             </dependency>
 
             <!-- Spring libraries -->

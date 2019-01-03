@@ -3273,19 +3273,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAPWithParams(addFocusActionProp(property), new ArrayList<Integer>());
     }
 
-    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, LCPWithParams movePathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean delete) throws ScriptingErrorLog.SemanticErrorException {
+    public LAPWithParams addScriptedReadActionProperty(LCPWithParams sourcePathProp, PropertyUsage propUsage, List<TypedParameter> params, boolean clientAction, boolean dialog) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass sourceProp = getValueClassByParamProperty(sourcePathProp, params);
         LCP<?> targetProp = propUsage == null ? baseLM.readFile : findLCPNoParamsByPropertyUsage(propUsage);
-        ValueClass moveProp = movePathProp == null ? null : getValueClassByParamProperty(movePathProp, params);
-        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, moveProp, clientAction, dialog, delete)),
-                movePathProp == null ? Collections.singletonList(sourcePathProp) : Lists.newArrayList(sourcePathProp, movePathProp));
+        return addScriptedJoinAProp(addAProp(new ReadActionProperty(sourceProp, targetProp, clientAction, dialog)), Collections.singletonList(sourcePathProp));
     }
 
     public LAPWithParams addScriptedWriteActionProperty(LCPWithParams sourceProp, LCPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(getTypeByParamProperty(sourceProp, params),
-                clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params),
-                pathProp == null ? null : getValueClassByParamProperty(pathProp, params))),
-                pathProp == null ? Collections.singletonList(sourceProp) : Arrays.asList(sourceProp, pathProp));
+                clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params), getValueClassByParamProperty(pathProp, params))),
+                Arrays.asList(sourceProp, pathProp));
     }
 
     public ImList<Type> getTypesForExportProp(List<LCPWithParams> paramProps, List<TypedParameter> params) {

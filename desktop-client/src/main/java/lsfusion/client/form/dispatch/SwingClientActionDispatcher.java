@@ -7,7 +7,7 @@ import javafx.scene.media.MediaPlayer;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
+import lsfusion.base.FileDialogUtils;
 import lsfusion.base.RawFileData;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
@@ -239,7 +239,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(ExportFileClientAction action) {
-        SwingUtils.showSaveFileDialog(action.files);
+        FileDialogUtils.showSaveFileDialog(action.files);
     }
 
     public Object execute(ImportFileClientAction action) {
@@ -418,10 +418,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void execute(final SaveFileClientAction action) {
-        SwingUtils.showSaveFileDialog(action.getFileMap(), action.noDialog, action.append);
     }
 
     public void execute(AudioClientAction action) {

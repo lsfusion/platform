@@ -1,6 +1,8 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -8,6 +10,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -28,9 +31,15 @@ public class DeleteActionProperty extends ScriptingActionProperty {
             String sourcePath = (String) context.getKeyValue(sourceInterface).getValue();
             boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
             if (sourcePath != null) {
-                FileUtils.deleteFile(context, sourcePath, isClient);
+                if (isClient) {
+                    String result = (String) context.requestUserInteraction(new DeleteFileClientAction(sourcePath));
+                    if (result != null)
+                        throw new RuntimeException(result);
+                } else {
+                    FileUtils.delete(sourcePath);
+                }
             }
-        } catch (Exception e) {
+        } catch (IOException | JSchException | SftpException e) {
             throw Throwables.propagate(e);
         }
     }

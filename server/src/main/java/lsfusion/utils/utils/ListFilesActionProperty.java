@@ -30,13 +30,24 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        String path = (String) context.getKeyValue(pathInterface).getValue();
+        String sourcePath = (String) context.getKeyValue(pathInterface).getValue();
         String charset = (String) context.getKeyValue(charsetInterface).getValue();
         boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
 
         try {
-            if (path != null) {
-                Map<String, Boolean> filesList = FileUtils.listFiles(context, path, charset, isClient);
+            if (sourcePath != null) {
+
+                Map<String, Boolean> filesList;
+                if (isClient) {
+                    Object result = context.requestUserInteraction(new ListFilesClientAction(sourcePath, charset));
+                    if (result instanceof String) {
+                        throw new RuntimeException((String) result);
+                    }else {
+                        filesList = (Map<String, Boolean>) result;
+                    }
+                } else {
+                    filesList = FileUtils.listFiles(sourcePath, charset);
+                }
 
                 context.getSession().dropChanges((DataProperty) findProperty("fileName[INTEGER]").property);
                 context.getSession().dropChanges((DataProperty) findProperty("fileIsDirectory[INTEGER]").property);
