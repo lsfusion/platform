@@ -20,31 +20,24 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP descriptionPolicy;
     public LCP orderUserPolicy;
 
-    public LCP permitViewProperty;
-    public LCP forbidViewProperty;
-    public LCP permitChangeProperty;
-    public LCP forbidChangeProperty;
-    public LCP notNullPermissionProperty;
-
     public LCP forbidDuplicateFormsCurrentUser;
     public LCP permitViewAllPropertyUser;
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
     public LCP permitChangeAllPropertyUser;
-    public LCP fullForbidViewUserProperty;
-    public LCP fullForbidChangeUserProperty;
+    public LCP forbidViewUserProperty;
+    public LCP forbidChangeUserProperty;
 
     public LCP forbidViewAllSetupPolicies;
     public LCP forbidChangeAllSetupPolicies;
 
     public LCP permitNavigatorElement;
     public LCP forbidNavigatorElement;
-    public LCP permitExportNavigatorElement;
 
     public LCP forbidAllFormsUser;
     public LCP permitAllFormsUser;
-    public LCP overPermitUserNavigatorElement;
-    public LCP overForbidUserNavigatorElement;
+    public LCP permitUserNavigatorElement;
+    public LCP forbidUserNavigatorElement;
 
     public LCP cachePropertyPolicyUser;
 
@@ -54,11 +47,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP userRoleSID;
     public LCP nameUserRole;
     public LCP mainRoleCustomUser;
-    public LCP inMainRoleCustomUser;
+    public LCP hasUserRole;
 
-    public LCP mainRoleUser;
-    public LCP sidMainRoleCustomUser;
-    public LCP nameMainRoleUser;
     public LCP currentUserMainRoleName;
 
     public LAP copyAccess;    
@@ -84,13 +74,11 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         sidUserRole = findProperty("sid[UserRole]");
         nameUserRole = findProperty("name[UserRole]");
         userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
-        sidMainRoleCustomUser = findProperty("sidMainRole[CustomUser]");
-        nameMainRoleUser = findProperty("nameMainRole[User]");
         currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
 
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");
-        inMainRoleCustomUser = findProperty("inMainRole[CustomUser,UserRole]");
+        hasUserRole = findProperty("has[User,UserRole]");
 
         // ------------------------ Политика безопасности ------------------ //
         namePolicy = findProperty("name[Policy]");
@@ -99,15 +87,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         orderUserPolicy = findProperty("order[User,Policy]");
 
         // ---- Политики для доменной логики
-
-        // -- Глобальные разрешения для всех ролей
-        permitViewProperty = findProperty("permitView[ActionOrProperty]");
-        forbidViewProperty = findProperty("forbidView[ActionOrProperty]");
-        permitChangeProperty = findProperty("permitChange[ActionOrProperty]");
-        forbidChangeProperty = findProperty("forbidChange[ActionOrProperty]");
-        notNullPermissionProperty = findProperty("notNullPermission[ActionOrProperty]");
-
-        // -- Разрешения для каждой роли
 
         // Разрешения для всех свойств
         forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser[]");
@@ -120,15 +99,14 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidChangeAllSetupPolicies = findProperty("forbidChangeAllSetupPolicies[User]");
 
         // Разрешения для каждого свойства
-        fullForbidViewUserProperty = findProperty("fullForbidView[User,ActionOrProperty]");
-        fullForbidChangeUserProperty = findProperty("fullForbidChange[User,ActionOrProperty]");
+        forbidViewUserProperty = findProperty("forbidView[User,ActionOrProperty]");
+        forbidChangeUserProperty = findProperty("forbidChange[User,ActionOrProperty]");
 
         // ---- Политики для логики представлений
 
         // -- Глобальные разрешения для всех ролей
         permitNavigatorElement = findProperty("permit[NavigatorElement]");
         forbidNavigatorElement = findProperty("forbid[NavigatorElement]");
-        permitExportNavigatorElement = findProperty("permitExport[NavigatorElement]");
         
         // -- Разрешения для каждой роли
 
@@ -137,8 +115,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidAllFormsUser = findProperty("forbidAllForms[User]");
         
         // Разрешения для каждого элемента
-        overPermitUserNavigatorElement = findProperty("overPermit[User,NavigatorElement]");
-        overForbidUserNavigatorElement = findProperty("overForbid[User,?]");
+        permitUserNavigatorElement = findProperty("permit[User,NavigatorElement]");
+        forbidUserNavigatorElement = findProperty("forbid[User,NavigatorElement]");
 
         cachePropertyPolicyUser = findProperty("cachePropertyPolicy[User]");
 

@@ -37,6 +37,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP fromAddressAccount;
     public LCP disableAccount;
     public LCP enableAccount;
+    public LCP unpackAccount;
 
     public LAP emailUserPassUser;
 
@@ -87,6 +88,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         disableAccount = findProperty("disable[Account]");
         enableAccount = findProperty("enable[Account]");
+        unpackAccount = findProperty("unpack[Account]");
 
         emailUserPassUser = findAction("emailUserPass[Contact]");
         

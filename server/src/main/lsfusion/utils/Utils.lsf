@@ -219,7 +219,8 @@ tableFile = DATA LOCAL TABLEFILE();
 CLASS YesNo 'Логическое' {
     yes 'ДА',
     no 'НЕТ'
-};
+}
+TABLE yesNo(YesNo);
 
 META defineHistorizableYesNo(property, defaultProperty, caption, object1, object1Identity, object2, object2Identity, group)
     @defineHistorizableCustomDefault(property, defaultProperty, caption, YesNo, staticCaption,

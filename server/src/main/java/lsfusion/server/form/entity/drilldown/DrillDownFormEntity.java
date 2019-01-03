@@ -84,6 +84,7 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
         detailsContainer = design.createContainer(LocalizedString.create("{logics.property.drilldown.form.details}"), version);
+        detailsContainer.setFlex(1.0);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);
 
