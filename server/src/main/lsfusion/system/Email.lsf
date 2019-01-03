@@ -82,6 +82,9 @@ id = DATA VARSTRING[100] (Email);
 emailId = GROUP AGGR Email email WHERE email IS Email BY id (email); 
 account = DATA Account (Email);
 
+uid = DATA LONG (Email);  
+emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
+
 subject 'Тема' = DATA VARSTRING[100] (Email);
 fromAddress 'От' = DATA VARSTRING[100] (Email);
 toAddress 'Кому' = DATA VARSTRING[100] (Email);
@@ -137,6 +140,18 @@ openFile 'Открыть' (AttachmentEmail attachmentEmail)  { open(file(attachm
 saveFile 'Скачать' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
+
+receiveEML 'Получить письма (EML)'  INTERNAL  'lsfusion.server.mail.ReceiveEMLActionProperty' (Account);
+importEML 'Импортировать письмо (EML)'  INTERNAL  'lsfusion.server.mail.ImportEMLActionProperty' (Account, LONG, FILE);
+
+emlFile 'EML файл' = DATA LOCAL FILE (LONG);
+
+receiveMail 'Получить почту (EML)' (Account account) {
+    receiveEML(account);
+    FOR(emlFile(LONG uid)) DO {
+        importEML(account, uid, emlFile(uid));
+    }
+}
 
 FORM remindUserPass 'Напоминание пароля'
 
