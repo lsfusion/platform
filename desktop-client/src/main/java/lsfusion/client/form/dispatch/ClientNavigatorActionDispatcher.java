@@ -1,5 +1,6 @@
 package lsfusion.client.form.dispatch;
 
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.ServerResponse;
@@ -23,5 +24,10 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     @Override
     protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
         return clientNavigator.remoteNavigator.throwInNavigatorAction(t);
+    }
+
+    @Override
+    public ClientFormController getFormController() {
+        return null;
     }
 }
