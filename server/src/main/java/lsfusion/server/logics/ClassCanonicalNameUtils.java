@@ -165,7 +165,6 @@ public final class ClassCanonicalNameUtils {
         put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("TEXT", StringClass.text);
-        put("ITEXT", StringClass.iText);
         put("RICHTEXT", StringClass.richText);
     }};
 
