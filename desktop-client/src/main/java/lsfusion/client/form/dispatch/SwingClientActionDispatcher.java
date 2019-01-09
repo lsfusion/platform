@@ -211,8 +211,6 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     protected void afterModalActionInSameEDT(boolean unblockView) {
     }
 
-    public abstract ClientFormController getFormController();
-
     @Override
     public Integer execute(ReportClientAction action) {
         Integer pageCount = null;
@@ -236,7 +234,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 }
             } else {
                 if (action.inDevMode) {
-                    pageCount = Main.frame.runReport(getFormController(), action.reportPathList, action.formSID, action.isModal, action.generationData, action.printerName);
+                    pageCount = Main.frame.runReport(action.reportPathList, action.formSID, action.isModal, action.generationData, action.printerName);
                 } else {
                     pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
                 }

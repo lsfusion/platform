@@ -25,9 +25,4 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
     protected ServerResponse throwInServerInvocation(long requestIndex, int continueIndex, Throwable t) throws IOException {
         return clientNavigator.remoteNavigator.throwInNavigatorAction(t);
     }
-
-    @Override
-    public ClientFormController getFormController() {
-        return null;
-    }
 }

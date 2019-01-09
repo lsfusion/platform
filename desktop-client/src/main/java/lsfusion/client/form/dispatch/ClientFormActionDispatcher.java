@@ -2,6 +2,7 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.dock.ClientFormDockable;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
@@ -16,6 +17,8 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public ClientFormActionDispatcher(DispatcherListener dispatcherListener) {
         super(dispatcherListener);
     }
+
+    public abstract ClientFormController getFormController();
 
     @Override
     protected Container getDialogParentContainer() {
