@@ -61,21 +61,21 @@ public class RMIUtils {
         }
     }
 
-    public static <T extends Remote> T rmiLookup(String registryHost, int registryPort, String name, String subName) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(registryHost, registryPort, name + "/" + subName);
+    public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName) throws RemoteException, NotBoundException, MalformedURLException {
+        return rmiLookup(host, port, name + "/" + subName);
     }
 
-    public static <T extends Remote> T rmiLookup(String registryHost, int registryPort, String name, String subName, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(registryHost, registryPort, name + "/" + subName, csf);
+    public static <T extends Remote> T rmiLookup(String host, int port, String name, String subName, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
+        return rmiLookup(host, port, name + "/" + subName, csf);
     }
 
-    public static <T extends Remote> T rmiLookup(String registryHost, int registryPort, String name) throws RemoteException, NotBoundException, MalformedURLException {
-        return rmiLookup(registryHost, registryPort, name, ZipSocketFactory.getInstance());
+    public static <T extends Remote> T rmiLookup(String host, int port, String name) throws RemoteException, NotBoundException, MalformedURLException {
+        return rmiLookup(host, port, name, ZipSocketFactory.getInstance());
     }
 
-    public static <T extends Remote> T rmiLookup(String registryHost, int registryPort, String name, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
-//        Registry registry = LocateRegistry.getRegistry(registryHost, registryPort, csf);
-        Registry registry = LocateRegistry.getRegistry(registryHost, registryPort);
+    public static <T extends Remote> T rmiLookup(String host, int port, String name, RMIClientSocketFactory csf) throws RemoteException, NotBoundException, MalformedURLException {
+//        Registry registry = LocateRegistry.getRegistry(host, port, csf);
+        Registry registry = LocateRegistry.getRegistry(host, port);
         return (T) registry.lookup(name);
     }
 
