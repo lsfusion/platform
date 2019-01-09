@@ -2456,4 +2456,15 @@ public class Settings implements Cloneable {
     public void setMinSizeForExcelStreamingReader(int minSizeForExcelStreamingReader) {
         this.minSizeForExcelStreamingReader = minSizeForExcelStreamingReader;
     }
+
+    //for PostgreDataAdapter, seconds
+    private int connectTimeout = 0;
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+    }
 }
