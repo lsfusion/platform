@@ -16,8 +16,8 @@
     <resources>
         <property name="jnlp.packEnabled" value="true"/>
         <j2se version="1.6+" initial-heap-size="${jnlp.initHeapSize}" max-heap-size="${jnlp.maxHeapSize}" java-vm-args="-XX:MinHeapFreeRatio=${jnlp.minHeapFreeRatio} -XX:MaxHeapFreeRatio=${jnlp.maxHeapFreeRatio} ${jnlp.vmargs}"/>
-        <property name="jnlp.lsfusion.client.hostname" value="${jnlp.registryHost}"/>
-        <property name="jnlp.lsfusion.client.hostport" value="${jnlp.registryPort}"/>
+        <property name="jnlp.lsfusion.client.hostname" value="${jnlp.host}"/>
+        <property name="jnlp.lsfusion.client.hostport" value="${jnlp.port}"/>
         <property name="jnlp.lsfusion.client.exportname" value="${jnlp.exportName}"/>
         <property name="jnlp.lsfusion.client.singleinstance" value="${jnlp.singleInstance}"/>
         <jar href="lsfusion-client.jar"/>

@@ -15,12 +15,12 @@
 
     <context-param>
         <description>Application registry server</description>
-        <param-name>registryHost</param-name>
+        <param-name>host</param-name>
         <param-value>localhost</param-value>
     </context-param>
     <context-param>
         <description>Application registry port</description>
-        <param-name>registryPort</param-name>
+        <param-name>port</param-name>
         <param-value>7652</param-value>
     </context-param>
     <context-param>
