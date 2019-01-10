@@ -308,7 +308,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final ClientFormController formController, final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
+    public Integer runReport(final List<ReportPath> customReportPathList, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
         return runReport(isModal, generationData, printerName, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
