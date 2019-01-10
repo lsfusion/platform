@@ -19,45 +19,54 @@ public class FileDialogUtils {
     public static void showSaveFileDialog(Map<String, RawFileData> files) {
         try {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
-            boolean singleFile;
-            fileChooser.setAcceptAllFileFilterUsed(false);
-            if (files.size() > 1) {
-                singleFile = false;
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            } else {
-                singleFile = true;
-                File file = new File(files.keySet().iterator().next());
-                fileChooser.setSelectedFile(file);
-                String extension = BaseUtils.getFileExtension(file);
-                if (!BaseUtils.isRedundantString(extension)) {
-                    ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                    fileChooser.addChoosableFileFilter(filter);
-                }
-            }
-            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                String path = fileChooser.getSelectedFile().getAbsolutePath();
-                for (String file : files.keySet()) {
-                    if (singleFile) {
-                        File file1 = new File(path);
-                        if (file1.exists()) {
-                            int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
-                                    getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
-                            if (answer == JOptionPane.YES_OPTION) {
-                                files.get(file).write(file1);
-                            }
-                        } else {
-                            files.get(file).write(file1);
-                        }
-                    } else {
-                        files.get(file).write(new File(path + "\\" + file));
+            Map<String, String> chosenFiles = chooseFiles(fileChooser, files.keySet());
+
+            for (Map.Entry<String, String> chosenFile : chosenFiles.entrySet()) {
+                File file = new File(chosenFile.getValue());
+                if (chosenFiles.size() == 1 && file.exists()) {
+                    int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
+                            getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
+                    if (answer != JOptionPane.YES_OPTION) {
+                        break;
                     }
                 }
-                SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
+                files.get(chosenFile.getKey()).write(file);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Map<String, String> chooseFiles(JFileChooser fileChooser, Set<String> files) {
+        Map<String, String> result = new HashMap<>();
+        fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
+        boolean singleFile;
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        if (files.size() > 1) {
+            singleFile = false;
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        } else {
+            singleFile = true;
+            File file = new File(files.iterator().next());
+            fileChooser.setSelectedFile(file);
+            String extension = BaseUtils.getFileExtension(file);
+            if (!BaseUtils.isRedundantString(extension)) {
+                ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
+                fileChooser.addChoosableFileFilter(filter);
+            }
+        }
+        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            String path = fileChooser.getSelectedFile().getAbsolutePath();
+            for (String file : files) {
+                if (singleFile) {
+                    result.put(file, path);
+                } else {
+                    result.put(file, path + "\\" + file);
+                }
+            }
+            SystemUtils.saveCurrentDirectory(singleFile ? new File(path.substring(0, path.lastIndexOf("\\"))) : new File(path));
+        }
+        return result;
     }
 
     private static Map<String, RawFileData> getFileMap(String path, RawFileData file) {

@@ -56,50 +56,35 @@ public class WriteUtils {
     private static void writeFile(String path, String extension, RawFileData fileData, boolean append) throws IOException {
         String url = appendExtension(path, extension);
         File file = createFile(System.getProperty("user.home") + "/Downloads/", url);
-        if (!file.getParentFile().exists())
+        if (!file.getParentFile().exists()) {
             throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
-        else {
-
-            if (append) {
-                switch (extension) {
-                    case "csv":
-                        if (file.exists()) {
-                            fileData.append(file.getAbsolutePath());
-                        } else {
-                            fileData.write(file);
-                        }
-                        break;
-                    case "xls": {
-                        if (file.exists()) {
-                            HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
-                            HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
-                            CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
-                            try (FileOutputStream fos = new FileOutputStream(file)) {
-                                destinationWB.write(fos);
-                            }
-                        } else {
-                            fileData.write(file);
-                        }
-                        break;
+        } else if (append && file.exists()) {
+            switch (extension) {
+                case "csv":
+                    fileData.append(file.getAbsolutePath());
+                    break;
+                case "xls": {
+                    HSSFWorkbook sourceWB = new HSSFWorkbook(fileData.getInputStream());
+                    HSSFWorkbook destinationWB = new HSSFWorkbook(new FileInputStream(file));
+                    CopyExcelUtil.copyHSSFSheets(sourceWB, destinationWB);
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        destinationWB.write(fos);
                     }
-                    case "xlsx":
-                        if (file.exists()) {
-                            XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
-                            XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
-                            CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
-                            try (FileOutputStream fos = new FileOutputStream(file)) {
-                                destinationWB.write(fos);
-                            }
-                        } else {
-                            fileData.write(file);
-                        }
-                        break;
-                    default:
-                        throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
+                    break;
                 }
-            } else {
-                fileData.write(file);
+                case "xlsx":
+                    XSSFWorkbook sourceWB = new XSSFWorkbook(fileData.getInputStream());
+                    XSSFWorkbook destinationWB = new XSSFWorkbook(new FileInputStream(file));
+                    CopyExcelUtil.copyXSSFSheets(sourceWB, destinationWB);
+                    try (FileOutputStream fos = new FileOutputStream(file)) {
+                        destinationWB.write(fos);
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("APPEND is supported only for csv, xls, xlsx files");
             }
+        } else {
+            fileData.write(file);
         }
     }
 
