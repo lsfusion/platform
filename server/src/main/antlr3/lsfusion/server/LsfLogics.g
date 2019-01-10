@@ -1988,8 +1988,8 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, context, clientAction, dialog, append);
 	}
 }
-	:	'WRITE' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? expr=propertyExpression[context, dynamic]
-	    'FROM' fromExpr=propertyExpression[context, dynamic] ('APPEND' { append = true; })?
+	:	'WRITE' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? fromExpr=propertyExpression[context, dynamic]
+	    'TO' expr=propertyExpression[context, dynamic] ('APPEND' { append = true; })?
 
 	;
 
