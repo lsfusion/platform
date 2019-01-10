@@ -20,9 +20,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class GwtClientUtils {
-    public static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
-    public static final String TARGET_URL_PARAM = "targetUrl";
-    public static final String GWT_DEVMODE_PARAM = "gwt.codesvr";
 
     public static final BaseMessages baseMessages = BaseMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
@@ -40,55 +37,7 @@ public class GwtClientUtils {
     }
 
     public static String getPageUrlPreservingParameters(String pageUrl) {
-        return getPageUrlPreservingParameters(pageUrl, (String[]) null, null);
-    }
-
-    public static String getPageUrlPreservingParameters(String param, String value) {
-        return getPageUrlPreservingParameters(null, param, value);
-    }
-
-    public static String getPageUrlPreservingParameters(String pageUrl, String param, String value) {
-        return getPageUrlPreservingParameters(pageUrl, param, value, null, null);
-    }
-
-    public static String getPageUrlPreservingParameters(String pageUrl, String param1, String value1, String param2, String value2) {
-        return getPageUrlPreservingParameters(pageUrl, new String[]{param1, param2}, new String[]{value1, value2});
-    }
-
-    public static String getPageUrlPreservingParameters(String pageUrl, String[] params, String[] values) {
-        String url;
-        if (params != null && params.length > 0) {
-            UrlBuilder urlBuilder = Window.Location.createUrlBuilder();
-            for (int i = 0; i < params.length; ++i) {
-                String param = params[i];
-                String value = values[i];
-
-                if (value != null) {
-                    urlBuilder.setParameter(param, value).buildString();
-                } else {
-                    urlBuilder.removeParameter(param).buildString();
-                }
-            }
-            url = urlBuilder.buildString();
-        } else {
-            url = Window.Location.getQueryString();
-        }
-
-        //использовать текущую страницу
-        if (pageUrl == null) {
-            return url;
-        }
-
-        int paramBegin = url.indexOf("?");
-        if (paramBegin == -1) {
-            paramBegin = url.length();
-        }
-
-        return GWT.getHostPageBaseURL() + pageUrl + url.substring(paramBegin);
-    }
-
-    public static String getCurrentUrlEncoded() {
-        return URL.encodePathSegment(Window.Location.createUrlBuilder().buildString());
+        return getWebAppBaseURL() + pageUrl + Window.Location.getQueryString();
     }
 
     public static String getLogoutUrl() {
@@ -96,7 +45,7 @@ public class GwtClientUtils {
     }
 
     public static String getLoginUrl() {
-        return getPageUrlPreservingParameters("login.jsp", TARGET_URL_PARAM, getCurrentUrlEncoded());
+        return getPageUrlPreservingParameters("login.jsp");
     }
 
     public static void relogin() {
@@ -164,14 +113,6 @@ public class GwtClientUtils {
     public static String getWebAppBaseURL() {
         String webAppRoot = getPageSetupArgument("webAppRoot");
         return webAppRoot != null ? webAppRoot : GWT.getHostPageBaseURL();
-    }
-
-    public static String getAbsoluteUrl(String relativeUrl) {
-        String absoluteUrl = GwtClientUtils.getWebAppBaseURL() + relativeUrl;
-        if (!GWT.isScript()) {
-            absoluteUrl += "?" + GWT_DEVMODE_PARAM + "=" + Window.Location.getParameter(GWT_DEVMODE_PARAM);
-        }
-        return absoluteUrl;
     }
 
     public static void stopPropagation(NativeEvent event) {

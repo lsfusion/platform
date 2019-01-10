@@ -18,7 +18,7 @@
         <td>
             <div id="content">
                 <form id="login-form"
-                      action="logout?targetUrl=<%=URLEncoder.encode(request.getAttribute(AccessDeniedHandlerImpl.ACCESS_DENIED_RESOURCE_URL).toString(), "UTF-8")%>">
+                      action="logout">
                     <fieldset>
                         <p>
                             Доступ к странице ограничен. Вы можете выйти и попробовать войти под другим именем.
