@@ -304,19 +304,29 @@ pushSetting 'Перегрузить свойство'  INTERNAL  'lsfusion.serve
 popSetting 'Сбросить свойство'  INTERNAL  'lsfusion.server.logics.service.reflection.PopSettingActionProperty' (VARSTRING[100]);
 
 writeDefaultSettings 'Записать настройки свойств по умолчанию'  INTERNAL  'lsfusion.server.logics.service.reflection.WriteDefaultSettingsActionProperty' ();
-saveSetting 'Сохранить настройку свойства'  INTERNAL  'lsfusion.server.logics.service.reflection.SaveSettingActionProperty' (Setting, UserRole);
+updateSetting 'Сохранить настройку свойства'  INTERNAL  'lsfusion.server.logics.service.reflection.UpdateSettingActionProperty' (Setting, UserRole, BOOLEAN);
+
+updateGlobalSetting(Setting r) {
+    updateSetting(r, NULL, TRUE); // system user and users without role
+    FOR UserRole ur IS UserRole DO // need this even in onStarted, because onStarted is executed after initializing RMI Manager, that's why roleSettings can be already clone, and we need to update it too
+        updateSetting(r, ur, NULL);    
+}
 
 onStarted() + {  
     writeDefaultSettings();
-    FOR baseValue(Setting r) DO saveSetting(r, NULL); //системный пользователь и пользователи без роли
-    FOR baseValue(Setting r, UserRole ur) DO saveSetting(r, ur);
+
+    FOR baseValue(Setting r) DO 
+        updateGlobalSetting(r);
+
+    FOR baseValue(Setting r, UserRole ur) DO 
+        updateSetting(r, ur, TRUE); 
 }
 
-WHEN CHANGED (baseValue(Setting r)) DO {
-    saveSetting(r, NULL); //системный пользователь и пользователи без роли
-    FOR UserRole ur IS UserRole DO saveSetting(r, ur);
-}
-WHEN CHANGED (baseValue(Setting r, UserRole ur)) DO saveSetting(r, ur);
+WHEN CHANGED (baseValue(Setting r)) DO
+    updateGlobalSetting(r);
+    
+WHEN CHANGED (baseValue(Setting r, UserRole ur)) 
+    DO updateSetting(r, ur, TRUE);
 
 selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR (User);
 overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor(), RGB(249, 249, 255);

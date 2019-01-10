@@ -82,7 +82,7 @@ public class ThreadLocalContext {
 
     public static void setSettings() {
         try {
-            settings.set(getRoleSettings(getCurrentRole()));
+            settings.set(getRoleSettings(getCurrentRole(), true));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -164,12 +164,12 @@ public class ThreadLocalContext {
         return settings.get();
     }
 
-    public static Settings getRoleSettings(Long role) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public static Settings getRoleSettings(Long role, boolean clone) throws CloneNotSupportedException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         if (role == null) //системный процесс или пользователь без роли
             return getLogicsInstance().getSettings();
         else {
             Settings roleSettings = roleSettingsMap.get(role);
-            if (roleSettings == null) {
+            if (roleSettings == null && clone) {
 
                 //клонируем settings для новой роли
                 roleSettings = getLogicsInstance().getSettings().cloneSettings();

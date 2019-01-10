@@ -1788,14 +1788,14 @@ public class Settings implements Cloneable {
         this.maxRecursionStatsIterations = maxRecursionStatsIterations;
     }
 
-    private int savePointCountForExceptions = 1;
+    private boolean useSavepointsForExceptions = false;
 
-    public int getSavePointCountForExceptions() {
-        return savePointCountForExceptions;
+    public boolean isUseSavepointsForExceptions() {
+        return useSavepointsForExceptions;
     }
 
-    public void setSavePointCountForExceptions(int savePointCountForExceptions) {
-        this.savePointCountForExceptions = savePointCountForExceptions;
+    public void setUseSavepointsForExceptions(boolean useSavepointsForExceptions) {
+        this.useSavepointsForExceptions = useSavepointsForExceptions;
     }
 
     private int maxLength = 127;
