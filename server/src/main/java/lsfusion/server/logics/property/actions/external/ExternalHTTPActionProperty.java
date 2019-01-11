@@ -39,14 +39,16 @@ import java.util.Map;
 
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private ExternalHttpMethod method;
-    private PropertyInterface query;
+    private PropertyInterface queryInterface;
+    private PropertyInterface bodyUrlInterface;
     private LCP headersProperty;
 
-    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty) {
-        super(1, params, targetPropList);
+    public ExternalHTTPActionProperty(ExternalHttpMethod method, ImList<Type> params, ImList<LCP> targetPropList, LCP headersProperty, boolean hasBodyUrl) {
+        super(hasBodyUrl ? 2 : 1, params, targetPropList);
 
         this.method = method;
-        this.query = getOrderInterfaces().get(0);
+        this.queryInterface = getOrderInterfaces().get(0);
+        this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
         this.headersProperty = headersProperty;
     }
 
@@ -55,11 +57,13 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         try {
 
             Result<ImOrderSet<PropertyInterface>> rNotUsedParams = new Result<>();
-            String connectionString = getTransformedText(context, query);
+            String connectionString = getTransformedText(context, queryInterface);
+            String bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
             if(connectionString != null) {
                 String replacedParams = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
+                bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
                 Map<String, String> headers = getHeaders(context);
-                HttpResponse response = readHTTP(context, replacedParams, rNotUsedParams.result, headers);
+                HttpResponse response = readHTTP(context, replacedParams, bodyUrl, rNotUsedParams.result, headers);
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
@@ -78,7 +82,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
         return FlowResult.FINISH;
     }
 
-    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, ImOrderSet<PropertyInterface> bodyParams, Map<String, String> headers) throws IOException {
+    private HttpResponse readHTTP(ExecutionContext<PropertyInterface> context, String connectionString, String bodyUrl, ImOrderSet<PropertyInterface> bodyParams, Map<String, String> headers) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().build();
 
         List<Object> paramList = new ArrayList<>();
@@ -98,7 +102,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             }
             case PUT: {
                 httpRequest = new HttpPut(connectionString);
-                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
+                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
                 if (!headers.containsKey("Content-Type"))
                     httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
                 ((HttpPut) httpRequest).setEntity(entity);
@@ -107,7 +111,7 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             case POST:
             default: {
                 httpRequest = new HttpPost(connectionString);
-                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, null);
+                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
                 if (!headers.containsKey("Content-Type"))
                     httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
                 ((HttpPost) httpRequest).setEntity(entity);
