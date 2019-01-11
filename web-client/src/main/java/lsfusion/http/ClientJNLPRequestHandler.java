@@ -37,7 +37,9 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
             String jnlpUrl = "client.jnlp" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
 
             VMOptions clientVMOptions = remoteLogics.getClientVMOptions();
-            handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion", request.getServerName(),
+            String host = logicsConnection.host != null && !logicsConnection.host.equals("localhost") && !logicsConnection.host.equals("127.0.0.1")
+                    ? logicsConnection.host : request.getServerName();
+            handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, "lsFusion", host,
                     logicsConnection.port, logicsConnection.exportName, remoteLogics.isSingleInstance(),
                     clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize(), clientVMOptions.getMinHeapFreeRatio(),
                     clientVMOptions.getMaxHeapFreeRatio(), clientVMOptions.getVmargs());
@@ -52,10 +54,10 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
                                      String codebaseUrl,
                                      String jnlpUrl,
                                      String appName,
-                                     String registryHost,
-                                     int registryPort,
+                                     String host,
+                                     int port,
                                      String exportName) throws IOException {
-        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, false, null, null, null, null, null);
+        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, host, port, exportName, false, null, null, null, null, null);
     }
 
     protected void handleJNLPRequest(HttpServletRequest request,
@@ -63,8 +65,8 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
                                      String codebaseUrl,
                                      String jnlpUrl,
                                      String appName,
-                                     String registryHost,
-                                     int registryPort,
+                                     String host,
+                                     int port,
                                      String exportName,
                                      boolean singleInstance,
                                      String initHeapSize,
@@ -84,8 +86,8 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
             properties.put("jnlp.codebase", codebaseUrl);
             properties.put("jnlp.url", jnlpUrl);
             properties.put("jnlp.appName", appName);
-            properties.put("jnlp.registryHost", registryHost);
-            properties.put("jnlp.registryPort", String.valueOf(registryPort));
+            properties.put("jnlp.host", host);
+            properties.put("jnlp.port", String.valueOf(port));
             properties.put("jnlp.exportName", exportName);
             properties.put("jnlp.singleInstance", String.valueOf(singleInstance));
             properties.put("jnlp.initHeapSize", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE);

@@ -86,6 +86,11 @@ cmd 'Выполнить cmd'  INTERNAL  'lsfusion.utils.utils.RunCommandActionPr
 cmd 'Выполнить cmd' (TEXT command)  {cmd(command, NULL); }
 cmdClient 'Выполнить cmd (на клиенте)' (TEXT command)  {cmd(command, TRUE); }
 
+pingError 'Ошибка Ping' = DATA LOCAL BOOLEAN ();
+ping 'Ping'  INTERNAL  'lsfusion.utils.utils.PingActionProperty' (TEXT, BOOLEAN);
+ping 'Ping' (TEXT host)  {ping(host, NULL); }
+pingClient 'Ping (на клиенте)' (TEXT host)  {ping(host, TRUE); }
+
 // ---------------------------------- Работа с файлами Excel  ---------------------------------- //
 protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
 protectExcel 'Защитить файл Excel паролем'  INTERNAL  'lsfusion.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);

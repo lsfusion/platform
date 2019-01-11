@@ -137,7 +137,7 @@ attachmentEmail (id, email) = GROUP AGGR AttachmentEmail attachment WHERE attach
 name 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 file 'Файл' = DATA FILE (AttachmentEmail);
 openFile 'Открыть' (AttachmentEmail attachmentEmail)  { open(file(attachmentEmail)); }
-saveFile 'Скачать' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG name(attachmentEmail) FROM file(attachmentEmail);}
+saveFile 'Скачать' (AttachmentEmail attachmentEmail)  { WRITE CLIENT DIALOG file(attachmentEmail) TO name(attachmentEmail);}
 lastError 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 importErrors 'Ошибки при импорте' (Email e) = GROUP MAX importError(AttachmentEmail ae) BY email(ae);
 

@@ -1,5 +1,6 @@
 package lsfusion.client.form.dispatch;
 
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.ServerResponse;

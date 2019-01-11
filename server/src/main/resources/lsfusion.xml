@@ -700,7 +700,7 @@
 
     <!-- Remoting -->
     <bean id="rmiManager" class="lsfusion.server.logics.RMIManager">
-        <property name="registryPort" value="${rmi.registryPort:7652}"/>
+        <property name="port" value="${rmi.port:7652}"/>
         <property name="httpPort" value="${http.port:7651}"/>
         <property name="jmxPort" value="${rmi.jmxPort:0}"/>
         <property name="exportPort" value="${rmi.exportPort:0}"/>

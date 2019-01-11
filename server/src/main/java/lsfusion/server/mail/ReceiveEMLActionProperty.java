@@ -1,6 +1,7 @@
 package lsfusion.server.mail;
 
 import com.sun.mail.pop3.POP3Folder;
+import com.sun.mail.util.FolderClosedIOException;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
@@ -145,10 +146,14 @@ public class ReceiveEMLActionProperty extends EmailActionProperty {
                         }
                     }
                     count++;
+                } catch (FolderClosedIOException e) {
+                    ServerLoggers.mailLogger.error("Ignored exception :", e);
+                    folder.open(Folder.READ_WRITE);
                 } catch (Exception e) {
                     if (ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
+                        count++;
                     } else throw e;
                 }
             }

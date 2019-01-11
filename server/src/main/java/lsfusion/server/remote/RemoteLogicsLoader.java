@@ -59,7 +59,7 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);
         } catch (AlreadyBoundException e) {
-            throw new RuntimeException("Port (" + rmiManager.getRegistryPort() + ") is already bound. Maybe another server is already running.");
+            throw new RuntimeException("Port (" + rmiManager.getPort() + ") is already bound. Maybe another server is already running.");
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
         }

@@ -1,6 +1,7 @@
 package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
+import jasperapi.ReportGenerator;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -16,12 +17,15 @@ import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.dock.DockableMainFrame;
+import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.classes.ClassDialog;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
+import lsfusion.client.report.ClientReportUtils;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
@@ -40,6 +44,8 @@ import java.text.DecimalFormat;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
+
+import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class SwingClientActionDispatcher implements ClientActionDispatcher, DispatcherInterface {
     private EventObject editEvent;
@@ -205,8 +211,38 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     protected void afterModalActionInSameEDT(boolean unblockView) {
     }
 
+    @Override
     public Integer execute(ReportClientAction action) {
-        return null;
+        Integer pageCount = null;
+        try {
+            if (action.printType == FormPrintType.AUTO) {
+                ClientReportUtils.autoprintReport(action.generationData, action.printerName);
+            } else if (action.printType != FormPrintType.PRINT) {
+                int editChoice = JOptionPane.NO_OPTION;
+                if (action.inDevMode && action.reportPathList.isEmpty()) {
+                    editChoice = SwingUtils.showConfirmDialog(Main.frame,
+                            getString("layout.menu.file.create.custom.report.choice"),
+                            getString("layout.menu.file.create.custom.report.title"),
+                            JOptionPane.QUESTION_MESSAGE,
+                            false);
+                    if (editChoice == JOptionPane.YES_OPTION) {
+                        Main.addReportPathList(action.reportPathList, action.formSID);
+                    }
+                }
+                if (editChoice == JOptionPane.NO_OPTION) {
+                    ReportGenerator.exportAndOpen(action.generationData, action.printType, action.sheetName, action.password);
+                }
+            } else {
+                if (action.inDevMode) {
+                    pageCount = Main.frame.runReport(action.reportPathList, action.formSID, action.isModal, action.generationData, action.printerName);
+                } else {
+                    pageCount = Main.frame.runReport(action.isModal, action.generationData, action.printerName, null);
+                }
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+        return pageCount;
     }
 
     public Object execute(RuntimeClientAction action) {

@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.Settings;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
@@ -94,8 +95,10 @@ public class PostgreDataAdapter extends DataAdapter {
         return "/sql/postgres/";
     }
 
-    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password);
+    public Connection startConnection() throws SQLException {
+        Settings settings = Settings.get();
+        int timeout = settings != null ? settings.getConnectTimeout() : 0;
+        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase.toLowerCase() + "?user=" + userID + "&password=" + password + "&connectTimeout=" + timeout);
     }
 
     @Override

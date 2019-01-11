@@ -1987,8 +1987,8 @@ writeActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
 		$property = self.addScriptedWriteActionProperty($fromExpr.property, $expr.property, context, clientAction, dialog, append);
 	}
 }
-	:	'WRITE' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? expr=propertyExpression[context, dynamic]
-	    'FROM' fromExpr=propertyExpression[context, dynamic] ('APPEND' { append = true; })?
+	:	'WRITE' ('CLIENT' { clientAction = true; } ('DIALOG' { dialog = true; })? )? fromExpr=propertyExpression[context, dynamic]
+	    'TO' expr=propertyExpression[context, dynamic] ('APPEND' { append = true; })?
 
 	;
 
@@ -4856,7 +4856,7 @@ fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGM
 fragment META_FRAGMENT : STRING_LITERAL_ID_FRAGMENT? (('##' | '###') STRING_LITERAL_NEXTID_FRAGMENT)+;
 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' 
-                |   'TEXT'  | 'ITEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
+                |   'TEXT' | 'RICHTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' 
 				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'RAWLINK' | 'LINK' | 'EXCELLINK' 
 				|   'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK' 

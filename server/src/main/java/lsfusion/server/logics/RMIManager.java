@@ -40,7 +40,7 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     private String exportName;
 
-    private int registryPort = 0;
+    private int port = 0;
 
     private int httpPort = 0;
 
@@ -60,12 +60,12 @@ public class RMIManager extends LogicsManager implements InitializingBean {
         this.exportPort = exportPort;
     }
 
-    public int getRegistryPort() {
-        return registryPort;
+    public int getPort() {
+        return port;
     }
 
-    public void setRegistryPort(int registryPort) {
-        this.registryPort = registryPort;
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public int getHttpPort() {
@@ -94,7 +94,7 @@ public class RMIManager extends LogicsManager implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.state(0 < registryPort && registryPort <= 65535, "registryPort must be between 0 and 65535");
+        Assert.state(0 < port && port <= 65535, "port must be between 0 and 65535");
         Assert.state(0 <= exportPort && exportPort <= 65535, "exportPort must be between 0 and 65535");
 
         if (isRedundantString(exportName)) {
@@ -182,14 +182,14 @@ public class RMIManager extends LogicsManager implements InitializingBean {
     
     private void initRegistry() throws RemoteException {
         //сначала ищем внешний registry на этом порту
-        registry = RMIUtils.getRmiRegistry(registryPort);
+        registry = RMIUtils.getRmiRegistry(port);
         try {
             //данный вызов позволяет убедиться, что registry найден
             registry.list();
         } catch (RemoteException e) {
             //если не найден - создаём локальнй registry
-            registry = RMIUtils.createRmiRegistry(registryPort);
-            exportPort = registryPort;
+            registry = RMIUtils.createRmiRegistry(port);
+            exportPort = port;
         }
     }
 

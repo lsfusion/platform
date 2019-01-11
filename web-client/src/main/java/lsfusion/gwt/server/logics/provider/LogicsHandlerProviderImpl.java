@@ -30,12 +30,12 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
 
     protected final static Logger logger = Logger.getLogger(LogicsHandlerProviderImpl.class);
 
-    private static final String registryHostKey = "registryHost";
-    private static final String registryPortKey = "registryPort";
+    private static final String hostKey = "host";
+    private static final String portKey = "port";
     private static final String exportNameKey = "exportName";
 
-    private String registryHost;
-    private int registryPort;
+    private String host;
+    private int port;
     private String exportName;
 
     public LogicsHandlerProviderImpl() {
@@ -46,32 +46,32 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        String registryHost = servletContext.getInitParameter(registryHostKey);
-        String registryPort = servletContext.getInitParameter(registryPortKey);
+        String host = servletContext.getInitParameter(hostKey);
+        String port = servletContext.getInitParameter(portKey);
         String exportName = nvl(servletContext.getInitParameter(exportNameKey), "default");
-        if (registryHost == null || registryPort == null) {
-            throw new IllegalStateException(registryHostKey + " or " + registryPortKey + " parameters aren't set in web.xml");
+        if (host == null || port == null) {
+            throw new IllegalStateException(hostKey + " or " + portKey + " parameters aren't set in web.xml");
         }
 
-        setRegistryHost(registryHost);
-        setRegistryPort(Integer.parseInt(registryPort));
+        setHost(host);
+        setPort(Integer.parseInt(port));
         setExportName(exportName);
     }
 
-    public String getRegistryHost() {
-        return registryHost;
+    public String getHost() {
+        return host;
     }
 
-    public void setRegistryHost(String registryHost) {
-        this.registryHost = registryHost;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public int getRegistryPort() {
-        return registryPort;
+    public int getPort() {
+        return port;
     }
 
-    public void setRegistryPort(int registryPort) {
-        this.registryPort = registryPort;
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public String getExportName() {
@@ -84,7 +84,7 @@ public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implemen
 
     @Override
     public LogicsConnection getLogicsConnection(String host, Integer port, String exportName) {
-        return new LogicsConnection(host != null ? host : registryHost, port != null ? port : registryPort, exportName != null ? exportName : this.exportName);
+        return new LogicsConnection(host != null ? host : this.host, port != null ? port : this.port, exportName != null ? exportName : this.exportName);
     }
 
     private static class LogicsCache<T extends RemoteLogicsInterface> {

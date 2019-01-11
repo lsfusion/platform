@@ -389,8 +389,8 @@ Function execAntConfiguration
         ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.name=" "$pgDbName" $R0
         ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.user=" "$pgUser" $R0
         ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "db.password=" "$pgPassword" $R0
-        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
-        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.registryPort=" "$platformServerPort" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.host=" "$platformServerHost" $R0
+        ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "rmi.port=" "$platformServerPort" $R0
         ${ConfigWriteSE} "$INSTDIR\conf\settings.properties" "logics.initialAdminPassword=" "$platformServerPassword" $R0
     ${endIf}
 
