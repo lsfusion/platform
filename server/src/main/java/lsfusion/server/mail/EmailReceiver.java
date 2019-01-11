@@ -8,6 +8,7 @@ import com.github.junrar.rarfile.FileHeader;
 import com.google.common.base.Throwables;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.BASE64DecoderStream;
+import com.sun.mail.util.FolderClosedIOException;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FileData;
@@ -267,10 +268,14 @@ public class EmailReceiver {
                         }
                     }
                     count++;
+                } catch (FolderClosedIOException e) {
+                    ServerLoggers.mailLogger.error("Ignored exception :", e);
+                    emailFolder.open(Folder.READ_WRITE);
                 } catch (Exception e) {
                     if(ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
+                        count++;
                     } else throw e;
                 }
             }
