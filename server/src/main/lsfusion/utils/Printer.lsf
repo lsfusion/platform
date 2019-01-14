@@ -3,11 +3,11 @@ MODULE Printer;
 REQUIRE System;
 
 //text, charset, printerName
-writeToPrinter 'Отправить на принтер'  INTERNAL  'lsfusion.utils.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
-writeToServerPrinter 'Отправить на принтер (на сервере)'  INTERNAL  'lsfusion.utils.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
-printed 'Отправлено на принтер' = DATA LOCAL BOOLEAN ();
+writeToPrinter '{printer.write.to.printer}'  INTERNAL  'lsfusion.utils.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+writeToServerPrinter '{printer.write.to.server.printer}'  INTERNAL  'lsfusion.utils.printer.WriteToServerPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+printed '{printer.printed}' = DATA LOCAL BOOLEAN ();
 
-getAvailablePrinters 'Список доступных принтеров'  INTERNAL  'lsfusion.utils.printer.GetAvailablePrintersActionProperty' ();
+getAvailablePrinters '{printer.get.available.printers}'  INTERNAL  'lsfusion.utils.printer.GetAvailablePrintersActionProperty' ();
 
 //text, charset, ip, port
 writeToSocketAction  INTERNAL  'lsfusion.utils.printer.WriteToServerSocketActionProperty' (TEXT, VARSTRING[10], VARSTRING[30], INTEGER);

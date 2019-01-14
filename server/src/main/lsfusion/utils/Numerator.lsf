@@ -5,38 +5,38 @@ REQUIRE System, MasterData, DefaultData;
 DESIGN options {
     commons {
         NEW numerator {
-            caption = 'Нумератор';
+            caption = '{numerator.numerator}';
         }
     }            
 }
 // ------------------------------------------- Нумераторы ----------------------------------------------- //
 
-CLASS Numerator 'Нумератор';
+CLASS Numerator '{numerator.numerator}';
 TABLE numerator (Numerator);
 
-name 'Наименование' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
+name '{numerator.name.numerator}' = DATA VARISTRING[100](Numerator) CHARWIDTH 20;
 
-series 'Серия' = DATA STRING[2] (Numerator) IN id CHARWIDTH 3 FIXED;
+series '{numerator.series.numerator}' = DATA STRING[2] (Numerator) IN id CHARWIDTH 3 FIXED;
 
-minValue 'Мин. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
-maxValue 'Макс. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
+minValue '{numerator.min.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
+maxValue '{numerator.max.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 
-stringLength 'Длина' = DATA INTEGER (Numerator) IN base;
+stringLength '{numerator.string.length.numerator}' = DATA INTEGER (Numerator) IN base;
 
-curValue 'Тек. значение' = DATA LONG (Numerator) IN id CHARWIDTH 15;
+curValue '{numerator.cur.value.numerator}' = DATA LONG (Numerator) IN id CHARWIDTH 15;
 curValue(Numerator numerator) <- minValue(numerator) WHEN SET(numerator IS Numerator);
 
 lpadStringWithZero = FORMULA VARSTRING[28] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
 
-curStringValue 'Тек. значение (строка)' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
+curStringValue '{numerator.cur.string.value.numerator}' (Numerator numerator) = lpadStringWithZero(curValue(numerator), stringLength(numerator)) IN base;
 
 incrementedValue = DATA LOCAL NESTED VARSTRING[28] ();
 
-incrementValue 'Увеличить значение'(Numerator numerator)  { 
+incrementValue '{numerator.increment.value.numerator}'(Numerator numerator)  { 
 	NEWSESSION {
 	    incrementedValue() <- NULL;
 	    IF curValue(numerator) >= maxValue(numerator) THEN
-	        MESSAGE 'Счетчик нумератора ' + name(numerator) + ' достиг максимального значения. Обратитесь к администратору.';
+	        MESSAGE '{numerator.increment.value.message.1} ' + name(numerator) + ' {numerator.increment.value.message.2}';
 	    ELSE {
 	        APPLY {
 	            incrementedValue() <- curStringValue(numerator);
@@ -48,7 +48,7 @@ incrementValue 'Увеличить значение'(Numerator numerator)  {
 
 // -------------- Генерация счетчиков на форме с целью выноса из общей транзакции для уменьшения вероятности CONFLICT UPDATE
 
-@defineOption(generateNumberOnForm, 'Генерировать номер до общей транзакции', numerator);
+@defineOption(generateNumberOnForm, '{numerator.generate.number.on.form}Генерировать номер до общей транзакции', numerator);
 
 META addEventGenerateNumberOnForm(form, o, object)
     generateNumber (###object ob) { 
@@ -65,34 +65,34 @@ END
 
 // --------------
 
-incrementValueSession 'Увеличить значение'(Numerator numerator)  { 
+incrementValueSession '{numerator.increment.value.numerator}'(Numerator numerator)  { 
     IF curValue(numerator) >= maxValue(numerator) THEN
-        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.';
+        MESSAGE '{numerator.increment.value.message.1} {numerator.increment.value.message.2}';
     ELSE
         curValue(numerator) <- curValue(numerator) + 1;
 }
 
-FORM numerator 'Нумератор'
+FORM numerator '{numerator.numerator}'
     OBJECTS n = Numerator PANEL
     PROPERTIES(n) name, series, minValue, maxValue, stringLength, curValue, curStringValue
 
     EDIT Numerator OBJECT n
 ;
 
-FORM dialogNumerators 'Нумераторы'
+FORM dialogNumerators '{numerator.numerators}'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, curValue
 
     LIST Numerator OBJECT n
 ;
 
-FORM numerators 'Нумераторы'
+FORM numerators '{numerator.numerators}'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, minValue, maxValue, stringLength, curValue, curStringValue
     PROPERTIES(n)          NEWSESSION NEW, EDIT, DELETE 
 ;
 
-FORM defaultNumerators 'Нумераторы'
+FORM defaultNumerators '{numerator.numerators}'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY name, series, minValue, maxValue, stringLength, curValue, curStringValue
     PROPERTIES(n)          NEWSESSION NEW, EDIT, DELETE 
@@ -103,7 +103,7 @@ DESIGN defaultNumerators {
         NEW defaultContainer AFTER OBJECTS {
             type = COLUMNS;
             columns = 3;
-            caption = 'Нумераторы по умолчанию';
+            caption = '{numerator.caption.default.numerators}';
         }
     }
 }
@@ -116,21 +116,21 @@ NAVIGATOR {
 
 // --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
 
-GROUP numbered 'Нумератор' : id;
+GROUP numbered '{numerator.numerator}' : id;
 
 META defineNumberedAbstract(class)
-    number 'Номер' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
-    series 'Серия' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 FIXED; 
+    number '{numerator.number.numerator}' = ABSTRACT VARSTRING[28] (class) IN numbered MATERIALIZED CHARWIDTH 8;
+    series '{numerator.series.numerator}' = ABSTRACT STRING[2] (class) IN numbered MATERIALIZED CHARWIDTH 3 FIXED; 
 
-    seriesNumber 'Серия/Номер' (class o) = 
+    seriesNumber '{numerator.series.number.numerator}' (class o) = 
         CONCAT '', series(o), number(o) 
         CHARWIDTH 8 INDEXED MATERIALIZED;
         
 END
 
-useLoweredNumber 'Использовать нижний регистр для номера' = DATA BOOLEAN ();
-useUpperedSeries 'Использовать верхний регистр для серии' = DATA BOOLEAN (); 
-keepNumberSpaces 'Разрешить пробелы в номерах' = DATA BOOLEAN (); 
+useLoweredNumber '{numerator.use.lowered.number}' = DATA BOOLEAN ();
+useUpperedSeries '{numerator.use.uppered.series}' = DATA BOOLEAN (); 
+keepNumberSpaces '{numerator.keep.number.spaces}' = DATA BOOLEAN (); 
 
 EXTEND FORM options
     PROPERTIES () useLoweredNumber, useUpperedSeries, keepNumberSpaces
@@ -144,8 +144,8 @@ DESIGN options{
 }
 
 META defineNumbered(class)
-    number 'Номер' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
-    series 'Серия' = DATA STRING[2] (class) IN numbered CHARWIDTH 3 FIXED;
+    number '{numerator.number.numerator}' = DATA VARSTRING[28] (class) IN numbered INDEXED CHARWIDTH 8;
+    series '{numerator.series.numerator}' = DATA STRING[2] (class) IN numbered CHARWIDTH 3 FIXED;
      
     WHEN useLoweredNumber() AND CHANGED(number(class o))
          INLINE DO number(o) <- lower(number(o));
@@ -156,17 +156,17 @@ META defineNumbered(class)
     WHEN CHANGED(number(class o)) AND NOT keepNumberSpaces()
         INLINE DO number(o) <- replace(number(o), ' ', '');
 
-    seriesNumber 'Серия/Номер' (class o) = 
+    seriesNumber '{numerator.series.number.numerator}' (class o) = 
         CONCAT '', series(o), number(o) 
         CHARWIDTH 7 INDEXED MATERIALIZED;
         
 END
 
 META defineNumerated(class)
-    numerator 'Нумератор (ИД)' = DATA Numerator (class);
-    nameNumerator 'Нумератор' (class o) = name(numerator(o)) IN numbered CHARWIDTH 7;
+    numerator '{numerator.id.numerator}' = DATA Numerator (class);
+    nameNumerator '{numerator.numerator}' (class o) = name(numerator(o)) IN numbered CHARWIDTH 7;
 
-    generateSeriesNumber 'Сгенерировать номер'(class o)  { 
+    generateSeriesNumber '{numerator.generate.number}'(class o)  { 
         number(o) <- curStringValue(numerator(o));
         series(o) <- series(numerator(o));
         incrementValueSession(numerator(o));
@@ -187,7 +187,7 @@ META defineNumeratedDefault(class, captionV, seriesV, prefix)
     @defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix);
 END
 
-GROUP defaultNumerator 'Нумераторы по умолчанию' : public;
+GROUP defaultNumerator '{numerator.caption.default.numerators}' : public;
 
 META defineNumeratedDefaultPrefix(class, captionV, seriesV, prefix)
 
@@ -218,14 +218,14 @@ END
 
 META defineNumerated(object1, object2)
 
-    number 'Номер' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 8;
-    series 'Серия' = DATA STRING[2] (###object1, ###object2) CHARWIDTH 3 FIXED;
-    seriesNumber 'Серия/Номер' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
+    number '{numerator.number.numerator}' = DATA VARSTRING[28] (###object1, ###object2) CHARWIDTH 8;
+    series '{numerator.series.numerator}' = DATA STRING[2] (###object1, ###object2) CHARWIDTH 3 FIXED;
+    seriesNumber '{numerator.series.number.numerator}' (###object1 object1, ###object2 object2) = CONCAT '', series(object1, object2), number(object1, object2) CHARWIDTH 8 MATERIALIZED;
 
     numerator = DATA Numerator (###object1, ###object2);
-    nameNumerator 'Нумератор' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) CHARWIDTH 7;
+    nameNumerator '{numerator.numerator}' (###object1 object1, ###object2 object2) = name(numerator(object1, object2)) CHARWIDTH 7;
 
-    setValueSessionNumerated 'Сгенерировать номер'(###object1 object1, ###object2 object2)  { 
+    setValueSessionNumerated '{numerator.generate.number}'(###object1 object1, ###object2 object2)  { 
         number(object1, object2) <- curStringValue(numerator(object1, object2));
         series(object1, object2) <- series(numerator(object1, object2));
         EXEC incrementValueSession(numerator(object1, object2));
@@ -283,5 +283,5 @@ META defineNumeratedID(object, caption)
 END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
-loadDefaultNumerators 'Загрузить стандартные нумераторы'  ABSTRACT LIST ( );
+loadDefaultNumerators '{numerator.load.default.numerators}'  ABSTRACT LIST ( );
 @implementLoadDefaultData(loadDefaultNumerators);

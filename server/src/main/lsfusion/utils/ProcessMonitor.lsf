@@ -9,90 +9,90 @@ CLASS ProcessType 'Фильтр процессов' {
     activeJava 'Активные (Java)'
 }
 
-FORM processTypes 'Фильтры процессов'
+FORM processTypes '{process.monitor.process.types}'
     OBJECTS t = ProcessType
     PROPERTIES(t) READONLY staticCaption
     
     LIST ProcessType OBJECT t
 ;
 
-CLASS StateProcess 'Статус процесса' {
-    active 'Active',
-    idle 'Idle in transaction'
+CLASS StateProcess '{process.monitor.status.process}' {
+    active '{process.monitor.status.process.active}',
+    idle '{process.monitor.status.process.idle}'
 }
 
-updateProcessMonitorAction 'Обновить монитор процессов'  INTERNAL  'lsfusion.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess 'Убить java-процесс'  INTERNAL  'lsfusion.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
-killSQLProcess 'Убить SQL-процесс'  INTERNAL  'lsfusion.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
-cancelJavaProcess 'Снять java-процесс'  INTERNAL  'lsfusion.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
-cancelSQLProcess 'Снять SQL-процесс'  INTERNAL  'lsfusion.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+updateProcessMonitorAction '{process.monitor.update.process.monitor.action}'  INTERNAL  'lsfusion.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+killJavaProcess '{process.monitor.kill.java.process}'  INTERNAL  'lsfusion.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
+killSQLProcess '{process.monitor.kill.sql.process}'  INTERNAL  'lsfusion.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
+cancelJavaProcess '{process.monitor.cancel.java.process}'  INTERNAL  'lsfusion.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
+cancelSQLProcess '{process.monitor.cancel.sql.process}'  INTERNAL  'lsfusion.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
-processType 'Фильтр процессов'= DATA LOCAL ProcessType();
-nameProcessType 'Фильтр процессов' () = staticName(processType()) CHARWIDTH 15;
-captionProcessType 'Фильтр процессов' () = staticCaption(processType());
+processType '{process.monitor.process.type}'= DATA LOCAL ProcessType();
+nameProcessType '{process.monitor.process.type}' () = staticName(processType()) CHARWIDTH 15;
+captionProcessType '{process.monitor.process.type}' () = staticCaption(processType());
 WHEN LOCAL CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
-idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
-threadNameSQLProcess 'Имя java-потока (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-threadStackTraceSQLProcess 'След java-потока (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
+idThreadProcess '{process.monitor.id.thread.process}' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
+threadNameSQLProcess '{process.monitor.thread.name.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+threadStackTraceSQLProcess '{process.monitor.thread.stack.trace.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 
-nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-computerProcess 'Компьютер (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
+nameComputerJavaProcess '{process.monitor.name.computer.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+computerProcess '{process.monitor.computer.process}' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (Computer i) = INTEGER(i AS Computer);
 computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
-nameComputerSQL 'Компьютер (SQL)' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
-nameComputer 'Компьютер' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
+nameComputerSQL '{process.monitor.name.computer.sql}' (VARSTRING[10] process) = hostname(computerObject(computerProcess(process)));
+nameComputer '{process.monitor.name.computer}' (VARSTRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
-nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-userProcess 'Пользователь (SQL)' = DATA LOCAL LONG (VARSTRING[10]);
+nameUserJavaProcess '{process.monitor.name.user.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+userProcess '{process.monitor.user.process}' = DATA LOCAL LONG (VARSTRING[10]);
 objValue (User i) = INTEGER(i AS User);
 userObject (value) = GROUP AGGR User user BY objValue(user);
-nameUserSQL 'Пользователь (SQL)' (VARSTRING[10] process) = name(userObject(userProcess(process)));
-nameUser 'Пользователь' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
-dateTimeCallProcess 'Время начала вызова' = DATA LOCAL DATETIME (VARSTRING[10]);
+nameUserSQL '{process.monitor.name.user.process.sql}' (VARSTRING[10] process) = name(userObject(userProcess(process)));
+nameUser '{process.monitor.name.user}' (VARSTRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
+dateTimeCallProcess '{process.monitor.date.time.call.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
 
-idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
-querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-copyFullQuerySQLProcess 'Копировать полный запрос в буфер' (VARSTRING[10] i)  INTERNAL  'lsfusion.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
-copiedFullQuerySQLProcess 'Скопированный полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-debugInfoSQLProcess 'Debug Info (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
-isActiveSQLProcess 'Активный (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-inTransactionSQLProcess 'В транзакции (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-startTransactionSQLProcess 'Время начала транзакции (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
-attemptCountSQLProcess 'Номер попытки (SQL)' = DATA LOCAL VARSTRING[20] (VARSTRING[10]);
-statusSQLProcess 'Статус (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
-statusMessageSQLProcess 'Status Message (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
+idSQLProcess '{process.monitor.id.sql.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
+querySQLProcess '{process.monitor.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+fullQuerySQLProcess '{process.monitor.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+copyFullQuerySQLProcess '{process.monitor.copy.full.query.sql.process}' (VARSTRING[10] i)  INTERNAL  'lsfusion.utils.CopyFullQuerySQLProcessActionProperty' (VARSTRING[10]);
+copiedFullQuerySQLProcess '{process.monitor.copied.full.query.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+addressUserSQLProcess '{process.monitor.address.user.sql.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+debugInfoSQLProcess '{process.monitor.debug.info.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+dateTimeSQLProcess '{process.monitor.date.time.sql.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
+isActiveSQLProcess '{process.monitor.is.active.sql.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
+inTransactionSQLProcess '{process.monitor.in.transaction.sql.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
+startTransactionSQLProcess '{process.monitor.start.transaction.sql.process}' = DATA LOCAL DATETIME (VARSTRING[10]);
+attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL VARSTRING[20] (VARSTRING[10]);
+statusSQLProcess '{process.monitor.status.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+statusMessageSQLProcess '{process.monitor.status.message.sql.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 
-lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
-lastThreadAllocatedBytesProcess 'Память за последний интервал' = DATA LOCAL LONG (VARSTRING[10]);
-threadAllocatedBytesProcess 'Выделенная память' = DATA LOCAL LONG (VARSTRING[10]);
+lsfStackTraceProcess '{process.monitor.lsf.stack.trace.process}' = DATA LOCAL TEXT (VARSTRING[10]);
+lastThreadAllocatedBytesProcess '{process.monitor.last.thread.allocated.bytes.process}' = DATA LOCAL LONG (VARSTRING[10]);
+threadAllocatedBytesProcess '{process.monitor.thread.allocated.bytes.process}' = DATA LOCAL LONG (VARSTRING[10]);
 
-stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (VARSTRING[10]);
+stackTraceJavaProcess '{process.monitor.stack.trace.java.process}' = DATA LOCAL TEXT (VARSTRING[10]);
 hasStackTraceJavaProcess (VARSTRING[10] i) = stackTraceJavaProcess(i) AND i IS VARSTRING[10];
-nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-statusJavaProcess 'Статус (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+nameJavaProcess '{process.monitor.name.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+statusJavaProcess '{process.monitor.status.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+lockNameJavaProcess '{process.monitor.lock.name.java.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 
-lockOwnerIdProcess 'ID блокирующего потока' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
-lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
-isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (VARSTRING[10]);
-queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (VARSTRING[10]);
+lockOwnerIdProcess '{process.monitor.lock.owner.id.process}' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
+lockOwnerNameProcess '{process.monitor.lock.owner.name.process}' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+isDisabledNestLoopProcess '{process.monitor.is.disabled.nest.loop.process}' = DATA LOCAL BOOLEAN (VARSTRING[10]);
+queryTimeoutProcess '{process.monitor.query.timeout.process}' = DATA LOCAL INTEGER (VARSTRING[10]);
    
 processThread (id) = GROUP AGGR VARSTRING[10] process WHERE process IS VARSTRING[10] BY idThreadProcess(process);
 threadOwnerProcess (VARSTRING[10] i) = processThread(lockOwnerIdProcess(i));
                                                                                                                                                                                                                                                           
-blockingProcess 'Уровень' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
+blockingProcess '{process.monitor.blocking.process}' (VARSTRING[10] child, VARSTRING[10] parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
                                                         STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                       
-isBlockingProcess 'Блокируется' (VARSTRING[10] child, VARSTRING[10] parent) = TRUE IF blockingProcess(child, parent);
+isBlockingProcess '{process.monitor.is.blocking.process}' (VARSTRING[10] child, VARSTRING[10] parent) = TRUE IF blockingProcess(child, parent);
 sumPlusOneBlocked  (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(VARSTRING[10] child, parent);
-sumBlocked 'Кол-во заблокированных процессов' (VARSTRING[10] process) = sumPlusOneBlocked(process) - 1;
+sumBlocked '{process.monitor.sum.blocked}' (VARSTRING[10] process) = sumPlusOneBlocked(process) - 1;
 deadlock (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child) AND statusJavaProcess(child) != 'BLOCKED';
-isDeadlock 'Deadlock' (VARSTRING[10] process) = NOT deadlock(process) AND process IS VARSTRING[10];
-sumPlusOneBlocking 'Кол-во блокирующих процессов' (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
-sumBlocking 'Глубина блокировки' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
+isDeadlock '{process.monitor.is.dead.lock}' (VARSTRING[10] process) = NOT deadlock(process) AND process IS VARSTRING[10];
+sumPlusOneBlocking '{process.monitor.sum.plus.one.blocking}' (VARSTRING[10] parent) = GROUP SUM 1 IF isBlockingProcess(parent, VARSTRING[10] child);
+sumBlocking '{process.monitor.sum.blocking}' (VARSTRING[10] process) = sumPlusOneBlocking(process) - 1;
 
 activeSQLProcess (VARSTRING[10] i) = querySQLProcess(i) AND (isActiveSQLProcess(i) OR inTransactionSQLProcess(i));
 activeJavaBlockingProcess (VARSTRING[10] i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
@@ -105,10 +105,10 @@ activeJavaProcess (VARSTRING[10] i) = activeJavaBlockingProcess(i)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1);
-activeBlockingProcess 'Активный' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
-activeProcess 'Активный' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaProcess(i);
+activeBlockingProcess '{process.monitor.status.process.active}' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
+activeProcess '{process.monitor.status.process.active}' (VARSTRING[10] i) = activeSQLProcess(i) OR activeJavaProcess(i);
 
-blockedProcess 'Заблокированный' (VARSTRING[10] i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
+blockedProcess '{process.monitor.blocked.process}' (VARSTRING[10] i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
 
 intToColor = FORMULA '(256*256*($1)+256*($2)+($3))::integer';
 
@@ -139,11 +139,11 @@ blue(VARSTRING[10] i) = CASE
 sqlColorProcess(VARSTRING[10] i) = COLOR(intToColor(red(i), green(i), blue(i)));
 backgroundProcess(VARSTRING[10] i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
-cancelProcess 'Снять процесс' (VARSTRING[10] i)  { 
+cancelProcess '{process.monitor.cancel.process}' (VARSTRING[10] i)  { 
     IF idSQLProcess(i) THEN cancelSQLProcess(i); ELSE cancelJavaProcess(i);
     updateProcessMonitorAction();
 }           
-killProcess 'Убить процесс' (VARSTRING[10] i)  { 
+killProcess '{process.monitor.kill.process}' (VARSTRING[10] i)  { 
     IF isActiveSQLProcess(i) THEN killSQLProcess(i); ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
@@ -153,7 +153,7 @@ setDefaultProcessType()  {
     processType() <- ProcessType.activeSQL;
 }    
 
-FORM processMonitor 'Монитор процессов'
+FORM processMonitor '{process.monitor.form.process.monitor}'
     OBJECTS i = VARSTRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
                            dateTimeCallProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
@@ -166,7 +166,7 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i) copiedFullQuerySQLProcess SHOWIF copiedFullQuerySQLProcess(i) PANEL
     FILTERS idThreadProcess(i)
     FILTERS idThreadProcess(i)
-    FILTERGROUP idleInTransaction FILTER 'Idle In Transaction' statusSQLProcess(i) == 'idle in transaction'
+    FILTERGROUP idleInTransaction FILTER '{process.monitor.form.process.monitor.filter.idle}' statusSQLProcess(i) == 'idle in transaction'
     EVENTS ON INIT setDefaultProcessType()
     
     TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
@@ -180,7 +180,7 @@ FORM processMonitor 'Монитор процессов'
                             queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2)
-    FILTERGROUP filter FILTER 'Фильтр' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
+    FILTERGROUP filter FILTER '{process.monitor.form.process.monitor.filter.filter}' (activeBlockingProcess(i2) AND sumBlocked(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
     
     OBJECTS blocked = VARSTRING[10], blocking = VARSTRING[10]
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlock, 
@@ -200,7 +200,7 @@ FORM processMonitor 'Монитор процессов'
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlocking(blocked) > 0, sumBlocked(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
-    FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
+    FILTERGROUP nonBlocking FILTER '{process.monitor.form.process.monitor.filter.non.blocking}' sumBlocked(blocked) == 0 OR isDeadlock(blocked) DEFAULT 
     ORDER sumBlocking(blocked) DESC, sumBlocking(blocking) DESC
     
     PROPERTIES() captionProcessType, updateProcessMonitorAction
@@ -212,10 +212,10 @@ DESIGN processMonitor {
         fill = 1;
         NEW allProcesses {
             fill = 1;
-            caption = 'Все процессы';
+            caption = '{process.monitor.caption.all.processes}';
             MOVE BOX(i) {
                 fill = 3;
-                caption = 'Процессы';
+                caption = '{process.monitor.caption.processes}';
             }
             MOVE PROPERTY(copiedFullQuerySQLProcess(i)) {
                 panelCaptionAbove = TRUE;
@@ -224,19 +224,19 @@ DESIGN processMonitor {
         }
         NEW blockingProcesses {
             fill = 1;
-            caption = 'Блокирующие';
+            caption = '{process.monitor.caption.blocking}';
             MOVE BOX(TREE blocking) {
-                caption = 'Блокирующие процессы';
+                caption = '{process.monitor.caption.blocking.processes}';
             }
         }
         NEW blockedProcesses {
             fill = 1;
-            caption = 'Блокированные';
+            caption = '{process.monitor.caption.blocked}';
             MOVE BOX(blocked) {
-                caption = 'Блокированные процессы';
+                caption = '{process.monitor.caption.blocked.process}';
             }
             MOVE BOX(blocking) {
-                caption = 'Блокирующие процессы';
+                caption = '{process.monitor.caption.blocking.processes}';
             }
         }
     } 

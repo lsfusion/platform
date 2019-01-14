@@ -4,40 +4,40 @@ REQUIRE System, Time;
 
 // --------------------------------------------- Стандартные группы --------------------------------- //
 
-GROUP print 'Печатные формы' : public;
+GROUP print '{utils.group.print}' : public;
 
 // ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
-fileName 'Список файлов' = DATA LOCAL VARISTRING[500] (INTEGER);
-fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
+fileName '{utils.file.name.integer}' = DATA LOCAL VARISTRING[500] (INTEGER);
+fileIsDirectory '{utils.file.is.directory.integer}' = DATA LOCAL BOOLEAN (INTEGER);
 //path, charset, isClient
 //todo: во всех использованиях с кастомной кодировкой вписать кодировку в строку подключения, чтобы можно было убрать  charset из параметров
-listFiles 'Получить список файлов'  INTERNAL  'lsfusion.utils.utils.ListFilesActionProperty' (VARISTRING[500], VARISTRING[10], BOOLEAN); 
-listFiles 'Получить список файлов' (VARISTRING[500] path)  { listFiles(path, 'UTF-8', NULL); }
-listFilesClient 'Получить список файлов (на клиенте)' (VARISTRING[500] path)  { listFiles(path, NULL, TRUE); }
+listFiles '{utils.list.files}'  INTERNAL  'lsfusion.utils.utils.ListFilesActionProperty' (VARISTRING[500], VARISTRING[10], BOOLEAN); 
+listFiles '{utils.list.files}' (VARISTRING[500] path)  { listFiles(path, 'UTF-8', NULL); }
+listFilesClient '{utils.list.files.client}' (VARISTRING[500] path)  { listFiles(path, NULL, TRUE); }
 
 // ------------------------------ Проверка существования файла по пути ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();
 //path, isClient
-fileExists 'Проверка существования файла'  INTERNAL  'lsfusion.utils.utils.FileExistsActionProperty' (VARISTRING[500], BOOLEAN); 
-fileExists 'Проверка существования файла'(VARISTRING[500] path)  { fileExists(path, NULL); }
-fileExistsClient 'Проверка существования файла (на клиенте)' (VARISTRING[500] path)  { fileExists(path, TRUE); } 
+fileExists '{utils.file.exists}'  INTERNAL  'lsfusion.utils.utils.FileExistsActionProperty' (VARISTRING[500], BOOLEAN); 
+fileExists '{utils.file.exists}' (VARISTRING[500] path)  { fileExists(path, NULL); }
+fileExistsClient '{utils.file.exists.client}' (VARISTRING[500] path)  { fileExists(path, TRUE); } 
 
 // --------------------------------- STRING -> FILE/LINK/RICHTEXT -> STRING --------------------------------- //
 resultFile = DATA LOCAL FILE ();
 //value, charset, extension
-stringToFile 'Запись строки в файл'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
+stringToFile '{utils.string.to.file}'  INTERNAL  'lsfusion.utils.utils.StringToFileActionProperty' (TEXT, VARSTRING[10], VARSTRING[10]);
 stringToFile(TEXT str) { stringToFile(str, 'UTF-8', ''); }
 
 resultString = DATA LOCAL TEXT ();
 //file, charset
-fileToString 'Запись файла в строку'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
+fileToString '{utils.file.to.string}'  INTERNAL  'lsfusion.utils.utils.FileToStringActionProperty' (FILE, VARSTRING[10]);
 //cast link to string
-linkToString 'Приведение ссылки к строке' INTERNAL 'lsfusion.utils.utils.LinkToStringActionProperty' (LINK);
+linkToString '{utils.link.to.string}' INTERNAL 'lsfusion.utils.utils.LinkToStringActionProperty' (LINK);
 //cast richtext to string
-richTextToString 'Приведение RichText к строке' INTERNAL 'lsfusion.utils.utils.RichTextToStringActionProperty' (RICHTEXT);
+richTextToString '{utils.rich.text.to.string}' INTERNAL 'lsfusion.utils.utils.RichTextToStringActionProperty' (RICHTEXT);
 
 //path, text, charset
-appendToFile 'Дозапись в файл' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
+appendToFile '{utils.append.to.file}' INTERNAL 'lsfusion.utils.utils.AppendToFileActionProperty' (VARSTRING[1000], TEXT, VARSTRING[10]);
 appendToFile(VARSTRING[1000] path, TEXT text) { appendToFile(path, text, 'UTF-8'); };
 
 setExtension = FORMULA FILE 'cast_to_custom_file(($1),$2)'; // for RAWFILE, PDFFILE...
@@ -45,7 +45,7 @@ changeExtension(FILE file, TEXT extension) = setExtension(RAWFILE(file), extensi
 
 // --------------------------------- Logging --------------------------------- //
 
-printToLog 'Записать в лог'  INTERNAL  'lsfusion.utils.utils.PrintToLogActionProperty' (TEXT);
+printToLog '{utils.print.to.log}'  INTERNAL  'lsfusion.utils.utils.PrintToLogActionProperty' (TEXT);
 logToFile (VARSTRING[1000] file, TEXT message) {
     appendToFile('logs/' + file + '.log', (CONCAT ' - ', currentDateTime(), message, '\n')); 
 }
@@ -56,44 +56,44 @@ logToFile (VARSTRING[1000] file, FILE message) {
 
 // ----------------------------------- Работа с файловой системой ----------------------------------- //
 //path, isClient
-mkdir 'Создать папку'  INTERNAL  'lsfusion.utils.utils.MkdirActionProperty' (VARISTRING[500], BOOLEAN);
-mkdir 'Создать папку' (VARISTRING[500] path)  { mkdir(path, NULL); }
-mkdirClient 'Создать папку (на клиенте)' (VARISTRING[500] path)  { mkdir(path, TRUE); }
+mkdir '{utils.mkdir}'  INTERNAL  'lsfusion.utils.utils.MkdirActionProperty' (VARISTRING[500], BOOLEAN);
+mkdir '{utils.mkdir}' (VARISTRING[500] path)  { mkdir(path, NULL); }
+mkdirClient '{utils.mkdir.client}' (VARISTRING[500] path)  { mkdir(path, TRUE); }
 //path, isClient
-delete 'Удалить файл или папку'  INTERNAL  'lsfusion.utils.utils.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
-delete 'Удалить файл или папку' (VARISTRING[500] path)  { delete(path, NULL); }
-deleteClient 'Удалить файл или папку (на клиенте)' (VARISTRING[500] path)  { delete(path, TRUE); }
+delete '{utils.delete}'  INTERNAL  'lsfusion.utils.utils.DeleteActionProperty' (VARISTRING[500], BOOLEAN);
+delete '{utils.delete}' (VARISTRING[500] path)  { delete(path, NULL); }
+deleteClient '{utils.delete.client}' (VARISTRING[500] path)  { delete(path, TRUE); }
 //sourcePath, destinationPath, isClient
-move 'Переместить файл'  INTERNAL  'lsfusion.utils.utils.MoveActionProperty' (VARISTRING[500], VARISTRING[500], BOOLEAN);
-move 'Переместить файл' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, NULL); }
-moveClient 'Переместить файл (на клиенте)' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, TRUE); }
+move '{utils.move}'  INTERNAL  'lsfusion.utils.utils.MoveActionProperty' (VARISTRING[500], VARISTRING[500], BOOLEAN);
+move '{utils.move}' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, NULL); }
+moveClient '{utils.move.client}' (VARISTRING[500] source, VARISTRING[500] destination)  { move(source, destination, TRUE); }
 
 fileSize = DATA LOCAL LONG ();
-getFileSize 'Получить размер файла'  INTERNAL  'lsfusion.utils.utils.GetFileSizeActionProperty' (FILE);
+getFileSize '{utils.get.file.size}'  INTERNAL  'lsfusion.utils.utils.GetFileSizeActionProperty' (FILE);
 
 //zip files
-zipping 'Архивируемый файл' = DATA LOCAL FILE (VARSTRING[1000]);
-zipped 'Файл архива' = DATA LOCAL FILE ();
-makeZipFile 'Заархивировать файлы'  INTERNAL  'lsfusion.utils.utils.MakeZipFileActionProperty' ();
+zipping '{utils.zipping.string}' = DATA LOCAL FILE (VARSTRING[1000]);
+zipped '{utils.zipped}' = DATA LOCAL FILE ();
+makeZipFile '{utils.make.zip.file}'  INTERNAL  'lsfusion.utils.utils.MakeZipFileActionProperty' ();
 
 //unzip files
-unzipping 'Файл архива' = DATA LOCAL FILE ();
-unzipped 'Разархивированные файлы' = DATA LOCAL FILE (VARSTRING[100]);
-makeUnzipFile 'Разархивировать архив'  INTERNAL  'lsfusion.utils.utils.MakeUnzipFileActionProperty' ();
+unzipping '{utils.unzipping}' = DATA LOCAL FILE ();
+unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (VARSTRING[100]);
+makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.utils.utils.MakeUnzipFileActionProperty' ();
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
-cmd 'Выполнить cmd'  INTERNAL  'lsfusion.utils.utils.RunCommandActionProperty' (TEXT, BOOLEAN);
-cmd 'Выполнить cmd' (TEXT command)  {cmd(command, NULL); }
-cmdClient 'Выполнить cmd (на клиенте)' (TEXT command)  {cmd(command, TRUE); }
+cmd '{utils.cmd}'  INTERNAL  'lsfusion.utils.utils.RunCommandActionProperty' (TEXT, BOOLEAN);
+cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL); }
+cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, TRUE); }
 
-pingError 'Ошибка Ping' = DATA LOCAL BOOLEAN ();
-ping 'Ping'  INTERNAL  'lsfusion.utils.utils.PingActionProperty' (TEXT, BOOLEAN);
-ping 'Ping' (TEXT host)  {ping(host, NULL); }
-pingClient 'Ping (на клиенте)' (TEXT host)  {ping(host, TRUE); }
+pingError '{utils.ping.error}' = DATA LOCAL BOOLEAN ();
+ping '{utils.ping}'  INTERNAL  'lsfusion.utils.utils.PingActionProperty' (TEXT, BOOLEAN);
+ping '{utils.ping}' (TEXT host)  {ping(host, NULL); }
+pingClient '{utils.ping.client}' (TEXT host)  {ping(host, TRUE); }
 
 // ---------------------------------- Работа с файлами Excel  ---------------------------------- //
-protectedExcel 'Защищённый файл Excel' = DATA LOCAL EXCELFILE ();
-protectExcel 'Защитить файл Excel паролем'  INTERNAL  'lsfusion.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
+protectedExcel '{utils.protected.excel}' = DATA LOCAL EXCELFILE ();
+protectExcel '{utils.protect.excel}'  INTERNAL  'lsfusion.utils.utils.ProtectExcelActionProperty' (EXCELFILE, VARSTRING[100]);
 
 // ---------------------------------- Генерация паролей  ---------------------------------- //
 generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
@@ -208,8 +208,8 @@ round5 (number) = round(number, 5);
 round6 (number) = round(number, 6);
 
 // ---------------------------------- Работа с датами  ---------------------------------- //
-resultMilliseconds 'Дата-время в миллисекундах' = DATA LOCAL LONG();
-toMilliseconds 'Дата-время в миллисекундах' INTERNAL 'lsfusion.utils.utils.ToMillisecondsActionProperty' (DATETIME);
+resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
+toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.utils.utils.ToMillisecondsActionProperty' (DATETIME);
 
 // -------------------------------------------- Свойства под файлы ---------------------------- //
 
@@ -244,7 +244,7 @@ END
 
 // --------------------------------------------- Диалоги --------------------------------- //
 
-FORM dialogString 'Выбор строки'
+FORM dialogString '{utils.form.dialog.string}'
     OBJECTS s = VARSTRING[200] PANEL
     PROPERTIES(s) objValue = VALUE
 ;
@@ -254,14 +254,14 @@ DESIGN dialogString {
         fill = 1;
         MOVE PROPERTY (objValue) {
             fill = 1;
-            caption = 'Введите строку';
+            caption = '{utils.caption.enter.string}';
             font = 'bold 64';
             panelCaptionAbove = TRUE;
         }
     }
 }
 
-FORM dialogDate 'Выбор даты'
+FORM dialogDate '{utils.form.dialog.date}'
     OBJECTS d = DATE PANEL
     PROPERTIES(d) objValue = VALUE
 ;
@@ -271,7 +271,7 @@ DESIGN dialogDate {
         fill = 1;
         MOVE PROPERTY (objValue) {
             fill = 1;
-            caption = 'Введите дату';
+            caption = '{utils.caption.enter.date}';
             font = 'bold 64';
             panelCaptionAbove = TRUE;
         }
@@ -279,27 +279,27 @@ DESIGN dialogDate {
 
 }
 
-FORM dialogInteger 'Выбор числа'
+FORM dialogInteger '{utils.form.dialog.integer}'
     OBJECTS i = INTEGER PANEL
     PROPERTIES(i) objValue = VALUE
 ;
 
 DESIGN dialogInteger {
     PROPERTY (objValue) {
-        caption = 'Введите число';
+        caption = '{utils.caption.enter.integer}';
         font = 'bold 64';
         panelCaptionAbove = TRUE;
     }
 }
 
-FORM dialogNumeric 'Выбор числа'
+FORM dialogNumeric '{utils.form.dialog.numeric}'
     OBJECTS n = NUMERIC[20,7] PANEL
     PROPERTIES(n) objValue = VALUE
 ;
 
 DESIGN dialogNumeric {
     PROPERTY (objValue) {
-        caption = 'Введите число';
+        caption = '{utils.caption.enter.numeric}';
         font = 'bold 64';
         panelCaptionAbove = TRUE;
     }
