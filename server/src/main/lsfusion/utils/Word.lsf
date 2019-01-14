@@ -2,38 +2,38 @@ MODULE Word;
 
 REQUIRE System, MasterData, Utils;
 
-CLASS Template 'Шаблон';
+CLASS Template '{word.template}';
 TABLE template(Template);
 
-name 'Имя' = DATA VARSTRING[100] (Template);
-file 'Файл шаблона' (Template) = DATA WORDFILE (Template);
-loadFile 'Загрузить шаблон'(Template t)  { INPUT =file(t) CHANGE; }
-openFile 'Открыть шаблон'(Template t)  { open(file(t)); }
-id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+name '{word.name.template}' = DATA VARSTRING[100] (Template);
+file '{word.file.template}' (Template) = DATA WORDFILE (Template);
+loadFile '{word.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
+openFile '{word.open.file.template}'(Template t)  { open(file(t)); }
+id '{word.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
 process  INTERNAL  'lsfusion.utils.word.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL WORDFILE ();
 openResultTemplate ()  { open(resultTemplate()); }
 
-openProcess 'Сгенерировать документ'(Template template)  { 
+openProcess '{word.open.process.template}'(Template template)  { 
     process(template);
     openResultTemplate();
 }
 
 templateId (string1) = GROUP AGGR Template template WHERE template IS Template BY id(template);
 
-CLASS TemplateEntry 'Строка шаблона';
+CLASS TemplateEntry '{word.template.entry}';
 TABLE templateEntry(TemplateEntry);
 
 objValue (TemplateEntry t) = INTEGER(t AS TemplateEntry);
-template 'Шаблон' = DATA Template (TemplateEntry);
-key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
-description 'Описание' = DATA VARSTRING[100](TemplateEntry);
-value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
+template '{word.template}' = DATA Template (TemplateEntry);
+key '{word.key.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+description '{word.description.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+value '{word.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
 //Deprecated
-isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+isTable '{word.is.table.template.entry}' = DATA BOOLEAN(TemplateEntry);
 
 CLASS Type 'Тип строки шаблона' {
    plain 'Плоский',
@@ -41,18 +41,18 @@ CLASS Type 'Тип строки шаблона' {
    list 'Список'
 }
 TABLE type (Type);
-name 'Наименование' (Type o) = staticCaption(o) IF o IS Type CHARWIDTH 8;
+name '{word.name.type}' (Type o) = staticCaption(o) IF o IS Type CHARWIDTH 8;
 
-FORM dialogTypes 'Тип строки шаблона'
+FORM dialogTypes '{word.type}'
     OBJECTS o = Type
     PROPERTIES(o) READONLY name
     
     LIST Type OBJECT o
 ;
 
-type 'Тип' = DATA Type(TemplateEntry);
-nameType 'Тип' (TemplateEntry t) = name(type(t));
-idType 'Тип' (TemplateEntry t) = staticName(type(t));
+type '{word.type.template.enrty}' = DATA Type(TemplateEntry);
+nameType '{word.name.type.template.enrty}' (TemplateEntry t) = name(type(t));
+idType '{word.id.type.template.enrty}' (TemplateEntry t) = staticName(type(t));
 
 isTableMigrated = DATA BOOLEAN();
 onStarted() + {
@@ -62,23 +62,23 @@ onStarted() + {
     }
 }
 
-isTableTemplateEntry 'Таблица' (TemplateEntry t) = type(t) == Type.table;
-isListTemplateEntry 'Список' (TemplateEntry t) = type(t) == Type.list;
+isTableTemplateEntry '{word.is.table.template.entry}' (TemplateEntry t) = type(t) == Type.table;
+isListTemplateEntry '{word.is.list.template.entry}' (TemplateEntry t) = type(t) == Type.list;
 notPlainTemplateEntry (TemplateEntry t) = isTableTemplateEntry(t) OR isListTemplateEntry(t);
 
 
 dataFirstRow = DATA INTEGER (TemplateEntry);
-firstRow 'Первый ряд с данными (начиная с 0)' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
+firstRow '{word.first.row.template.entry}' (TemplateEntry e) = OVERRIDE dataFirstRow(e), 0;
 
 dataColumnSeparator = DATA VARSTRING[20] (TemplateEntry);
-columnSeparator 'Разделитель колонок' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
+columnSeparator '{word.column.separator.template.entry}' (TemplateEntry e)= OVERRIDE dataColumnSeparator(e), ';'; 
 
 dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
-rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
+rowSeparator '{word.row.separator.template.entry}' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\r'; 
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR TemplateEntry templateEntry WHERE templateEntry IS TemplateEntry BY  key(templateEntry), id(template(templateEntry));
 
-FORM template 'Шаблон Word'
+FORM template '{word.form.template}'
 
     OBJECTS t = Template PANEL
     PROPERTIES (t) name, id
@@ -117,7 +117,7 @@ DESIGN template {
 }
 
 
-FORM templates 'Шаблоны Word'
+FORM templates '{word.form.templates}'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
@@ -128,7 +128,7 @@ FORM templates 'Шаблоны Word'
     FILTERS template (te) == t
 ;
 
-FORM dialogTemplates 'Шаблоны Word'
+FORM dialogTemplates '{word.form.templates}'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id

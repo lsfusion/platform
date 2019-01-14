@@ -4,10 +4,10 @@ REQUIRE Scheduler, DefaultData;
 
 NAMESPACE Scheduler;
 
-loadDefaultScheduledTasks 'Загрузить стандартные задания планировщика' ()  ABSTRACT LIST ( ) IN loadDefault;
+loadDefaultScheduledTasks '{scheduler.default.data.load.default.scheduled.tasks}' ()  ABSTRACT LIST ( ) IN loadDefault;
 @implementLoadDefaultData(loadDefaultScheduledTasks);
 
-loadDefaultScheduledTask 'Добавить стандартное задание планировщика'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  { 
+loadDefaultScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(VARSTRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  { 
     NEW s = ScheduledTask {
         name(s) <- iname;
         active(s) <- TRUE ;
@@ -17,7 +17,7 @@ loadDefaultScheduledTask 'Добавить стандартное задание
     }
 }
 
-loadDefaultScheduledTaskDetail 'Добавить стандартное задание планировщика (действия)'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop)  { 
+loadDefaultScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(VARSTRING[100] iname, INTEGER order, VARSTRING[512] prop)  { 
     NEW d = ScheduledTaskDetail {
         order(d) <- order;
         active(d) <- TRUE;
@@ -27,7 +27,7 @@ loadDefaultScheduledTaskDetail 'Добавить стандартное зада
 }
 
 loadDefaultScheduledTasks () + {        
-    loadDefaultScheduledTask ('Обслуживание БД', 2014_07_01_03:00, 86400, SchedulerStartType.afterStart);
-    loadDefaultScheduledTaskDetail ('Обслуживание БД', 1, 'Service.serviceDBAction[]');
-    loadDefaultScheduledTaskDetail ('Обслуживание БД', 2, 'Service.vacuumDBAction[]');        
+    loadDefaultScheduledTask ('{scheduler.default.data.load.default.service.db}', 2014_07_01_03:00, 86400, SchedulerStartType.afterStart);
+    loadDefaultScheduledTaskDetail ('{scheduler.default.data.load.default.service.db}', 1, 'Service.serviceDBAction[]');
+    loadDefaultScheduledTaskDetail ('{scheduler.default.data.load.default.service.db}', 2, 'Service.vacuumDBAction[]');        
 }
