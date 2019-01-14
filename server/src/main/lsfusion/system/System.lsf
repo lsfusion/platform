@@ -35,6 +35,9 @@ apply  { APPLY; }
 cancel  { CANCEL; }
 onStarted  ABSTRACT LIST ( );
 
+statusHttp = DATA LOCAL INTEGER();
+failedHttp = statusHttp() < 200 OR statusHttp() >= 300;
+
 messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
 lsfStackTraceCaughtException = DATA LOCAL TEXT();
