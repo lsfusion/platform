@@ -42,7 +42,8 @@ public class ExternalUtils {
     private static final String ACTION_CN_PARAM = "action";
     private static final String SCRIPT_PARAM = "script";
     private static final String PARAMS_PARAM = "p";
-    private static final String RETURNS_PARAM = "returns";
+    private static final String RETURN_PARAM = "return";
+    private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
 
     public static ExternalResponse processRequest(RemoteLogicsInterface remoteLogics, String uri, String query, InputStream is, Map<String, String[]> requestParams, ContentType requestContentType) throws IOException, MessagingException {
@@ -50,7 +51,9 @@ public class ExternalUtils {
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
         List<Object> paramsList = BaseUtils.mergeList(getParameterValues(queryParams, PARAMS_PARAM), getListFromInputStream(is, requestContentType));
-        List<String> returns = getParameterValues(queryParams, RETURNS_PARAM);
+        List<String> returns = getParameterValues(queryParams, RETURN_PARAM);
+        String returnMultiType = getParameterValue(queryParams, RETURNMULTITYPE_PARAM);
+        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
         List<Object> paramList = new ArrayList<>();
         
         String filename = "export";
@@ -80,7 +83,7 @@ public class ExternalUtils {
 
         if (!paramList.isEmpty()) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(paramList, singleFileExtension);
+            entity = getInputStreamFromList(paramList, getBodyUrl(paramList, returnBodyUrl), singleFileExtension);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
@@ -103,6 +106,19 @@ public class ExternalUtils {
             }
         }
         return params;
+    }
+
+    public static String getBodyUrl(List<Object> paramList, boolean returnBodyUrl) {
+        String bodyUrl = null;
+        if (paramList.size() > 1 && returnBodyUrl) {
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < paramList.size(); i++) {
+                Object value = paramList.get(i);
+                result.append(String.format("%s=%s", ((result.length() == 0) ? "" : "&") + "param" + i, value));
+            }
+            bodyUrl = result.toString();
+        }
+        return bodyUrl;
     }
 
     public static ContentType getContentType(String extension) {
@@ -218,22 +234,26 @@ public class ExternalUtils {
     }
 
     // paramList byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(List<Object> paramList, Result<String> singleFileExtension) {
+    public static HttpEntity getInputStreamFromList(List<Object> paramList, String bodyUrl, Result<String> singleFileExtension) {
         HttpEntity entity;
         int paramCount = paramList.size();
         if (paramCount > 1) {
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setContentType(ExternalUtils.MULTIPART_MIXED);
-            for (int i = 0; i < paramCount; i++) {
-                Object value = paramList.get(i);
-                if (value instanceof FileData) {
-                    String extension = ((FileData) value).getExtension();
-                    builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
+            if(bodyUrl != null) {
+                entity = new StringEntity(bodyUrl, ContentType.APPLICATION_FORM_URLENCODED);
+            } else {
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                builder.setContentType(ExternalUtils.MULTIPART_MIXED);
+                for (int i = 0; i < paramCount; i++) {
+                    Object value = paramList.get(i);
+                    if (value instanceof FileData) {
+                        String extension = ((FileData) value).getExtension();
+                        builder.addPart("param" + i, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), "filename"));
+                    } else {
+                        builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
+                    }
                 }
-                else
-                    builder.addPart("param" + i, new StringBody((String) value, ExternalUtils.TEXT_PLAIN));
+                entity = builder.build();
             }
-            entity = builder.build();
         } else if(paramCount == 1) {
             Object value = BaseUtils.single(paramList);
             if (value instanceof FileData) {
