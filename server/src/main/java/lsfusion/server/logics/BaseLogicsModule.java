@@ -103,6 +103,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LCP<?> canceled;
     public LAP<?> onStarted;
 
+    public LCP statusHttp;
+
     public LCP messageCaughtException;
     public LCP javaStackTraceCaughtException;
     public LCP lsfStackTraceCaughtException;
@@ -381,6 +383,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         cancel = findAction("cancel[]");
 
         onStarted = findAction("onStarted[]");
+
+        statusHttp = findProperty("statusHttp[]");
 
         messageCaughtException = findProperty("messageCaughtException[]");
         javaStackTraceCaughtException = findProperty("javaStackTraceCaughtException[]");
