@@ -6,21 +6,20 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.http.client.URL;
-import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
 import lsfusion.gwt.shared.GwtSharedUtils;
 
 import java.util.*;
 
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 public class GwtClientUtils {
 
+    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
     public static final BaseMessages baseMessages = BaseMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
 
@@ -107,6 +106,13 @@ public class GwtClientUtils {
         } catch (MissingResourceException e) {
             //если аргумент не найден, то возвращаем null
             return null;
+        }
+    }
+
+    public static void setAttemptCount(int attemptCount) {
+        RootPanel p = RootPanel.get("loadingMsg");
+        if (p != null) {
+            p.getElement().setInnerHTML(messages.rmiConnectionLostWaitReconnect(attemptCount));
         }
     }
 

@@ -132,7 +132,6 @@ public class GConnectionLostManager {
         private VerticalPanel errorPanel;
 
         private boolean fatal;
-        private boolean reconnectWhenFatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
             super(false, true, false, false, false);
@@ -239,15 +238,7 @@ public class GConnectionLostManager {
         }
 
         private void reconnectAction() {
-            if (fatal)
-                Window.Location.reload();
-            else {
-                lbMessage.setHTML(messages.rmiConnectionLostWaitReconnect(attempt));
-                warningPanel.setVisible(false);
-                btnReconnect.setVisible(false);
-                center();
-                reconnectWhenFatal = true;
-            }
+            Window.Location.reload();
         }
 
         private void reloginAction() {
@@ -256,18 +247,12 @@ public class GConnectionLostManager {
 
         public void setFatal(boolean fatal) {
             if (this.fatal != fatal) {
-                if (fatal && reconnectWhenFatal)
-                    Window.Location.reload();
-                else {
-                    lbMessage.setHTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
-                    loadingPanel.setVisible(!fatal);
-                    warningPanel.setVisible(!fatal);
-                    errorPanel.setVisible(fatal);
-                    this.fatal = fatal;
-                    center();
-                }
-            } else if(!fatal && reconnectWhenFatal) {
-                lbMessage.setHTML(messages.rmiConnectionLostWaitReconnect(++attempt / 2));
+                lbMessage.setHTML(fatal ? messages.rmiConnectionLostFatal() : messages.rmiConnectionLostNonfatal());
+                loadingPanel.setVisible(!fatal);
+                warningPanel.setVisible(!fatal);
+                errorPanel.setVisible(fatal);
+                this.fatal = fatal;
+                center();
             }
         }
 
