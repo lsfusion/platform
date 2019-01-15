@@ -80,8 +80,6 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                     });
                 } else {
                     int maxTries = ErrorHandlingCallback.getMaxTries(caught);
-                    if (caught instanceof AppServerNotAvailableException) // temporary, reconnect worker should handle this
-                        maxTries = 30;
                     if (finalRequestTry <= maxTries) {
                         if (finalRequestTry == 2) //first retry
                             GConnectionLostManager.registerFailedRmiRequest();

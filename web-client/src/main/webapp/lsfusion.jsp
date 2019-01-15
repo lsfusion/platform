@@ -38,8 +38,6 @@
             }
 
             #loadingGif {
-                margin-right:8px;
-                float:left;
                 vertical-align:top;
             }
 
@@ -56,7 +54,7 @@
         </script>
 
         <div id="loadingWrapper">
-            <div id="loading">
+            <div id="loading" align="center">
                 <div class="loadingIndicator">
                     <img id="loadingGif" src="images/loading.gif" width="16" height="16"/>
                     lsFusion<br/>
