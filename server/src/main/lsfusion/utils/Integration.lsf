@@ -2,14 +2,14 @@ MODULE Integration;
 
 REQUIRE System;
 
-showIDs 'Показывать ID объектов' = DATA BOOLEAN ();
+showIDs '{integration.show.ids}' = DATA BOOLEAN ();
 
 META defineExternalizable (object, type)
     @defineExternalizable(object, type, );
 END
 
 META defineExternalizable (object, type, prefix)
-    prefix###id 'Код' = DATA type (###object) IN id INDEXED CHARWIDTH 10;
+    prefix###id '{integration.id}' = DATA type (###object) IN id INDEXED CHARWIDTH 10;
     prefix###object (id) = GROUP AGGR ###object object BY prefix###id (object);
 END
 
@@ -18,7 +18,7 @@ META defineExternalizableAbstract (object, type)
 END
 
 META defineExternalizableAbstract (object, type, prefix)
-    id 'Код' = ABSTRACT type (###object) MATERIALIZED INDEXED CHARWIDTH 10;
+    id '{integration.id}' = ABSTRACT type (###object) MATERIALIZED INDEXED CHARWIDTH 10;
     object (id) = GROUP AGGR ###object object BY id (object);
 END
 

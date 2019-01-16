@@ -3,6 +3,6 @@ MODULE Com;
 REQUIRE System;
 
 //file, baudrate, com-port, daemon
-writeToComPort 'Запись в com-port'  INTERNAL  'lsfusion.utils.com.WriteToComPortActionProperty' (FILE, INTEGER, INTEGER, BOOLEAN);
-writeToComPort 'Запись в com-port' (FILE file, INTEGER baudrate, INTEGER comPort)  { writeToComPort(file, baudrate, comPort, NULL); }
-writeToComPortDaemon 'Запись в com-port (подключённый через ScannerDaemonTask)' (FILE file, INTEGER baudrate, INTEGER comPort)  { writeToComPort(file, baudrate, comPort, TRUE); }
+writeToComPort '{com.write.to.com.port}'  INTERNAL  'lsfusion.utils.com.WriteToComPortActionProperty' (FILE, INTEGER, INTEGER, BOOLEAN);
+writeToComPort '{com.write.to.com.port}' (FILE file, INTEGER baudrate, INTEGER comPort)  { writeToComPort(file, baudrate, comPort, NULL); }
+writeToComPortDaemon '{com.write.to.com.port.daemon}' (FILE file, INTEGER baudrate, INTEGER comPort)  { writeToComPort(file, baudrate, comPort, TRUE); }
