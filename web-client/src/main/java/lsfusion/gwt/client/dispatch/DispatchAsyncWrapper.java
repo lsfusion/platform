@@ -5,9 +5,11 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.InvocationException;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.GConnectionLostManager;
@@ -22,6 +24,8 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.baseMessages;
 
 public class DispatchAsyncWrapper extends AbstractDispatchAsync {
     private static boolean useGETForGwtRPC = GwtClientUtils.getPageParameter("useGETForGwtRPC") != null;
@@ -67,25 +71,32 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                int maxTries = ErrorHandlingCallback.getMaxTries(caught);
-                if (caught instanceof AppServerNotAvailableException) // temporary, reconnect worker should handle this
-                    maxTries = 30;
-                if (finalRequestTry <= maxTries) {
-                    if(finalRequestTry == 2) //first retry
-                        GConnectionLostManager.registerFailedRmiRequest();
-                    GExceptionManager.addFailedRmiRequest(caught, action);
-                    
-                    Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
+                if(caught instanceof InvocationException) {
+                    DialogBoxHelper.showMessageBox(true, baseMessages.error(), baseMessages.needReloginErrorMessage(), false, new DialogBoxHelper.CloseCallback() {
                         @Override
-                        public void run() {
-                            execute(action, callback);
+                        public void closed(DialogBoxHelper.OptionType chosenOption) {
+                            GwtClientUtils.logout();
                         }
-                    };
-                    timer.schedule(1000);
+                    });
                 } else {
-                    if(maxTries > -1) // some connection problem
-                        GConnectionLostManager.connectionLost();
-                    DispatchAsyncWrapper.this.onFailure(action, caught, callback);
+                    int maxTries = ErrorHandlingCallback.getMaxTries(caught);
+                    if (finalRequestTry <= maxTries) {
+                        if (finalRequestTry == 2) //first retry
+                            GConnectionLostManager.registerFailedRmiRequest();
+                        GExceptionManager.addFailedRmiRequest(caught, action);
+
+                        Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
+                            @Override
+                            public void run() {
+                                execute(action, callback);
+                            }
+                        };
+                        timer.schedule(1000);
+                    } else {
+                        if (maxTries > -1) // some connection problem
+                            GConnectionLostManager.connectionLost();
+                        DispatchAsyncWrapper.this.onFailure(action, caught, callback);
+                    }
                 }
             }
 

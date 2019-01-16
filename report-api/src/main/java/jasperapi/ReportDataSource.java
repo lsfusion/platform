@@ -5,10 +5,11 @@ import lsfusion.base.DateConverter;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 
 import java.util.*;
 
-public class ReportDataSource implements JRDataSource {
+public class ReportDataSource implements JRRewindableDataSource {
     private final List<ReportDataSource> childSources = new ArrayList<>();
     
     private final ClientKeyData keyData;
@@ -17,7 +18,7 @@ public class ReportDataSource implements JRDataSource {
     private String repeatCountFieldName;
     private int repeatCount = 0;
 
-    public final ListIterator<Map<Integer, Object>> iterator;
+    public ListIterator<Map<Integer, Object>> iterator;
     private Map<Integer, Object> upCurrentKeyRow;
     public Map<Integer, Object> currentKeyRow;
 
@@ -26,8 +27,18 @@ public class ReportDataSource implements JRDataSource {
         this.propData = propData;
         this.repeatCountFieldName = repeatCountFieldName;
 
+        moveFirst();
+    }
+
+    @Override
+    public void moveFirst() {
         upCurrentKeyRow = new HashMap<>();
         iterator = keyData.listIterator();
+
+        // not sure if it is needed, but just in case
+        currentKeyRow = null;
+        for (ReportDataSource childSource : childSources)
+            childSource.upCurrentKeyRow = null;
     }
 
     public Object getFieldValue(JRField jrField) throws JRException {

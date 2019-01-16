@@ -10,6 +10,8 @@ public interface BaseMessages extends Messages {
 
     String sessionTimeoutErrorMessage();
 
+    String needReloginErrorMessage();
+
     String yes();
 
     String no();

@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
@@ -17,6 +18,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.WrapperAsyncCallbackEx;
 import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.result.BooleanResult;
 import lsfusion.gwt.shared.result.ListResult;
 import lsfusion.gwt.shared.result.VoidResult;
@@ -101,10 +103,10 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void onModuleLoad() {
-        initializeLogicsAndNavigator();
+        initializeLogicsAndNavigator(0);
     }
 
-    public void initializeLogicsAndNavigator() {
+    public void initializeLogicsAndNavigator(final int attemptCount) {
         String host = Window.Location.getParameter("host");
         String portString = Window.Location.getParameter("port");
         Integer port = portString != null ? Integer.valueOf(portString) : null;
@@ -114,6 +116,23 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
             public void success(StringResult result) {
                 logicsAndNavigatorDispatchAsync = new LogicsAndNavigatorDispatchAsync(result.get());
                 initializeFrame();
+            }
+
+            @Override
+            public void failure(Throwable caught) {
+                if(caught instanceof AppServerNotAvailableException) {
+                    new Timer()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            GwtClientUtils.setAttemptCount(attemptCount + 1);
+                            initializeLogicsAndNavigator(attemptCount + 1);
+                        }
+                    }.schedule(2000);
+                } else {
+                    super.failure(caught);
+                }
             }
         });
     }

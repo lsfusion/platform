@@ -2,7 +2,7 @@ MODULE Chat;
 
 REQUIRE Authentication, Integration, Time, SystemEvents, Utils;
 
-CLASS Chat 'Чат';
+CLASS Chat '{chat.chat}';
 TABLE chat(Chat);
 TABLE chatCustomUser(Chat, CustomUser);
 
@@ -10,17 +10,17 @@ EXTEND CLASS UserRole : Chat;
 
 @defineExternalizable(chat, VARSTRING[100]);
 
-in 'Вкл.' = DATA BOOLEAN (Chat, CustomUser);
-overIn 'Вкл.' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
+in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);
+overIn '{chat.in.chat}' (Chat c, CustomUser u) = IF c IS UserRole THEN has(u,c) ELSE in(c,u);  
 in (Chat c) = overIn(c, currentUser()); 
 isDialog(Chat chat) = (GROUP SUM 1 IF in(chat, CustomUser user)) == 2;
 chatIn(CustomUser user1, CustomUser user2) = GROUP MAX Chat chat IF in(chat, user1) AND in(chat, user2) AND isDialog(chat);
-readonly 'Только чтение' = DATA BOOLEAN (Chat, CustomUser);
-readonly 'Только чтение' (Chat c) = readonly(c, currentUser());
+readonly '{chat.readonly}' = DATA BOOLEAN (Chat, CustomUser);
+readonly '{chat.readonly}' (Chat c) = readonly(c, currentUser());
 
-dataName 'Имя' = DATA VARISTRING[100] (Chat);
-nameOrLogin 'Пользователь' (CustomUser user) = OVERRIDE name(user), login(user);
-name 'Имя' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN 'Роль: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()))) CHARWIDTH 15;
+dataName '{chat.name}' = DATA VARISTRING[100] (Chat);
+nameOrLogin '{chat.name.or.login.user}' (CustomUser user) = OVERRIDE name(user), login(user);
+name '{chat.name}' (Chat chat) = (OVERRIDE dataName(chat), IF chat IS UserRole THEN '{chat.name.role}: ' + Security.name(chat) ELSE (GROUP CONCAT nameOrLogin(CustomUser user), ', ' IF in(chat, user) AND (NOT isDialog(chat) OR NOT user == currentUser()))) CHARWIDTH 15;
 
 CLASS MessageStatus {
     sent 'Отправлено',
@@ -28,72 +28,72 @@ CLASS MessageStatus {
     seen 'Прочитано'
 }
 
-CLASS Message 'Сообщение';
+CLASS Message '{chat.message}';
 TABLE message(Message);
 TABLE messageCustomUser(Message, CustomUser);
 
-pushNotification 'Отправить уведомление пользователю'  ABSTRACT LIST ( CustomUser, BOOLEAN, BOOLEAN);
+pushNotification '{chat.push.notification}'  ABSTRACT LIST ( CustomUser, BOOLEAN, BOOLEAN);
 seekLastMessageInFullChat  ABSTRACT LIST ( );
 markSeenOnChange  ABSTRACT LIST ( Chat);
-editMessage 'Редактировать сообщение' (Chat c, Message m)  ABSTRACT LIST ( Chat, Message);
+editMessage '{chat.edit.message}' (Chat c, Message m)  ABSTRACT LIST ( Chat, Message);
 
-author 'Автор' = DATA CustomUser (Message);
-nameAuthor 'Автор' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 FIXED;
+author '{chat.author.message}' = DATA CustomUser (Message);
+nameAuthor '{chat.author.message}' (Message m) = nameOrLogin(author(m)) CHARWIDTH 30 FIXED;
 own(Message m) = author(m) == currentUser();
-text 'Текст' = DATA TEXT (Message) CHARWIDTH 50;
-dateTime 'Время' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
-lastEditDateTime 'Время редактирования' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
-system 'Системное' = DATA BOOLEAN (Message);
-status 'Статус' = DATA MessageStatus (Message, CustomUser);
-captionStatus 'Статус' (Message message, CustomUser user) = staticCaption(status(message, user));
-captionStatus 'Статус' (Message message) = captionStatus(message, currentUser());
+text '{chat.text.message}' = DATA TEXT (Message) CHARWIDTH 50;
+dateTime '{chat.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
+lastEditDateTime '{chat.last.edit.date.time.message}' = DATA DATETIME (Message) CHARWIDTH 30 FIXED;
+system '{chat.system.message}' = DATA BOOLEAN (Message);
+status '{chat.status.message}' = DATA MessageStatus (Message, CustomUser);
+captionStatus '{chat.status.message}' (Message message, CustomUser user) = staticCaption(status(message, user));
+captionStatus '{chat.status.message}' (Message message) = captionStatus(message, currentUser());
 chat = DATA Chat (Message);
-nameChat 'Чат' (Message message) = name(chat(message)) CHARWIDTH 30;
-nameShortChat 'Чат' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
+nameChat '{chat.chat}' (Message message) = name(chat(message)) CHARWIDTH 30;
+nameShortChat '{chat.chat}' (Message message) = IF isDialog(chat(message)) THEN nameChat(message) ELSE (nameChat(message) + ' [' + nameAuthor(message) + ']') CHARWIDTH 15;
 
-attachment 'Вложение' = DATA FILE (Message);
-hasAttachment 'Вл.' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 FIXED;
-loadAttachment 'Прикрепить вложение' (Message m)  { INPUT =attachment(m) CHANGE; }
-openAttachment 'Открыть вложение' (Message m)  { 
+attachment '{chat.attachment}' = DATA FILE (Message);
+hasAttachment '{chat.has.attachment}' (Message m) = IF attachment(m) THEN TRUE CHARWIDTH 1 FIXED;
+loadAttachment '{chat.load.attachment}' (Message m)  { INPUT =attachment(m) CHANGE; }
+openAttachment '{chat.open.attachment}' (Message m)  { 
     IF attachment(m) THEN {
         open(attachment(m));
     } ELSE {
-        MESSAGE 'Вложение отсутствует!';
+        MESSAGE '{chat.open.attachment.message.no.attachment}';
     }
 } IMAGE 'open.png';
 
-editedText (Message m) = 'Изменено: ' + TEXT(lastEditDateTime(m));
-showText 'Текст' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m) ELSE '');
+editedText (Message m) = '{chat.edited.text}: ' + TEXT(lastEditDateTime(m));
+showText '{chat.show.text}' (Message m) = (IF text(m) THEN text(m) ELSE '') + (IF lastEditDateTime(m) THEN '\n\n' + editedText(m) ELSE '');
 
 readonly (Message m) = readonly(chat(m));
 editable (Message m) = NOT readonly(m);
 
 seenCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.seen;
 deliveredCount(m) = GROUP SUM 1 IF status(m, CustomUser user) == MessageStatus.delivered;
-status 'Статус' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 FIXED;
+status '{chat.status.message}' (Message m) = IF own(m) THEN ISTRING[10](staticCaption(IF seenCount(m) > 1 THEN MessageStatus.seen ELSE IF deliveredCount(m) > 0 THEN MessageStatus.delivered ELSE MessageStatus.sent)) ELSE '' CHARWIDTH 10 FIXED;
  
-countMessages 'Кол-во сообщений' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
+countMessages '{chat.count.messages}' (Chat chat) = GROUP SUM 1 IF text(Message message) AND chat(message) == chat;
 isEmpty(Chat c) = NOT countMessages(c); 
-lastMessageDateTime 'Последнее сообщение' (Chat c) = GROUP LAST dateTime(Message m) ORDER dateTime(m), m BY chat(m);
-lastMessageDateTime 'Последнее сообщение' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
+lastMessageDateTime '{chat.last.message.date.time}' (Chat c) = GROUP LAST dateTime(Message m) ORDER dateTime(m), m BY chat(m);
+lastMessageDateTime '{chat.last.message.date.time}' (CustomUser u) = lastMessageDateTime(chatIn(u, currentUser()));
 
-unreadMessages 'Непрочитанных' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
-unreadMessages'Непрочитанных' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 FIXED;
-unreadMessages 'Непрочитанных' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 FIXED;
-sumUnreadMessages 'Всего непрочитанных' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
+unreadMessages '{chat.unread.messages}' (chat, CustomUser user) = GROUP SUM 1 IF (status(Message message, user) == MessageStatus.sent OR status(message, user) == MessageStatus.delivered) AND (author(message) != user) BY chat(message);
+unreadMessages'{chat.unread.messages}' (Chat chat) = unreadMessages(chat, currentUser()) CHARWIDTH 10 FIXED;
+unreadMessages '{chat.unread.messages}' (CustomUser user) = unreadMessages(chatIn(user, currentUser()), currentUser()) CHARWIDTH 10 FIXED;
+sumUnreadMessages '{chat.sum.unread.messages}' (CustomUser user) = GROUP SUM unreadMessages(Chat chat, user) IF overIn(chat, user);
 
 chatNotFound = DATA LOCAL BOOLEAN ();
-defaultNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT ();
-chatNewMessage 'Новое сообщение' = DATA LOCAL NESTED TEXT (Chat);
-newMessage 'Новое сообщение' = DATA LOCAL TEXT (Chat);
-editingMessage 'Редактируемое сообщение' = DATA LOCAL Message(Chat);
+defaultNewMessage '{chat.new.message}' = DATA LOCAL NESTED TEXT ();
+chatNewMessage '{chat.new.message}' = DATA LOCAL NESTED TEXT (Chat);
+newMessage '{chat.new.message}' = DATA LOCAL TEXT (Chat);
+editingMessage '{chat.editing.message}' = DATA LOCAL Message(Chat);
 noEditingMessage (Chat chat) = NOT editingMessage(chat);
-notificate 'С уведомлением' = DATA LOCAL NESTED BOOLEAN (Chat);
+notificate '{chat.notificate}' = DATA LOCAL NESTED BOOLEAN (Chat);
 defaultNotificate = DATA LOCAL NESTED BOOLEAN ();
 
-attachment 'Вложение' = DATA LOCAL NESTED FILE (Chat);
-loadAttachment 'Прикрепить вложение' (Chat c)  { INPUT =attachment(c) CHANGE; }
-deleteAttachment 'Удалить вложение' (Chat c)  { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
+attachment '{chat.attachment}' = DATA LOCAL NESTED FILE (Chat);
+loadAttachment '{chat.load.attachment}' (Chat c)  { INPUT =attachment(c) CHANGE; }
+deleteAttachment '{chat.delete.attachment}' (Chat c)  { attachment(c) <- NULL; } IMAGE 'deleteChat.png';
 showLoadAttachment (Chat c) = NOT attachment(c);
 showDeleteAttachment (Chat c) = attachment(c);
 
@@ -101,7 +101,7 @@ onStarted() + {
 
     FOR NOT chat('system') NEW c = Chat DO {
         id(c) <- 'system';
-        dataName(c) <- 'Все'; 
+        dataName(c) <- '{chat.name.all}'; 
     }
     
     in(Chat c, User u) <- TRUE WHERE (login( u) AND lastActivity(u)) AND  c == chat('system');
@@ -140,7 +140,7 @@ stopEditing(Chat c)  {
     }
 }
 
-sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN system)  { 
+sendMessage '{chat.send.message.chat}' (Chat chat, TEXT message, BOOLEAN system)  { 
     NEW m = Message {
         chat(m) <- chat;
         dateTime(m) <- currentDateTime();
@@ -172,14 +172,14 @@ sendMessage 'Написать в чат' (Chat chat, TEXT message, BOOLEAN syste
     seekLastMessageInFullChat();
 }
 
-sendMessage 'Отправить'  ABSTRACT LIST ( Chat, CustomUser) CHANGEKEY 'ctrl ENTER';
-saveMessage 'Сохранить'  ABSTRACT LIST ( Chat) CHANGEKEY 'ctrl ENTER';
+sendMessage '{chat.send.message}'  ABSTRACT LIST ( Chat, CustomUser) CHANGEKEY 'ctrl ENTER';
+saveMessage '{chat.save.message}'  ABSTRACT LIST ( Chat) CHANGEKEY 'ctrl ENTER';
 
-sendRestartMessage 'Отправить сообщение об остановке сервера' = DATA BOOLEAN ();
-sendRestartServerMessage 'Отправить сообщение об остановке сервера' ()  { sendMessage(chat('system'), 'Сервер будет остановлен через 5 минут!\nСохраните текущую работу и выйдите из приложения.', TRUE); }
+sendRestartMessage '{chat.send.restart.message}' = DATA BOOLEAN ();
+sendRestartServerMessage '{chat.send.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.restart.server.message.message}', TRUE); }
 restartServer() + {  IF sendRestartMessage() THEN sendRestartServerMessage(); }
 
-sendCancelRestartServerMessage 'Отправить сообщение об отмене остановки сервера' ()  { sendMessage(chat('system'), 'Остановка сервера отменена', TRUE); }
+sendCancelRestartServerMessage '{chat.send.cancel.restart.server.message}' ()  { sendMessage(chat('system'), '{chat.send.cancel.restart.server.message.message}', TRUE); }
 cancelRestartServer() + {  IF sendRestartMessage() THEN sendCancelRestartServerMessage(); }
 
 EXTEND FORM maintenance PROPERTIES() sendRestartMessage;
@@ -221,7 +221,7 @@ includeCurrentUserInChat (Chat c)  {
     includeUserInChat(currentUser(), c);
 }
  
-FORM addChat 'Создать чат'
+FORM addChat '{chat.form.add.chat}'
     OBJECTS c = Chat PANEL
     PROPERTIES (c) name
     
@@ -229,14 +229,14 @@ FORM addChat 'Создать чат'
     PROPERTIES(u) READONLY login, name
     PROPERTIES(c,u) DRAW u in, readonly 
     
-    FILTERGROUP in FILTER 'Включены в чат' in(c,u)          
+    FILTERGROUP in FILTER '{chat.form.add.chat.filter.in}' in(c,u)          
 
     EVENTS ON CHANGE c includeCurrentUserInChat(c)
 
     EDIT Chat OBJECT c
 ;  
   
-FORM editChat 'Чат'
+FORM editChat '{chat.chat}'
     OBJECTS c = Chat PANEL
     PROPERTIES (c) name
     
@@ -244,12 +244,12 @@ FORM editChat 'Чат'
     PROPERTIES(u) READONLY login, name
     PROPERTIES(c,u) DRAW u in, readonly 
     
-    FILTERGROUP in FILTER 'Включены в чат' in(c,u) DEFAULT
+    FILTERGROUP in FILTER '{chat.form.add.chat.filter.in}' in(c,u) DEFAULT
 ;  
 
-editChatAction 'Редактировать' (Chat c)  { 
+editChatAction '{chat.edit.chat.action}' (Chat c)  { 
     IF c IS UserRole THEN 
-        MESSAGE 'Запрещено редактировать чат для роли!';
+        MESSAGE '{chat.edit.chat.action.message}';
     ELSE
         SHOW editChat ;
 }
@@ -260,8 +260,8 @@ recentVisible  = ABSTRACT BOOLEAN ();
 readonlyFullChat(Chat chat) = readonly(chat) AND recentVisible();
 prevUser() = DATA LOCAL NESTED CustomUser();
 
-backgroundUnread 'Цвет' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
-backgroundUnread 'Цвет' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
+backgroundUnread '{chat.background.unread}' (Chat chat) = RGB(255, 0, 0) IF unreadMessages(chat);
+backgroundUnread '{chat.background.unread}' (CustomUser user) = RGB(255, 0, 0) IF unreadMessages(user);
 
 online (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 300;
 away (CustomUser user) = subtractSeconds(lastActivity(user), currentDateTime()) < 3600;
@@ -285,16 +285,16 @@ markSeenOnChange(Message m)  {
     markSeenOnChangeMessages(chat(m), currentUser());
 };
 
-deleteMessage 'Удалить сообщение' (Message m)  { 
+deleteMessage '{chat.delete.message}' (Message m)  { 
     IF own(m) THEN {
         IF subtractSeconds(dateTime(m), currentDateTime()) < 3600 THEN {
             DELETE m;
             apply();
-        } ELSE MESSAGE 'Запрещено удалять сообщения старше часа!';
-    } ELSE MESSAGE 'Запрещено удалять чужие сообщения!';
+        } ELSE MESSAGE '{chat.delete.message.message1}';
+    } ELSE MESSAGE '{chat.delete.message.message2}';
 }
 
-FORM fullChat 'Чат'
+FORM fullChat '{chat.chat}'
     OBJECTS c = Chat
     PROPERTIES(c) READONLY name ON CONTEXTMENU editChatAction(c), lastMessageDateTime, unreadMessages BACKGROUND backgroundUnread(c)
     PROPERTIES(c) NEWSESSION NEW, DELETE SHOWIF isEmpty(c)
@@ -312,7 +312,7 @@ FORM fullChat 'Чат'
     EVENTS ON INIT seekChat(u)
     EVENTS ON CHANGE u seekChat(u)
     
-    FILTERGROUP in FILTER 'Только активные' away(u)  
+    FILTERGROUP in FILTER '{chat.form.full.chat.filter.in}' away(u)  
     FILTERS u != currentUser(), login(u), lastActivity(u)
     ORDER lastMessageDateTime(u) DESC
     
@@ -340,12 +340,12 @@ DESIGN fullChat {
                 type = TABBED;
        
                 NEW contacts {
-                    caption = 'Контакты';
-                    MOVE BOX(u) { caption = 'Контакты'; }
+                    caption = '{chat.contacts}';
+                    MOVE BOX(u) { caption = '{chat.contacts}'; }
                 }
                 NEW recent {
-                    caption = 'Чаты';
-                    MOVE BOX(c) { caption = 'Чаты'; } 
+                    caption = '{chat.chats}';
+                    MOVE BOX(c) { caption = '{chat.chats}'; } 
                 }                         
                 
             }
@@ -408,16 +408,16 @@ editMessage (Chat c, Message m) + {
             editingMessage(c) <- m;
             attachment(c) <- attachment(m);
             ACTIVATE PROPERTY fullChat.newMessage(c);
-        } ELSE MESSAGE 'Запрещено редактировать сообщения старше часа!';
-    } ELSE MESSAGE 'Запрещено редактировать чужие сообщения!';
+        } ELSE MESSAGE '{chat.edit.message.message1}';
+    } ELSE MESSAGE '{chat.edit.message.message2}';
 }
 
-sendMessage 'Написать в чат' (Chat chat)  { 
+sendMessage '{chat.send.message.chat}' (Chat chat)  { 
     IF newMessage(chat) OR attachment(chat) THEN
         sendMessage(chat, newMessage(chat), NULL);
 }
 
-sendMessage 'Написать пользователю' (CustomUser user)  { 
+sendMessage '{chat.send.message.user}' (CustomUser user)  { 
     LOCAL chat = Chat();
     chat() <- chatIn(user, currentUser());
     IF NOT chat() THEN {
@@ -449,13 +449,13 @@ deliveredNotificationAction(CustomUser user) + {
     }
 }
 
-closeChat 'Закрыть'  { 
+closeChat '{chat.close.chat}'  { 
     formClose();
 }
 
-reply 'Ответ' = DATA LOCAL TEXT (Message);
-notificate 'С уведомлением' = DATA LOCAL BOOLEAN (Message); 
-replyChat 'Ответить' (Chat c, Message m)  { 
+reply '{chat.reply}' = DATA LOCAL TEXT (Message);
+notificate '{chat.notificate}' = DATA LOCAL BOOLEAN (Message); 
+replyChat '{chat.reply.chat}' (Chat c, Message m)  { 
     IF(reply(m)) THEN {
         markSeenMessages(currentUser());
         newMessage(c) <- reply(m);
@@ -465,11 +465,11 @@ replyChat 'Ответить' (Chat c, Message m)  {
     }
 };
 
-replyChat 'Ответить' (Message m)  { 
+replyChat '{chat.reply.chat}' (Message m)  { 
     replyChat(chat(m), m);
 } CHANGEKEY 'ctrl ENTER';
 
-openChat 'Перейти в чат' (Chat c, Message m)  { 
+openChat '{chat.open.chat}' (Chat c, Message m)  { 
     markSeenMessages(currentUser());
     SHOW fullChat NOWAIT;
     NEWSESSION { NEWTHREAD {
@@ -482,11 +482,11 @@ openChat 'Перейти в чат' (Chat c, Message m)  {
     formClose();
 };
 
-openChat 'Перейти в чат' (Message m)  { 
+openChat '{chat.open.chat}' (Message m)  { 
     openChat(chat(m), m);
 };
 
-FORM shortChat 'Новое сообщение'
+FORM shortChat '{chat.new.message}'
 OBJECTS m = Message LAST
 PROPERTIES(m) READONLY nameShortChat, showText, dateTime
 PROPERTIES(m) PANEL reply READONLYIF readonly(m), replyChat SHOWIF editable(m), notificate SHOWIF editable(m), openChat
