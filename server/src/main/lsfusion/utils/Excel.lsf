@@ -2,40 +2,40 @@ MODULE Excel;
 
 REQUIRE System, MasterData, Utils;
 
-CLASS Template 'Шаблон';
+CLASS Template '{excel.template}';
 TABLE template(Template);
 
-name 'Имя' = DATA VARSTRING[100] (Template);
-file 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
-loadFile 'Загрузить шаблон'(Template t)  { INPUT =file(t) CHANGE; }
-openFile 'Открыть шаблон'(Template t)  { open(file(t)); }
-id 'Идентификатор' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
+name '{excel.name.template}' = DATA VARSTRING[100] (Template);
+file '{excel.file.template}' (Template) = DATA EXCELFILE (Template);
+loadFile '{excel.load.file.template}'(Template t)  { INPUT =file(t) CHANGE; }
+openFile '{excel.open.file.template}'(Template t)  { open(file(t)); }
+id '{excel.id.template}' = DATA VARISTRING[100] (Template) CHARWIDTH 5;
 
 process  INTERNAL  'lsfusion.utils.excel.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate ()  { open(resultTemplate()); }
 
-openProcess 'Сгенерировать документ'(Template template)  { 
+openProcess '{excel.open.process.template}'(Template template)  { 
     process(template);
     openResultTemplate();
 }
 
-CLASS TemplateEntry 'Строка шаблона';
+CLASS TemplateEntry '{excel.template.entry}';
 TABLE templateEntry(TemplateEntry);
 
-template 'Шаблон' = DATA Template (TemplateEntry);
-key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
-description 'Описание' = DATA VARSTRING[100](TemplateEntry);
-isNumeric 'Числовые данные' = DATA BOOLEAN (TemplateEntry);
-format 'Формат' = DATA VARSTRING[20] (TemplateEntry);
-value 'Значение' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
+template '{excel.template}' = DATA Template (TemplateEntry);
+key '{excel.key.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+description '{excel.description.template.entry}' = DATA VARSTRING[100](TemplateEntry);
+isNumeric '{excel.is.numeric.template.entry}' = DATA BOOLEAN (TemplateEntry);
+format '{excel.format.template.entry}' = DATA VARSTRING[20] (TemplateEntry);
+value '{excel.value.template.entry}' = DATA LOCAL TEXT (TemplateEntry) CHARWIDTH 100;
 
-isTable 'Таблица' = DATA BOOLEAN(TemplateEntry);
+isTable '{excel.is.table.template.entry}' = DATA BOOLEAN(TemplateEntry);
 dataRowSeparator = DATA VARSTRING[20] (TemplateEntry);
-rowSeparator 'Разделитель строк' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\n'; 
+rowSeparator '{excel.row.separator}' (TemplateEntry e)= OVERRIDE dataRowSeparator(e), '\n'; 
 
-FORM template 'Шаблон Excel'
+FORM template '{excel.form.template}'
 
     OBJECTS t = Template PANEL
     PROPERTIES (t) name, id
@@ -71,7 +71,7 @@ DESIGN template {
     MOVE TOOLBARBOX;
 }
 
-FORM templates 'Шаблоны Excel'
+FORM templates '{excel.form.templates}'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id
@@ -83,7 +83,7 @@ FORM templates 'Шаблоны Excel'
     FILTERS template (te) == t
 ;
 
-FORM dialogTemplates 'Шаблоны Excel'
+FORM dialogTemplates '{excel.form.templates}'
 
     OBJECTS t = Template
     PROPERTIES (t) READONLY name, id

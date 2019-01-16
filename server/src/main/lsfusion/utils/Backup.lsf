@@ -27,11 +27,11 @@ dumpDir 'Путь сохранения бэкапов PostgreSQL' = DATA VARSTRI
 setDumpDir  INTERNAL 'lsfusion.utils.backup.SetDumpDirActionProperty'();
 WHEN CHANGED(dumpDir()) DO setDumpDir();
 
-saveMondayBackups 'Оставлять бэкап за понедельник (от недели до месяца)' = DATA BOOLEAN ();
-saveFirstDayBackups 'Оставлять бэкап за первое число месяца (старше месяца)' = DATA BOOLEAN ();
-maxQuantityBackups 'Максимальное число сохраняемых бэкапов' = DATA INTEGER ();
-decimateBackups 'Проредить' INTERNAL  'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
-decimateBackupsAction 'Проредить'  { 
+saveMondayBackups '{backup.dave.monday.backups}' = DATA BOOLEAN ();
+saveFirstDayBackups '{backup.first.day.backups}' = DATA BOOLEAN ();
+maxQuantityBackups '{backup.max.quantity.backups}' = DATA INTEGER ();
+decimateBackups '{backup.decimate.backups}' INTERNAL  'lsfusion.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
+decimateBackupsAction '{backup.decimate.backups}'  { 
     decimateBackups();
     formRefresh();
 }
@@ -65,7 +65,7 @@ exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
-    PROPERTIES() binPath, dumpDir, saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
+    PROPERTIES() saveFirstDayBackups, maxQuantityBackups, saveMondayBackups
     PROPERTIES() DRAW b  decimateBackupsAction, makeBackupAction, makePartialBackupAction
     PROPERTIES(b) save
     PROPERTIES(b) READONLY partial, date, time, file, fileDeleted, notSucceeded, log PANEL
@@ -108,8 +108,6 @@ DESIGN backup {
         NEW pane2 {
             caption = 'Настройки';
             align = STRETCH;
-            MOVE PROPERTY(binPath());
-            MOVE PROPERTY(dumpDir());
             MOVE PROPERTY(saveFirstDayBackups());
             MOVE PROPERTY(saveMondayBackups());
             MOVE PROPERTY(maxQuantityBackups());

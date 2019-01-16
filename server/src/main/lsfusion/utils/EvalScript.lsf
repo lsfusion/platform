@@ -4,16 +4,16 @@ REQUIRE System, Service, Time;
 
 NAMESPACE System;
 
-CLASS Script 'Скрипт';
+CLASS Script '{eval.script.script}';
 TABLE script(Script);
 
-name 'Наименование' = DATA VARSTRING[100] (Script);
-text 'Текст' = DATA TEXT (Script);
+name '{eval.script.name.script}' = DATA VARSTRING[100] (Script);
+text '{eval.script.text.script}' = DATA TEXT (Script);
 textScript = GROUP MAX Script script BY text(script);
  
-dateTime 'Время запуска' = DATA DATETIME (Script);
+dateTime '{eval.script.date.time.script}' = DATA DATETIME (Script);
 
-dateTimeChange 'Время изменения' = DATA DATETIME (Script);  
+dateTimeChange '{eval.script.date.time.change.script}' = DATA DATETIME (Script);  
 dateTimeChange(Script s) <- currentDateTime() WHEN CHANGED(text(s));
 
 preRunScript(Script s)  { 
@@ -21,8 +21,8 @@ preRunScript(Script s)  {
     APPLY;
 }
 
-showStack 'Показать стек' = DATA LOCAL BOOLEAN ();
-FORM exception 'Ошибка'
+showStack '{eval.script.show.stack}' = DATA LOCAL BOOLEAN ();
+FORM exception '{eval.script.form.exception}'
     OBJECTS message = TEXT PANEL, showStack = BOOLEAN PANEL, javaStack = TEXT PANEL, lsfStack = TEXT PANEL
     PROPERTIES valueMessage= VALUE(message) BACKGROUND RGB(255, 50, 50) READONLY, showStack() TOOLBAR 
     PROPERTIES READONLY SHOWIF showStack() valueJavaStack = VALUE(javaStack), valueLsfStack = VALUE(lsfStack)
@@ -37,7 +37,7 @@ DESIGN exception {
             MOVE PROPERTY(valueMessage) {
                 fill = 1;
                 panelCaptionAbove = TRUE;
-                caption = 'Текст ошибки';
+                caption = '{eval.script.form.exception.caption.value.message}';
             }
             NEW stacks {
                 fill = 3;
@@ -45,19 +45,19 @@ DESIGN exception {
                 MOVE PROPERTY(valueJavaStack) {
                     panelCaptionAbove = TRUE;
                     fill = 1;
-                    caption = 'Java-стек';
+                    caption = '{eval.script.form.exception.caption.java.stack}';
                 }
                 MOVE PROPERTY(valueLsfStack) {
                     panelCaptionAbove = TRUE;
                     fill = 1;
-                    caption = 'LSF-стек';
+                    caption = '{eval.script.form.exception.caption.lsf.stack}';
                 }
             }        
         }
     }
 }
 
-scriptExecution 'Выполнить скрипт' (Script s)  { 
+scriptExecution '{eval.script.script.execution}' (Script s)  { 
     preRunScript(s); 
     NEWSESSION TRY {
         EVAL text(s); 
@@ -66,7 +66,7 @@ scriptExecution 'Выполнить скрипт' (Script s)  {
     }
 }
 
-actionBodyExecution 'Выполнить действие' (Script s)  { 
+actionBodyExecution '{eval.script.action.body.execution}' (Script s)  { 
     preRunScript(s);
     NEWSESSION TRY {
         EVAL CONCAT ' ', 'run() \{', text(s), ';\n\};';
@@ -75,7 +75,7 @@ actionBodyExecution 'Выполнить действие' (Script s)  {
     }
 }
 
-formExecution 'Показать форму' (Script s)  { 
+formExecution '{eval.script.form.execution}' (Script s)  { 
     preRunScript(s);
     NEWSESSION TRY {
         EVAL CONCAT ' ', 'FORM form', text(s), ';\nrun() \{ SHOW form NOWAIT; \}';
@@ -84,7 +84,7 @@ formExecution 'Показать форму' (Script s)  {
     }
 }
 
-javaActionBodyExecution 'Выполнить Java-код' (Script s)  { 
+javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  { 
     preRunScript(s);
     NEWSESSION TRY {
         EVAL CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
@@ -94,50 +94,50 @@ javaActionBodyExecution 'Выполнить Java-код' (Script s)  {
 }
 
 // Универсальная таблица для последующего импорта
-CLASS Row 'Ряд';
+CLASS Row '{eval.script.row}';
 TABLE row(Row);
 
-string1 'Строка 1' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string2 'Строка 2' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string3 'Строка 3' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string4 'Строка 4' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string5 'Строка 5' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string6 'Строка 6' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string7 'Строка 7' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string8 'Строка 8' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string9 'Строка 9' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
-string10 'Строка 10' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string1 '{eval.script.string1.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string2 '{eval.script.string2.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string3 '{eval.script.string3.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string4 '{eval.script.string4.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string5 '{eval.script.string5.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string6 '{eval.script.string6.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string7 '{eval.script.string7.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string8 '{eval.script.string8.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string9 '{eval.script.string9.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
+string10 '{eval.script.string10.row}' = DATA VARSTRING[1000] (Row) CHARWIDTH 10;
 
-numeric1 'Число 1' = DATA NUMERIC[20,7] (Row);
-numeric2 'Число 2' = DATA NUMERIC[20,7] (Row);
-numeric3 'Число 3' = DATA NUMERIC[20,7] (Row);
-numeric4 'Число 4' = DATA NUMERIC[20,7] (Row);
-numeric5 'Число 5' = DATA NUMERIC[20,7] (Row);
+numeric1 '{eval.script.numeric1.row}' = DATA NUMERIC[20,7] (Row);
+numeric2 '{eval.script.numeric2.row}' = DATA NUMERIC[20,7] (Row);
+numeric3 '{eval.script.numeric3.row}' = DATA NUMERIC[20,7] (Row);
+numeric4 '{eval.script.numeric4.row}' = DATA NUMERIC[20,7] (Row);
+numeric5 '{eval.script.numeric5.row}' = DATA NUMERIC[20,7] (Row);
 
-date1 'Дата 1' = DATA DATE (Row);
-date2 'Дата 2' = DATA DATE (Row);
-date3 'Дата 3' = DATA DATE (Row);
+date1 '{eval.script.date1.row}' = DATA DATE (Row);
+date2 '{eval.script.date2.row}' = DATA DATE (Row);
+date3 '{eval.script.date3.row}' = DATA DATE (Row);
 
-FORM scriptLog 'Скрипт'
+FORM scriptLog '{eval.script.form.script.log}'
     OBJECTS s = Script PANEL
     PROPERTIES(s) name, text, dateTime
 
     EDIT Script OBJECT s
 ;
 
-FORM scriptsLog 'Скрипты'
+FORM scriptsLog '{eval.script.form.scripts.log}'
     
     OBJECTS s=Script FIRST
     PROPERTIES(s) READONLY name, text, dateTimeChange, dateTime 
     PROPERTIES(s) NEWSESSION DELETE 
     ORDER dateTimeChange(s) DESC
 
-    FILTERGROUP user FILTER 'Именованные' name(s) 'F9'
+    FILTERGROUP user FILTER '{eval.script.form.scripts.log.filter.name}' name(s) 'F9'
 
     LIST Script OBJECT s
 ;
 
-FORM interpreter 'Интерпретатор'
+FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS s = Script PANEL
     PROPERTIES(s) name, text
     
@@ -155,7 +155,7 @@ createScript ()  {
     }
 }
 
-copyScript 'Копировать' (Script sf)  { 
+copyScript '{eval.script.copy.script}' (Script sf)  { 
     NEW s = Script {
         text(s) <- text(sf);
         SEEK interpreter.s = s;
@@ -164,14 +164,14 @@ copyScript 'Копировать' (Script sf)  {
         DELETE sf;
 }
 
-findScript 'Найти' (Script sf)  { 
+findScript '{eval.script.find.script}' (Script sf)  { 
     DIALOG scriptsLog OBJECTS s INPUT DO {
         IF NOT PREV(sf IS Script) THEN
             DELETE sf;
 
         LOCAL new = BOOLEAN();
         new() <- NULL;
-        ASK 'Создать новый скрипт на основе выбранного ? ' DO {
+        ASK '{eval.script.find.script.ask}' DO {
             NEW st = Script {
                 text(st) <- text(s);
                 SEEK interpreter.s = st;
@@ -197,9 +197,9 @@ DESIGN interpreter {
         type = TABBED;
         NEW scriptPane {
             fill = 1;        
-            caption = 'Скрипт';
+            caption = '{eval.script.form.interpreter.caption.script}';
             NEW script {
-                caption = 'Параметры';
+                caption = '{eval.script.form.interpreter.caption.options}';
                 type = CONTAINERH;
                 MOVE PROPERTY(copyScript(s)) { font = 'bold 24'; alignment = STRETCH; }
                 MOVE PROPERTY(findScript(s)) { font = 'bold 24'; alignment = STRETCH; }
@@ -210,7 +210,7 @@ DESIGN interpreter {
                 fill = 1;
             }
             NEW run {
-                caption = 'Запуск';
+                caption = '{eval.script.form.interpreter.caption.run}';
                 type = CONTAINERH;
                 MOVE PROPERTY(scriptExecution(s)) { font = 'bold 24'; }
                 MOVE PROPERTY(actionBodyExecution(s)) { font = 'bold 24'; }
@@ -219,7 +219,7 @@ DESIGN interpreter {
             }
         }
         MOVE BOX(r) {
-            caption = 'Данные';
+            caption = '{eval.script.form.interpreter.caption.data}';
         }
     }
     MOVE TOOLBARBOX;

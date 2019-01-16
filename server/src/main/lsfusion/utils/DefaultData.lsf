@@ -2,11 +2,11 @@ MODULE DefaultData;
 
 REQUIRE System;
 
-GROUP loadDefault 'Загрузка отдельных объектов' : public;
+GROUP loadDefault '{default.data.load.default}' : public;
 
-loadDefaultData 'Загрузить стандартные данные'  ABSTRACT LIST( );
+loadDefaultData '{default.data.load.default.data}'  ABSTRACT LIST( );
 
-FORM defaultData 'Стандартные данные'
+FORM defaultData '{default.data.form.default.data}'
     PROPERTIES() loadDefaultData
 ;
 DESIGN defaultData {
@@ -16,7 +16,7 @@ DESIGN defaultData {
         NEW commons {
             type = COLUMNS;
             columns = 3;
-            caption = 'Общие';
+            caption = '{default.data.form.default.data.caption.general}';
             MOVE PROPERTY(loadDefaultData());
         }
     }
