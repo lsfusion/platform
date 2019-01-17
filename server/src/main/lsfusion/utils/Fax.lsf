@@ -2,5 +2,6 @@ MODULE Fax;
 
 REQUIRE System, Utils;
 
+//need fax4j in pom.xml
 //text, faxNumber
 writeToFax '{fax.write.to.fax}'  INTERNAL  'lsfusion.utils.fax.WriteToFaxActionProperty' (TEXT, VARISTRING[255]);

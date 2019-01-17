@@ -83,7 +83,6 @@
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
         <shef.version>0.5</shef.version>
-        <fax4j.version>0.43.1</fax4j.version>
         <imageio-jpeg.version>3.3.2</imageio-jpeg.version>
         <jnlp.api.version>7.0</jnlp.api.version>
         <ojdbc14.version>11.2.0.4</ojdbc14.version>
@@ -127,6 +126,7 @@
         <asm.version>5.0.4</asm.version>
 
         <tess4j.version>4.3.1</tess4j.version>
+        <fax4j.version>0.43.1</fax4j.version>
     </properties>
     
     <repositories>
@@ -541,11 +541,6 @@
                 <version>${shef.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.sf.fax4j</groupId>
-                <artifactId>fax4j</artifactId>
-                <version>${fax4j.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-jpeg</artifactId>
                 <version>${imageio-jpeg.version}</version>
@@ -778,11 +773,17 @@
                 <artifactId>gwt-selection</artifactId>
                 <version>${gwt.selection.version}</version>
             </dependency>
-            
+
+            <!--optional dependencies-->
             <dependency>
                 <groupId>net.sourceforge.tess4j</groupId>
                 <artifactId>tess4j</artifactId>
                 <version>${tess4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.fax4j</groupId>
+                <artifactId>fax4j</artifactId>
+                <version>${fax4j.version}</version>
             </dependency>
 
             <!-- Platform modules -->
