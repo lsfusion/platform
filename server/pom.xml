@@ -310,5 +310,12 @@
             <artifactId>opencsv</artifactId>
             <version>4.4</version>
         </dependency>
+
+        <!--text recognition-->
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
