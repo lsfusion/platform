@@ -125,6 +125,8 @@
         <gwt.selection.version>1.1</gwt.selection.version>
 
         <asm.version>5.0.4</asm.version>
+
+        <tess4j.version>4.3.1</tess4j.version>
     </properties>
     
     <repositories>
@@ -776,6 +778,13 @@
                 <artifactId>gwt-selection</artifactId>
                 <version>${gwt.selection.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>net.sourceforge.tess4j</groupId>
+                <artifactId>tess4j</artifactId>
+                <version>${tess4j.version}</version>
+            </dependency>
+
             <!-- Platform modules -->
             <dependency>
                 <groupId>lsfusion.platform</groupId>
