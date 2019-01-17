@@ -1,11 +1,9 @@
-package lsfusion.utils.utils;
+package lsfusion.utils.utils.opencv;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
-import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -17,43 +15,50 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.Iterator;
 
-public class ImageToStringOpenCVActionProperty extends ScriptingActionProperty {
+public class ImageToStringActionProperty extends ScriptingActionProperty {
     protected final ClassPropertyInterface imageInterface;
-    protected final ClassPropertyInterface tessDataPathInterface;
+    protected final ClassPropertyInterface languageInterface;
     protected final ClassPropertyInterface oemInterface;
     protected final ClassPropertyInterface psmInterface;
 
-    public ImageToStringOpenCVActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+    public ImageToStringActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         imageInterface = i.next();
-        tessDataPathInterface = i.next();
+        languageInterface = i.next();
         oemInterface = i.next();
         psmInterface = i.next();
     }
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
-        ObjectValue imageObject = context.getKeyValue(imageInterface);
-        String tessDataPath = (String) context.getKeyValue(tessDataPathInterface).getValue();
+        FileData imageObject = (FileData) context.getKeyValue(imageInterface).getValue();
 
-        if (imageObject instanceof DataObject && tessDataPath != null) {
-            RawFileData imageFile = (RawFileData) imageObject.getValue();
-            String extension = ((StaticFormatFileClass) ((DataObject) imageObject).getType()).getOpenExtension(imageFile);
+        if (imageObject != null) {
+            RawFileData imageFile = imageObject.getRawFile();
+            String extension = imageObject.getExtension();
 
+            String language = (String) context.getKeyValue(languageInterface).getValue(); //rus
             Integer oem = (Integer) context.getKeyValue(oemInterface).getValue(); //1
             Integer psm = (Integer) context.getKeyValue(psmInterface).getValue(); //3
 
             File tmpFile = null;
             try {
-                tmpFile = File.createTempFile("opencv", "." + extension);
 
-                FileUtils.writeByteArrayToFile(tmpFile, imageFile.getBytes());
+                String tessDataPath = (String) findProperty("tessDatPath[]").read(context);
+                if (tessDataPath != null) {
 
-                String result = imageToString(tmpFile, tessDataPath, oem, psm);
+                    tmpFile = File.createTempFile("opencv", "." + extension);
 
-                findProperty("imageToStringResult[]").change(result, context);
+                    FileUtils.writeByteArrayToFile(tmpFile, imageFile.getBytes());
+
+                    String result = imageToString(tmpFile, tessDataPath, language, oem, psm);
+
+                    findProperty("imageToStringResult[]").change(result, context);
+                } else {
+                    throw new RuntimeException("Tess DataPath not defined");
+                }
 
             } catch (Throwable t) {
                 throw Throwables.propagate(t);
@@ -63,16 +68,16 @@ public class ImageToStringOpenCVActionProperty extends ScriptingActionProperty {
                 }
             }
         } else {
-            throw new RuntimeException("No image or dataPath");
+            throw new RuntimeException("No image");
         }
     }
 
-    private String imageToString(File file, String tessDataPath, Integer oem, Integer psm) throws TesseractException {
+    private String imageToString(File file, String tessDataPath, String language, Integer oem, Integer psm) throws TesseractException {
 
         File imageFile = new File(file.getAbsolutePath());
         Tesseract instance = new Tesseract();
         instance.setDatapath(tessDataPath);
-        instance.setLanguage("rus");
+        instance.setLanguage(language);
 
         if (oem != null) {
             instance.setOcrEngineMode(oem);
