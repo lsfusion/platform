@@ -44,6 +44,8 @@ import lsfusion.server.form.instance.filter.RegularFilterInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.form.stat.FormReportManager;
+import lsfusion.server.form.stat.StaticFormReportManager;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.logics.*;
@@ -54,8 +56,6 @@ import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.profiler.ProfiledObject;
-import lsfusion.server.form.stat.FormReportManager;
-import lsfusion.server.form.stat.StaticFormReportManager;
 import lsfusion.server.session.*;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
@@ -66,8 +66,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
@@ -1978,7 +1978,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             for (int i = 0; i < containerShowIfCount; ++i) {
                 ContainerView container = containerShowIfs.getKey(i);
                 CalcPropertyObjectInstance<?> showIf = containerShowIfs.getValue(i);
-                if (propertyUpdated(showIf, groupObjectKeys, changedProps, false)) {
+                if (refresh || propertyUpdated(showIf, groupObjectKeys, changedProps, false)) {
                     changedContainersShowIfs.exclAdd(container);
                 }
             }
