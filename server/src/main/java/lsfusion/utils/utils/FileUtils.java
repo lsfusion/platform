@@ -33,27 +33,28 @@ public class FileUtils {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false);
             if (readResult != null) {
                 RawFileData rawFile = (RawFileData) readResult.fileBytes;  
-                try {
-                    switch (destPath.type) {
-                        case "file":
+                switch (destPath.type) {
+                    case "file":
+                        try {
                             rawFile.write(destPath.path);
-                            break;
-                        case "ftp":
+                        } finally {
+                            deleteFile(srcPath.path);
+                        }
+                        break;
+                    case "ftp":
+                        try {
                             WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
-                            break;
-                        case "sftp":
-                            WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
-                            break;
-                    }
-                } finally {
-                    switch (srcPath.type) {
-                        case "ftp":
+                        } finally {
                             deleteFTPFile(srcPath.path);
-                            break;
-                        case "sftp":
+                        }
+                        break;
+                    case "sftp":
+                        try {
+                            WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
+                        } finally {
                             deleteSFTPFile(srcPath.path);
-                            break;
-                    }
+                        }
+                        break;
                 }
             }
         }
