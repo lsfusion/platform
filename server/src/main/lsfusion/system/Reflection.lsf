@@ -38,8 +38,8 @@ isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
 isNavigatorAction (NavigatorElement element) = element IS NavigatorAction;
 isNavigatorForm (NavigatorElement element) = element IS NavigatorForm;
 
-CLASS Form 'Форма' {
-    noForm 'NoForm'
+CLASS Form '{reflection.form}' {
+    noForm '{reflection.form.no.form}'
 };
 
 TABLE form (Form);
@@ -113,9 +113,9 @@ lastRecalculate '{reflection.last.recalculate.property}' = DATA DATETIME (Proper
 
 CLASS PropertyDraw '{reflection.property.draw}';
 
-CLASS PropertyDrawShowStatus 'Показ свойства' {
-    Show 'Показать',
-    Hide 'Спрятать'
+CLASS PropertyDrawShowStatus '{reflection.property.draw.status}' {
+    Show '{reflection.property.draw.status.show}',
+    Hide '{reflection.property.draw.status.hide}'
 }
 TABLE propertyDrawShowStatus(PropertyDrawShowStatus);
 
