@@ -31,7 +31,13 @@ public class FileExistsActionProperty extends ScriptingActionProperty {
         try {
             context.getSession().dropChanges((DataProperty) findProperty("fileExists[]").property);
             if (path != null) {
-                findProperty("fileExists[]").change(FileUtils.checkFileExists(context, path, isClient) ? true : null, context);
+                boolean exists;
+                if (isClient) {
+                    exists = (boolean) context.requestUserInteraction(new FileExistsClientAction(path));
+                } else {
+                    exists = FileUtils.checkFileExists(path);
+                }
+                findProperty("fileExists[]").change(exists ? true : null, context);
             } else {
                 throw new RuntimeException("FileExists Error. Path not specified.");
             }

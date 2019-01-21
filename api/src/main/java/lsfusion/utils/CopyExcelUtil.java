@@ -17,7 +17,7 @@ import java.util.*;
  * modified by Philipp Löpmeier (replacing deprecated classes and methods, using generic types)
  * modified by a.filipchik (xlsx support & optimizations)
  */
-public final class WriteUtils {
+public final class CopyExcelUtil {
 
     public static void copyHSSFSheets(HSSFWorkbook sourceWB, HSSFWorkbook destinationWB) {
         for (Iterator<Sheet> it = sourceWB.sheetIterator(); it.hasNext(); ) {
@@ -218,7 +218,7 @@ public final class WriteUtils {
             XSSFRow destRow = newSheet.createRow(i);
             if (srcRow != null) {
                 //BaseUtils.systemLogger.info("copy row " + i);
-                WriteUtils.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
+                CopyExcelUtil.copyXSSFRow(newSheet, srcRow, destRow, styleMap, sheetMergedRegions, mergedRegions);
                 if (srcRow.getLastCellNum() > maxColumnNum) {
                     maxColumnNum = srcRow.getLastCellNum();
                 }

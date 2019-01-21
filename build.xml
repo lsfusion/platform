@@ -31,12 +31,6 @@
         </antcall>
     </target>
 
-    <target name="report-api-recursiveCompile">
-        <antcall target="recursiveCompile">
-            <param name="artifactId" value="report-api"/>
-        </antcall>
-    </target>
-
     <target name="desktop-client-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="desktop-client"/>

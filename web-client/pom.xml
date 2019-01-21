@@ -154,10 +154,6 @@
         <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>report-api</artifactId>
             <!--избавляемся от ошибок при компиляции-->
             <exclusions>
                 <exclusion>

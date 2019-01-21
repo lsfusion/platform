@@ -102,10 +102,6 @@
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>lsfusion.platform</groupId>
-            <artifactId>report-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>

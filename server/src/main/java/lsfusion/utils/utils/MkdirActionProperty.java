@@ -1,6 +1,8 @@
 package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -9,6 +11,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -25,16 +28,23 @@ public class MkdirActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String directory = BaseUtils.trimToNull((String) context.getKeyValue(directoryInterface).getValue());
-        boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
-        if (directory != null) {
-            try {
-                FileUtils.mkdir(context, directory, isClient);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
+        try {
+            String directory = BaseUtils.trimToNull((String) context.getKeyValue(directoryInterface).getValue());
+            boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
+            if (directory != null) {
+                if (isClient) {
+                    String result = (String) context.requestUserInteraction(new MkdirClientAction(directory));
+                    if (result != null) {
+                        throw new RuntimeException(result);
+                    }
+                } else {
+                    FileUtils.mkdir(directory);
+                }
+            } else {
+                throw new RuntimeException("Path not specified");
             }
-        } else {
-            throw new RuntimeException("Path not specified");
+        } catch (SftpException | JSchException | IOException e) {
+            throw Throwables.propagate(e);
         }
     }
 

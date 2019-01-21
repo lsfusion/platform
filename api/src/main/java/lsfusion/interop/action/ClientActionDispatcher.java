@@ -31,8 +31,6 @@ public interface ClientActionDispatcher {
 
     void execute(OpenFileClientAction action);
 
-    void execute(SaveFileClientAction action);
-
     void execute(AudioClientAction action);
 
     void execute(RunEditReportClientAction action);

@@ -51,7 +51,7 @@ public class RmiQueue implements DispatcherListener {
     private boolean dispatchingPostponed;
 
     private AtomicBoolean abandoned = new AtomicBoolean();
-    
+
     private final boolean retryableRequestSupported;
 
     public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, InterruptibleProvider<List<Object>> serverMessageListProvider, AsyncListener asyncListener, boolean retryableRequestSupported) {
@@ -59,7 +59,7 @@ public class RmiQueue implements DispatcherListener {
         this.serverMessageListProvider = serverMessageListProvider;
         this.tableManager = tableManager;
         this.asyncListener = asyncListener;
-        
+
         this.retryableRequestSupported = retryableRequestSupported;
 
         rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("rmi-queue"));

@@ -2,6 +2,8 @@ package lsfusion.client;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.client.rmi.ConnectionLostManager;
+import lsfusion.interop.exceptions.RemoteInternalException;
+import lsfusion.interop.exceptions.RemoteServerException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -105,18 +107,28 @@ public final class Log {
     }
 
     public static void error(String message, Throwable t) {
-        error(message, t, null);
+        error(message, t, null, null);
     }
 
-    public static void error(String message, Throwable t, String lsfStack) {
-        error(message, null, null, ExceptionUtils.getStackTraceString(t), lsfStack, false);
+    public static void error(RemoteServerException remote) {
+        if(remote instanceof RemoteInternalException) {
+            Log.error(remote.getMessage() + "\nОбратитесь к администратору.", remote, ((RemoteInternalException) remote).javaStack, ((RemoteInternalException) remote).lsfStack);
+        } else {
+            Log.error(remote.getMessage(), remote);
+        }
+    }
+    private static void error(String message, Throwable t, String remoteJavaStack, String lsfStack) {
+        String javaStack = ExceptionUtils.getStackTraceString(t);
+        if(remoteJavaStack != null)
+            javaStack = remoteJavaStack + '\n' + javaStack;
+        error(message, null, null, javaStack, lsfStack, false);
     }
 
     public static void messageWarning(String message, List<String> titles, List<List<String>> data) {
         error(message, titles, data, "", null, true);
     }
     
-    public static void error(String message, List<String> titles, List<List<String>> data, String trace, String lsfStack, boolean warning) {
+    public static void error(String message, List<String> titles, List<List<String>> data, String javaStack, String lsfStack, boolean warning) {
         if (ConnectionLostManager.isConnectionLost()) {
             return;
         }
@@ -150,7 +162,7 @@ public final class Log {
         }
 
         Font logFont = new Font("Tahoma", Font.PLAIN, Main.getIntUIFontSize(12));
-        JTextArea javaStackTA = new JTextArea(trace, 7, 60);
+        JTextArea javaStackTA = new JTextArea(javaStack, 7, 60);
         javaStackTA.setFont(logFont);
         javaStackTA.setForeground(Color.RED);
         JScrollPane javaStackInScroll = new JScrollPane(javaStackTA);
@@ -185,7 +197,7 @@ public final class Log {
         mainPanel.add(south);
 
         String opt[];
-        if (trace.length() > 0) {
+        if (javaStack.length() > 0) {
             opt = new String[]{"OK", getString("client.more")};
         } else {
             opt = new String[]{"OK"};

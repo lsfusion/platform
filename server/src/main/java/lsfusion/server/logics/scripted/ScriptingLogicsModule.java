@@ -3275,9 +3275,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAPWithParams addScriptedWriteActionProperty(LCPWithParams sourceProp, LCPWithParams pathProp, List<TypedParameter> params, boolean clientAction, boolean dialog, boolean append) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(getTypeByParamProperty(sourceProp, params),
-                clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params),
-                pathProp == null ? null : getValueClassByParamProperty(pathProp, params))),
-                pathProp == null ? Collections.singletonList(sourceProp) : Arrays.asList(sourceProp, pathProp));
+                clientAction, dialog, append, getValueClassByParamProperty(sourceProp, params), getValueClassByParamProperty(pathProp, params))),
+                Arrays.asList(sourceProp, pathProp));
     }
 
     public ImList<Type> getTypesForExportProp(List<LCPWithParams> paramProps, List<TypedParameter> params) {

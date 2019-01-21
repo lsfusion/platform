@@ -59,11 +59,12 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             } else {
                 readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false);
             }
-            if (readResult.errorCode == 0) {
+            if (readResult != null) {
                 if(isDynamicFormatFileClass)
                     targetProp.change((FileData)readResult.fileBytes, context);
                 else
                     targetProp.change((RawFileData)readResult.fileBytes, context);
+                }
             }
             if(readResult.error != null)
                 throw new RuntimeException(readResult.error);
