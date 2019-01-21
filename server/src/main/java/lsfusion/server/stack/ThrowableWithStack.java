@@ -24,7 +24,7 @@ public class ThrowableWithStack {
     public String getStack() {
         return stack; 
     }
-    
+
     public void log(String prefix, Logger logger) {
         logger.error(prefix + ": " + (stack.isEmpty() ? "" : '\n' + stack), throwable);
     }

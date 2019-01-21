@@ -4,9 +4,9 @@ NAMESPACE System;
 
 CLASS NATIVE Object;
 
-GROUP NATIVE root 'Корневая группа';
-GROUP NATIVE public 'Пользовательские свойства' : root;
-GROUP NATIVE private 'Внутренние свойства' : root;
+GROUP NATIVE root '{system.group.root}';
+GROUP NATIVE public '{system.group.public}' : root;
+GROUP NATIVE private '{system.group.private}' : root;
 
 CLASS NATIVE StaticObject;
 TABLE staticObject (StaticObject) NODEFAULT;
@@ -18,13 +18,13 @@ objectClass = NATIVE CustomObjectClass (Object);
 random = NATIVE DOUBLE ();
 //watch = NATIVE (); 
 
-stat 'Статистика' = DATA INTEGER (CustomObjectClass);
+stat '{system.stat.class}' = DATA INTEGER (CustomObjectClass);
 
-GROUP NATIVE base 'Атрибуты' : public;
-GROUP NATIVE id 'Идентифицирующие свойства' : base;
+GROUP NATIVE base '{system.group.base}' : public;
+GROUP NATIVE id '{system.group.id}' : base;
 
-GROUP drillDown 'Действия детализации' : root;
-GROUP propertyPolicy 'Свойства политики безопасности' : root;
+GROUP drillDown '{system.group.drill.down}' : root;
+GROUP propertyPolicy '{system.group.property.policy}' : root;
 
 canceled = DATA LOCAL BOOLEAN ();
 applyMessage = DATA LOCAL TEXT ();
@@ -53,9 +53,9 @@ formRefresh '{action.form.refresh}'  INTERNAL  'lsfusion.server.logics.property.
 formOk '{action.form.ok}'  INTERNAL  'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
 formClose '{action.form.close}'  INTERNAL  'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект'  INTERNAL  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
+seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.SeekScriptingActionProperty' (Object);
 
-sleep 'Sleep'  INTERNAL  'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
+sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
@@ -87,55 +87,55 @@ check()  {
 executeLocalEvents  INTERNAL  'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' (TEXT);
 executeLocalEvents()  { executeLocalEvents(NULL); }
 
-staticName 'Статическое имя' = DATA STRING[250] (Object); // temporary for migration
-staticName 'Статическое имя' (StaticObject object) = staticName[Object](object) MATERIALIZED TABLE staticObject;
+staticName '{system.static.name.object}' = DATA STRING[250] (Object); // temporary for migration
+staticName '{system.static.name.object}' (StaticObject object) = staticName[Object](object) MATERIALIZED TABLE staticObject;
 nameStatic (name) = GROUP MAX StaticObject object BY staticName(object);
 
-staticCaption 'Статическое имя' = DATA ISTRING[100] (Object); // temporary for migration
-staticCaption 'Статический заголовок' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject IN id;
+staticCaption '{system.static.caption.object}' = DATA ISTRING[100] (Object); // temporary for migration
+staticCaption '{system.static.caption.object}' (StaticObject object) = staticCaption[Object](object) MATERIALIZED TABLE staticObject IN id;
 
-objectClassName 'Класс объекта' (Object o) = staticCaption(objectClass(o));
-prevObjectClassName 'Класс объекта' (Object o) = staticCaption(PREV(objectClass(o)));
+objectClassName '{system.object.class.name.object}' (Object o) = staticCaption(objectClass(o));
+prevObjectClassName '{system.object.class.name.object}' (Object o) = staticCaption(PREV(objectClass(o)));
 
-defaultBackgroundColor 'Цвет фона по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
-defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
-defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) MATERIALIZED;
+defaultBackgroundColor '{system.default.background.color}' = DATA COLOR ();
+defaultOverrideBackgroundColor '{system.default.background.color}' = OVERRIDE defaultBackgroundColor(), RGB(255, 255, 0) MATERIALIZED;
+defaultForegroundColor '{system.default.foreground.color}' = DATA COLOR ();
+defaultOverrideForegroundColor '{system.default.foreground.color}' = OVERRIDE defaultForegroundColor(), RGB(255, 0, 0) MATERIALIZED;
 
-selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR ();
-selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR ();
-selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR ();
-focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR ();
-focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR ();
+selectedRowBackgroundColor '{system.selected.row.background.color}' = DATA COLOR ();
+selectedRowBorderColor '{system.selected.row.border.color}' = DATA COLOR ();
+selectedCellBackgroundColor '{system.selected.cell.background.color}' = DATA COLOR ();
+focusedCellBackgroundColor '{system.focused.cell.background.color}' = DATA COLOR ();
+focusedCellBorderColor '{system.focused.cell.border.color}' = DATA COLOR ();
   
-customReportCharWidth 'Ширина символа в пикселах в отчетах' = DATA INTEGER ();
-customReportRowHeight 'Высота поля в пикселах в отчетах' = DATA INTEGER ();
+customReportCharWidth '{system.report.char.width}' = DATA INTEGER ();
+customReportRowHeight '{system.report.row.height}' = DATA INTEGER ();
    
 defaultReportCharWidth = 8;
 defaultReportRowHeight = 18;    
    
-reportCharWidth 'Ширина символа в пикселах в отчетах' = OVERRIDE customReportCharWidth(), defaultReportCharWidth();      
-reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE customReportRowHeight(), defaultReportRowHeight();
-reportNotToStretch 'Не растягивать поле по вертикали' = DATA BOOLEAN (); 
-reportToStretch 'Растягивать поле по вертикали' = NOT reportNotToStretch();
+reportCharWidth '{system.report.char.width}' = OVERRIDE customReportCharWidth(), defaultReportCharWidth();      
+reportRowHeight '{system.report.row.height}' = OVERRIDE customReportRowHeight(), defaultReportRowHeight();
+reportNotToStretch '{system.report.not.to.stretch}' = DATA BOOLEAN (); 
+reportToStretch '{system.report.to.stretch}' = NOT reportNotToStretch();
 
-hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
+hashModules '{system.hash.modules}' = DATA VARSTRING[200] ();
 
 // ----------------------------------- open files ----------------------------------- //
 
 //source path, name
-open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
-open 'Открыть файл' (VARSTRING[255] source)  { open(source, NULL); }
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenPathActionProperty' (VARISTRING[255], VARISTRING[255]);
+open '{system.open.file}' (VARSTRING[255] source)  { open(source, NULL); }
 //source file, name
-open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenFileActionProperty' (FILE, VARISTRING[255]);
-open 'Открыть файл' (FILE source)  { open(source, NULL); }
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenFileActionProperty' (FILE, VARISTRING[255]);
+open '{system.open.file}' (FILE source)  { open(source, NULL); }
 //source rawFile, name
-open 'Открыть файл'  INTERNAL  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
-open 'Открыть файл' (RAWFILE source)  { open(source, NULL); }
+open '{system.open.file}'  INTERNAL  'lsfusion.utils.system.OpenRawFileActionProperty' (RAWFILE, VARISTRING[255]);
+open '{system.open.file}' (RAWFILE source)  { open(source, NULL); }
 //source link
-open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenLinkActionProperty' (LINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.utils.system.OpenLinkActionProperty' (LINK);
 //source rawLink
-open 'Открыть ссылку'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
+open '{system.open.link}'  INTERNAL  'lsfusion.utils.system.OpenRawLinkActionProperty' (RAWLINK);
   
 addedObject() = DATA LOCAL Object ();
 formPageCount() = DATA LOCAL INTEGER ();
@@ -150,17 +150,17 @@ readFile = DATA LOCAL FILE ();
 getFileExtension(FILE file) = FORMULA TEXT 'get_extension($1)';
 getExtension = getFileExtension(FILE(file));
 
-downloadFile 'Скопировать файл на клиент'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
+downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.lib.DownloadFileActionProperty' (VARSTRING[100]); 
 
-loadDownloadedLibrary 'Загрузить скачанную библиотеку'  INTERNAL  'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
-loadDownloadedFont 'Загрузить шрифт'  INTERNAL  'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
+loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.lib.LoadDownloadedLibraryActionProperty' (VARSTRING[100]);
+loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.lib.LoadDownloadedFontActionProperty' (VARSTRING[100]);
 
-loadLibrary 'Загрузить библиотеку' (path)   { 
+loadLibrary '{system.load.library}' (path)   { 
     downloadFile(path);
     loadDownloadedLibrary(path);
 }
 
-loadFont 'Загрузить шрифт' (path)   { 
+loadFont '{system.load.font}' (path)   { 
     downloadFile(path);
     loadDownloadedFont(path);
 }
@@ -208,12 +208,12 @@ requestedTableLink = DATA LOCAL NESTED TABLELINK ();
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 
-edit 'Редактировать'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
+edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'edit.png' CHANGEKEY 'BACK_SPACE' HIDE TOOLBAR;
 edit(Object o) + {  DIALOG EDIT Object =o DOCKED; }
 formEdit(Object o)  { edit(o); }
 
 // private, only for interactive usage (for other purposes use operator DELETE)
-delete 'Удалить'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
+delete '{logics.delete}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;
 delete(Object o) + {  DELETE o; } 
 formDelete(Object o)  { 
     IF sessionOwners() THEN
@@ -235,7 +235,7 @@ META applicationForm(sid, name)
                 flex = 1;
                 align = STRETCH;
                 NEW commons {
-                    caption = 'Общие';
+                    caption = '{system.form.sid.name.caption.commons}';
                 }
             }
         }
@@ -246,9 +246,9 @@ END
 @applicationForm(integrationData, '{navigator.integration}');
 @applicationForm(migrationData, '{navigator.migration}');
 
-networkPath 'Сетевой путь' = DATA LOCAL NESTED VARSTRING[500] ();
-loadNetworkPath 'Загрузить'  INTERNAL  'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
-FORM networkPathForm 'Выбор сетевого пути'
+networkPath '{system.network.path}' = DATA LOCAL NESTED VARSTRING[500] ();
+loadNetworkPath '{system.load.network.path}'  INTERNAL  'lsfusion.server.logics.property.actions.LoadLinkActionProperty' ();
+FORM networkPathForm '{system.form.network.path.form}'
     PROPERTIES() networkPath, loadNetworkPath;
 
 META defineLinkDialog (object, class)

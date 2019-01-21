@@ -1,0 +1,22 @@
+MODULE OpenCV;
+
+//need tess4j in pom.xml
+
+//file, threshold
+convertToBlackAndWhite INTERNAL  'lsfusion.utils.utils.opencv.ConvertToBlackAndWhiteActionProperty' (FILE, INTEGER);
+convertToBlackAndWhiteResult = DATA LOCAL FILE();
+
+tessDatPath 'Tess DataPath' = DATA VARSTRING[200](); 
+//file, language, oem, psm
+imageToString INTERNAL  'lsfusion.utils.utils.opencv.ImageToStringActionProperty' (FILE, VARSTRING[3], INTEGER, INTEGER);
+imageToStringResult = DATA LOCAL TEXT();
+
+EXTEND FORM options PROPERTIES tessDatPath();
+DESIGN options { 
+    pane { 
+        NEW openCV {
+            caption = 'OpenCV';
+            MOVE PROPERTY(tessDatPath());  
+        } 
+    } 
+}

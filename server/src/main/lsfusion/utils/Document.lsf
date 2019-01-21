@@ -614,7 +614,7 @@ END
 
 META defineDocumentDetailDescription(object, detailClass)
     description '{document.description.object}' (detailClass d) = description(object(d)) CHARWIDTH 30;
-    descriptionIndex '{document.description.object}' (detailClass d) = description(d) + ', {document.description.position} ' + index(d) CHARWIDTH 30 IN base;
+    descriptionIndex '{document.description.object}' (detailClass d) = VARSTRING[200](description(d) + ', {document.description.position} ' + index(d)) CHARWIDTH 30 IN base;
 END
 
 META defineDocumentDescription(object, detailClass, caption)

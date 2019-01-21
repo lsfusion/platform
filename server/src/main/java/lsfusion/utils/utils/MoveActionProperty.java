@@ -31,7 +31,15 @@ public class MoveActionProperty extends ScriptingActionProperty {
             String destinationPath = (String) context.getKeyValue(destinationInterface).getValue();
             boolean isClient = context.getKeyValue(isClientInterface).getValue() != null;
             if (sourcePath != null && destinationPath != null) {
-                FileUtils.moveFile(context, sourcePath, destinationPath, isClient);
+                if (isClient) {
+                    String result = (String) context.requestUserInteraction(new MoveFileClientAction(sourcePath, destinationPath));
+                    if (result != null) {
+                        throw new RuntimeException(String.format("Failed to move file from %s to %s", sourcePath, destinationPath));
+                    }
+                } else {
+                    FileUtils.moveFile(sourcePath, destinationPath);
+                }
+
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

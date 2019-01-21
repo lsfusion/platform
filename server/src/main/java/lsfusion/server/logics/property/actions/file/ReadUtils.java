@@ -15,10 +15,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.jfree.ui.ExtensionFileFilter;
-import org.springframework.util.FileCopyUtils;
 
 import javax.swing.*;
 import java.io.*;
@@ -27,11 +24,9 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,112 +40,71 @@ public class ReadUtils {
     private static final String IN = " IN ";
 
     public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) throws IOException, SftpException, JSchException, SQLException {
-        String type = null;
-        File file = null;
-        Object fileBytes = null; // RawFileData or FileData
-        int errorCode = 0;
         if (isDialog) {
             sourcePath = showReadFileDialog(sourcePath);
+            if(sourcePath == null) {
+                return null;
+            }
         }
-        if (sourcePath != null) {
-            Pattern p = Pattern.compile("(?:(file|ftp|sftp|http|https|jdbc|mdb):(?://)?)?(.*)");
-            Matcher m = p.matcher(sourcePath);
-            if (m.matches()) {
-                type = m.group(1) == null ? "file" : m.group(1).toLowerCase();
-                String url = m.group(2);
 
-                String extension = null;
-                switch (type) {
-                    case "file":
-                        file = new File(url);
-                        extension = BaseUtils.getFileExtension(file);
-                        break;
-                    case "http":
-                    case "https":
-                        file = File.createTempFile("downloaded", ".tmp");
-                        copyHTTPToFile(sourcePath, file);
-                        extension = BaseUtils.getFileExtension(new File(url));
-                        break;
-                    case "ftp":
-                        file = File.createTempFile("downloaded", ".tmp");
-                        copyFTPToFile(sourcePath, file);
-                        extension = BaseUtils.getFileExtension(new File(url));
-                        break;
-                    case "sftp":
-                        file = File.createTempFile("downloaded", ".tmp");
-                        copySFTPToFile(sourcePath, file);
-                        extension = BaseUtils.getFileExtension(new File(url));
-                        break;
-                    case "jdbc":
-                        file = File.createTempFile("downloaded", ".tmp");
-                        extension = "jdbc";
-                        copyJDBCToFile(sourcePath, file);
-                        break;
-                    case "mdb":
-                        file = File.createTempFile("downloaded", ".tmp");
-                        copyMDBToFile(sourcePath, file);
-                        extension = "mdb";
-                        break;
-                }
-                if (file != null) {
-                    if (file.exists()) {
-                        if (isBlockingFileRead) {
-                            try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
-                                try (java.nio.channels.FileLock lock = channel.lock()) {
-                                    if (isDynamicFormatFileClass) {
-                                        fileBytes = new FileData(readBytesFromChannel(channel), extension);
-                                    } else {
-                                        fileBytes = readBytesFromChannel(channel);
-                                    }
-                                }
-                            }
+        Path filePath = Path.parsePath(sourcePath, true);
+        File file = null;
+        String extension = null;
+        switch (filePath.type) {
+            case "file":
+                file = new File(filePath.path);
+                extension = BaseUtils.getFileExtension(file);
+                break;
+            case "http":
+            case "https":
+                file = File.createTempFile("downloaded", ".tmp");
+                copyHTTPToFile(filePath, file);
+                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                break;
+            case "ftp":
+                file = File.createTempFile("downloaded", ".tmp");
+                copyFTPToFile(filePath.path, file);
+                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                break;
+            case "sftp":
+                file = File.createTempFile("downloaded", ".tmp");
+                copySFTPToFile(filePath.path, file);
+                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                break;
+            case "jdbc":
+                file = File.createTempFile("downloaded", ".tmp");
+                extension = "jdbc";
+                copyJDBCToFile(filePath.path, file);
+                break;
+            case "mdb":
+                file = File.createTempFile("downloaded", ".tmp");
+                copyMDBToFile(filePath.path, file);
+                extension = "mdb";
+                break;
+        }
+        Object fileBytes; // RawFileData or FileData
+        if (file != null && file.exists()) {
+            if (isBlockingFileRead) {
+                try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
+                    try (java.nio.channels.FileLock lock = channel.lock()) {
+                        if (isDynamicFormatFileClass) {
+                            fileBytes = new FileData(readBytesFromChannel(channel), extension);
                         } else {
-                            if (isDynamicFormatFileClass) {
-                                fileBytes = new FileData(new RawFileData(file), extension);
-                            } else {
-                                fileBytes = new RawFileData(file);
-                            }
+                            fileBytes = readBytesFromChannel(channel);
                         }
-                    } else {
-                        errorCode = 3;
                     }
-                } else {
-                    errorCode = 2;
                 }
             } else {
-                errorCode = 2;
+                if (isDynamicFormatFileClass) {
+                    fileBytes = new FileData(new RawFileData(file), extension);
+                } else {
+                    fileBytes = new RawFileData(file);
+                }
             }
         } else {
-            errorCode = isDialog ? -1 : 1;
+            throw new RuntimeException("Read Error. File not found: " + sourcePath);
         }
-        String error = getError(errorCode, sourcePath);
-        return new ReadResult(fileBytes, type, file != null ? file.getAbsolutePath() : null, errorCode, error);
-    }
-
-    public static void postProcessFile(String sourcePath, String type, String filePath, String movePath, boolean delete) throws IOException, SftpException, JSchException {
-        File file = new File(filePath);
-        boolean move = movePath != null;
-        if (move) {
-            if (movePath.startsWith("file://")) {
-                ServerLoggers.importLogger.info(String.format("Writing file to %s", movePath));
-                FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-            } else if (movePath.startsWith("ftp://"))
-                WriteActionProperty.storeFileToFTP(movePath, file, null);
-            else if (movePath.startsWith("sftp://"))
-                WriteActionProperty.storeFileToSFTP(movePath, file, null);
-            else
-                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath + ", supports only file, ftp, sftp"));
-        }
-        if (!type.equals("file") || delete || move)
-            if (!file.delete())
-                file.deleteOnExit();
-        if (delete || move) {
-            if (type.equals("ftp")) {
-                deleteFTPFile(sourcePath);
-            } else if (type.equals("sftp")) {
-                deleteSFTPFile(sourcePath);
-            }
-        }
+        return new ReadResult(fileBytes, filePath.type, file.getAbsolutePath());
     }
 
     public static String showReadFileDialog(String path) {
@@ -178,10 +132,9 @@ public class ReadUtils {
         return result;
     }
 
-    private static void copyHTTPToFile(String path, File file) throws IOException {
-        final List<String> properties = parseHTTPPath(path);
+    private static void copyHTTPToFile(Path path, File file) throws IOException {
+        final List<String> properties = parseHTTPPath(path.path);
         if (properties != null) {
-            String type = properties.get(0);
             final String username = properties.get(1);
             final String password = properties.get(2);
             String pathToFile = properties.get(3);
@@ -190,16 +143,16 @@ public class ReadUtils {
                     return (new PasswordAuthentication(username, password.toCharArray()));
                 }
             });
-            URL httpUrl = new URL(URIUtil.encodeQuery(type + "://" + pathToFile));
+            URL httpUrl = new URL(URIUtil.encodeQuery(path.type + "://" + pathToFile));
             FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
         } else {
-            FileUtils.copyURLToFile(new URL(path), file);
+            FileUtils.copyURLToFile(new URL(path.type + "://" + path.path), file);
         }
     }
 
     private static List<String> parseHTTPPath(String path) {
         /*http|https://username:password@path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("(http|https):\\/\\/(.*):(.*)@(.*)");
+        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@(.*)");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String type = connectionStringMatcher.group(1);
@@ -211,8 +164,7 @@ public class ReadUtils {
     }
 
     private static void copyFTPToFile(String path, File file) throws IOException {
-        ServerLoggers.importLogger.info(String.format("Reading file from %s", path));
-        FTPPath properties = parseFTPPath(path, 21);
+        FTPPath properties = FTPPath.parseFTPPath(path, 21);
         FTPClient ftpClient = new FTPClient();
         ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
         if (properties.charset != null)
@@ -247,7 +199,7 @@ public class ReadUtils {
     }
 
     private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
-        FTPPath properties = parseFTPPath(path, 22);
+        FTPPath properties = FTPPath.parseFTPPath(path, 22);
         String remoteFile = properties.remoteFile;
         remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
 
@@ -276,99 +228,9 @@ public class ReadUtils {
         }
     }
 
-    public static void deleteFTPFile(String path) throws IOException {
-        FTPPath properties = parseFTPPath(path, 21);
-        FTPClient ftpClient = new FTPClient();
-        try {
-            if (properties.charset != null)
-                ftpClient.setControlEncoding(properties.charset);
-            ftpClient.connect(properties.server, properties.port);
-            ftpClient.login(properties.username, properties.password);
-            if(properties.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-
-            boolean done = ftpClient.deleteFile(properties.remoteFile);
-            if (!done) {
-                throw Throwables.propagate(new RuntimeException("Some error occurred while deleting file from ftp"));
-            }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            if (ftpClient.isConnected()) {
-                ftpClient.logout();
-                ftpClient.disconnect();
-            }
-        }
-    }
-
-    public static void deleteSFTPFile(String path) throws JSchException, SftpException {
-        FTPPath properties = parseFTPPath(path, 22);
-        String remoteFile = properties.remoteFile;
-        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            channelSftp.rm(remoteFile);
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
-    }
-
-    public static FTPPath parseFTPPath(String path, Integer defaultPort) {
-        /*sftp|ftp://username:password;charset@host:port/path_to_file?passivemode=false*/
-        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):([^;]*)(?:;(.*))?@([^\\/:]*)(?::([^\\/]+))?(?:\\/([^?]*))?(?:\\?(.*))?");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String username = connectionStringMatcher.group(1);
-            String password = connectionStringMatcher.group(2);
-            String charset = connectionStringMatcher.group(3);
-            String server = connectionStringMatcher.group(4);
-            Integer port = connectionStringMatcher.group(5) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(5));
-            String remoteFile = connectionStringMatcher.group(6);
-            List<NameValuePair> extraParams = URLEncodedUtils.parse(connectionStringMatcher.group(7), charset != null ? Charset.forName(charset) :  StandardCharsets.UTF_8);
-            boolean passiveMode = isPassiveMode(extraParams);
-            return new FTPPath(username, password, charset, server, port, remoteFile, passiveMode);
-        } else {
-            throw new RuntimeException("Incorrect ftp url. Please use format: ftp(s)://username:password;charset@host:port/path_to_file?passivemode=false");
-        }
-    }
-
-    private static boolean isPassiveMode(List<NameValuePair> queryParams) {
-        String result = getParameterValue(queryParams, "passivemode");
-        return result == null || result.equals("true");
-    }
-
-    private static String getParameterValue(List<NameValuePair> queryParams, String key) {
-        List<String> values = new ArrayList<>();
-        for(NameValuePair queryParam : queryParams) {
-            if(queryParam.getName().equalsIgnoreCase(key))
-                values.add(queryParam.getValue());
-        }
-        return values.isEmpty() ? null : values.get(0);
-    }
-
     private static void copyJDBCToFile(String query, File file) throws SQLException {
         /*jdbc://connectionString@query*/
-        Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
+        Pattern queryPattern = Pattern.compile("([^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
         if (queryMatcher.matches()) {
             Connection conn = null;
@@ -405,7 +267,7 @@ public class ReadUtils {
     private static void copyMDBToFile(String path, File file) throws IOException {
         /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
         /*conditions: field=value (<,>,<=,>=) or field IN (value1,value2,value3)*/
-        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):([^;]*)(?:;([^;]*))*");
+        Pattern queryPattern = Pattern.compile("(.*):([^;]*)(?:;([^;]*))*");
         Matcher queryMatcher = queryPattern.matcher(path);
         if (queryMatcher.matches()) {
             Database db = null;
@@ -683,31 +545,11 @@ public class ReadUtils {
         Object fileBytes; // RawFileData or FileData
         String type;
         public String filePath;
-        public int errorCode;
-        public String error;
 
-        public ReadResult(Object fileBytes, String type, String filePath, int errorCode, String error) {
+        public ReadResult(Object fileBytes, String type, String filePath) {
             this.fileBytes = fileBytes;
             this.type = type;
             this.filePath = filePath;
-            this.errorCode = errorCode;
-            this.error = error;
         }
-    }
-
-    private static String getError(int errorCode, String path) {
-        String error = null;
-        switch (errorCode) {
-            case 1:
-                error = "Read Error. Path not specified";
-                break;
-            case 2:
-                error = String.format("Read Error. Incorrect path: %s, use syntax (file|ftp|http|https|jdbc|mdb)://path", path);
-                break;
-            case 3:
-                error = "Read Error. File not found: " + path;
-                break;
-        }
-        return error;
     }
 }

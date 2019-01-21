@@ -15,7 +15,7 @@
         <intercept-url pattern="/lsfusion.jsp" access="isAuthenticated()"/>
         <intercept-url pattern="/lsfusion/*" access="isAuthenticated()"/>
 
-        <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-url="/login.jsp?error=1"/>
+        <form-login login-processing-url="/login_check" authentication-success-handler-ref="successLoginHandler" authentication-failure-handler-ref="failureLoginHandler"/>
         <access-denied-handler ref="accessDeniedHandler" />
         <logout logout-url="/logout" success-handler-ref="successLogoutHandler"/>
 
@@ -43,8 +43,8 @@
         <b:property name="loginFormUrl" value="/login.jsp"/>
     </b:bean>
 
-    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler" >
-    </b:bean>
+    <b:bean id="successLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationSuccessHandler"/>
+    <b:bean id="failureLoginHandler" class="lsfusion.http.LSFSimpleUrlAuthenticationFailureHandler"/>
 
     <b:bean id="accessDeniedHandler" class="lsfusion.http.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />

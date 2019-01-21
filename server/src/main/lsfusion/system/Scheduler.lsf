@@ -9,7 +9,7 @@ CLASS SchedulerStartType 'Отсчёт времени' {
 }
 TABLE schedulerStartType(SchedulerStartType);
 
-FORM schedulerStartTypes 'Способ отсчета времени'
+FORM schedulerStartTypes '{scheduler.form.scheduler.start.types}'
     OBJECTS s = SchedulerStartType
     PROPERTIES(s) READONLY staticCaption
     LIST SchedulerStartType OBJECT s
@@ -18,47 +18,47 @@ FORM schedulerStartTypes 'Способ отсчета времени'
 DESIGN schedulerStartTypes {
     BOX {
         PROPERTY(staticCaption(s)) {
-            caption = 'Отсчёт времени';
+            caption = '{scheduler.scheduler.start.type}';
         }
     }
 }
 
-CLASS ScheduledTask 'Задание планировщика';
+CLASS ScheduledTask '{scheduler.scheduled.task}';
 TABLE scheduledTask (ScheduledTask);
 
-name 'Имя' = DATA VARSTRING[100] (ScheduledTask);
+name '{scheduler.name.scheduled.task}' = DATA VARSTRING[100] (ScheduledTask);
 scheduledTask (name) = GROUP AGGR ScheduledTask task WHERE task IS ScheduledTask BY name(task);
 
-runAtStart 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
-timeFrom 'Время с' = DATA TIME (ScheduledTask);
-timeTo 'Время по' = DATA TIME (ScheduledTask);
-startDate 'Дата начала' = DATA DATETIME (ScheduledTask);
-period 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
-schedulerStartType 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
-nameSchedulerStartType 'Отсчёт времени' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
-active 'Активно' = DATA BOOLEAN (ScheduledTask);
-daysOfMonth 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
+runAtStart '{scheduler.run.at.start.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
+timeFrom '{scheduler.time.from.scheduled.task}' = DATA TIME (ScheduledTask);
+timeTo '{scheduler.time.to.scheduled.task}' = DATA TIME (ScheduledTask);
+startDate '{scheduler.start.date.scheduled.task}' = DATA DATETIME (ScheduledTask);
+period '{scheduler.period.scheduled.task}' = DATA INTEGER (ScheduledTask);
+schedulerStartType '{scheduler.scheduler.start.type}' = DATA SchedulerStartType (ScheduledTask);
+nameSchedulerStartType '{scheduler.scheduler.start.type}' = staticCaption(schedulerStartType(ScheduledTask ScheduledTask));
+active '{scheduler.active.scheduled.task}' = DATA BOOLEAN (ScheduledTask);
+daysOfMonth '{scheduler.days.of.month.scheduled.task}' = DATA VARSTRING[255] (ScheduledTask);
 
 TABLE DOWScheduledTask(DOW, ScheduledTask);
-in 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
+in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, ScheduledTask); 
 daysOfWeek (ScheduledTask t)= GROUP CONCAT VARSTRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
 
-CLASS ScheduledTaskDetail 'Строка задания планировщика';
+CLASS ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
 
-active 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
-order 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
-script 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
+active '{scheduler.active.scheduled.task.detail}' = DATA BOOLEAN (ScheduledTaskDetail);
+order '{scheduler.order.scheduled.task.detail}' = DATA INTEGER (ScheduledTaskDetail);
+script '{scheduler.script.scheduled.task.detail}' = DATA TEXT (ScheduledTaskDetail);
 
 scheduledTask = DATA ScheduledTask (ScheduledTaskDetail) NONULL DELETE;
 property = DATA Property (ScheduledTaskDetail); // temporary for migration
 action = DATA Action (ScheduledTaskDetail);
-captionAction 'Действие' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
-canonicalNameAction 'Код действия' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
-parameter 'Параметр действия' = DATA TEXT (ScheduledTaskDetail);
-classAction 'Класс действия' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
-timeout 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
-ignoreExceptions 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
+captionAction '{scheduler.caption.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = caption(action(scheduledTaskDetail)) CHARWIDTH 50;
+canonicalNameAction '{scheduler.canonical.name.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = canonicalName(action(scheduledTaskDetail)) CHARWIDTH 50;
+parameter '{scheduler.parameter.scheduled.task.detail}' = DATA TEXT (ScheduledTaskDetail);
+classAction '{scheduler.class.action.scheduled.task.detail}' (ScheduledTaskDetail scheduledTaskDetail) = class(action(scheduledTaskDetail)) CHARWIDTH 25;
+timeout '{scheduler.timeout.scheduled.task.detail}' = DATA INTEGER (ScheduledTaskDetail);
+ignoreExceptions '{scheduler.ignore.exceptions.scheduled.task.detail}' = DATA BOOLEAN (ScheduledTaskDetail);
 
 // temporary for migration
 copyAction()  { 
@@ -67,52 +67,52 @@ copyAction()  {
     }    
 }
 
-CONSTRAINT script(ScheduledTaskDetail d) AND action(d) MESSAGE 'В задании планировщика не могут быть одновременно выбраны свойство и скрипт';
+CONSTRAINT script(ScheduledTaskDetail d) AND action(d) MESSAGE '{scheduler.constraint.script.and.action}';
 
-CLASS ScheduledTaskLog 'Лог планировщика';
+CLASS ScheduledTaskLog '{scheduler.scheduled.task.log}';
 TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
-result 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
-exceptionOccurred 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
-property 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
-date 'Время' = DATA DATETIME (ScheduledTaskLog);
-toDate 'Дата' (ScheduledTaskLog d) = DATE(date(d));
-scheduledTask 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog) INDEXED;
+result '{scheduler.result.scheduled.task.log}' = DATA VARSTRING[200] (ScheduledTaskLog);
+exceptionOccurred '{scheduler.exception.occurred.scheduled.task.log}' = DATA BOOLEAN (ScheduledTaskLog);
+property '{scheduler.property.scheduled.task.log}' = DATA VARSTRING[200] (ScheduledTaskLog);
+date '{scheduler.date.scheduled.task.log}' = DATA DATETIME (ScheduledTaskLog);
+toDate '{scheduler.to.date.scheduled.task.log}' (ScheduledTaskLog d) = DATE(date(d));
+scheduledTask '{scheduler.scheduled.task}' = DATA ScheduledTask (ScheduledTaskLog) INDEXED;
 
-@defineLog (ScheduledTaskLog, 'планировщика', log, toDate);
+@defineLog (ScheduledTaskLog, '{scheduler.define.log.of.scheduled}', log, toDate);
 
-CLASS ScheduledClientTaskLog 'Сообщения клиента';
+CLASS ScheduledClientTaskLog '{scheduler.scheduled.client.task.log}';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
-scheduledTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE INDEXED;
-message 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
-failed 'Ошибка'= DATA BOOLEAN (ScheduledClientTaskLog);
-lsfStack 'LSF след'= DATA TEXT (ScheduledClientTaskLog);
-date 'Время'= DATA DATETIME (ScheduledClientTaskLog);
+scheduledTaskLog '{scheduler.scheduled.client.task.log}'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NONULL DELETE INDEXED;
+message '{scheduler.message.scheduled.client.task.log}'= DATA TEXT (ScheduledClientTaskLog);
+failed '{scheduler.failed.scheduled.client.task.log}'= DATA BOOLEAN (ScheduledClientTaskLog);
+lsfStack '{scheduler.lsf.stack.scheduled.client.task.log}'= DATA TEXT (ScheduledClientTaskLog);
+date '{scheduler.date.scheduled.client.task.log}'= DATA DATETIME (ScheduledClientTaskLog);
 
-isFailed 'Ошибка в сообщениях' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF failed(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl);
-isMessages 'Сообщения' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
+isFailed '{scheduler.is.failed.scheduled.client.task.log}' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF failed(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl);
+isMessages '{scheduler.is.messages.scheduled.client.task.log}' (ScheduledTaskLog stl)= TRUE IF [GROUP SUM 1 IF message(ScheduledClientTaskLog stcl) BY scheduledTaskLog(stcl)](stl) AND NOT exceptionOccurred(stl);
 
-stopScheduler 'Остановить планировщик'  INTERNAL  'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
-stopSchedulerApply 'Остановить планировщик'  { 
+stopScheduler '{scheduler.stop.scheduler}'  INTERNAL  'lsfusion.server.scheduler.StopSchedulerActionProperty' ();
+stopSchedulerApply '{scheduler.stop.scheduler}'  { 
     stopScheduler();
     apply();
 }
-runSetupScheduler 'Запустить планировщик'  INTERNAL  'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
-runSetupSchedulerApply 'Запустить планировщик'  { 
+runSetupScheduler '{scheduler.run.setup.scheduler}'  INTERNAL  'lsfusion.server.scheduler.SetupSchedulerActionProperty' ();
+runSetupSchedulerApply '{scheduler.run.setup.scheduler}'  { 
     runSetupScheduler();
     apply();
 }
-isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
-isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
+isStartedScheduler '{scheduler.is.started.scheduler}'  = DATA BOOLEAN ();
+isStoppedScheduler '{scheduler.is.stopped.scheduler}' () = NOT isStartedScheduler();
 
-threadCountScheduler 'Кол-во потоков' = DATA INTEGER ();
+threadCountScheduler '{scheduler.thread.count.scheduler}' = DATA INTEGER ();
 
 onStarted() + {  runSetupScheduler(); }
 
-scriptText 'Скрипт' () = DATA LOCAL TEXT ();
-evalScript 'Выполнить скрипт' ()  { EVAL scriptText(); }
+scriptText '{scheduler.script.text}' () = DATA LOCAL TEXT ();
+evalScript '{scheduler.eval.script}' ()  { EVAL scriptText(); }
                                          
 changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t)) OR CHANGED (startDate(t)) OR CHANGED (timeFrom(t)) 
                                          OR CHANGED (timeTo(t)) OR CHANGED (period(t)) OR CHANGED (daysOfMonth(t))
@@ -124,12 +124,12 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                          AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
-executeScheduledTask 'Выполнить задание'  INTERNAL  'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
-setupScheduledTask 'Перезапустить задание'  INTERNAL  'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
+executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.scheduler.ExecuteScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                                                                                                                 
+setupScheduledTask '{scheduler.setup.scheduled.task}'  INTERNAL  'lsfusion.server.scheduler.SetupScheduledTaskActionProperty' (ScheduledTask) CONFIRM;                                         
 WHEN changedSchedulerTask(ScheduledTask t) DO EXEC setupScheduledTask(t);
 WHEN DROPPED (ScheduledTaskDetail td IS ScheduledTaskDetail) IF PREV(active(td)) AND isStartedScheduler() DO EXEC setupScheduledTask(scheduledTask(td));
            
-FORM scheduledTask 'Задания'
+FORM scheduledTask '{scheduler.form.scheduled.task}'
 
     PROPERTIES() threadCountScheduler
 
@@ -148,7 +148,7 @@ FORM scheduledTask 'Задания'
     PROPERTIES (tl) READONLY property, result, exceptionOccurred, isMessages, isFailed, date
     
     FILTERGROUP stlFilters 
-        FILTER 'Ошибка или сообщение' exceptionOccurred(tl) OR isMessages(tl)
+        FILTER '{scheduler.form.scheduled.task.filter.exception}' exceptionOccurred(tl) OR isMessages(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
     PROPERTIES (ctl) READONLY message, failed, date, lsfStack
@@ -166,7 +166,7 @@ FORM scheduledTask 'Задания'
             scheduledTaskLog(ctl) == tl
 
     FILTERGROUP filtersScheduler
-            FILTER 'Только активные' active(td) 'F9'
+            FILTER '{scheduler.form.scheduled.task.filter.active}' active(td) 'F9'
 ;
 
 DESIGN scheduledTask {
@@ -178,7 +178,7 @@ DESIGN scheduledTask {
             fill = 2;
             type = TABBED;
             NEW property{
-                caption = 'Свойства';
+                caption = '{scheduler.form.scheduled.task.caption.properties}';
                 type = SPLITH;
                 MOVE BOX(td) {
                     PROPERTY(parameter(td)) {
@@ -191,13 +191,13 @@ DESIGN scheduledTask {
                 }
             }
             NEW logContainer {
-                caption = 'Лог';
+                caption = '{scheduler.form.scheduled.task.caption.log}';
                 type = CONTAINERH;
                 MOVE BOX(tl);
                 MOVE BOX(ctl);
             }
             NEW dowContainer {
-                caption = 'Фильтр по дням';
+                caption = '{scheduler.form.scheduled.task.caption.filter.by.days}';
                 MOVE BOX(dow);
                 PROPERTY(number(dow)) {
                     hide = TRUE;
@@ -205,7 +205,7 @@ DESIGN scheduledTask {
                 MOVE PROPERTY(daysOfMonth(t));
             }        
             NEW settingsContainer {
-                caption = 'Настройки планировщика';
+                caption = '{scheduler.form.scheduled.task.caption.settings}';
                 MOVE PROPERTY(threadCountScheduler());
             }
         }
@@ -219,7 +219,7 @@ DESIGN scheduledTask {
     MOVE TOOLBARBOX;
 }
 
-FORM scheduledTaskProperties 'Действия'
+FORM scheduledTaskProperties '{scheduler.form.scheduled.task.properties}'
     OBJECTS p = Action
     PROPERTIES(p) READONLY caption, canonicalName, class
 ;
