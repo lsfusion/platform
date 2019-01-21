@@ -7,10 +7,10 @@ public abstract class RemoteServerException extends RuntimeException {
     }
 
     public RemoteServerException(Throwable cause) {
-        super(cause);
+        super(cause.getMessage()); // we can't set pass the cause further, because its class can be missing at client side
     }
 
     public RemoteServerException(String message, Throwable cause) {
-        super(message, cause);
+        super(message + ": " + cause.getMessage()); // we can't set pass the cause further, because its class can be missing at client side
     }
 }

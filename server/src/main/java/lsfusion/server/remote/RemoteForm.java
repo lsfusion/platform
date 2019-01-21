@@ -857,9 +857,11 @@ public class RemoteForm<F extends FormInstance> extends ContextAwarePendingRemot
 
     private void clearRecentResults(long lastReceivedRequestIndex) {
         //assert: current thread holds the request lock
-        if (lastReceivedRequestIndex < 0) {
+        if (lastReceivedRequestIndex == -2) {
             recentResults.clear();
         } else {
+            if(lastReceivedRequestIndex == -1)
+                return;
             // if request is already received, there is no need for recentResults for that request (we'll assume that there cannot be retryableRequest after that)
             // however it is < (and not <=) because the same requestIndex is used for continueServerInvocation (so it would be possible to clear result that might be needed for retryable request)
             // the cleaner solution is to lookahead if there will be continueServerInvocation and don't set lastReceivedRequestIndex in RmiQueue in that case, but now using < is a lot easier
