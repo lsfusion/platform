@@ -25,29 +25,13 @@ public class WriteUtils {
             case "ftp": {
                 if(append)
                     throw new RuntimeException("APPEND is not supported in WRITE to FTP");
-                File file = null;
-                try {
-                    file = File.createTempFile("downloaded", ".tmp");
-                    fileData.write(file);
-                    storeFileToFTP(filePath.path, file, extension);
-                } finally {
-                    if (file != null && !file.delete())
-                        file.deleteOnExit();
-                }
+                storeFileToFTP(filePath.path, fileData, extension);
                 break;
             }
             case "sftp": {
                 if(append)
                     throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
-                File file = null;
-                try {
-                    file = File.createTempFile("downloaded", ".tmp");
-                    fileData.write(file);
-                    storeFileToSFTP(filePath.path, file, extension);
-                } finally {
-                    if (file != null && !file.delete())
-                        file.deleteOnExit();
-                }
+                storeFileToSFTP(filePath.path, fileData, extension);
                 break;
             }
         }
@@ -95,7 +79,7 @@ public class WriteUtils {
         return new File(parent, filePath);
     }
 
-    public static void storeFileToFTP(String path, File file, String extension) throws IOException {
+    public static void storeFileToFTP(String path, RawFileData file, String extension) throws IOException {
         ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         FTPPath properties = FTPPath.parseFTPPath(path, 21);
         String remoteFile = appendExtension(properties.remoteFile, extension);
@@ -113,7 +97,7 @@ public class WriteUtils {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                 ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
-                InputStream inputStream = new FileInputStream(file);
+                InputStream inputStream = file.getInputStream();
                 boolean done = ftpClient.storeFile(remoteFile, inputStream);
                 inputStream.close();
                 if (done)
@@ -137,7 +121,7 @@ public class WriteUtils {
         }
     }
 
-    public static void storeFileToSFTP(String path, File file, String extension) throws JSchException, SftpException, FileNotFoundException {
+    public static void storeFileToSFTP(String path, RawFileData file, String extension) throws JSchException, SftpException, FileNotFoundException {
         FTPPath properties = FTPPath.parseFTPPath(path, 22);
         String remoteFilePath = appendExtension(properties.remoteFile, extension);
         File remoteFile = new File((!remoteFilePath.startsWith("/") ? "/" : "") + remoteFilePath);
@@ -159,7 +143,7 @@ public class WriteUtils {
             if (properties.charset != null)
                 channelSftp.setFilenameEncoding(properties.charset);
             channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
-            channelSftp.put(new FileInputStream(file), remoteFile.getName());
+            channelSftp.put(file.getInputStream(), remoteFile.getName());
         } finally {
             if (channelSftp != null)
                 channelSftp.exit();
