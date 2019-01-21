@@ -44,7 +44,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + charHeight option for property
     public static Integer getApiVersion() {
-        return 79;
+        return 80;
     }
 
     public static String getPlatformVersion() {
@@ -2177,10 +2177,7 @@ public class BaseUtils {
     }
 
     public static String getFileExtension(File file) {
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        String extension = (index == -1) ? "" : name.substring(index + 1);
-        return extension;
+        return getFileExtension(file.getName());
     }
 
     public static String getFileExtension(String filename) {

@@ -48,37 +48,37 @@ public class ReadUtils {
         }
 
         Path filePath = Path.parsePath(sourcePath, true);
-        File file = null;
+        
+        File localFile = null;
+        if(!filePath.type.equals("file"))
+            localFile = File.createTempFile("downloaded", ".tmp");
+
+        File file = localFile;
         String extension = null;
         switch (filePath.type) {
             case "file":
                 file = new File(filePath.path);
-                extension = BaseUtils.getFileExtension(file);
+                extension = BaseUtils.getFileExtension(filePath.path);
                 break;
             case "http":
             case "https":
-                file = File.createTempFile("downloaded", ".tmp");
-                copyHTTPToFile(filePath, file);
-                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                copyHTTPToFile(filePath, localFile);
+                extension = BaseUtils.getFileExtension(filePath.path);
                 break;
             case "ftp":
-                file = File.createTempFile("downloaded", ".tmp");
-                copyFTPToFile(filePath.path, file);
-                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                copyFTPToFile(filePath.path, localFile);
+                extension = BaseUtils.getFileExtension(filePath.path);
                 break;
             case "sftp":
-                file = File.createTempFile("downloaded", ".tmp");
-                copySFTPToFile(filePath.path, file);
-                extension = BaseUtils.getFileExtension(new File(filePath.path));
+                copySFTPToFile(filePath.path, localFile);
+                extension = BaseUtils.getFileExtension(filePath.path);
                 break;
             case "jdbc":
-                file = File.createTempFile("downloaded", ".tmp");
+                copyJDBCToFile(filePath.path, localFile);
                 extension = "jdbc";
-                copyJDBCToFile(filePath.path, file);
                 break;
             case "mdb":
-                file = File.createTempFile("downloaded", ".tmp");
-                copyMDBToFile(filePath.path, file);
+                copyMDBToFile(filePath.path, localFile);
                 extension = "mdb";
                 break;
         }
@@ -101,10 +101,12 @@ public class ReadUtils {
                     fileBytes = new RawFileData(file);
                 }
             }
+            if(localFile != null && !localFile.delete())
+                localFile.deleteOnExit();
         } else {
             throw new RuntimeException("Read Error. File not found: " + sourcePath);
         }
-        return new ReadResult(fileBytes, filePath.type, file.getAbsolutePath());
+        return new ReadResult(fileBytes, filePath.type);
     }
 
     public static String showReadFileDialog(String path) {
@@ -542,14 +544,12 @@ public class ReadUtils {
     }
 
     public static class ReadResult implements Serializable {
-        public Object fileBytes; // RawFileData or FileData
-        public String type;
-        public String filePath;
+        public final Object fileBytes; // RawFileData or FileData
+        String type;
 
-        public ReadResult(Object fileBytes, String type, String filePath) {
+        public ReadResult(Object fileBytes, String type) {
             this.fileBytes = fileBytes;
             this.type = type;
-            this.filePath = filePath;
         }
     }
 }

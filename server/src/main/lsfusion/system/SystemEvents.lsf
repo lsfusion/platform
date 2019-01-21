@@ -2,31 +2,31 @@ MODULE SystemEvents;
 
 REQUIRE System, Reflection, Time, Service;
 
-CLASS ABSTRACT Exception 'Исключение';
-CLASS ClientException 'Исключение на клиенте' : Exception;
-CLASS WebClientException 'Исключение на web-клиенте' : ClientException;
-CLASS RemoteServerException 'Исключение на сервере (от клиента)' : ClientException;
-CLASS ABSTRACT RemoteClientException 'Исключение связи' : ClientException;
-CLASS UnhandledException 'Необработанное исключение связи' : RemoteClientException;
-CLASS ABSTRACT HandledException 'Обработанное исключение связи' : RemoteClientException;
-CLASS FatalHandledException 'Постоянное исключение связи' : HandledException;
-CLASS NonFatalHandledException 'Временное исключение связи' : HandledException;
-CLASS ServerException 'Исключение на сервере' : Exception;
+CLASS ABSTRACT Exception '{system.events.exception}';
+CLASS ClientException '{system.events.client.exception}' : Exception;
+CLASS WebClientException '{system.events.web.client.exception}' : ClientException;
+CLASS RemoteServerException '{system.events.remote.server.exception}' : ClientException;
+CLASS ABSTRACT RemoteClientException '{system.events.remote.client.exception}' : ClientException;
+CLASS UnhandledException '{system.events.unhandled.exception}' : RemoteClientException;
+CLASS ABSTRACT HandledException '{system.events.handled.exception}' : RemoteClientException;
+CLASS FatalHandledException '{system.events.fatal.handled.exception}' : HandledException;
+CLASS NonFatalHandledException '{system.events.not.fatal.handled.exception}' : HandledException;
+CLASS ServerException '{system.events.server.exception}' : Exception;
 TABLE exception (Exception);
 
-message 'Сообщение исключения' = DATA VARISTRING[250] (Exception);
-date 'Время возникновения' = DATA DATETIME (Exception);
-fromDate 'Дата возникновения' (Exception d)= DATE(date(d));
-erTrace 'След исключения'= DATA TEXT (Exception);
-lsfStackTrace 'LSF след исключения'= DATA TEXT (Exception);
-type 'Тип исключения' = DATA VARSTRING[250] (Exception);
+message '{system.events.message.exception}' = DATA VARISTRING[250] (Exception);
+date '{system.events.date.exception}' = DATA DATETIME (Exception);
+fromDate '{system.events.from.date.exception}' (Exception d)= DATE(date(d));
+erTrace '{system.events.er.trace.exception}'= DATA TEXT (Exception);
+lsfStackTrace '{system.events.lsf.stack.trace.exception}'= DATA TEXT (Exception);
+type '{system.events.type.exception}' = DATA VARSTRING[250] (Exception);
 
-client 'Клиент' = DATA VARSTRING[100] (ClientException);
-login 'Логин' = DATA VARSTRING[100] (ClientException);
+client '{system.events.client}' = DATA VARSTRING[100] (ClientException);
+login '{system.events.login}' = DATA VARSTRING[100] (ClientException);
 
-reqId 'ИД запроса' = DATA LONG (HandledException);
-count 'Кол-во запросов' = DATA INTEGER (NonFatalHandledException);
-abandoned 'Перест.' = DATA BOOLEAN (NonFatalHandledException);
+reqId '{system.events.req.id}' = DATA LONG (HandledException);
+count '{system.events.count}' = DATA INTEGER (NonFatalHandledException);
+abandoned '{system.events.abandoned}' = DATA BOOLEAN (NonFatalHandledException);
 
 foregroundNonFatal(NonFatalHandledException e) = IF e IS NonFatalHandledException AND NOT abandoned(e) THEN RGB(192,192,192);
 
@@ -36,20 +36,20 @@ backgroundNonFatal(ClientException e) = CASE
             WHEN e IS WebClientException THEN RGB(255, 255, 210)            
             WHEN e IS ClientException THEN RGB(255, 255, 240);            
 
-@defineLog (Exception, 'ошибок', log, fromDate);
+@defineLog (Exception, '{system.events.define.log.of.exceptions}', log, fromDate);
 
-CLASS Launch 'Запуск';
+CLASS Launch '{system.events.launch}';
 TABLE launch (Launch);
 
-computer 'Компьютер' = DATA Computer (Launch);
-hostname 'Имя компьютера' (Launch launch) = hostname(computer(launch));
-time 'Время запуска'= DATA DATETIME (Launch);
-date 'Дата' (Launch l) = DATE(time(l));
-revision 'Версия'= DATA VARSTRING[10] (Launch);
+computer '{system.events.computer.launch}' = DATA Computer (Launch);
+hostname '{system.events.hostname.launch}' (Launch launch) = hostname(computer(launch));
+time '{system.events.time.launch}'= DATA DATETIME (Launch);
+date '{system.events.date.launch}' (Launch l) = DATE(time(l));
+revision '{system.events.revision.launch}'= DATA VARSTRING[10] (Launch);
 
-@defineLog (Launch, 'запусков', log, date);
+@defineLog (Launch, '{system.events.define.log.of.launches}', log, date);
 
-CLASS Connection 'Подключение';
+CLASS Connection '{system.events.connection}';
 
 CLASS ConnectionStatus 'Статус подключения' {
     connectedConnection 'Подключён',
@@ -66,37 +66,37 @@ FORM connectionStatuses
 TABLE connection (Connection);
 TABLE connectionNavigatorElement (Connection, NavigatorElement);
 
-computer 'Компьютер' = DATA Computer (Connection);
-hostnameComputer 'Имя компьютера'(Connection connection) = hostname(computer(connection));
+computer '{system.events.computer.connection}' = DATA Computer (Connection);
+hostnameComputer '{system.events.hostname.computer.connection}'(Connection connection) = hostname(computer(connection));
 
-remoteAddress 'IP пользователя' = DATA VARSTRING[40] (Connection);
+remoteAddress '{system.events.remote.address.connection}' = DATA VARSTRING[40] (Connection);
 
-user 'Пользователь' = DATA CustomUser (Connection);
-userLogin 'Логин пользователя' (Connection connection) = login(user(connection));
+user '{system.events.user.connection}' = DATA CustomUser (Connection);
+userLogin '{system.events.user.login.connection}' (Connection connection) = login(user(connection));
 
-osVersion 'Операционная система' = DATA VARSTRING[100] (Connection);
-processor 'Процессор' = DATA VARSTRING[100] (Connection);
-architecture 'Архитектура' = DATA VARSTRING[10] (Connection);
-cores 'Количество ядер' = DATA INTEGER (Connection);
-physicalMemory 'Физическая память, МБ' = DATA INTEGER (Connection);
-totalMemory 'Всего память для JVM, МБ' = DATA INTEGER (Connection);
-maximumMemory 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
-freeMemory 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
-javaVersion 'Версия java' = DATA VARSTRING[100] (Connection);
-is64Java '64-битная java' = DATA BOOLEAN (Connection);
-screenSize 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
+osVersion '{system.events.os.version.connection}' = DATA VARSTRING[100] (Connection);
+processor '{system.events.processor.connection}' = DATA VARSTRING[100] (Connection);
+architecture '{system.events.architecture.connection}' = DATA VARSTRING[10] (Connection);
+cores '{system.events.cores.connection}' = DATA INTEGER (Connection);
+physicalMemory '{system.events.physical.memory.connection}' = DATA INTEGER (Connection);
+totalMemory '{system.events.total.memory.connection}' = DATA INTEGER (Connection);
+maximumMemory '{system.events.maximum.memory.connection}' = DATA INTEGER (Connection);
+freeMemory '{system.events.free.memory.connection}' = DATA INTEGER (Connection);
+javaVersion '{system.events.java.version.connection}' = DATA VARSTRING[100] (Connection);
+is64Java '{system.events.is64java.connection}' = DATA BOOLEAN (Connection);
+screenSize '{system.events.screen.size.connection}' = DATA VARSTRING[20] (Connection);
 
-countConnection 'Кол-во подключений' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
+countConnection '{system.events.count.connection}' = GROUP SUM 1 BY user(Connection connection) MATERIALIZED; 
 CONSTRAINT DROPPED(CustomUser u IS CustomUser) AND PREV(countConnection(u))
-    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
+    MESSAGE '{system.events.constraint.dropped.custom.user.message}';
 
-connectionStatus 'Статус подключения' =  DATA ConnectionStatus (Connection) INDEXED;
+connectionStatus '{system.events.connection.status}' =  DATA ConnectionStatus (Connection) INDEXED;
 INDEX user(Connection c), connectionStatus(c);
-nameConnectionStatus 'Статус подключения' (Connection connection) = staticCaption(connectionStatus(connection));
+nameConnectionStatus '{system.events.connection.status}' (Connection connection) = staticCaption(connectionStatus(connection));
 
-connectTime 'Время подключения' = DATA DATETIME (Connection);
-connectDate 'Дата подключения' (Connection c) = DATE(connectTime(c));
-disconnectTime 'Время отключения' = DATA DATETIME (Connection);
+connectTime '{system.events.connect.time.connection}' = DATA DATETIME (Connection);
+connectDate '{system.events.connect.date.connection}' (Connection c) = DATE(connectTime(c));
+disconnectTime '{system.events.disconnect.time.connection}' = DATA DATETIME (Connection);
 disconnectTime (Connection connection) <- currentDateTime() WHEN SET(connectionStatus(connection) == ConnectionStatus.disconnectedConnection);
 
 currentLaunch = DATA Launch();
@@ -107,13 +107,13 @@ onStarted() + {
         WHERE connectionStatus(connection) == ConnectionStatus.connectedConnection AND currentLaunch() != launch(connection);
 }
 
-reconnect 'Переподключить' (CustomUser user)  { 
+reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { NEWTHREAD reconnect(); CONNECTION conn; }
         }
 } CONFIRM;
 
-shutdown 'Отключить' (CustomUser user)  { 
+shutdown '{system.events.shutdown.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
             NEWSESSION { NEWTHREAD shutdown(); CONNECTION conn; }
         }
@@ -123,36 +123,36 @@ hasConnectedConnections (CustomUser user) = GROUP SUM 1 IF user(Connection conn)
 
 fileUserLogs = DATA FILE (Connection);
 userLogs ()  INTERNAL  'lsfusion.server.logics.systemevents.UserLogsActionProperty' ();
-requestUserLogs 'Запросить логи' (CustomUser user)  { 
+requestUserLogs '{system.events.request.user.logs.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileUserLogs(conn) <- NULL; apply(); } 
         NEWSESSION NEWTHREAD userLogs(); CONNECTION conn;
     }
 }
-openUserLogs 'Открыть логи' (CustomUser user)  { 
+openUserLogs '{system.events.open.user.logs.custom.user}' (CustomUser user)  { 
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileUserLogs(conn) DO {
             open(fileUserLogs(conn), userLogin(conn) + '-log');
         } ELSE {
-            MESSAGE 'Логи ещё не получены. Ожидайте';
+            MESSAGE '{system.events.open.user.logs.message}';
         }
     }
 }
 
 fileThreadDump = DATA FILE (Connection);
 threadDump ()  INTERNAL  'lsfusion.server.logics.systemevents.ThreadDumpActionProperty' ();
-requestThreadDump 'Запросить ThreadDump' (CustomUser user)  { 
+requestThreadDump '{system.events.request.thread.dump.custom.user}' (CustomUser user)  { 
     FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection DO {
         NEWSESSION { fileThreadDump(conn) <- NULL; apply(); } 
         NEWSESSION NEWTHREAD threadDump(); CONNECTION conn;
     }
 }
-openThreadDump 'Открыть ThreadDump' (CustomUser user)  { 
+openThreadDump '{system.events.open.thread.dump.custom.user}' (CustomUser user)  { 
     IF hasConnectedConnections(user) THEN {
         FOR user(Connection conn) == user AND connectionStatus(conn) == ConnectionStatus.connectedConnection AND fileThreadDump(conn) DO {
             open(fileThreadDump(conn), userLogin(conn) + '-dump');
         } ELSE {
-            MESSAGE 'ThreadDump ещё не получен. Ожидайте';
+            MESSAGE '{system.events.open.thread.dump.message}';
         }
     }
 }
@@ -160,64 +160,64 @@ openThreadDump 'Открыть ThreadDump' (CustomUser user)  {
 EXTEND FORM customUsers PROPERTIES(u) GRID reconnect, shutdown, 
                                       requestUserLogs, openUserLogs, requestThreadDump, openThreadDump;
 
-@defineLog (Connection, 'подключений', log, connectDate);
+@defineLog (Connection, '{system.events.define.log.of.connections}', log, connectDate);
 
 currentConnection = NATIVE Connection();
 
 //заменили user на customUser
-user 'Пользователь сессии' = DATA User (Session);
-nameUser 'Пользователь сессии' (Session session) = name(user(session));
-nameContact 'Пользователь сессии' (Session session) = name[Contact](user(session));
+user '{system.events.user.session}' = DATA User (Session);
+nameUser '{system.events.user.session}' (Session session) = name(user(session));
+nameContact '{system.events.user.session}' (Session session) = name[Contact](user(session));
 user (Session session) <- currentUser() WHEN SET(session IS Session);
 
 TABLE connectionForm (Connection, Form);
-connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, Form);
+connectionFormCount '{system.events.connection.form.count}' = DATA INTEGER (Connection, Form);
 
-CLASS Session 'Сессия';
+CLASS Session '{system.events.session}';
 TABLE session(Session);
 TABLE sessionObject(Session, Object);
 
 currentSession = DATA LOCAL Session();
 
-quantityAddedClasses 'Количество добавленных классов' = DATA INTEGER (Session);
-quantityRemovedClasses 'Количество удалённых классов' = DATA INTEGER (Session);
-quantityChangedClasses 'Количество изменённых классов' = DATA INTEGER (Session);
-changes 'Изменения' = DATA TEXT (Session);
+quantityAddedClasses '{system.events.quantity.added.classes.session}' = DATA INTEGER (Session);
+quantityRemovedClasses '{system.events.quantity.removed.classes.session}' = DATA INTEGER (Session);
+quantityChangedClasses '{system.events.quantity.changed.classes.session}' = DATA INTEGER (Session);
+changes '{system.events.changes.session}' = DATA TEXT (Session);
 
-dateTime 'Время' = DATA DATETIME (Session) IN id;
-date 'Дата' (Session s) = DATE(dateTime(s));
+dateTime '{system.events.date.time.session}' = DATA DATETIME (Session) IN id;
+date '{system.events.date.session}' (Session s) = DATE(dateTime(s));
 dateTime(Session session) <- currentDateTime() WHEN SET (session IS Session);
 
-form 'Форма сессии' = DATA Form (Session);
-captionForm 'Название формы' (Session session) = caption(form(session));
+form '{system.events.form.session}' = DATA Form (Session);
+captionForm '{system.events.caption.form.session}' (Session session) = caption(form(session));
 
-connection 'Подключение сессии' = DATA Connection(Session) INDEXED;
-hostnameComputerConnection 'Имя компьютера' = hostnameComputer(connection(Session session))IN id;
-userLoginConnection 'Логин пользователя' = userLogin(connection(Session session)) IN id;
+connection '{system.events.connection.session}' = DATA Connection(Session) INDEXED;
+hostnameComputerConnection '{system.events.hostname.computer.connection.session}' = hostnameComputer(connection(Session session))IN id;
+userLoginConnection '{system.events.user.login.connection.session}' = userLogin(connection(Session session)) IN id;
 
-@defineLog (Session, 'изменений', log, date);
+@defineLog (Session, '{system.events.define.log.of.changes}', log, date);
 
 TABLE pingTable(Computer, DATETIME, DATETIME);
-pingFromTo 'Пинг (мс)' = DATA INTEGER (Computer, DATETIME, DATETIME);
-minTotalMemoryFromTo 'Минимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-maxTotalMemoryFromTo 'Максимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-minUsedMemoryFromTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
-maxUsedMemoryFromTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+pingFromTo '{system.events.ping.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minTotalMemoryFromTo '{system.events.min.total.memory.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxTotalMemoryFromTo '{system.events.max.total.memory.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minUsedMemoryFromTo '{system.events.min.used.memory.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxUsedMemoryFromTo '{system.events.max.used.memory.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
 lastConnection(computer) = GROUP LAST Connection connection ORDER connection BY computer(connection);
-remoteAddress 'IP пользователя' (Computer computer) = remoteAddress(lastConnection(computer));
-osVersion 'Операционная система' (Computer computer) = osVersion(lastConnection(computer));
-processor 'Процессор' (Computer computer) = processor(lastConnection(computer));
-architecture 'Архитектура' (Computer computer) = architecture(lastConnection(computer));
-cores 'Количество ядер' (Computer computer) = cores(lastConnection(computer));
-physicalMemory 'Физическая память, МБ' (Computer computer) = physicalMemory(lastConnection(computer));
-totalMemory 'Всего память для JVM, МБ' (Computer computer) = totalMemory(lastConnection(computer));
-maximumMemory 'Максимально доступная память для JVM, МБ' (Computer computer) = maximumMemory(lastConnection(computer));
-freeMemory 'Свободная память для JVM, МБ' (Computer computer) = freeMemory(lastConnection(computer));
-javaVersion 'Версия java' (Computer computer) = javaVersion(lastConnection(computer));
-is64Java '64-битная java' (Computer computer) = is64Java(lastConnection(computer));
+remoteAddress '{system.events.remote.address.connection}' (Computer computer) = remoteAddress(lastConnection(computer));
+osVersion '{system.events.os.version.connection}' (Computer computer) = osVersion(lastConnection(computer));
+processor '{system.events.processor.connection}' (Computer computer) = processor(lastConnection(computer));
+architecture '{system.events.architecture.connection}' (Computer computer) = architecture(lastConnection(computer));
+cores '{system.events.cores.connection}' (Computer computer) = cores(lastConnection(computer));
+physicalMemory '{system.events.physical.memory.connection}' (Computer computer) = physicalMemory(lastConnection(computer));
+totalMemory '{system.events.total.memory.connection}' (Computer computer) = totalMemory(lastConnection(computer));
+maximumMemory '{system.events.maximum.memory.connection}' (Computer computer) = maximumMemory(lastConnection(computer));
+freeMemory '{system.events.free.memory.connection}' (Computer computer) = freeMemory(lastConnection(computer));
+javaVersion '{system.events.java.version.connection}' (Computer computer) = javaVersion(lastConnection(computer));
+is64Java '{system.events.is64java.connection}' (Computer computer) = is64Java(lastConnection(computer));
 
-countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
+countDaysClearPings '{system.events.count.days.clear.pings}' = DATA INTEGER (); 
 
 onClientStarted  ABSTRACT LIST ( );
 
@@ -267,7 +267,7 @@ clearApplicationLog () + {
 	}
 }   
 
-FORM connections 'Журнал подключений'
+FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection
     PROPERTIES (c) READONLY hostnameComputer, remoteAddress, userLogin, osVersion,
@@ -286,9 +286,9 @@ FORM connections 'Журнал подключений'
     FILTERS connectionFormCount(c, n)>0
     FILTERS connection(s)==c
     FILTERGROUP filtersConnection
-                FILTER 'Активные подключения' connectionStatus(c) == ConnectionStatus.connectedConnection 'F8'
+                FILTER '{system.events.form.connections.filter.active}' connectionStatus(c) == ConnectionStatus.connectedConnection 'F8'
     FILTERGROUP filtersNavigatorElement
-                FILTER 'Только выбранной формы' form(s)==n 'F9'
+                FILTER '{system.events.form.connections.filter.form}' form(s)==n 'F9'
 ;
 
 DESIGN connections{
@@ -301,7 +301,7 @@ DESIGN connections{
     }
 }
 
-FORM  exceptions 'Журнал ошибок'
+FORM  exceptions '{system.events.form.exceptions}'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatal(e) BACKGROUND backgroundNonFatal(e) READONLY objectClassName, message, client , login , type, date, reqId PANEL, count PANEL, abandoned PANEL
@@ -333,20 +333,20 @@ DESIGN exceptions {
     }
 }
 
-FORM launches 'Журнал запусков'
+FORM launches '{system.events.form.launches}'
 
    OBJECTS l=Launch
    PROPERTIES(l) READONLY hostname, time, revision
 ;
 
-FORM changes 'Журнал изменений'
+FORM changes '{system.events.form.changes}'
 
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionForm, hostnameComputerConnection,
                             userLoginConnection, quantityAddedClasses, quantityRemovedClasses,
                             quantityChangedClasses, gChanges = changes, dateTime, pChanges = changes PANEL
     FILTERGROUP filtersChange
-                    FILTER 'Только изменения пользователей' userLoginConnection(s) 'F8' DEFAULT
+                    FILTER '{system.events.form.changes.filter.user.login.connections}' userLoginConnection(s) 'F8' DEFAULT
 ;
 
 DESIGN changes {
@@ -369,28 +369,28 @@ DESIGN changes {
     }
 }
 
-limitPing 'Пороговый пинг (мс)' = DATA INTEGER ();
-limitPingSum 'Суммарное время выше порога, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitPing '{system.events.limit.ping}' = DATA INTEGER ();
+limitPingSum '{system.events.limit.ping.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
     IF pingFromTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND dlimitDTo > dTo;
-averagePingDateFrom 'Средний пинг (мс)' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+averagePingDateFrom '{system.events.average.ping.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
     [GROUP SUM pingFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
     [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF pingFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);
     
-limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
-limitMaxTotalMemorySum 'Суммарное время выше порога памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitMaxTotalMemory '{system.events.limit.max.total.memory}' = DATA INTEGER();
+limitMaxTotalMemorySum '{system.events.limit.max.total.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
     IF maxTotalMemoryFromTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
-averageMaxTotalMemoryDateFrom 'Средняя память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+averageMaxTotalMemoryDateFrom '{system.events.average.max.total.memory.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
     [GROUP SUM maxTotalMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
     [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxTotalMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
-limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
-limitMaxUsedMemorySum 'Суммарное время выше порога использованной памяти, секунд' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
+limitMaxUsedMemory '{system.events.limit.max.used.memory}' = DATA INTEGER();   
+limitMaxUsedMemorySum '{system.events.limit.max.used.memory.sum}' (Computer computer, DATETIME limitDFrom, limitDTo) = GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo
     IF maxUsedMemoryFromTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND dlimitDTo > dTo;
-averageMaxUsedMemoryDateFrom 'Средняя использованная память, МБ' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
+averageMaxUsedMemoryDateFrom '{system.events.average.max.used.memory.date.from}' (Computer computer, DATETIME limitDFrom, DATETIME limitDTo) = 
     [GROUP SUM maxUsedMemoryFromTo(computer, DATETIME dFrom, DATETIME dTo) * subtractSeconds(dFrom, dTo) BY DATETIME dlimitDTo IF limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo) / 
     [GROUP SUM subtractSeconds(DATETIME dFrom, DATETIME dTo) BY DATETIME dlimitDTo IF maxUsedMemoryFromTo(computer, dFrom, dTo) AND limitDFrom < dFrom AND dlimitDTo > dTo] (limitDTo);        
 
-FORM pings 'Журнал клиентских приложений'
+FORM pings '{system.events.form.pings}'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
     PROPERTIES(c) READONLY hostname, remoteAddress, osVersion, processor, architecture, cores, 
                            physicalMemory, totalMemory, maximumMemory, freeMemory,
@@ -411,7 +411,7 @@ FORM pings 'Журнал клиентских приложений'
                              disconnectTime
     FILTERS computer(cn) == c
     FILTERGROUP filtersConnection
-                    FILTER 'Активные подключения' connectionStatus(cn) == ConnectionStatus.connectedConnection 'F8'
+                    FILTER '{system.events.form.pings.filter.active}' connectionStatus(cn) == ConnectionStatus.connectedConnection 'F8'
 ;
 
 DESIGN pings {
@@ -424,20 +424,20 @@ DESIGN pings {
             fill = 1;
             type = TABBED;
             NEW data {
-                caption = 'Данные';
+                caption = '{system.events.form.pings.caption.data}';
                 MOVE BOX(dates);
-                PROPERTY(dFromObj) { caption = 'Время (с)'; }
-                PROPERTY(dToObj) { caption = 'Время (по)'; }
-                PROPERTY(subtractSeconds(dFrom, dTo)) { caption = 'Промежуток в секундах'; }
+                PROPERTY(dFromObj) { caption = '{system.events.form.pings.caption.time.from}'; }
+                PROPERTY(dToObj) { caption = '{system.events.form.pings.caption.time.to}'; }
+                PROPERTY(subtractSeconds(dFrom, dTo)) { caption = '{system.events.form.pings.caption.subtract.seconds}'; }
             }
             NEW connections {
-                caption = 'Подключения';
+                caption = '{system.events.form.pings.caption.connections}';
                 MOVE BOX(cn);
             }
         }
     }
-    PROPERTY(limitDFromObj) { caption = 'Время (с)'; }
-    PROPERTY(limitDToObj) { caption = 'Время (по)'; }    
+    PROPERTY(limitDFromObj) { caption = '{system.events.form.pings.caption.time.from}'; }
+    PROPERTY(limitDToObj) { caption = '{system.events.form.pings.caption.time.to}'; }    
 }
 
 NAVIGATOR {

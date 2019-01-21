@@ -30,24 +30,22 @@ public class FileUtils {
         if(srcPath.type.equals("file") && destPath.type.equals("file")) {
             rename(new File(srcPath.path), new File(destPath.path));
         } else {
-
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false);
             if (readResult != null) {
-                File sourceFile = new File(readResult.filePath);
+                RawFileData rawFile = (RawFileData) readResult.fileBytes;  
                 try {
                     switch (destPath.type) {
                         case "file":
-                            FileCopyUtils.copy(sourceFile, new File(destPath.path));
+                            rawFile.write(destPath.path);
                             break;
                         case "ftp":
-                            WriteUtils.storeFileToFTP(destPath.path, (RawFileData) readResult.fileBytes, null);
+                            WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
                             break;
                         case "sftp":
-                            WriteUtils.storeFileToSFTP(destPath.path, (RawFileData) readResult.fileBytes, null);
+                            WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
                             break;
                     }
                 } finally {
-                    deleteFile(readResult.filePath);
                     switch (srcPath.type) {
                         case "ftp":
                             deleteFTPFile(srcPath.path);

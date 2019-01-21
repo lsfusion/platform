@@ -25,29 +25,13 @@ public class WriteUtils {
             case "ftp": {
                 if(append)
                     throw new RuntimeException("APPEND is not supported in WRITE to FTP");
-                File file = null;
-                try {
-                    file = File.createTempFile("downloaded", ".tmp");
-                    fileData.write(file);
-                    storeFileToFTP(filePath.path, file, extension);
-                } finally {
-                    if (file != null && !file.delete())
-                        file.deleteOnExit();
-                }
+                storeFileToFTP(filePath.path, fileData, extension);
                 break;
             }
             case "sftp": {
                 if(append)
                     throw new RuntimeException("APPEND is not supported in WRITE to SFTP");
-                File file = null;
-                try {
-                    file = File.createTempFile("downloaded", ".tmp");
-                    fileData.write(file);
-                    storeFileToSFTP(filePath.path, file, extension);
-                } finally {
-                    if (file != null && !file.delete())
-                        file.deleteOnExit();
-                }
+                storeFileToSFTP(filePath.path, fileData, extension);
                 break;
             }
         }
@@ -113,7 +97,7 @@ public class WriteUtils {
                 ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                 ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
 
-                InputStream inputStream = new FileInputStream(file.getInputStream());
+                InputStream inputStream = file.getInputStream();
                 boolean done = ftpClient.storeFile(remoteFile, inputStream);
                 inputStream.close();
                 if (done)

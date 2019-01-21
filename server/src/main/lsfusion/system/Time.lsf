@@ -19,7 +19,7 @@ currentHour = extractHour(currentTime());
 currentMinute = extractMinute(currentTime());
 currentSecond = extractSecond(currentTime());
 
-currentDate 'Тек. дата' = DATA DATE ();
+currentDate '{time.current.date}' = DATA DATE ();
 
 extractYear = FORMULA INTEGER PG '(extract(year from ($1)))', MS 'datepart(yy, $1)';
 extractMonthNumber = FORMULA INTEGER PG '(extract(month from ($1)))', MS 'datepart(mm, $1)';
@@ -28,7 +28,6 @@ extractDay = FORMULA INTEGER PG '(extract(day from ($1)))', MS 'datepart(dd, $1)
 currentDay = extractDay(currentDate());
 currentMonth  = extractMonthNumber(currentDate());
 currentYear = extractYear(currentDate());
-
 dateDiffersCurrent(DATE date) = date IS DATE AND date != currentDate();
 
 currentTimeText() =  [FORMULA TEXT 'to_char(now(),($1))']('YYYYMMDDHH24MISSMS'); 
@@ -90,7 +89,7 @@ CLASS Month 'Месяц' {
 
 TABLE month (Month);
 
-number 'Номер месяца' = DATA INTEGER (Month);
+number '{time.number.month}' = DATA INTEGER (Month);
 onStarted() + { 
     number(Month d) <- 1 WHERE d == Month.january; 
     number(Month d) <- 2 WHERE d == Month.february; 
@@ -106,12 +105,12 @@ onStarted() + {
     number(Month d) <- 12 WHERE d == Month.december; 
 }
 
-month 'Месяц (ИД)' (number) = GROUP AGGR Month month BY number(month);
+month '{time.month.number}' (number) = GROUP AGGR Month month BY number(month);
 
-extractMonth 'Месяц (ИД)' (DATE date) = month(extractMonthNumber(date));
-extractMonthName 'Месяц' (DATE date) = staticCaption(extractMonth(date));
+extractMonth '{time.extract.month}' (DATE date) = month(extractMonthNumber(date));
+extractMonthName '{time.extract.month.name}' (DATE date) = staticCaption(extractMonth(date));
 
-FORM months 'Месяца'
+FORM months '{time.form.months}'
     OBJECTS m = Month
     PROPERTIES(m) READONLY staticCaption, number
     ORDER number(m)
@@ -131,7 +130,7 @@ CLASS DOW 'День недели' {
 }
 TABLE dow (DOW);
 
-number 'Номер дня недели' = DATA INTEGER (DOW);
+number '{time.number.dow}' = DATA INTEGER (DOW);
 onStarted() + { 
     number(DOW d) <- 0 WHERE d == DOW.sunday; 
     number(DOW d) <- 1 WHERE d == DOW.monday; 
@@ -142,7 +141,7 @@ onStarted() + {
     number(DOW d) <- 6 WHERE d == DOW.saturday; 
 }
 
-numberM 'Номер дня недели' = DATA INTEGER (DOW);
+numberM '{time.number.dow}' = DATA INTEGER (DOW);
 onStarted() + { 
     numberM(DOW d) <- 0 WHERE d == DOW.monday; 
     numberM(DOW d) <- 1 WHERE d == DOW.tuesday; 
@@ -153,18 +152,18 @@ onStarted() + {
     numberM(DOW d) <- 6 WHERE d == DOW.sunday; 
 }
 
-FORM DOWs 'Дни недели'
+FORM DOWs '{time.form.dows}'
     OBJECTS d = DOW
     PROPERTIES(d) READONLY staticCaption, numberM
     ORDER numberM(d)
     LIST DOW OBJECT d
 ;
 
-DOW 'День недели (ИД)' (number) = GROUP AGGR DOW dow BY number(dow);
+DOW '{time.dow.number}' (number) = GROUP AGGR DOW dow BY number(dow);
 
 extractDOWNumber = [ FORMULA INTEGER PG '(extract(dow from ($1)))', MS '(DATEPART(dw, $1)-1)'](DATE date AS DATE);
-extractDOW 'День недели (ИД)' (DATE date) = DOW(extractDOWNumber(date));
-extractDOWName 'День недели' (DATE date) = staticCaption(extractDOW(date)) CHARWIDTH 12;
+extractDOW '{time.extract.dow}' (DATE date) = DOW(extractDOWNumber(date));
+extractDOWName '{time.extract.dow.name}' (DATE date) = staticCaption(extractDOW(date)) CHARWIDTH 12;
 
 distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) (+) (7 IF number(d2) < number(d1));     
 
