@@ -2,6 +2,7 @@ package lsfusion.utils.utils;
 
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
+import lsfusion.base.RawFileData;
 import lsfusion.server.logics.property.actions.file.FTPPath;
 import lsfusion.server.logics.property.actions.file.Path;
 import lsfusion.server.logics.property.actions.file.ReadUtils;
@@ -42,7 +43,7 @@ public class FileUtils {
                             WriteUtils.storeFileToFTP(destPath.path, (RawFileData) readResult.fileBytes, null);
                             break;
                         case "sftp":
-                            WriteUtils.storeFileToSFTP(destPath.path, sourceFile, null);
+                            WriteUtils.storeFileToSFTP(destPath.path, (RawFileData) readResult.fileBytes, null);
                             break;
                     }
                 } finally {

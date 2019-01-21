@@ -64,10 +64,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
                     targetProp.change((FileData)readResult.fileBytes, context);
                 else
                     targetProp.change((RawFileData)readResult.fileBytes, context);
-                }
             }
-            if(readResult.error != null)
-                throw new RuntimeException(readResult.error);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
