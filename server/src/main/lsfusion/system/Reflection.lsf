@@ -2,36 +2,36 @@ MODULE Reflection;
 
 REQUIRE System, Authentication;
 
-CLASS PropertyGroup 'Родит. группа';
+CLASS PropertyGroup '{reflection.property.group}';
 TABLE propertyGroup (PropertyGroup);
 
 TABLE propertyGroupPropertyGroup (PropertyGroup, PropertyGroup);
-parent 'Родит. группа' = DATA PropertyGroup (PropertyGroup);
-level 'Уровень' (PropertyGroup child, PropertyGroup parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
+parent '{reflection.parent.property.group}' = DATA PropertyGroup (PropertyGroup);
+level '{reflection.level}' (PropertyGroup child, PropertyGroup parent) = RECURSION 1l IF child IS PropertyGroup AND parent == child
                                                                       STEP 2l IF parent == parent($parent) MATERIALIZED;
 
-caption 'Имя' = DATA VARSTRING[250] (PropertyGroup);
-number 'Номер' = DATA INTEGER (PropertyGroup);
-SID 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
-propertyGroup 'Свойство' (sID) = GROUP AGGR PropertyGroup propertyGroup WHERE propertyGroup IS PropertyGroup BY SID(propertyGroup);
+caption '{reflection.caption.property.group}' = DATA VARSTRING[250] (PropertyGroup);
+number '{reflection.number.property.group}' = DATA INTEGER (PropertyGroup);
+SID '{reflection.sid.property.group}' = DATA VARSTRING[100] (PropertyGroup);
+propertyGroup '{reflection.property.group.sid}' (sID) = GROUP AGGR PropertyGroup propertyGroup WHERE propertyGroup IS PropertyGroup BY SID(propertyGroup);
 
 
-CLASS NavigatorElement 'Элемент навигатора';
-CLASS NavigatorAction 'Действие' : NavigatorElement;
-CLASS NavigatorForm 'Форма' : NavigatorElement;
-CLASS NavigatorFolder 'Папка' : NavigatorElement;    
+CLASS NavigatorElement '{reflection.navigator.element}';
+CLASS NavigatorAction '{reflection.navigator.action}' : NavigatorElement;
+CLASS NavigatorForm '{reflection.navigator.form}' : NavigatorElement;
+CLASS NavigatorFolder '{reflection.navigator.folder}' : NavigatorElement;    
 
 
 TABLE navigatorElement (NavigatorElement);
 TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 
-caption 'Название элемента навигатора' = DATA VARSTRING[250] (NavigatorElement);
-canonicalName 'Каноническое имя элемента навигатора' = DATA VARSTRING[100] (NavigatorElement);
-number 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElementCanonicalName 'Элемент навигатора' (sid) = GROUP AGGR NavigatorElement navigatorElement WHERE navigatorElement IS NavigatorElement BY canonicalName(navigatorElement);
+caption '{reflection.caption.navigator.element}' = DATA VARSTRING[250] (NavigatorElement);
+canonicalName '{reflection.canonical.name.navigator.element}' = DATA VARSTRING[100] (NavigatorElement);
+number '{reflection.number.navigator.element}' = DATA INTEGER (NavigatorElement);
+navigatorElementCanonicalName '{reflection.navigator.element}' (sid) = GROUP AGGR NavigatorElement navigatorElement WHERE navigatorElement IS NavigatorElement BY canonicalName(navigatorElement);
 
-parent 'Родительский элемент' = DATA NavigatorElement (NavigatorElement);
-level 'Уровень' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
+parent '{reflection.parent.navigator.element}' = DATA NavigatorElement (NavigatorElement);
+level '{reflection.level}' (NavigatorElement child, NavigatorElement parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
                                                               STEP 2l IF parent == parent($parent) MATERIALIZED;
 
 isNavigatorFolder (NavigatorElement element) = element IS NavigatorFolder;
@@ -45,50 +45,50 @@ CLASS Form 'Форма' {
 TABLE form (Form);
 TABLE formNames (VARSTRING[100]);
 
-caption 'Название формы' = DATA VARSTRING[250] (Form);
-canonicalName 'Каноническое имя формы' = DATA VARSTRING[100] (Form);
-form 'Форма' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
+caption '{reflection.caption.form}' = DATA VARSTRING[250] (Form);
+canonicalName '{reflection.canonical.name.form}' = DATA VARSTRING[100] (Form);
+form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // для profiler'а
 is (Form form) = form IS Form;
 
 currentForm = NATIVE Form ();
 
-CLASS ABSTRACT ActionOrProperty 'Свойство или действие';
+CLASS ABSTRACT ActionOrProperty '{reflection.action.or.property}';
 TABLE actionOrProperty(ActionOrProperty);
 
-CLASS Property 'Свойство' : ActionOrProperty;
+CLASS Property '{reflection.property}' : ActionOrProperty;
 TABLE property (Property);
 
-CLASS Action 'Действие' : ActionOrProperty;
+CLASS Action '{reflection.action}' : ActionOrProperty;
 TABLE action (Action);
 
-parent 'Родит. группа' = DATA PropertyGroup (ActionOrProperty);
-number 'Номер' = DATA INTEGER (ActionOrProperty);
-canonicalName 'Имя свойства' = DATA STRING[512] (Property) IN id;
-canonicalName 'Имя свойства' = DATA STRING[512] (Action) IN id;
-canonicalName 'Имя свойства' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
-caption 'Заголовок' = DATA VARISTRING[250] (ActionOrProperty) IN base;
-annotation 'Аннотация' = DATA VARSTRING[100] (ActionOrProperty);
-class 'Класс свойства' = DATA VARSTRING[100] (ActionOrProperty);
+parent '{reflection.parent.action.or.property}' = DATA PropertyGroup (ActionOrProperty);
+number '{reflection.number.action.or.property}' = DATA INTEGER (ActionOrProperty);
+canonicalName '{reflection.canonical.name.property}' = DATA STRING[512] (Property) IN id;
+canonicalName '{reflection.canonical.name.action}' = DATA STRING[512] (Action) IN id;
+canonicalName '{reflection.canonical.name.action.or.property}' (ActionOrProperty p) = MULTI canonicalName[Property](p), canonicalName[Action](p);
+caption '{reflection.caption.action.or.property}' = DATA VARISTRING[250] (ActionOrProperty) IN base;
+annotation '{reflection.annotation.action.or.property}' = DATA VARSTRING[100] (ActionOrProperty);
+class '{reflection.class.action.or.property}' = DATA VARSTRING[100] (ActionOrProperty);
 
-dbName 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
+dbName '{reflection.db.name.property}' = DATA VARSTRING[100] (Property) IN base;
 leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
-loggable 'Логируется' = DATA BOOLEAN (Property);
-userLoggable 'Логируется пользователем' = DATA BOOLEAN (Property);
-stored 'Постоянно хранимое' = DATA BOOLEAN (Property);
-isSetNotNull 'Не может быть null' = DATA BOOLEAN (Property);
-return 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
-complexity 'Сложность свойства' = DATA LONG (Property);
-tableSID 'Таблица' = DATA VARSTRING[100] (Property);
+loggable '{reflection.loggable.property}' = DATA BOOLEAN (Property);
+userLoggable '{reflection.user.loggable.property}' = DATA BOOLEAN (Property);
+stored '{reflection.stored.property}' = DATA BOOLEAN (Property);
+isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
+return '{reflection.return.property}' = DATA VARSTRING[100] (Property);
+complexity '{reflection.complexity.property}' = DATA LONG (Property);
+tableSID '{reflection.table.sid.property}' = DATA VARSTRING[100] (Property);
 
-stats 'Кол-во записей' = DATA INTEGER (Property);
-maxStatsProperty 'Максимальное кол-во записей для логируемого свойства' = DATA INTEGER ();
+stats '{reflection.stats.property}' = DATA INTEGER (Property);
+maxStatsProperty '{reflection.max.stats.property}' = DATA INTEGER ();
 CONSTRAINT SET (userLoggable(Property p)) AND maxStatsProperty() AND stats(p) > maxStatsProperty() 
-           MESSAGE 'Количество записей логируемого свойства не может превышать ' + maxStatsProperty();
+           MESSAGE '{reflection.constraint.max.stats.property} ' + maxStatsProperty();
            
-webServerUrl 'Web Server URL' = DATA STRING[100]();
+webServerUrl '{reflection.web.server.url}' = DATA STRING[100]();
 
-form 'Имя формы' = DATA Form (NavigatorElement);
-action 'Имя действия' = DATA Action (NavigatorAction);
+form '{reflection.form.navigator.element}' = DATA Form (NavigatorElement);
+action '{reflection.action.navigator.element}' = DATA Action (NavigatorAction);
 
 EXTEND FORM options PROPERTIES maxStatsProperty(), webServerUrl();
 DESIGN options { 
@@ -98,20 +98,20 @@ DESIGN options {
     } 
 }
 
-propertyCanonicalName 'Свойство' (cn) = GROUP AGGR Property property WHERE property IS Property BY canonicalName(property);
-actionCanonicalName 'Действие' (cn) = GROUP AGGR Action property WHERE property IS Action BY canonicalName(property);
-propertyTable 'Свойство' (string, sID) = GROUP AGGR Property property WHERE stored(property) BY tableSID(property), dbName(property);
+propertyCanonicalName '{reflection.property}' (cn) = GROUP AGGR Property property WHERE property IS Property BY canonicalName(property);
+actionCanonicalName '{reflection.action}' (cn) = GROUP AGGR Action property WHERE property IS Action BY canonicalName(property);
+propertyTable '{reflection.property}' (string, sID) = GROUP AGGR Property property WHERE stored(property) BY tableSID(property), dbName(property);
 
-quantity 'Количество разновидностей' = DATA INTEGER (Property);
-quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (Property);
-notNullQuantity 'Количество не null значений' = DATA INTEGER (Property);
-overStats 'Кол-во записей' (Property property) = OVERRIDE notNullQuantity(property), stats(property);
+quantity '{reflection.quantity.property}' = DATA INTEGER (Property);
+quantityTop '{reflection.quantity.top.property}' = DATA INTEGER (Property);
+notNullQuantity '{reflection.not.null.quantity.property}' = DATA INTEGER (Property);
+overStats '{reflection.stats.property}' (Property property) = OVERRIDE notNullQuantity(property), stats(property);
 
 hasNotNullQuantity() = GROUP SUM 1 IF notNullQuantity(Property property);
 
-lastRecalculate 'Последний пересчёт аггрегаций' = DATA DATETIME (Property);
+lastRecalculate '{reflection.last.recalculate.property}' = DATA DATETIME (Property);
 
-CLASS PropertyDraw 'Свойство на форме';
+CLASS PropertyDraw '{reflection.property.draw}';
 
 CLASS PropertyDrawShowStatus 'Показ свойства' {
     Show 'Показать',
@@ -129,172 +129,172 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-sid 'Код свойства на форме' = DATA VARSTRING[100] (PropertyDraw) IN id;
-caption 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
-form 'Форма' = DATA Form (PropertyDraw) INDEXED;
-nameForm 'Форма' (PropertyDraw pd) = canonicalName(form(pd)) IN id;
-groupObject 'Группа объектов' = DATA GroupObject (PropertyDraw);
-propertyDraw 'Свойство на форме' (form, sID) = GROUP AGGR PropertyDraw propertyDraw WHERE propertyDraw IS PropertyDraw BY form (propertyDraw), sid (propertyDraw);
-propertyDrawByFormNameAndPropertyDrawSid 'Код формы' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (form(str1), str2);
+sid '{reflection.sid.property.draw}' = DATA VARSTRING[100] (PropertyDraw) IN id;
+caption '{reflection.caption.property.draw}' = DATA VARSTRING[250] (PropertyDraw);
+form '{reflection.form.property.draw}' = DATA Form (PropertyDraw) INDEXED;
+nameForm '{reflection.form.property.draw}' (PropertyDraw pd) = canonicalName(form(pd)) IN id;
+groupObject '{reflection.group.object.property.draw}' = DATA GroupObject (PropertyDraw);
+propertyDraw '{reflection.property.draw}' (form, sID) = GROUP AGGR PropertyDraw propertyDraw WHERE propertyDraw IS PropertyDraw BY form (propertyDraw), sid (propertyDraw);
+propertyDrawByFormNameAndPropertyDrawSid '{reflection.property.draw.by.form.name.and.property.draw.sid}' (VARSTRING[100] str1, VARSTRING[100] str2) = propertyDraw (form(str1), str2);
 
-show 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
-show 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
+show '{reflection.show.property.draw}' = DATA PropertyDrawShowStatus (PropertyDraw);
+show '{reflection.show.property.draw.custom.user}' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);
 
-nameShow 'Показ свойства' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) CHARWIDTH 50;
-nameShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) CHARWIDTH 50;
+nameShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticName(show (propertyDraw)) CHARWIDTH 50;
+nameShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticName(show(propertyDraw, customUser)) CHARWIDTH 50;
 
-captionShow 'Показ свойства' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) CHARWIDTH 20;
-captionShow 'Показ свойства для пользователя' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) CHARWIDTH 20;
+captionShow '{reflection.show.property.draw}' (PropertyDraw propertyDraw) = staticCaption(show (propertyDraw)) CHARWIDTH 20;
+captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw propertyDraw, CustomUser customUser) = staticCaption(show(propertyDraw, customUser)) CHARWIDTH 20;
 
-columnCaption 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnCaption 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
+columnCaption '{reflection.column.caption.property.draw.custom.user}' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
+columnCaption '{reflection.column.caption.property.draw}' = DATA VARSTRING[100] (PropertyDraw);
 
-columnPattern 'Маска свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
-columnPattern 'Маска свойства' = DATA VARSTRING[100] (PropertyDraw);
+columnPattern '{reflection.column.pattern.property.draw.custom.user}' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
+columnPattern '{reflection.column.pattern.property.draw}' = DATA VARSTRING[100] (PropertyDraw);
 
-columnWidth 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnWidth 'Ширина' = DATA INTEGER (PropertyDraw);
+columnWidth '{reflection.column.width.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
+columnWidth '{reflection.column.width.property.draw}' = DATA INTEGER (PropertyDraw);
 
-columnOrder 'Порядок для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnOrder 'Порядок' = DATA INTEGER (PropertyDraw);
+columnOrder '{reflection.column.order.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
+columnOrder '{reflection.column.order.property.draw}' = DATA INTEGER (PropertyDraw);
 
-columnSort 'Сортировка для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
-columnSort 'Сортировка' = DATA INTEGER (PropertyDraw);
+columnSort '{reflection.column.sort.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
+columnSort '{reflection.column.sort.property.draw}' = DATA INTEGER (PropertyDraw);
 
-columnAscendingSort 'Восходящая сортировка для пользователя' = DATA BOOLEAN (PropertyDraw, CustomUser);
-columnAscendingSort 'Восходящая сортировка' = DATA BOOLEAN (PropertyDraw);
+columnAscendingSort '{reflection.column.ascending.sort.property.draw.custom.user}' = DATA BOOLEAN (PropertyDraw, CustomUser);
+columnAscendingSort '{reflection.column.ascending.sort.property.draw}' = DATA BOOLEAN (PropertyDraw);
 
-hasUserPreferences 'Настройки сохранены для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
+hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'= DATA BOOLEAN (GroupObject, CustomUser);
 countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
-CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
-hasUserPreferences 'Настройки сохранены' = DATA BOOLEAN (GroupObject);
+CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
+hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
 countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
-CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE 'Настройки не сохранены: спрятаны все колонки';
-hasUserPreferencesOverride 'Настройки сохранены' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
+CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
+hasUserPreferencesOverride '{reflection.has.user.preferences.group.object}' (GroupObject groupObject, CustomUser customUser) = OVERRIDE hasUserPreferences(groupObject, customUser), hasUserPreferences(groupObject) IF customUser IS CustomUser;
 
-fontSize 'Размер шрифта для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-fontSize 'Размер шрифта' = DATA INTEGER (GroupObject);
+fontSize '{reflection.font.size.group.object.custom.user}'= DATA INTEGER (GroupObject, CustomUser);
+fontSize '{reflection.font.size.group.object}' = DATA INTEGER (GroupObject);
 
-isFontBold 'Полужирный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-isFontBold 'Полужирный шрифт' = DATA BOOLEAN (GroupObject);
+isFontBold '{reflection.is.font.bold.group.object.custom.user}'= DATA BOOLEAN (GroupObject, CustomUser);
+isFontBold '{reflection.is.font.bold.group.object}' = DATA BOOLEAN (GroupObject);
 
-isFontItalic 'Курсивный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
-isFontItalic 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
+isFontItalic '{reflection.is.font.italic.group.object.custom.object}'= DATA BOOLEAN (GroupObject, CustomUser);
+isFontItalic '{reflection.is.font.italic.group.object}' = DATA BOOLEAN (GroupObject);
 
-pageSize 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-pageSize 'Размер страницы' = DATA INTEGER (GroupObject);
+pageSize '{reflection.page.size.group.object.custom.object}'= DATA INTEGER (GroupObject, CustomUser);
+pageSize '{reflection.page.size.group.object}' = DATA INTEGER (GroupObject);
 
-headerHeight 'Высота заголовков для пользователя'= DATA INTEGER (GroupObject, CustomUser);
-headerHeight 'Высота заголовков' = DATA INTEGER (GroupObject);
+headerHeight '{reflection.header.height.group.object.custom.object}'= DATA INTEGER (GroupObject, CustomUser);
+headerHeight '{reflection.header.height.group.object}' = DATA INTEGER (GroupObject);
 
-CLASS Table 'Таблица';
+CLASS Table '{reflection.table}';
 TABLE tables (Table);
 
-sid 'Имя таблицы' = DATA VARISTRING[100] (Table);
-table 'Имя таблицы' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
-rows 'Количество записей' = DATA INTEGER (Table);
-skipVacuum 'Не очищать' = DATA BOOLEAN (Table);
-table 'Таблица' = DATA Table (TableKey);
+sid '{reflection.sid.table}' = DATA VARISTRING[100] (Table);
+table '{reflection.table}' (sID) = GROUP AGGR Table table WHERE table IS Table BY sid (table);
+rows '{reflection.row.table}' = DATA INTEGER (Table);
+skipVacuum '{reflection.skip.vacuum.table}' = DATA BOOLEAN (Table);
+table '{reflection.table}' = DATA Table (TableKey);
 sidTable (TableKey tableKey) = sid(table(tableKey));
 
-CLASS TableKey 'Ключ';
+CLASS TableKey '{reflection.table.key}';
 TABLE tableKey (TableKey);
 
-sid 'Код ключа' = DATA VARISTRING[100] (TableKey);
-tableKey 'Ключ' (sID) = GROUP AGGR TableKey tableKey WHERE tableKey IS TableKey BY sid (tableKey);
-class 'Класс ключа' = DATA VARISTRING[40] (TableKey);
-classSID 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
-name 'Имя ключа' = DATA VARISTRING[20] (TableKey);
-quantity 'Количество разновидностей' = DATA INTEGER (TableKey);
-quantityTop 'Количество разновидностей (Top)' = DATA INTEGER (TableKey);
-overQuantity 'Количество разновидностей' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
+sid '{reflection.sid.table.key}' = DATA VARISTRING[100] (TableKey);
+tableKey '{reflection.table.key}' (sID) = GROUP AGGR TableKey tableKey WHERE tableKey IS TableKey BY sid (tableKey);
+class '{reflection.class.table.key}' = DATA VARISTRING[40] (TableKey);
+classSID '{reflection.class.sid.table.key}' = DATA VARSTRING[100] (TableKey);
+name '{reflection.name.table.key}' = DATA VARISTRING[20] (TableKey);
+quantity '{reflection.quantity.table.key}' = DATA INTEGER (TableKey);
+quantityTop '{reflection.quantity.top.table.key}' = DATA INTEGER (TableKey);
+overQuantity '{reflection.quantity.table.key}' (TableKey tableKey) = OVERRIDE quantityTop(tableKey), quantity(tableKey);
 
-CLASS TableColumn 'Колонка';
+CLASS TableColumn '{reflection.table.column}';
 TABLE tableColumn (TableColumn);
 
-table 'Таблица' = DATA Table(TableColumn);
-sid 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
+table '{reflection.table.table.column}' = DATA Table(TableColumn);
+sid '{reflection.sid.table.column}' = DATA VARISTRING[100] (TableColumn);
 tableSID (sid) = GROUP MAX Table table BY sid(table);
 
 longSID(TableColumn tableColumn) = sid(table(tableColumn)) + '.' + sid(tableColumn);
-tableColumnLong 'Колонка' (sID) = GROUP AGGR TableColumn tableColumn WHERE tableColumn IS TableColumn BY longSID(tableColumn); 
+tableColumnLong '{reflection.table.column}' (sID) = GROUP AGGR TableColumn tableColumn WHERE tableColumn IS TableColumn BY longSID(tableColumn); 
 tableColumnSID (sid) = GROUP MAX TableColumn tableColumn BY sid(tableColumn);
-property 'Свойство' (TableColumn tableColumn) = propertyTable(sid(table(tableColumn)), sid(tableColumn));
-lastRecalculateProperty 'Последний пересчёт аггрегаций' (TableColumn tableColumn) = lastRecalculate(property(tableColumn));
-caption 'Заголовок свойства' (TableColumn tableColumn) = caption(property(tableColumn));
-canonicalName 'Каноническое имя свойства' (TableColumn tableColumn) = canonicalName(property(tableColumn));
-quantity 'Количество разновидностей' (TableColumn tableColumn) = quantity(property(tableColumn));
-quantityTop 'Количество разновидностей (Top)' (TableColumn tableColumn) = quantityTop(property(tableColumn));
-overQuantity 'Количество разновидностей' (TableColumn tableColumn) = OVERRIDE quantityTop(tableColumn), quantity(tableColumn);
-notNullQuantity 'Количество не null значений' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
+property '{reflection.property}' (TableColumn tableColumn) = propertyTable(sid(table(tableColumn)), sid(tableColumn));
+lastRecalculateProperty '{reflection.last.recalculate.property}' (TableColumn tableColumn) = lastRecalculate(property(tableColumn));
+caption '{reflection.caption.table.column}' (TableColumn tableColumn) = caption(property(tableColumn));
+canonicalName '{reflection.canonical.name.table.column}' (TableColumn tableColumn) = canonicalName(property(tableColumn));
+quantity '{reflection.quantity.top.property}' (TableColumn tableColumn) = quantity(property(tableColumn));
+quantityTop '{reflection.quantity.top.property}' (TableColumn tableColumn) = quantityTop(property(tableColumn));
+overQuantity '{reflection.quantity.top.property}' (TableColumn tableColumn) = OVERRIDE quantityTop(tableColumn), quantity(tableColumn);
+notNullQuantity '{reflection.not.null.quantity.property}' (TableColumn tableColumn) = notNullQuantity(property(tableColumn));
 tableColumn(Property property) = tableColumnLong(tableSID(property) + '.' + dbName(property));
-annotation 'Аннотация' (TableColumn tableColumn) = annotation(property(tableColumn));
-return 'Возвращаемый класс свойства ' (TableColumn tableColumn) = return(property(tableColumn));
+annotation '{reflection.annotation.action.or.property}' (TableColumn tableColumn) = annotation(property(tableColumn));
+return '{reflection.return.table.column}' (TableColumn tableColumn) = return(property(tableColumn));
 
-percentNotNull 'Не null, %' (TableColumn tableColumn) = IF rows (table(tableColumn)) == 0
+percentNotNull '{reflection.percent.not.null}' (TableColumn tableColumn) = IF rows (table(tableColumn)) == 0
                                                           THEN 100.00
                                                           ELSE NUMERIC[15,2](notNullQuantity(tableColumn)) / rows (table(tableColumn)) * 100;
-sparseColumns 'Количество разреженных колонок' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
+sparseColumns '{reflection.sparse.columns}' (table) = GROUP SUM 1 BY table(TableColumn tableColumn) IF percentNotNull(tableColumn) < 50;
 
-notRecalculate 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
-notRecalculate 'Не пересчитывать аггрегации' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
+notRecalculate '{reflection.not.recalculate}' = DATA BOOLEAN (TableColumn);
+notRecalculate '{reflection.not.recalculate}' (VARISTRING[100] sid) = notRecalculate(tableColumnSID(sid));
 
-recalculateAggregation 'Пересчитать агрегации'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
-recalculateAggregationWithDependencies 'Пересчитать агрегации (+зависимости)'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
-recalculateAggregationWithDependents 'Пересчитать агрегации (+зависимые)'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
-checkAggregation 'Проверить агрегации'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+recalculateAggregation '{reflection.recalculate.aggregation}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependencies '{reflection.recalculate.aggregation.with.dependencies}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependents '{reflection.recalculate.aggregation.with.dependents}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregation '{reflection.check.aggregation}'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
 checkAggregation(VARISTRING[100] string)  { checkAggregation(tableColumnSID(string)); }
 dropDB  INTERNAL  'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
-drop 'Окончательно удалить колонку' (DropColumn cl)  { 
+drop '{reflection.drop.drop.column}' (DropColumn cl)  { 
     dropDB(cl);
     DELETE cl;
 }
 
-recalculateColumnsAggregations 'Пересчитать агрегации колонок' (Table table)  { 
+recalculateColumnsAggregations '{reflection.recalculate.column.aggregations}' (Table table)  { 
     FOR table == table(TableColumn tableColumn) AND tableColumn IS TableColumn DO {
         recalculateAggregation(tableColumn);    
     }
 }
-checkClasses 'Проверить классы таблицы'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClasses '{reflection.check.classes}'  INTERNAL  'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
 checkClasses(VARISTRING[100] string)  { checkClasses(table(string)); }
-recalculateClasses 'Пересчитать классы таблицы'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
-notRecalculateStats 'Не пересчитывать статистику таблицы' = DATA BOOLEAN (Table);
-notRecalculateStats 'Не пересчитывать статистику таблицы' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
-recalculateStats 'Пересчитать статистику таблицы'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
-pack 'Упаковать таблицу'  INTERNAL  'lsfusion.server.logics.reflection.PackTableActionProperty' (Table);
+recalculateClasses '{reflection.recalculate.classes}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
+notRecalculateStats '{reflection.not.recalculate.stats}' = DATA BOOLEAN (Table);
+notRecalculateStats '{reflection.not.recalculate.stats}' (VARISTRING[100] sid) = notRecalculateStats(tableSID(sid));
+recalculateStats '{reflection.recalculate.stats}'  INTERNAL  'lsfusion.server.logics.reflection.RecalculateTableStatsActionProperty' (Table);
+pack '{reflection.pack.table}'  INTERNAL  'lsfusion.server.logics.reflection.PackTableActionProperty' (Table);
 
-CLASS DropColumn 'Удалённая колонка';
+CLASS DropColumn '{reflection.drop.column}';
 TABLE dropColumn (DropColumn);
 
-sid 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
-dropColumn 'Удалённая колонка' (sID) = GROUP NAGGR DropColumn dropColumn WHERE dropColumn IS DropColumn BY sid (dropColumn);
-sidTable 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
-time 'Время удаления' = DATA DATETIME (DropColumn);
-revision 'Версия' = DATA VARSTRING[10] (DropColumn);
+sid '{reflection.sid.drop.column}' = DATA VARSTRING[100] (DropColumn);
+dropColumn '{reflection.drop.column}' (sID) = GROUP NAGGR DropColumn dropColumn WHERE dropColumn IS DropColumn BY sid (dropColumn);
+sidTable '{reflection.sid.table.drop.column}' = DATA VARSTRING[100] (DropColumn);
+time '{reflection.time.drop.column}' = DATA DATETIME (DropColumn);
+revision '{reflection.revision.drop.column}' = DATA VARSTRING[10] (DropColumn);
 
-CLASS GroupObject 'Группа объектов';
+CLASS GroupObject '{reflection.group.object}';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sid 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN id;
-form 'Форма' = DATA Form (GroupObject);
+sid '{reflection.sid.group.object}' = DATA VARSTRING[100] (GroupObject) IN id;
+form '{reflection.form.group.object}' = DATA Form (GroupObject);
 canonicalNameForm (GroupObject groupObject) = canonicalName (form(groupObject)) IN id;
 captionForm (GroupObject groupObject) = caption (form(groupObject)) IN id; 
-groupSIDFormGroupObject 'Группа объектов' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject WHERE groupObject IS GroupObject BY sid (groupObject), canonicalNameForm (groupObject);
+groupSIDFormGroupObject '{reflection.group.object}' (sidGroupObject, canonicalNameNavigatorElement) = GROUP AGGR GroupObject groupObject WHERE groupObject IS GroupObject BY sid (groupObject), canonicalNameForm (groupObject);
 
-CLASS FormGrouping 'Группировка';
+CLASS FormGrouping '{reflection.form.grouping}';
 TABLE formGrouping (FormGrouping); 
 
-name 'Имя группировки' = DATA VARSTRING[100] (FormGrouping);
+name '{reflection.name.form.grouping}' = DATA VARSTRING[100] (FormGrouping);
 groupObject = DATA GroupObject (FormGrouping);
-itemQuantity 'Количество записей' = DATA BOOLEAN (FormGrouping);
-formGrouping 'Группировка' (nameFormGrouping, groupObject) = GROUP AGGR FormGrouping formGrouping WHERE formGrouping IS FormGrouping BY name(formGrouping), groupObject(formGrouping);
+itemQuantity '{reflection.item.quantity.form.grouping}' = DATA BOOLEAN (FormGrouping);
+formGrouping '{reflection.form.grouping}' (nameFormGrouping, groupObject) = GROUP AGGR FormGrouping formGrouping WHERE formGrouping IS FormGrouping BY name(formGrouping), groupObject(formGrouping);
 
 TABLE formGroupingPropertyDraw (FormGrouping, PropertyDraw);
-groupOrder 'Порядок группировки' = DATA INTEGER (FormGrouping, PropertyDraw);
-sum 'Суммировать' = DATA BOOLEAN (FormGrouping, PropertyDraw);
-max 'Максимум' = DATA BOOLEAN (FormGrouping, PropertyDraw);
-pivot 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+groupOrder '{reflection.group.order.form.grouping}' = DATA INTEGER (FormGrouping, PropertyDraw);
+sum '{reflection.sum.form.grouping}' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+max '{reflection.max.form.grouping}' = DATA BOOLEAN (FormGrouping, PropertyDraw);
+pivot '{reflection.pivot.form.grouping}' = DATA BOOLEAN (FormGrouping, PropertyDraw);
 
 changeQuantity(Property p, INTEGER q)  { 
     quantity(p) <- q;
@@ -318,7 +318,7 @@ changeNotNullQuantity(TableColumn tc)  {
         }      
 }
 
-FORM physicalModel 'Таблицы'
+FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sid, rows, sparseColumns
     PROPERTIES(t) GRID recalculateColumnsAggregations, checkClasses, recalculateClasses, notRecalculateStats, recalculateStats, pack, skipVacuum
@@ -337,7 +337,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(dc) drop GRID
 
     FILTERGROUP filtersForm
-        FILTER 'Фильтр по таблице' table(tc)==t 'F8' DEFAULT
+        FILTER '{reflection.form.physical.model.filter.table}' table(tc)==t 'F8' DEFAULT
 
     FILTERS
         table(tk)==t
@@ -350,37 +350,37 @@ DESIGN physicalModel {
             type = TABBED;
             NEW modelContainer {
                 fill = 1;
-                caption = 'Таблицы';
+                caption = '{reflection.form.physical.model.caption.tables}';
                 MOVE BOX(t) {
-                    caption = 'Таблицы';
+                    caption = '{reflection.form.physical.model.caption.tables}';
                     fill = 1;
                 };
                 MOVE BOX(tk) {
-                    caption = 'Ключи';
+                    caption = '{reflection.form.physical.model.caption.keys}';
                     fill = 0.5;
                 }
                 MOVE BOX(tc) {
-                    caption = 'Колонки';
+                    caption = '{reflection.form.physical.model.caption.columns}';
                     fill = 1;
                 }
             }
 
             NEW dropColumnsContainer {
                 fill = 1;
-                caption = 'Удалённые колонки';
+                caption = '{reflection.form.physical.model.caption.deleted.columns}';
                 MOVE BOX(dc);
             }
         }
     }
 }
 
-FORM navigatorElements 'Элементы навигатора'
+FORM navigatorElements '{reflection.form.navigator.elements}'
     TREE neTree ne=NavigatorElement PARENT parent
     PROPERTIES(ne) READONLY caption, canonicalName, number
     ORDER number(ne)   
 ;
 
-FORM forms 'Формы'
+FORM forms '{reflection.form.forms}'
 
     OBJECTS tf=Form
     PROPERTIES(tf) READONLY canonicalName, caption
@@ -420,7 +420,7 @@ FORM forms 'Формы'
         groupObject(fg)==g 
 
     FILTERGROUP filtersForm
-        FILTER 'Свойства только текущей группы объектов' groupObject(p)==g 'F8'
+        FILTER '{reflection.form.forms.filter.group.object}' groupObject(p)==g 'F8'
 ;
 
 DESIGN forms {
@@ -440,7 +440,7 @@ DESIGN forms {
 
 dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 
-FORM properties 'Свойства'
+FORM properties '{reflection.form.properties}'
     OBJECTS p=Property
     PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
      quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE, lastRecalculate
@@ -464,20 +464,20 @@ DESIGN properties {
 
             NEW treeContainer {
                 fill = 1;
-                caption = 'Дерево';
+                caption = '{reflection.form.properties.caption.tree}';
                 MOVE BOX(TREE treePropertiesObject);
             }
 
             NEW tableContainer {
                 fill = 1;
-                caption = 'Таблица';
+                caption = '{reflection.form.properties.caption.table}';
                 MOVE BOX(p);
             }
         }
     }
 }
 
-FORM actions 'Действия'
+FORM actions '{reflection.form.actions}'
     OBJECTS p=Action
     PROPERTIES(p) GRID READONLY caption, canonicalName, annotation, class, parent, number
 
@@ -500,13 +500,13 @@ DESIGN actions {
 
             NEW treeContainer {
                 fill = 1;
-                caption = 'Дерево';
+                caption = '{reflection.form.actions.caption.tree}';
                 MOVE BOX(TREE treeActionsObject);
             }
 
             NEW tableContainer {
                 fill = 1;
-                caption = 'Таблица';
+                caption = '{reflection.form.actions.caption.table}';
                 MOVE BOX(p);
             }
         }
