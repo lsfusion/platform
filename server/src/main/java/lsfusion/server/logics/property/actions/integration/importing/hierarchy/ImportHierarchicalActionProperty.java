@@ -3,9 +3,12 @@ package lsfusion.server.logics.property.actions.integration.importing.hierarchy;
 import lsfusion.base.ExternalUtils;
 import lsfusion.base.RawFileData;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.integration.hierarchy.Node;
@@ -38,12 +41,16 @@ public abstract class ImportHierarchicalActionProperty<T extends Node<T>> extend
 
         RawFileData file = readFile(context.getKeyValue(fileInterface));
 
-        ParseNode parseNode = formEntity.getImportHierarchy().getIntegrationHierarchy();
+        StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
         if(file != null) {
             T rootNode = getRootNode(file, root);
-            parseNode.importNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), importData);
+            hierarchy.getIntegrationHierarchy().importNode(rootNode, MapFact.<ObjectEntity, Object>EMPTY(), importData);
         }
+        // filling properties that were not imported (to drop their changes too)
+        for(ImOrderSet<PropertyDrawEntity> properties : hierarchy.getAllProperties())
+            for(PropertyDrawEntity<?> property : properties)
+                importData.addProperty(property.getImportProperty(), true); // isExclusive can be false, it doesn't matter        
         return importData;
     }
 

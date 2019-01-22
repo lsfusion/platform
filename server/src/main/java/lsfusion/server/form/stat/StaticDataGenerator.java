@@ -83,6 +83,10 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             return groupHierarchy.getDependencies(group);
         }
         
+        public Iterable<ImOrderSet<PropertyDrawEntity>> getAllProperties() {
+            return properties.valueIt();
+        }
+        
         public ImOrderSet<PropertyDrawEntity> getProperties(GroupObjectEntity group) {
             ImOrderSet<PropertyDrawEntity> groupProperties = properties.get(group != null ? group : GroupObjectEntity.NULL);
             if(groupProperties != null)
