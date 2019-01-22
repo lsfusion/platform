@@ -53,60 +53,63 @@ public class ReadUtils {
         if(!filePath.type.equals("file"))
             localFile = File.createTempFile("downloaded", ".tmp");
 
-        File file = localFile;
-        String extension = null;
-        switch (filePath.type) {
-            case "file":
-                file = new File(filePath.path);
-                extension = BaseUtils.getFileExtension(filePath.path);
-                break;
-            case "http":
-            case "https":
-                copyHTTPToFile(filePath, localFile);
-                extension = BaseUtils.getFileExtension(filePath.path);
-                break;
-            case "ftp":
-                copyFTPToFile(filePath.path, localFile);
-                extension = BaseUtils.getFileExtension(filePath.path);
-                break;
-            case "sftp":
-                copySFTPToFile(filePath.path, localFile);
-                extension = BaseUtils.getFileExtension(filePath.path);
-                break;
-            case "jdbc":
-                copyJDBCToFile(filePath.path, localFile);
-                extension = "jdbc";
-                break;
-            case "mdb":
-                copyMDBToFile(filePath.path, localFile);
-                extension = "mdb";
-                break;
-        }
-        Object fileBytes; // RawFileData or FileData
-        if (file != null && file.exists()) {
-            if (isBlockingFileRead) {
-                try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
-                    try (java.nio.channels.FileLock lock = channel.lock()) {
-                        if (isDynamicFormatFileClass) {
-                            fileBytes = new FileData(readBytesFromChannel(channel), extension);
-                        } else {
-                            fileBytes = readBytesFromChannel(channel);
+        try {
+            File file = localFile;
+            String extension = null;
+            switch (filePath.type) {
+                case "file":
+                    file = new File(filePath.path);
+                    extension = BaseUtils.getFileExtension(filePath.path);
+                    break;
+                case "http":
+                case "https":
+                    copyHTTPToFile(filePath, localFile);
+                    extension = BaseUtils.getFileExtension(filePath.path);
+                    break;
+                case "ftp":
+                    copyFTPToFile(filePath.path, localFile);
+                    extension = BaseUtils.getFileExtension(filePath.path);
+                    break;
+                case "sftp":
+                    copySFTPToFile(filePath.path, localFile);
+                    extension = BaseUtils.getFileExtension(filePath.path);
+                    break;
+                case "jdbc":
+                    copyJDBCToFile(filePath.path, localFile);
+                    extension = "jdbc";
+                    break;
+                case "mdb":
+                    copyMDBToFile(filePath.path, localFile);
+                    extension = "mdb";
+                    break;
+            }
+            Object fileBytes; // RawFileData or FileData
+            if (file != null && file.exists()) {
+                if (isBlockingFileRead) {
+                    try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
+                        try (java.nio.channels.FileLock lock = channel.lock()) {
+                            if (isDynamicFormatFileClass) {
+                                fileBytes = new FileData(readBytesFromChannel(channel), extension);
+                            } else {
+                                fileBytes = readBytesFromChannel(channel);
+                            }
                         }
+                    }
+                } else {
+                    if (isDynamicFormatFileClass) {
+                        fileBytes = new FileData(new RawFileData(file), extension);
+                    } else {
+                        fileBytes = new RawFileData(file);
                     }
                 }
             } else {
-                if (isDynamicFormatFileClass) {
-                    fileBytes = new FileData(new RawFileData(file), extension);
-                } else {
-                    fileBytes = new RawFileData(file);
-                }
+                throw new RuntimeException("Read Error. File not found: " + sourcePath);
             }
-            if(localFile != null && !localFile.delete())
+            return new ReadResult(fileBytes, filePath.type);
+        } finally {
+            if (localFile != null && !localFile.delete()) 
                 localFile.deleteOnExit();
-        } else {
-            throw new RuntimeException("Read Error. File not found: " + sourcePath);
         }
-        return new ReadResult(fileBytes, filePath.type);
     }
 
     public static String showReadFileDialog(String path) {
