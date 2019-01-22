@@ -38,7 +38,15 @@ public class ImageClass extends StaticFormatFileClass {
     }
 
     public String getOpenExtension(RawFileData file) {
-        return "jpg"; //, jpeg, bmp, png";
+        String extension = null;
+        if (file.getBytes().length >= 2) {
+            if (file.getBytes()[0] == (byte) 0x89 && file.getBytes()[1] == (byte) 0x50) {
+                extension = "png";
+            } else if (file.getBytes()[0] == (byte) 0x42 && file.getBytes()[1] == (byte) 0x4D) {
+                extension = "bmp";
+            }
+        }
+        return extension == null ? "jpg" : extension;
     }
 
     @Override
