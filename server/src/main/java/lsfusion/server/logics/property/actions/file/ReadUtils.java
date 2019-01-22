@@ -75,7 +75,7 @@ public class ReadUtils {
                     extension = BaseUtils.getFileExtension(filePath.path);
                     break;
                 case "jdbc":
-                    copyJDBCToFile(filePath.path, localFile);
+                    copyJDBCToFile(sourcePath, localFile);
                     extension = "jdbc";
                     break;
                 case "mdb":
@@ -235,7 +235,7 @@ public class ReadUtils {
 
     private static void copyJDBCToFile(String query, File file) throws SQLException {
         /*jdbc://connectionString@query*/
-        Pattern queryPattern = Pattern.compile("([^@]*)@(.*)");
+        Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
         if (queryMatcher.matches()) {
             Connection conn = null;
