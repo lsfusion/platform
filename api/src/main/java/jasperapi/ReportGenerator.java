@@ -723,7 +723,7 @@ public class ReportGenerator {
                 tempFile.deleteOnExit();
             }
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в " + type, e);
+            throw new RuntimeException(ApiResourceBundle.getString("exceptions.error.exporting.to", type), e);
         }
     }
 

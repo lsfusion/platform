@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.ColorGridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
@@ -37,6 +37,6 @@ public class GColorType extends GDataType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeColorCaption();
+        return ClientMessages.Instance.get().typeColorCaption();
     }
 }

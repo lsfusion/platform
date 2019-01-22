@@ -235,7 +235,7 @@ public class Main {
                         }
                     }
                     if(serverVersion != null) {
-                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "LSFusion", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart", serverVersion, clientVersion), "lsFusion", JOptionPane.WARNING_MESSAGE);
                         Main.shutdown();
                         return;
                     }

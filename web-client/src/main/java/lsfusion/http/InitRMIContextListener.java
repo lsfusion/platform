@@ -7,6 +7,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.io.IOException;
 
+import static lsfusion.base.ServerMessages.getString;
+
 public class InitRMIContextListener implements ServletContextListener {
     private static final Logger logger = Logger.getLogger(InitRMIContextListener.class);
 
@@ -18,7 +20,7 @@ public class InitRMIContextListener implements ServletContextListener {
             RMIUtils.overrideRMIHostName(host);
         } catch (IOException e) {
             logger.error("Ошибка при инициализации RMISocketFactory: ", e);
-            throw new RuntimeException("Произошла ошибка при инициализации RMI.", e);
+            throw new RuntimeException(getString("initialization.rmi.error"), e); // not the user's locale
         }
     }
 

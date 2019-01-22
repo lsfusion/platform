@@ -5,14 +5,14 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.ResizableFocusPanel;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GFilterView extends ResizableFocusPanel implements GFilterConditionView.UIHandler {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String ADD_CONDITION = "filtadd.png";
     private static final String APPLY = "filt.png";
 

@@ -14,10 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Locale;
 
+import static lsfusion.base.ServerUtils.LOCALE_COOKIE_NAME;
+
+// allows to overwrite locale cookie on the fly by passing "locale" param 
 public class RequestContextFilter extends OncePerRequestFilter {
     private static final String LOCALE_PARAM_NAME = "locale";
-
-    private static final String LOCALE_COOKIE_NAME = "lsfusion.locale.current";
 
     private final CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
 

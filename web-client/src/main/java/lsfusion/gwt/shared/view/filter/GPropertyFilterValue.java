@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.filter;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.dto.GFilterValueDTO;
 
@@ -9,7 +9,7 @@ public class GPropertyFilterValue extends GFilterValue {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().filterPropertyValue();
+        return ClientMessages.Instance.get().filterPropertyValue();
     }
 
     @Override

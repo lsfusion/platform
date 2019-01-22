@@ -1,18 +1,18 @@
 package lsfusion.gwt.shared.view;
 
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.GFormController;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
-import lsfusion.gwt.shared.view.classes.*;
-import lsfusion.gwt.shared.view.filter.GCompare;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.renderer.FormatGridCellRenderer;
 import lsfusion.gwt.client.form.ui.grid.renderer.GridCellRenderer;
-import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.client.form.ui.panel.PanelRenderer;
+import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
+import lsfusion.gwt.shared.view.classes.*;
+import lsfusion.gwt.shared.view.filter.GCompare;
+import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 import lsfusion.gwt.shared.view.reader.*;
 
 import java.io.Serializable;
@@ -191,8 +191,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         }
     }
 
-    private static MainFrameMessages getMessages() {
-        return MainFrameMessages.Instance.get();
+    private static ClientMessages getMessages() {
+        return ClientMessages.Instance.get();
     }
     
     public static final String TOOL_TIP_FORMAT =

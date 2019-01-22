@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.form.ui.toolbar.preferences;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 public class PropertyListItem {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     public GPropertyDraw property;
     private String userCaption;
     private String userPattern;

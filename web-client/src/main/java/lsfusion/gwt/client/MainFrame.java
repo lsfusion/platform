@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -30,13 +29,17 @@ import lsfusion.gwt.client.form.ServerMessageProvider;
 import lsfusion.gwt.client.form.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.ui.GFormController;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
-import lsfusion.gwt.shared.view.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorController;
 import lsfusion.gwt.client.window.WindowsController;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
-import lsfusion.gwt.shared.actions.navigator.GetClientSettingsResult;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.actions.navigator.*;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.result.BooleanResult;
+import lsfusion.gwt.shared.result.ListResult;
+import lsfusion.gwt.shared.result.VoidResult;
+import lsfusion.gwt.shared.view.GNavigatorAction;
 import lsfusion.gwt.shared.view.actions.GAction;
 import lsfusion.gwt.shared.view.actions.GActivateFormAction;
 import lsfusion.gwt.shared.view.actions.GFormAction;
@@ -47,11 +50,14 @@ import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint, ServerMessageProvider {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public static LogicsAndNavigatorDispatchAsync logicsAndNavigatorDispatchAsync;
     public static boolean devMode;
@@ -60,7 +66,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     public static boolean forbidDuplicateForms;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
-    public static String localeCookieName = "GWT_LOCALE";
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;
@@ -160,13 +165,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 } finally {
                     clean();
                 }
-            }
-        });
-
-        logicsAndNavigatorDispatchAsync.execute(new GetLocaleAction(), new ErrorHandlingCallback<StringResult>() {
-            @Override
-            public void success(StringResult result) {
-                setLocale(result.get());
             }
         });
 
@@ -307,14 +305,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
         GExceptionManager.flushUnreportedThrowables();
     }
 
-    private void setLocale(String newLocale) {
-        String oldLocale = Cookies.getCookie(localeCookieName);
-        if(oldLocale == null || !oldLocale.equals(newLocale)) {
-            Cookies.setCookie(localeCookieName, newLocale, new Date(System.currentTimeMillis() + 1000L*60L*60L*24L*365L*5L));
-            Window.Location.reload();
-        }
-    }
-    
     public static void setShouldRepeatPingRequest(boolean ishouldRepeatPingRequest) {
         shouldRepeatPingRequest = ishouldRepeatPingRequest;
     }

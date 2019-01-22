@@ -4,14 +4,14 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.shared.view.classes.GObjectClass;
 
 public class GResizableClassDialog extends GResizableModalWindow {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private final boolean concreate;
     private final ClassChosenHandler classChosenHandler;
@@ -24,7 +24,7 @@ public class GResizableClassDialog extends GResizableModalWindow {
     private GObjectClass chosenClass;
 
     public GResizableClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        super(messages.choseClass());
+        super(messages.choosingClass());
 
         this.concreate = concreate;
         this.classChosenHandler = classChosenHandler;

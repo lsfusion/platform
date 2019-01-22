@@ -1,5 +1,6 @@
 package lsfusion.http;
 
+import lsfusion.base.ServerMessages;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 
@@ -16,7 +17,8 @@ public class ReadMemoryLimitsRequestHandler extends HttpLogicsRequestHandler {
         Map<String, String> memoryLimits = remoteLogics.readMemoryLimits();
         String url = "";
         for(Map.Entry<String, String> memoryLimit : memoryLimits.entrySet()) {
-            url += String.format("<a href=\"%s/client.jnlp?%s\">Run desktop client %s</a><br/>", contextPath, memoryLimit.getValue(), memoryLimit.getKey());
+            String runDesktopClient = ServerMessages.getString(request, "run.desktop.client");
+            url += String.format("<a href=\"%s/client.jnlp?%s\">" + runDesktopClient + " %s</a><br/>", contextPath, memoryLimit.getValue(), memoryLimit.getKey());
         }
         response.getOutputStream().write(url.getBytes());
     }

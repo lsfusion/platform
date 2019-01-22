@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.LogicalGridCellEditor;
@@ -42,6 +42,6 @@ public class GLogicalType extends GDataType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeLogicalCaption();
+        return ClientMessages.Instance.get().typeLogicalCaption();
     }
 }

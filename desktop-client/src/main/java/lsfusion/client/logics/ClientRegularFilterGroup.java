@@ -41,7 +41,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return ClientResourceBundle.getString("descriptor.filter");
+        return ClientResourceBundle.getString("logics.filter");
     }
 
     @Override

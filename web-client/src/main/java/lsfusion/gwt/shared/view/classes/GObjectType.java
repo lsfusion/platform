@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.LongGridCellEditor;
@@ -52,6 +52,6 @@ public class GObjectType extends GType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeObjectCaption();
+        return ClientMessages.Instance.get().typeObjectCaption();
     }
 }

@@ -8,16 +8,16 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.MainFrame;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.shared.view.GKeyStroke;
-import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.client.MainFrameMessages;
 
 @SuppressWarnings("GWTStyleCheck")
 public class GSaveResetConfirmDialog {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     
     public boolean forAll = false;
     public boolean complete = false;

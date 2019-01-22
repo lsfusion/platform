@@ -7,19 +7,19 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.filter.*;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class GFilterConditionView extends ResizableHorizontalPanel implements GFilterValueView.GFilterValueListener {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void conditionChanged();
         void conditionRemoved(GPropertyFilter condition);

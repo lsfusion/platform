@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.DateGridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
@@ -48,7 +48,7 @@ public class GDateType extends GFormatType<DateTimeFormat> {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeDateCaption();
+        return ClientMessages.Instance.get().typeDateCaption();
     }
 
     @Override

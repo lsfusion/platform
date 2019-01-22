@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.DoubleGridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
@@ -38,7 +38,7 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeDoubleCaption();
+        return ClientMessages.Instance.get().typeDoubleCaption();
     }
     
     @Override

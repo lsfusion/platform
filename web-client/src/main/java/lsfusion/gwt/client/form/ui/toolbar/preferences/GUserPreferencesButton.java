@@ -2,13 +2,13 @@ package lsfusion.gwt.client.form.ui.toolbar.preferences;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.GGridTable;
 import lsfusion.gwt.client.form.ui.GGroupObjectController;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 
 public class GUserPreferencesButton extends GToolbarButton {
-    private final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private final ClientMessages messages = ClientMessages.Instance.get();
     private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
     private static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
 

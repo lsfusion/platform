@@ -9,10 +9,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
@@ -35,6 +32,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException;
 
     List<String> authenticateUser(String userName, String password) throws RemoteException;
+    
+    Locale getUserLocale(String userName) throws RemoteException;
 
     VMOptions getClientVMOptions() throws RemoteException;
 

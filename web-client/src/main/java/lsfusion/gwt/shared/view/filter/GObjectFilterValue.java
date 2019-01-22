@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.filter;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.shared.view.GObject;
 import lsfusion.gwt.shared.view.changes.dto.GFilterValueDTO;
 
@@ -9,7 +9,7 @@ public class GObjectFilterValue extends GFilterValue {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().filterObjectValue();
+        return ClientMessages.Instance.get().filterObjectValue();
     }
 
     @Override

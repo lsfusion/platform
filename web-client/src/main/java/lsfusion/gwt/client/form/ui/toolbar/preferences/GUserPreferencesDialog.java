@@ -3,18 +3,18 @@ package lsfusion.gwt.client.form.ui.toolbar.preferences;
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.base.Callback;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
-import lsfusion.gwt.client.ErrorHandlingCallback;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.GCaptionPanel;
 import lsfusion.gwt.client.form.ui.GGridTable;
 import lsfusion.gwt.client.form.ui.GGroupObjectController;
 import lsfusion.gwt.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.shared.view.GFont;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
@@ -30,7 +30,7 @@ import static lsfusion.gwt.shared.view.GFont.DEFAULT_FONT_SIZE;
 
 @SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends GResizableModalWindow {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
     private GGroupObjectController groupController;

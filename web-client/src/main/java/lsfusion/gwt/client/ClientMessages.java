@@ -3,16 +3,22 @@ package lsfusion.gwt.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Messages;
 
-public interface MainFrameMessages extends Messages {
-    String title();
-
-    String choseClass();
-
+public interface ClientMessages extends Messages {
+    String yes();
+    String no();
     String ok();
-
     String close();
-
     String cancel();
+    String more();
+    String logout();
+
+    String error();
+    String internalServerError();
+    String actionTimeoutError();
+    String sessionTimeoutError();
+    String needReloginError();
+
+    String choosingClass();
 
     String grid();
     String panel();
@@ -166,9 +172,9 @@ public interface MainFrameMessages extends Messages {
     String multipleFilterComponentAll();
     
     class Instance {
-        private static final MainFrameMessages instance = GWT.create(MainFrameMessages.class);
+        private static final ClientMessages instance = GWT.create(ClientMessages.class);
 
-        public static MainFrameMessages get() {
+        public static ClientMessages get() {
             return instance;
         }
     }

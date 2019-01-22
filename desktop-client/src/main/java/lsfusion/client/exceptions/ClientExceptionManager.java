@@ -5,13 +5,21 @@ import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.RmiQueue;
-import lsfusion.interop.exceptions.*;
+import lsfusion.interop.exceptions.FatalHandledRemoteException;
+import lsfusion.interop.exceptions.RemoteAbandonedException;
+import lsfusion.interop.exceptions.RemoteClientException;
+import lsfusion.interop.exceptions.RemoteServerException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.List;
+
+import static lsfusion.client.ClientResourceBundle.getString;
 
 public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
@@ -25,7 +33,7 @@ public class ClientExceptionManager {
                 
                 Throwable remote = getRemoteExceptionCause(e);
                 if(remote == null) {
-                    Log.error("Внутренняя ошибка клиента", e);
+                    Log.error(getString("errors.internal.client.error"), e);
                     reportClientThrowable(e); // обычный throwable
                 }
                 if (remote instanceof RemoteServerException) {

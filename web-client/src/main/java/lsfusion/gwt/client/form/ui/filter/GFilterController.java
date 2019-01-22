@@ -4,20 +4,20 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.panel.ImageButton;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.filter.GPropertyFilter;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.client.form.ui.panel.ImageButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GFilterController {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String ADD_FILTER = "filtadd.png";
     private static final String EXPAND = "expand.png";
     private static final String FILTER_BUTTON_TOOLTIP_TEXT = messages.formQueriesFilter() + " (F2)";

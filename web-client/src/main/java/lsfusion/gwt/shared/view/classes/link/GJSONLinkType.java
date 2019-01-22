@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.view.classes.link;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 
 public class GJSONLinkType extends GLinkType {
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeJSONFileLinkCaption();
+        return ClientMessages.Instance.get().typeJSONFileLinkCaption();
     }
 }

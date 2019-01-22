@@ -1,8 +1,8 @@
 package lsfusion.gwt.server;
 
-import lsfusion.http.LogicsRequestHandler;
 import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
+import lsfusion.http.LogicsRequestHandler;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -20,7 +20,7 @@ public class LookupLogicsAndCreateNavigatorHandler extends SimpleActionHandlerEx
     public StringResult executeEx(LookupLogicsAndCreateNavigator action, ExecutionContext context) throws DispatchException, IOException {
          return new StringResult(LogicsRequestHandler.runRequest(servlet.getLogicsHandlerProvider(), action.host, action.port, action.exportName, new LogicsRequestHandler.Runnable<String>() {
             public String run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws IOException {
-                return servlet.getLogicsAndNavigatorProvider().createNavigator(remoteLogics);
+                return servlet.getLogicsAndNavigatorProvider().createNavigator(remoteLogics, servlet);
             }
         }));
     }

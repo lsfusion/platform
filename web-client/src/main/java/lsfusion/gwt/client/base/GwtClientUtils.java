@@ -9,7 +9,7 @@ import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.HasMaxPreferredSize;
 import lsfusion.gwt.shared.GwtSharedUtils;
 
@@ -19,8 +19,7 @@ import static java.lang.Math.max;
 
 public class GwtClientUtils {
 
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
-    public static final BaseMessages baseMessages = BaseMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     public static final com.google.gwt.user.client.Element rootElement = RootPanel.get().getElement();
 
     public static void removeLoaderFromHostedPage() {

@@ -2,7 +2,9 @@ package lsfusion.gwt.server.navigator.provider;
 
 import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
+import lsfusion.base.ServerMessages;
 import lsfusion.base.SystemUtils;
+import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -12,7 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,11 +24,11 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
 
     public String servSID = GwtSharedUtils.randomString(25);
 
-    public String createNavigator(RemoteLogicsInterface remoteLogics) throws RemoteException {
+    public String createNavigator(RemoteLogicsInterface remoteLogics, LSFusionDispatchServlet servlet) throws RemoteException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) {
 //            auth = new TestingAuthenticationToken("admin", "fusion");
-            throw new IllegalStateException("Пользователь должен быть аутентифицирован, чтобы использовать навигатор.");
+            throw new IllegalStateException(ServerMessages.getString(servlet.getRequest(), "error.user.must.be.authenticated"));
         }
 
         String username = auth.getName();

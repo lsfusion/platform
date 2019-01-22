@@ -8,13 +8,13 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.BaseMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.shared.view.GKeyStroke;
 
 public class DialogBoxHelper {
-    private static final BaseMessages messages = BaseMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     
     public interface CloseCallback {
         void closed(OptionType chosenOption);

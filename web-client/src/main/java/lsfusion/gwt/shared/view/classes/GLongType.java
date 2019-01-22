@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.LongGridCellEditor;
@@ -28,6 +28,6 @@ public class GLongType extends GIntegralType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeLongCaption();
+        return ClientMessages.Instance.get().typeLongCaption();
     }
 }

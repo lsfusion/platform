@@ -9,19 +9,19 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
-import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.shared.view.GPropertyDraw;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.DialogBasedGridCellEditor;
+import lsfusion.gwt.shared.view.GFlexAlignment;
+import lsfusion.gwt.shared.view.GPropertyDraw;
 
 public class RichTextGridCellEditor extends DialogBasedGridCellEditor {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private static int INITIAL_WIDTH = Math.min(800, Window.getClientWidth() - 20);
     private static int INITIAL_HEIGHT = Math.min(600, Window.getClientHeight() - 20);

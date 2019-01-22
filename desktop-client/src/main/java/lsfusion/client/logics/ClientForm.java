@@ -17,6 +17,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+
 public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
                                                                  ClientCustomSerializable,
                                                                  AbstractForm<ClientContainer, ClientComponent, String>,
@@ -158,7 +160,7 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
-                        "<b>Путь:</b> %s<br/>" +
+                        "<b>" + getString("logics.scriptpath") + ":</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) :
                 String.format("<html><body><b>%s</b></body></html>", caption);
     }

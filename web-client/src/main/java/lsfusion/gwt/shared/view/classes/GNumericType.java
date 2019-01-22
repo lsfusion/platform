@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.classes;
 
 import com.google.gwt.i18n.client.LocaleInfo;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.NumericGridCellEditor;
@@ -83,6 +83,6 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeNumericCaption() + '[' + length + ',' + precision + ']';
+        return ClientMessages.Instance.get().typeNumericCaption() + '[' + length + ',' + precision + ']';
     }
 }

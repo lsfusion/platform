@@ -8,11 +8,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.CopyPasteUtils;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.client.base.ui.WindowBox;
-import lsfusion.gwt.client.base.ui.ProgressBar;
+import lsfusion.gwt.client.base.ui.*;
 import lsfusion.gwt.shared.view.GProgressBar;
 
 import java.util.ArrayList;
@@ -21,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GBusyDialog extends WindowBox {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     public Boolean needInterrupt = null;
 
     VerticalPanel mainPanel;

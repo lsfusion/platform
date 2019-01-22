@@ -1,7 +1,9 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.ApiResourceBundle;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -18,8 +20,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.User;
-import lsfusion.server.classes.*;
-import lsfusion.server.data.JDBCTable;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -223,6 +224,24 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }
         if (user != null) {
             return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));
+        }
+        return null;
+    }
+
+    @Override
+    public Locale getUserLocale(String userName) throws RemoteException {
+        try(DataSession session = dbManager.createSession()) {
+            Object userId = businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(userName, StringClass.get(100)));
+            String language = (String) businessLogics.authenticationLM.language.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
+            if (language != null) {
+                String country = (String) businessLogics.authenticationLM.country.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
+                if (country != null) {
+                    return new Locale(language, country);
+                }
+                return new Locale(language);
+            }
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
         return null;
     }

@@ -13,7 +13,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.WindowBox;
 
 public class GConnectionLostManager {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static AtomicLong failedRequests = new AtomicLong();
     private static AtomicBoolean connectionLost = new AtomicBoolean(false);
 

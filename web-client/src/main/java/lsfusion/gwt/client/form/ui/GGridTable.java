@@ -9,28 +9,27 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.ErrorHandlingCallback;
+import lsfusion.gwt.client.HotkeyManager;
 import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.shared.view.GKeyStroke;
-import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.ui.cellview.Column;
 import lsfusion.gwt.client.form.ui.cellview.DataGrid;
 import lsfusion.gwt.client.form.ui.cellview.KeyboardRowChangedEvent;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.cellview.cell.CellPreviewEvent;
-import lsfusion.gwt.client.ErrorHandlingCallback;
-import lsfusion.gwt.client.HotkeyManager;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.form.ui.grid.EditEvent;
+import lsfusion.gwt.client.form.ui.grid.GridEditableCell;
+import lsfusion.gwt.client.form.ui.grid.editor.TextBasedGridCellEditor;
 import lsfusion.gwt.client.form.ui.toolbar.preferences.GGridUserPreferences;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.shared.view.*;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.shared.view.classes.GObjectType;
-import lsfusion.gwt.client.form.ui.grid.EditEvent;
-import lsfusion.gwt.client.form.ui.grid.GridEditableCell;
-import lsfusion.gwt.client.form.ui.grid.editor.TextBasedGridCellEditor;
 
 import java.util.*;
 
@@ -42,7 +41,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final double QUICK_SEARCH_MAX_DELAY = 2000;
 
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<>();

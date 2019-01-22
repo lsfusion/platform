@@ -54,7 +54,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
                     al[0].actionPerformed(evt);
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(getParent(),
-                            String.format("Произошла ошибка при сохранении файла: \n%s", e.getMessage()), "Ошибка", JOptionPane.ERROR_MESSAGE);
+                            getString("errors.error.saving.file", e.getMessage()), getString("errors.error"), JOptionPane.ERROR_MESSAGE);
                     ClientExceptionManager.reportClientThrowable(e);
                 }
             }

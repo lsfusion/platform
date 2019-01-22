@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
 import lsfusion.gwt.client.form.ui.grid.editor.GridCellEditor;
 import lsfusion.gwt.client.form.ui.grid.editor.StringGridCellEditor;
@@ -91,9 +91,10 @@ public class GStringType extends GDataType {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeStringCaption() + 
-                (caseInsensitive ? " " + MainFrameMessages.Instance.get().typeStringCaptionRegister() : "") + 
-                (blankPadded ? " " + MainFrameMessages.Instance.get().typeStringCaptionPadding() : "") + 
+        ClientMessages messages = ClientMessages.Instance.get();
+        return messages.typeStringCaption() + 
+                (caseInsensitive ? " " + messages.typeStringCaptionRegister() : "") + 
+                (blankPadded ? " " + messages.typeStringCaptionPadding() : "") + 
                 (rich ? " rich" : "") + 
                 "(" + length + ")";
     }
