@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.ApiResourceBundle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,7 +24,7 @@ public class ChooseObjectDialog extends JDialog {
         };
         JScrollPane tablePane = new JScrollPane(table);
 
-        JButton OKButton = new JButton("OK");
+        JButton OKButton = new JButton(ApiResourceBundle.getString("dialog.ok"));
         OKButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -31,7 +33,7 @@ public class ChooseObjectDialog extends JDialog {
             }
         });
 
-        JButton cancelButton = new JButton("Отмена");
+        JButton cancelButton = new JButton(ApiResourceBundle.getString("dialog.cancel"));
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
