@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.view.classes;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 
 public class GTableType extends GFileType {
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeTableFileCaption();
+        return ClientMessages.Instance.get().typeTableFileCaption();
     }
 }

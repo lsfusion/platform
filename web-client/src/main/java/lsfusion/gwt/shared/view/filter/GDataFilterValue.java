@@ -1,6 +1,6 @@
 package lsfusion.gwt.shared.view.filter;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.shared.view.changes.dto.GFilterValueDTO;
 
 import java.io.Serializable;
@@ -10,7 +10,7 @@ public class GDataFilterValue extends GFilterValue {
 
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().filterDataValue();
+        return ClientMessages.Instance.get().filterDataValue();
     }
 
     @Override

@@ -7,15 +7,15 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.shared.GwtSharedUtils;
-import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.base.ui.ProgressBar;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
+import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
+import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.changes.dto.GFilesDTO;
 import org.moxieapps.gwt.uploader.client.File;
 import org.moxieapps.gwt.uploader.client.Uploader;
 import org.moxieapps.gwt.uploader.client.events.*;
@@ -37,7 +37,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private LinkedHashMap<String, String> filePrefixes;
     private HashMap<String, String> fileNames;
 
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     
     public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> extensions) {
         super(editManager, property, messages.fileEditorTitle(), 500, 150);

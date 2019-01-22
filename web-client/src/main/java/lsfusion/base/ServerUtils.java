@@ -1,13 +1,17 @@
-package lsfusion.http;
+package lsfusion.base;
 
+import org.apache.commons.lang3.LocaleUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
 public class ServerUtils {
+    public static final String LOCALE_COOKIE_NAME = "LSFUSION_LOCALE";
     private static final String DEFAULT_LOCALE_LANGUAGE = "ru";
 
     public static Authentication getAuthentication() {
@@ -17,10 +21,10 @@ public class ServerUtils {
         }
         return auth;
     }
-    
+
     public static String getAuthorizedUserName() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth == null ? "Not authorized" : auth.getName();    
+        return auth == null ? "Not authorized" : auth.getName();
     }
 
     public static Locale getLocale() {
@@ -35,15 +39,14 @@ public class ServerUtils {
         return language;
     }
 
-    public static String getLocaleLanguage(Cookie[] cookies) {
-        String locale = null;
-        if(cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("GWT_LOCALE")) {
-                    locale = cookie.getValue();
-                }
+    public static Locale getLocale(HttpServletRequest request) {
+        Cookie localeCookie = WebUtils.getCookie(request, LOCALE_COOKIE_NAME);
+        if (localeCookie != null) {
+            String cookieLocaleString = localeCookie.getValue();
+            if (cookieLocaleString != null) {
+                return LocaleUtils.toLocale(cookieLocaleString);
             }
         }
-        return locale != null ? locale : getLocaleLanguage();
+        return new Locale(getLocaleLanguage());
     }
 }

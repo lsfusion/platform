@@ -40,14 +40,14 @@ public class ClassDialog extends JDialog {
 
         JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton okButton = new JButton(ClientResourceBundle.getString("descriptor.editor.okbutton"));
+        JButton okButton = new JButton(ClientResourceBundle.getString("dialog.ok"));
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 okPressed();
             }
         });
 
-        AbstractAction cancelAction = new AbstractAction(ClientResourceBundle.getString("descriptor.editor.cancelbutton")) {
+        AbstractAction cancelAction = new AbstractAction(ClientResourceBundle.getString("dialog.cancel")) {
             public void actionPerformed(ActionEvent ae) {
                 chosenClass = null;
                 ClassDialog.this.setVisible(false);

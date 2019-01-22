@@ -3,10 +3,10 @@ package lsfusion.gwt.client.form.ui.toolbar;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 
 public abstract class GCountQuantityButton extends GToolbarButton {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private NumberFormat format;
 
     public GCountQuantityButton() {

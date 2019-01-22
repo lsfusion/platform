@@ -11,11 +11,10 @@ import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.baseMessages;
-
 public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     private static final String TIMEOUT_MESSAGE = "SESSION_TIMED_OUT";
     private static final Integer MAX_REQUEST_TRIES = 30;
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     @Override
     public void failure(Throwable caught) {
@@ -32,15 +31,15 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
 
         String message = getServerMessage(caught);
         if (message != null) {
-            ErrorDialog.show(baseMessages.error(), message, getJavaStackTrace(caught), getLSFStackTrace(caught));
+            ErrorDialog.show(messages.error(), message, getJavaStackTrace(caught), getLSFStackTrace(caught));
             return;
         } else if (caught instanceof RequestTimeoutException) {
-            DialogBoxHelper.showMessageBox(true, baseMessages.error(), baseMessages.actionTimeoutErrorMessage(), false, null);
+            DialogBoxHelper.showMessageBox(true, messages.error(), messages.actionTimeoutError(), false, null);
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
-                DialogBoxHelper.showMessageBox(true, baseMessages.error(), baseMessages.sessionTimeoutErrorMessage(), false, new DialogBoxHelper.CloseCallback() {
+                DialogBoxHelper.showMessageBox(true, messages.error(), messages.sessionTimeoutError(), false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(OptionType chosenOption) {
                         relogin();
@@ -49,7 +48,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
                 return;
             }
         }
-        ErrorDialog.show(baseMessages.error(), baseMessages.internalServerErrorMessage(), getJavaStackTrace(caught));
+        ErrorDialog.show(messages.error(), messages.internalServerError(), getJavaStackTrace(caught));
     }
 
     public static int getMaxTries(Throwable caught) {

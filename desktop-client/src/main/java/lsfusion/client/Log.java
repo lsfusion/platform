@@ -112,7 +112,7 @@ public final class Log {
 
     public static void error(RemoteServerException remote) {
         if(remote instanceof RemoteInternalException) {
-            Log.error(remote.getMessage() + "\nОбратитесь к администратору.", remote, ((RemoteInternalException) remote).javaStack, ((RemoteInternalException) remote).lsfStack);
+            Log.error(remote.getMessage() + "\n" + getString("errors.contact.administrator"), remote, ((RemoteInternalException) remote).javaStack, ((RemoteInternalException) remote).lsfStack);
         } else {
             Log.error(remote.getMessage(), remote);
         }
@@ -193,16 +193,18 @@ public final class Log {
         mainPanel.add(south);
 
         String opt[];
+        final String okOption = getString("dialog.ok");
+        final String moreOption = getString("client.more");
         if (javaStack.length() > 0) {
-            opt = new String[]{"OK", getString("client.more")};
+            opt = new String[]{okOption, moreOption};
         } else {
-            opt = new String[]{"OK"};
+            opt = new String[]{okOption};
         }
         final JOptionPane optionPane = new JOptionPane(mainPanel, warning ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE,
                                      JOptionPane.YES_NO_OPTION,
                                      null,
                                      opt,
-                                     "OK");
+                okOption);
 
         final JDialog dialog = new JDialog(Main.frame, Main.getMainTitle(), Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setContentPane(optionPane);
@@ -212,9 +214,9 @@ public final class Log {
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 Object value = optionPane.getValue();
-                if (dialog.isVisible() && (value.equals("OK") || value.equals(-1))) {
+                if (dialog.isVisible() && (value.equals(okOption) || value.equals(-1))) {
                     dialog.dispose();
-                } else if (value.equals(getString("client.more"))) {
+                } else if (value.equals(moreOption)) {
                     boolean southWasVisible = south.isVisible();
                     south.setVisible(!southWasVisible);
                     optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);

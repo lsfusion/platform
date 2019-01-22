@@ -7,17 +7,17 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
-import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.shared.view.GPropertyDraw;
-import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.grid.EditManager;
+import lsfusion.gwt.shared.view.GPropertyDraw;
+import lsfusion.gwt.shared.view.changes.dto.ColorDTO;
 import net.auroris.ColorPicker.client.ColorPicker;
 
 public class ColorGridCellEditor extends PopupBasedGridCellEditor {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private ColorPicker colorPicker;
 

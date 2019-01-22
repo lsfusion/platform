@@ -1,8 +1,8 @@
 package lsfusion.gwt.shared.view;
 
-import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.MainFrame;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.view.window.GNavigatorWindow;
 
 import java.io.Serializable;
@@ -30,7 +30,7 @@ public abstract class GNavigatorElement implements Serializable {
 
     public String getTooltipText() {
         return MainFrame.configurationAccessAllowed ?
-                GwtSharedUtils.stringFormat("<html><b>%s</b><hr><b>sID:</b> %s<br><b>" + MainFrameMessages.Instance.get().tooltipPath() 
+                GwtSharedUtils.stringFormat("<html><b>%s</b><hr><b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() 
                         + ":</b> %s</html>", caption, canonicalName, creationPath) : caption;
     }
 }

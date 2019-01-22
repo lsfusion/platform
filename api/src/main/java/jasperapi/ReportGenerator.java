@@ -28,8 +28,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -723,7 +723,7 @@ public class ReportGenerator {
                 tempFile.deleteOnExit();
             }
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при экспорте в " + type, e);
+            throw new RuntimeException(ApiResourceBundle.getString("exceptions.error.exporting.to", type), e);
         }
     }
 

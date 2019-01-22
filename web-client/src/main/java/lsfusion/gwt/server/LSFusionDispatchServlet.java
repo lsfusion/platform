@@ -2,16 +2,16 @@ package lsfusion.gwt.server;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.gwt.shared.exceptions.RemoteRetryException;
-import lsfusion.gwt.shared.exceptions.MessageException;
-import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.form.provider.FormProvider;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.server.logics.provider.LogicsHandlerProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
 import lsfusion.gwt.server.navigator.provider.LogicsAndNavigatorProvider;
+import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.shared.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+
+import static lsfusion.base.ServerMessages.getString;
 
 // singleton, one for whole application
 public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet implements org.springframework.web.HttpRequestHandler, org.springframework.beans.factory.InitializingBean, org.springframework.beans.factory.BeanNameAware {
@@ -65,7 +67,6 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
         registry.addHandler(new ForbidDuplicateFormsHandler(this));
         registry.addHandler(new GetNavigatorInfoHandler(this));
-        registry.addHandler(new GetLocaleHandler(this));
         registry.addHandler(new GetClientSettingsHandler(this));
         registry.addHandler(new IsConfigurationAccessAllowedHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
@@ -216,13 +217,13 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
             throw e;
         } catch (MessageException e) {
             logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());
+            throw new MessageException(getString(getRequest(), "internal.server.error.with.message", e.getMessage()));
         } catch (RemoteInternalException e) {
             logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException("Внутренняя ошибка сервера.", e, e.lsfStack);
+            throw new MessageException(getString(getRequest(), "internal.server.error"), e, e.lsfStack);
         } catch (Throwable e) {
             logger.error("Error in LogicsAwareDispatchServlet.execute: ", e);
-            throw new MessageException("Внутренняя ошибка сервера.", e);
+            throw new MessageException(getString(getRequest(), "internal.server.error"), e);
         }
     }
 

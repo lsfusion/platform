@@ -1,10 +1,11 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.ExceptionUtils;
-import lsfusion.http.ServerUtils;
+import lsfusion.base.ServerMessages;
+import lsfusion.base.ServerUtils;
 import lsfusion.gwt.shared.exceptions.IODispatchException;
-import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.gwt.shared.exceptions.MessageException;
+import lsfusion.gwt.shared.exceptions.RemoteRetryException;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -44,7 +45,7 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
             if (ioe instanceof RemoteException && !(ioe.getCause() instanceof ClassNotFoundException)) { // пробуем послать повторный запрос
                 throw new RemoteRetryException(ioe.getMessage(), ioe, ExceptionUtils.getFatalRemoteExceptionCount(ioe));
             }
-            throw new IODispatchException("Ошибка ввода/вывода при выполнении action: ", ioe);
+            throw new IODispatchException(ServerMessages.getString(servlet.getRequest(), "io.error.performing.action"), ioe);
         }
     }
 

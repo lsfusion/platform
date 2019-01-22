@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.ui;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.layout.GFormLayout;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.shared.view.GClassViewType;
@@ -17,7 +17,7 @@ import java.util.List;
 import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
 
 public class GShowTypeView extends ResizableHorizontalPanel {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private Button gridButton;
     private Button panelButton;
     private Button hideButton;

@@ -6,27 +6,27 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.client.form.ui.cellview.Column;
 import lsfusion.gwt.client.form.ui.cellview.DataGrid;
 import lsfusion.gwt.client.form.ui.cellview.HeaderPanel;
 import lsfusion.gwt.client.form.ui.cellview.KeyboardRowChangedEvent;
 import lsfusion.gwt.client.form.ui.cellview.cell.Cell;
 import lsfusion.gwt.client.form.ui.cellview.cell.CellPreviewEvent;
-import lsfusion.gwt.client.MainFrameMessages;
-import lsfusion.gwt.shared.view.*;
-import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 import lsfusion.gwt.client.form.ui.grid.EditEvent;
 import lsfusion.gwt.client.form.ui.grid.GridEditableCell;
+import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.gwt.shared.view.*;
+import lsfusion.gwt.shared.view.changes.GGroupObjectValue;
 
 import java.util.*;
 
 import static java.util.Collections.singleton;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     
     private boolean dataUpdated;
     private boolean columnsUpdated;

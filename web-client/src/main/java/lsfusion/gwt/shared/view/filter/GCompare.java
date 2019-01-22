@@ -1,7 +1,7 @@
 package lsfusion.gwt.shared.view.filter;
 
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 
 public enum GCompare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, INARRAY;
@@ -69,6 +69,7 @@ public enum GCompare {
 
     @Override
     public String toString() {
+        ClientMessages messages = ClientMessages.Instance.get();
         switch (this) {
             case EQUALS :
                 return "=";
@@ -83,11 +84,11 @@ public enum GCompare {
             case NOT_EQUALS :
                 return "!=";
             case START_WITH :
-                return MainFrameMessages.Instance.get().filterCompareStartsWith();
+                return messages.filterCompareStartsWith();
             case CONTAINS:
-                return MainFrameMessages.Instance.get().filterCompareContains();
+                return messages.filterCompareContains();
             case ENDS_WITH:
-                return MainFrameMessages.Instance.get().filterCompareEndsWith();
+                return messages.filterCompareEndsWith();
             case LIKE :
                 return "LIKE";
             case INARRAY :

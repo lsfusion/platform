@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+
 public abstract class ClientNavigatorElement {
 
     private String canonicalName;
@@ -125,7 +127,7 @@ public abstract class ClientNavigatorElement {
                 String.format("<html><body>" +
                         "<b>%s</b><br/><hr>" +
                         "<b>sID:</b> %s<br/>" +
-                        "<b>Путь:</b> %s<br/>" +
+                        "<b>" + getString("logics.scriptpath") + ":</b> %s<br/>" +
                         "</body></html>", caption, canonicalName, creationPath) : caption;
     }
 }

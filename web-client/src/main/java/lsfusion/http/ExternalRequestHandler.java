@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static lsfusion.base.ServerMessages.getString;
+
 public class ExternalRequestHandler extends HttpLogicsRequestHandler {
 
     @Override
@@ -25,12 +27,12 @@ public class ExternalRequestHandler extends HttpLogicsRequestHandler {
                     response.addHeader("Content-Disposition", responseHttpEntity.contentDisposition);
                 responseHttpEntity.response.writeTo(response.getOutputStream());
             } else
-                response.getWriter().print("Executed successfully");
+                response.getWriter().print(getString(request, "executed.successfully"));
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("text/html; charset=utf-8");
-            response.getWriter().print("Internal Server Error: " + e.getMessage());
+            response.getWriter().print(getString(request, "internal.server.error.with.message", e.getMessage()));
         }
     }
 }

@@ -5,13 +5,13 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.ui.GCaptionPanel;
 
 import java.util.ArrayList;
 
 public abstract class ColumnsDualListBox extends AbsolutePanel {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_DUAL_LIST_BUTTONS_CONTAINER = "dualListButtonsContainer";
 
     private ColumnsListBoxDragController dragController;

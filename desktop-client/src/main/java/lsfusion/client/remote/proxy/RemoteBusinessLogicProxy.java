@@ -11,10 +11,7 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
@@ -90,6 +87,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodStartCall("authenticateUser");
         List<String> result = target.authenticateUser(userName, password);
         logRemoteMethodEndCall("authenticateUser", result);
+        return result;
+    }
+
+    @Override
+    public Locale getUserLocale(String userName) throws RemoteException {
+        logRemoteMethodStartCall("getUserLocale");
+        Locale result = target.getUserLocale(userName);
+        logRemoteMethodEndCall("getUserLocale", result);
         return result;
     }
 

@@ -1,6 +1,5 @@
 package lsfusion.client.form.grid;
 
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.InternalEditEvent;
@@ -26,6 +25,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static lsfusion.client.ClientResourceBundle.getString;
 
 public class GridController {
 
@@ -74,7 +75,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createPrintGroupXlsButton() {
-        return new ToolbarGridButton(PRINT_XLS_ICON, ClientResourceBundle.getString("form.grid.export.to.xlsx")) {
+        return new ToolbarGridButton(PRINT_XLS_ICON, getString("form.grid.export.to.xlsx")) {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -92,7 +93,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createPrintGroupButton() {
-        return new ToolbarGridButton(PRINT_GROUP_ICON, ClientResourceBundle.getString("form.grid.print.grid")) {
+        return new ToolbarGridButton(PRINT_GROUP_ICON, getString("form.grid.print.grid")) {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -180,7 +181,7 @@ public class GridController {
     }
 
     public ToolbarGridButton createGroupChangeButton() {
-        ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON, ClientResourceBundle.getString("form.grid.group.groupchange") + " (F12)") {
+        ToolbarGridButton groupChangeButton = new ToolbarGridButton(GROUP_CHANGE_ICON, getString("form.grid.group.groupchange") + " (F12)") {
             @Override
             public void addListener() {
                 addActionListener(new ActionListener() {
@@ -189,7 +190,8 @@ public class GridController {
                         final int rowIndex = table.getSelectedRow();
                         final int columnIndex = table.getSelectedColumn();
                         if (rowIndex == -1 || columnIndex == -1)
-                            JOptionPane.showMessageDialog(form.getLayout(), "Не выбрано ни одной колонки", "Сообщение", 0);
+                            JOptionPane.showMessageDialog(form.getLayout(), getString("form.grid.group.groupchange.no.column.selected"), 
+                                    getString("errors.error"), JOptionPane.ERROR_MESSAGE);
                         else
                             RmiQueue.runAction(new Runnable() {
                                 @Override

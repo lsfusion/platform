@@ -2,17 +2,16 @@ package lsfusion.gwt.server.logics.provider;
 
 import com.google.common.base.Throwables;
 import com.google.gwt.core.client.GWT;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.server.logics.LogicsConnection;
+import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import lsfusion.interop.RemoteLogicsInterface;
 
 import javax.servlet.ServletContext;
-
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -25,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static lsfusion.base.BaseUtils.nvl;
 
 // singleton, one for whole application
-// needed for custom handler requests + RemoteAuthentificationManager (where gwt is not used)
+// needed for custom handler requests + RemoteAuthenticationManager (where gwt is not used)
 public class LogicsHandlerProviderImpl<T extends RemoteLogicsInterface> implements InitializingBean, LogicsHandlerProvider {
 
     protected final static Logger logger = Logger.getLogger(LogicsHandlerProviderImpl.class);

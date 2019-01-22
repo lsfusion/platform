@@ -1,15 +1,18 @@
 package lsfusion.gwt.client.form.ui.toolbar;
 
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HasAlignment;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.ui.ResizableHorizontalPanel;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.shared.view.GPropertyDraw;
 
 import java.math.BigDecimal;
 
 public abstract class GCalculateSumButton extends GToolbarButton {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public GCalculateSumButton() {
         super("sum.png", messages.formQueriesCalculateSum());

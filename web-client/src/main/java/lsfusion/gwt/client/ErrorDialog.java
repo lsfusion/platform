@@ -3,15 +3,14 @@ package lsfusion.gwt.client;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.BaseMessages;
 import lsfusion.gwt.client.base.ui.FlexPanel;
-import lsfusion.gwt.shared.view.GFlexAlignment;
 import lsfusion.gwt.client.form.ui.dialog.GResizableModalWindow;
 import lsfusion.gwt.client.form.ui.layout.flex.FlexTabbedPanel;
+import lsfusion.gwt.shared.view.GFlexAlignment;
 
 @SuppressWarnings("GWTStyleCheck")
 public class ErrorDialog extends GResizableModalWindow {
-    private static final BaseMessages messages = BaseMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
     private FlexPanel mainPane;
     private Button closeButton;
     private FlexTabbedPanel stacksPanel = null;

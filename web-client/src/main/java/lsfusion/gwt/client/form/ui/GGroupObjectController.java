@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.ui;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.MainFrameMessages;
 import lsfusion.gwt.client.form.ui.toolbar.GCalculateSumButton;
 import lsfusion.gwt.client.form.ui.toolbar.GCountQuantityButton;
 import lsfusion.gwt.client.form.ui.toolbar.GToolbarButton;
@@ -22,7 +22,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.shared.view.GClassViewType.DEFAULT;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
-    private final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private final ClientMessages messages = ClientMessages.Instance.get();
     public GGroupObject groupObject;
 
     private GGridController grid;

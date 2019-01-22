@@ -8,13 +8,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.InvocationException;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
-import lsfusion.gwt.shared.actions.RequestAction;
+import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.GConnectionLostManager;
 import lsfusion.gwt.client.GExceptionManager;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.ui.DialogBoxHelper;
+import lsfusion.gwt.shared.actions.RequestAction;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;
@@ -24,8 +24,6 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.baseMessages;
 
 public class DispatchAsyncWrapper extends AbstractDispatchAsync {
     private static boolean useGETForGwtRPC = GwtClientUtils.getPageParameter("useGETForGwtRPC") != null;
@@ -72,7 +70,8 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
                 if(caught instanceof InvocationException) {
-                    DialogBoxHelper.showMessageBox(true, baseMessages.error(), baseMessages.needReloginErrorMessage(), false, new DialogBoxHelper.CloseCallback() {
+                    ClientMessages messages = ClientMessages.Instance.get();
+                    DialogBoxHelper.showMessageBox(true, messages.error(), messages.needReloginError(), false, new DialogBoxHelper.CloseCallback() {
                         @Override
                         public void closed(DialogBoxHelper.OptionType chosenOption) {
                             GwtClientUtils.logout();

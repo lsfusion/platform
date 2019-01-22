@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.ServerMessages.getString;
 
 public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
     protected final static Logger logger = Logger.getLogger(ClientJNLPRequestHandler.class);
@@ -45,7 +46,7 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
                     clientVMOptions.getMaxHeapFreeRatio(), clientVMOptions.getVmargs());
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, getString(request, "error.generating.jnlp"));
         }
     }
 
@@ -104,7 +105,7 @@ public class ClientJNLPRequestHandler extends HttpLogicsRequestHandler {
             response.getOutputStream().write(content.getBytes());
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, getString(request, "error.generating.jnlp"));
         }
     }
 

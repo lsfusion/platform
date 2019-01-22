@@ -1,10 +1,10 @@
 package lsfusion.gwt.shared.view.classes.link;
 
-import lsfusion.gwt.client.MainFrameMessages;
+import lsfusion.gwt.client.ClientMessages;
 
 public class GTableLinkType extends GLinkType {
     @Override
     public String toString() {
-        return MainFrameMessages.Instance.get().typeXMLFileLinkCaption();
+        return ClientMessages.Instance.get().typeXMLFileLinkCaption();
     }
 }

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static lsfusion.base.ServerMessages.getString;
+
 public class LSFRemoteAuthenticationManager extends LogicsRequestHandler implements RemoteAuthenticationManager {
 
     @Override
@@ -33,14 +35,16 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
             String host = null;
             Integer port = null;
             String exportName = null;
-            RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
+            HttpServletRequest request = null;
+            final RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
             if (attribs != null) {
-                HttpServletRequest request = ((ServletRequestAttributes) attribs).getRequest();
+                request = ((ServletRequestAttributes) attribs).getRequest();
                 host = request.getParameter("host");
                 port = BaseUtils.parseInt(request.getParameter("port"));
                 exportName = request.getParameter("exportName");
             }
 
+            final HttpServletRequest finalRequest = request;
             return runRequest(host, port, exportName, new Runnable<Collection<GrantedAuthority>> () {
                 public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
@@ -53,9 +57,9 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
                         //TODO: добавить проверку platform version!
                         Integer oldApiVersion = BaseUtils.getApiVersion();
                         Integer newApiVersion = remoteLogics.getApiVersion();
-                        if (!oldApiVersion.equals(newApiVersion))
-                            throw new DisabledException("Необходимо обновить web-клиент. изменилась версия API!");
-
+                        if (!oldApiVersion.equals(newApiVersion)) {
+                            throw new DisabledException(getString(finalRequest, "need.to.update.web.client"));
+                        }
                         return result;
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
