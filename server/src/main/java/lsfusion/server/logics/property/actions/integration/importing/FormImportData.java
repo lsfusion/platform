@@ -55,13 +55,16 @@ public class FormImportData implements ImportData {
 
     public void addProperty(CalcPropertyObjectEntity<?> entity, ImMap<ObjectEntity, Object> upKeyValues, Object value, boolean isExclusive) {
         ImMap<ObjectEntity, Object> paramObjects = upKeyValues.filterIncl(entity.getObjectInstances());
+        addProperty(entity, isExclusive).add(paramObjects, value);
+    }
 
+    public MMap<ImMap<ObjectEntity, Object>, Object> addProperty(CalcPropertyObjectEntity<?> entity, boolean isExclusive) {
         MMap<ImMap<ObjectEntity, Object>, Object> propertyValues = properties.get(entity);
         if(propertyValues == null) {
             propertyValues = MapFact.mMap(isExclusive);
             properties.exclAdd(entity, propertyValues);
         }
-        propertyValues.add(paramObjects, value);
+        return propertyValues;
     }
     
     private final MAddMap<ObjectEntity, Integer> indexes = MapFact.mAddMap(MapFact.<ObjectEntity, Integer>override()); // end-to-end numeration

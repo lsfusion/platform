@@ -41,10 +41,9 @@ public abstract class ImportPlainActionProperty<I extends ImportPlainIterator> e
 
     protected FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, RawFileData> files = getFiles(context);
-        
+
+        StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
-        
-        StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();        
         importGroupData(hierarchy.getRoot(), SetFact.<GroupObjectEntity>EMPTY(), hierarchy, files, importData, context, null);
 
         return importData;
