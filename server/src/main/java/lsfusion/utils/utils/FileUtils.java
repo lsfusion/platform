@@ -35,25 +35,24 @@ public class FileUtils {
                 RawFileData rawFile = (RawFileData) readResult.fileBytes;  
                 switch (destPath.type) {
                     case "file":
-                        try {
-                            rawFile.write(destPath.path);
-                        } finally {
-                            deleteFile(srcPath.path);
-                        }
+                        rawFile.write(destPath.path);
                         break;
                     case "ftp":
-                        try {
-                            WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
-                        } finally {
-                            deleteFTPFile(srcPath.path);
-                        }
+                        WriteUtils.storeFileToFTP(destPath.path, rawFile, null);
                         break;
                     case "sftp":
-                        try {
-                            WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
-                        } finally {
-                            deleteSFTPFile(srcPath.path);
-                        }
+                        WriteUtils.storeFileToSFTP(destPath.path, rawFile, null);
+                        break;
+                }
+                switch (srcPath.type) {
+                    case "file":
+                        deleteFile(srcPath.path);
+                        break;
+                    case "ftp":
+                        deleteFTPFile(srcPath.path);
+                        break;
+                    case "sftp":
+                        deleteSFTPFile(srcPath.path);
                         break;
                 }
             }
