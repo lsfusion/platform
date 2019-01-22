@@ -8,7 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ui.WindowBox;
 
 public class GLogoutMessageManager {
-    private static final MainFrameMessages messages = MainFrameMessages.Instance.get();
+    private static final ClientMessages messages = ClientMessages.Instance.get();
 
     private static GBlockDialog blockDialog;
 
