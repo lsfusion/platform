@@ -40,8 +40,9 @@ public class WriteUtils {
     private static void writeFile(String path, String extension, RawFileData fileData, boolean append) throws IOException {
         String url = appendExtension(path, extension);
         File file = createFile(System.getProperty("user.home") + "/Downloads/", url);
-        if (!file.getParentFile().exists()) {
-            throw new RuntimeException(String.format("Path is incorrect or not found: %s", url));
+        File parentFile = file.getParentFile();
+        if (parentFile != null && !parentFile.exists()) {
+            throw new RuntimeException(String.format("Path is incorrect or not found: %s", file.getAbsolutePath()));
         } else if (append && file.exists()) {
             switch (extension) {
                 case "csv":
@@ -74,7 +75,7 @@ public class WriteUtils {
 
     private static File createFile(String parent, String filePath) {
         File file = new File(filePath);
-        if(file.isAbsolute())
+        if(file.isAbsolute() || filePath.matches("CON|PRN|AUX|NUL|COM\\d|LPT\\d"))
             return file;
         return new File(parent, filePath);
     }
