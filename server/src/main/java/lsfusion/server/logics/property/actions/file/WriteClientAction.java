@@ -9,11 +9,11 @@ import lsfusion.interop.action.ExecuteClientAction;
 import java.io.IOException;
 
 public class WriteClientAction extends ExecuteClientAction {
-    RawFileData file;
-    String path;
-    String extension;
-    boolean append;
-    boolean isDialog;
+    private final RawFileData file;
+    private final String path;
+    private final String extension;
+    private final boolean append;
+    private final boolean isDialog;
 
     public WriteClientAction(RawFileData file, String path, String extension, boolean append, boolean isDialog) {
         this.file = file;
@@ -26,12 +26,14 @@ public class WriteClientAction extends ExecuteClientAction {
     @Override
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         try {
+            String filePath = path;
+            String fileExtension = extension;
             if (isDialog) {
-                path = FileDialogUtils.showSaveFileDialog(WriteUtils.appendExtension(path, extension), file);
-                extension = null;
+                filePath = FileDialogUtils.showSaveFileDialog(WriteUtils.appendExtension(path, extension), file);
+                fileExtension = null;
             }
-            if(path != null) {
-                WriteUtils.write(file, path, extension, append);
+            if (filePath != null) {
+                WriteUtils.write(file, filePath, fileExtension, append);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
