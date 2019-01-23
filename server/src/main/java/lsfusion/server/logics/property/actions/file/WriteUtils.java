@@ -75,7 +75,7 @@ public class WriteUtils {
 
     private static File createFile(String parent, String filePath) {
         File file = new File(filePath);
-        if(file.isAbsolute() || filePath.matches("CON|PRN|AUX|NUL|COM\\d|LPT\\d"))
+        if(file.isAbsolute() || filePath.matches("(?i:CON|PRN|AUX|NUL|COM\\d|LPT\\d)"))
             return file;
         return new File(parent, filePath);
     }
