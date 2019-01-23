@@ -1,6 +1,7 @@
 package lsfusion.http;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ServerUtils;
 import lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
@@ -24,7 +25,11 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         try {
             // setting cookie before super.onAuthenticationSuccess() to have right cookie-path  
-            RemoteLogicsInterface logics = logicsHandlerProvider.getLogics(logicsHandlerProvider.getLogicsConnection(null, null, null));
+            RemoteLogicsInterface logics = logicsHandlerProvider.getLogics(logicsHandlerProvider.getLogicsConnection(
+                    request.getParameter("host"), 
+                    BaseUtils.parseInt(request.getParameter("port")), 
+                    request.getParameter("exportName")
+            ));
             Locale userLocale = logics.getUserLocale(authentication.getName());
             if (userLocale != null) {
                 Cookie localeCookie = new Cookie(ServerUtils.LOCALE_COOKIE_NAME, userLocale.toString());
