@@ -7,9 +7,13 @@ import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.remote.PreAuthentication;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,10 +31,12 @@ import java.util.Locale;
 
 import static lsfusion.base.ServerMessages.getString;
 
-public class LSFRemoteAuthenticationManager extends LogicsRequestHandler implements RemoteAuthenticationManager {
+public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implements AuthenticationProvider {
 
     @Override
-    public Collection<GrantedAuthority> attemptAuthentication(final String username, final String password) throws RemoteAuthenticationException {
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        final String username = authentication.getPrincipal().toString();
+        final String password = authentication.getCredentials().toString();
 
         try {
             //https://stackoverflow.com/questions/24025924/java-lang-illegalstateexception-no-thread-bound-request-found-exception-in-asp
@@ -40,23 +46,18 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
                 request = ((ServletRequestAttributes) attribs).getRequest();
 
             final HttpServletRequest finalRequest = request;
-            return runRequest(request, new Runnable<Collection<GrantedAuthority>> () {
-                public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
+            PreAuthentication auth = runRequest(request, new Runnable<PreAuthentication> () {
+                public PreAuthentication run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
-                        List<GrantedAuthority> result = new ArrayList<>();
                         Locale locale = Locale.getDefault();
                         PreAuthentication auth = remoteLogics.preAuthenticateUser(username, password, locale.getLanguage(), locale.getCountry());
-                        for (String role : auth.roles) {
-                            result.add(new GrantedAuthorityImpl(role));
-                        }
-
                         //TODO: добавить проверку platform version!
                         Integer oldApiVersion = BaseUtils.getApiVersion();
                         Integer newApiVersion = remoteLogics.getApiVersion();
                         if (!oldApiVersion.equals(newApiVersion)) {
                             throw new DisabledException(getString(finalRequest, "need.to.update.web.client"));
                         }
-                        return result;
+                        return auth;
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
                     } catch (RemoteMessageException le) {
@@ -64,13 +65,21 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
                     }
                 }
             });
+
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+            for (String role : auth.roles) {
+                authorities.add(new GrantedAuthorityImpl(role));
+            }
+            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password, authorities);
+            token.setDetails(auth.locale);            
+            return token;
+
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+    }
 
-//    } catch (LoginException le) {
-//        throw new UsernameNotFoundException(le.getMessage());
-//    } catch (RemoteMessageException le) {
-//        throw new RuntimeException(le.getMessage());
+    public boolean supports(Class<? extends Object> authentication) {
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
