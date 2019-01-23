@@ -44,7 +44,7 @@ public class BaseUtils {
 
     //client auto restart in dev mode + charHeight option for property
     public static Integer getApiVersion() {
-        return 80;
+        return 81;
     }
 
     public static String getPlatformVersion() {
