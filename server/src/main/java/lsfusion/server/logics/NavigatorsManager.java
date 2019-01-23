@@ -111,7 +111,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         try {
             User user;
             try (DataSession session = dbManager.createSession()) {
-                user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
+                user = securityManager.readAndAuthenticateUser(session, navigatorInfo.login, navigatorInfo.password, stack);
                 String result = session.applyMessage(businessLogics, stack);
                 if(result != null)
                     throw new RemoteMessageException(result);

@@ -6,6 +6,7 @@ import lsfusion.gwt.server.logics.LogicsConnection;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteMessageException;
+import lsfusion.interop.remote.PreAuthentication;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationException;
 import org.springframework.security.authentication.rcp.RemoteAuthenticationManager;
@@ -22,6 +23,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import static lsfusion.base.ServerMessages.getString;
 
@@ -32,25 +34,19 @@ public class LSFRemoteAuthenticationManager extends LogicsRequestHandler impleme
 
         try {
             //https://stackoverflow.com/questions/24025924/java-lang-illegalstateexception-no-thread-bound-request-found-exception-in-asp
-            String host = null;
-            Integer port = null;
-            String exportName = null;
             HttpServletRequest request = null;
             final RequestAttributes attribs = RequestContextHolder.getRequestAttributes();
-            if (attribs != null) {
+            if (attribs != null)
                 request = ((ServletRequestAttributes) attribs).getRequest();
-                host = request.getParameter("host");
-                port = BaseUtils.parseInt(request.getParameter("port"));
-                exportName = request.getParameter("exportName");
-            }
 
             final HttpServletRequest finalRequest = request;
-            return runRequest(host, port, exportName, new Runnable<Collection<GrantedAuthority>> () {
+            return runRequest(request, new Runnable<Collection<GrantedAuthority>> () {
                 public Collection<GrantedAuthority> run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
                         List<GrantedAuthority> result = new ArrayList<>();
-                        List<String> roles = remoteLogics.authenticateUser(username, password);
-                        for (String role : roles) {
+                        Locale locale = Locale.getDefault();
+                        PreAuthentication auth = remoteLogics.preAuthenticateUser(username, password, locale.getLanguage(), locale.getCountry());
+                        for (String role : auth.roles) {
                             result.add(new GrantedAuthorityImpl(role));
                         }
 

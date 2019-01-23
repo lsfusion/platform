@@ -251,8 +251,8 @@ public class Main {
 
                     LocalePreferences userPreferences = remoteNavigator.getLocalePreferences();
 
-                    if (userPreferences.language != null) {
-                        Locale userLocale = new Locale(userPreferences.language, nvl(userPreferences.country, ""));
+                    Locale userLocale = userPreferences.getLocale();
+                    if (userLocale != null) {
                         Locale.setDefault(userLocale);
                         ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
                         

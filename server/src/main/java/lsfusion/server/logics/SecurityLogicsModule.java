@@ -41,8 +41,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
     public LCP cachePropertyPolicyUser;
 
-    public LCP transactTimeoutUser;
-    
     public LCP sidUserRole;
     public LCP userRoleSID;
     public LCP nameUserRole;
@@ -50,6 +48,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP hasUserRole;
 
     public LCP currentUserMainRoleName;
+    public LCP currentUserTransactTimeout;
 
     public LAP copyAccess;    
 
@@ -75,6 +74,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         nameUserRole = findProperty("name[UserRole]");
         userRoleSID = findProperty("userRoleSID[VARSTRING[30]]");
         currentUserMainRoleName = findProperty("currentUserMainRoleName[]");
+        currentUserTransactTimeout = findProperty("currentUserTransactTimeout[]");
 
         // Список ролей для пользователей
         mainRoleCustomUser = findProperty("mainRole[CustomUser]");
@@ -119,8 +119,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidUserNavigatorElement = findProperty("forbid[User,NavigatorElement]");
 
         cachePropertyPolicyUser = findProperty("cachePropertyPolicy[User]");
-
-        transactTimeoutUser = findProperty("transactTimeout[User]");
 
         propertyPolicyForm = findForm("propertyPolicy");
         actionPolicyForm = findForm("actionPolicy");

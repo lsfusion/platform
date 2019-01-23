@@ -7,6 +7,7 @@ import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
+import lsfusion.interop.remote.PreAuthentication;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -31,10 +32,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     ExternalScreenParameters getExternalScreenParameters(int screenID, long computerId) throws RemoteException;
 
-    List<String> authenticateUser(String userName, String password) throws RemoteException;
+    PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException;
     
-    Locale getUserLocale(String userName) throws RemoteException;
-
     VMOptions getClientVMOptions() throws RemoteException;
 
     void remindPassword(String email, String localeLanguage) throws RemoteException;

@@ -22,6 +22,7 @@ import lsfusion.server.context.ExecutionStack;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
@@ -52,7 +53,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     public static SecurityPolicy serverSecurityPolicy = new SecurityPolicy();
 
     private final MAddMap<Long, SecurityPolicy> policies = MapFact.mAddOverrideMap();
-    private final MAddMap<Long, List<SecurityPolicy>> userPolicies = MapFact.mAddOverrideMap();
 
     public SecurityPolicy defaultPolicy;
     public SecurityPolicy permitAllPolicy;
@@ -167,23 +167,13 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return policies.get(policyID);
     }
 
-    public void setUserPolicies(long userId, SecurityPolicy... policies) {
-        setUserPolicies(userId, Arrays.asList(policies));
-    }
-
-    public void setUserPolicies(long userId, List<SecurityPolicy> policies) {
-        userPolicies.add(userId, policies);
-    }
-
-    public List<SecurityPolicy> getUserPolicies(long userId) {
-        return userPolicies.get(userId);
-    }
-
+    private long adminUserId = -1;
     public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
         try(DataSession session = createSession()) {
-            User user = addUser("admin", initialAdminPassword, session);
-            applySecurityPolicy(user, session);
-            setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
+            User adminUser = readUser("admin", session);
+            if (adminUser == null)
+                adminUser = addUser("admin", initialAdminPassword, session);
+            adminUserId = adminUser.ID;
             apply(session);
         }
     }
@@ -245,49 +235,29 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
     }
 
     protected User addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {
-
-        User user = readUser(login, session);
-        if (user == null) {
-            DataObject userObject = session.addObject(authenticationLM.customUser);
-            authenticationLM.loginCustomUser.change(login, session, userObject);
-            authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
-            Long userID = (Long) userObject.object;
-            user = new User(userID);
-        }
-
-        return user;
+        DataObject userObject = session.addObject(authenticationLM.customUser);
+        authenticationLM.loginCustomUser.change(login, session, userObject);
+        authenticationLM.sha256PasswordCustomUser.change(BaseUtils.calculateBase64Hash("SHA-256", defaultPassword.trim(), UserInfo.salt), session, userObject);
+        Long userID = (Long) userObject.object;
+        return new User(userID);
     }
 
     public User readUser(String login, DataSession session) throws SQLException, SQLHandledException {
-        return readUser(login, false, session);
-    }
-
-    public User readUser(String login, boolean insensitive, DataSession session) throws SQLException, SQLHandledException {
-        Long userId = insensitive ? (Long) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(100))) :
+        Long userId = authenticationLM.useLDAP.read(session) != null ? (Long) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(100))) :
                 (Long) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(100)));
         if (userId == null) {
             return null;
         }
-        User userObject = new User(userId);
-        applyTimeout(userObject);
-        return userObject;
+        return new User(userId);
     }
-    
-    public User readUserWithSecurityPolicy(String login, DataSession session) throws SQLException, SQLHandledException {
-        User user = readUser(login, session);
-        applySecurityPolicy(user, session);
-        return user;
-    }
-    
+
     public void applySecurityPolicy(User userObject, DataSession session) throws SQLException, SQLHandledException {
         // политика по умолчанию из кода
         userObject.addSecurityPolicy(defaultPolicy);
 
-        // политики для пользователя, заданные в коде
-        List<SecurityPolicy> codeUserPolicy = getUserPolicies(userObject.ID);
-        if (codeUserPolicy != null) {
-            for (SecurityPolicy policy : codeUserPolicy)
-                userObject.addSecurityPolicy(policy);
+        if(userObject.ID == adminUserId) {
+            userObject.addSecurityPolicy(permitAllPolicy);
+            userObject.addSecurityPolicy(allowConfiguratorPolicy);
         }
 
         // политика по умолчанию из формы "Политика безопасности"
@@ -302,26 +272,6 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             SecurityPolicy policy = getPolicy(policyId);
             if (policy != null) {
                 userObject.addSecurityPolicy(policy);
-            }
-        }
-    }
-
-    private void applyTimeout(User user) throws SQLException, SQLHandledException {
-        try (DataSession session = createSession()) {
-
-            DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
-
-            QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
-            Expr userExpr = qu.getMapExprs().get("userId");
-            qu.and(userExpr.compare(userObject, Compare.EQUALS));
-            qu.addProperty("transactTimeoutUser", securityLM.transactTimeoutUser.getExpr(session.getModifier(), userExpr));
-
-            ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session).values();
-            for (ImMap<String, Object> valueMap : timeoutValues) {
-                Integer timeout = (Integer) valueMap.get("transactTimeoutUser");
-                if (timeout != null) {
-                    user.setTimeout(timeout);
-                }
             }
         }
     }
@@ -351,11 +301,19 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public User authenticateUser(DataSession session, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
-        boolean needAuthentication = true;
-        boolean useLDAP = authenticationLM.useLDAP.read(session) != null;
-        User user = readUser(login, useLDAP, session);
-        if (useLDAP) {
+    public User readAndAuthenticateUser(DataSession session, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
+        User user = readUser(login, session);
+
+        user = authenticateUser(session, user, login, password, stack);
+
+        if (user != null)
+            applySecurityPolicy(user, session);
+
+        return user;
+    }
+
+    public User authenticateUser(DataSession session, User user, String login, String password, ExecutionStack stack) throws SQLException, SQLHandledException {
+        if (authenticationLM.useLDAP.read(session) != null) {
             String server = (String) authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) authenticationLM.portLDAP.read(session);
             String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
@@ -364,11 +322,11 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             try {
                 LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password);
                 if (ldapParameters.isConnected()) {
-                    needAuthentication = false;
                     if (user == null) {
                         user = addUser(login, password, session);
                     }
                     setUserParameters(user, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
+                    return user;
                 } else {
                     throw new LoginException();
                 }
@@ -377,25 +335,17 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
             }
         }
 
-        if (needAuthentication) {
-            if (user == null) {
-                throw new LoginException();
-            }
-
-            DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
-
-            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
-                throw new LockedException();
-            }
-
-            if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password, stack))
-                throw new LoginException();
-        }
-        
-        if (user != null) {
-            applySecurityPolicy(user, session);
+        if (user == null) {
+            throw new LoginException();
         }
 
+        DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
+        if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+            throw new LockedException();
+        }
+
+        if (!isUniversalPassword(password) && !authenticationLM.checkPassword(userObject, password, stack))
+            throw new LoginException();
         return user;
     }
 
@@ -580,40 +530,29 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         return securityLM.mainRoleCustomUser.read(createSession(), user);
     }
 
-    public List<String> getUserRolesNames(String username, List<String> extraUserRoleNames) {
-        try {
-            try (DataSession session = createSession()) {
-                ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.toExclSet("user", "role"));
-                Expr userExpr = keys.get("user");
-                Expr roleExpr = keys.get("role");
+    public List<String> getUserRolesNames(DataObject userObject) throws SQLException, SQLHandledException {
+        try (DataSession session = createSession()) {
+            ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.singleton("role"));
+            Expr roleExpr = keys.get("role");
+            ValueExpr userExpr = userObject.getExpr();
+                    
+            QueryBuilder<String, String> q = new QueryBuilder<>(keys);
+            q.and(securityLM.hasUserRole.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
+            q.addProperty("roleName", securityLM.sidUserRole.getExpr(session.getModifier(), roleExpr));
 
-                QueryBuilder<String, String> q = new QueryBuilder<>(keys);
-                q.and(securityLM.hasUserRole.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
-                q.and(authenticationLM.loginCustomUser.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session);
 
-                q.addProperty("roleName", securityLM.sidUserRole.getExpr(session.getModifier(), roleExpr));
-
-                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session);
-
-                List<String> roles = new ArrayList<>();
-                for (ImMap<String, Object> value : values.valueIt()) {
-                    Object rn = value.get("roleName");
-                    if (rn instanceof String) {
-                        String roleName = ((String) rn).trim();
-                        if (!roleName.isEmpty()) {
-                            roles.add(roleName);
-                        }
+            List<String> roles = new ArrayList<>();
+            for (ImMap<String, Object> value : values.valueIt()) {
+                Object rn = value.get("roleName");
+                if (rn instanceof String) {
+                    String roleName = ((String) rn).trim();
+                    if (!roleName.isEmpty()) {
+                        roles.add(roleName);
                     }
                 }
-                roles.addAll(extraUserRoleNames);
-
-                return roles;
             }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(localize("{logics.info.error.reading.list.of.roles}"), e);
-        } catch (SQLHandledException e) {
-            throw Throwables.propagate(e);
+            return roles;
         }
     }
 
