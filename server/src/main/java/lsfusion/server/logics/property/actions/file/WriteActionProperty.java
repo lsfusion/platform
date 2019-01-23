@@ -58,11 +58,7 @@ public class WriteActionProperty extends SystemExplicitActionProperty {
         try {
             if (rawFileData != null) {
                 if (clientAction) {
-                    if(dialog) {
-                        context.delayUserInteraction(new SaveFileDialogClientAction(rawFileData, WriteUtils.appendExtension(path, extension)));
-                    } else {
-                        context.delayUserInteraction(new WriteClientAction(rawFileData, path, extension, append));
-                    }
+                    context.delayUserInteraction(new WriteClientAction(rawFileData, path, extension, append, dialog));
                 } else {
                     WriteUtils.write(rawFileData, path, extension, append);
                 }
