@@ -12,29 +12,27 @@ import static lsfusion.base.ApiResourceBundle.getString;
 
 public class FileDialogUtils {
 
-    public static void showSaveFileDialog(String path, RawFileData file) {
-        showSaveFileDialog(getFileMap(path, file));
+    public static Map<String, RawFileData> showSaveFileDialog(String path, RawFileData file) {
+        return showSaveFileDialog(getFileMap(path, file));
     }
 
-    public static void showSaveFileDialog(Map<String, RawFileData> files) {
-        try {
-            JFileChooser fileChooser = new JFileChooser();
-            Map<String, String> chosenFiles = chooseFiles(fileChooser, files.keySet());
+    public static Map<String, RawFileData> showSaveFileDialog(Map<String, RawFileData> files) {
+        Map<String, RawFileData> resultMap = new HashMap<>();
+        JFileChooser fileChooser = new JFileChooser();
+        Map<String, String> chosenFiles = chooseFiles(fileChooser, files.keySet());
 
-            for (Map.Entry<String, String> chosenFile : chosenFiles.entrySet()) {
-                File file = new File(chosenFile.getValue());
-                if (chosenFiles.size() == 1 && file.exists()) {
-                    int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
-                            getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
-                    if (answer != JOptionPane.YES_OPTION) {
-                        break;
-                    }
+        for (Map.Entry<String, String> chosenFile : chosenFiles.entrySet()) {
+            File file = new File(chosenFile.getValue());
+            if (chosenFiles.size() == 1 && file.exists()) {
+                int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"),
+                        getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
+                if (answer != JOptionPane.YES_OPTION) {
+                    break;
                 }
-                files.get(chosenFile.getKey()).write(file);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            resultMap.put(chosenFile.getValue(), files.get(chosenFile.getKey()));
         }
+        return resultMap;
     }
 
     public static Map<String, String> chooseFiles(JFileChooser fileChooser, Set<String> files) {

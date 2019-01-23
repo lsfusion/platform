@@ -17,7 +17,6 @@ import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.dock.DockableMainFrame;
-import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.form.DispatcherListener;
 import lsfusion.client.form.classes.ClassDialog;
@@ -31,7 +30,9 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
 import org.apache.commons.io.FileUtils;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -274,8 +275,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    public void execute(ExportFileClientAction action) {
-        FileDialogUtils.showSaveFileDialog(action.files);
+    public void execute(ExportFileClientAction action) throws IOException {
+        Map<String, RawFileData> chosenFiles = FileDialogUtils.showSaveFileDialog(action.files);
+        for(Map.Entry<String, RawFileData> fileEntry : chosenFiles.entrySet()) {
+            fileEntry.getValue().write(fileEntry.getKey());
+        }
     }
 
     public Object execute(ImportFileClientAction action) {
