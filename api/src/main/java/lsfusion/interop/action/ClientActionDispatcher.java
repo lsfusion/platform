@@ -2,6 +2,7 @@ package lsfusion.interop.action;
 
 import lsfusion.base.RawFileData;
 
+import java.io.IOException;
 import java.util.Map;
 
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
@@ -13,7 +14,7 @@ public interface ClientActionDispatcher {
 
     Object execute(RuntimeClientAction action);
 
-    void execute(ExportFileClientAction action);
+    void execute(ExportFileClientAction action) throws IOException;
 
     Object execute(ImportFileClientAction action);
 
