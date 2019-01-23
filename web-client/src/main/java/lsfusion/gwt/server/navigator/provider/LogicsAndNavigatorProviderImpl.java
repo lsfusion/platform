@@ -6,6 +6,7 @@ import lsfusion.base.ServerMessages;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
 import lsfusion.gwt.shared.GwtSharedUtils;
+import lsfusion.http.LSFAuthenticationToken;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.springframework.beans.factory.DisposableBean;
@@ -52,8 +53,11 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-        String language = Locale.getDefault().getLanguage();
-        String country = Locale.getDefault().getCountry();
+        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
+        if(clientLocale == null)
+            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
+        String language = clientLocale.getLanguage();
+        String country = clientLocale.getCountry();
 
         RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
                 remoteLogics.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
