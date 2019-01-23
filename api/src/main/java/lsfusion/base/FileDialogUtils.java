@@ -5,17 +5,18 @@ import org.jfree.ui.ExtensionFileFilter;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public class FileDialogUtils {
 
-    public static Map<String, RawFileData> showSaveFileDialog(String path, RawFileData file) {
-        return showSaveFileDialog(getFileMap(path, file));
+    public static String showSaveFileDialog(String path, RawFileData file) {
+        Map<String, RawFileData> chosenFiles = showSaveFileDialog(Collections.singletonMap(path, file));
+        return chosenFiles.isEmpty() ? null : BaseUtils.singleKey(chosenFiles);
     }
 
+    @Deprecated
     public static Map<String, RawFileData> showSaveFileDialog(Map<String, RawFileData> files) {
         Map<String, RawFileData> resultMap = new HashMap<>();
         JFileChooser fileChooser = new JFileChooser();
@@ -64,12 +65,6 @@ public class FileDialogUtils {
             }
             SystemUtils.saveCurrentDirectory(singleFile ? new File(path.substring(0, path.lastIndexOf("\\"))) : new File(path));
         }
-        return result;
-    }
-
-    private static Map<String, RawFileData> getFileMap(String path, RawFileData file) {
-        Map<String, RawFileData> result = new HashMap<>();
-        result.put(path, file);
         return result;
     }
 

@@ -7,7 +7,6 @@ import lsfusion.interop.action.ClientActionDispatcher;
 import lsfusion.interop.action.ExecuteClientAction;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class WriteClientAction extends ExecuteClientAction {
     RawFileData file;
@@ -27,12 +26,11 @@ public class WriteClientAction extends ExecuteClientAction {
     @Override
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         try {
-            if(isDialog) {
-                Map<String, RawFileData> chosenFiles = FileDialogUtils.showSaveFileDialog(WriteUtils.appendExtension(path, extension), file);
-                for(Map.Entry<String, RawFileData> fileEntry : chosenFiles.entrySet()) {
-                    fileEntry.getValue().write(fileEntry.getKey());
-                }
-            } else {
+            if (isDialog) {
+                path = FileDialogUtils.showSaveFileDialog(WriteUtils.appendExtension(path, extension), file);
+                extension = null;
+            }
+            if(path != null) {
                 WriteUtils.write(file, path, extension, append);
             }
         } catch (Exception e) {
