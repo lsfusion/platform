@@ -77,6 +77,6 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
     }
 
     public boolean supports(Class<? extends Object> authentication) {
-        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        return LSFAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
