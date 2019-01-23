@@ -10,8 +10,6 @@ import lsfusion.interop.remote.PreAuthentication;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.rcp.RemoteAuthenticationException;
-import org.springframework.security.authentication.rcp.RemoteAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +24,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 import static lsfusion.base.ServerMessages.getString;
@@ -77,6 +74,6 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
     }
 
     public boolean supports(Class<? extends Object> authentication) {
-        return LSFAuthenticationToken.class.isAssignableFrom(authentication);
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

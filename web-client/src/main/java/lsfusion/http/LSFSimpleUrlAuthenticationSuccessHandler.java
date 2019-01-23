@@ -2,14 +2,8 @@ package lsfusion.http;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ServerUtils;
-import lsfusion.gwt.server.logics.LogicsConnection;
-import lsfusion.gwt.server.logics.provider.LogicsHandlerProviderImpl;
-import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
-import lsfusion.interop.RemoteLogicsInterface;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
@@ -18,9 +12,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.net.URISyntaxException;
+import java.util.*;
 
 public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     
@@ -37,13 +30,33 @@ public class LSFSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthentic
         }
         super.onAuthenticationSuccess(request, response, authentication);
     }
+    
+    private String removeQueryParams(HttpServletRequest request, Set<String> paramsToRemove) {
+        String queryString = request.getQueryString();
+        StringBuilder newQueryString = new StringBuilder();
+        try {
+            if (queryString != null && !queryString.isEmpty()) {
+                List<NameValuePair> params = new URIBuilder("?" + queryString).getQueryParams();
+                for (Iterator<NameValuePair> paramsIterator = params.iterator(); paramsIterator.hasNext();) {
+                    NameValuePair queryParameter = paramsIterator.next();
+                    if (paramsToRemove.contains(queryParameter.getName())) {
+                        paramsIterator.remove();
+                    }
+                }
+                for (NameValuePair param : params) {
+                    newQueryString.append(newQueryString.length() != 0 ? "&" : "?");
+                    newQueryString.append(param);
+                }
+            }
+        } catch (URISyntaxException e) {
+            Throwables.propagate(e);
+        } 
+        return newQueryString.toString();
+    }
 
     @Override
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
-        String queryString = request.getQueryString();
-        if (queryString != null) {
-            queryString = queryString.replaceAll("&error=1|error=1&|error=1", "");
-        }
-        return "/lsfusion.jsp" + (queryString == null || queryString.isEmpty() ? "" : ("?" + queryString));
+        String newQueryString = removeQueryParams(request, Collections.singleton("error"));
+        return "/lsfusion.jsp" + newQueryString;
     }
 }
