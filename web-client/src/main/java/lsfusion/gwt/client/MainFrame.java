@@ -28,6 +28,7 @@ import lsfusion.gwt.client.window.WindowsController;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.logics.CheckApiVersionAction;
 import lsfusion.gwt.shared.actions.navigator.*;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.result.BooleanResult;
@@ -138,6 +139,16 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void initializeFrame() {
+        logicsAndNavigatorDispatchAsync.execute(new CheckApiVersionAction(messages.checkApiVersionMessage()), new ErrorHandlingCallback<StringResult>() {
+            @Override
+            public void success(StringResult result) {
+                final String error = result.get();
+                if(error != null) {
+                    GLogoutMessageManager.start(error);
+                }
+            }
+        });
+
         Window.addWindowClosingHandler(new Window.ClosingHandler() { // добавляем после инициализации окон
             @Override
             public void onWindowClosing(Window.ClosingEvent event) {

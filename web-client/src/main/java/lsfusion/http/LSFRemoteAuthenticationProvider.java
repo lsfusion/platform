@@ -42,19 +42,11 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             if (attribs != null)
                 request = ((ServletRequestAttributes) attribs).getRequest();
 
-            final HttpServletRequest finalRequest = request;
             PreAuthentication auth = runRequest(request, new Runnable<PreAuthentication> () {
                 public PreAuthentication run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {
                         Locale locale = Locale.getDefault();
-                        PreAuthentication auth = remoteLogics.preAuthenticateUser(username, password, locale.getLanguage(), locale.getCountry());
-                        //TODO: добавить проверку platform version!
-                        Integer oldApiVersion = BaseUtils.getApiVersion();
-                        Integer newApiVersion = remoteLogics.getApiVersion();
-                        if (!oldApiVersion.equals(newApiVersion)) {
-                            throw new DisabledException(getString(finalRequest, "need.to.update.web.client"));
-                        }
-                        return auth;
+                        return remoteLogics.preAuthenticateUser(username, password, locale.getLanguage(), locale.getCountry());
                     } catch (LoginException le) {
                         throw new UsernameNotFoundException(le.getMessage());
                     } catch (RemoteMessageException le) {

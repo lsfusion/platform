@@ -4,6 +4,7 @@ import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.form.provider.FormProvider;
+import lsfusion.gwt.server.logics.handlers.CheckApiVersionHandler;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.server.logics.provider.LogicsHandlerProvider;
 import lsfusion.gwt.server.navigator.handlers.*;
@@ -58,6 +59,7 @@ public class LSFusionDispatchServlet extends net.customware.gwt.dispatch.server.
         registry.addHandler(new LookupLogicsAndCreateNavigatorHandler(this));
 
         // logics
+        registry.addHandler(new CheckApiVersionHandler(this));
         registry.addHandler(new GenerateIDHandler(this));
 
         // navigator
