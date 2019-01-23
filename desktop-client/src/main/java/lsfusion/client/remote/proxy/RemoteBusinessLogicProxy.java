@@ -9,6 +9,7 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.PreAuthentication;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -83,18 +84,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public List<String> authenticateUser(String userName, String password) throws RemoteException {
+    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
         logRemoteMethodStartCall("authenticateUser");
-        List<String> result = target.authenticateUser(userName, password);
+        PreAuthentication result = target.preAuthenticateUser(userName, password, language, country);
         logRemoteMethodEndCall("authenticateUser", result);
-        return result;
-    }
-
-    @Override
-    public Locale getUserLocale(String userName) throws RemoteException {
-        logRemoteMethodStartCall("getUserLocale");
-        Locale result = target.getUserLocale(userName);
-        logRemoteMethodEndCall("getUserLocale", result);
         return result;
     }
 

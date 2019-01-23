@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.GUIPreferences;
+import lsfusion.interop.LocalePreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.action.ReportPath;
@@ -17,6 +18,7 @@ import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.PreAuthentication;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.User;
@@ -27,6 +29,7 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
+import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
 import lsfusion.server.logics.SecurityManager;
@@ -214,36 +217,22 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }
 
+    // web spring authentitification
     @Override
-    public List<String> authenticateUser(String userName, String password) throws RemoteException {
-        User user;
+    public PreAuthentication preAuthenticateUser(String userName, String password, String language, String country) throws RemoteException {
         try(DataSession session = dbManager.createSession()) {
-            user = securityManager.authenticateUser(session, userName, password, getStack());
+            User user;
+            if(password == null) // temporary
+                user = securityManager.readUser(userName, session);
+            else
+                user = securityManager.readAndAuthenticateUser(session, userName, password, getStack());            
+            DataObject userObject = user.getDataObject(businessLogics.authenticationLM.customUser, session);
+            
+            return new PreAuthentication(securityManager.getUserRolesNames(userObject), 
+                                RemoteNavigator.loadLocalePreferences(session, userObject, businessLogics, language, country, getStack()).getLocale());
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        if (user != null) {
-            return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));
-        }
-        return null;
-    }
-
-    @Override
-    public Locale getUserLocale(String userName) throws RemoteException {
-        try(DataSession session = dbManager.createSession()) {
-            Object userId = businessLogics.authenticationLM.customUserLogin.read(session, new DataObject(userName, StringClass.get(100)));
-            String language = (String) businessLogics.authenticationLM.language.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
-            if (language != null) {
-                String country = (String) businessLogics.authenticationLM.country.read(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
-                if (country != null) {
-                    return new Locale(language, country);
-                }
-                return new Locale(language);
-            }
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-        return null;
     }
 
     @Override
@@ -254,10 +243,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public long generateID() throws RemoteException {
         return dbManager.generateID();
-    }
-
-    protected List<String> getExtraUserRoleNames(String username) {
-        return new ArrayList<>();
     }
 
     protected Long getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {

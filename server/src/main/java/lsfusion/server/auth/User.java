@@ -18,30 +18,7 @@ public class User extends PolicyAgent {
         this.ID = ID;
     }
 
-    List<UserGroup> userGroups = new ArrayList();
-
-    public SecurityPolicy getSecurityPolicy() {
-
-        SecurityPolicy resultPolicy = new SecurityPolicy();
-
-        for (UserGroup userGroup : userGroups)
-            resultPolicy.override(userGroup.getSecurityPolicy());
-
-        resultPolicy.override(super.getSecurityPolicy());
-        return resultPolicy;
-    }
-    
     public DataObject getDataObject(ConcreteCustomClass customClass, DataSession session) throws SQLException, SQLHandledException {
         return session.getDataObject(customClass, ID);
-    }
-    
-    public int timeout = 0;
-    
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
-    
-    public int getTimeout() {
-        return timeout;
     }
 }

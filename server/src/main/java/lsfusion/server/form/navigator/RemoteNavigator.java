@@ -127,7 +127,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         this.classCache = new ClassCache();
 
         this.securityPolicy = currentUser.getSecurityPolicy();
-        this.transactionTimeout = currentUser.getTimeout();
 
         try(DataSession session = dbManager.createSession()) {
             this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
@@ -144,6 +143,10 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
             String userRole = (String) businessLogics.securityLM.currentUserMainRoleName.read(session);
             logInfo = new LogInfo(allowExcessAllocatedBytes, userName, userRole, computerName, remoteAddress);
+
+            Integer timeout = (Integer) businessLogics.securityLM.currentUserTransactTimeout.read(session);
+            if(timeout != null)
+                this.transactionTimeout = timeout;
         }
         this.userRole = getRole();
 
@@ -174,11 +177,15 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         Object newRole = securityManager.getUserMainRole(user);
         Object currentRole = securityManager.getUserMainRole(this.user);
         if (BaseUtils.nullEquals(newRole, currentRole)) {
-            setUser(user, stack);
-            Result<Integer> timeout = new Result<>();
-            this.securityPolicy = getUserSecurityPolicy(timeout);
+            this.user = user;
+            
+            loadLocalePreferences(stack);
+            try(DataSession session = createSession()) {
+                User secUser = new User((Long) this.user.object);
+                securityManager.applySecurityPolicy(secUser, session);
+                this.securityPolicy = secUser.getSecurityPolicy();
+            }
             this.userRole = getRole();
-            this.transactionTimeout = timeout.result;
             updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
             return true;
         }
@@ -194,18 +201,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             session.updateSessionEvents(updateChanges);
             
             session.updateProperties(property, updateChanges); // редко используется поэтому все равно
-        }
-    }
-
-    public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {
-        try {
-            try(DataSession session = createSession()) {
-                User user = securityManager.readUserWithSecurityPolicy(getUserLogin(), session);
-                timeout.set(user.getTimeout());
-                return user.getSecurityPolicy();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -291,11 +286,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    private void setUser(DataObject user, ExecutionStack stack) {
-        this.user = user;
-        loadLocalePreferences(stack);
     }
 
     @Aspect
@@ -514,35 +504,37 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    private void loadLocalePreferences(ExecutionStack stack) {
-        String language = null, country = null, timeZone = null;
-        Integer twoDigitYearStart = null;
-        
+    private void loadLocalePreferences(ExecutionStack stack) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
-            if (clientLanguage != null) {
-                businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
-                businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
-            }
-            
-            language = (String) businessLogics.authenticationLM.language.read(session, user);
-            country = (String) businessLogics.authenticationLM.country.read(session, user);
-            timeZone = (String) businessLogics.authenticationLM.timeZone.read(session, user);
-            twoDigitYearStart = (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user);
-            session.applyException(businessLogics, stack);
-        } catch (SQLException | SQLHandledException ignored) {
+            userLocalePreferences = loadLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
         }
-        this.userLocalePreferences = new LocalePreferences(language, country, timeZone, twoDigitYearStart);
     }
-    
-    public LocalePreferences getLocalePreferences() throws RemoteException {
+
+    public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+        saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
+
+        return new LocalePreferences((String) businessLogics.authenticationLM.language.read(session, user), 
+                                     (String) businessLogics.authenticationLM.country.read(session, user), 
+                                     (String) businessLogics.authenticationLM.timeZone.read(session, user), 
+                                     (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user));
+    }
+
+    public static void saveClientLanguage(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+        if (clientLanguage != null) {
+            businessLogics.authenticationLM.clientLanguage.change(clientLanguage, session, user);
+            businessLogics.authenticationLM.clientCountry.change(clientCountry, session, user);
+            session.applyException(businessLogics, stack);
+        }
+    }
+
+    public LocalePreferences getLocalePreferences() {
         return userLocalePreferences;
     }
 
     public Locale getLocale() {
-        LocalePreferences pref = userLocalePreferences;
-        if (pref != null && pref.language != null) {
-            return new Locale(pref.language, pref.country == null ? "" : pref.country);
-        }
+        Locale locale = getLocalePreferences().getLocale();
+        if(locale != null)
+            return locale;
         return Locale.getDefault();
     }
 

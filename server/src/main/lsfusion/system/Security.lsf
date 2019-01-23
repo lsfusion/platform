@@ -71,6 +71,7 @@ copy ABSTRACT LIST (UserRole, UserRole);
 // Transaction timeout
 transactTimeout '{security.transact.timeout}' = DATA INTEGER (UserRole);
 transactTimeout '{security.transact.timeout}' (User user) = transactTimeout(mainRole(user));
+currentUserTransactTimeout () = transactTimeout(currentUser());
 
 copy (UserRole from, UserRole to) +{ transactTimeout(to) <- transactTimeout(from); }
 

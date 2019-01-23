@@ -16,7 +16,7 @@ public abstract class HttpLogicsRequestHandler extends LogicsRequestHandler impl
 
     @Override
     public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        runRequest(request.getParameter("host"), BaseUtils.parseInt(request.getParameter("port")), request.getParameter("exportName"), new Runnable<Object>() {
+        runRequest(request, new Runnable<Object>() {
             @Override
             public Object run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws IOException {
                 handleRequest(remoteLogics, logicsConnection, request, response);

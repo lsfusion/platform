@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.ProgressBar;
+import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
@@ -156,7 +157,16 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveFile(action.file, action.name, action.extension), action.name != null ? (action.name + (action.extension != null ? "." + action.extension : "")) : null);
+        return new GOpenFileAction(FileUtils.saveFile(action.file, action.name, action.extension), action.name != null ? appendExtension(action.name, action.extension) : null);
+    }
+
+    @Converter(from = WriteClientAction.class)
+    public GOpenFileAction convertAction(WriteClientAction action) {
+        return new GOpenFileAction(FileUtils.saveFile(action.file, action.path, action.extension), appendExtension(action.path, action.extension));
+    }
+
+    private String appendExtension(String path, String extension) {
+        return path + (extension != null ? ("." + extension) : "");
     }
 
     @Converter(from = ExportFileClientAction.class)

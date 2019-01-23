@@ -9,11 +9,11 @@ import lsfusion.interop.action.ExecuteClientAction;
 import java.io.IOException;
 
 public class WriteClientAction extends ExecuteClientAction {
-    private final RawFileData file;
-    private final String path;
-    private final String extension;
-    private final boolean append;
-    private final boolean isDialog;
+    public final RawFileData file;
+    public final String path;
+    public final String extension;
+    public final boolean append;
+    public final boolean isDialog;
 
     public WriteClientAction(RawFileData file, String path, String extension, boolean append, boolean isDialog) {
         this.file = file;
