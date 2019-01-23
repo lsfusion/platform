@@ -6,8 +6,6 @@ import java.sql.SQLException;
 
 public interface ExtraReadInterface {
 
-    void copyJDBCToFile(String query, File file) throws SQLException;
-
-    void copyMDBToFile(String query, File file) throws IOException;
+    void copyToFile(String type, String query, File file) throws SQLException, IOException;
 
 }
