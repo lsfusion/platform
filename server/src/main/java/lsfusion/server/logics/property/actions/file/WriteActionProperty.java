@@ -3,6 +3,8 @@ package lsfusion.server.logics.property.actions.file;
 import com.google.common.base.Throwables;
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
+import lsfusion.base.file.WriteClientAction;
+import lsfusion.base.file.WriteUtils;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.StringClass;

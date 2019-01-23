@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.file;
+package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.ClientAction;
@@ -22,7 +22,7 @@ public class ReadClientAction implements ClientAction {
 
     public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
         try {
-            return ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, isDialog);
+            return ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, isDialog, null);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

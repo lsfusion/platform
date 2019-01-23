@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.file;
+package lsfusion.base.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.FileDialogUtils;

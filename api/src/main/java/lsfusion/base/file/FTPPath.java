@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.file;
+package lsfusion.base.file;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;

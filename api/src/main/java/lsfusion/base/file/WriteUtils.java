@@ -1,8 +1,7 @@
-package lsfusion.server.logics.property.actions.file;
+package lsfusion.base.file;
 
 import com.jcraft.jsch.*;
 import lsfusion.base.RawFileData;
-import lsfusion.server.ServerLoggers;
 import lsfusion.utils.CopyExcelUtil;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -81,7 +80,6 @@ public class WriteUtils {
     }
 
     public static void storeFileToFTP(String path, RawFileData file, String extension) throws IOException {
-        ServerLoggers.importLogger.info(String.format("Writing file to %s", path));
         FTPPath properties = FTPPath.parseFTPPath(path, 21);
         String remoteFile = appendExtension(properties.remoteFile, extension);
         FTPClient ftpClient = new FTPClient();
@@ -101,10 +99,7 @@ public class WriteUtils {
                 InputStream inputStream = file.getInputStream();
                 boolean done = ftpClient.storeFile(remoteFile, inputStream);
                 inputStream.close();
-                if (done)
-                    ServerLoggers.importLogger.info(String.format("Successful writing file to %s", path));
-                else {
-                    ServerLoggers.importLogger.error(String.format("Failed writing file to %s : " + ftpClient.getReplyCode(), path));
+                if (!done) {
                     throw new RuntimeException("Error occurred while writing file to ftp : " + ftpClient.getReplyCode());
                 }
             } else {

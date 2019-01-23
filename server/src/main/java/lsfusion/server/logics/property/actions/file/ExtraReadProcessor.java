@@ -5,32 +5,22 @@ import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
-import com.jcraft.jsch.*;
-import lsfusion.base.*;
-import lsfusion.server.ServerLoggers;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.file.ExtraReadInterface;
 import lsfusion.server.data.JDBCTable;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPConnectionClosedException;
-import org.jfree.ui.ExtensionFileFilter;
 
-import javax.swing.*;
-import java.io.*;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
-import java.util.Date;
 import java.util.*;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReadUtils {
+@Deprecated
+public class ExtraReadProcessor implements ExtraReadInterface {
 
     private static final String EQ = "=";
     private static final String GE = ">=";
@@ -39,202 +29,12 @@ public class ReadUtils {
     private static final String LT = "<";
     private static final String IN = " IN ";
 
-    public static ReadResult readFile(String sourcePath, boolean isDynamicFormatFileClass, boolean isBlockingFileRead, boolean isDialog) throws IOException, SftpException, JSchException, SQLException {
-        if (isDialog) {
-            sourcePath = showReadFileDialog(sourcePath);
-            if(sourcePath == null) {
-                return null;
-            }
-        }
-
-        Path filePath = Path.parsePath(sourcePath, true);
-        
-        File localFile = null;
-        if(!filePath.type.equals("file"))
-            localFile = File.createTempFile("downloaded", ".tmp");
-
-        try {
-            File file = localFile;
-            String extension = null;
-            switch (filePath.type) {
-                case "file":
-                    file = new File(filePath.path);
-                    extension = BaseUtils.getFileExtension(filePath.path);
-                    break;
-                case "http":
-                case "https":
-                    copyHTTPToFile(filePath, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
-                    break;
-                case "ftp":
-                    copyFTPToFile(filePath.path, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
-                    break;
-                case "sftp":
-                    copySFTPToFile(filePath.path, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
-                    break;
-                case "jdbc":
-                    copyJDBCToFile(sourcePath, localFile);
-                    extension = "jdbc";
-                    break;
-                case "mdb":
-                    copyMDBToFile(filePath.path, localFile);
-                    extension = "mdb";
-                    break;
-            }
-            Object fileBytes; // RawFileData or FileData
-            if (file != null && file.exists()) {
-                if (isBlockingFileRead) {
-                    try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
-                        try (java.nio.channels.FileLock lock = channel.lock()) {
-                            if (isDynamicFormatFileClass) {
-                                fileBytes = new FileData(readBytesFromChannel(channel), extension);
-                            } else {
-                                fileBytes = readBytesFromChannel(channel);
-                            }
-                        }
-                    }
-                } else {
-                    if (isDynamicFormatFileClass) {
-                        fileBytes = new FileData(new RawFileData(file), extension);
-                    } else {
-                        fileBytes = new RawFileData(file);
-                    }
-                }
-            } else {
-                throw new RuntimeException("Read Error. File not found: " + sourcePath);
-            }
-            return new ReadResult(fileBytes, filePath.type);
-        } finally {
-            if (localFile != null && !localFile.delete()) 
-                localFile.deleteOnExit();
-        }
+    public ExtraReadProcessor() {
     }
 
-    public static String showReadFileDialog(String path) {
-        String result = null;
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setAcceptAllFileFilterUsed(false);
-
-        File parentDir = null;
-        if (path != null) {
-            File file = new File(path.startsWith("file://") ? path.substring(7) : path);
-            fileChooser.setSelectedFile(file);
-            parentDir = file.getParentFile();
-            String extension = BaseUtils.getFileExtension(file);
-            if (!BaseUtils.isRedundantString(extension)) {
-                ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                fileChooser.addChoosableFileFilter(filter);
-            }
-        }
-        fileChooser.setCurrentDirectory(parentDir != null ? parentDir : SystemUtils.loadCurrentDirectory());
-
-        if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            result = fileChooser.getSelectedFile().getAbsolutePath();
-            SystemUtils.saveCurrentDirectory(new File(result.substring(0, result.lastIndexOf("\\"))));
-        }
-        return result;
-    }
-
-    private static void copyHTTPToFile(Path path, File file) throws IOException {
-        final List<String> properties = parseHTTPPath(path.path);
-        if (properties != null) {
-            final String username = properties.get(1);
-            final String password = properties.get(2);
-            String pathToFile = properties.get(3);
-            Authenticator.setDefault(new Authenticator() {
-                public PasswordAuthentication getPasswordAuthentication() {
-                    return (new PasswordAuthentication(username, password.toCharArray()));
-                }
-            });
-            URL httpUrl = new URL(URIUtil.encodeQuery(path.type + "://" + pathToFile));
-            FileUtils.copyInputStreamToFile(httpUrl.openConnection().getInputStream(), file);
-        } else {
-            FileUtils.copyURLToFile(new URL(path.type + "://" + path.path), file);
-        }
-    }
-
-    private static List<String> parseHTTPPath(String path) {
-        /*http|https://username:password@path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("(.*):(.*)@(.*)");
-        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
-        if (connectionStringMatcher.matches()) {
-            String type = connectionStringMatcher.group(1);
-            String username = connectionStringMatcher.group(2);
-            String password = connectionStringMatcher.group(3);
-            String pathToFile = connectionStringMatcher.group(4);
-            return Arrays.asList(type, username, password, pathToFile);
-        } else return null;
-    }
-
-    private static void copyFTPToFile(String path, File file) throws IOException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 21);
-        FTPClient ftpClient = new FTPClient();
-        ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
-        if (properties.charset != null)
-            ftpClient.setControlEncoding(properties.charset);
-        try {
-
-            ftpClient.connect(properties.server, properties.port);
-            ftpClient.login(properties.username, properties.password);
-            if(properties.passiveMode) {
-                ftpClient.enterLocalPassiveMode();
-            }
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-
-            OutputStream outputStream = new FileOutputStream(file);
-            boolean done = ftpClient.retrieveFile(properties.remoteFile, outputStream);
-            outputStream.close();
-            if (!done) {
-                throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
-            }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            try {
-                if (ftpClient.isConnected()) {
-                    ftpClient.logout();
-                    ftpClient.disconnect();
-                }
-            } catch (FTPConnectionClosedException e1) {
-                ServerLoggers.importLogger.error("Ignored: ", e1);
-            }
-        }
-    }
-
-    private static void copySFTPToFile(String path, File file) throws JSchException, SftpException {
-        FTPPath properties = FTPPath.parseFTPPath(path, 22);
-        String remoteFile = properties.remoteFile;
-        remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
-
-        Session session = null;
-        Channel channel = null;
-        ChannelSftp channelSftp = null;
-        try {
-            JSch jsch = new JSch();
-            session = jsch.getSession(properties.username, properties.server, properties.port);
-            session.setPassword(properties.password);
-            Properties config = new Properties();
-            config.put("StrictHostKeyChecking", "no");
-            session.setConfig(config);
-            session.connect();
-            channel = session.openChannel("sftp");
-            channel.connect();
-            channelSftp = (ChannelSftp) channel;
-            channelSftp.get(remoteFile, file.getAbsolutePath());
-        } finally {
-            if (channelSftp != null)
-                channelSftp.exit();
-            if (channel != null)
-                channel.disconnect();
-            if (session != null)
-                session.disconnect();
-        }
-    }
-
-    private static void copyJDBCToFile(String query, File file) throws SQLException {
-        /*jdbc://connectionString@query*/
+    @Override
+    public void copyJDBCToFile(String query, File file) throws SQLException {
+        //jdbc://connectionString@query
         Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
         if (queryMatcher.matches()) {
@@ -269,7 +69,8 @@ public class ReadUtils {
         }
     }
 
-    private static void copyMDBToFile(String path, File file) throws IOException {
+    @Override
+    public void copyMDBToFile(String path, File file) throws IOException {
         /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
         /*conditions: field=value (<,>,<=,>=) or field IN (value1,value2,value3)*/
         Pattern queryPattern = Pattern.compile("(.*):([^;]*)(?:;([^;]*))*");
@@ -324,7 +125,7 @@ public class ReadUtils {
                             conditionResult = ignoreRowIntegerCondition(not, fieldValue, sign, value);
                         } else if (fieldValue instanceof Double) {
                             conditionResult = ignoreRowDoubleCondition(not, fieldValue, sign, value);
-                        } else if (fieldValue instanceof Date) {
+                        } else if (fieldValue instanceof java.util.Date) {
                             conditionResult = ignoreRowDateCondition(not, fieldValue, sign, value);
                         } else {
                             conditionResult = ignoreRowStringCondition(not, fieldValue, sign, value);
@@ -446,33 +247,33 @@ public class ReadUtils {
     private static boolean ignoreRowDateCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
         if (sign.equals(IN)) {
-            List<Date> dateValues = new ArrayList<>();
+            List<java.util.Date> dateValues = new ArrayList<>();
             for (String v : splitIn(value)) {
                 dateValues.add(parseDate(v));
             }
             ignoreRow = !dateValues.contains(fieldValue);
         } else {
 
-            Date dateValue = parseDate(value);
+            java.util.Date dateValue = parseDate(value);
             switch (sign) {
                 case EQ:
-                    if (((Date) fieldValue).compareTo(dateValue) != 0)
+                    if (((java.util.Date) fieldValue).compareTo(dateValue) != 0)
                         ignoreRow = true;
                     break;
                 case GE:
-                    if (((Date) fieldValue).compareTo(dateValue) < 0)
+                    if (((java.util.Date) fieldValue).compareTo(dateValue) < 0)
                         ignoreRow = true;
                     break;
                 case GT:
-                    if (((Date) fieldValue).compareTo(dateValue) <= 0)
+                    if (((java.util.Date) fieldValue).compareTo(dateValue) <= 0)
                         ignoreRow = true;
                     break;
                 case LE:
-                    if (((Date) fieldValue).compareTo(dateValue) > 0)
+                    if (((java.util.Date) fieldValue).compareTo(dateValue) > 0)
                         ignoreRow = true;
                     break;
                 case LT:
-                    if (((Date) fieldValue).compareTo(dateValue) >= 0)
+                    if (((java.util.Date) fieldValue).compareTo(dateValue) >= 0)
                         ignoreRow = true;
                     break;
             }
@@ -532,27 +333,5 @@ public class ReadUtils {
                 throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid \"IN\" condition"));
         }
         return values;
-    }
-
-    private static RawFileData readBytesFromChannel(FileChannel channel) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteBuffer buffer = ByteBuffer.allocate(IOUtils.BUFFER_SIZE);
-        int left = Integer.MAX_VALUE;
-        int readCount;
-        while (left > 0 && (readCount = channel.read(buffer)) > 0) {
-            out.write(buffer.array(), 0, readCount);
-            left -= readCount;
-        }
-        return new RawFileData(out);
-    }
-
-    public static class ReadResult implements Serializable {
-        public final Object fileBytes; // RawFileData or FileData
-        String type;
-
-        public ReadResult(Object fileBytes, String type) {
-            this.fileBytes = fileBytes;
-            this.type = type;
-        }
     }
 }
