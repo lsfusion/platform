@@ -70,10 +70,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             for (String role : auth.roles) {
                 authorities.add(new GrantedAuthorityImpl(role));
             }
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password, authorities);
-            token.setDetails(auth.locale);            
-            return token;
-
+            return new LSFAuthenticationToken(username, password, authorities, auth.locale);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
