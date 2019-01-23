@@ -3,6 +3,8 @@ package lsfusion.server.logics.property.actions.file;
 import com.google.common.base.Throwables;
 import lsfusion.base.FileData;
 import lsfusion.base.RawFileData;
+import lsfusion.base.file.ReadClientAction;
+import lsfusion.base.file.ReadUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.DynamicFormatFileClass;
@@ -19,12 +21,14 @@ import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import java.sql.SQLException;
 
 public class ReadActionProperty extends SystemExplicitActionProperty {
+    private final ExtraReadProcessor extraReadProcessor;
     private final LCP<?> targetProp;
     private final boolean clientAction;
     private final boolean dialog;
 
     public ReadActionProperty(ValueClass sourceProp, LCP<?> targetProp, boolean clientAction, boolean dialog) {
         super(sourceProp);
+        this.extraReadProcessor = new ExtraReadProcessor();
         this.targetProp = targetProp;
         this.clientAction = clientAction;
         this.dialog = dialog;
@@ -57,7 +61,7 @@ public class ReadActionProperty extends SystemExplicitActionProperty {
             if (clientAction) {
                 readResult = (ReadUtils.ReadResult) context.requestUserInteraction(new ReadClientAction(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, dialog));
             } else {
-                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false);
+                readResult = ReadUtils.readFile(sourcePath, isDynamicFormatFileClass, isBlockingFileRead, false, extraReadProcessor);
             }
             if (readResult != null) {
                 if(isDynamicFormatFileClass)

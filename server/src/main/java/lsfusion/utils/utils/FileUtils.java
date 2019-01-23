@@ -3,14 +3,13 @@ package lsfusion.utils.utils;
 import com.google.common.base.Throwables;
 import com.jcraft.jsch.*;
 import lsfusion.base.RawFileData;
-import lsfusion.server.logics.property.actions.file.FTPPath;
-import lsfusion.server.logics.property.actions.file.Path;
-import lsfusion.server.logics.property.actions.file.ReadUtils;
-import lsfusion.server.logics.property.actions.file.WriteUtils;
+import lsfusion.base.file.FTPPath;
+import lsfusion.base.file.Path;
+import lsfusion.base.file.ReadUtils;
+import lsfusion.base.file.WriteUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class FileUtils {
         if(srcPath.type.equals("file") && destPath.type.equals("file")) {
             rename(new File(srcPath.path), new File(destPath.path));
         } else {
-            ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false);
+            ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
             if (readResult != null) {
                 RawFileData rawFile = (RawFileData) readResult.fileBytes;  
                 switch (destPath.type) {
