@@ -42,7 +42,7 @@ public abstract class ReadUtils {
 
         try {
             File file = localFile;
-            String extension = null;
+            String extension;
             switch (filePath.type) {
                 case "file":
                     file = new File(filePath.path);
@@ -61,22 +61,13 @@ public abstract class ReadUtils {
                     copySFTPToFile(filePath.path, localFile);
                     extension = BaseUtils.getFileExtension(filePath.path);
                     break;
-                case "jdbc":
+                default:
                     if(extraReadProcessor != null) {
-                        extraReadProcessor.copyJDBCToFile(sourcePath, localFile);
-                        extension = "jdbc";
+                        extraReadProcessor.copyToFile(filePath.type, sourcePath, localFile);
+                        extension = filePath.type;
                     } else {
-                        throw new RuntimeException("READ CLIENT JDBC is not supported");
+                        throw new RuntimeException(String.format("READ CLIENT %s is not supported", filePath.type));
                     }
-                    break;
-                case "mdb":
-                    if(extraReadProcessor != null) {
-                        extraReadProcessor.copyMDBToFile(filePath.path, localFile);
-                        extension = "mdb";
-                    } else {
-                        throw new RuntimeException("READ CLIENT MDB is not supported");
-                    }
-                    break;
             }
             Object fileBytes; // RawFileData or FileData
             if (file != null && file.exists()) {

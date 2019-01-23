@@ -33,7 +33,20 @@ public class ExtraReadProcessor implements ExtraReadInterface {
     }
 
     @Override
-    public void copyJDBCToFile(String query, File file) throws SQLException {
+    public void copyToFile(String type, String query, File file) throws SQLException, IOException {
+        switch (type) {
+            case "jdbc":
+                copyJDBCToFile(query, file);
+                break;
+            case "mdb":
+                copyMDBToFile(query, file);
+                break;
+            default:
+                throw new RuntimeException(String.format("READ %s is not supported", type));
+        }
+    }
+
+    private void copyJDBCToFile(String query, File file) throws SQLException {
         //jdbc://connectionString@query
         Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
@@ -69,8 +82,7 @@ public class ExtraReadProcessor implements ExtraReadInterface {
         }
     }
 
-    @Override
-    public void copyMDBToFile(String path, File file) throws IOException {
+    private void copyMDBToFile(String path, File file) throws IOException {
         /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
         /*conditions: field=value (<,>,<=,>=) or field IN (value1,value2,value3)*/
         Pattern queryPattern = Pattern.compile("(.*):([^;]*)(?:;([^;]*))*");
