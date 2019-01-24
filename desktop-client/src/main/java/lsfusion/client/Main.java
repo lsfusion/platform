@@ -254,7 +254,6 @@ public class Main {
                     Locale userLocale = userPreferences.getLocale();
                     if (userLocale != null) {
                         Locale.setDefault(userLocale);
-                        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
                         
                         UIManager.getDefaults().setDefaultLocale(userLocale);
                         UIManager.getLookAndFeelDefaults().setDefaultLocale(userLocale);

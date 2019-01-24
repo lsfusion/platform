@@ -1,6 +1,7 @@
 package lsfusion.server.logics.i18n;
 
 import lsfusion.base.ResourceUtils;
+import lsfusion.utils.LocalizeUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -21,7 +22,7 @@ public class DefaultLocalizer extends AbstractLocalizer {
     public String localizeKey(String key, Locale locale) {
         for (String bundleName : resourceBundleNames) {
             try {
-                ResourceBundle bundle = ResourceBundle.getBundle(bundleName, locale);
+                ResourceBundle bundle = LocalizeUtils.getBundle(bundleName, locale);
                 return bundle.getString(key);
             } catch (MissingResourceException | ClassCastException ignored) {}
         }

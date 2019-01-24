@@ -1,13 +1,12 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.context.EventThreadInfo;
 import lsfusion.server.context.LogicsInstanceContext;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.context.ThreadInfo;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.lifecycle.LifecycleManager;
 import lsfusion.server.stack.NestedThreadException;
 import lsfusion.server.stack.ThrowableWithStack;
@@ -15,7 +14,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LogicsInstance implements InitializingBean {
     private static final Logger logger = ServerLoggers.startLogger;
@@ -116,7 +116,6 @@ public class LogicsInstance implements InitializingBean {
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-        ApiResourceBundle.load(Locale.getDefault());
     }
     
     public void setCustomObjects(Object... objects) {

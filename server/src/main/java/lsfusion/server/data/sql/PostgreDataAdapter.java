@@ -10,6 +10,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.utils.LocalizeUtils;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
@@ -64,7 +65,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);
             } catch (SQLException e) {
-                ResourceBundle resourceBundle = ResourceBundle.getBundle("ServerResourceBundle");
+                ResourceBundle resourceBundle = LocalizeUtils.getBundle("ServerResourceBundle");
                 logger.error(resourceBundle.getString("{data.sql.error.creating.database}"), e);
             }
         }
@@ -73,7 +74,7 @@ public class PostgreDataAdapter extends DataAdapter {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
             connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
-            ResourceBundle resourceBundle = ResourceBundle.getBundle("ServerResourceBundle"); 
+            ResourceBundle resourceBundle = LocalizeUtils.getBundle("ServerResourceBundle"); 
             logger.info(resourceBundle.getString("data.sql.error.creating.database"), e);
         }
         connect.close();
