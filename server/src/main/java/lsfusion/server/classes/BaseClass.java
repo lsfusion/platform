@@ -12,6 +12,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
@@ -116,14 +117,14 @@ public class BaseClass extends AbstractCustomClass {
         if(objectClass.readData(objectClass.ID, session.sql) == null) {
             DataObject classObject = new DataObject(objectClass.ID, unknown);
             session.changeClass(classObject, objectClass);
-            staticCaption.change(objectClass.caption.getSourceString(), session, classObject);
+            staticCaption.change(ThreadLocalContext.localize(objectClass.caption), session, classObject);
             staticName.change(objectClass.getSID(), session, classObject);
         }
         usedSIds.put(objectClass.getSID(), objectClass);
         usedIds.add(objectClass.ID);
 
         Map<DataObject, String> modifiedSIDs = new HashMap<>();
-        Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
+        Map<DataObject, String> modifiedCaptions = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
         Set<CustomClass> allClasses = getAllChildren().toJavaSet();
         allClasses.remove(objectClass);
@@ -140,7 +141,7 @@ public class BaseClass extends AbstractCustomClass {
 
         for (CustomClass customClass : allClasses) // заполним все остальные StaticClass
             if (customClass instanceof ConcreteCustomClass)
-                modifiedNames.putAll(((ConcreteCustomClass) customClass).fillIDs(session, staticCaption, staticName, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
+                modifiedCaptions.putAll(((ConcreteCustomClass) customClass).fillIDs(session, staticCaption, staticName, usedSIds, usedIds, objectSIDChanges, modifiedSIDs));
 
         for (CustomClass customClass : allClasses)
             if (customClass instanceof AbstractCustomClass) {
@@ -155,9 +156,9 @@ public class BaseClass extends AbstractCustomClass {
         }
 
         // применение переименования классов вынесено сюда, поскольку objectClass.fillIDs() вызывается раньше проставления ID'шников - не срабатывает execute()
-        for (Map.Entry<DataObject, String> modifiedName : modifiedNames.entrySet()) {
-            startLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
-            staticCaption.change(modifiedName.getValue(), session, modifiedName.getKey());
+        for (Map.Entry<DataObject, String> modifiedCaption : modifiedCaptions.entrySet()) {
+            startLogger.info("renaming class with id " + modifiedCaption.getKey() + " to " + modifiedCaption.getValue());
+            staticCaption.change(modifiedCaption.getValue(), session, modifiedCaption.getKey());
         }
     }
 

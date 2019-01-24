@@ -199,7 +199,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
-        Map<DataObject, String> modifiedNames = new HashMap<>();
+        Map<DataObject, String> modifiedCaptions = new HashMap<>();
 
         // Получаем старые sid и name
         QueryBuilder<String, String> allClassesQuery = new QueryBuilder<>(SetFact.singleton("key"));
@@ -236,21 +236,22 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
                 }
             }
 
+            String staticObjectCaption = ThreadLocalContext.localize(info.caption);
             if (oldClasses.containsKey(oldSID)) {
-                if (info.caption != null && !info.caption.getSourceString().equals(oldClasses.get(oldSID).second)) {
-                    modifiedNames.put(new DataObject(oldClasses.get(oldSID).first, this), info.caption.getSourceString());
+                if (!staticObjectCaption.equals(oldClasses.get(oldSID).second)) {
+                    modifiedCaptions.put(new DataObject(oldClasses.get(oldSID).first, this), staticObjectCaption);
                 }
                 info.id = oldClasses.get(oldSID).first;
             } else {
                 DataObject classObject = session.addObject(this);
-                name.change(info.caption.getSourceString(), session, classObject);
+                name.change(staticObjectCaption, session, classObject);
                 staticName.change(newSID, session, classObject);
                 info.id = (Long) classObject.object;
             }
 
             usedIds.add(info.id);
         }
-        return modifiedNames;
+        return modifiedCaptions;
     }
 
     private String createStaticObjectSID(String objectName) {
