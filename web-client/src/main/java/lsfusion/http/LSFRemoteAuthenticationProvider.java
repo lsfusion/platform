@@ -40,7 +40,6 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             if (attribs != null)
                 request = ((ServletRequestAttributes) attribs).getRequest();
 
-            final HttpServletRequest finalRequest = request;
             PreAuthentication auth = runRequest(request, new Runnable<PreAuthentication> () {
                 public PreAuthentication run(RemoteLogicsInterface remoteLogics, LogicsConnection logicsConnection) throws RemoteException {
                     try {

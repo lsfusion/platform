@@ -9,6 +9,7 @@ import lsfusion.gwt.shared.exceptions.MessageException;
 import lsfusion.gwt.shared.actions.RequestAction;
 import lsfusion.gwt.server.form.handlers.*;
 import lsfusion.gwt.server.form.provider.FormProvider;
+import lsfusion.gwt.server.logics.handlers.CheckApiVersionHandler;
 import lsfusion.gwt.server.logics.handlers.GenerateIDHandler;
 import lsfusion.gwt.server.logics.provider.LogicsHandlerProvider;
 import lsfusion.gwt.server.navigator.handlers.*;

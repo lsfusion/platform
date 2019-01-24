@@ -108,9 +108,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
 
     private String formID = null;
 
-    private String clientLanguage;
-    private String clientCountry;
-    
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
     public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, NavigatorInfo navigatorInfo, User currentUser, int port, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
@@ -147,6 +144,8 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
             Integer timeout = (Integer) businessLogics.securityLM.currentUserTransactTimeout.read(session);
             if(timeout != null)
                 this.transactionTimeout = timeout;
+
+            userLocalePreferences = loadLocalePreferences(session, user, businessLogics, navigatorInfo.language, navigatorInfo.country, stack);
         }
         this.userRole = getRole();
 
@@ -162,11 +161,6 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         finalizeInit(stack, SyncType.NOSYNC);
 
         navigatorManager.navigatorCreated(stack, this, navigatorInfo);
-        
-        this.clientLanguage = navigatorInfo.language;
-        this.clientCountry = navigatorInfo.country;
-
-        loadLocalePreferences(stack);
     }
 
     public boolean isFullClient() {
@@ -179,9 +173,10 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         if (BaseUtils.nullEquals(newRole, currentRole)) {
             this.user = user;
             
-            loadLocalePreferences(stack);
             try(DataSession session = createSession()) {
-                User secUser = new User((Long) this.user.object);
+                userLocalePreferences = loadLocalePreferences(session, user, businessLogics);
+
+                User secUser = new User((Long) user.object);
                 securityManager.applySecurityPolicy(secUser, session);
                 this.securityPolicy = secUser.getSecurityPolicy();
             }
@@ -504,15 +499,13 @@ public class RemoteNavigator extends ContextAwarePendingRemoteObject implements 
         }
     }
 
-    private void loadLocalePreferences(ExecutionStack stack) throws SQLException, SQLHandledException {
-        try (DataSession session = createSession()) {
-            userLocalePreferences = loadLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
-        }
-    }
-
     public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
         saveClientLanguage(session, user, businessLogics, clientLanguage, clientCountry, stack);
 
+        return loadLocalePreferences(session, user, businessLogics);
+    }
+
+    public static LocalePreferences loadLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics) throws SQLException, SQLHandledException {
         return new LocalePreferences((String) businessLogics.authenticationLM.language.read(session, user), 
                                      (String) businessLogics.authenticationLM.country.read(session, user), 
                                      (String) businessLogics.authenticationLM.timeZone.read(session, user), 

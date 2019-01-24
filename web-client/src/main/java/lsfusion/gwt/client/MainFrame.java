@@ -34,6 +34,7 @@ import lsfusion.gwt.client.window.WindowsController;
 import lsfusion.gwt.shared.GwtSharedUtils;
 import lsfusion.gwt.shared.actions.LookupLogicsAndCreateNavigator;
 import lsfusion.gwt.shared.actions.form.ServerResponseResult;
+import lsfusion.gwt.shared.actions.logics.CheckApiVersionAction;
 import lsfusion.gwt.shared.actions.navigator.*;
 import lsfusion.gwt.shared.exceptions.AppServerNotAvailableException;
 import lsfusion.gwt.shared.result.BooleanResult;

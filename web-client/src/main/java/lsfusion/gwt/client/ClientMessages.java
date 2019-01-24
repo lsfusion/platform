@@ -76,9 +76,9 @@ public interface ClientMessages extends Messages {
     String formFilterConditionViewAnd();
     String formFilterConditionViewOr();
     String formFilterDialogHeader();
-    
+
     String tooltipPath();
-    
+
     String busyDialogBreak();
     String busyDialogCancelTransaction();
     String busyDialogCancelTransactionConfirm();
@@ -115,9 +115,9 @@ public interface ClientMessages extends Messages {
     String propertyTooltipFormPropertyName();
     String propertyTooltipFormPropertyDeclaration();
     String propertyTooltipHotkey();
-    
+
     String propertyEmptyCaption();
-    
+
     String typeDateTimeCaption();
     String typeActionCaption();
     String typeColorCaption();
@@ -168,9 +168,9 @@ public interface ClientMessages extends Messages {
     String fileEditorAddFiles();
     String fileEditorDropFiles();
     String fileEditorCancel();
-    
+
     String multipleFilterComponentAll();
-    
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

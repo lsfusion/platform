@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.gwt.server.logics.LogicsActionHandler;
 import lsfusion.gwt.shared.actions.logics.CheckApiVersionAction;
 import lsfusion.gwt.server.LSFusionDispatchServlet;
-import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
