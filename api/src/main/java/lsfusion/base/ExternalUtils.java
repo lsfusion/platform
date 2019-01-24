@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
+
 public class ExternalUtils {
 
     public static final String defaultCSVSeparator = ";";
@@ -200,7 +202,7 @@ public class ExternalUtils {
                     else
                         paramsList.add(getRequestParam(param, partContentType, true)); // multipart автоматически text/* возвращает как String
                 }
-            } else if(mimeType.equalsIgnoreCase("application/x-www-form-urlencoded")) {
+            } else if(mimeType.equalsIgnoreCase(APPLICATION_FORM_URLENCODED.getMimeType())) {
                 Charset charset = getCharsetFromContentType(contentType);
                 List<NameValuePair> params = URLEncodedUtils.parse(new String(bytes, charset), charset);
                 for(NameValuePair param : params)
@@ -217,7 +219,7 @@ public class ExternalUtils {
         int paramCount = paramList.size();
         if (paramCount > 1) {
             if(bodyUrl != null) {
-                entity = new StringEntity(bodyUrl, ContentType.APPLICATION_FORM_URLENCODED);
+                entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
             } else {
                 MultipartEntityBuilder builder = MultipartEntityBuilder.create();
                 builder.setContentType(ExternalUtils.MULTIPART_MIXED);
