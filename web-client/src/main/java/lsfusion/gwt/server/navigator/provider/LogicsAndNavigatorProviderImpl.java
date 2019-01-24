@@ -53,16 +53,17 @@ public class LogicsAndNavigatorProviderImpl implements LogicsAndNavigatorProvide
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
-        if(clientLocale == null)
-            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
-        String language = clientLocale.getLanguage();
-        String country = clientLocale.getCountry();
+//        we don't need client locale here, because it was already updated in preAuthenticateUser
+//        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
+//        if(clientLocale == null)
+//            clientLocale = Locale.getDefault(); // it's better to pass and use client locale here         
+//        String language = clientLocale.getLanguage();
+//        String country = clientLocale.getCountry();
 
         RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
                 remoteLogics.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                javaVersion, null, language, country), true);
+                javaVersion, null, null, null), true);
 //        RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator(true, new NavigatorInfo(username, password,
 //                remoteLogics.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture,
 //                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null, language, country), true);
