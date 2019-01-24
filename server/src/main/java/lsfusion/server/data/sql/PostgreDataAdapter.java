@@ -65,8 +65,7 @@ public class PostgreDataAdapter extends DataAdapter {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);
             } catch (SQLException e) {
-                ResourceBundle resourceBundle = LocalizeUtils.getBundle("ServerResourceBundle");
-                logger.error(resourceBundle.getString("{data.sql.error.creating.database}"), e);
+                logger.error("Error creating database :", e);
             }
         }
 
@@ -74,8 +73,7 @@ public class PostgreDataAdapter extends DataAdapter {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
             connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
-            ResourceBundle resourceBundle = LocalizeUtils.getBundle("ServerResourceBundle"); 
-            logger.info(resourceBundle.getString("data.sql.error.creating.database"), e);
+            logger.info("Error creating database :", e);
         }
         connect.close();
     }
