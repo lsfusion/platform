@@ -104,6 +104,11 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
     }
 
     public void onModuleLoad() {
+        // inject global styles
+        GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
+
+        hackForGwtDnd();
+        
         initializeLogicsAndNavigator(0);
     }
 
@@ -168,11 +173,6 @@ public class MainFrame implements EntryPoint, ServerMessageProvider {
                 GExceptionManager.logClientError("Uncaught GWT : " + messages.uncaughtGWTException() + ": ", t);
             }
         });
-
-        // inject global styles
-        GWT.<MainFrameResources>create(MainFrameResources.class).css().ensureInjected();
-
-        hackForGwtDnd();
 
         formsController = new DefaultFormsController(tabSID) {
             @Override
