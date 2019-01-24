@@ -69,7 +69,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                if(caught instanceof InvocationException) {
+                /*if(caught instanceof InvocationException) {
                     ClientMessages messages = ClientMessages.Instance.get();
                     DialogBoxHelper.showMessageBox(true, messages.error(), messages.needReloginError(), false, new DialogBoxHelper.CloseCallback() {
                         @Override
@@ -77,7 +77,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                             GwtClientUtils.logout();
                         }
                     });
-                } else {
+                } else {*/
                     int maxTries = ErrorHandlingCallback.getMaxTries(caught);
                     if (finalRequestTry <= maxTries) {
                         if (finalRequestTry == 2) //first retry
@@ -96,7 +96,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                             GConnectionLostManager.connectionLost();
                         DispatchAsyncWrapper.this.onFailure(action, caught, callback);
                     }
-                }
+                //}
             }
 
             public void onSuccess(Result result) {
