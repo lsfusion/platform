@@ -5,15 +5,12 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.rpc.InvocationException;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.ErrorHandlingCallback;
 import lsfusion.gwt.client.GConnectionLostManager;
 import lsfusion.gwt.client.GExceptionManager;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ui.DialogBoxHelper;
 import lsfusion.gwt.shared.actions.RequestAction;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
@@ -69,34 +66,25 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
         final Integer finalRequestTry = requestTry;
         getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
             public void onFailure(Throwable caught) {
-                /*if(caught instanceof InvocationException) {
-                    ClientMessages messages = ClientMessages.Instance.get();
-                    DialogBoxHelper.showMessageBox(true, messages.error(), messages.needReloginError(), false, new DialogBoxHelper.CloseCallback() {
-                        @Override
-                        public void closed(DialogBoxHelper.OptionType chosenOption) {
-                            GwtClientUtils.logout();
-                        }
-                    });
-                } else {*/
-                    int maxTries = ErrorHandlingCallback.getMaxTries(caught);
-                    if (finalRequestTry <= maxTries) {
-                        if (finalRequestTry == 2) //first retry
-                            GConnectionLostManager.registerFailedRmiRequest();
-                        GExceptionManager.addFailedRmiRequest(caught, action);
+                int maxTries = ErrorHandlingCallback.getMaxTries(caught);
+                if (finalRequestTry <= maxTries) {
+                    if (finalRequestTry == 2) //first retry
+                        GConnectionLostManager.registerFailedRmiRequest();
+                    GExceptionManager.addFailedRmiRequest(caught, action);
 
-                        Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
-                            @Override
-                            public void run() {
-                                execute(action, callback);
-                            }
-                        };
-                        timer.schedule(1000);
-                    } else {
-                        if (maxTries > -1) // some connection problem
-                            GConnectionLostManager.connectionLost();
-                        DispatchAsyncWrapper.this.onFailure(action, caught, callback);
-                    }
-                //}
+                    Timer timer = new Timer() {  // таймер, чтобы не исчерпать слишком быстро попытки соединения с сервером
+                        @Override
+                        public void run() {
+                            execute(action, callback);
+                        }
+                    };
+                    timer.schedule(1000);
+                } else {
+                    boolean isAuthException = ErrorHandlingCallback.isAuthException(caught);
+                    if (maxTries > -1 || isAuthException) // some connection problem
+                        GConnectionLostManager.connectionLost(isAuthException);
+                    DispatchAsyncWrapper.this.onFailure(action, caught, callback);
+                }
             }
 
             public void onSuccess(Result result) {

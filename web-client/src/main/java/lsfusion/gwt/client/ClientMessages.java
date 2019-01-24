@@ -16,7 +16,6 @@ public interface ClientMessages extends Messages {
     String internalServerError();
     String actionTimeoutError();
     String sessionTimeoutError();
-    String needReloginError();
 
     String choosingClass();
 
@@ -95,6 +94,7 @@ public interface ClientMessages extends Messages {
     String formGridSureToPasteMultivalue();
 
     String rmiConnectionLost();
+    String rmiConnectionLostAuth();
     String rmiConnectionLostFatal();
     String rmiConnectionLostNonfatal();
     String rmiConnectionLostWaitReconnect(int attempt);
