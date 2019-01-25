@@ -27,7 +27,7 @@ public class FileUtils {
         Path destPath = Path.parsePath(destinationPath);
 
         if(srcPath.type.equals("file") && destPath.type.equals("file")) {
-            rename(new File(srcPath.path), new File(destPath.path));
+            org.apache.commons.io.FileUtils.moveFile(new File(srcPath.path), new File(destPath.path));
         } else {
             ReadUtils.ReadResult readResult = ReadUtils.readFile(sourcePath, false, false, false, null);
             if (readResult != null) {
@@ -55,14 +55,6 @@ public class FileUtils {
                         break;
                 }
             }
-        }
-    }
-
-    private static void rename(File srcFile, File destFile) {
-        if(!srcFile.exists()) {
-            throw new RuntimeException("Read Error. File not found: " + srcFile);
-        } else if(!(srcFile.renameTo(destFile))) {
-            throw new RuntimeException(String.format("Failed to move file from '%s' to '%s'", srcFile.getAbsolutePath(), destFile.getAbsolutePath()));
         }
     }
 
