@@ -1,27 +1,15 @@
 package lsfusion.base;
 
-import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import lsfusion.utils.LocalizeUtils;
 
+import java.text.MessageFormat;
 
 public class ApiResourceBundle {
-
-    private static ResourceBundle apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle");
-
     public static String getString(String key) {
-        return apiResourceBundle.getString(key);
+        return LocalizeUtils.getBundle("ApiResourceBundle").getString(key);
     }
 
     public static String getString(String key, Object... params) {
         return MessageFormat.format(getString(key), params);
-    }
-
-    public static void load(Locale locale) {
-        if (locale == null) {
-            apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle");
-        } else {
-            apiResourceBundle = ResourceBundle.getBundle("ApiResourceBundle", locale);
-        }
     }
 }

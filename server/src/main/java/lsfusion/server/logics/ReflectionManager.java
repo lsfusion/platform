@@ -10,6 +10,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.ValueExpr;
@@ -149,7 +150,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (e instanceof NavigatorAction == actions){
                 List<Object> row = new ArrayList<>();
                 row.add(e.getCanonicalName());
-                row.add(e.caption.getSourceString());
+                row.add(ThreadLocalContext.localize(e.caption));
                 if(actions) {
                     FormEntity form = ((NavigatorAction) e).getForm();
                     row.add(form != null ? form.getCanonicalName() : null);
@@ -240,7 +241,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         
         List<List<Object>> formsData = new ArrayList<>();
         for (FormEntity form : businessLogics.getFormEntities()) {
-            formsData.add(asList((Object) form.getCanonicalName(), form.getCaption().getSourceString()));
+            formsData.add(asList((Object) form.getCanonicalName(), ThreadLocalContext.localize(form.getCaption())));
         }
 
         startLogger.info("synchronizeForms integration service started");
@@ -531,7 +532,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
                     
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption.getSourceString(), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
+                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), ThreadLocalContext.localize(property.caption), property instanceof CalcProperty && ((CalcProperty)property).isLoggable() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, property.annotation, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
@@ -630,7 +631,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         List<List<Object>> data = new ArrayList<>();
 
         for (AbstractGroup group : businessLogics.getChildGroups()) {
-            data.add(asList(group.getSID(), (Object) group.caption.getSourceString()));
+            data.add(asList(group.getSID(), (Object) ThreadLocalContext.localize(group.caption)));
         }
 
         startLogger.info("synchronizeGroupProperties integration service started");
@@ -720,7 +721,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             data.add(Collections.singletonList(tableName));
             ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
             for (KeyField key : dataTable.keys) {
-                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption().getSourceString(), classes.get(key).getSID()));
+                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), ThreadLocalContext.localize(classes.get(key).getCaption()), classes.get(key).getSID()));
             }
             for (PropertyField property : dataTable.properties) {
                 dataProps.add(asList(tableName, property.getName(), tableName + "." + property.getName()));

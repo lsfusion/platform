@@ -2,6 +2,7 @@ package lsfusion.gwt.client;
 
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
+import com.google.gwt.user.client.rpc.InvocationException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -26,7 +27,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     protected void showErrorMessage(final Throwable caught) {
         GExceptionManager.logClientError("Failure, while performing an action. ", caught);
 
-        if(getMaxTries(caught) > -1) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
+        if(getMaxTries(caught) > -1 || isAuthException(caught)) // if there is a trouble in connection, then we just setting connectionLost in DispatchAsyncWrapper, and showing no message (because there will be connection lost dialog anyway)
             return;
 
         String message = getServerMessage(caught);
@@ -49,6 +50,10 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
             }
         }
         ErrorDialog.show(messages.error(), messages.internalServerError(), getJavaStackTrace(caught));
+    }
+
+    public static boolean isAuthException(Throwable caught) {
+        return caught instanceof InvocationException && caught.getMessage() != null && caught.getMessage().contains("<div style=\"visibility: hidden;\">448b0ce6-206e-11e9-ab14-d663bd873d93</div>");//from login.jsp
     }
 
     public static int getMaxTries(Throwable caught) {

@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.server.logics.property.ExternalHttpMethod.PUT;
+
 public class ExternalHTTPActionProperty extends ExternalActionProperty {
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
@@ -60,10 +62,10 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
             String connectionString = getTransformedText(context, queryInterface);
             String bodyUrl = bodyUrlInterface != null ? getTransformedText(context, bodyUrlInterface) : null;
             if(connectionString != null) {
-                String replacedParams = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
+                connectionString = replaceParams(context, connectionString, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN));
                 bodyUrl = bodyUrl != null ? replaceParams(context, bodyUrl, rNotUsedParams, ExternalUtils.getCharsetFromContentType(ExternalUtils.TEXT_PLAIN)) : null;
                 Map<String, String> headers = getHeaders(context);
-                HttpResponse response = readHTTP(context, replacedParams, bodyUrl, rNotUsedParams.result, headers);
+                HttpResponse response = readHTTP(context, connectionString, bodyUrl, rNotUsedParams.result, headers);
                 HttpEntity responseEntity = response.getEntity();
 
                 ContentType contentType = ContentType.get(responseEntity);
@@ -101,21 +103,17 @@ public class ExternalHTTPActionProperty extends ExternalActionProperty {
                 httpRequest = new HttpDelete(connectionString);
                 break;
             }
-            case PUT: {
-                httpRequest = new HttpPut(connectionString);
-                HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
-                if (!headers.containsKey("Content-Type"))
-                    httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
-                ((HttpPut) httpRequest).setEntity(entity);
-                break;
-            }
+            case PUT:
             case POST:
             default: {
-                httpRequest = new HttpPost(connectionString);
+                if(method.equals(PUT))
+                    httpRequest = new HttpPut(connectionString);
+                else
+                    httpRequest = new HttpPost(connectionString);
                 HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, null);
                 if (!headers.containsKey("Content-Type"))
                     httpRequest.addHeader("Content-Type", entity.getContentType().getValue());
-                ((HttpPost) httpRequest).setEntity(entity);
+                ((HttpEntityEnclosingRequestBase) httpRequest).setEntity(entity);
                 break;
             }
         }
