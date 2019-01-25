@@ -257,9 +257,11 @@ public class GConnectionLostManager {
                 loadingPanel.setVisible(!fatal && !authException);
                 warningPanel.setVisible(!fatal && !authException);
                 errorPanel.setVisible(fatal && !authException);
-                btnExit.setVisible(!authException);
-                btnRelogin.setVisible(!authException);
-                btnReconnect.setEnabled(true);
+                if(authException) {
+                    btnExit.setEnabled(true);
+                    btnRelogin.setEnabled(true);
+                    btnReconnect.setEnabled(true);
+                }
                 this.fatal = fatal;
                 center();
             }

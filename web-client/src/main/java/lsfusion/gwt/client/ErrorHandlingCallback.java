@@ -53,7 +53,7 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
     }
 
     public static boolean isAuthException(Throwable caught) {
-        return caught instanceof InvocationException && caught.getMessage() != null && caught.getMessage().contains("<title>lsFusion</title>");//from login.jsp
+        return caught instanceof InvocationException && caught.getMessage() != null && caught.getMessage().contains("<div style=\"visibility: hidden;\">448b0ce6-206e-11e9-ab14-d663bd873d93</div>");//from login.jsp
     }
 
     public static int getMaxTries(Throwable caught) {
